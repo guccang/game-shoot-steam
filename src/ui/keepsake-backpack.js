@@ -1,4 +1,6 @@
 import {vehicleLocations,locateVehicle} from '../core/vehicle-location.js';
+import {createMailbox} from './mailbox.js';
+import {unreadMailCount} from '../progression/mailbox.js';
 import {CAMP_CHARACTERS,MONSTER_CAMPS} from '../config/monster-camps.js';
 import {FARM_CROPS} from '../config/farm.js';
 // 小背包复用手机底板、正式来信与地图，物品详情只在用户操作时更新。
@@ -28,6 +30,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  phone.querySelector('.ui-panel__body').prepend(environmentStatus);
  trigger.querySelector('.backpack-symbol').innerHTML=keepsakeIcon('bag');phoneTrigger.querySelector('.phone-symbol').innerHTML=keepsakeIcon('patrol-phone');
  let selected='elder-letter',call=null,node=itemPanel,detail,actions,message;
+ const mailbox=createMailbox({game,root,dialogs,onChange,onClose:()=>{if(phone.open&&!call)render();}});
  // 切换渲染目标仅发生在打开详情时，不干扰底层背包格子。
  function selectPanel(){node=selected==='patrol-phone'?phone:itemPanel;detail=node.querySelector('.keepsake-content');actions=node.querySelector('.ui-panel__footer');message=node.querySelector('.keepsake-message');}
  // 动作名称固定，操作区不随着长正文一起滚出屏幕。
@@ -60,6 +63,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   }else{
    const calendar=calendarView(game.progress.living.calendar),reason=phoneUnavailable(game);
    detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>载具定位</h3><div class="keepsake-contacts">${vehicleLocations(game).map(v=>`<button type="button" class="ui-choice" data-locate-vehicle="${v.hull}"><span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span></button>`).join('')||'<p>还没有自有载具。</p>'}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
+   detail.querySelector('.keepsake-apps').insertAdjacentHTML('afterbegin',button('mail',`邮件${unreadMailCount(game.progress)?' · '+unreadMailCount(game.progress)+' 未读':''}`));
    actions.innerHTML=button('close',bag.open?'返回背包':'收好手机',true);
   }
  }
@@ -84,6 +88,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   if(vehicle){const result=locateVehicle(game,Number(vehicle.dataset.locateVehicle));if(result.ok){for(const p of [phone,itemPanel,bag])if(p.open)dialogs.close(p.id);onNotice(result.message);onChange();}else{message.textContent=result.message;message.hidden=false;}return;}
   const contact=event.target.closest('[data-call]');if(contact){const result=callNeighbor(game,contact.dataset.call);if(result.ok){call=result;resetView();}else{message.textContent=result.message;message.hidden=false;}return;}
   const action=event.target.closest('[data-pack-action]')?.dataset.packAction;if(!action)return;
+  if(action==='mail'&&ownsKeepsake(game.progress,'patrol-phone')){mailbox.open();return;}
   if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}
   if(action==='map'&&ownsKeepsake(game.progress,'patrol-phone')){dialogs.open('map-dialog');return;}
   if(action==='home'||action==='visit'){navigate(action==='home'?'home':call.id);return;}
@@ -94,5 +99,5 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  scope.on(itemPanel,'click',act);scope.on(phone,'click',act);
  // 应用销毁清除本实例节点与监听，重载存档不会沿用旧通话。
  function dispose(){scope.dispose();environmentStatus.hidden=true;root.getElementById('game-frame').append(environmentStatus);for(const panel of [bag,itemPanel,phone])panel.remove();trigger.querySelector('.backpack-symbol').replaceChildren();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}
- return {dispose};
+ return {dispose:()=>{mailbox.dispose();dispose();}};
 }

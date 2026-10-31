@@ -1,4 +1,5 @@
 import {heroExperience} from '../progression/hero-experience.js';
+import {unreadMailCount} from '../progression/mailbox.js';
 import { i18nText } from "../i18n/index.js";
 import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
 import {deathCoinLoss} from '../core/death-penalty.js';
@@ -31,6 +32,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
   let pawAnimation = null, pawSequence = 0;
   // 将游戏快照映射到界面，不改变规则数据。
   function updateUI() {
+    const unread=unreadMailCount(game.progress),badge=$('phone-mail-badge');if(badge){badge.hidden=!unread;badge.textContent=unread>99?'99+':String(unread);$('phone-button').setAttribute('aria-label',unread?`打开巡林手机，${unread}封未读邮件`:'打开巡林手机');}
     if(canvasRevision!==canvasRecoveryRevision()){canvasRevision=canvasRecoveryRevision();portraitKind=null;inventory.invalidateArt();}
     // 只按正式战斗状态精简顶栏；暂停不闪回资源栏，结算、退出和离开清缴区自动恢复。
     $('game-frame').classList.toggle('task-combat-active',!!game.campDefense&&game.campDefense.phase!=='result'||clearingCombatActive(game));

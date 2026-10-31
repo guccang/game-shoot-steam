@@ -9,7 +9,7 @@ import {recordEconomy} from './economy-ledger.js';
 // 只提交当前任务；存储失败的正式入口会丢弃整个候选进度。
 export function awardMainline(progress,id){
  const task=currentMainlineTask(progress.mainline);if(!task||task.id!==id)return null;
- awardCampXp(progress,'mainline');
+ awardCampXp(progress,'mainline',null,task.title);
  const reward={};
  for(const [key,n] of Object.entries(mainlineReward(task,progress)))reward[key]=creditResource(progress,key,n);
  grantMainlineSeeds(progress,task);

@@ -273,7 +273,7 @@ export function claimStory(game) {
   if(!r||r.phase!=='prepare'||!node.claimWhen||!storyCondition(r,node.claimWhen))return false;
   // 恢复载具选择访问器，交付后切换新获得的车体仍会读取正确主炮和等级。
   const before=game.progress,next=validateProgress(structuredClone(game.progress)),record=next.story.chapters[def.id],reward=def.reward,first=!record.rewardClaimed;
-  if(!record.rewardClaimed){awardCampXp(next,'story',def.id);for(const [key,amount] of Object.entries(reward)){
+  if(!record.rewardClaimed){awardCampXp(next,'story',def.id,def.title);for(const [key,amount] of Object.entries(reward)){
     creditResource(next,key,amount);
   }record.rewardClaimed=true;}
   record.completed=true;record.choices=structuredClone(r.choices||{});record.followupLoadout=r.lastExperienceLoadout||r.loadoutId;record.followupDismissed=false;

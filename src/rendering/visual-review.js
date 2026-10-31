@@ -1740,3 +1740,9 @@ export async function inspectCatHome(game,root){
  const {heroExperience}=await import('../progression/hero-experience.js');
  return {designCriterion:'cat-home-progression',room:game.cottage?.kind,hero:game.progress.hero,experience:heroExperience(game.progress),owned:game.progress.heroes.filter(level=>level>0).length,oldHeroTab:!!root.getElementById('tab-heroes'),dialog:!!root.getElementById('cat-home-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 邮箱验收读取实际存档与正式页面，核对未读、附件和触控边界。
+export async function inspectMailbox(game,root){
+ const {unreadMailCount}=await import('../progression/mailbox.js');
+ return {designCriterion:'phone-mail',unread:unreadMailCount(game.progress),count:game.progress.mailbox.items.length,parcels:game.progress.farm.delivery.parcels.length,open:!!root.getElementById('mailbox-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

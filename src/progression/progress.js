@@ -1,3 +1,4 @@
+import {freshMailbox,normalizeMailbox,syncParcelMail} from './mailbox.js';
 import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
 import {normalizeVehicleService} from './vehicle-repair.js';
 import {freshHome,normalizeHome} from './home-decor.js';
@@ -52,6 +53,7 @@ export function freshProgress() {
     legendaryWorkshop:normalizeLegendaryWorkshop(null),
     arrival: null,
     farm:freshFarm(),
+    mailbox:freshMailbox(),
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
     keepsakes:normalizeKeepsakes(null,null),
@@ -143,6 +145,7 @@ export function validateProgress(raw) {
   p.legendaryWorkshop=normalizeLegendaryWorkshop(raw.legendaryWorkshop);
   p.restoration=validateRestoration(raw.restoration);
   p.farm=validateFarm(raw.farm);
+  p.mailbox=normalizeMailbox(raw.mailbox);syncParcelMail(p);
   p.campLevel=validateCampLevel(raw.campLevel);
   p.mainline=validateMainline(raw.mainline);
   restoreFirstPlantSeeds(p);

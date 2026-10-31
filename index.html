@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="/src/styles/cottage.css">
   <link rel="stylesheet" href="/src/styles/home-decor.css">
   <link rel="stylesheet" href="/src/styles/cat-home.css">
+  <link rel="stylesheet" href="/src/styles/mailbox.css">
   <link rel="stylesheet" href="/src/styles/keepsake-backpack.css">
   <!-- 通用底板最后接入，让已有弹窗共享外观，新页面复用同一结构类。 -->
   <link rel="stylesheet" href="/src/styles/ui-foundation.css">
@@ -96,7 +97,7 @@
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <nav class="field-menu" data-i18n-aria-label="index.853e342729">
         <div id="field-menu-items" class="field-menu-items">
-        <button id="phone-button" type="button" aria-label="打开巡林手机" aria-haspopup="dialog" aria-controls="phone-dialog"><span class="phone-symbol" aria-hidden="true"></span><span>手机</span></button>
+        <button id="phone-button" type="button" aria-label="打开巡林手机" aria-haspopup="dialog" aria-controls="phone-dialog"><span class="phone-symbol" aria-hidden="true"></span><span>手机</span><span id="phone-mail-badge" hidden aria-hidden="true"></span></button>
         <button id="realm-button" data-i18n-aria-label="ui.panels.realms.f5dc54fbda" aria-haspopup="dialog" aria-controls="realm-dialog"><svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="40" rx="18" ry="5" fill="#47675640"/><path d="M10 37V23C10 3 38 3 38 23v14" fill="#a4b8a2" stroke="#456354" stroke-width="3"/><path d="M16 37V23c0-13 16-13 16 0v14z" fill="#8b82b0" stroke="#eee3bd" stroke-width="2"/><path d="m24 18 3 7 6 2-6 3-3 7-3-7-6-3 6-2z" fill="#f6e5ae"/></svg><span><!--i18n:index.61cc0e09df--></span></button>
         <button id="heroes-button" aria-label="定位猫窝"><canvas id="hero-button-icon" width="112" height="112" aria-hidden="true"></canvas><span>猫窝</span></button>
         <button id="weapons-button" hidden data-i18n-aria-label="ui.inventory.235d93ed3b" aria-haspopup="dialog" aria-controls="workshop-dialog"><canvas id="weapon-button-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:ui.story-rewards.4fe131173e--></span></button>

@@ -1,4 +1,5 @@
 import {equipmentQuestReason} from './equipment-quests.js';
+import {sendMail,resourceMailText} from './mailbox.js';
 import {RANGER,arrivalPistolPurchase} from '../config/ranger-arrival.js';
 import { i18nText } from "../i18n/index.js";
 import {campPurchasePrice} from './camp-level.js';
@@ -58,6 +59,8 @@ export function payEquipment(progress, kind, index) {
   if (!canPurchaseEquipment(progress, kind, index)) return false;
   const cost = equipmentRecipe(kind, index, progress);
   recordEconomy(progress,'expense','buy:'+kind+':'+index,cost);
+  // 手续与所有权处于同一候选事务；报价预览不会向真实邮箱寄信。
+  sendMail(progress,{key:`purchase:${kind}:${index}`,sender:kind==='vehicle'?'载具工坊':'武器工坊',title:`${cost.name}购买手续`,body:`${cost.name}的购买手续已办妥。\n实际支付：${resourceMailText(cost)}。\n${kind==='vehicle'?'车辆已登记到你的名下，并停入停车场，可通过手机定位。':'装备已登记到你的名下，可以在工坊查看和装备。'}\n此邮件为购买凭证，无需再次付款。`});
   progress.coins -= cost.coins;
   progress.wood -= cost.wood;
   for (const key of MATERIAL_KEYS) progress.materials[key] -= cost[key];

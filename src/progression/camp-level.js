@@ -1,4 +1,5 @@
 import {awardHeroXp,HERO_TASK_XP} from './hero-experience.js';
+import {sendMail} from './mailbox.js';
 // 营地经验、存档校验与首次购买报价共用规则，不改变战斗强度。
 import {CAMP_LEVELS,CAMP_ACTIVITY_XP,CAMP_BATCHES,CAMP_STORY_XP} from '../config/camp-level.js';
 // 损坏值和旧档缺项从零开始，不根据历史战绩补发经验。
@@ -16,12 +17,15 @@ export function campDiscountText(percent){return `${percent/10}折`;}
 // 只用于首次购买，整数百分比向上取整，材料及零价保持不变。
 export function campPurchasePrice(progress,base){const {percent}=campProgress(progress);return {...base,coins:Math.ceil(base.coins*percent/100),wood:Math.ceil(base.wood*percent/100)};}
 // 发放返回实际经验差额，封顶与资源钱包互相独立；调用方负责完成事件的一次性保护。
-export function awardCampXp(progress,activity,chapterId=null){
+export function awardCampXp(progress,activity,chapterId=null,taskTitle=''){
  // 任务和挑战已完成的一次性事务同时发放角色经验，营地满级也继续成长。
- awardHeroXp(progress,HERO_TASK_XP[activity]||0);
+ const hero=awardHeroXp(progress,HERO_TASK_XP[activity]||0);
  const state=progress.campLevel=validateCampLevel(progress.campLevel),before=state.xp;
  const amount=activity==='story'?(chapterId?.startsWith('neighbors-')?CAMP_ACTIVITY_XP.living:CAMP_STORY_XP[chapterId]??240):CAMP_ACTIVITY_XP[activity]??0;
- state.xp=Math.min(CAMP_LEVELS.at(-1).xp,before+amount);return state.xp-before;
+ state.xp=Math.min(CAMP_LEVELS.at(-1).xp,before+amount);
+ const label={mainline:'主线委托',living:'邻里委托',story:'故事任务',clearing:'领主清缴',horde:'营门守卫',realm:'秘境挑战',fire:'森林消防',football:'足球比赛'}[activity];
+ if(label)sendMail(progress,{title:(taskTitle||label)+'完成通知',body:`你已完成${taskTitle||label}，本次奖励已结算。营地经验 +${state.xp-before}，出战角色经验 +${hero.gained}。请在任务记录与背包中查看进度和物品。`});
+ return state.xp-before;
 }
 // 伐木和野外击杀按批积累，余数随存档保留，不要求连续完成。
 export function countCampActivity(progress,kind,count=1){

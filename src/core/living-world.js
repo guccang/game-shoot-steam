@@ -173,7 +173,7 @@ export function interactLivingRequest(game,id){
       // 完成后明确恢复主线，其他已接请求保留进度，等待玩家手动追踪。
       q.completed=true;q.completedDay=p.living.calendar.day;p.taskTracking={kind:'mainline'};
       const chapter=p.story.chapters[id];
-      if(!chapter.rewardClaimed)awardCampXp(p,'living');
+      if(!chapter.rewardClaimed)awardCampXp(p,'living',null,spec.title);
       if(!chapter.rewardClaimed)for(const [key,amount] of Object.entries(STORY_CAMPAIGN[id].reward))creditResource(p,key,amount);
       chapter.completed=true;chapter.rewardClaimed=true;Object.assign(p.story.worldFlags,STORY_CAMPAIGN[id].completionFlags);p.living.journal.push(spec.reply);
     }p.living.journal=p.living.journal.slice(-GAMEPLAY_VALUES.living.journalLimit);

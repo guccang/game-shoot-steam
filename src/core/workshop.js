@@ -14,7 +14,11 @@ export function commitWorkshop(game, plan, persist) {
   const firstPistol=arrivalPistolPurchase(game.progress,plan.kind,plan.index,plan.action);
   const quote = quoteWorkshop(game.progress, plan, !!game.realm);
   if (!quote.ok) return quote;
-  quote.next.patrol = capturePatrol(game);
+  // 快照也在副本上同步位置和耐久，保存失败不能提前改动正式进度。
+  const snapshot=Object.create(game);snapshot.progress=structuredClone(game.progress);
+  quote.next.patrol = capturePatrol(snapshot);
+  quote.next.living.position=snapshot.progress.living.position;
+  quote.next.vehicleService=snapshot.progress.vehicleService;
   let saved = false;
   try { saved = persist(quote.next) === true; } catch { saved = false; }
   if (!saved) return { ...quote, ok: false, reason: i18nText("core.workshop.7d32e8a05c") };
