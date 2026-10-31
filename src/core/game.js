@@ -1,3 +1,4 @@
+import {legendaryVisible} from './legendary-workshop.js';
 import {updateVehicleRepair,personalFleet,vehicleRequiresService,vehicleService,syncVehicleService} from './vehicle-repair.js';
 import {absorbEnergyShield} from '../combat/energy-shield.js';
 import {updateFarmDelivery} from './farm-delivery.js';
@@ -823,6 +824,7 @@ export class Game {
     if (this.state !== 'playing') return;
     syncStoryWorld(this);
     // 营地实体在章节全程可见，底座碰撞同样不随任务节点开关。
+    this.player.legendaryBuilding=legendaryVisible(this);
     this.player.livingCollision=!this.campDefense&&!this.realm&&this.mapId==='forest'&&!this.fireActive;
     updateLivingWorld(this,dt);
     expireWildFarms(this);

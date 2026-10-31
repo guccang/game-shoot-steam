@@ -49,11 +49,11 @@ test('跨地图车辆只在真实地图显示，手机标出实际位置且不�
  const g=setup();g.mapId='jiuzhaigou';g.player.mapId='jiuzhaigou';Object.assign(g.player,{x:1400,y:1000});g.summonVehicle();g.dismountVehicle();const location=vehicleLocations(g)[0];assert.equal(location.mapId,'jiuzhaigou');
  g.mapId='forest';g.player.mapId='forest';assert.equal(parkedOwned(g).length,0);assert.equal(g.summonVehicle(),false);assert.ok(locateVehicle(g,0).ok);assert.equal(worldNavigationDiagnostics(g).intent.site.mapId,'jiuzhaigou');assert.equal(vehicleLocations(g)[0].x,1400);
 });
-test('种子屋售货员可购买，维修中心接收门外车且室内等待修好后交到门外',()=>{
+test('种子屋售货员可购买，维修中心接收门外车且室内等待修好后交到北门停车场',()=>{
  const g=setup();Object.assign(g.player,WORKSHOP_INTERIORS.seed.door);assert.ok(enterWorkshop(g,'seed'));g.progress.farm.unlocked[0]=true;assert.ok(canBuyFarmSeeds(g));assert.ok(buyFarmSeeds(g,0,1).ok);
  const repair=setup();Object.assign(repair.player,REPAIR_BAY);repair.summonVehicle();repair.vehicle.hp*=.75;repair.dismountVehicle();Object.assign(repair.player,WORKSHOP_INTERIORS.repair.door);assert.ok(enterWorkshop(repair,'repair'));const room=repair.cottage,cost=repair.progress.coins;
- assert.ok(requestVehicleRepair(repair,0).ok);assert.ok(repair.progress.coins<cost);assert.equal(repair.cottage,room);repair.state='paused';updateVehicleRepair(repair,30);assert.equal(repair.progress.vehicleService[0].phase,'repairing');repair.state='playing';updateVehicleRepair(repair,13);assert.equal(repair.progress.vehicleService[0].phase,'ready');
- assert.ok(collectRepairedVehicle(repair,0).ok);assert.equal(repair.cottage,room);assert.equal(repair.vehicle.active,false);assert.equal(vehicleLocations(repair)[0].status,'原地停放');assert.equal(repair.vehicle.hp,repair.vehicle.maxHp);
+ assert.ok(requestVehicleRepair(repair,0).ok);assert.ok(repair.progress.coins<cost);assert.equal(repair.cottage,room);repair.state='paused';updateVehicleRepair(repair,30);assert.equal(repair.progress.vehicleService[0].phase,'repairing');repair.state='playing';updateVehicleRepair(repair,13);assert.equal(repair.progress.vehicleService[0].phase,null);
+ assert.equal(collectRepairedVehicle(repair,0).ok,false);assert.equal(repair.cottage,room);assert.equal(repair.vehicle.active,false);assert.equal(vehicleLocations(repair)[0].status,'停车场');assert.equal(repair.vehicle.hp,repair.vehicle.maxHp);
 });
 test('停车提示只提供明确点击，停留不自动停车，点击后驶入固定泊位',()=>{
  const g=setup(),spot=PARKING_SPOTS.find(s=>s.id==='weapons-west');Object.assign(g.player,{x:spot.x,y:spot.approachY,vx:0,vy:0});g.summonVehicle();
@@ -71,6 +71,6 @@ test('多辆原地停车可独立读档，手动停入车位阻止访客和自�
 test('正式游戏更新在屋内推进维修，暂停冻结，取回多车不会重叠',()=>{
  const g=setup();Object.assign(g.player,WORKSHOP_INTERIORS.repair.door);assert.ok(enterWorkshop(g,'repair'));g.progress.vehicleHulls[5]=1;
  for(const hull of [0,5])g.progress.vehicleService[hull]={hp:.5,phase:'repairing',mapId:'forest',position:{...REPAIR_BAY},timer:11.9};
- g.state='paused';g.update(.05);assert.equal(g.progress.vehicleService[0].timer,11.9);g.state='playing';for(let i=0;i<3;i++)g.update(.05);assert.equal(g.progress.vehicleService[0].phase,'ready');
- assert.ok(collectRepairedVehicle(g,0).ok);assert.ok(collectRepairedVehicle(g,5).ok);const sites=vehicleLocations(g);assert.ok(worldDistance(sites.find(s=>s.hull===0),sites.find(s=>s.hull===5))>=85);
+ g.state='paused';g.update(.05);assert.equal(g.progress.vehicleService[0].timer,11.9);g.state='playing';for(let i=0;i<3;i++)g.update(.05);assert.equal(g.progress.vehicleService[0].phase,null);
+ assert.equal(g.progress.vehicleService[5].phase,null);const sites=vehicleLocations(g);assert.ok(worldDistance(sites.find(s=>s.hull===0),sites.find(s=>s.hull===5))>=85);
 });

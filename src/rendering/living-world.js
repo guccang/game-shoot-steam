@@ -1,3 +1,4 @@
+import {drawBuildingArchitecture} from './building-architecture.js';
 import {createRenderCanvas,watchRenderCanvas} from './canvas-recovery.js';
 import { onArtStyleChange } from '../art-styles/state.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
@@ -148,6 +149,7 @@ export function drawLivingObject(c, item, game, night, reduced) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 function drawFacility(c, item, night) {
+  if(['kitchen','relay'].includes(item.kind)){c.save();c.translate(item.x,item.y);drawBuildingArchitecture(c,item.kind,false,night);c.restore();return;}
   c.save();
   c.translate(item.x, item.y);
   const wood = night > 0.5 ? '#938260' : '#bc9b6c',

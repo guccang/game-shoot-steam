@@ -1,3 +1,4 @@
+import {parkingRecordSite} from '../src/progression/roadside-parking.js';
 // 营地扩建验证正式碰撞、循环镜像、泊车、维修与在途旧档，不使用替代地图。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -65,16 +66,16 @@ test('三个维修泊位与周期镜像均可 P 倒车、刷新、重新上车�
 test('维修库内停驻车可由室内售货员保养，交车位置不压住房门',()=>{
  const g=setup(),spot=spots.find(s=>s.indoor);Object.assign(g.player,{x:spot.x,y:spot.approachY});g.summonVehicle();g.vehicle.hp*=.5;requestParking(g);
  for(let i=0;i<300&&g.vehicle.active;i++)updateParking(g,.05);
- Object.assign(g.player,WORKSHOP_INTERIORS.repair.door);assert.ok(enterWorkshop(g,'repair'));assert.ok(requestVehicleRepair(g,0).ok);updateVehicleRepair(g,13);assert.ok(collectRepairedVehicle(g,0).ok);
- const car=g.progress.campParking.owned[0];assert.ok(worldDistance(car,WORKSHOP_INTERIORS.repair.door)>65);assert.equal(blocked(car.x,car.y,30,g.trees,{mapId:'forest',livingCollision:true}),false);
+ Object.assign(g.player,WORKSHOP_INTERIORS.repair.door);assert.ok(enterWorkshop(g,'repair'));assert.ok(requestVehicleRepair(g,0).ok);updateVehicleRepair(g,13);assert.equal(collectRepairedVehicle(g,0).ok,false);
+ const car=parkingRecordSite(g.progress.campParking.owned[0]);assert.ok(worldDistance(car,WORKSHOP_INTERIORS.repair.door)>65);assert.equal(blocked(car.x,car.y,30,g.trees,{mapId:'forest',livingCollision:true}),false);
 });
 
 test('旧档出车、挂钩和返程续接新维修区，费用和残骸位置不变',()=>{
  for(const phase of ['outbound','hooking','towing'])for(const truckX of [180,-780]){
   const g=setup(),position={x:220,y:835};g.vehicle.hp=0;g.progress.vehicleService[0]={hp:0,phase,mapId:'forest',position,truck:{x:truckX,y:835},route:[{x:150,y:835},position],step:1,timer:0,wheel:0,layoutVersion:0};
   const coins=g.progress.coins;updateVehicleRepair(g,.05);assert.deepEqual(g.progress.vehicleService[0].position,position);
-  for(let i=0;i<2000&&g.progress.vehicleService[0].phase!=='ready';i++)updateVehicleRepair(g,.05);
-  const r=g.progress.vehicleService[0];assert.equal(r.phase,'ready');assert.equal(r.layoutVersion,REPAIR_LAYOUT_VERSION);assert.deepEqual(r.position,REPAIR_BAY);assert.equal(g.progress.coins,coins);
+  for(let i=0;i<2000&&g.progress.vehicleService[0].phase;i++)updateVehicleRepair(g,.05);
+  const r=g.progress.vehicleService[0];assert.equal(r.phase,null);assert.equal(r.layoutVersion,REPAIR_LAYOUT_VERSION);assert.deepEqual(r.position,canonical(parkingRecordSite(g.progress.campParking.owned.find(p=>p.hull===0))));assert.equal(g.progress.coins,coins);
   for(let i=1;i<r.route.length;i++)assert.ok(questLineClear(r.route[i-1],r.route[i],{mapId:'forest',livingCollision:true,navigationRadius:18},g.trees));
  }
 });

@@ -13,7 +13,8 @@ export const LIVING_SEASON_NAMES = ['春','夏','秋','冬'];
 export const LIVING_PLACES = {
   camp:{...TOWN_LAYOUT.letters,name:'晴叶饭桌',kind:'letters',width:90,height:48},
   relay:{...townPoint({x:790,y:1540}),name:'旧哨站',kind:'relay',width:104,height:100},
-  kitchen:{...townPoint({x:530,y:1810}),name:'阿团的厨房',kind:'kitchen',width:140,height:92},
+  // 厨房向西让出栖架与纵路，完整墙体不占用居民出门和车辆通路。
+  kitchen:{...townPoint({x:445,y:1810}),name:'阿团的厨房',kind:'kitchen',width:140,height:92},
   pottery:{...townPoint({x:780,y:1800}),name:'铁牙陶作台',kind:'pottery',width:104,height:46},
   roost:{...townPoint({x:560,y:1660}),name:'小夜的栖架',kind:'roost',width:100,height:112},
   market:{...townPoint({x:880,y:1900}),name:'林间集市',kind:'market',width:120,height:65},

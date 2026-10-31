@@ -125,6 +125,12 @@ export function drawGarage(c, winter = false, options = {}) {
     c.lineTo(x + 12, -123);
     c.stroke();
   }
+  // 工业车库加装采光天窗与分段卷帘梁，维修库配橙色安全护角。
+  poly(c,[[-54,-154],[-37,-170],[42,-170],[58,-154]],'#547566',edge,2);
+  box(c,-36,-167,77,13,2,'#a9cbbb',edge,1.5);
+  for(const x of [-16,8,30])box(c,x,-166,2,11,0,'#547566');
+  box(c,-104,-12,25,13,2,options.repair?'#cfad6d':'#b6c39b',edge,1.5);
+  box(c,80,-12,25,13,2,options.repair?'#cfad6d':'#b6c39b',edge,1.5);
   box(c, -114, -120, 228, 11, 3, '#a6b58b', edge, style.garage.strokeWidth);
   box(c, -31, -139, 62, 21, 5, '#e4d8a6', edge, style.garage.strokeWidth);
   oval(c, -15, -128, 6, 6, '#718b70', edge, 1.5);

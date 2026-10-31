@@ -12,16 +12,16 @@ export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
  root.body.append(panel);
  // 页面打开时刷新一次；游戏暂停时不伪造进度或反复重建焦点。
  function render(){
-  const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=reason||'收好手机或关闭页面后，拖车与维修继续工作。';
+  const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=reason||'关闭页面后继续维修，修好自动停入北门停车场；可用手机定位。';
   panel.querySelector('[data-repair-balance]').textContent=`持有金币：${game.progress.coins}`;
   panel.querySelector('[data-repair-list]').innerHTML=game.vehicles.filter(v=>game.progress.vehicleHulls[v.index]).map(v=>{
-   const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index),status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:'维修中',ready:'已修好 · 中心待取车'})[phase]||(v.hp<=0?'已报废':v.hp<v.maxHp?'耐久损耗':'完好');
-   const available=!reason&&(phase==='ready'?!remote:(!phase||phase==='wrecked')&&cost>0&&(!remote||v.hp<=0));
-   return `<button type="button" class="ui-choice" style="width:100%;margin-bottom:8px;min-height:72px;display:block;text-align:left" data-repair-hull="${v.index}" aria-pressed="${selection===v.index}" ${available?'':'disabled'}><b>${vehicleModel(v.index).name}</b><br><span>${status} · 耐久 ${Math.ceil(v.hp)} / ${v.maxHp}</span><br><small>${phase==='ready'?'现场免费取车':phase&&phase!=='wrecked'?'已付费，无需重复支付':cost?`费用 ${cost} 金币${game.progress.coins<cost?' · 金币不足':''}`:'无需维修'}</small></button>`;
+   const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index),status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:'维修中',ready:'已修好 · 等待停车场空位'})[phase]||(v.hp<=0?'已报废':v.hp<v.maxHp?'耐久损耗':'完好');
+   const available=!reason&&(phase==='ready'?true:(!phase||phase==='wrecked')&&cost>0&&(!remote||v.hp<=0));
+   return `<button type="button" class="ui-choice" style="width:100%;margin-bottom:8px;min-height:72px;display:block;text-align:left" data-repair-hull="${v.index}" aria-pressed="${selection===v.index}" ${available?'':'disabled'}><b>${vehicleModel(v.index).name}</b><br><span>${status} · 耐久 ${Math.ceil(v.hp)} / ${v.maxHp}</span><br><small>${phase==='ready'?'空出车位后自动交付':phase&&phase!=='wrecked'?'已付费，无需重复支付':cost?`费用 ${cost} 金币${game.progress.coins<cost?' · 金币不足':''}`:'无需维修'}</small></button>`;
   }).join('')||'<p>还没有自有载具。</p>';
   const confirm=panel.querySelector('[data-repair-confirm]'),r=vehicleService(game,selection),cost=vehicleRepairQuote(game,selection);
-  const enabled=selection!==null&&!reason&&(r?.phase==='ready'?!remote:(!r?.phase||r.phase==='wrecked')&&cost>0&&game.progress.coins>=cost&&(!remote||game.vehicles[selection].hp<=0));
-  confirm.disabled=!enabled;confirm.textContent=selection===null?'选择车辆':r?.phase==='ready'?'领取车辆':`确认支付 ${cost} 金币`;
+  const enabled=selection!==null&&!reason&&(r?.phase==='ready'?true:(!r?.phase||r.phase==='wrecked')&&cost>0&&game.progress.coins>=cost&&(!remote||game.vehicles[selection].hp<=0));
+  confirm.disabled=!enabled;confirm.textContent=selection===null?'选择车辆':r?.phase==='ready'?'重新安排车位':`确认支付 ${cost} 金币`;
  }
  // 确认时再次从业务层报价与校验，不使用页面缓存扣费。
  scope.on(panel,'click',event=>{

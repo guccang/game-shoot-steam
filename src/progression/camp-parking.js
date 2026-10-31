@@ -3,8 +3,8 @@ import {parkingRecordOccupies} from './roadside-parking.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {vehicleWeapon} from '../config/vehicles.js';
 // 北停车场为自有车辆预留位置，访客不进入持久化占位表。
-export function northParkingSpot(progress,hull){
- return PARKING_SPOTS.find(s=>s.building==='north'&&!progress.campParking?.owned?.some(r=>r.hull!==hull&&parkingRecordOccupies(r,s)));
+export function northParkingSpot(progress,hull,available=null){
+ return PARKING_SPOTS.find(s=>s.building==='north'&&(!available||available(s))&&!progress.campParking?.owned?.some(r=>r.hull!==hull&&parkingRecordOccupies(r,s)));
 }
 // 北场满位后使用既有工坊泊位，购买与停驻共用容量判断。
 export function availableParkingSpot(progress,hull){

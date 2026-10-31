@@ -1,3 +1,4 @@
+import {worldBuildingBlocked} from '../src/world/building-collision.js';
 // 导航性能专项：固定正式森林场景，以搜索工作量防回退，并核对空间索引与原碰撞完全一致。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -98,11 +99,11 @@ test('围栏空间索引与原全扫描在边界和周期镜像下完全一致',
  }
 });
 
-test('缓存设施列表保持装饰排除、底座边界和坐标换算规则',()=>{
+test('设施列表保留低矮底座与装饰排除，房屋改用完整墙体及周期坐标',()=>{
  const facilities=[FARM_SEED_SHOP,...Object.values(LIVING_PLACES)];
  for(const s of facilities)for(const radius of [0,12,48])for(const dx of [-s.width/2-radius,0,s.width/2+radius-.01])for(const dy of [-19-radius,-18.99-radius,0,5+radius])for(const mirror of [-1,0,1]){
   const x=s.x+dx+mirror*WORLD.width,y=s.y+dy-mirror*WORLD.height,p=canonical({x,y});
-  const expected=facilities.some(f=>!['flowers','basket','warning'].includes(f.kind)&&Math.abs(p.x-f.x)<f.width/2+radius&&p.y>f.y-19-radius&&p.y<f.y+5+radius);
+  const expected=worldBuildingBlocked(x,y,radius,{mapId:'forest'})||Object.values(LIVING_PLACES).some(f=>!['flowers','basket','warning','relay','kitchen','market'].includes(f.kind)&&Math.abs(p.x-f.x)<f.width/2+radius&&p.y>f.y-19-radius&&p.y<f.y+5+radius);
   assert.equal(livingFacilityBlocked(x,y,radius),expected);
  }
 });

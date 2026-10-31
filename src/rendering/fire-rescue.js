@@ -20,7 +20,7 @@ export function drawFireStation(c,item,player=null,time=0,layer='all') {
  if(item.parkedTruck&&layer==='all'){const parked={x:-49,y:-27};drawVehicleTracks(c,parked,item.parkedTruck);drawVehicleArmor(c,parked,item.parkedTruck,item.truckProgress,0,true);}
  if(layer!=='back'){
  for(let y=-82;y<=-74;y+=4)box(c,-112,y,126,3,1,'#b6c0a0');
- box(c,-121,-88,7,91,2,'#dfcc9b',outline,1.7);box(c,16,-88,7,91,2,'#dfcc9b',outline,1.7);
+ box(c,-121,-88,7,91,2,'#dfcc9b',outline,1.7);box(c,24,-88,7,91,2,'#dfcc9b',outline,1.7);
  poly(c,[[-128,-96],[-51,-130],[28,-96],[22,-87],[-120,-87]],'#b96d54',outline,2.4);
  poly(c,[[-128,-96],[-51,-130],[-43,-122],[-110,-93]],'#dca477',outline,1.5);
  box(c,27,-115,43,112,3,'#e9d9ac',outline,2.5);box(c,36,-43,25,43,2,'#496a54',outline,2);
@@ -28,6 +28,11 @@ export function drawFireStation(c,item,player=null,time=0,layer='all') {
  poly(c,[[21,-114],[48,-139],[77,-114],[70,-107],[28,-107]],'#b96d54',outline,2.2);
  oval(c,48,-101,8,6,Math.sin(time*4)>0?'#efc989':'#cf8c62',outline,1.5);
  box(c,-106,-98,114,12,2,'#bd7055',outline,1.5);c.font = canvasFont(10);c.textAlign='center';c.fillStyle='#fff0c2';c.fillText(i18nText("config.realms.12658843f1"),-49,-89);
+ // 值守楼加装石砌墙裙、消防标识与屋面采光窗，车库门洞尺寸保持一致。
+ box(c,28,-15,43,14,2,'#9aa48a',outline,1.5);
+ box(c,-84,-116,42,14,2,'#b6d0bf',outline,1.5);
+ for(const x of [-70,-57])box(c,x,-115,2,12,0,'#638777');
+ box(c,39,-54,19,8,2,'#ba7052',outline,1.3);
  oval(c,73,-23,11,15,'#c6b17a',outline,2);oval(c,73,-23,6,10,null,outline,2);box(c,-121,-9,10,25,3,'#c46d54',outline,2);box(c,-124,-8,17,5,2,'#f3dda4',outline,1.5);}
  c.restore();
 }

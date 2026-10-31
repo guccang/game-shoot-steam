@@ -1,4 +1,5 @@
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
+import {drawBuildingArchitecture} from './building-architecture.js';
 import { style } from '../art-styles/config.js';
 import { box, poly } from './primitives.js';
 import { drawWorldSign } from './world-signs.js';
@@ -44,6 +45,7 @@ function roofPanel(c, index, winter = false, night = 0) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawWeaponWorkshop(c, ruined = false, winter = false) {
+  if(!ruined){drawBuildingArchitecture(c,'weapons',winter);return;}
   const line = style.weaponWorkshopBuilding.drawWeaponWorkshopColor,
     wood = ruined ? '#9b9778' : '#d9bc80';
   poly(

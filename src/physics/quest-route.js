@@ -13,7 +13,7 @@ function pointClear(x,y,body,trees){
  // 玩家保持原有十二单位余量；大型召唤物显式传入自己的脚底尺寸。
  const radius=body.navigationRadius??12;
  if(body.arena){const a=nearest(body.arena,{x,y});if(Math.hypot(x-a.x,y-a.y)>body.arena.radius-radius)return false;}
- return body.flying||!blocked(x,y,radius,trees,body);
+ return !blocked(x,y,radius,trees,body);
 }
 // 每条边以8单位扫掠，沿用步行、两栖、飞行与战斗圈的实际通行规则。
 export function questLineClear(a,b,body,trees){

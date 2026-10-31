@@ -1,5 +1,6 @@
 // 小屋共用解码与绘制流程，风格目录仅存放图片和尺寸清单。
-import { drawCottageWindowLight, drawCottageRoofSnow } from './cottage-art.js';
+import {drawBuildingArchitecture} from './building-architecture.js';
+import {box,poly} from './primitives.js';
 import { artStyle, ART_STYLES } from '../art-styles/state.js';
 import classic from '../../assets/art-styles/classic/cozy-cottage/manifest.json' with { type: 'json' };
 import clear from '../../assets/art-styles/clear/cozy-cottage/manifest.json' with { type: 'json' };
@@ -46,18 +47,18 @@ export function cozyCottageStatus() {
     decodedBytes: image ? image.naturalWidth * image.naturalHeight * 4 : 0,
   };
 }
-// 两套图片共用门槛锚点，不能以备用图掩盖资源缺失。
+// 预载资源状态保持兼容；新木石立面采用正式程序几何，不改变门槛锚点。
 export function drawCozyCottage(c) {
   const id = artStyle(),
     image = images.get(id);
   if (!image) throw Error('温馨小屋图片尚未加载，不能绘制场景。');
-  c.drawImage(image, ...manifests[id].logicalBounds);
+  drawBuildingArchitecture(c,'cottage');
 }
 // 窗光继续跟随正式昼夜图集。
 export function drawCozyCottageWarmth(c) {
-  drawCottageWindowLight(c);
+  for(const x of [-52,21])box(c,x,-54,22,27,2,'#f2d88f','#607d61',1.2);
 }
 // 积雪继续跟随正式季节图集。
 export function drawCozyCottageSnow(c) {
-  drawCottageRoofSnow(c);
+  poly(c,[[-71,-87],[-10,-136],[62,-111],[67,-102],[-9,-127],[-63,-84]],'#edf1dc','#c3d0b7',1.2);
 }

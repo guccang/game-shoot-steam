@@ -15,7 +15,7 @@ export function vehicleLocations(game){
   let site,status;
   if(order?.phase){
    site=['repairing','ready'].includes(order.phase)?{...REPAIR_BAY,mapId:'forest'}:{...(order.phase==='wrecked'?order.position:order.truck||order.position),mapId:order.mapId};
-   status=({wrecked:'已报废',outbound:'救援中',hooking:'拖车挂接中',towing:'拖运中',repairing:'维修中',ready:'维修完成待取车'})[order.phase];
+   status=({wrecked:'已报废',outbound:'救援中',hooking:'拖车挂接中',towing:'拖运中',repairing:'维修中',ready:'修好待停车场空位'})[order.phase];
   }else if(v.active&&v===game.vehicle){site={...canonical(game.player),mapId:game.mapId};status='驾驶中';}
   else if(v.index===4&&game.fireGarageParked){site={...FIRE_GARAGE,mapId:'forest'};status='消防站车库';}
   else if(record){site=parkingRecordSite(record);status=record.spot?'停车场':'原地停放';}

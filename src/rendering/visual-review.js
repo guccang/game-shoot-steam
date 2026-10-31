@@ -1710,3 +1710,9 @@ export async function inspectVehicleRepair(game,root){
  const {vehicleServiceObjects}=await import('./vehicle-repair.js'),panel=root.getElementById('vehicle-repair-dialog');
  return {designCriterion:'vehicle-repair-service',objects:vehicleServiceObjects(game).map(o=>({type:o.type,x:o.x,y:o.y,hull:o.hull})),orders:game.progress.vehicleService,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,buttons:panel?.open?[...panel.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().height).map(b=>({text:b.textContent,height:b.getBoundingClientRect().height})):[],bitmapBytes:0};
 }
+
+// 新建筑验收直接读取正式墙体、维修订单和停车记录，保持图形与通行使用同一目录。
+export async function inspectBuildingTowRedesign(game,root){
+ const {WORLD_BUILDINGS}=await import('../config/world-buildings.js'),{TOW_TRUCK}=await import('../config/vehicle-repair.js');
+ return {...await inspectVehicleRepair(game,root),designCriterion:'building-tow-redesign',buildings:WORLD_BUILDINGS,tow:TOW_TRUCK,parked:game.progress.campParking.owned};
+}

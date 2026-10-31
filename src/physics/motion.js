@@ -1,3 +1,4 @@
+import {worldBuildingBlocked} from '../world/building-collision.js';
 import {monsterHitProfile} from '../config/monster-hit-reactions.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 轻量二维物理：分步碰撞、惯性与冲量；碎片另带高度轴，重力不会歪曲来弹方向。
@@ -16,6 +17,9 @@ const BOSS_PUSH_LIMIT = GAMEPLAY_VALUES.physics.bossPushLimit, BOSS_PUSH_DRAG = 
 
 // 河岸、湖山及树干统一使用脚底圆形碰撞体，桥面是河流通道。
 export function blocked(x, y, radius = 12, trees = [], body = null) {
+  // 建筑墙体连低空载具也不能穿过；飞行仍可跨越水面、树木与普通围栏。
+  if(worldBuildingBlocked(x,y,radius,body||{}))return true;
+  if(body?.flying)return false;
   // 停驻车体的边界跟随正式泊位；上车后记录移除，正常驾驶立即恢复通行。
   if(!body?.flying&&(body?.parkingBarriers||[]).some(b=>Math.abs(delta(x-b.x,WORLD.width))<b.width/2+radius&&Math.abs(delta(y-b.y,WORLD.height))<b.height/2+radius))return true;
   // 维修护栏只阻挡地面实体，位置与地图镜像一致，气垫船也不能穿过木栏。
@@ -55,12 +59,6 @@ export function moveBody(body, dx, dy, bounds, radius = 12, trees = []) {
     const factor = Math.min(1, (a.radius - radius - 1e-6) / Math.max(1, Math.hypot(x, y)));
     dx = a.x + x * factor - body.x; dy = a.y + y * factor - body.y;
     if (a.terrain !== 'forest') { body.x += dx; body.y += dy; return; }
-  }
-  // 低空载具只跳过地形阻挡，承伤仍由统一战斗规则处理。
-  if (body.flying) {
-    body.x += dx;
-    body.y += dy;
-    return;
   }
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 4));
   for (let i = 0; i < steps; i++) {

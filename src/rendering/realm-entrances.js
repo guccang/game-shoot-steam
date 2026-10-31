@@ -97,163 +97,20 @@ function drawRogue(c, color, pulse) {
   star(c, 0, -47, 12 + pulse, color.glow);
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function drawTower(c, color, pulse) {
-  style.realmEntrances.fineTower
-    ? poly(
-        c,
-        [
-          [-35, 0],
-          [-35, -76],
-          [4, -88],
-          [38, -73],
-          [38, 0],
-        ],
-        '#ddd8b8',
-      )
-    : poly(
-        c,
-        [
-          [-35, 0],
-          [-35, -76],
-          [4, -88],
-          [38, -73],
-          [38, 0],
-        ],
-        '#f1d9a3',
-        outline,
-        3.5,
-      );
-  style.realmEntrances.fineTower
-    ? poly(
-        c,
-        [
-          [4, -88],
-          [38, -73],
-          [38, 0],
-          [4, 8],
-        ],
-        '#a4ad90',
-      )
-    : poly(
-        c,
-        [
-          [4, -88],
-          [38, -73],
-          [38, 0],
-          [4, 8],
-        ],
-        '#c6ac7c',
-        outline,
-        3,
-      );
-  style.realmEntrances.fineTower
-    ? poly(
-        c,
-        [
-          [-45, -77],
-          [0, -99],
-          [46, -78],
-          [5, -64],
-        ],
-        color.main,
-      )
-    : poly(
-        c,
-        [
-          [-45, -77],
-          [0, -99],
-          [46, -78],
-          [5, -64],
-        ],
-        color.main,
-        outline,
-        3.5,
-      );
-  poly(
-    c,
-    [
-      [-45, -77],
-      [0, -99],
-      [5, -83],
-    ],
-    color.light,
-    null,
-  );
-  box(c, -24, -122, 48, 40, 3, style.realmEntrances.drawTowerColor, outline, style.realmEntrances.drawTowerValue);
-  poly(
-    c,
-    [
-      [9, -122],
-      [24, -122],
-      [24, -82],
-      [9, -87],
-    ],
-    '#acb397',
-    null,
-  );
-  style.realmEntrances.fineTower
-    ? poly(
-        c,
-        [
-          [-34, -122],
-          [0, -155],
-          [34, -122],
-          [0, -109],
-        ],
-        color.main,
-      )
-    : poly(
-        c,
-        [
-          [-34, -122],
-          [0, -155],
-          [34, -122],
-          [0, -109],
-        ],
-        color.main,
-        outline,
-        3.5,
-      );
-  poly(
-    c,
-    [
-      [-34, -122],
-      [0, -155],
-      [0, -109],
-    ],
-    color.light,
-    null,
-  );
-  box(c, -12, -101, 24, 13, 6, color.dark, outline, 1.5);
-  box(c, -17, -44, 34, 46, [17, 17, 2, 2], color.dark, outline, 2);
-  box(c, -10, -36, 20, 35, [10, 10, 1, 1], color.glow);
-  for (const [x, y] of [
-    [-22, -61],
-    [20, -52],
-    [-23, -22],
-    [18, -16],
-  ])
-    box(c, x, y, 12, 5, 1, '#a9b394');
-  c.strokeStyle = outline;
-  c.lineWidth = 3;
-  c.beginPath();
-  c.moveTo(0, -152);
-  c.lineTo(0, -164);
-  c.stroke();
-  poly(
-    c,
-    [
-      [2, -164],
-      [26, -158],
-      [2, -151],
-    ],
-    color.main,
-    outline,
-    1.5,
-  );
-  star(c, 0, -57, 7 + pulse * 0.3, color.glow);
+function drawTower(c,color,pulse){
+ // 分层石砌钟塔以宽台基、收分塔身和四角塔檐区别于普通住宅。
+ box(c,-46,-14,92,22,4,'#9ca98d',outline,2);box(c,-39,-100,78,89,3,'#ddd9b7',outline,2.5);
+ poly(c,[[16,-100],[39,-100],[39,-11],[16,-7]],'#a6b295',outline,1.5);
+ for(const y of [-24,-45,-66,-87]){c.strokeStyle='#9eaa8b';c.lineWidth=1.2;c.beginPath();c.moveTo(-36,y);c.lineTo(36,y);c.stroke();}
+ box(c,-15,-47,30,46,8,'#506f66',outline,2);box(c,-9,-38,18,35,6,'#92b3a1',outline,1.3);
+ for(const x of [-29,22])box(c,x,-82,7,25,3,'#688e80',outline,1.5);
+ box(c,-46,-108,92,13,3,'#9faf92',outline,2);box(c,-29,-146,58,39,3,'#e4d9b2',outline,2);
+ poly(c,[[-38,-146],[0,-166],[38,-146],[31,-139],[-31,-139]],color.main,outline,2.5);
+ oval(c,0,-126,15,15,'#f4e6b6',outline,2);c.strokeStyle='#5a8070';c.lineWidth=2;c.beginPath();c.moveTo(0,-138);c.lineTo(0,-126);c.lineTo(8,-123+pulse*.15);c.stroke();
+ for(const x of [-41,34]){box(c,x,-119,7,22,1,'#b9c4a4',outline,1.5);poly(c,[[x-3,-119],[x+3,-129],[x+10,-119]],color.main,outline,1.4);}
 }
-// 共用绘制与动作输入，风格差异由配置提供。
+
+// 守护圣像沿用原独立光效和石台结构。
 function drawGuardian(c, color, pulse) {
   for (const sign of [-1, 1]) {
     poly(

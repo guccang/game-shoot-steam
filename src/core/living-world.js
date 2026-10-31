@@ -13,7 +13,7 @@ import {calendarView,advanceLivingCalendar} from '../world/living-calendar.js';
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
 import {worldDistance,nearest,WORLD} from '../world/coordinates.js';
 import {moveBody,drySpawn,blocked} from '../physics/motion.js';
-import {naturalWaypoint} from '../physics/terrain-navigation.js';
+import {planQuestRoute,questLineClear} from '../physics/quest-route.js';
 import {createCatMotion,updateCatMotion} from './cat-motion.js';
 import {validateProgress} from '../progression/progress.js';
 import {STORY_CAMPAIGN} from '../config/story-campaign.js';
@@ -26,7 +26,7 @@ export function livingResidents(game){
   if(!game.livingActors)game.livingActors=new Map();
   for(const [index,spec] of RESIDENTS.entries())if(!game.livingActors.has(spec.id)){
     const home=LIVING_PLACES[spec.home],saved=game.progress.living.residents[spec.id];
-    const position=saved&&!blocked(saved.x,saved.y,12,game.trees)?saved:{x:home.x+(index%3-1)*32,y:home.y+45+Math.floor(index/3)*20};
+    const position=saved&&!blocked(saved.x,saved.y,12,game.trees,{mapId:'forest'})?saved:{x:home.x+(index%3-1)*32,y:home.y+45+Math.floor(index/3)*20};
     game.livingActors.set(spec.id,{...spec,...position,mapId:'forest',type:'living-resident',radius:12,motion:createCatMotion(),clock:0,action:'rest',moving:false,path:[],goal:null});
   }
   return [...game.livingActors.values()].filter(r=>r.hero!==game.progress.hero);
@@ -53,10 +53,10 @@ export function residentSchedule(game,resident){
   }
   if(['rain','thunder','snow'].includes(game.livingWeather)&&action!=='watch'){place=['cook','boar'].includes(resident.id)?'kitchen':resident.id==='bat'?'roost':'relay';action='shelter';}
   const p=LIVING_PLACES[place],index=RESIDENTS.indexOf(RESIDENTS.find(r=>r.id===resident.id));
-  return {place,action,x:p.x+(index%3-1)*34,y:p.y+(action==='shelter'?12:42)+Math.floor(index/3)*(action==='shelter'?18:23)};
+  return {place,action,x:p.x+(index%3-1)*34,y:p.y+(action==='shelter'?22:42)+Math.floor(index/3)*(action==='shelter'?18:23)};
 }
 // 道路图只含少量固定节点，长距离往来走已有生活通路；近距离直达工作面。
-function residentPath(from,to){
+function residentRoadPath(from,to){
   if(worldDistance(from,to)<GAMEPLAY_VALUES.living.directRouteDistance)return [to];
   const nodes=[],edges=[];
   // 合并道路交点，保证营地与邻里使用相同的交通关系。
@@ -67,17 +67,32 @@ function residentPath(from,to){
   while(queue.length){const n=queue.shift();if(n===end)break;for(const next of edges[n])if(!previous.has(next)){previous.set(next,n);queue.push(next);}}
   const path=[];for(let n=end;n!==null&&n!==undefined;n=previous.get(n))path.unshift(nodes[n]);return [...path,to];
 }
+// 沿既有生活道路分段避开实体建筑；作息切换时规划，行走帧不重复搜索。
+function residentPath(from,to,trees){
+ const points=[],body={...from,navigationRadius:16};let start=from;
+ for(const goal of residentRoadPath(from,to)){
+  if(questLineClear(start,goal,body,trees))points.push(goal);
+  else{const route=planQuestRoute({...body,...start},goal,trees);if(!route.reachable)return points;points.push(...route.points.slice(1));}
+  start=goal;
+ }
+ return points;
+}
 // 每个居民持续更新；不按摄像机可见性创建或销毁，六人规模无需全世界模拟。
 export function updateLivingWorld(game,dt){
   if(!livingForest(game)||game.state!=='playing')return;
   for(const resident of livingResidents(game)){
     const target=residentSchedule(game,resident),key=`${target.place}:${target.action}`;
-    if(resident.goal!==key){resident.goal=key;resident.path=residentPath(resident,target);}
+    if(resident.goal!==key){resident.goal=key;resident.path=residentPath(resident,target,game.trees);}
     resident.action=target.action;resident.place=target.place;resident.clock+=dt;
-    const waypoint=resident.path[0],before={x:resident.x,y:resident.y};
-    if(waypoint){const n=nearest(naturalWaypoint(resident,waypoint,12)||waypoint,resident),distance=Math.hypot(n.x-resident.x,n.y-resident.y);
-      if(worldDistance(resident,waypoint)<GAMEPLAY_VALUES.living.waypointReach)resident.path.shift();
-      else if(distance>0)moveBody(resident,(n.x-resident.x)/distance*Math.min(distance,GAMEPLAY_VALUES.living.walkSpeed*dt),(n.y-resident.y)/distance*Math.min(distance,GAMEPLAY_VALUES.living.walkSpeed*dt),WORLD,12,game.trees);}
+    const before={x:resident.x,y:resident.y};let remaining=GAMEPLAY_VALUES.living.walkSpeed*dt;
+    // 一帧可走完多个短路点，绕墙新增折点不会吞掉整帧行走时间。
+    while(remaining>0&&resident.path.length){
+      const waypoint=resident.path[0],n=nearest(waypoint,resident),distance=Math.hypot(n.x-resident.x,n.y-resident.y);
+      if(distance<GAMEPLAY_VALUES.living.waypointReach){resident.path.shift();continue;}
+      const step=Math.min(distance,remaining),x=resident.x,y=resident.y;
+      moveBody(resident,(n.x-x)/distance*step,(n.y-y)/distance*step,WORLD,12,game.trees);remaining-=step;
+      if(Math.hypot(resident.x-x,resident.y-y)<step*.5)break;
+    }
     const speed=dt>0?worldDistance(before,resident)/dt:0;resident.moving=speed>3;updateCatMotion(resident.motion,dt,speed,resident.moving);
     // 小夜沿连续高度落上栖架；换班起飞时也缓慢下降，脚底世界坐标不跳变。
     const height=resident.id==='bat'&&target.place==='roost'&&!resident.path.length?Math.max(0,target.y-LIVING_PLACES.roost.y+20):0;
