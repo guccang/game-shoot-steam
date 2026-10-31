@@ -1,3 +1,4 @@
+import {drawGarage,drawGarageGround} from './garage.js';
 import {nearest} from '../world/coordinates.js';
 // 维修建筑、残骸与拖车直接进入正式世界深度队列，不创建替代预览画面。
 import {REPAIR_CENTER,REPAIR_BAY,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
@@ -29,15 +30,8 @@ export function drawWreckDamage(c,x,y,time=0){
 }
 // 建筑先画地坪与阴影，再画墙面与屋顶；保留门前真实活动空间。
 function drawCenter(c,item,night){
- c.save();c.translate(item.x,item.y);oval(c,8,6,87,19,'#324f3930');box(c,-86,-12,175,51,12,night?'#9da481':'#d7cba4');
- box(c,-72,-74,144,74,8,'#efe1b4','#355b43',2.2);box(c,23,-64,43,64,2,'#b6c29a','#355b43',1.8);
- box(c,-56,-57,62,57,5,'#53735b','#355b43',2);box(c,-49,-49,48,41,3,'#8c9b70');
- // 工具架和独立立柱使维修棚与已有整车销售车库结构不同。
- for(let i=0;i<3;i++){box(c,-45+i*16,-41,7,22,2,'#e8d598','#42644b',1.2);}
- c.beginPath();c.moveTo(-82,-72);c.lineTo(-15,-112);c.lineTo(80,-77);c.lineTo(70,-62);c.lineTo(-15,-90);c.lineTo(-73,-59);c.closePath();c.fillStyle='#7f9d69';c.fill();c.strokeStyle='#355b43';c.lineWidth=2.5;c.stroke();
- box(c,-60,-84,120,26,6,'#fff0bf','#42644b',2);c.fillStyle='#355b43';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText('载具维修中心',0,-66);
- c.strokeStyle='#f1dfac';c.lineWidth=4;c.beginPath();c.moveTo(37,-46);c.lineTo(53,-30);c.moveTo(35,-50);c.lineTo(31,-43);c.lineTo(40,-39);c.stroke();
- box(c,25,-13,38,9,3,'#42644b');c.restore();
+ c.save();c.translate(item.x,item.y);drawGarageGround(c);
+ drawGarage(c,false,{label:'载具维修中心',repair:true});c.restore();
 }
 // 拖车局部轮毂依真实位移转动，绞盘与载车平板独立，不用整图变形伪造动作。
 function drawTow(c,item,game){

@@ -1,4 +1,5 @@
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
+import {WORLD} from '../world/coordinates.js';
 import { style } from '../art-styles/config.js';
 import { consumeDrawSteps } from './draw-steps.js';
 import { LIVING_ROADS } from '../config/living-world.js';
@@ -7,7 +8,8 @@ import { PATHS, pathDistance } from '../world/paths.js';
 // 土路使用渐薄的色带和零散草缘，仅在地面缓存构建时绘制，不增加逐帧滤镜。
 
 // 沿统一路网预计算草缘法线；全部地块共享同一份主支路几何。
-const roads = [...PATHS, ...LIVING_ROADS].map((path) =>
+// 西侧支路跨周期接缝时补画正坐标镜像，保证路面与寻路留白同址。
+const roads = [...PATHS, ...LIVING_ROADS].flatMap(path=>path.some(p=>p.x<0)?[path,path.map(p=>({...p,x:p.x+WORLD.width}))]:[path]).map((path) =>
   path.map((p, i) => {
     const last = path.length - 1,
       a = path[Math.max(0, i - 1)];

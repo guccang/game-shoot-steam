@@ -35,7 +35,7 @@ test('钱不足和重复请求不扣款，暂停冻结，读档续接拖车与�
  g.progress.coins=100000;const cost=vehicleRepairQuote(g,0);assert.equal(requestVehicleRepair(g,0,true).ok,true);assert.equal(g.progress.coins,100000-cost);
  assert.equal(requestVehicleRepair(g,0,true).ok,false);assert.equal(g.progress.coins,100000-cost);
  updateVehicleRepair(g,.5);g.state='paused';const before=JSON.stringify(vehicleService(g,0));updateVehicleRepair(g,1000);assert.equal(JSON.stringify(vehicleService(g,0)),before);
- g.progress.patrol=capturePatrol(g);const loaded=new Game(structuredClone(g.progress));loaded.state='playing';assert.equal(JSON.stringify(vehicleService(loaded,0)),JSON.stringify({...JSON.parse(before),angle:JSON.parse(before).angle}));
+ g.progress.patrol=capturePatrol(g);const loaded=new Game(structuredClone(g.progress));loaded.state='playing';assert.deepEqual(vehicleService(loaded,0),JSON.parse(before));
  finish(loaded);assert.equal(loaded.vehicle.hp,loaded.vehicle.maxHp);assert.equal(loaded.summonVehicle(),false);
  Object.assign(loaded.player,REPAIR_CENTER,{y:REPAIR_CENTER.y+50});assert.equal(collectRepairedVehicle(loaded,0).ok,true);assert.equal(loaded.vehicle.active,true);assert.equal(loaded.progress.coins,100000-cost);
 });
@@ -66,7 +66,7 @@ test('换用其他车后仍能领取修好车，旧车留在停车场而非丢�
 test('旧档零血停驻车迁移为唯一残骸，维修中心底座与耕地留白一致',()=>{
  const p=ownedPineProgress();p.campParking={owned:[{hull:0,spot:'north-0-0',hp:0,ammo:0,reload:0}]};const g=new Game(p);
  assert.equal(g.vehicle.hp,0);assert.equal(vehicleService(g,0).phase,'wrecked');assert.equal(g.progress.campParking.owned.length,0);
- assert.equal(blocked(REPAIR_CENTER.x,REPAIR_CENTER.y,12,[],{mapId:'forest',livingCollision:true}),true);
+ assert.equal(blocked(REPAIR_CENTER.x+90,REPAIR_CENTER.y,12,[],{mapId:'forest',livingCollision:true}),true);
  assert.equal(blocked(REPAIR_CENTER.x,REPAIR_CENTER.y+55,12,[],{mapId:'forest',livingCollision:true}),false);
  assert.match(farmLandReason(g,{...REPAIR_CENTER,y:REPAIR_CENTER.y-45}),/建筑|路面/);
 });

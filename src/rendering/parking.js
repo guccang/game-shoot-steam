@@ -2,7 +2,7 @@
 import {TOWN_SHIFT_X} from '../config/town-layout.js';
 import {PARKING as C,PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {nearest} from '../world/coordinates.js';
-import {VEHICLE_WORKSHOP,GARAGE} from '../world/workshop.js';
+import {GARAGE} from '../world/workshop.js';
 import {box,oval} from './primitives.js';
 import {drawActionCountdown} from './action-countdown.js';
 import {parkingInteractionAnchor,nearbyInteractionAnchor} from '../world/interaction-anchors.js';
@@ -33,8 +33,11 @@ export function drawParkingGround(c,game,view,night=0){
 // 车库内的驾驶者排在门洞之后绘制，再用正式洞口遮罩保留屋顶、立柱的遮挡。
 export function parkingGaragePose(player,vehicle){
  if(!vehicle.active)return null;
- const g=nearest(VEHICLE_WORKSHOP,player);
- return Math.abs(player.x-g.x)<GARAGE.bayHalf&&player.y<g.y+GARAGE.threshold&&player.y>g.y+GARAGE.bayTop?g:null;
+ for(const spot of PARKING_SPOTS.filter(s=>s.indoor)){
+  const g=nearest({x:spot.x,y:spot.garageY},player);
+  if(Math.abs(player.x-g.x)<GARAGE.bayHalf&&player.y<g.y+GARAGE.threshold&&player.y>g.y+GARAGE.bayTop)return g;
+ }
+ return null;
 }
 // 对齐和倒车状态固定显示在目标车库或泊位，车辆运动不再带走提示。
 export function drawParkingCountdown(c,game,player,zoom=1){

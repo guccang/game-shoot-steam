@@ -1,8 +1,7 @@
 // 森林野外等级按营地最短距离分布；生态配色、清缴和剧情难度独立保留。
-import {TOWN_LAYOUT} from '../config/town-layout.js';
 import {worldDistance} from './coordinates.js';
-const b=TOWN_LAYOUT.bounds;
-export const FOREST_LEVEL_ORIGIN=Object.freeze({x:(b.left+b.right)/2,y:(b.top+b.bottom)/2});
+// 扩大安全区不移动既有难度圈中心，保留野外营地等级和成长梯度。
+export const FOREST_LEVEL_ORIGIN=Object.freeze({x:305,y:755});
 export const FOREST_LEVEL_BANDS=Object.freeze([
  {from:0,to:1500,min:1,max:3,name:'营地周边'},
  {from:1500,to:2400,min:4,max:6,name:'近郊林地'},

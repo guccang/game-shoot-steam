@@ -53,7 +53,8 @@ export function coversScenery(x, y) {
   // 公交站整座棚顶和候车地面保留树冠净空。
   const bus=nearest(RANGER.busStop,{x,y});
   if(right>bus.x-60&&left<bus.x+75&&bottom>bus.y-105&&top<bus.y+35)return true;
-  for (const house of CLEARING_BUILDINGS) {
+  for (const source of CLEARING_BUILDINGS) {
+    const house={...source,...nearest(source,{x,y})};
     if (right > house.x - (house.width/2 || 80 * house.size) - 20 && left < house.x + (house.width/2 || 80 * house.size) + 20 &&
         bottom > house.y - (house.height || 140 * house.size) - 15 && top < house.y + 50) return true;
   }

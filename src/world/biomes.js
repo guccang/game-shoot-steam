@@ -160,7 +160,7 @@ export function enemyIdentity(x, y, roll = 0.5, mapId = 'forest', fixedLevel = n
   // 营地及其周边按营地中心的原始区域等级生成完整属性，避免边缘混入低一级野怪。
   // 清缴、剧情指定等级仍优先；物种与阶级倍率在基础等级计算之后应用。
   const territory = fixedLevel == null ? monsterCampTerritoryAt(x,y,mapId) : null;
-  const origin = territory || {x,y};
+  const origin = territory?.levelOrigin || territory || {x,y};
   const zone = biomeAt(x, y, mapId),
     rank = roll > GAMEPLAY_VALUES.enemy.eliteRollThreshold ? 2 : roll > GAMEPLAY_VALUES.enemy.toughRollThreshold ? 1 : 0,
     level = fixedLevel ?? (mapId==='forest'?forestThreatAt(origin.x,origin.y).level:biomeAt(origin.x,origin.y,mapId).level + Math.floor(terrainNoise(Math.floor(origin.x / GAMEPLAY_VALUES.enemy.levelNoiseCell), Math.floor(origin.y / GAMEPLAY_VALUES.enemy.levelNoiseCell)) * GAMEPLAY_VALUES.enemy.zoneLevelSpan));

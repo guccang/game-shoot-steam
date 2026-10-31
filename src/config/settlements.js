@@ -2,7 +2,7 @@
 import {TOWN_LAYOUT,TOWN_SHIFT_X} from './town-layout.js';
 export const SETTLEMENTS=[
  {id:'sunleaf',name:'晴叶营地',...TOWN_LAYOUT.bounds,gates:[{side:'top',at:650+TOWN_SHIFT_X,width:170},{side:'bottom',at:690+TOWN_SHIFT_X,width:180},{side:'left',at:729,width:170},{side:'right',at:729,width:180}]},
- {id:'neighbors',name:'邻里小院',left:TOWN_LAYOUT.bounds.left,right:TOWN_LAYOUT.bounds.right,top:TOWN_LAYOUT.bounds.bottom,bottom:2040,gates:[{side:'top',at:690+TOWN_SHIFT_X,width:170},{side:'bottom',at:600+TOWN_SHIFT_X,width:170},{side:'left',at:1850,width:150},{side:'right',at:1800,width:150}]},
+ {id:'neighbors',name:'邻里小院',left:120+TOWN_SHIFT_X,right:TOWN_LAYOUT.bounds.right,top:TOWN_LAYOUT.bounds.bottom,bottom:2040,gates:[{side:'top',at:690+TOWN_SHIFT_X,width:170},{side:'bottom',at:600+TOWN_SHIFT_X,width:170},{side:'left',at:1850,width:150},{side:'right',at:1800,width:150}]},
 ];
 // 历史清缴存档与原地貌留白兼容；新任务不使用这个固定地点。
 export const BOSS_CLEARING={id:'east-clearing',name:'东林清缴场',mapId:'forest',x:1600,y:400,radius:300};

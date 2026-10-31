@@ -77,9 +77,9 @@ test('运行时镜像中的旧落点仍只作附近修正',()=>{
 
 // 营地和小院连成一个安全空间，接缝无双排栅栏、门叶或重复门牌。
 test('聚落只围外轮廓，整段连接处都能通行并保持安全区',()=>{
- assert.ok(!SETTLEMENT_FENCES.some(f=>f.horizontal&&f.y===1400));
- for(let x=T.bounds.left+30;x<=T.bounds.right-30;x+=30)for(let y=1380;y<=1480;y+=10){
+ assert.ok(!SETTLEMENT_FENCES.some(f=>f.horizontal&&f.y===1400&&f.x>-180));
+ for(let x=-180+30;x<=T.bounds.right-30;x+=30)for(let y=1380;y<=1480;y+=10){
   assert.equal(settlementBlocked(x,y,12),false);assert.ok(settlementAt({x,y}));
  }
- for(const x of [T.bounds.left,T.bounds.right])for(const y of [1300,1500])assert.ok(settlementBlocked(x,y));
+ for(const y of [1300,1500])for(const x of [y<1400?T.bounds.left:-180,T.bounds.right])assert.ok(settlementBlocked(x,y));
 });

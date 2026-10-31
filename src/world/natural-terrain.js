@@ -7,12 +7,12 @@ import { riverXAt } from './river-geometry.js';
 import { LANDSCAPE_GROUPS, landscapeRecipes, lakeContour } from './landscape-variants.js';
 
 export const TERRAIN_SEED = 743;
-// 保护现有营地、建筑、田地；后续随机地图可传入自己的保护矩形和候选区域。
+// 保护现有营地、建筑、田地；西侧扩建的周期镜像也避开新山湖。
 export const TERRAIN_RESERVES = [
-  { x:TOWN_LAYOUT.bounds.left, y:TOWN_LAYOUT.bounds.top, w:1020, h:TOWN_LAYOUT.bounds.bottom-TOWN_LAYOUT.bounds.top },
+  { x:TOWN_LAYOUT.bounds.left, y:TOWN_LAYOUT.bounds.top, w:TOWN_LAYOUT.bounds.right-TOWN_LAYOUT.bounds.left+50, h:TOWN_LAYOUT.bounds.bottom-TOWN_LAYOUT.bounds.top },
   { x: 1330, y: 490, w: 260, h: 280 },
   { x: 2250, y: 1140, w: 310, h: 260 },
-];
+].flatMap(r=>r.x<0?[r,{...r,x:r.x+WORLD.width}]:[r]);
 const LAKE_ZONES = LANDSCAPE_GROUPS.map(g=>({...g.lake,group:g.id}));
 const MOUNTAIN_ZONES = LANDSCAPE_GROUPS.map(g=>({...g.mountain,group:g.id}));
 // 每个沙湾只属于一侧：位置、长度与面积都独立，不再套用左右镜像模板。

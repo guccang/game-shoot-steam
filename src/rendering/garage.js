@@ -8,7 +8,7 @@ import { GARAGE, VEHICLE_WORKSHOP } from '../world/workshop.js';
 
 // 建筑缓存使用底座为原点，门洞留足整车及推车人的宽度。
 // 共用绘制与动作输入，风格差异由配置提供。
-export function drawGarage(c, winter = false) {
+export function drawGarage(c, winter = false, options = {}) {
   const edge = style.garage.outline;
   box(c, -106, -10, 212, 18, 5, '#929e87', edge, style.garage.strokeWidth);
   poly(
@@ -130,7 +130,12 @@ export function drawGarage(c, winter = false) {
   oval(c, -15, -128, 6, 6, '#718b70', edge, 1.5);
   oval(c, 15, -128, 6, 6, '#718b70', edge, 1.5);
   box(c, -10, -131, 20, 6, 2, '#92a481', edge, 1.5);
-  drawWorldSign(c, '载具工坊', 0, -151);
+  // 维修库复用门洞与车体遮挡，只替换招牌及独立工具徽记。
+  if(options.repair){
+    box(c,-28,-137,56,17,4,'#e4d8a6');
+    c.strokeStyle=edge;c.lineWidth=3;c.beginPath();c.moveTo(-9,-133);c.lineTo(8,-123);c.moveTo(-9,-133);c.lineTo(-14,-128);c.moveTo(-9,-133);c.lineTo(-4,-136);c.stroke();
+  }
+  drawWorldSign(c, options.label||'载具工坊', 0, -151);
   if (winter) {
     poly(
       c,

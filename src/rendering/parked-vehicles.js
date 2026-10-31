@@ -1,7 +1,7 @@
 // 停驻车体不绘制驾驶员；访客样车与玩家装备目录完全分离。
 import {parkedOwned,campParkingVisible,VISITOR_MODELS} from '../core/camp-parking.js';
 import {PARKING_SPOTS} from '../config/parking.js';
-import {VEHICLE_WORKSHOP} from '../world/workshop.js';
+import {GARAGE} from '../world/workshop.js';
 import {drawVehicleTracks,drawVehicleArmor} from './vehicle.js';
 import {clipGarageOpening} from './garage.js';
 import {box} from './primitives.js';
@@ -14,7 +14,7 @@ const visitorPreviews=new WeakMap();
 export function parkedVehicleObjects(game){
  if(!campParkingVisible(game)||game.arrivalCinematic)return [];
  return [...parkedOwned(game).map(s=>({...s,hull:s.record.hull,owner:true})),...(game.mapId==='forest'?game.parkingVisitors||[]:[]).map(v=>({...PARKING_SPOTS.find(s=>s.id===v.spot),model:VISITOR_MODELS.find(m=>m.id===v.model)}))]
-  .map(s=>({...s,type:'parked-vehicle',depthOffset:s.indoor?VEHICLE_WORKSHOP.y+2-s.y:0}));
+  .map(s=>({...s,type:'parked-vehicle',depthOffset:s.indoor?s.garageY+2-s.y:0}));
 }
 // 展示样车使用独立的原厂主炮快照，不能把展示配置写入玩家拥有列表。
 function visitorPreview(game,hull){
@@ -34,7 +34,7 @@ export function drawParkedHull(c,point,game,hull,record=null,visitor=false){
 }
 // 复用原车轮、履带、装甲与独立炮塔，只有科幻样车使用自己的停机结构。
 export function drawParkedVehicle(c,item,game){
- c.save();if(item.indoor)clipGarageOpening(c,{x:item.x,y:item.y+(VEHICLE_WORKSHOP.y-PARKING_SPOTS[0].y)});
+ c.save();if(item.indoor)clipGarageOpening(c,{x:item.x,y:item.y-GARAGE.parkingY});
  if(item.model?.sciFi){c.translate(item.x,item.y);drawScienceVehicle(c,item.model);}
  else{
   drawParkedHull(c,item,game,item.hull??item.model.hull,item.record,!item.owner);

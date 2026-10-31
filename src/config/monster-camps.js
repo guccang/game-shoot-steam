@@ -8,7 +8,8 @@ export const MONSTER_CAMP_RULES=Object.freeze({scale:CAMP_SCALE,radius:150*CAMP_
 // 营地及周边野怪从六级起逐步增加攻击，二十级为原曲线的2.5倍；不读取玩家装备。
 export function monsterCampDamageScale(level){return 1+Math.max(0,level-MONSTER_CAMP_RULES.damageGrowthAfterLevel)*MONSTER_CAMP_RULES.damageGrowthPerLevel;}
 export const MONSTER_CAMPS=Object.freeze([
- {id:'ember-pot',name:'歪锅营地',mapId:'forest',x:10368,y:1430,seeds:[0,1,3],style:'pot',lines:['我负责试吃。锅糊了属于厨师的个人成长。','这地方没有围栏，风景免费，穿堂风也免费。','别动我的胡萝卜！那是枕头，备用的才是晚饭。']},
+ // 扩建后移到南侧围栏外，保留原难度采样点和稳定任务身份。
+ {id:'ember-pot',name:'歪锅营地',mapId:'forest',x:10368,y:1760,levelOrigin:{x:10368,y:1430},seeds:[0,1,3],style:'pot',lines:['我负责试吃。锅糊了属于厨师的个人成长。','这地方没有围栏，风景免费，穿堂风也免费。','别动我的胡萝卜！那是枕头，备用的才是晚饭。']},
  {id:'snore-pine',name:'呼噜松营地',mapId:'forest',x:9507,y:834,seeds:[5,10,15],style:'rack',lines:['我不是站岗睡着，我在梦里巡逻。','昨晚谁说自己不打呼？松果都震下来了。','营地招牌写着包住，没说住的是树荫。']},
  {id:'berry-rumor',name:'浆果小报营地',mapId:'forest',x:9190,y:7442,seeds:[2,4,8],style:'pot',lines:['独家消息：隔壁头领的叶帽，是粘上去的。','报纸卖不动？把天气预报改成谁欠谁一碗汤。','咱们营地最安全的财产，是没人愿意偷的锅。']},
  {id:'moon-kettle',name:'月亮茶摊营地',mapId:'forest',x:9537,y:3949,seeds:[7,9,11],style:'rack',lines:['月亮泡进茶里不用付钱，所以我只在晚上营业。','我亲戚说巡林员总找种子。种子又没长腿！','这里安静得很好，就是茶壶比我话多。']},

@@ -12,9 +12,10 @@ import {monsterCampTerritoryAt} from '../src/config/monster-camps.js';
 test('城镇周边保持1–3级，怪物营地区域跟随营地等级，西门不跳到10级',()=>{
  for(let angle=0;angle<Math.PI*2;angle+=Math.PI/16)for(const radius of [600,900,1499]){const x=camp.x+Math.cos(angle)*radius,y=camp.y+Math.sin(angle)*radius,level=enemyIdentity(x,y,.5).level,territory=monsterCampTerritoryAt(x,y);
   // 野外营地周边是明确的局部等级区域；其余城镇近郊继续受原1–3级带约束。
-  if(territory)assert.equal(level,forestThreatAt(territory.x,territory.y).level);else assert.ok(level>=1&&level<=3);
+  if(territory)assert.equal(level,forestThreatAt((territory.levelOrigin||territory).x,(territory.levelOrigin||territory).y).level);else assert.ok(level>=1&&level<=3);
  }
- for(const x of [-400,-100,TOWN_LAYOUT.bounds.left-60])assert.ok(enemyIdentity(x,camp.y).level<=3);
+ // 扩建后的西门可能接近固定营地，维持其原等级，周期镜像不能额外跳级。
+ for(const x of [-400,-100,TOWN_LAYOUT.bounds.left-60]){const t=monsterCampTerritoryAt(x,camp.y),origin=t?.levelOrigin||t;assert.equal(enemyIdentity(x,camp.y).level,forestThreatAt(origin?.x??x,origin?.y??camp.y).level);assert.equal(enemyIdentity(x+WORLD.width,camp.y).level,enemyIdentity(x,camp.y).level);}
 });
 
 test('向远处移动等级单调增加，整个循环地图覆盖1到20级',()=>{

@@ -17,14 +17,14 @@ import {VEHICLE_COOLDOWN} from '../src/config/vehicles.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
 import {validateFireProgress} from '../src/progression/fire-progress.js';
 
-test('建筑和邻里一起向西300，左右外栏拉直且河岸留出通道',()=>{
+test('原建筑保留西迁坐标，营地扩建外栏且河岸留出通道',()=>{
  assert.deepEqual(T.spawn,{x:600,y:700});assert.equal(T.weapons.x,50);assert.equal(T.cottage.x,550);
  assert.equal(FARM_SEED_SHOP.x,700);assert.equal(FARM_SEED_DOOR.x,700);assert.equal(FARM_DELIVERY.x,700);
  assert.equal(LIVING_PLACES.kitchen.x,230);assert.equal(LIVING_PLACES.relay.x,490);
  assert.equal(STORY_POSTS.find(p=>p.id==='monster-neighbors').x,350);
- assert.deepEqual(SETTLEMENTS.map(s=>[s.left,s.right]),[[-180,790],[-180,790]]);
- assert.ok(!SETTLEMENT_FENCES.some(f=>f.horizontal&&f.y===1400));
- for(const x of [-180,790])for(const y of [1300,1500]){
+ assert.deepEqual(SETTLEMENTS.map(s=>[s.left,s.right]),[[-780,790],[-180,790]]);
+ assert.ok(!SETTLEMENT_FENCES.some(f=>f.horizontal&&f.y===1400&&f.x>-180));
+ for(const y of [1300,1500])for(const x of [y<1400?-780:-180,790]){
   assert.ok(settlementBlocked(x,y));assert.ok(settlementBlocked(x+WORLD.width,y));
   assert.ok(settlementAt({x:x+(x<0?20:-20),y}));
  }

@@ -1,7 +1,7 @@
 import {parkingRecordSite} from '../progression/roadside-parking.js';
 // 自有车辆报废、救援和维修的唯一业务入口；临时活动装备继续由各自会话管理。
 import {blocked} from '../physics/motion.js';
-import {REPAIR_CENTER,REPAIR_BAY,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
+import {REPAIR_CENTER,REPAIR_BAY,REPAIR_LAYOUT_VERSION,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
 import {economyFor} from '../config/economy.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {worldDistance,canonical,nearest} from '../world/coordinates.js';
@@ -77,11 +77,11 @@ export function requestVehicleRepair(game,index,remote=false){
   if(!endpoint)return {ok:false,message:'无法找到安全拖车接应点，请清理附近障碍后重试。'};
   const route=planQuestRoute({...depot,mapId,navigationRadius:18,livingCollision:mapId==='forest'},endpoint,trees,24000);
   if(!route.reachable)return {ok:false,message:'拖车暂时无法通行，请清理沿途障碍后重试；未扣费。'};
-  order={hp:0,phase:'outbound',mapId,position,truck:{...route.points[0]},route:route.points,step:1,timer:0,wheel:0,angle:0};
+  order={layoutVersion:REPAIR_LAYOUT_VERSION,hp:0,phase:'outbound',mapId,position,truck:{...route.points[0]},route:route.points,step:1,timer:0,wheel:0,angle:0};
  }else{
   if(v.active&&!game.dismountVehicle())return {ok:false,message:'附近无法安全下车，请移至门前空地。'};
   if(!game.cottage)Object.assign(game.player,{x:REPAIR_CENTER.x,y:REPAIR_CENTER.y+70,vx:0,vy:0});
-  order={hp:v.hp/v.maxHp,phase:'repairing',mapId:'forest',position:{...REPAIR_BAY},truck:{...REPAIR_BAY},timer:0,wheel:0};
+  order={layoutVersion:REPAIR_LAYOUT_VERSION,hp:v.hp/v.maxHp,phase:'repairing',mapId:'forest',position:{...REPAIR_BAY},truck:{...REPAIR_BAY},timer:0,wheel:0};
  }
  game.progress.coins-=cost;game.progress.vehicleService??=[];game.progress.vehicleService[index]=order;
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
@@ -118,12 +118,34 @@ export function collectRepairedVehicle(game,index){
  Object.assign(game.player,nearest(REPAIR_BAY,game.player),{vx:0,vy:0});
  game.onEvent('vehicle-service',{text:'维修完成，车辆已交付。'});return {ok:true,message:'车辆已恢复全部耐久。'};
 }
+// 新围栏可能覆盖旧拖车落点；按拖车十八单位余量找最近接应点，避免反复规划失败。
+function serviceRouteAccess(point,mapId,trees){
+ const body={mapId,livingCollision:mapId==='forest'};
+ for(let radius=0;radius<=320;radius+=16){
+  const count=Math.max(1,Math.ceil(Math.PI*2*radius/16));
+  for(let i=0;i<count;i++){const angle=Math.PI*2*i/count,p={x:point.x+Math.cos(angle)*radius,y:point.y+Math.sin(angle)*radius};if(!blocked(p.x,p.y,18,trees,body))return p;}
+ }
+ return null;
+}
+// 搬迁后从拖车当前位置重算路线，保留残骸、付款和工时；湖谷仍从原接驳点返回。
+function refreshServiceRoute(game,r,dt){
+ if(r.layoutVersion===REPAIR_LAYOUT_VERSION)return true;
+ r.routeRetry=Math.max(0,(r.routeRetry||0)-dt);if(r.routeRetry>0)return false;
+ const trees=r.mapId===game.mapId?game.trees:(r.mapId==='forest'?forestLayout():jiuzhaigouTrees()).map(t=>({...t,hp:1,radius:t.radius||12}));
+ const target=r.phase==='outbound'?serviceRouteAccess(r.position,r.mapId,trees):(r.mapId==='forest'?REPAIR_BAY:JIUZHAIGOU_SPAWN);
+ const start=serviceRouteAccess(r.truck,r.mapId,trees);
+ if(!target||!start){r.routeRetry=1;return false;}
+ const route=planQuestRoute({...start,mapId:r.mapId,navigationRadius:18,livingCollision:r.mapId==='forest'},target,trees,24000);
+ if(!route.reachable){r.routeRetry=1;return false;}
+ r.truck={...route.points[0]};r.route=route.points;r.step=1;r.layoutVersion=REPAIR_LAYOUT_VERSION;return true;
+}
 // 拖车沿已验证的折线前进，车轮相位按真实路程累积，暂停不推进。
 export function updateVehicleRepair(game,dt){
  if(game.state!=='playing'||!personalFleet(game))return;
  for(const [index,r] of (game.progress.vehicleService||[]).entries()){
   if(!r||!['outbound','hooking','towing','repairing'].includes(r.phase))continue;
   if(r.phase==='outbound'||r.phase==='towing'){
+   if(!refreshServiceRoute(game,r,dt))continue;
    let distance=C.towSpeed*dt;
    while(distance>0&&r.step<r.route.length){const target=r.route[r.step],dx=target.x-r.truck.x,dy=target.y-r.truck.y,d=Math.hypot(dx,dy),step=Math.min(d,distance);
     if(d>0){r.truck.x+=dx/d*step;r.truck.y+=dy/d*step;r.angle=Math.atan2(dy,dx);r.wheel+=step/8;}distance-=step;if(step===d)r.step++;
@@ -131,7 +153,7 @@ export function updateVehicleRepair(game,dt){
    if(r.step>=r.route.length){r.phase=r.phase==='outbound'?'hooking':'repairing';r.timer=0;if(r.phase==='repairing'){r.mapId='forest';r.position={...REPAIR_BAY};}game.onEvent('vehicle-service');}
   }else{
    r.timer+=dt;
-   if(r.phase==='hooking'&&r.timer>=C.hookSeconds){r.phase='towing';r.route.reverse();r.step=1;r.timer=0;game.onEvent('vehicle-service');}
+   if(r.phase==='hooking'&&r.timer>=C.hookSeconds){r.phase='towing';r.layoutVersion=0;r.step=1;r.timer=0;game.onEvent('vehicle-service');}
    else if(r.phase==='repairing'&&r.timer>=C.repairSeconds){r.phase='ready';r.hp=1;game.vehicles[index].hp=game.vehicles[index].maxHp;game.onEvent('vehicle-service',{text:vehicleModel(index).name+'已修好，请到维修中心取车。'});}
   }
  }
