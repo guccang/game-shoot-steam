@@ -6,15 +6,15 @@ import {validateProgress} from '../progression/progress.js';
 import {capturePatrol} from './patrol-session.js';
 // 暂停仅供已打开的说明与工坊确认，不放行故事、秘境和停驻状态。
 export function legendaryAccessReason(game){
- if(!['playing','paused'].includes(game.state)||game.realm||game.story||game.cottage||game.campDefense||game.fireActive||game.workshopTrial||game.arrivalCinematic)return '请先结束当前活动，回到森林自由探索。';
+ if(!['playing','paused'].includes(game.state)||game.realm||game.story||(game.cottage&&game.cottage.kind!=='legendary')||game.campDefense||game.fireActive||game.workshopTrial||game.arrivalCinematic)return '请先结束当前活动，回到森林自由探索。';
  if(game.mapId!=='forest')return '请先回到晴叶森林，再驾驶红狼寻找工坊。';
- if(!game.progress.vehicleHulls[6]||!game.vehicle?.active||game.vehicle.index!==6||game.vehicle.hp<=0)return '只有驾驶红狼坦克，旧铭牌才能唤醒传奇工坊。';
+ if(!game.progress.vehicleHulls[6])return '只有驾驶红狼坦克，旧铭牌才能唤醒传奇工坊。';
  return '';
 }
 // 显现与点击共享条件，其他车型来到同一坐标也不显示入口。
 export function legendaryVisible(game){return !legendaryAccessReason(game);}
 // 门前距离使用循环世界距离，远程调用不能跳过实际抵达。
-export function legendaryNearby(game){return legendaryVisible(game)&&worldDistance(game.player,SITE)<=SITE.radius;}
+export function legendaryNearby(game){return legendaryVisible(game)&&(game.cottage?.kind==='legendary'||worldDistance(game.player,SITE)<=SITE.radius);}
 // 行程只移动当前红狼，保留车体生命、武器、主线与资源。
 export function travelLegendary(game){const reason=legendaryAccessReason(game);if(reason)return {ok:false,reason};Object.assign(game.player,SITE.arrival,{vx:0,vy:0,recoilX:0,recoilY:0});game.aimLock=null;return {ok:true};}
 // 保存成功后才替换永久档，失败不解锁、不覆盖外观或方案。

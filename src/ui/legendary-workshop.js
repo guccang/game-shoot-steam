@@ -46,7 +46,7 @@ export function createLegendaryWorkshop({game,root,renderer,dialogs,persist,onCh
   if(b.dataset.schemeLoad!==undefined){const s=game.progress.legendaryWorkshop.schemes[Number(b.dataset.schemeLoad)];if(s&&game.progress.vehicleHulls[s.vehicle]){vehicle=s.vehicle;draft=normalizeTankDesign(s.design);render();$('legendary-status').textContent='已载入方案预览，点击应用后更换实战外观。';}}
  });
  // 门前标识严格贴着建筑投影，不向HUD避让；其他载具连同建筑一起隐藏。
- function renderFrame(){entry.hidden=!legendaryVisible(game)||game.state!=='playing'||!!root.querySelector('dialog[open]')||!renderer.view;if(entry.hidden)return;const v=renderer.view,r=renderer.canvas.getBoundingClientRect(),f=frame.getBoundingClientRect(),p=nearest(SITE,{x:v.x+v.w/2,y:v.y+v.h/2}),x=(p.x-v.x)*v.zoom+r.left-f.left,y=(p.y-v.y)*v.zoom+r.top-f.top;entry.hidden=x<0||x>r.width||y<0||y>r.height;if(!entry.hidden){entry.style.left=x+'px';entry.style.top=(y+12*v.zoom)+'px';}}
+ function renderFrame(){entry.hidden=true;}
  // 卸载时释放入口、模态和全部监听。
  function dispose(){scope.dispose();if(dialog.open)dialogs.close(dialog.id);dialog.remove();entry.remove();}
  return {open,renderFrame,dispose};

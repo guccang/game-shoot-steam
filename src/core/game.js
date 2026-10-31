@@ -307,7 +307,7 @@ export class Game {
     if(this.vehicle.index===4&&this.fireGarageParked)return boardFireGarage(this);
     // 跳过开场后的首个输入也先接管北广场赠车，不能趁下一帧到来前远程召走。
     adoptArrivalParking(this);
-    if(parkingFleetApplies(this)&&parkedOwned(this).some(s=>s.record.hull===this.vehicle.index))return boardParkedVehicle(this,this.vehicle.index);
+    if(parkingFleetApplies(this)&&this.progress.campParking.owned.some(s=>s.hull===this.vehicle.index))return boardParkedVehicle(this,this.vehicle.index);
     if(this.arrivalCinematic||this.fireTransit||['football','race'].includes(this.realm?.mode))return false;
     const summoned=summonVehicle(this);
     if(summoned&&this.vehicle.index===5&&this.progress.arrival){this.progress.arrival.parked=false;this.onEvent('vehicle-config');}
@@ -791,6 +791,8 @@ export class Game {
     // 运动会使用独立移动时钟，倒计时、暂停、终点均不推进森林或战斗逻辑。
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt))return;
+    // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
+    if(this.cottage)updateVehicleRepair(this,dt);
     if(updateCottage(this,dt,input))return;
     updateRestoration(this,dt);
     updateParkingVisitors(this,dt);

@@ -1,3 +1,5 @@
+import {interiorLayout} from '../config/workshop-interiors.js';
+import {requestWorldNavigation} from '../core/world-navigation.js';
 import {createVehicleRepairPanel} from '../ui/vehicle-repair.js';
 import {facilityOpen} from '../config/town-restoration.js';
 
@@ -14,7 +16,7 @@ import {campProgress,campDiscountText} from '../progression/camp-level.js';
 import {updateWorkshopDisplayEntry} from '../core/workshop-display-entry.js';
 import {updateBuildingEntry} from '../core/building-entry.js';
 import {STORY_POSTS} from '../config/story-posts.js';
-import {openCottageRest,enterCottage} from '../core/cottage.js';
+import {openCottageRest} from '../core/cottage.js';
 import {createTaskReward} from '../ui/task-reward.js';
 import {createCampHome} from '../ui/camp-home.js';
 import {createCampDefensePanel} from '../ui/camp-defense.js';
@@ -231,8 +233,7 @@ export function createApplication({
    else if(id==='race')realmPanel.enter(id);
    else if(id==='travel')$('phone-button').click();
    else if(id==='clearing')clearingPanel.visit();
-   else if(id==='cottage'){if(enterCottage(game)){renderer.camera.time=null;save();refresh();}}
-   else if(id==='garage')workshop.open('vehicle');
+   else if(['cottage','garage','fire','tower'].includes(id)){const room=interiorLayout({kind:id==='garage'?'vehicle':id});requestWorldNavigation(game,{...room.door,id:room.id,mapId:'forest'},'前往'+room.name,{direct:true});toast.show('下车后在门口站定 1 秒进入，与屋内售货员交谈。');}
    else if(id==='story')storyPanel.open();
    else if(id==='neighbors')livingPanel.open();
    else if(id==='defense')campDefensePanel.visit('left');
@@ -244,8 +245,8 @@ export function createApplication({
     createTrial: createWorkshopTrial });
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});
   game.openLegendaryWorkshop=()=>legendaryWorkshop.open();
-  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:(kind,index)=>workshop.open(kind,index),onChange:()=>{save();refresh();}});
-  // 地图短按直接查看工坊；门前点击和停车入库继续走室内入口。
+  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:openRoomService,onChange:()=>{save();refresh();}});
+  // 工坊外部不建立点击入口，门前站定后由室内售货员提供服务。
   worldWorkshop = createWorldWorkshop({ game, renderer, root, onEnter: () => !facilityOpen(game.progress,'weapons')?rangerArrival.openWorkshop():workshop.open('weapons') });
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onEnter:()=>workshop.open('vehicle')});
   const vehicleControls = createVehicleControls({ game, root, onChange: () => refresh() });
@@ -293,6 +294,16 @@ export function createApplication({
     if(action.type==='fire'){firePanel.open();return 'fire-dialog';}
     $(action.id)?.click();return root.querySelector('dialog[open]:not(#mainline-dialog)')?.id;
   }});
+  // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
+  function openRoomService(kind,index){
+    if(kind==='seed')return seedShop.open();
+    if(kind==='repair')return vehicleRepair.open();
+    if(kind==='fire')return firePanel.open();
+    if(kind==='tower')return realmPanel.open('tower');
+    if(kind==='legendary')return legendaryWorkshop.open();
+    if(['relay','kitchen'].includes(kind))return livingPanel.open();
+    return workshop.open(kind,index);
+  }
   // 所有附近按钮只提交一次明确意图，沿用原页面、入室和载具控制器。
   const nearbyControls=createNearbyInteraction({game,renderer,root,input,activate:entry=>{
     if(entry.type==='vehicle-repair')vehicleRepair.open();
@@ -306,9 +317,8 @@ export function createApplication({
     else if(entry.type==='arrival-repair')game.advanceArrival();
     else if(entry.type==='monster-camp')monsterCampPanel.open(entry.key,entry.id);
     else if(entry.type==='seed-shop')seedShop.open();
-    else if(entry.type==='cottage')enterCottage(game);
     else if(entry.type==='rest')openCottageRest(game);
-    else if(entry.type==='display')workshop.open(entry.kind,entry.index);
+    else if(entry.type==='display'){if(entry.kind==='cottage')campHome.openHomeDecor();else openRoomService(entry.kind,entry.index);}
     else if(entry.type==='workshop')workshop.open(entry.key);
     else if(entry.type==='parking')requestParking(game);
     else if(entry.type==='fire-parking')requestFireParking(game);

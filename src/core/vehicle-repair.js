@@ -1,5 +1,6 @@
+import {parkingRecordSite} from '../progression/roadside-parking.js';
 // 自有车辆报废、救援和维修的唯一业务入口；临时活动装备继续由各自会话管理。
-import {PARKING_SPOTS} from '../config/parking.js';
+import {blocked} from '../physics/motion.js';
 import {REPAIR_CENTER,REPAIR_BAY,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
 import {economyFor} from '../config/economy.js';
 import {vehicleModel} from '../config/vehicles.js';
@@ -31,7 +32,7 @@ export function restoreVehicleService(game){
  if(!personalFleet(game))return;
  for(const v of game.vehicles){const r=vehicleService(game,v.index),parked=game.progress.campParking?.owned.find(p=>p.hull===v.index);
   if(r||parked)v.hp=v.maxHp*(r?.hp??parked.hp);
-  if(v.hp<=0&&!r?.phase){game.progress.vehicleService[v.index]={hp:0,phase:'wrecked',mapId:'forest',position:parked?canonical(PARKING_SPOTS.find(s=>s.id===parked.spot)||REPAIR_BAY):canonical(game.progress.living.position||game.player)};}
+  if(v.hp<=0&&!r?.phase){game.progress.vehicleService[v.index]={hp:0,phase:'wrecked',mapId:parked?parkingRecordSite(parked).mapId:game.mapId,position:parked?canonical(parkingRecordSite(parked)):canonical(game.progress.living.position||game.player)};}
  }
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>!vehicleService(game,p.hull)?.phase);
 }
@@ -51,9 +52,9 @@ export function vehicleRepairQuote(game,index){
 }
 // 手机只提供救援；现场检查真实位置，禁用按钮不是业务权限边界。
 export function repairUnavailable(game,remote=false){
- if(!personalFleet(game)||game.cottage||!['playing','paused'].includes(game.state))return '请在自由巡林时使用维修服务。';
+ if(!personalFleet(game)||(game.cottage&&game.cottage.kind!=='repair'&&!remote)||!['playing','paused'].includes(game.state))return '请在自由巡林时使用维修服务。';
  if(remote&&!ownsKeepsake(game.progress,'patrol-phone'))return '需要巡林手机才能呼叫救援。';
- if(!remote&&(game.mapId!=='forest'||worldDistance(game.player,REPAIR_CENTER)>C.radius))return '请先到载具维修中心。';
+ if(!remote&&(game.mapId!=='forest'||game.cottage?.kind!=='repair'&&worldDistance(game.player,REPAIR_CENTER)>C.radius&&worldDistance(game.player,REPAIR_BAY)>110))return '请先到载具维修中心。';
  return '';
 }
 // 先核对路线、所有权与金币，再一次扣费落单；重复点击不会二次收费。
@@ -66,7 +67,8 @@ export function requestVehicleRepair(game,index,remote=false){
  if(game.progress.coins<cost)return {ok:false,message:`金币不足，需要 ${cost} 金币。`};
  const wrecked=v.hp<=0;
  if(remote&&!wrecked)return {ok:false,message:'日常保养请驾驶这辆车到维修中心。'};
- if(!wrecked&&(game.vehicle!==v||!v.active))return {ok:false,message:'请驾驶这辆车到维修中心，再交车保养。'};
+ const parked=game.progress.campParking.owned.find(r=>r.hull===index),parkedSite=parked&&parkingRecordSite(parked);
+ if(!wrecked&&!(game.vehicle===v&&v.active)&&!(parkedSite?.mapId==='forest'&&worldDistance(parkedSite,REPAIR_CENTER)<=C.radius))return {ok:false,message:'请驾驶这辆车到维修中心，再交车保养。'};
  let order;
  if(wrecked){
   const mapId=old?.mapId||game.mapId,position=old?.position||canonical(game.player),depot=mapId==='forest'?REPAIR_BAY:JIUZHAIGOU_SPAWN;
@@ -77,7 +79,8 @@ export function requestVehicleRepair(game,index,remote=false){
   if(!route.reachable)return {ok:false,message:'拖车暂时无法通行，请清理沿途障碍后重试；未扣费。'};
   order={hp:0,phase:'outbound',mapId,position,truck:{...route.points[0]},route:route.points,step:1,timer:0,wheel:0,angle:0};
  }else{
-  if(!game.dismountVehicle())return {ok:false,message:'附近无法安全下车，请移至门前空地。'};
+  if(v.active&&!game.dismountVehicle())return {ok:false,message:'附近无法安全下车，请移至门前空地。'};
+  if(!game.cottage)Object.assign(game.player,{x:REPAIR_CENTER.x,y:REPAIR_CENTER.y+70,vx:0,vy:0});
   order={hp:v.hp/v.maxHp,phase:'repairing',mapId:'forest',position:{...REPAIR_BAY},truck:{...REPAIR_BAY},timer:0,wheel:0};
  }
  game.progress.coins-=cost;game.progress.vehicleService??=[];game.progress.vehicleService[index]=order;
@@ -86,11 +89,29 @@ export function requestVehicleRepair(game,index,remote=false){
  v.active=false;v.cooldown=0;game.onEvent('vehicle-service',{text:wrecked?'拖车已出发，收好手机可继续救援。':'已交车维修，离开页面后开始作业。'});
  return {ok:true,message:`已支付 ${cost} 金币。${wrecked?'拖车正在赶往损毁地点。':'维修已开始。'}`};
 }
+// 交付车位从门外向外找空地，避开房门、树木与已停车辆，满位则继续保管。
+function repairDeliveryPoint(game,index){
+ const occupied=game.progress.campParking.owned.filter(r=>r.hull!==index).map(parkingRecordSite).filter(s=>s.mapId==='forest');
+ const body={mapId:'forest',livingCollision:true};
+ for(const dy of [0,85,170,255])for(const dx of [0,85,-85,170,-170,255,-255]){
+  const point={x:REPAIR_BAY.x+dx,y:REPAIR_BAY.y+dy};
+  if(worldDistance(point,{x:REPAIR_CENTER.x,y:REPAIR_CENTER.y+45})<65||occupied.some(s=>worldDistance(s,point)<85)||blocked(point.x,point.y,30,game.trees,body))continue;
+  return canonical(point);
+ }
+ return null;
+}
 // 维修完成后只能在中心取车；切换当前车仍由既有停车规则保管旧车。
 export function collectRepairedVehicle(game,index){
  const reason=repairUnavailable(game);if(reason)return {ok:false,message:reason};
  let r=vehicleService(game,index);if(r?.phase!=='ready')return {ok:false,message:'这辆车尚未修好。'};
  if(game.vehicle.active)return {ok:false,message:'请先下车，再领取修好的车辆。'};
+ if(game.cottage?.kind==='repair'){
+  const position=repairDeliveryPoint(game,index);if(!position)return {ok:false,message:'门外暂时没有安全空位，请移开车辆后再取车。'};
+  r.phase=null;r.hp=1;const v=game.vehicles[index];v.hp=v.maxHp;v.active=false;
+  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
+  game.progress.campParking.owned.push({hull:index,spot:null,mapId:'forest',...position,hp:1,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:0,track:0});
+  game.onEvent('vehicle-service',{text:'车辆已交付门外，可用手机定位取车。'});return {ok:true,message:'车辆已恢复全部耐久，请到门外上车。'};
+ }
  if(game.vehicle.index!==index&&!game.selectVehicle(index))return {ok:false,message:'当前车辆无法停放，请先停车。'};
  r=vehicleService(game,index);r.phase=null;game.vehicles[index].hp=game.vehicles[index].maxHp;
  if(!game.summonVehicle()){r.phase='ready';return {ok:false,message:'暂时无法取车，请稍后再试。'};}
@@ -99,7 +120,7 @@ export function collectRepairedVehicle(game,index){
 }
 // 拖车沿已验证的折线前进，车轮相位按真实路程累积，暂停不推进。
 export function updateVehicleRepair(game,dt){
- if(game.state!=='playing'||!personalFleet(game)||game.cottage)return;
+ if(game.state!=='playing'||!personalFleet(game))return;
  for(const [index,r] of (game.progress.vehicleService||[]).entries()){
   if(!r||!['outbound','hooking','towing','repairing'].includes(r.phase))continue;
   if(r.phase==='outbound'||r.phase==='towing'){

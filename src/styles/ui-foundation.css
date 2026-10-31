@@ -400,7 +400,7 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #nearby-interaction small { display:block; font-size:11px; line-height:1.4; white-space:pre-line; }
 #nearby-interaction small[hidden] { display:none; }
 /* 车位上只显示停车标识与点击短提示，触控仍保留44px高度。 */
-#nearby-interaction[data-interaction="parking"]:not([hidden]) { display:flex; align-items:center; justify-content:center; flex-direction:row; gap:6px; min-width:76px; padding:6px 8px; font-size:12px; }
+#nearby-interaction[data-interaction="parking"]:not([hidden]), #nearby-interaction[data-interaction="fire-parking"]:not([hidden]) { display:flex; align-items:center; justify-content:center; flex-direction:row; gap:0; width:44px; min-width:44px; height:44px; padding:8px; font-size:12px; }
 #nearby-interaction .parking-hint-icon { display:flex; width:24px; height:24px; flex:none; pointer-events:none; }
 #nearby-interaction .parking-hint-icon[hidden] { display:none; }
 #nearby-interaction .parking-hint-icon svg { width:100%; height:100%; }

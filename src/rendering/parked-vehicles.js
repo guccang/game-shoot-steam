@@ -13,7 +13,7 @@ const visitorPreviews=new WeakMap();
 // 单一车位记录生成单一场景实体，停在室内的车与门框按固定深度合成。
 export function parkedVehicleObjects(game){
  if(!campParkingVisible(game)||game.arrivalCinematic)return [];
- return [...parkedOwned(game).map(s=>({...s,hull:s.record.hull,owner:true})),...(game.parkingVisitors||[]).map(v=>({...PARKING_SPOTS.find(s=>s.id===v.spot),model:VISITOR_MODELS.find(m=>m.id===v.model)}))]
+ return [...parkedOwned(game).map(s=>({...s,hull:s.record.hull,owner:true})),...(game.mapId==='forest'?game.parkingVisitors||[]:[]).map(v=>({...PARKING_SPOTS.find(s=>s.id===v.spot),model:VISITOR_MODELS.find(m=>m.id===v.model)}))]
   .map(s=>({...s,type:'parked-vehicle',depthOffset:s.indoor?VEHICLE_WORKSHOP.y+2-s.y:0}));
 }
 // 展示样车使用独立的原厂主炮快照，不能把展示配置写入玩家拥有列表。

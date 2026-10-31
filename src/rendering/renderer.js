@@ -192,7 +192,7 @@ export class Renderer {
       w = this.width,
       h = this.height,
       time = source.previewTime;
-    if(source.cottage){this.stormStrike=null;if(['weapons','vehicle'].includes(source.cottage.kind))drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
+    if(source.cottage){this.stormStrike=null;if(source.cottage.kind&&source.cottage.kind!=='cottage')drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     const valley = source.mapId === 'jiuzhaigou';
     this.ground.setMap(source.mapId);this.ground.setSceneryMask(null);
     const seasonNow = performance.now();

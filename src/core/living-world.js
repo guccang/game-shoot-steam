@@ -110,13 +110,15 @@ export function trackLivingRequest(game,id=null){
   if(!livingForest(game)||game.livingBattle&&game.livingBattle!==id||id&&(!record||record.completed||record.stage<0||record.stage>=spec.steps.length))return {ok:false,message:'这项任务现在不能切换追踪。'};
   return commitLiving(game,p=>{p.taskTracking=id?{kind:'living',id}:{kind:'mainline'};});
 }
+// 屋内邻里服务沿用房门外的实际地点，其他房间不获得远程交付权限。
+export function livingInteractionPosition(game){return ['relay','kitchen'].includes(game.cottage?.kind)?game.cottage.outside:game.player;}
 // 请求从当地委托板或委托人身边接取，两条路径共享同一状态。
 export function acceptLivingRequest(game,id){
  if(!facilityOpen(game.progress,'neighbors'))return {ok:false,message:facilityReason(game.progress,'neighbors')};
   const spec=LIVING_REQUESTS.find(q=>q.id===id),state=game.progress.living;
   if(game.livingPreview||!livingForest(game)||game.state==='dead'||!spec||game.boss||state.requests[id].stage>=0||!spec.requires.every(k=>state.requests[k].completed))return {ok:false,message:'这份请求现在还不能接取。'};
   const host=residentFor(game,spec.host),post=nearbyStoryPost(game);
-  if(!(host&&worldDistance(game.player,host)<GAMEPLAY_VALUES.living.interactDistance)&&!post)return {ok:false,message:'走近委托板，或当面问问委托人。'};
+  if(!(host&&worldDistance(livingInteractionPosition(game),host)<GAMEPLAY_VALUES.living.interactDistance)&&!post)return {ok:false,message:'走近委托板，或当面问问委托人。'};
   return commitLiving(game,p=>{recordActivity(p,'living');p.living.requests[id].stage=0;p.taskTracking={kind:'living',id};p.living.journal.push(spec.lead);p.living.journal=p.living.journal.slice(-GAMEPLAY_VALUES.living.journalLimit);});
 }
 // 任务目标读取常驻居民的当前位置，不指向已经走开的固定空地。
@@ -143,7 +145,7 @@ export function recordLivingKill(game,enemy){
 // 每一步检查地点与阶段；完成旗标、奖励和可回访结果在一次持久化里提交。
 export function interactLivingRequest(game,id){
   const spec=LIVING_REQUESTS.find(q=>q.id===id),target=spec&&livingRequestTarget(game,spec);
-  if(game.livingPreview||!livingForest(game)||game.boss||game.state==='dead'||!target||worldDistance(game.player,target)>GAMEPLAY_VALUES.living.interactDistance)return {ok:false,message:'请走近这次要帮助的人或物。'};
+  if(game.livingPreview||!livingForest(game)||game.boss||game.state==='dead'||!target||worldDistance(livingInteractionPosition(game),target)>GAMEPLAY_VALUES.living.interactDistance)return {ok:false,message:'请走近这次要帮助的人或物。'};
   const record=game.progress.living.requests[id];
   if(target.step.battle&&(record.battleKills||0)<GAMEPLAY_VALUES.living.battleKills){
     const tracked=trackLivingRequest(game,id);return tracked.ok?startLivingBattle(game,id):tracked;

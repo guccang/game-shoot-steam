@@ -1,3 +1,4 @@
+import {parkingRecordSite,parkingRecordOccupies} from '../progression/roadside-parking.js';
 import {vehicleService} from './vehicle-repair.js';
 import {REPAIR_BAY} from '../config/vehicle-repair.js';
 // 驾驶和停驻是同一辆车的两种状态，站在车旁点击才可重新上车。
@@ -12,9 +13,9 @@ import {RANGER} from '../config/ranger-arrival.js';
 import {VISITOR_MODELS} from '../config/parking-visitors.js';
 export {VISITOR_MODELS} from '../config/parking-visitors.js';
 // 只在正常营地显示停驻车，秘境与入职镜头不借用玩家车位。
-export function campParkingVisible(game){return game.mapId==='forest'&&!game.realm&&!game.story&&!game.cottage;}
-// 每份记录都通过固定泊位取坐标，避免保存任意传送位置。
-export function parkedOwned(game){return (game.progress.campParking?.owned||[]).map(record=>({...PARKING_SPOTS.find(s=>s.id===record.spot),record}));}
+export function campParkingVisible(game){return ['forest','jiuzhaigou'].includes(game.mapId)&&!game.realm&&!game.story&&!game.cottage;}
+// 固定泊位与原地停车统一投影，其他地图的车辆不会出现在当前场景。
+export function parkedOwned(game){return (game.progress.campParking?.owned||[]).map(record=>({...parkingRecordSite(record),record})).filter(site=>site.mapId===game.mapId);}
 // 过场结束即可使用已有车辆，不把其他车体绑定到首枪教学。
 export function arrivalParkingAllowed(game){return !game.arrivalCinematic;}
 // 剧情借车、秘境整备、消防出动和试驾继续使用各自的临时装备，不受营地停车限制。
@@ -23,35 +24,28 @@ export function parkingFleetApplies(game){return !game.realm&&!game.story&&!game
 export function vehicleParkingSite(game,hull){
  if(vehicleService(game,hull)?.phase)return {...REPAIR_BAY,id:'vehicle-repair',name:'载具维修中心',mapId:'forest'};
  if(hull===4&&game.fireGarageParked)return {...FIRE_GARAGE,id:'fire-garage',name:'消防站车库',mapId:'forest'};
- const parked=parkedOwned(game).find(s=>s.record.hull===hull);
- return parked?{...parked,mapId:'forest'}:{id:'north-parking',name:'北停车场',mapId:'forest',...NORTH_PARKING.entrance};
+ const record=game.progress.campParking?.owned.find(r=>r.hull===hull),parked=record&&parkingRecordSite(record);
+ return parked?parked:{id:'north-parking',name:'北停车场',mapId:'forest',...NORTH_PARKING.entrance};
 }
 // 只能在停车区域选用另一辆自有车，携带的旧车会留在停车场而不跟随出发。
 export function canSelectParkingVehicle(game,hull){
  if(!parkingFleetApplies(game))return true;
- if(game.mapId!=='forest'||game.cottage||!['playing','paused'].includes(game.state))return false;
+ if(game.cottage||!['playing','paused'].includes(game.state))return false;
  const site=vehicleParkingSite(game,hull);
- return worldDistance(game.player,site)<=155;
-}
-// 换车优先使用目标车辆同区的空位；满位则使用本次换乘腾出的车位，不挤走访客。
-function swapParkingSpot(game,target){
- return PARKING_SPOTS.filter(s=>s.building===target.building&&!parkingOccupied(game,s.id))
-  .sort((a,b)=>worldDistance(game.player,a)-worldDistance(game.player,b))[0]||target;
+ return site.mapId===game.mapId&&worldDistance(game.player,site)<=155;
 }
 // 换乘前保存随行车的耐久与供给；已有停驻记录的车不被移动到另一个泊位。
-export function storeCarriedVehicle(game,v=game.vehicle,released=null){
+export function storeCarriedVehicle(game,v=game.vehicle){
  const p=game.progress;p.campParking??={owned:[]};
  if(vehicleService(game,v.index)?.phase)return true;
  if(!p.vehicleHulls[v.index]||p.campParking.owned.some(r=>r.hull===v.index)||v.index===4&&game.fireGarageParked)return true;
- const spot=released?swapParkingSpot(game,released):availableParkingSpot(p,v.index);if(!spot)return false;
- if(v.active&&v===game.vehicle&&!dismountVehicle(game))return false;
- // 目标车辆已预检可驾驶；满位交接先释放它的记录，再落旧车，始终保持唯一车位。
- if(released&&spot.id===released.id)p.campParking.owned=p.campParking.owned.filter(r=>r.hull!==released.record.hull);
+ if(v.active&&v===game.vehicle)return dismountVehicle(game);
+ const spot=availableParkingSpot(p,v.index);if(!spot)return false;
  p.campParking.owned.push({hull:v.index,spot:spot.id,hp:v.hp/v.maxHp,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:v.wheelPhase||0,track:game.player.walkPhase||0});
  game.parkingVisitors=(game.parkingVisitors||[]).filter(r=>r.spot!==spot.id);return true;
 }
 // 同一车体和同一泊位最多一辆，倒车中的预约也不允许访客占用。
-export function parkingOccupied(game,id){return parkedOwned(game).some(s=>s.id===id)||(game.parkingVisitors||[]).some(s=>s.spot===id)||id===RANGER.parkingId&&game.progress.arrival?.parked&&!game.arrivalCinematic;}
+export function parkingOccupied(game,id){const spot=PARKING_SPOTS.find(s=>s.id===id);return !!spot&&game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,spot))||(game.parkingVisitors||[]).some(s=>s.spot===id)||id===RANGER.parkingId&&game.progress.arrival?.parked&&!game.arrivalCinematic;}
 // 交接完成后接管北广场赠车，不移动到未修复车库，也不重复占位。
 export function adoptArrivalParking(game){
  if(!arrivalParkingAllowed(game)||!game.progress.arrival?.parked||!game.progress.vehicleHulls[RANGER.scooter])return;
@@ -95,18 +89,19 @@ export function boardParkedVehicle(game,hull){
  Object.assign(game.player,boarding,{vx:0,vy:0,pushX:0,pushY:0,walkPhase:parked.record.track});
  game.progress.campParking.owned=game.progress.campParking.owned.filter(s=>s.hull!==hull);
  // 上车时不再次候停，须先驶离，防止刚点上车又被自动赶下来。
- game.parking={id:parked.id,hull,phase:'cancelled',idle:false};
+ game.parking=parked.record.spot?{id:parked.id,hull,phase:'cancelled',idle:false}:null;
  game.onEvent('camp-parking-change');return true;
 }
 // 访客在看不到的空位轮换，两个空位和所有自有车、倒车预约始终保留。
 export function updateParkingVisitors(game,dt){
  if(!campParkingVisible(game)||!arrivalParkingAllowed(game)){game.player.parkingBarriers=[];return;}
  if(game.state!=='playing')return;
+ if(game.mapId!=='forest'){game.parkingVisitors=[];game.player.parkingBarriers=parkedOwned(game).map(s=>({x:s.x,y:s.y-20,width:72,height:60}));return;}
  adoptArrivalParking(game);
  // 新购与赠礼车辆优先占位，访客不能与自有车重叠；旧档也在同一入口补齐停放记录。
  if(parkingFleetApplies(game)&&game.progress.vehicleHulls.some((level,hull)=>level&&!vehicleService(game,hull)?.phase&&hull!==game.progress.vehicleIndex&&!(hull===4&&game.fireGarageParked)&&!game.progress.campParking.owned.some(r=>r.hull===hull)))
   game.progress.campParking=normalizeCampParking(game.progress.campParking,game.progress);
- game.parkingVisitors=(game.parkingVisitors||[]).filter(v=>!game.progress.campParking.owned.some(r=>r.spot===v.spot));
+ game.parkingVisitors=(game.parkingVisitors||[]).filter(v=>!game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,PARKING_SPOTS.find(s=>s.id===v.spot))));
  game.parkingVisitors||=[];game.parkingVisitTimer??=8;
  // 停车实体只给当前玩家提供脚底碰撞，不改动入职导演和居民路线。
  game.player.parkingBarriers=[...parkedOwned(game),...game.parkingVisitors.map(v=>PARKING_SPOTS.find(s=>s.id===v.spot))].map(s=>({x:s.x,y:s.y-20,width:72,height:60}));

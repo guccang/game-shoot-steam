@@ -93,6 +93,7 @@ export function startFireRescue(game){
  // 自有消防车报废或在修时不能用任务借车覆盖永久订单。
  if(game.progress.vehicleHulls[4]&&(game.vehicles[4].hp<=0||vehicleService(game,4)?.phase)){game.onEvent('story-hint',{text:'消防车需要先在维修中心修好并取回，才能再次出动。'});return false;}
  if(game.vehicle.active&&!game.dismountVehicle())return false;
+ if(game.cottage){Object.assign(game.player,game.cottage.outside,{vx:0,vy:0});game.cottage=null;game.cottageDoorLatch='fire';}
  borrowTruck(game,r);game.state='playing';beginFireTownTransfer(game);
  recordActivity(game.progress,'fire');changed(game,fireMotionText('transferring'));return true;
 }

@@ -1,3 +1,4 @@
+import {vehicleLocations,locateVehicle} from '../core/vehicle-location.js';
 import {CAMP_CHARACTERS,MONSTER_CAMPS} from '../config/monster-camps.js';
 import {FARM_CROPS} from '../config/farm.js';
 // 小背包复用手机底板、正式来信与地图，物品详情只在用户操作时更新。
@@ -51,14 +52,14 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
    actions.innerHTML=button('letter',game.progress.arrival?.phase==='letter'?'读完了，开始巡林':'收好来信',true);
   }else if(selected==='house-key'){
    const repaired=facilityOpen(game.progress,'cottage');
-   detail.innerHTML=`<section class="keepsake-key">${keepsakeIcon(selected)}<h3>总有一扇门为你留着</h3><p>松伯留下的房子钥匙。木牌被摸得光滑，绳结还是新的。</p><div class="ui-inset"><b>${repaired?'小屋已经修好了':'小屋还需要修缮'}</b><p>${repaired?'下车后走到门前，站定3秒就能进屋歇脚。':'带上木头来修复小屋。任务修复靠近自动开工，提前修复请在修复页确认。钥匙会一直留在包里。'}</p></div></section>`;
+   detail.innerHTML=`<section class="keepsake-key">${keepsakeIcon(selected)}<h3>总有一扇门为你留着</h3><p>松伯留下的房子钥匙。木牌被摸得光滑，绳结还是新的。</p><div class="ui-inset"><b>${repaired?'小屋已经修好了':'小屋还需要修缮'}</b><p>${repaired?'下车后走到门前，站定1秒就能进屋歇脚。':'带上木头来修复小屋。任务修复靠近自动开工，提前修复请在修复页确认。钥匙会一直留在包里。'}</p></div></section>`;
    actions.innerHTML=button('home','标出回家的路',true);
   }else if(call){
    detail.innerHTML=`<section class="keepsake-call" aria-live="polite"><small>${escape(call.status)}</small><h3>${escape(call.name)}</h3><p class="keepsake-location">${escape(call.location)}</p><blockquote>${escape(call.message)}</blockquote><p class="keepsake-help">电话可以问候和问路，交付还要当面完成。</p></section>`;
    actions.innerHTML=button('hangup','挂断')+button('visit','去找'+call.name,true);
   }else{
    const calendar=calendarView(game.progress.living.calendar),reason=phoneUnavailable(game);
-   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
+   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>载具定位</h3><div class="keepsake-contacts">${vehicleLocations(game).map(v=>`<button type="button" class="ui-choice" data-locate-vehicle="${v.hull}"><span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span></button>`).join('')||'<p>还没有自有载具。</p>'}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
    actions.innerHTML=button('close',bag.open?'返回背包':'收好手机',true);
   }
  }
@@ -79,6 +80,8 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  // 详情与手机共享已存在的业务动作，地图仍是手机中的子页面。
  function act(event){
   node=event.currentTarget;selectPanel();
+  const vehicle=event.target.closest('[data-locate-vehicle]');
+  if(vehicle){const result=locateVehicle(game,Number(vehicle.dataset.locateVehicle));if(result.ok){for(const p of [phone,itemPanel,bag])if(p.open)dialogs.close(p.id);onNotice(result.message);onChange();}else{message.textContent=result.message;message.hidden=false;}return;}
   const contact=event.target.closest('[data-call]');if(contact){const result=callNeighbor(game,contact.dataset.call);if(result.ok){call=result;resetView();}else{message.textContent=result.message;message.hidden=false;}return;}
   const action=event.target.closest('[data-pack-action]')?.dataset.packAction;if(!action)return;
   if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}

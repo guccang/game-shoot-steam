@@ -1,3 +1,4 @@
+import {interiorShopkeeper} from '../config/workshop-interiors.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
@@ -177,7 +178,9 @@ function drawVehicleDisplay(c, item, game) {
 function drawTools(c, item) {
   const { x, y, width: w } = item;
   oval(c, x + 3, y + 9, w * 0.53, 9, '#35553e30');
-  if (item.type === 'tires') {
+  if(item.type==='counter'){
+    box(c,x-w/2,y-25,w,40,5,'#b59668','#4e6b50',2);box(c,x-w/2-4,y-31,w+8,12,4,'#e3cd98','#68714e',2);box(c,x-34,y-22,68,29,4,'#c8ad7b','#9a805a',1);
+  }else if (item.type === 'tires') {
     for (const yy of [y + 5, y - 8, y - 21]) {
       oval(c, x, yy, 18, 10, '#576f60', '#3d5b48', 2);
       oval(c, x, yy - 2, 9, 4, '#9fb098', '#3d5b48', 1);
@@ -244,6 +247,9 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
   c.scale(zoom, zoom);
   box(c, 6, 10, layout.width - 6, layout.height - 4, 12, '#203d353f');
   drawWalls(c, garage, night, layout);
+  if(layout.service){
+    c.fillStyle='#f4e8c5';c.fillRect(48,24,layout.width-96,42);c.fillStyle='#405a48';c.font='bold 18px sans-serif';c.textAlign='center';c.fillText(layout.name,layout.width/2,52);
+  }
   const record = garageVehicleRecord(g),
     bay = VEHICLE_BAY,
     displays = garage
@@ -295,12 +301,13 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
   c.fillText('出门', layout.exit.x, layout.height - 16);
   const items = garage
     ? [...GARAGE_FURNITURE, ...displays, ...(record ? [{ ...bay, type: 'vehicle' }] : [])]
-    : interiorWeaponDisplays().filter((item) => item.y + 25 >= view.top && item.y - 60 <= view.bottom);
+    : layout.service?[{id:'counter',type:'counter',x:180,y:205,width:130,height:36}]:interiorWeaponDisplays().filter((item) => item.y + 25 >= view.top && item.y - 60 <= view.bottom);
   if (!garage && renderer.interiorArt) {
     const visible = new Set(items.map((item) => item.index));
     for (const key of renderer.interiorArt.images.keys())
       if (!visible.has(key)) renderer.interiorArt.images.delete(key);
   }
+  items.push(interiorShopkeeper(room));
   items.push({ type: 'player', x: g.player.x, y: g.player.y });
   items.sort((a, b) => a.y - b.y);
   for (const item of items) {
@@ -326,6 +333,11 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
         0,
         true,
       );
+    else if(item.type==='shopkeeper'){
+      drawCat(c,item.x,item.y,4,Math.PI/2,PLAYER_SCALE,0,0,null,1,null,0,false,false,null,0,null,0,true);
+      c.fillStyle='#fff2d0';c.strokeStyle='#58765c';box(c,item.x-40,item.y-78,80,23,6,'#fff2d0','#58765c',1);
+      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText('售货员',item.x,item.y-62);
+    }
     else if (item.type === 'vehicle-display') drawVehicleDisplay(c, item, g);
     else if (item.type === 'vehicle') drawParkedHull(c, item, g, record.hull, record);
     else if (item.type === 'rack') drawRack(c, item, renderer);

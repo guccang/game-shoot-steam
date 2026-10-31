@@ -82,8 +82,10 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  scope.on($('home-preview'),'click',e=>{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*360,y=(e.clientY-r.top)/r.height*360;if(draft)point(x,y);else{const item=placedDecor(game.progress.homeDecor).sort((a,b)=>b.y-a.y).find(i=>Math.abs(x-i.x)<Math.max(22,i.width/2)&&y>i.y-Math.max(30,i.height)&&y<i.y+i.height/2);if(item)select(item.uid);}});
  scope.on($('home-preview'),'keydown',e=>{const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];if(direction&&draft){e.preventDefault();nudge(direction);}});
  // 父级逐帧只同步可见性；存档对象或金币变化后才更新内容。
- function render(){entry.hidden=!game.cottage||!!game.cottage.kind&&game.cottage.kind!=='cottage';entry.disabled=!!game.cottage?.sleep||!!game.cottage?.restOpen||game.state!=='playing';if(dialog.open){if(!game.cottage){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
+ function render(){entry.hidden=true;entry.disabled=!!game.cottage?.sleep||!!game.cottage?.restOpen||game.state!=='playing';if(dialog.open){if(!game.cottage){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
  // 动态节点跟随小屋控制器卸载，避免重复事件和残留预览。
  function dispose(){scope.dispose();if(dialog.open)dialog.close();entry.remove();dialog.remove();}
- return {render,dispose};
+ // 屋内售货员打开家具服务，保持原暂停与保存流程。
+ function open(){if(game.cottage&&(!game.cottage.kind||game.cottage.kind==='cottage')&&!game.cottage.sleep&&!game.cottage.restOpen&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}}
+ return {render,dispose,open};
 }

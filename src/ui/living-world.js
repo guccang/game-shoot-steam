@@ -1,3 +1,4 @@
+import {livingInteractionPosition} from '../core/living-world.js';
 import {equipmentQuestCards} from './equipment-quests.js';
 import {EQUIPMENT_QUESTS,equipmentStoryCompleted} from '../config/equipment-quests.js';
 import {focusedResidentRequest,visibleResidentRequests} from './living-request-view.js';
@@ -52,7 +53,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
       if(!person)html+='<p class="living-intro">去见见邻居，帮一件小事。故事就发生在路上。</p>';
       for(const spec of ordered){
         const q=state.requests[spec.id],host=residentFor(game,spec.host),locked=spec.requires.some(id=>!state.requests[id].completed);
-        const canAccept=(near||host&&worldDistance(game.player,host)<110)&&!locked,t=livingRequestTarget(game,spec),accepted=q.stage>=0;
+        const canAccept=(near||host&&worldDistance(livingInteractionPosition(game),host)<110)&&!locked,t=livingRequestTarget(game,spec),accepted=q.stage>=0;
         const names={coins:'金币',wood:'木材',parts:'零件',crystal:'晶体',core:'核心'};
         html+=`<article data-living-request="${spec.id}" class="living-request ${accepted?'living-current':''}"><div class="living-task-meta"><small>${q.completed?'已完成':accepted?'正在帮忙':escape(host?.name||'邻居')+'想请你帮忙'}</small>${accepted&&!q.completed?`<small>第 ${q.stage+1} / ${spec.steps.length} 步</small>`:''}</div><h3>${escape(spec.title)}</h3>`;
         if(accepted&&!q.completed)html+=`<div class="living-task-goal"><small>当前目标</small><strong>${escape(t?.text)}</strong></div>`;
@@ -61,7 +62,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
         html+=`<details class="living-reward-details"><summary>${q.completed?'任务奖励':'完成奖励'}</summary><div class="living-pay">${Object.entries(spec.reward).map(([key,n])=>`<span>${names[key]} +${n}</span>`).join('')}</div></details>`;
         if(q.completed){/* 完成页只保留右上角关闭，不出现下一委托操作。 */}
         else if(accepted){
-          const close=t&&worldDistance(game.player,t)<110;
+          const close=t&&worldDistance(livingInteractionPosition(game),t)<110;
           html+=`<button class="primary" ${close?`data-living-do="${spec.id}"`:`data-living-track="${spec.id}"`}>${close?'在这里继续':'带我过去'}</button>`;
         }else if(locked)html+='<small>先完成送饭与夜班请求，大家再一起筹备集市。</small>';
         else html+=canAccept?`<button class="primary" data-living-accept="${spec.id}">接下请求</button>`:`<button data-living-visit="${spec.host}">去找${escape(host?.name||'邻居')}</button>`;

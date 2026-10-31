@@ -54,7 +54,7 @@ export function createNearbyInteraction({game,renderer,root,input,activate}){
   button.toggleAttribute('data-world-movement',house);
   if(campSign){for(const [key,value] of [['--camp-sign-width',Math.max(44,108*renderer.view.zoom)+'px'],['--camp-sign-height',Math.max(44,36*renderer.view.zoom)+'px']])if(button.style.getPropertyValue(key)!==value)button.style.setProperty(key,value);}
   const label='点击 · '+entry.label,description=entry.detail||'',accessible=label+(description?'。'+description.replace('\n','。'):'');
-  const parking=entry.type==='parking',visibleLabel=parking?'点击':label;
+  const parking=['parking','fire-parking'].includes(entry.type),visibleLabel=parking?'':label;
   if(parkingIcon.hidden!==!parking)parkingIcon.hidden=!parking;
   if(title.textContent!==visibleLabel)title.textContent=visibleLabel;
   if(detail.textContent!==description)detail.textContent=description;

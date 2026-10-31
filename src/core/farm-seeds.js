@@ -6,13 +6,13 @@ import {validateProgress} from '../progression/progress.js';
 import {commitFarm,storyFarmAllowed} from './farm.js';
 import {recordEconomy} from '../progression/economy-ledger.js';
 import {worldDistance} from '../world/coordinates.js';
-// 打开的商店会暂停游戏，骑乘也可交易；远程只能看来源和导航。
-export function canBuyFarmSeeds(game){return ['playing','paused'].includes(game.state)&&game.mapId==='forest'&&!game.realm&&storyFarmAllowed(game)&&!game.cottage&&!game.workshopTrial&&!game.fireActive&&!game.campDefense&&!game.arrivalCinematic&&worldDistance(game.player,FARM_SEED_DOOR)<=125;}
+// 普通世界在屋内向售货员购种；剧情自由行动保留场景原有的门前交易。
+export function canBuyFarmSeeds(game){return ['playing','paused'].includes(game.state)&&game.mapId==='forest'&&!game.realm&&storyFarmAllowed(game)&&(game.cottage?.kind==='seed'||!!game.story&&worldDistance(game.player,FARM_SEED_DOOR)<=125)&&!game.workshopTrial&&!game.fireActive&&!game.campDefense&&!game.arrivalCinematic;}
 // 数量、解锁、余额和容量在每次提交时重新校验，失败不扣款。
 export function buyFarmSeeds(game,cropId,count=1){
  const crop=FARM_CROPS[cropId];
  if(!Number.isInteger(cropId)||!crop||![1,5,10].includes(count))return {ok:false,message:'请选择有效的种子与数量。'};
- if(!canBuyFarmSeeds(game))return {ok:false,message:'请到种子小屋门前购买。'};
+ if(!canBuyFarmSeeds(game))return {ok:false,message:'请进种子小屋与售货员交谈购买。'};
  const next=validateProgress(structuredClone(game.progress)),f=next.farm,cost=crop.cost*count;
  if(!f.unlocked[cropId])return {ok:false,message:'先获得一粒'+crop.name+'种子，即可永久解锁购买。'};
  if(f.seeds[cropId]+count>FARM_STOCK_CAP)return {ok:false,message:'种子库存已满，先使用一些再购买。'};

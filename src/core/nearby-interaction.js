@@ -1,23 +1,19 @@
-import {personalFleet,vehicleService} from './vehicle-repair.js';
-import {REPAIR_CENTER,VEHICLE_REPAIR} from '../config/vehicle-repair.js';
+import {personalFleet} from './vehicle-repair.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,campSignSite,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {monsterCampsAvailable} from './monster-camps.js';
 import {arrivalWorkReady} from './ranger-arrival.js';
-import {RANGER,arrivalPistolPurchase} from '../config/ranger-arrival.js';
+import {RANGER} from '../config/ranger-arrival.js';
 import {TOWN_RESTORATIONS,facilityOpen} from '../config/town-restoration.js';
 import {entryFacility,restorationStatus} from './town-restoration.js';
 // 附近交互统一选取最近目标，只返回点击意图，不在帧更新中执行。
 import {BUILDING_ENTRIES,BUILDING_ENTRY} from '../config/building-entries.js';
 import {canInspectBuilding} from './building-entry.js';
 import {COTTAGE} from '../config/cottage.js';
-import {canClickCottage} from './cottage.js';
-import {WORKSHOP_INTERIORS,interiorLayout,interiorWorkshopTargets,WORKSHOP_DISPLAY_ENTRY} from '../config/workshop-interiors.js';
-import {workshopDisplayDistance} from './workshop-display-entry.js';
+import {interiorLayout} from '../config/workshop-interiors.js';
 import {canRequestParking,nearestParkingSpot} from './parking.js';
 import {canRequestFireParking} from './fire-rescue.js';
 import {worldDistance} from '../world/coordinates.js';
 import {farmMode} from './farm.js';
-import {FARM_SEED_DOOR} from '../config/farm.js';
 import {nearbyStoryPost} from './story-posts.js';
 import {CAMP_GATES} from '../config/camp-defense.js';
 
@@ -40,13 +36,12 @@ export function nearbyInteraction(game){
   const layout=interiorLayout(room),p=game.player;
   if(Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius)return null;
   if((!room.kind||room.kind==='cottage')&&Math.hypot(p.x-COTTAGE.bed.x,p.y-COTTAGE.bed.y)<=COTTAGE.bedRadius)return {id:'rest',type:'rest',label:'休息一下'};
-  const item=interiorWorkshopTargets(game).filter(item=>workshopDisplayDistance(p,item)<=WORKSHOP_DISPLAY_ENTRY.radius).sort((a,b)=>workshopDisplayDistance(p,a)-workshopDisplayDistance(p,b))[0];
-  return item?{...item,id:'display-'+item.id+'-'+item.index,type:'display',label:item.id==='bay'?'整备停驻车辆':item.kind==='weapons'?'查看武器':'查看展车'}:null;
+  // 售货员使用自身唯一点击区，避免附近按钮盖住角色。
+  return null;
  }
  if(canRequestParking(game))return {id:'parking-'+nearestParkingSpot(game).id,type:'parking',label:'停车入位'};
  const entries=[];
  if(personalFleet(game)){
-  if(game.mapId==='forest'&&worldDistance(game.player,REPAIR_CENTER)<=VEHICLE_REPAIR.radius)entries.push({...REPAIR_CENTER,type:'vehicle-repair',label:'载具维修中心',detail:'维修保养 · 救援报废载具',distance:worldDistance(game.player,REPAIR_CENTER)});
   for(const [hull,r] of (game.progress.vehicleService||[]).entries())if(r?.phase==='wrecked'&&r.mapId===game.mapId&&worldDistance(game.player,r.position)<=120)entries.push({...r.position,id:'wreck-'+hull,type:'vehicle-wreck',hull,label:'查看损坏载具',detail:'已报废 · 需要维修',distance:worldDistance(game.player,r.position)});
  }
  // 外围故事绑定真实木牌；营内居民和冷灰堆继续使用自己的现场位置。
@@ -54,17 +49,8 @@ export function nearbyInteraction(game){
   const npc=CAMP_CHARACTERS.find(n=>n.camp===c.id),cache=CAMP_CHARACTERS.some(n=>n.destination===c.id&&game.progress.monsterCamps.clues.includes(n.id));
   for(const site of [campSignSite(c),...(npc?[campCharacterSite(c)]:[]),...(cache?[campCacheSite(c)]:[])]){const distance=worldDistance(game.player,site),character=site.id.endsWith('character'),sign=site.id.endsWith('sign');if(distance<=90)entries.push({...site,id:site.id,type:'monster-camp',key:c.id,presentation:sign?'camp-sign':null,label:site.id.endsWith('cache')?'查看冷灰堆':character?'和'+npc.name+'聊聊':'阅读营地木牌',detail:character?'友善居民':c.name,distance});}
  }
- // 已建成小屋提供明确点击入口，原门前站定三秒方式继续保留。
- if(canClickCottage(game))entries.push({id:'cottage-entry',type:'cottage',key:'cottage',label:'进入小屋',detail:'也可在门前站定3秒进入',distance:worldDistance(game.player,COTTAGE.door)});
- // 种子小屋与其他建筑按距离择近，骑乘时也能查看与购买。
- if(game.mapId==='forest'&&!game.realm&&!game.story&&!game.fireActive&&!game.campDefense&&worldDistance(game.player,FARM_SEED_DOOR)<=125)entries.push({id:'seed-shop',type:'seed-shop',label:'种子小屋',detail:'购买种子 · 查看来源',distance:worldDistance(game.player,FARM_SEED_DOOR)});
- // 首枪任务显示购买入口，其余工坊沿用升级入口；步行入室由门前站立倒计时处理。
- if(game.mapId==='forest'&&!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial)for(const room of Object.values(WORKSHOP_INTERIORS)){
-  const distance=worldDistance(game.player,room.door);
-  const firstPistol=arrivalPistolPurchase(game.progress,room.id,0,'buy');
-  if(distance<=room.clickRadius)entries.push({id:'workshop-'+room.id,type:'workshop',key:room.id,label:firstPistol?'购买手枪':room.id==='vehicle'?'升级载具':'升级武器',detail:firstPistol?'打开购买页签':'打开升级界面',distance});
- }
  if(canInspectBuilding(game))for(const e of BUILDING_ENTRIES){
+  if(e.type==='realm'&&['fire','tower'].includes(e.key))continue;
   // 兽潮导航在站牌附近结束，提示范围覆盖抵达误差，同时遵守营门的实际进入距离。
   const gate=e.type==='gate'&&CAMP_GATES.find(g=>g.id===e.key),distance=worldDistance(game.player,e);
   if(gate?worldDistance(game.player,gate)<=160:distance<=(e.radius??BUILDING_ENTRY.radius))entries.push({...e,label:e.type==='realm'?'查看入口':gate?'怪潮站牌':e.type==='clearing'?'查看清缴委托':'查看告示',detail:gate?'打开怪潮页面':'',presentation:gate?'task-entry':null,distance});

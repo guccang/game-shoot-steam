@@ -31,7 +31,7 @@ export function createWorldRealms({ game, renderer, root, onEnter }) {
     return !game.cottage && !game.campDefense && !game.arrivalCinematic && game.state === 'playing' && game.mapId !== 'jiuzhaigou' && !game.realm && !game.story && !root.querySelector('dialog[open]');
   }
   // 点击和候停共用闩锁，离开秘境返回原门口时不会再次自动进入。
-  function enter(mode){if(!available())return false;const entry=BUILDING_ENTRIES.find(e=>e.type==='realm'&&e.key===mode);if(!entry)return false;latchBuildingEntry(game,entry);return onEnter(mode);}
+  function enter(mode){if(['fire','tower'].includes(mode)||!available())return false;const entry=BUILDING_ENTRIES.find(e=>e.type==='realm'&&e.key===mode);if(!entry)return false;latchBuildingEntry(game,entry);return onEnter(mode);}
   // 采用实际画布尺寸与镜头倍率，覆盖手机、广角武器以及循环世界镜像。
   function tap(event) {
     if (!available() || !renderer.view) return;
@@ -46,6 +46,7 @@ export function createWorldRealms({ game, renderer, root, onEnter }) {
     layer.hidden = !available() || !renderer.view;
     if (layer.hidden) return;
     REALM_ENTRANCES.forEach((entry,i)=>{
+      if(['fire','tower'].includes(entry.mode)){buttons[i].hidden=true;return;}
       placeSceneHit(buttons[i],entry,renderer,root.getElementById('game-frame'),{width:entry.width,height:entry.height});
       if(entry.mode==='fire'&&(game.fireActive||game.fireGarageParked||game.fireRescue?.phase==='won'))buttons[i].hidden=true;
     });

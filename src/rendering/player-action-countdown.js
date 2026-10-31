@@ -3,7 +3,7 @@ import {drawActionCountdown} from './action-countdown.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
 import {doorwayInteractionAnchor,projectInteractionAnchor} from '../world/interaction-anchors.js';
 
-// 房屋入室三秒、出门一秒共用正式进度，绘制不改变计时或房间状态。
+// 房屋入室与出门均站定一秒共用正式进度，绘制不改变计时或房间状态。
 export function playerActionCountdown(game){
  const room=game.cottage;
  if(room)return !room.sleep&&!room.restOpen&&room.exitElapsed?{elapsed:room.exitElapsed,wait:interiorLayout(room).exitWait,icon:'exit'}:null;

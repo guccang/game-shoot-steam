@@ -1,3 +1,4 @@
+import {parkAtPosition} from '../progression/roadside-parking.js';
 import {personalFleet,vehicleRequiresService,vehicleService,markVehicleWreck,syncVehicleService} from '../core/vehicle-repair.js';
 import {RED_WOLF_HULL} from '../config/red-wolf-geometry.js';
 import {breakTreesAlong} from './boss-terrain.js';
@@ -104,6 +105,7 @@ export function summonVehicle(game) {
 
 // 下车保留驾驶员生命与武器；特殊通行载具先找安全步行落点，避免红狼下车后卡进树干。
 export function dismountVehicle(game) {
+  const parkedPosition={x:game.player.x,y:game.player.y};
   if (!game.vehicle.active) return false;
   if ((!game.player.arena || game.player.arena.terrain === 'forest') && (game.player.flying || game.player.amphibious || game.player.treePass) && !landVehicle(game)) return false;
   game.player.flying = false;
@@ -112,6 +114,8 @@ export function dismountVehicle(game) {
   game.vehicle.active = false;
   if(game.vehicle.index===5)clampRiderSupply(game);
   game.vehicle.targetId = null;
+  if(parkAtPosition(game,parkedPosition)&&worldDistance(game.player,parkedPosition)<60){const side=landingPoint({...game.player,x:parkedPosition.x+72,y:parkedPosition.y+20},game.trees);if(side)Object.assign(game.player,side);}
+  game.player.vx=game.player.vy=0;
   game.onEvent('vehicle-dismount',{index:game.vehicle.index});
   return true;
 }
