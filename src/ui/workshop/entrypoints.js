@@ -1,9 +1,11 @@
 // 旧菜单与追踪入口统一路由，秘境继续使用原局内装备面板。
 
 // 监听器交由外层事件作用域销毁，避免重新挂载后重复触发。
-export function bindWorkshopEntrypoints({root,scope,game,open}) {
+export function bindWorkshopEntrypoints({root,scope,game,open,current}) {
   // 捕获旧入口，保持原秘境车库流程；森林中只有一个正式工坊。
   scope.on(root, 'click', event => {
+    const main=event.target.closest('#weapons-button,#vehicles-button,#magazine-hud');
+    if(main){event.preventDefault();event.stopImmediatePropagation();current(main.id==='vehicles-button'?'vehicle':'weapons');return;}
     if (game.realm) return;
     const target = event.target.closest('#weapons-button, #vehicles-button, #tab-weapons, #goal-workshop, [data-category="vehicles"]');
     if (!target) return;

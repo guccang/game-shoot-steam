@@ -176,7 +176,7 @@ export function updateBoss(game, dt, previousPlayer = game.player) {
         if (!a.hit && !pursuit.holding && (b.arena || clearWaterPath(b, p)) &&
             (shieldContact||bossSweep(from, b, previousPlayer, p, b.radius))) {
           if(shieldContact){b.x=from.x+(b.x-from.x)*shieldContact.t;b.y=from.y+(b.y-from.y)*shieldContact.t;a.shieldBlocked=true;}
-          hurtTarget(game, b.blastDamage ?? GAMEPLAY_VALUES.boss.baseBlastDamage,shieldContact||b);
+          hurtTarget(game, b.blastDamage ?? GAMEPLAY_VALUES.boss.baseBlastDamage,{...(shieldContact||b),damageType:'explosion'});
           a.hit = true;
         }
         // 盾面截停后再记录实际位移和沿途破树，避免高步长越过屏障破坏后方树木。
@@ -259,7 +259,7 @@ export function updateBossHazards(game, dt, previousPlayer = game.player) {
     }
     if (h.kind === 'spore') h.tick = Math.max(0, h.tick - dt);
     if (touches && !h.hit && !(h.tick > 0)) {
-      hurtTarget(game, h.damage,impactSource);
+      hurtTarget(game, h.damage,{...impactSource,damageType:h.damageType||(['slam','wave'].includes(h.kind)?'explosion':['feather','lane','cone'].includes(h.kind)?'piercing':undefined)});
       if (h.kind === 'spore') h.tick = GAMEPLAY_VALUES.boss.sporeTickInterval;
       else h.hit = true;
     }

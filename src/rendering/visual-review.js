@@ -1752,3 +1752,10 @@ export async function inspectVehicleLoadoutWeight(game,root){
  const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
  return {designCriterion:'vehicle-loadout-weight',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),tow:game.progress.logistics.tow,build:game.progress.logistics.builds[game.vehicle.index],open:!!root.getElementById('logistics-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 补给验收读取正式页面、装备与炮塔损坏，不生成替代预览。
+export async function inspectVehicleSupplies(game,root){
+ const {vehicleFaults}=await import('../config/supplies.js');
+ const panel=root.getElementById('field-equipment-dialog'),buttons=[...(panel?.querySelectorAll('button')||[])];
+ return {designCriterion:'vehicle-supplies',room:game.cottage?.kind,gun:game.vehicle.weaponIndex,faults:vehicleFaults(game.progress,game.vehicle.index),title:root.getElementById('field-equipment-title')?.textContent,ammo:game.progress.supplies.vehicles[game.vehicle.index],overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,smallButtons:buttons.some(b=>{const r=b.getBoundingClientRect();return r.height>0&&r.height<44;}),badDialog:[...root.querySelectorAll('dialog[open]')].some(d=>{const r=d.getBoundingClientRect();return r.x<0||r.y<0||r.right>root.defaultView.innerWidth+1||r.bottom>root.defaultView.innerHeight+1;})};
+}

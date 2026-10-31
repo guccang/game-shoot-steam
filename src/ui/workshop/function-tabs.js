@@ -30,7 +30,7 @@ export function renderWorkshopFunctions(root,{page,kind,index,progress,owned,una
  $('ws-empty-modify').hidden=page!=='modify'||!unarmed;
  // 成长只解释当前装备的熟练度；购买优惠继续由正式报价计算。
  $('ws-unlock-panel').setAttribute('aria-label',kind==='vehicle'?'战车成长说明':'武器熟练度成长');
- $('ws-unlock-status').textContent=kind==='weapons'?'使用这把武器击败怪物，积累熟练度。':unarmed?'骑乘时使用角色手持武器。':'载具固定使用自己的主武器。';
+ $('ws-unlock-status').textContent=kind==='weapons'?'使用这把武器击败怪物，积累熟练度。':'主炮可跨车型换装，安装只受载重限制。';
  if(defense){$('ws-unlock-status').textContent='手持护盾自动抵挡伤害，载具主炮继续攻击。';$('ws-unlock-rule').textContent='升级护盾核心和充能线圈，无熟练度要求。';return;}
  $('ws-unlock-rule').textContent=kind==='vehicle'?'换装发动机提升运力；叠加装甲增加耐久和重量。主武器部件可独立升级。':'基础部件可直接升级；熟练度达到 2 级后解锁改装套件。';
 }

@@ -1,3 +1,4 @@
+import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
 import {maintainPlayerTow,advancePlayerTow} from './player-towing.js';
@@ -272,6 +273,7 @@ export class Game {
   }
   // 改装不补弹，清空当前武器蓄能，防止切分支绕过充能和装填限制。
   modifyWeapon(index, choice) {
+    if(this.cottage?.kind!=='weapons')return false;
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
     if (!changeWeaponMod(this.progress, index, choice)) return false;
     resetFunnelModuleCharge(this.funnel, index);
@@ -370,6 +372,7 @@ export class Game {
   }
   // 炮塔独立交易；随车主炮只升级，旧炮塔记录不授予角色武器。
   transactTurret(index, action) {
+    if(action==='upgrade'&&this.cottage?.kind!=='vehicle')return false;
     if (action === 'equip') return this.configureVehicle(index);
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
     if (!transactVehicle(this.progress, 'turret', index, action)) return false;
@@ -402,6 +405,7 @@ export class Game {
   }
   // 购买、装备、升级共用事务入口，余额不足时不修改状态。
   transact(kind, index, action) {
+    if(action==='upgrade'&&this.cottage?.kind!==(kind==='weapons'?'weapons':'vehicle'))return false;
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
     const oldWeapon = this.progress.weapon;
     if (!transactProgress(this.progress, kind, index, action)) return false;
@@ -775,7 +779,7 @@ export class Game {
     // 格挡不产生或刷新无敌时间，已有的身体保护也不能免除护盾消耗。
     amount=absorbEnergyShield(this,amount,source);
     if(amount<=0||this.player.invincible>0)return;
-    if (absorbVehicleHit(this, amount)) return;
+    if (absorbVehicleHit(this, amount, source)) return;
     this.player.hp = Math.max(0, this.player.hp - amount);
     this.player.invincible = GAMEPLAY_VALUES.player.invincibleSeconds;
     this.float(this.player.x, this.player.y, `−${Math.floor(amount)}`, '#ffb1a0', true);
@@ -894,7 +898,7 @@ export class Game {
     const weapon = this.weapon();
     const magazine = this.magazines[this.loadout.weapon];
     const wasReloading = magazine.remaining > 0;
-    const fireTime = advanceReload(magazine, weapon, dt, this.onEvent);
+    const fireTime = advanceReload(magazine, weapon, dt, this.onEvent,n=>takeSupplyAmmo(this,weapon,n),supplyAmmoCount(this,weapon));
     if (!this.parking?.idle&&!farmWorking(this)&&['funnel', 'drone'].includes(weapon.controller)) updateFunnel(this, dt);
     if (!this.parking?.idle&&!farmWorking(this)&&weapon.controller === 'mechanical') updateMechanical(this, dt);
     if (!this.parking?.idle&&!farmWorking(this)&&weapon.controller === 'spider') updateSpider(this, dt);
@@ -917,6 +921,7 @@ export class Game {
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
     updateVehicle(this, dt, !!this.parking?.idle);
+    syncSupplyAmmo(this);
     updateVehicleRepair(this,dt);
     updateGuardianDefenses(this, dt);
     profiler?.end('logic.weapons');

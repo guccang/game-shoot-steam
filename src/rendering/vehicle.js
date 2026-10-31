@@ -86,14 +86,6 @@ export function drawVehicleTracks(c, player, vehicle, reduced = false, time = 0,
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawVehicleArmor(c, player, vehicle, progress, time, reduced = false, assembly = null) {
   const originalContext=c;c=tankPaintContext(c,progress,vehicle.index,'front');
-  if (vehicle.index === 5) {
-    c.save();
-    c.translate(player.x, player.y);
-    drawScooterFront(c, reduced ? 0 : vehicle.wheelPhase || 0);
-    drawVehicleParts(c, 5, progress, assembly?.kind === 'vehicle' ? assembly.part : null);
-    c.restore();
-    return;
-  }
   const w = vehicleWeapon(progress, vehicle.weaponIndex),
     pose = vehicleGunPose(vehicle, reduced);
   if (w && assembly?.kind === 'turret') w.parts = { ...w.parts, omitted: assembly.part };
@@ -101,7 +93,8 @@ export function drawVehicleArmor(c, player, vehicle, progress, time, reduced = f
   c.translate(player.x, player.y);
   const hull = tankHullPose(vehicle, reduced);
   c.translate(hull.x, hull.y);
-  if (vehicle.index === 8) drawPoliceFront(c);
+  if (vehicle.index === 5) drawScooterFront(c,reduced?0:vehicle.wheelPhase||0);
+  else if (vehicle.index === 8) drawPoliceFront(c);
   else if (vehicle.index === 7) drawJinbeiFront(c);
   else if (vehicle.index === 6) drawRedWolfFront(c, vehicle.flash > 0);
   else if (vehicle.index === 4) drawFireTruckFront(c, vehicle.flash > 0);

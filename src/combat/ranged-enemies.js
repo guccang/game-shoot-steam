@@ -93,7 +93,7 @@ export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
     if (hit) {
       b.remaining = 0;
       if (!hit.tree) {
-        if (hit.node === game.player) game.hurt(b.damage,hit.shield||from);
+        if (hit.node === game.player) game.hurt(b.damage,{...(hit.shield||from),damageType:b.splash?'explosion':null});
         else damageCompanion(hit, b.damage);
       }
       if(hit.shield&&b.splash){b.x=hit.shield.x;b.y=hit.shield.y;detonateEnemyShell(game,b,companions,true);}
@@ -115,7 +115,7 @@ function detonateEnemyShell(game, shell, companions, skipPlayer=false) {
     const point = nearest(target.node, center);
     if (game.trees.some(tree => tree.hp > 0 && segmentCircle(center, point, nearest(tree, center), tree.radius) !== null)) continue;
     const amount = shell.damage * (worldDistance(center, point) <= shell.splash * GAMEPLAY_VALUES.ranged.fullSplashRadiusRatio ? 1 :GAMEPLAY_VALUES.ranged.edgeSplashDamageRatio);
-    if (target.node === game.player) game.hurt(amount,center); else damageCompanion(target, amount);
+    if (target.node === game.player) game.hurt(amount,{...center,damageType:'explosion'}); else damageCompanion(target, amount);
   }
   game.fx.add('blast', shell.x, shell.y, .3, { size: shell.splash, color: '#e4b16d' });
   game.fx.add('ring', shell.x, shell.y, .38, { size: shell.splash, color: '#b76543' });

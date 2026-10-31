@@ -1,6 +1,6 @@
 // 秘境载具检查点只接收固定车体与已知炮塔字段，避免外部存档注入运行时对象。
 import { COLLECTED_VEHICLES, VEHICLE_COOLDOWN } from '../config/vehicles.js';
-import { VEHICLE_WEAPONS as WEAPONS, isVehicleArmament, nativeVehicleWeapon } from '../config/vehicle-armaments.js';
+import { VEHICLE_WEAPONS as WEAPONS, isVehicleArmament } from '../config/vehicle-armaments.js';
 import { validateTideState } from '../config/tide-cannon.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 
@@ -20,7 +20,7 @@ export function validateRealmVehicles(raw) {
     const v = raw.hulls[i] || {}, modules = {};
     for (const [key, w] of WEAPONS.entries()) {
       const m = v.modules?.[key];
-      if (!m || nativeVehicleWeapon(i)?.weaponIndex !== key) continue;
+      if (!m || !isVehicleArmament(key) || v.weaponIndex !== key) continue;
       modules[key] = {
         magazine: { ammo: Math.floor(bounded(m.magazine?.ammo, (w.magazineSize+(GAMEPLAY_VALUES.progress.maxPartLevel-1)*Math.max(1,Math.floor(w.magazineSize*GAMEPLAY_VALUES.parts.capacityPerLevel)))*(isVehicleArmament(key)?1:GAMEPLAY_VALUES.vehicle.ammoMultiplier))),
           remaining: bounded(m.magazine?.remaining, w.reloadTime),
@@ -33,7 +33,7 @@ export function validateRealmVehicles(raw) {
         cycle: { charge: bounded(m.cycle?.charge, w.grenade?.charge || 0), firing: m.cycle?.firing === true },
       };
     }
-    const weaponIndex = nativeVehicleWeapon(i)?.weaponIndex ?? null;
+    const weaponIndex = isVehicleArmament(v.weaponIndex)?v.weaponIndex:null;
     return { active: i === index && v.active === true, hp: bounded(v.hp, 100000),
       maxHp: bounded(v.maxHp, 100000), cooldown: bounded(v.cooldown, VEHICLE_COOLDOWN), weaponIndex, modules };
   }) };

@@ -2,7 +2,7 @@
 import {equipmentQuestReason,equipmentQuest} from '../../progression/equipment-quests.js';
 import {WEAPONS} from '../../config/weapons.js';
 import {COLLECTED_VEHICLES} from '../../config/vehicles.js';
-import {nativeVehicleWeapon} from '../../config/vehicle-armaments.js';
+import {VEHICLE_ARMAMENTS} from '../../config/vehicle-armaments.js';
 import {WEAPON_STORIES,VEHICLE_STORIES,ARMAMENT_STORIES} from '../../config/equipment-stories.js';
 import {storyEquipmentSource} from '../../progression/story-rewards.js';
 
@@ -10,7 +10,7 @@ import {storyEquipmentSource} from '../../progression/story-rewards.js';
 export function workshopEquipmentInfo(progress,{kind,index,turret=null}){
  const hull=kind==='vehicle',catalog=hull?COLLECTED_VEHICLES:WEAPONS;
  if(!Number.isInteger(index)||!catalog[index])return null;
- const native=hull?nativeVehicleWeapon(index):null;
+ const native=hull?VEHICLE_ARMAMENTS.find(w=>w.weaponIndex===progress.vehicleLoadouts[index]):null;
  const armament=native&&turret===native.weaponIndex?native:null;
  const equipment=armament||catalog[index];
  const lore=(armament?ARMAMENT_STORIES:hull?VEHICLE_STORIES:WEAPON_STORIES)[equipment.id];

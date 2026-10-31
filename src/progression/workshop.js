@@ -41,6 +41,7 @@ export function workshopDraft(progress, kind, index, choice) {
 
 // 返回完整需求及失败原因；引用正式交易函数验证，不复制扣费规则。
 export function quoteWorkshop(progress, plan, realm = false) {
+  if(plan.action==='mount')return {ok:false,reason:'请使用载具装配中的主炮换装。',rows:[],next:null};
   if(plan.kind==='vehicle'&&['part','upgrade'].includes(plan.action))return {ok:false,reason:'车体改用发动机换装与装甲叠加，请打开载具装配。',rows:[],next:null};
   if(!facilityOpen(progress,workshopFacility(plan.kind)))return {ok:false,reason:facilityReason(progress,workshopFacility(plan.kind)),rows:[],next:null};
   const next = validateProgress(bindEconomy(JSON.parse(JSON.stringify(progress)),economyFor(progress)));
@@ -66,7 +67,7 @@ export function quoteWorkshop(progress, plan, realm = false) {
     if (!spec) reason = i18nText("progression.workshop.3f4545579c");
     else if (!level) reason = i18nText("progression.workshop.5f5d7b184d");
     else if (kind === 'turret' && (!Number.isInteger(plan.vehicleIndex) || !progress.vehicleHulls[plan.vehicleIndex])) reason = i18nText("progression.workshop.e3c1f80940");
-    else if (kind==='turret' && isVehicleArmament(index) && nativeVehicleWeapon(plan.vehicleIndex)?.weaponIndex!==index) reason=i18nText("progression.workshop.fc521f38ee");
+    else if (kind==='turret' && progress.vehicleLoadouts[plan.vehicleIndex]!==index) reason='这门主炮尚未安装在当前车辆上。';
     else if (plan.original !== current) reason = i18nText("progression.workshop.3b62615a84");
     else if (current >= spec.max) reason = i18nText("progression.workshop.76b8c8d208");
     else if (!rows.some(r => r.missing)) {
@@ -81,18 +82,6 @@ export function quoteWorkshop(progress, plan, realm = false) {
     else if (choice === progress.mods[index]) reason = i18nText("progression.workshop.fbe7e18ea3");
     else if (choice && masteryInfo(progress, index).level < MOD_MASTERY_LEVEL) reason = `套件需熟练度 ${MOD_MASTERY_LEVEL} 级 · 还差 ${MASTERY_THRESHOLDS[MOD_MASTERY_LEVEL-1]-masteryInfo(progress,index).xp} 点，使用本枪击败怪物提升`;
     else ok = changeWeaponMod(next, index, choice);
-  } else if (action === 'mount' && kind === 'vehicle') {
-    if(COLLECTED_VEHICLES[index].unarmed)return {ok:false,reason:i18nText('arrival.scooter.description'),rows,next:null};
-    if (Number.isInteger(choice)&&VEHICLE_WEAPONS[choice]&&nativeVehicleWeapon(index)?.weaponIndex===choice) {
-      if (!progress.vehicleWeapons[choice]) rows = equipmentRequirements(progress, 'turret', choice);
-      if (!level) reason = i18nText("progression.workshop.a2d11252fb");
-      else if (plan.original !== progress.vehicleLoadouts[index]) reason = i18nText("progression.workshop.4f64799614");
-      else if (choice === progress.vehicleLoadouts[index]) reason = i18nText("progression.workshop.fbe7e18ea3");
-      else if (next.vehicleWeapons[choice] || transactVehicle(next, 'turret', choice, 'buy')) {
-        next.vehicleLoadouts[index] = choice;
-        ok = true;
-      }
-    } else reason = '载具只能使用自己的主武器';
   } else if (action === 'buy' || action === 'upgrade') {
     rows = action === 'buy' ? equipmentRequirements(progress, kind, index)
       : costRows(economyUpgradeCost(progress,kind,index,level));
@@ -121,7 +110,7 @@ export function previewWorkshop(progress, kind, index, choice) {
     return { progress: next, weapon: effectiveWeapon(next, index) };
   }
   next.vehicleHulls[index] ||= 1;
-  const weaponIndex = nativeVehicleWeapon(index)?.weaponIndex ?? null;
+  const weaponIndex = progress.vehicleHulls[index] ? progress.vehicleLoadouts[index] : nativeVehicleWeapon(index)?.weaponIndex ?? null;
   next.vehicleLoadouts[index] = weaponIndex;
   if (weaponIndex !== null) next.vehicleWeapons[weaponIndex] ||= 1;
   return { progress: next, weapon: weaponIndex === null ? null : vehicleWeapon(next, weaponIndex) };

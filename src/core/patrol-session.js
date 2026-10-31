@@ -1,3 +1,4 @@
+import {syncSupplyAmmo} from '../combat/supply-ammo.js';
 import {syncVehicleService} from './vehicle-repair.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 巡游会话负责战场与可序列化进度之间的映射，不访问浏览器存储。
@@ -32,6 +33,7 @@ export function restartPatrol(game) {
 
 // 快照只记录已结算进度；剩余怪物重建配额，不重复奖励已击败的怪物。
 export function capturePatrol(game) {
+  syncSupplyAmmo(game);
   syncVehicleService(game);
   if (game.campDefense) return game.campDefense.patrol;
   if (game.story) return game.story.forestReturn.patrol;

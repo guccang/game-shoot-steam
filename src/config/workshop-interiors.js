@@ -1,3 +1,4 @@
+import {AMMO_SHOP} from './supplies.js';
 import {CAT_HOME} from './cat-home.js';
 import {FURNITURE_SHOP,FURNITURE_SHOP_DISPLAYS} from './furniture-shop.js';
 import {FARM_SEED_SHOP,FARM_SEED_DOOR} from './farm.js';
@@ -24,6 +25,7 @@ export const VEHICLE_DISPLAYS=purchasableVehicles.map((index,slot)=>({id:'showro
 // 小型营业房使用同一门槛和通道，服务名称决定室内柜台文案。
 function serviceRoom(id,name,site,door={x:site.x,y:site.y+22}){return {...WORKSHOP_ROOM,id,name,site,door,outside:{x:door.x,y:door.y+52},service:true};}
 export const WORKSHOP_INTERIORS={
+ ammo:serviceRoom('ammo','弹药补给铺',AMMO_SHOP),
  'cat-home':serviceRoom('cat-home','猫窝',CAT_HOME),
  furniture:serviceRoom('furniture','家具小铺',FURNITURE_SHOP),
  seed:serviceRoom('seed','种子小屋',FARM_SEED_SHOP,FARM_SEED_DOOR),

@@ -22,6 +22,7 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
     if(type==='living-kill'){save();return;}
     if(type==='hero-experience'){save();return;}
     if(type==='vehicle-durability'){save();return;}
+    if(type==='vehicle-fault'){if(data?.text)toast.show(data.text);return;}
     if(type==='vehicle-service'){save();if(data?.text)toast.show(data.text);return;}
     if(type==='story-hint'){toast.show(data.text);return;}
     if(type==='story-complete'){audio.play('victory');toast.show(i18nText("app.game-events.d6bdf7c915"));return;}

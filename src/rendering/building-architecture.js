@@ -3,6 +3,7 @@ import {box,poly,oval} from './primitives.js';
 import {drawWorldSign} from './world-signs.js';
 const EDGE='#365a48';
 const DESIGNS={
+ ammo:{w:144,h:128,roof:'#77928b',name:'弹药补给铺'},
  'cat-home':{w:144,h:132,roof:'#9b9474',name:'猫窝'},
  furniture:{w:136,h:120,roof:'#98a276',name:'家具小铺'},
  cottage:{w:130,h:135,roof:'#789865',name:'巡林小屋'},
@@ -40,7 +41,10 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
   poly(c,[[left-8,wall-1],[-10,-h],[right-3,-h+25],[right+8,wall+5]],d.roof,EDGE,2.6);
   poly(c,[[left-8,wall-1],[-10,-h],[2,-h+9],[left+3,wall+2]],'#a4b68a',null);
   for(let row=0;row<3;row++){const y=-h+24+row*13;c.strokeStyle='#456e5944';c.lineWidth=1.4;c.beginPath();c.moveTo(left+30-row*9,y);c.lineTo(right-20+row*5,y+10);c.stroke();}
-  if(kind==='seed'){
+  if(kind==='ammo'){
+  // 双弹筒与侧箱提供清晰的补给功能剪影，不增加独立碰撞点。
+  windowFrame(c,-57,-56,25,27,night);box(c,29,-36,28,32,3,'#9c946c',EDGE,1.7);for(const x of [-13,8]){box(c,x,-92,10,22,2,'#d6bc79',EDGE,1.4);poly(c,[[x,-92],[x+5,-101],[x+10,-92]],'#e4d3a1',EDGE,1.2);}
+ }else if(kind==='seed'){
    poly(c,[[-36,wall-8],[-7,-h+10],[36,-h+33],[42,wall-4]],'#b1cec0',EDGE,1.8);
    for(const t of [.25,.5,.75]){c.strokeStyle='#688e77';c.beginPath();c.moveTo(-7+43*t,-h+10+23*t);c.lineTo(-36+78*t,wall-8+4*t);c.stroke();}
   }
@@ -50,7 +54,10 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
  box(c,-doorW/2-4,-49,doorW+8,52,3,'#baaa7f',EDGE,1.7);box(c,-doorW/2,-46,doorW,48,3,'#54745c',EDGE,1.7);
  for(let x=-doorW/2+7;x<doorW/2;x+=10){c.strokeStyle='#93a482';c.lineWidth=1;c.beginPath();c.moveTo(x,-43);c.lineTo(x,-2);c.stroke();}
  oval(c,doorW/2-6,-20,2.4,2.4,'#e8cf83');box(c,-doorW/2-9,0,doorW+18,7,2,'#c8ccb0',EDGE,1.4);
- if(kind==='seed'){
+ if(kind==='ammo'){
+  // 双弹筒与侧箱提供清晰的补给功能剪影，不增加独立碰撞点。
+  windowFrame(c,-57,-56,25,27,night);box(c,29,-36,28,32,3,'#9c946c',EDGE,1.7);for(const x of [-13,8]){box(c,x,-92,10,22,2,'#d6bc79',EDGE,1.4);poly(c,[[x,-92],[x+5,-101],[x+10,-92]],'#e4d3a1',EDGE,1.2);}
+ }else if(kind==='seed'){
   for(const side of [-1,1]){windowFrame(c,side<0?left+12:23,-52,22,27,night);box(c,side*37-12,-16,24,15,3,'#b39166',EDGE,1.2);for(const dx of [-5,4]){oval(c,side*37+dx,-20,5,8,'#82a76d',EDGE,1);}}
  }else if(kind==='cat-home'){
   // 猫耳轮廓与软垫窗区别于普通住宅，爪印不覆盖中央入口。

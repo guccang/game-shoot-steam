@@ -1,3 +1,5 @@
+import {requestWorldNavigation} from '../core/world-navigation.js';
+import {WORKSHOP,VEHICLE_WORKSHOP} from '../world/workshop.js';
 import {equipmentQuest,equipmentQuestReason} from '../progression/equipment-quests.js';
 import {equipmentQuestStatus} from './equipment-quests.js';
 import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
@@ -38,7 +40,7 @@ import {recordMainlineTrial} from '../core/mainline-manager.js';
 import {mainlinePurchaseReason} from '../config/mainline-gates.js';
 
 // 所有入口共用一个弹窗；外部注入持久化事务和隔离靶场，界面不依赖 Game 类型。
-export function createWorkshop({ game, root, dialogs, commit, createTrial, onChange, onEquipmentStory, onVehicleFit }) {
+export function createWorkshop({ game, root, dialogs, commit, createTrial, onChange, onEquipmentStory, onVehicleFit, onCurrent }) {
   const host = root.defaultView, scope = createEventScope();
   const dialog = root.createElement('dialog');
   dialog.id = 'workshop-dialog'; dialog.className = 'workshop-dialog';
@@ -304,12 +306,12 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     $('ws-name').textContent = editingTurret===null ? catalog[index].name : VEHICLE_WEAPONS[editingTurret].name;
     $('ws-info').setAttribute('aria-label',`查看${$('ws-name').textContent}的档案`);
     $('ws-back-body').hidden=true;
-    $('ws-kits-tab').hidden=functionPage!=='upgrade'||kind!=='vehicle'||COLLECTED_VEHICLES[index].unarmed;
+    $('ws-kits-tab').hidden=functionPage!=='upgrade'||kind!=='vehicle'||p.vehicleLoadouts[index]===null;
     $('ws-back-body').textContent=i18nText("ui.workshop.086d497593");
     $('ws-kits-tab').textContent='武器部件';
-    const weaponTarget=p.vehicleLoadouts[index]??nativeVehicleWeapon(index)?.weaponIndex??null;
+    const weaponTarget=p.vehicleLoadouts[index]??null;
     $('ws-kits-tab').disabled=kind==='vehicle'&&weaponTarget===null;
-    $('ws-native-turret').hidden=kind!=='vehicle'||functionPage!=='upgrade'||!nativeVehicleWeapon(index)||nativeVehicleWeapon(index).weaponIndex===weaponTarget;
+    $('ws-native-turret').hidden=true;
     $('ws-native-turret').setAttribute('aria-pressed',String(editingTurret===nativeVehicleWeapon(index)?.weaponIndex));
     $('ws-components-tab').textContent=kind==='vehicle'?i18nText("balance.app.4d4acd9679"):i18nText("balance.app.a2345efc60");
     $('ws-components-tab').setAttribute('aria-pressed',String(tray==='components'&&editingTurret===null));
@@ -378,7 +380,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     $('ws-turret-upgrade').hidden = kind !== 'vehicle' || selectedPart === null || !p.vehicleWeapons[selectedPart] || !!draft;
     if(tray==='components') $('ws-turret-buy').hidden=$('ws-turret-upgrade').hidden=true;
     $('ws-turret-buy').disabled = $('ws-turret-upgrade').disabled = !!draft;
-    if(functionPage==='upgrade'&&kind==='vehicle'&&editingTurret===null)$('ws-part-info').textContent='换装发动机提升运力；叠加装甲增加耐久与重量';
+    if(functionPage==='upgrade'&&kind==='vehicle'&&editingTurret===null)$('ws-part-info').textContent='换装发动机、叠加装甲或跨车型替换主炮；装配均计入重量';
     renderStats(); renderQuote(); paint();
     for (const item of scroll) { $(item.id).scrollLeft = item.left; $(item.id).scrollTop = item.top; }
   }
@@ -437,6 +439,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   }
   // 外部入口可指定装备及炮塔目标；旧弹窗的暂停归属转交给综合工坊。
   function open(nextKind = 'weapons', nextIndex, turret) {
+    if(game.cottage?.kind!==nextKind){const site=nextKind==='vehicle'?VEHICLE_WORKSHOP:WORKSHOP;requestWorldNavigation(game,{...site,y:site.y+22},'前往工坊，与售货员交谈',{direct:true});return;}
     if(!facilityOpen(game.progress,workshopFacility(nextKind))){game.requestFacility?.(workshopFacility(nextKind));return;}
     if (game.realm) return;
     // 修复后自由选择装备，过场期间仍由剧情接管操作。
@@ -452,7 +455,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
       dialogs.transferResume(old, 'workshop-dialog'); dialogs.close(old);
     }
     dialog.querySelector('[data-ws-item="' + index + '"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    if (turret !== undefined && nativeVehicleWeapon(index)?.weaponIndex===turret) { tray='components'; editingTurret=turret; render(); }
+    if (turret !== undefined && game.progress.vehicleLoadouts[index]===turret) { tray='components'; editingTurret=turret; render(); }
     // 货架定位只保留货架自身滚动，打开工坊时中央标题与工作台始终从顶部展示。
     dialog.querySelector('.ws-layout').scrollTop = 0;
   }
@@ -507,7 +510,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   scope.on($('ws-reset'), 'click', () => place(0));
   scope.on($('ws-purchase'), 'click', () => { if (!draft) submit(currentPlan()); });
   scope.on($('ws-components-tab'),'click',()=>{comparison=null;before=false;stopTrial();construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0;draft=null;selectedPart=null;selectedUpgrade=null;editingTurret=null;tray='components';render();});
-  scope.on($('ws-kits-tab'),'click',()=>{comparison=null;before=false;stopTrial();construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0;draft=null;selectedPart=null;selectedUpgrade=null;editingTurret=kind==='vehicle'?(game.progress.vehicleLoadouts[index]??nativeVehicleWeapon(index)?.weaponIndex??null):null;tray=kind==='vehicle'?'components':'kits';render();});
+  scope.on($('ws-kits-tab'),'click',()=>{comparison=null;before=false;stopTrial();construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0;draft=null;selectedPart=null;selectedUpgrade=null;editingTurret=kind==='vehicle'?(game.progress.vehicleLoadouts[index]??null):null;tray=kind==='vehicle'?'components':'kits';render();});
   // 分页只更换挂载目录，不付款或修改当前出战武器。
   for(const [id,delta] of [['ws-mount-prev',-1],['ws-mount-next',1]])scope.on($(id),'click',()=>{mountPage+=delta;render();});
   // 专属主炮入口无需先更换当前挂载，任务升级也不会擅自装备它。
@@ -539,7 +542,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   });
   // 演练返回重新启用免费试装的长按确认。
   scope.on($('weapon-trial-dialog'),'close',()=>{if(dialog.open)renderQuote();});
-  bindWorkshopEntrypoints({root,scope,game,open});
+  bindWorkshopEntrypoints({root,scope,game,open,current:onCurrent});
   let guideQuoteCache=null;
   // 给指引提供只读快照；同一方案和钱包复用报价，避免每帧复制完整存档。
   function guideState(part){
@@ -550,7 +553,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     const quote=guideQuoteCache.quote;
     return {open:dialog.open,page:functionPage,kind,index,turret:editingTurret,tray,part:selectedUpgrade,choice:selectedPart,
       draft:draft&&{...draft},completed:!!comparison,before,busy:!!assemblyFrame,dragging:false,trial:trial.active(),
-      weaponTarget:game.progress.vehicleLoadouts[index]??nativeVehicleWeapon(index)?.weaponIndex??null,affordable:quote.ok,reason:quote.reason,tool:construction.guideState()};
+      weaponTarget:game.progress.vehicleLoadouts[index]??null,affordable:quote.ok,reason:quote.reason,tool:construction.guideState()};
   }
   // 自动预览正确的安装圈，不生成草稿、不扣费，不打断正在进行的长按或试装。
   function guidePreview(part){

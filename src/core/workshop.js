@@ -9,6 +9,7 @@ import { createVehicle, configureVehicle } from '../combat/vehicle.js';
 
 // 单次方案原子提交，保存函数由应用注入；失败仍可继续编辑原草稿。
 export function commitWorkshop(game, plan, persist) {
+  if(['upgrade','part','modify','mount'].includes(plan.action)&&game.cottage?.kind!==(plan.kind==='weapons'?'weapons':'vehicle'))return {ok:false,reason:'请到对应工坊，与售货员交谈后整备。'};
   if(game.fireActive)return {ok:false,reason:i18nText("core.map-travel.c5d64346b5")};
   if (game.story) return {ok:false,reason:i18nText("core.workshop.f30c3779f7")};
   const firstPistol=arrivalPistolPurchase(game.progress,plan.kind,plan.index,plan.action);
@@ -19,6 +20,7 @@ export function commitWorkshop(game, plan, persist) {
   quote.next.patrol = capturePatrol(snapshot);
   quote.next.living.position=snapshot.progress.living.position;
   quote.next.vehicleService=snapshot.progress.vehicleService;
+  quote.next.supplies=snapshot.progress.supplies;
   let saved = false;
   try { saved = persist(quote.next) === true; } catch { saved = false; }
   if (!saved) return { ...quote, ok: false, reason: i18nText("core.workshop.7d32e8a05c") };

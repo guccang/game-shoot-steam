@@ -1,3 +1,4 @@
+import {vehicleFaults} from '../config/supplies.js';
 import {northParkingSpot} from '../progression/camp-parking.js';
 import {sendMail} from '../progression/mailbox.js';
 import {parkingRecordSite} from '../progression/roadside-parking.js';
@@ -50,7 +51,8 @@ export function markVehicleWreck(game,position){
 export function vehicleRepairQuote(game,index){
  const v=game.vehicles[index],price=economyFor(game.progress).vehicles[index]?.coins||0;
  if(!v||!game.progress.vehicleHulls[index])return 0;
- return v.hp>=v.maxHp?0:Math.max(1,Math.ceil(price*C.repairRate*(1-Math.max(0,v.hp)/v.maxHp)));
+ const f=vehicleFaults(game.progress,index),loss=Math.min(1,(1-Math.max(0,v.hp)/v.maxHp)+Math.max(f.gun,f.engine)/100*.2);
+ return loss<=0?0:Math.max(1,Math.ceil(price*C.repairRate*loss));
 }
 // 手机只提供救援；现场检查真实位置，禁用按钮不是业务权限边界。
 export function repairUnavailable(game,remote=false){
@@ -68,19 +70,20 @@ export function requestVehicleRepair(game,index,remote=false){
  if(old?.phase&&old.phase!=='wrecked')return {ok:false,message:old.phase==='ready'?'车辆已修好，等待停车场空位。':'救援维修正在进行，请勿重复下单。'};
  const cost=vehicleRepairQuote(game,index);if(!cost)return {ok:false,message:'载具完好，无需维修。'};
  if(game.progress.coins<cost)return {ok:false,message:`金币不足，需要 ${cost} 金币。`};
- const wrecked=v.hp<=0;
+ const wrecked=v.hp<=0||vehicleFaults(game.progress,index).engine>=100;
  if(remote&&!wrecked)return {ok:false,message:'日常保养请驾驶这辆车到维修中心。'};
  const parked=game.progress.campParking.owned.find(r=>r.hull===index),parkedSite=parked&&parkingRecordSite(parked);
  if(!wrecked&&!(game.vehicle===v&&v.active)&&!(parkedSite?.mapId==='forest'&&worldDistance(parkedSite,REPAIR_CENTER)<=C.radius))return {ok:false,message:'请驾驶这辆车到维修中心，再交车保养。'};
  let order;
  if(wrecked){
-  const mapId=old?.mapId||game.mapId,position=old?.position||canonical(game.player),depot=mapId==='forest'?REPAIR_BAY:JIUZHAIGOU_SPAWN;
+  const mapId=v.hp<=0?(old?.mapId||game.mapId):(parkedSite?.mapId||game.mapId),position=v.hp<=0?(old?.position||canonical(game.player)):canonical(parkedSite||game.cottage?.outside||game.player),depot=mapId==='forest'?REPAIR_BAY:JIUZHAIGOU_SPAWN;
   const trees=mapId===game.mapId?game.trees:(mapId==='forest'?forestLayout():jiuzhaigouTrees()).map(t=>({...t,hp:1,radius:t.radius||12}));
   const endpoint=serviceRouteAccess(position,mapId,trees);
   if(!endpoint)return {ok:false,message:'无法找到安全拖车接应点，请清理附近障碍后重试。'};
   const route=planQuestRoute({...depot,mapId,navigationRadius:TOW_TRUCK.navigationRadius,livingCollision:mapId==='forest'},endpoint,trees,24000);
   if(!route.reachable)return {ok:false,message:'拖车暂时无法通行，请清理沿途障碍后重试；未扣费。'};
-  order={layoutVersion:REPAIR_LAYOUT_VERSION,hp:0,phase:'outbound',mapId,position,truck:{...route.points[0]},route:route.points,step:1,timer:0,wheel:0,angle:0};
+  if(v.active&&!game.dismountVehicle())return {ok:false,message:'附近无法安全下车，请清理车辆周围空间。'};
+  order={layoutVersion:REPAIR_LAYOUT_VERSION,hp:v.hp/v.maxHp,phase:'outbound',mapId,position,truck:{...route.points[0]},route:route.points,step:1,timer:0,wheel:0,angle:0};
  }else{
   if(v.active&&!game.dismountVehicle())return {ok:false,message:'附近无法安全下车，请移至门前空地。'};
   if(!game.cottage)Object.assign(game.player,{x:REPAIR_CENTER.x,y:REPAIR_CENTER.y+70,vx:0,vy:0});
@@ -98,7 +101,7 @@ export function collectRepairedVehicle(game,index){
  if(!personalFleet(game)||!['playing','paused'].includes(game.state))return {ok:false,message:'请在自由巡林时安排交车。'};
  const r=vehicleService(game,index);if(r?.phase!=='ready')return {ok:false,message:'车辆尚未修好或已交付停车场。'};
  const spot=northParkingSpot(game.progress,index,s=>!(game.mapId==='forest'&&game.vehicle.active&&worldDistance(game.player,s)<85));if(!spot)return {ok:false,message:'北门停车场已满，车辆已保管，空出车位后自动交付。'};
- const v=game.vehicles[index];v.hp=v.maxHp;v.active=false;r.phase=null;r.hp=1;r.mapId='forest';r.position=canonical(spot);
+ const v=game.vehicles[index];game.progress.supplies.engineFaults[index]=0;if(v.weaponIndex!==null)game.progress.supplies.gunFaults[v.weaponIndex]=0;v.hp=v.maxHp;v.active=false;r.phase=null;r.hp=1;r.mapId='forest';r.position=canonical(spot);
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  game.progress.campParking.owned.push({hull:index,spot:spot.id,hp:1,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:v.wheelPhase||0,track:0});
  game.parkingVisitors=(game.parkingVisitors||[]).filter(p=>p.spot!==spot.id);

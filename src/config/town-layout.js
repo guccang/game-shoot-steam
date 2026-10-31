@@ -13,6 +13,7 @@ export const TOWN_LAYOUT = {
   bounds: {left:-480,right:1090,top:110,bottom:1400},
   weapons: {x:350,y:570,width:150,height:135,scale:.95},
   garage: {x:350,y:990,width:220,height:175},
+  ammo: {x:-140,y:570,width:144,height:128},
   repair: {x:-140,y:930,width:220,height:175},
   cottage: {x:850,y:300},
   catHome: {x:580,y:780,width:144,height:132},
@@ -30,6 +31,7 @@ export const TOWN_LAYOUT = {
 for(const [id,p] of Object.entries(TOWN_LAYOUT))TOWN_LAYOUT[id]=id==='bounds'?{...p,left:p.left+TOWN_SHIFT_X,right:p.right+TOWN_SHIFT_X}:townPoint(p);
 // 小径端点与原纵路相接；车位判断仍只使用原干道，不把院内支路误判为禁停区。
 export const TOWN_PATHS = [
+  [{x:-140,y:635},{x:-340,y:635},{x:-340,y:729}],
   [{x:580,y:840},{x:690,y:840}],
   // 家具小店连接主路，避开北停车场和武器工坊的正门。
   [{x:570,y:610},{x:690,y:610}],

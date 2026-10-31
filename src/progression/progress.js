@@ -1,3 +1,5 @@
+import {freshSupplies,normalizeSupplies} from './supplies.js';
+import {isVehicleArmament} from '../config/vehicle-armaments.js';
 import {freshMailbox,normalizeMailbox,syncParcelMail} from './mailbox.js';
 import {freshLogistics,normalizeLogistics} from './vehicle-build.js';
 import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
@@ -56,6 +58,7 @@ export function freshProgress() {
     farm:freshFarm(),
     mailbox:freshMailbox(),
     logistics:freshLogistics(),
+    supplies:freshSupplies(),
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
     keepsakes:normalizeKeepsakes(null,null),
@@ -262,7 +265,10 @@ export function validateProgress(raw) {
     p.vehicleWeapons=VEHICLE_WEAPONS.map((_,i)=>Math.max(0,Math.min(GAMEPLAY_VALUES.progress.maxEquipmentLevel,Math.floor(Number(raw.vehicleWeapons?.[i])||0))));
     for(let i=0;i<COLLECTED_VEHICLES.length;i++)grantVehicleArmament(p,i);
   }
-  p.vehicleLoadouts[RANGER.scooter]=null;
+  // 当前挂载按实物主炮去重；车体所有权不强制恢复出厂主炮。
+  const mountedGuns=new Set();
+  p.vehicleLoadouts=p.vehicleHulls.map((owned,i)=>{const gun=raw.vehicleLoadouts?.[i];if(!owned||!isVehicleArmament(gun)||!p.vehicleWeapons[gun]||mountedGuns.has(gun))return null;mountedGuns.add(gun);return gun;});
+  p.supplies=normalizeSupplies(raw.supplies,p);
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
   p.logistics=normalizeLogistics(raw.logistics,p);

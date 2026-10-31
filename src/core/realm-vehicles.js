@@ -1,6 +1,5 @@
 import {createCatCrewState} from '../combat/cat-crew.js';
 // 载具随秘境会话独立出战；森林车库冻结，关卡检查点包含耐久、供给和修复进度。
-import { nativeVehicleWeapon } from '../config/vehicle-armaments.js';
 import { createVehicle } from '../combat/vehicle.js';
 import { ownsVehicleWeapon, vehicleModel } from '../config/vehicles.js';
 import { validateRealmVehicles } from '../progression/realm-vehicles.js';
@@ -20,7 +19,8 @@ export function restoreRealmVehicles(game, raw) {
   p.vehicleIndex = expedition ? expedition.vehicle ?? 0 : p.vehicleHulls[saved.index] ? saved.index : 0;
   game.vehicles = saved.hulls.map((hull, index) => {
     const owned = p.vehicleHulls[index] > 0;
-    const weaponIndex = nativeVehicleWeapon(index)?.weaponIndex ?? null;
+    // 森林和活动快照保留实际炮型，跨车型安装不能恢复成原厂炮。
+    const weaponIndex = hull.weaponIndex;
     p.vehicleLoadouts[index] = owned && ownsVehicleWeapon(p, weaponIndex) ? weaponIndex : null;
     const v = createVehicle(p, game.maxHp(), index);
     v.maxHp = Math.max(1, Math.min(v.maxHp, hull.maxHp || v.maxHp));

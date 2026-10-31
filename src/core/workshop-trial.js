@@ -22,7 +22,7 @@ export function createWorkshopTrial(progress, kind, index, reduced = false, opti
   game.state = 'playing'; game.reducedMotion = reduced;
   game.setViewport(600, 300);
   // 靶场固定取景与正式试射绘制一致，不能使用游戏手机镜头裁掉后排靶。
-  const rider = kind === 'vehicle' && vehicleModel(index).unarmed;
+  const rider = kind === 'vehicle' && p.vehicleLoadouts[index]===null;
   const controller=kind==='weapons'||rider?game.weapon().controller:null;
   const flying=['funnel','drone'].includes(controller),scale=flying?.78:1;
   const offset=flying?180:['mechanical','spider'].includes(controller)?140:80;

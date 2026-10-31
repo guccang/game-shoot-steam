@@ -1,3 +1,6 @@
+import {applyVehicleFault} from './vehicle-faults.js';
+import {takeSupplyAmmo,finiteSupply,supplyAmmoCount} from './supply-ammo.js';
+import {ammoKind,vehicleFaults} from '../config/supplies.js';
 import {parkAtPosition} from '../progression/roadside-parking.js';
 import {personalFleet,vehicleRequiresService,vehicleService,markVehicleWreck,syncVehicleService} from '../core/vehicle-repair.js';
 import {RED_WOLF_HULL} from '../config/red-wolf-geometry.js';
@@ -38,7 +41,7 @@ export const VEHICLE_GUN_SCALE = 0.75;
 
 // 载具炮塔与角色所有权独立；专属主炮随车获得，秘境保持局内装备限制。
 export function canMountVehicleWeapon(progress, index, hull = progress.vehicleIndex) {
-  return Number.isInteger(index) && nativeVehicleWeapon(hull)?.weaponIndex === index && ownsVehicleWeapon(progress, index);
+  return Number.isInteger(index) && (progress.guardianHandWeapons || isVehicleArmament(index)) && ownsVehicleWeapon(progress, index);
 }
 
 // 每个备选炮塔模块保留独立弹夹和技能进度，首次更换空仓装填。
@@ -61,10 +64,12 @@ export function createVehicle(progress, _legacyHeroHp, index = progress.vehicleI
     vehicleIndex: index,
     vehicleLevel: progress.vehicleHulls?.[index] || 1,
   };
-  // 守护支架复用武器运行时但不是可驾驶载具；驾驶载具始终按车型取原生主炮。
-  const weaponIndex = progress.guardianHandWeapons ? progress.vehicleLoadouts?.[index] : nativeVehicleWeapon(index)?.weaponIndex;
-  const weapon = vehicleModel(index).unarmed ? null : vehicleWeapon(progress, weaponIndex ?? null);
-  const module = weapon ? createModule(weapon, true, progress) : null;
+  // 车体读取实际安装主炮，守护支架沿用临时挂载记录。
+  const weaponIndex = progress.vehicleLoadouts?.[index];
+  const weapon = vehicleWeapon(progress, weaponIndex ?? null);
+  const module = weapon ? createModule(weapon, !progress.supplies||!!progress.temporaryGrowth||!ammoKind(weapon), progress) : null;
+  const saved=progress.supplies?.vehicleMags[index];
+  if(module&&ammoKind(weapon)&&!progress.temporaryGrowth&&saved?.weapon===weaponIndex)Object.assign(module.magazine,{ammo:Math.min(weapon.magazineSize,saved.ammo),remaining:saved.remaining});
   return {
     index,
     active: false,
@@ -121,9 +126,10 @@ export function dismountVehicle(game) {
 }
 
 // 所有怪物与环境伤害都由 Game.hurt 汇入；溢出伤害不再次击中驾驶员。
-export function absorbVehicleHit(game, amount) {
+export function absorbVehicleHit(game, amount, source=null) {
   const v = game.vehicle;
   if (!v.active) return false;
+  applyVehicleFault(game,source);
   v.hp = Math.max(0, v.hp - amount);
   v.flash = 0.18;
   game.player.invincible = GAMEPLAY_VALUES.player.invincibleSeconds;
@@ -162,7 +168,8 @@ export function resetVehicleCharge(vehicle, index) {
 
 // 配置校验独立炮塔所有权；收起模块保留弹药和技能，刷新只持久化选择。
 export function configureVehicle(game, index, vehicleIndex = game.loadout.vehicleIndex) {
-  if(isVehicleArmament(index)&&nativeVehicleWeapon(vehicleIndex)?.weaponIndex!==index)return false;
+  // 永久车队必须经由原子换炮事务；这里只处理守护活动的临时挂载。
+  if(!game.loadout.guardianHandWeapons)return false;
   if (!game.loadout.vehicleHulls[vehicleIndex] || !game.vehicles[vehicleIndex] || !canMountVehicleWeapon(game.loadout, index, vehicleIndex) || index === game.vehicles[vehicleIndex].weaponIndex)
     return false;
   const v = game.vehicles[vehicleIndex],
@@ -220,17 +227,17 @@ export function updateVehicle(game, dt, holdFire = false) {
     hull.flash = Math.max(0, hull.flash - dt);
   }
   if (!v.active) return;
-  // 防止旧检查点或外部配置绕过车型绑定，守护支架沿用其独立手持武器规则。
-  if (!(game.loadout || game.progress).guardianHandWeapons && v.weaponIndex !== (nativeVehicleWeapon(v.index)?.weaponIndex ?? null)) return;
+  // 完全损坏的主炮停止装填和攻击，活动借用装备不使用永久故障。
+  if (finiteSupply(game)&&vehicleFaults(game.progress,v.index).gun>=100){v.targetId=null;return;}
   const baseWeapon = realmWeapon(vehicleWeapon((game.loadout || game.progress), v.weaponIndex), game.realm?.buffs),
-    w = baseWeapon && {...baseWeapon,statisticsSource:statisticsSource(game,baseWeapon,game.statisticsVehicleIndex!==undefined?game.statisticsVehicleIndex:v.index)},
+    w = baseWeapon && {...baseWeapon,interval:baseWeapon.interval*(1+(finiteSupply(game)?vehicleFaults(game.progress,v.index).gun:0)/100),statisticsSource:statisticsSource(game,baseWeapon,game.statisticsVehicleIndex!==undefined?game.statisticsVehicleIndex:v.index)},
     m = v.module;
   if (!w || !m) {
     v.targetId = null;
     return;
   }
   updateRecoil(v.recoil, v.weaponIndex, dt);
-  const activeTime = advanceReload(m.magazine, w, dt, game.onEvent);
+  const activeTime = advanceReload(m.magazine, w, dt, game.onEvent,n=>takeSupplyAmmo(game,w,n,v.index),supplyAmmoCount(game,w,v.index));
   // 候停和停稳期间停止搜索与开火，正常装填和各车修复冷却照常推进。
   if(holdFire){v.targetId=null;return;}
   if (w.controller) { updateVehicleCompanions(game, dt); return; }

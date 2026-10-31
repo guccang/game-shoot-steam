@@ -1,3 +1,4 @@
+import {ammoShopObjects,drawAmmoShop} from './ammo-shop.js';
 import {catHomeObjects,drawCatHome} from './cat-home.js';
 import {drawPlayerTow} from './player-towing.js';
 import {furnitureShopObjects,drawFurnitureShop} from './furniture-shop.js';
@@ -371,7 +372,7 @@ export class Renderer {
     const activeStoryResidents=storyResidentIds(source);
     const objects = [
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
-      ...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
+      ...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
       ...visibleBodies(farmObjects(camp),view,90),
       ...visibleBodies(restorationObjects(camp),view,150),
       ...visibleBodies(campDefenseObjects(camp),view,160),
@@ -478,6 +479,7 @@ export class Renderer {
         profiler?.end('render.monsters');
       }
       else if(item.type==='farm-delivery')drawFarmDelivery(c,item);
+      else if(item.type==='ammo-shop')drawAmmoShop(c,item,light.night,winter);
       else if(item.type==='cat-home')drawCatHome(c,item,light.night,winter);
       else if(item.type==='furniture-shop')drawFurnitureShop(c,item,light.night,winter);
       else if(item.type==='seed-shop')drawSeedShop(c,item);

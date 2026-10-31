@@ -16,7 +16,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 背包格子、物品详情和手机使用独立弹窗，逐层返回时保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo}){
+export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo,onItems}){
  const scope=createEventScope(),trigger=root.getElementById('backpack-button'),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -39,7 +39,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  function renderBag(){
   const items=[...KEEPSAKES.filter(item=>ownsKeepsake(game.progress,item.id)),...CAMP_CHARACTERS.filter(n=>game.progress.monsterCamps.items.includes(n.id)).map(n=>({id:'camp-relic-'+n.id,name:n.item,action:'查看奇物来历与效果',campRelic:true}))];
   bag.querySelector('.keepsake-content').innerHTML='<div class="keepsake-pockets" aria-label="随身物品">'+items.map(item=>`<button type="button" class="keepsake-pocket" data-keepsake="${item.id}" aria-haspopup="dialog" aria-controls="${item.id==='patrol-phone'?'phone-dialog':'keepsake-dialog'}" aria-label="${item.name}，${item.action}">${item.campRelic?'<span aria-hidden="true">✦</span>':keepsakeIcon(item.id)}<span>${item.name}</span></button>`).join('')+'<div class="keepsake-empty" aria-hidden="true"></div>'.repeat(Math.max(0,9-items.length))+'</div>'+(!items.length?'<p>松伯交接后，重要物品会收在这里。</p>':'');
-  bag.querySelector('.ui-panel__footer').innerHTML=button('cargo','负重与货舱')+button('close','收好背包',true);
+  bag.querySelector('.ui-panel__footer').innerHTML=button('cargo','负重与货舱')+button('items','使用道具')+button('close','收好背包',true);
  }
  // 物品详情与手机按用户操作更新，正文不再常驻背包页。
  function render(){
@@ -81,6 +81,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   const item=event.target.closest('[data-keepsake]');if(item){selected=item.dataset.keepsake;call=null;dialogs.open(selected==='patrol-phone'?phone.id:itemPanel.id);return;}
   if(event.target.closest('[data-pack-action="close"]'))dialogs.close(bag.id);
   if(event.target.closest('[data-pack-action="cargo"]'))onCargo();
+  if(event.target.closest('[data-pack-action="items"]'))onItems();
  });
  // 详情与手机共享已存在的业务动作，地图仍是手机中的子页面。
  function act(event){

@@ -10,7 +10,7 @@ export function normalizeVehicleService(raw,progress){
   const hp=Number.isFinite(r.hp)?Math.max(0,Math.min(1,r.hp)):1;
   const phase=['wrecked','outbound','hooking','towing','repairing','ready'].includes(r.phase)?r.phase:null;
   const route=Array.isArray(r.route)?r.route.slice(0,4096).map(p=>point(p,REPAIR_BAY)):[];
-  return {hp:phase&&phase!=='ready'?Math.min(hp,.999999):hp,phase,mapId:r.mapId==='jiuzhaigou'?'jiuzhaigou':'forest',
+  return {hp:phase==='wrecked'?0:hp,phase,mapId:r.mapId==='jiuzhaigou'?'jiuzhaigou':'forest',
    layoutVersion:r.layoutVersion===REPAIR_LAYOUT_VERSION?REPAIR_LAYOUT_VERSION:0,
    position:['repairing','ready'].includes(phase)?{...REPAIR_BAY}:point(r.position,REPAIR_BAY),truck:point(r.truck,REPAIR_BAY),route,
    step:Math.max(0,Math.min(route.length-1,Math.floor(r.step)||0)),timer:Math.max(0,Math.min(C.repairSeconds,Number(r.timer)||0)),wheel:Number.isFinite(r.wheel)?r.wheel%10000:0,angle:Number.isFinite(r.angle)?r.angle:0};
