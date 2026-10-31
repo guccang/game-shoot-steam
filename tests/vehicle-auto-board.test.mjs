@@ -1,0 +1,30 @@
+// 自动上车通过真实Game状态、真实停驻记录与正式更新循环验证，不替换业务计时。
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Game} from '../src/core/game.js';
+import {freshProgress,freshRangerProgress} from '../src/progression/progress.js';
+import {MAINLINE_IDS} from '../src/config/mainline.js';
+import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
+import {parkedOwned} from '../src/core/camp-parking.js';
+import {vehicleBoardingPoint,updateVehicleBoarding} from '../src/core/vehicle-boarding.js';
+import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
+import {activateVehicleTransfer} from '../src/ui/vehicle-transfer.js';
+import {worldNavigationDiagnostics} from '../src/core/world-navigation.js';
+import {skipArrivalJourney,completeArrivalLetter,arrivalTarget} from '../src/core/ranger-arrival.js';
+import {FIRE_GARAGE} from '../src/world/fire-navigation.js';
+import {WORLD} from '../src/world/coordinates.js';
+// 清理无关任务，仅创建两辆正常自有车，保留正式碰撞和上车事务。
+function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.vehicleHulls[0]=p.vehicleHulls[1]=1;p.vehicleIndex=0;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=g.fireClock=999;g.enemies=[];g.parkingVisitors=[];g.vehicle.active=false;g.progress.campParking.owned=[{hull:0,spot:'north-0-0',hp:.6,ammo:0,reload:.7,wheel:2,track:3},{hull:1,spot:'north-0-1',hp:.8,ammo:0,reload:0,wheel:0,track:0}];return g;}
+// 在正式可通行的车头前站定，侧面和后方由各用例另设。
+function front(g,hull=0){const s=parkedOwned(g).find(s=>s.record.hull===hull);Object.assign(g.player,vehicleBoardingPoint(s),{vx:0,vy:0,pushX:0,pushY:0});return s;}
+// 固定步长调用完整游戏更新，使移动、暂停和场景门口规则共同执行。
+function step(g,seconds,input={x:0,y:0}){for(let t=0;t<seconds-1e-9;t+=.05)g.update(Math.min(.05,seconds-t),input);}
+test('正面站定满1秒才上车，保留耐久供给并移除唯一停驻记录',()=>{const g=scene(),site=front(g);step(g,.95);assert.equal(g.vehicle.active,false);assert.equal(playerActionCountdown(g).icon,'vehicle');assert.ok(g.vehicleBoarding.elapsed>.94);step(g,.05);assert.equal(g.vehicle.active,true);assert.equal(g.vehicle.hp/g.vehicle.maxHp,.6);assert.equal(g.vehicle.wheelPhase,2);assert.equal(g.progress.campParking.owned.some(s=>s.hull===0),false);assert.equal(g.player.x,site.x);assert.equal(g.vehicleBoarding,null);assert.equal(playerActionCountdown(g),null);});
+test('侧面和后方不触发；移动取消，切换车辆重新累计',()=>{const g=scene(),s=front(g);for(const [dx,dy] of [[65,0],[0,-70]]){Object.assign(g.player,{x:s.x+dx,y:s.y+dy});step(g,1.2);assert.equal(g.vehicleBoarding,null);assert.equal(g.vehicle.active,false);}front(g);step(g,.6);step(g,.05,{x:1,y:0});assert.equal(g.vehicleBoarding,null);front(g,1);step(g,.6);assert.equal(g.vehicle.active,false);assert.equal(g.vehicleBoarding.hull,1);step(g,.4);assert.equal(g.vehicle.index,1);assert.equal(g.vehicle.active,true);});
+test('暂停冻结，关闭继续；刷新不继承半程候停时间',()=>{const g=scene();front(g);step(g,.4);const elapsed=g.vehicleBoarding.elapsed;g.state='paused';step(g,3);assert.equal(g.vehicleBoarding.elapsed,elapsed);g.state='playing';step(g,.55);assert.equal(g.vehicle.active,false);step(g,.05);assert.equal(g.vehicle.active,true);const a=scene();front(a);step(a,.7);const restored=new Game(structuredClone(a.progress));assert.equal(restored.vehicleBoarding,null);});
+test('倒计时期间报废、维修、失去所有权或冷却都立即取消',()=>{for(const mutate of [g=>g.vehicles[0].hp=0,g=>g.progress.vehicleService[0]={phase:'repairing'},g=>g.progress.vehicleHulls[0]=0,g=>g.vehicles[0].cooldown=2]){const g=scene();front(g);step(g,.4);mutate(g);step(g,.05);assert.equal(g.vehicleBoarding,null);assert.equal(g.vehicle.active,false);}});
+test('室内、驾驶、剧情和种地作业不能自动登车，离开范围重置',()=>{for(const mutate of [g=>g.cottage={kind:'repair'},g=>g.vehicle.active=true,g=>g.mainlineSpeech={},g=>g.farmWork={tool:'hoe'}]){const g=scene();front(g);updateVehicleBoarding(g,.4);mutate(g);updateVehicleBoarding(g,.8);assert.equal(g.vehicleBoarding,null);}const g=scene();front(g);step(g,.5);g.player.y+=60;step(g,.05);assert.equal(g.vehicleBoarding,null);front(g);step(g,.6);assert.equal(g.vehicle.active,false);});
+test('下车后仍在触发区不回车，先移开再站定才重新上车',()=>{const g=scene();front(g);step(g,1);assert.ok(g.dismountVehicle());front(g);step(g,1.5);assert.equal(g.vehicle.active,false);assert.equal(g.vehicleBoarding,null);g.player.x+=80;step(g,.05);front(g);step(g,1);assert.equal(g.vehicle.active,true);});
+test('路边、其他地图、周期镜像、库内泊位均使用实际车头位置',()=>{for(const mode of ['roadside','jiuzhaigou','mirror','garage']){const g=scene();g.progress.campParking.owned.length=1;const r=g.progress.campParking.owned[0];if(mode==='roadside'||mode==='jiuzhaigou'){Object.assign(r,{spot:null,mapId:mode==='jiuzhaigou'?'jiuzhaigou':'forest',x:1400,y:1000});g.mapId=r.mapId;g.player.mapId=r.mapId;}if(mode==='garage')r.spot='garage';front(g);if(mode==='mirror')g.player.x+=WORLD.width;step(g,1);assert.equal(g.vehicle.active,true,mode);assert.equal(g.cottage,null,mode);}});
+test('快捷换乘仅导航不立即上车，目标落在车头；消防库内车也可自动登车',()=>{const g=scene(),s=front(g);assert.ok(activateVehicleTransfer(g,0));assert.equal(g.vehicle.active,false);assert.equal(worldNavigationDiagnostics(g).intent.site.y,vehicleBoardingPoint(s).y);step(g,1);assert.equal(g.vehicle.active,true);const f=scene();f.progress.vehicleHulls[4]=1;f.progress.vehicleIndex=4;f.vehicle=f.vehicles[4];f.progress.fireDispatch.garage={parked:true,truckHp:1};Object.assign(f.player,vehicleBoardingPoint(FIRE_GARAGE),{vx:0,vy:0});step(f,1);assert.equal(f.vehicle.active,true);assert.equal(f.fireGarageParked,false);});
+test('真实入职赠车无需点击上车，自动推进至采木任务',()=>{const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));assert.ok(completeArrivalLetter(g));Object.assign(g.player,arrivalTarget(g),{vx:0,vy:0,pushX:0,pushY:0});step(g,.95);assert.equal(g.vehicle.active,false);const t=g.vehicleBoarding.elapsed;g.state='paused';step(g,2);assert.equal(g.vehicleBoarding.elapsed,t);g.state='playing';step(g,.15);assert.equal(g.vehicle.active,true);assert.equal(g.progress.arrival.phase,'gather');});

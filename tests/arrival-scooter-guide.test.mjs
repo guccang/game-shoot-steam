@@ -50,9 +50,9 @@ test('骑赠车采木修房，施工及购枪刷新保持骑乘，修好直接�
  assert.equal(g.progress.arrival.phase,'complete');assert.equal(g.progress.weapons[0],1);assert.equal(g.progress.wood,wood-RANGER.repairWood);assert.equal(g.vehicle.active,true);
 });
 
-test('引导远处指向任务路线，车旁指向上车按钮，骑车修复不提前要求下车',()=>{
+test('引导指向任务路线，车旁提示正面站定上车，骑车修复不提前要求下车',()=>{
  const g=ready();Object.assign(g.player,{x:1200,y:700});assert.equal(arrivalWorkshopGuide(g).source,'#arrival-goal');
- Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.equal(arrivalWorkshopGuide(g).source,'#vehicle-button');
+ Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.equal(arrivalWorkshopGuide(g).source,'#arrival-goal');assert.match(arrivalWorkshopGuide(g).text,/正面.*1秒/);
  assert.equal(arrivalWorkshopGuide(g,'settings-dialog'),null);g.progress.wood=RANGER.repairWood;board(g);
  Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});assert.equal(arrivalWorkshopGuide(g),null);
 });

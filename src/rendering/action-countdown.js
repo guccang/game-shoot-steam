@@ -3,7 +3,7 @@ import {box,oval,poly} from './primitives.js';
 
 // 图标独立于圆环和数字；颜色、比例与原倒车候停提示一致。
 function drawIcon(c,icon){
- if(icon==='parking'){
+ if(icon==='parking'||icon==='vehicle'){
   box(c,-6,-4,12,9,3,'#82a376','#41664b',1.3);box(c,-4,-7,8,5,2,'#dce5b9','#41664b',1);
   for(const x of [-5,4])oval(c,x,5,1.5,2,'#41664b');
  }else if(icon==='weapon'){

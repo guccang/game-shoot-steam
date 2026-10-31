@@ -48,7 +48,7 @@ export function updateCottage(game,dt,input){
   if(room.exitElapsed+1e-9>=layout.exitWait)leaveCottage(game);
   return true;
  }
- if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
+ if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech||game.vehicleBoarding){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
  // 页面暂停不消耗等待时间，关闭后继续；移动、驾驶和离开门口立即取消。
  if(game.state!=='playing')return false;
  const layouts=[interiorLayout({kind:'cottage'}),...Object.values(WORKSHOP_INTERIORS)].filter(r=>r.id!=='legendary'||game.progress.vehicleHulls[6]);

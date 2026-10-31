@@ -1,3 +1,4 @@
+import {vehicleBoardingPoint} from './vehicle-boarding.js';
 import {creditResource} from '../progression/resource-wallet.js';
 import {normalizeKeepsakes} from '../progression/keepsakes.js';
 import {RESTORATION_FLIGHT} from '../config/town-restoration.js';
@@ -206,7 +207,7 @@ export function updateArrival(game,dt) {
 export function arrivalWorkshopObjective(game) {
   const a=game.progress?.arrival;
   if(!a||!arrivalGuidanceVisible(game)||!['ride-guide','gather','repair','craft'].includes(a.phase))return null;
-  if(a.phase==='ride-guide')return {task:{id:'arrival-scooter',title:'坐上电动车'},key:'arrival-ride-guide',phase:'travel',site:{...arrivalTarget(game),mapId:'forest'},label:'前往北广场，坐上松伯赠送的电动车'};
+  if(a.phase==='ride-guide')return {task:{id:'arrival-scooter',title:'坐上电动车'},key:'arrival-ride-guide',phase:'travel',site:{...arrivalTarget(game),mapId:'forest'},label:'前往北广场，在电动车正面站定1秒上车'};
   // 保留树的碰撞信息，正式寻路会把终点放在树旁；砍倒后自动选择下一棵。
   if(a.phase==='gather'||game.progress.wood<(a.phase==='repair'?RANGER.repairWood:RANGER.pistolWood)){
     const tree=arrivalTarget(game);if(!tree)return null;
@@ -221,7 +222,7 @@ export function arrivalTarget(game) {
   if(a.phase==='ride-guide'){
     const parked=parkedOwned(game).find(s=>s.record.hull===RANGER.scooter);
     // 导航落在车位前的通道，不把终点放进车体碰撞内；已取出的随行车原地可上。
-    return parked?{x:parked.x,y:parked.approachY??parked.y+60}:a.parked?{x:RANGER.parking.x,y:RANGER.parking.y+60}:{x:game.player.x,y:game.player.y};
+    return parked?vehicleBoardingPoint(parked):a.parked?{x:RANGER.parking.x,y:RANGER.parking.y+60}:{x:game.player.x,y:game.player.y};
   }
   if(a.phase==='gather'||(['repair','craft'].includes(a.phase)&&game.progress.wood<(a.phase==='repair'?RANGER.repairWood:RANGER.pistolWood)))
     {let target=null,distance=Infinity;for(const tree of game.trees){if(tree.hp<=0)continue;const d=worldDistance(tree,game.player);if(d<distance){target=tree;distance=d;}}return target;}

@@ -121,6 +121,8 @@ export function dismountVehicle(game) {
   game.vehicle.targetId = null;
   if(parkAtPosition(game,parkedPosition)&&worldDistance(game.player,parkedPosition)<60){const side=landingPoint({...game.player,x:parkedPosition.x+72,y:parkedPosition.y+20},game.trees);if(side)Object.assign(game.player,side);}
   game.player.vx=game.player.vy=0;
+  // 下车后若仍落在车头触发区，须先移开，防止一秒后被自动送回车上。
+  game.vehicleBoarding=null;game.vehicleBoardingBlocked={hull:game.vehicle.index,mapId:game.mapId};
   game.onEvent('vehicle-dismount',{index:game.vehicle.index});
   return true;
 }

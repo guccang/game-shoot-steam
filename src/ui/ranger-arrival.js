@@ -75,7 +75,7 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     // 短提示保留行动、地点和资源缺口，避免与标题重复占满窄任务卡。
     body.textContent=game.arrivalError?'保存失败，请重试。':a.phase==='gather'?`靠近树木采集 · 木材 ${game.progress.wood}/${RANGER.repairWood}`:a.phase==='repairing'?`屋顶重建 · ${Math.max(1,Math.ceil(RESTORATION_SECONDS-a.elapsed))}秒`:a.phase==='repair'?'靠近工坊，材料足够后自动修复':a.phase==='craft'?(game.progress.wood<RANGER.pistolWood?`还差 ${RANGER.pistolWood-game.progress.wood} 木材，靠近树木采集`:'靠近武器工坊，点击购买'):'稍等片刻';
     if(reading)body.textContent='点击任务，查看来信';
-    if(a.phase==='ride-guide')body.textContent='前往北停车场，靠近电动车上车';
+    if(a.phase==='ride-guide')body.textContent='前往北停车场，在电动车正面站定1秒上车';
     if(a.phase==='dismount-guide')body.textContent='靠近武器工坊，点击购买';
     retry.hidden=!game.arrivalError;card.dataset.phase=a.phase;
     if(dialog.open)renderWorkshop();

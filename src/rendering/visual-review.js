@@ -1767,3 +1767,6 @@ export async function inspectRepairParkingDisplay(game){
  const {VEHICLE_REPAIR}=await import('../config/vehicle-repair.js');
  return {designCriterion:'repair-parking-display',bays:vehicleServiceObjects(game).filter(o=>o.type==='repair-bay').map(o=>({id:o.id,hull:o.hull,x:o.x,y:o.y,phase:o.order.phase,remaining:Math.ceil(VEHICLE_REPAIR.repairSeconds-o.order.timer),occupied:parkingOccupied(game,o.id)})),waiting:game.progress.vehicleService.filter(r=>r?.phase==='repairing'&&!r.repairSpot).length};
 }
+
+// 自动上车验收读取正式工时与屏幕徽记，不构造另一套倒计时预览。
+export function inspectVehicleAutoBoard(game,renderer){return {designCriterion:'vehicle-auto-board',active:game.vehicle.active,hull:game.vehicle.index,boarding:game.vehicleBoarding?{hull:game.vehicleBoarding.hull,elapsed:game.vehicleBoarding.elapsed,site:game.vehicleBoarding.site.id}:null,countdown:renderer.actionCountdownView,parked:game.progress.campParking.owned.map(s=>s.hull)};}

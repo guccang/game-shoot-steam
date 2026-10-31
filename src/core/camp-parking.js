@@ -2,7 +2,7 @@ import {repairParkingReserved,repairParkingSpot} from '../config/repair-parking.
 import {parkingRecordSite,parkingRecordOccupies} from '../progression/roadside-parking.js';
 import {vehicleService} from './vehicle-repair.js';
 import {REPAIR_BAY} from '../config/vehicle-repair.js';
-// 驾驶和停驻是同一辆车的两种状态，站在车旁点击才可重新上车。
+// 驾驶和停驻是同一辆车的两种状态，车头站定完成后重新上车。
 import {PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {availableParkingSpot,normalizeCampParking,northParkingSpot} from '../progression/camp-parking.js';
 import {FIRE_GARAGE} from '../world/fire-navigation.js';
@@ -74,7 +74,7 @@ export function leaveParkedVehicle(game,spot){
  Object.assign(game.player,disembarkPoint(game,spot),{vx:0,vy:0,pushX:0,pushY:0});
  game.onEvent('camp-parking-change');return true;
 }
-// 已停放的车不能远程召到脚边；车旁点击和快捷键共用距离、场景及耐久检查。
+// 自动上车完成后复用此事务入口，统一校验距离、场景与耐久。
 export function boardParkedVehicle(game,hull){
  const parked=parkedOwned(game).find(s=>s.record.hull===hull);
  if(!parked||!campParkingVisible(game)||!arrivalParkingAllowed(game,hull)||game.fireActive||game.campDefense||game.workshopTrial||!['playing','paused'].includes(game.state)||game.vehicle.active&&game.vehicle.index===hull||worldDistance(game.player,parked)>155)return false;
@@ -89,7 +89,7 @@ export function boardParkedVehicle(game,hull){
  if(!summonVehicle(game))return false;
  Object.assign(game.player,boarding,{vx:0,vy:0,pushX:0,pushY:0,walkPhase:parked.record.track});
  game.progress.campParking.owned=game.progress.campParking.owned.filter(s=>s.hull!==hull);
- // 上车时不再次候停，须先驶离，防止刚点上车又被自动赶下来。
+ // 上车时不再次候停，须先驶离，防止刚上车又被自动赶下来。
  game.parking=parked.record.spot?{id:parked.id,hull,phase:'cancelled',idle:false}:null;
  game.onEvent('camp-parking-change');return true;
 }

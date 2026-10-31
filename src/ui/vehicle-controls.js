@@ -1,8 +1,10 @@
-import {personalFleet,vehicleRequiresService,vehicleService} from '../core/vehicle-repair.js';
+import {activateVehicleTransfer} from './vehicle-transfer.js';
+import {parkingFleetApplies} from '../core/camp-parking.js';
+import {vehicleRequiresService,vehicleService} from '../core/vehicle-repair.js';
 import { i18nText } from "../i18n/index.js";
 import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
 import { funnelWeapon } from '../config/funnel-loadouts.js';
-// 血条下方的载具快捷图标直接上下车，收藏使用侧边入口，配置使用独立炮塔页签。
+// 血条下方的载具图标提供定位和下车，改装仍由工坊负责。
 import { createEventScope } from '../platform/events.js';
 import { realmWeapon } from '../config/realms.js';
 import { drawVehicleIcon } from '../rendering/vehicle.js';
@@ -10,19 +12,18 @@ import { vehicleWeapon, vehicleModel } from '../config/vehicles.js';
 import { VEHICLE_COOLDOWN } from '../config/vehicles.js';
 import { updateRing } from './status-rings.js';
 import {parkedOwned,arrivalParkingAllowed} from '../core/camp-parking.js';
-import {worldDistance} from '../world/coordinates.js';
-import {canBoardFireGarage} from '../core/fire-rescue.js';
-// 点击直接召唤或下车，不创建弹窗；载具冷却和资源仍由 Game 校验。
+// 自有车快捷键只定位或下车；活动借车沿用场景原有召唤规则。
 export function createVehicleControls({ game, root, onChange }) {
   const scope = createEventScope();
   scope.on(root.getElementById('vehicle-button'), 'click', () => {
     if (game.vehicle.active) game.dismountVehicle();
+    else if(parkingFleetApplies(game))activateVehicleTransfer(game,game.vehicle.index);
     else game.summonVehicle();
     onChange();
   });
   return { dispose: scope.dispose };
 }
-// 外圈表示耐久/修复，内圈表示炮塔余弹或装填；修复完成仍需手动召唤。
+// 外圈表示耐久/修复，内圈表示炮塔供给，停驻车提示前往正面自动上车。
 export function updateVehicleHud(root, game) {
   const node = root.getElementById('vehicle-button'),
     v = game.vehicle,
@@ -55,11 +56,12 @@ export function updateVehicleHud(root, game) {
     mark: repairing || (v.active && reloading) ? 'reload' : '',
     label: parked ? i18nText("ui.vehicle-controls.134ebb01a8") : `${v.active ? i18nText("ui.vehicle-controls.ac0ad40e42") : i18nText("ui.vehicle-controls.9fd671b1a1", { p0: (model.shortName) })} · ${detail}${game.state === 'paused' ? i18nText("ui.funnel-supply.4ea1173d1f") : ''}`,
   });
-  node.disabled = !!game.cottage || game.arrivalCinematic || !game.loadout.vehicleHulls[v.index] || game.fireTransit || parked&&!canBoardFireGarage(game) || game.realm?.mode==='football' || !['playing', 'paused'].includes(game.state) || repairing;
+  node.disabled = !!game.cottage || game.arrivalCinematic || !game.loadout.vehicleHulls[v.index] || game.fireTransit || game.realm?.mode==='football' || !['playing', 'paused'].includes(game.state) || repairing;
   node.hidden = game.realm?.mode==='football';
   // 停驻状态明确引导回到车辆，快捷入口同样不能把车从远处召走。
   const campParked=!game.realm&&!game.story&&parkedOwned(game).find(s=>s.record.hull===v.index);
-  if(campParked&&!v.active){node.setAttribute('aria-label','已停在'+campParked.name+'，靠近后点击快捷入口上车');node.title='已停在'+campParked.name;node.disabled||=worldDistance(game.player,campParked)>155||!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;}
+  if(campParked&&!v.active){node.setAttribute('aria-label','已停在'+campParked.name+'，到车头正面站定1秒自动上车');node.title='已停在'+campParked.name;node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;}
+  if(parkingFleetApplies(game)&&!v.active){node.title='定位载具 · 到车头正面站定1秒自动上车';node.setAttribute('aria-label',node.title);}
   if(vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase)){node.title=v.hp<=0?'已报废 · 需要维修':'维修中心待取车';node.setAttribute('aria-label',node.title);node.querySelector('.ring-count').textContent=v.hp<=0?'损坏':'维修';}
   node.setAttribute('aria-pressed', String(v.active));
 }
