@@ -42,7 +42,7 @@ export function drawParkedVehicle(c,item,game){
  c.restore();
  // 只有走近的玩家看到短标签，远景不堆文字。
  if(Math.hypot(game.player.x-item.x,game.player.y-item.y)<155){
-  const text=item.owner?(game.vehicle.active?'点击换车':'点击上车'):item.model.sciFi?item.model.name+' · 非卖品':item.model.name+' · 访客';
+  const text=item.owner?(game.vehicle.active?'下车后靠近换乘':'靠近1秒上车'):item.model.sciFi?item.model.name+' · 非卖品':item.model.name+' · 访客';
   c.save();c.font='bold 11px sans-serif';c.textAlign='center';box(c,item.x-55,item.y+20,110,20,8,'#fff1c9','#6c8869',1);c.fillStyle='#41664b';c.fillText(text,item.x,item.y+34);c.restore();
  }
 }

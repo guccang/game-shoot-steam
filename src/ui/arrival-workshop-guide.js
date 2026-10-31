@@ -11,10 +11,10 @@ export function arrivalWorkshopGuide(game,dialogId=null){
  if(!arrivalGuidanceVisible(game)||game.arrivalError)return null;
  // 来信尚未阅读时指向真实任务按钮，打开任意弹窗后让出引导层。
  if(phase==='letter'&&!dialogId)return {id:'arrival-letter',source:'#arrival-goal',text:'点击任务，阅读松伯的信'};
- // 全程指向任务路线，到车旁后说明正面站定的自动上车动作。
+ // 全程指向任务路线，到车旁后说明靠近倒计时的自动上车动作。
  if(phase==='ride-guide'&&!dialogId){
   const parked=parkedOwned(game).find(s=>s.record.hull===RANGER.scooter),site=parked||(game.progress.arrival.parked?RANGER.parking:null);
-  return site&&worldDistance(game.player,site)>155?{id:'arrival-scooter-route',source:'#arrival-goal',text:'沿路线前往北广场停车场'}:{id:'arrival-scooter-board',source:'#arrival-goal',text:'走到电动车正面，站定1秒自动上车'};
+  return site&&worldDistance(game.player,site)>155?{id:'arrival-scooter-route',source:'#arrival-goal',text:'沿路线前往北广场停车场'}:{id:'arrival-scooter-board',source:'#arrival-goal',text:'靠近电动车，停留1秒自动上车'};
  }
  if(!step)return null;
  // 刚建成时先看新建筑，随后再提示购买，避免提示牌盖住完成徽记。

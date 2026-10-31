@@ -1053,7 +1053,7 @@
           },
           {
             "label": "驾驶120米",
-            "hint": "到北停车场靠近战车点击上车，旧车留在营地",
+            "hint": "到北停车场靠近战车，停留1秒自动上车，旧车留在营地",
             "action": false,
             "highlight": "#vehicle-button",
             "operation": {

@@ -2,7 +2,7 @@ import {repairParkingReserved,repairParkingSpot} from '../config/repair-parking.
 import {parkingRecordSite,parkingRecordOccupies} from '../progression/roadside-parking.js';
 import {vehicleService} from './vehicle-repair.js';
 import {REPAIR_BAY} from '../config/vehicle-repair.js';
-// 驾驶和停驻是同一辆车的两种状态，车头站定完成后重新上车。
+// 驾驶和停驻是同一辆车的两种状态，靠近倒计时完成后重新上车。
 import {PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {availableParkingSpot,normalizeCampParking,northParkingSpot} from '../progression/camp-parking.js';
 import {FIRE_GARAGE} from '../world/fire-navigation.js';

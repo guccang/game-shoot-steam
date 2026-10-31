@@ -23,7 +23,7 @@ export function createVehicleControls({ game, root, onChange }) {
   });
   return { dispose: scope.dispose };
 }
-// 外圈表示耐久/修复，内圈表示炮塔供给，停驻车提示前往正面自动上车。
+// 外圈表示耐久/修复，内圈表示炮塔供给，停驻车提示靠近自动上车。
 export function updateVehicleHud(root, game) {
   const node = root.getElementById('vehicle-button'),
     v = game.vehicle,
@@ -60,8 +60,8 @@ export function updateVehicleHud(root, game) {
   node.hidden = game.realm?.mode==='football';
   // 停驻状态明确引导回到车辆，快捷入口同样不能把车从远处召走。
   const campParked=!game.realm&&!game.story&&parkedOwned(game).find(s=>s.record.hull===v.index);
-  if(campParked&&!v.active){node.setAttribute('aria-label','已停在'+campParked.name+'，到车头正面站定1秒自动上车');node.title='已停在'+campParked.name;node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;}
-  if(parkingFleetApplies(game)&&!v.active){node.title='定位载具 · 到车头正面站定1秒自动上车';node.setAttribute('aria-label',node.title);}
+  if(campParked&&!v.active){node.setAttribute('aria-label','已停在'+campParked.name+'，靠近载具停留1秒自动上车');node.title='已停在'+campParked.name;node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;}
+  if(parkingFleetApplies(game)&&!v.active){node.title='定位载具 · 靠近载具停留1秒自动上车';node.setAttribute('aria-label',node.title);}
   if(vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase)){node.title=v.hp<=0?'已报废 · 需要维修':'维修中心待取车';node.setAttribute('aria-label',node.title);node.querySelector('.ring-count').textContent=v.hp<=0?'损坏':'维修';}
   node.setAttribute('aria-pressed', String(v.active));
 }
