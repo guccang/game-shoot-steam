@@ -1,8 +1,9 @@
+import {repairParkingSpot} from '../config/repair-parking.js';
 import {drawGarage,drawGarageGround} from './garage.js';
 import {drawWheel} from './pine-wheels.js';
 import {nearest} from '../world/coordinates.js';
 // 维修建筑、残骸与拖车直接进入正式世界深度队列，不创建替代预览画面。
-import {REPAIR_CENTER,REPAIR_BAY,towLoadPoint,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
+import {REPAIR_CENTER,towLoadPoint,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
 import {personalFleet} from '../core/vehicle-repair.js';
 import {drawParkedHull} from './parked-vehicles.js';
 import {box,oval,poly} from './primitives.js';
@@ -14,7 +15,7 @@ export function vehicleServiceObjects(game){
   if(!r?.phase||r.mapId!==game.mapId)continue;
   if(['wrecked','outbound'].includes(r.phase))objects.push({...r.position,type:'repair-wreck',hull});
   if(['outbound','hooking','towing'].includes(r.phase))objects.push({...r.truck,type:'repair-tow',hull,order:r});
-  if(r.phase==='repairing'&&!objects.some(o=>o.type==='repair-bay'))objects.push({...REPAIR_BAY,type:'repair-bay',hull,order:r});
+  const spot=repairParkingSpot(r);if(spot)objects.push({...spot,type:'repair-bay',hull,order:r});
  }
  return objects;
 }
@@ -75,6 +76,7 @@ export function drawVehicleServiceObject(c,item,game,night=0,reduced=false){
  if(item.type==='repair-wreck'||item.order?.phase==='repairing')drawWreckDamage(c,item.x,item.y,reduced?0:game.time);
  if(item.type==='repair-bay'){
   const r=item.order;box(c,item.x-38,item.y+20,76,9,4,'#e9dfb5','#41634a',1.5);box(c,item.x-36,item.y+22,72*Math.min(1,r.timer/C.repairSeconds),5,2,'#79a674');
-  c.save();c.fillStyle='#355b43';c.font='bold 11px sans-serif';c.textAlign='center';c.fillText('维修中',item.x,item.y+44);c.restore();
+  box(c,item.x-58,item.y+34,116,22,7,'#fff1c7','#41634a',1.5);
+  c.save();c.fillStyle='#355b43';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(r.phase==='ready'?'修好待交付':`维修中 · ${Math.max(0,Math.ceil(C.repairSeconds-r.timer))}秒`,item.x,item.y+49);c.restore();
  }
 }

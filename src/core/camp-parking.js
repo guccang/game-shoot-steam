@@ -1,3 +1,4 @@
+import {repairParkingReserved,repairParkingSpot} from '../config/repair-parking.js';
 import {parkingRecordSite,parkingRecordOccupies} from '../progression/roadside-parking.js';
 import {vehicleService} from './vehicle-repair.js';
 import {REPAIR_BAY} from '../config/vehicle-repair.js';
@@ -22,7 +23,7 @@ export function arrivalParkingAllowed(game){return !game.arrivalCinematic;}
 export function parkingFleetApplies(game){return !game.realm&&!game.story&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&arrivalParkingAllowed(game);}
 // 页面与导航读取同一实际停放地点；消防任务车保留消防站的专用车库。
 export function vehicleParkingSite(game,hull){
- if(vehicleService(game,hull)?.phase)return {...REPAIR_BAY,id:'vehicle-repair',name:'载具维修中心',mapId:'forest'};
+ if(vehicleService(game,hull)?.phase)return {...(repairParkingSpot(vehicleService(game,hull))||REPAIR_BAY),id:'vehicle-repair',name:'载具维修中心',mapId:'forest'};
  if(hull===4&&game.fireGarageParked)return {...FIRE_GARAGE,id:'fire-garage',name:'消防站车库',mapId:'forest'};
  const record=game.progress.campParking?.owned.find(r=>r.hull===hull),parked=record&&parkingRecordSite(record);
  return parked?parked:{id:'north-parking',name:'北停车场',mapId:'forest',...NORTH_PARKING.entrance};
@@ -45,7 +46,7 @@ export function storeCarriedVehicle(game,v=game.vehicle){
  game.parkingVisitors=(game.parkingVisitors||[]).filter(r=>r.spot!==spot.id);return true;
 }
 // 同一车体和同一泊位最多一辆，倒车中的预约也不允许访客占用。
-export function parkingOccupied(game,id){const spot=PARKING_SPOTS.find(s=>s.id===id);return !!spot&&game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,spot))||(game.parkingVisitors||[]).some(s=>s.spot===id)||id===RANGER.parkingId&&game.progress.arrival?.parked&&!game.arrivalCinematic;}
+export function parkingOccupied(game,id){const spot=PARKING_SPOTS.find(s=>s.id===id);return repairParkingReserved(game.progress,id)||!!spot&&game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,spot))||(game.parkingVisitors||[]).some(s=>s.spot===id)||id===RANGER.parkingId&&game.progress.arrival?.parked&&!game.arrivalCinematic;}
 // 交接完成后接管北广场赠车，不移动到未修复车库，也不重复占位。
 export function adoptArrivalParking(game){
  if(!arrivalParkingAllowed(game)||!game.progress.arrival?.parked||!game.progress.vehicleHulls[RANGER.scooter])return;
@@ -104,7 +105,7 @@ export function updateParkingVisitors(game,dt){
  game.parkingVisitors=(game.parkingVisitors||[]).filter(v=>!game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,PARKING_SPOTS.find(s=>s.id===v.spot))));
  game.parkingVisitors||=[];game.parkingVisitTimer??=8;
  // 停车实体只给当前玩家提供脚底碰撞，不改动入职导演和居民路线。
- game.player.parkingBarriers=[...parkedOwned(game),...game.parkingVisitors.map(v=>PARKING_SPOTS.find(s=>s.id===v.spot))].map(s=>({x:s.x,y:s.y-20,width:72,height:60}));
+ game.player.parkingBarriers=[...parkedOwned(game),...(game.progress.vehicleService||[]).map(repairParkingSpot).filter(Boolean),...game.parkingVisitors.map(v=>PARKING_SPOTS.find(s=>s.id===v.spot))].map(s=>({x:s.x,y:s.y-20,width:72,height:60}));
  // 入职任务期间开放赠车与碰撞，访客轮换仍等任务结束，避免干扰引导。
  if(game.arrivalPending)return;
  game.parkingVisitTimer-=dt;if(game.parkingVisitTimer>0)return;

@@ -1,3 +1,4 @@
+import {assignRepairParking} from './repair-parking.js';
 import {vehicleFaults} from '../config/supplies.js';
 import {northParkingSpot} from '../progression/camp-parking.js';
 import {sendMail} from '../progression/mailbox.js';
@@ -93,6 +94,7 @@ export function requestVehicleRepair(game,index,remote=false){
  sendMail(game.progress,{sender:'载具维修中心',title:vehicleModel(index).name+'维修受理凭证',body:`已支付 ${cost} 金币，${wrecked?'拖车正在赶往损毁地点':'车辆已交付维修'}。维修完成后将放入北门停车场。`});
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  if(index===4)game.progress.fireDispatch.garage=null;
+ if(order.phase==='repairing')assignRepairParking(game,index);
  v.active=false;v.cooldown=0;game.onEvent('vehicle-service',{text:wrecked?'拖车已出发，收好手机可继续救援。':'已交车维修，离开页面后开始作业。'});
  return {ok:true,message:`已支付 ${cost} 金币。${wrecked?'拖车正在赶往损毁地点。':'维修已开始。'}`};
 }
@@ -101,7 +103,7 @@ export function collectRepairedVehicle(game,index){
  if(!personalFleet(game)||!['playing','paused'].includes(game.state))return {ok:false,message:'请在自由巡林时安排交车。'};
  const r=vehicleService(game,index);if(r?.phase!=='ready')return {ok:false,message:'车辆尚未修好或已交付停车场。'};
  const spot=northParkingSpot(game.progress,index,s=>!(game.mapId==='forest'&&game.vehicle.active&&worldDistance(game.player,s)<85));if(!spot)return {ok:false,message:'北门停车场已满，车辆已保管，空出车位后自动交付。'};
- const v=game.vehicles[index];game.progress.supplies.engineFaults[index]=0;if(v.weaponIndex!==null)game.progress.supplies.gunFaults[v.weaponIndex]=0;v.hp=v.maxHp;v.active=false;r.phase=null;r.hp=1;r.mapId='forest';r.position=canonical(spot);
+ const v=game.vehicles[index];game.progress.supplies.engineFaults[index]=0;if(v.weaponIndex!==null)game.progress.supplies.gunFaults[v.weaponIndex]=0;v.hp=v.maxHp;v.active=false;r.phase=null;r.repairSpot=null;r.hp=1;r.mapId='forest';r.position=canonical(spot);
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  game.progress.campParking.owned.push({hull:index,spot:spot.id,hp:1,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:v.wheelPhase||0,track:0});
  game.parkingVisitors=(game.parkingVisitors||[]).filter(p=>p.spot!==spot.id);
@@ -136,13 +138,14 @@ export function updateVehicleRepair(game,dt){
  for(const [index,r] of (game.progress.vehicleService||[]).entries()){
   if(!r||!['outbound','hooking','towing','repairing','ready'].includes(r.phase))continue;
   if(r.phase==='ready'){collectRepairedVehicle(game,index);continue;}
+  if(r.phase==='repairing'){const waiting=!r.repairSpot;if(!assignRepairParking(game,index))continue;if(waiting)game.onEvent('vehicle-service');}
   if(r.phase==='outbound'||r.phase==='towing'){
    if(!refreshServiceRoute(game,r,dt))continue;
    let distance=C.towSpeed*dt;
    while(distance>0&&r.step<r.route.length){const target=r.route[r.step],dx=target.x-r.truck.x,dy=target.y-r.truck.y,d=Math.hypot(dx,dy),step=Math.min(d,distance);
     if(d>0){r.truck.x+=dx/d*step;r.truck.y+=dy/d*step;r.angle=Math.atan2(dy,dx);r.wheel+=step/8;}distance-=step;if(step===d)r.step++;
    }
-   if(r.step>=r.route.length){r.phase=r.phase==='outbound'?'hooking':'repairing';r.timer=0;if(r.phase==='repairing'){r.mapId='forest';r.position={...REPAIR_BAY};}game.onEvent('vehicle-service');}
+   if(r.step>=r.route.length){r.phase=r.phase==='outbound'?'hooking':'repairing';r.timer=0;if(r.phase==='repairing'){r.mapId='forest';r.position={...REPAIR_BAY};assignRepairParking(game,index);}game.onEvent('vehicle-service');}
   }else{
    r.timer+=dt;
    if(r.phase==='hooking'&&r.timer>=C.hookSeconds){r.phase='towing';r.layoutVersion=0;r.step=1;r.timer=0;game.onEvent('vehicle-service');}

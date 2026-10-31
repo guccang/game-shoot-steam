@@ -1759,3 +1759,11 @@ export async function inspectVehicleSupplies(game,root){
  const panel=root.getElementById('field-equipment-dialog'),buttons=[...(panel?.querySelectorAll('button')||[])];
  return {designCriterion:'vehicle-supplies',room:game.cottage?.kind,gun:game.vehicle.weaponIndex,faults:vehicleFaults(game.progress,game.vehicle.index),title:root.getElementById('field-equipment-title')?.textContent,ammo:game.progress.supplies.vehicles[game.vehicle.index],overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,smallButtons:buttons.some(b=>{const r=b.getBoundingClientRect();return r.height>0&&r.height<44;}),badDialog:[...root.querySelectorAll('dialog[open]')].some(d=>{const r=d.getBoundingClientRect();return r.x<0||r.y<0||r.right>root.defaultView.innerWidth+1||r.bottom>root.defaultView.innerHeight+1;})};
 }
+
+// 维修泊位验收直接读取正式深度队列，核对多车位置、剩余工时和占位。
+export async function inspectRepairParkingDisplay(game){
+ const {vehicleServiceObjects}=await import('./vehicle-repair.js');
+ const {parkingOccupied}=await import('../core/camp-parking.js');
+ const {VEHICLE_REPAIR}=await import('../config/vehicle-repair.js');
+ return {designCriterion:'repair-parking-display',bays:vehicleServiceObjects(game).filter(o=>o.type==='repair-bay').map(o=>({id:o.id,hull:o.hull,x:o.x,y:o.y,phase:o.order.phase,remaining:Math.ceil(VEHICLE_REPAIR.repairSeconds-o.order.timer),occupied:parkingOccupied(game,o.id)})),waiting:game.progress.vehicleService.filter(r=>r?.phase==='repairing'&&!r.repairSpot).length};
+}
