@@ -15,6 +15,7 @@ import { payEquipment } from './equipment-goals.js';
 
 // 车体购买附带专属主炮；旧炮塔保留独立交易兼容，角色枪械不随之获取。
 export function transactVehicle(progress, kind, index, action) {
+  if(kind==='vehicle'&&action==='upgrade')return false;
   if(!facilityOpen(progress,'garage'))return false;
   if (!['vehicle', 'turret'].includes(kind)) return false;
   if(kind==='turret' && (!isVehicleArmament(index) || !progress.vehicleHulls[VEHICLE_WEAPONS[index].hullIndex]))return false;

@@ -1,4 +1,6 @@
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
+import {movementLoadFactor} from '../progression/load-weight.js';
+import {maintainPlayerTow,advancePlayerTow} from './player-towing.js';
 import {awardHeroXp} from '../progression/hero-experience.js';
 import {legendaryVisible} from './legendary-workshop.js';
 import {updateVehicleRepair,personalFleet,vehicleRequiresService,vehicleService,syncVehicleService} from './vehicle-repair.js';
@@ -796,6 +798,7 @@ export class Game {
     // 运动会使用独立移动时钟，倒计时、暂停、终点均不推进森林或战斗逻辑。
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt))return;
+    maintainPlayerTow(this);
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
     if(this.cottage)updateVehicleRepair(this,dt);
     if(updateCottage(this,dt,input))return;
@@ -848,8 +851,10 @@ export class Game {
     const length = Math.hypot(input.x, input.y),
       speed =
         HEROES[(this.story?this.loadout:this.progress).hero].speed *
-        (this.vehicle.active ? vehicleSpeed(this.loadout, this.vehicle.index) : 1);
+        (this.vehicle.active ? vehicleSpeed(this.loadout, this.vehicle.index) : 1)*movementLoadFactor(this);
+    if(speed===0)p.vx=p.vy=0;
     driveBody(p, input, speed, dt, WORLD, this.trees);
+    advancePlayerTow(this,previousPlayer,dt);
     crushVehicleTrees(this, previousPlayer);
     // 只记录主动移动，后坐与敌人击退不触发地图遭遇。
     const exploringMove = length > 0 && worldDistance(p, previousPlayer) > .01;
@@ -857,7 +862,9 @@ export class Game {
     if(this.arrivalPending&&this.mapId==='forest'&&!this.realm&&!this.story&&!this.fireActive&&!this.campDefense){this.progress.arrival.x=p.x;this.progress.arrival.y=p.y;}
     updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - previousPlayer.x, p.y - previousPlayer.y) / dt : 0, length > 0 && !this.vehicle.active);
     const beforeKick = {x:p.x,y:p.y};
-    updateHolderKick(p, dt, this.trees);
+    if(speed!==0)updateHolderKick(p, dt, this.trees);
+    else p.pushX=p.pushY=0;
+    advancePlayerTow(this,beforeKick,dt);
     crushVehicleTrees(this, beforeKick);
     // 无战斗目标时也按转速收枪转向行进方向。
     if(length>0&&p.aimHold<=0&&!this.findAttackTarget())turnWeapon(p,Math.atan2(input.y,input.x),dt,GAMEPLAY_VALUES.weaponTurn.handheldRate);

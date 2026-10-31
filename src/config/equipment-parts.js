@@ -1,4 +1,5 @@
 import {equipmentLevelCap} from './legendary-workshop.js';
+import {installedEngine,vehicleBuild} from './vehicle-load.js';
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
 import { VEHICLE_UPGRADE_MOUNTS, VEHICLE_UPGRADE_BOUNDS } from './vehicle-upgrade-art.js';
 import { GATLING_PARTS } from './gatling-art.js';
@@ -14,6 +15,8 @@ export const PART_LABELS = { damage: i18nText("config.equipment-parts.fb198574f1
 
 // 旧等级仍保存在原字段，新增部件缺省一级；读取非法值时不放大收益。
 export function partLevel(progress, kind, index, key) {
+  // 原车部件画像根据实际装甲与发动机展示，不读取历史车体等级。
+  if(kind==='vehicle'&&!progress.temporaryGrowth){const build=vehicleBuild(progress,index);return key==='armor'?Math.min(20,build.plates+1):key==='engine'?build.engine+1:1;}
   const w=(kind==='turret'?VEHICLE_WEAPONS:WEAPONS)[index];
   const legacy = key === 'damage' ? (kind === 'turret' ? progress.vehicleWeapons : progress.weapons)?.[index]
     : key === 'armor' ? progress.vehicleHulls?.[index] : null;
@@ -72,4 +75,4 @@ export function applyWeaponParts(weapon, progress, index, kind = 'weapons') {
 }
 
 // 动力只改变当前车型移动倍率，不影响驾驶状态、碰撞或修复计时。
-export function engineMultiplier(progress, index) { return 1 + GAMEPLAY_VALUES.parts.enginePerLevel * (partLevel(progress, 'vehicle', index, 'engine') - 1); }
+export function engineMultiplier(progress, index) { return progress.temporaryGrowth?1 + GAMEPLAY_VALUES.parts.enginePerLevel * (partLevel(progress, 'vehicle', index, 'engine') - 1):installedEngine(progress,index).speed; }

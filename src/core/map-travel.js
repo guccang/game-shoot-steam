@@ -16,6 +16,7 @@ import {resetEncounters} from './encounter-manager.js';
 
 // 战斗中的领主和秘境不允许旅行，避免中断蓄力、挑战结算或秘境检查点。
 export function mapTravelReason(game) {
+  if(game.progress.logistics?.tow)return '请先解除牵引或将残骸送到维修中心，再跨地图旅行。';
   if(game.campDefense)return '请先完成营地守门结算。';
   if(game.fireActive)return i18nText("core.map-travel.c5d64346b5");
   if (game.story) return i18nText("core.map-travel.fc3e9d412b");

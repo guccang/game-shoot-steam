@@ -1,6 +1,7 @@
 import {isRainWeather} from '../world/season-weather.js';
+import {sellCrops} from './cargo.js';
 import {storyDeliveryReady} from './story-definition.js';
-// 农活事务与走近执行队列；动作命中时才扣种子、开地或发放金币。
+// 农活事务与走近执行队列；动作命中时才扣种子、开地或收获作物。
 import {recordGardeningAction} from '../progression/mainline-gardening.js';
 import {FARM_ACTION_TIMING,FARM_COMBAT_RESUME_DELAY} from '../config/farm-tools.js';
 export {FARM_ACTION_TIMING} from '../config/farm-tools.js';
@@ -8,9 +9,6 @@ import {validateProgress} from '../progression/progress.js';
 import {farmGrowth,grantFarmSeeds,wetFarmPlot} from '../progression/farm.js';
 import {wildFarmTime} from '../progression/wild-farm-age.js';
 import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_WATER,farmCell,farmPosition} from '../config/farm.js';
-import {creditResource} from '../progression/resource-wallet.js';
-import {RESOURCE_CAP} from '../config/resource-limits.js';
-import {recordEconomy} from '../progression/economy-ledger.js';
 import {worldDistance,nearest} from '../world/coordinates.js';
 import {farmLandReason,farmApproach,farmDigTarget} from '../world/farm-land.js';
 import {naturalWaypoint} from '../physics/terrain-navigation.js';
@@ -81,8 +79,9 @@ export function commitFarm(game,next,event){
 }
 // 只提交真实发生的一格动作；所有操作再次核验地图、距离与成熟状态。
 export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,now=Date.now()}={}){
- // 快递柜结算旧收成不使用农具，允许骑乘；耕种、浇水及收割仍必须步行。
- if(action==='legacy'?(!canEnterFarm(game)||farmInteractionBlocked(game)):!canUseFarm(game))return {ok:false,message:'请结束当前活动并下车，再拿起农具。'};
+ if(action==='sell')return sellCrops(game);
+ // 耕种、浇水及收割必须步行，收购通过独立事务办理。
+ if(!canUseFarm(game))return {ok:false,message:'请结束当前活动并下车，再拿起农具。'};
  if(!Number.isFinite(now)||now<0||!Number.isInteger(cropId)||cropId<0)return {ok:false,message:'农田操作参数无效。'};
  const next=validateProgress(structuredClone(game.progress)),f=next.farm,p=f.plots.find(p=>p.id===plotId),crop=FARM_CROPS[cropId];
  // 空田的湿度属于土壤；播种重置本茬加速状态时，保留这份已获得的水分。
@@ -111,9 +110,9 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   message=wateredPlots.some(p=>p.savedSeconds>0)?`已浇灌 ${targets.length} 块田 · 本茬最多提前 ${FARM_WATER.reduction*100}%成熟`:'已再次浇水，土壤保持湿润 · 本茬加速已生效';
  }else if(action==='harvest'){
   if(!p||p.crop===null||farmGrowth(p,now)<1)return {ok:false,message:'这块田还没有成熟。'};
-  harvest=p.crop;const grown=FARM_CROPS[harvest];if(RESOURCE_CAP-next.coins<grown.value)return {ok:false,message:'金币已满，成熟作物继续留在田里。'};
-  coins=creditResource(next,'coins',grown.value);f.xp=Math.min(FARM_STOCK_CAP,f.xp+grown.xp);f.harvested=Math.min(FARM_STOCK_CAP,f.harvested+1);
-  Object.assign(p,{crop:null,plantedAt:0,readyAt:0,watered:false});recordEconomy(next,'income','farm:harvest',{coins});message=grown.name+'收获，金币 +'+coins;
+  harvest=p.crop;const grown=FARM_CROPS[harvest];if(f.inventory[harvest]>=FARM_STOCK_CAP)return {ok:false,message:'作物库存已满，请先装车或出售。'};
+  f.inventory[harvest]++;f.xp=Math.min(FARM_STOCK_CAP,f.xp+grown.xp);f.harvested=Math.min(FARM_STOCK_CAP,f.harvested+1);
+  Object.assign(p,{crop:null,plantedAt:0,readyAt:0,watered:false});message=grown.name+'收获，背包作物 +1；到种子小屋或快递站出售获得金币。';
   if(p.wild)message+=' · 野外也能种田，点击空田即可继续播种';
  }else if(action==='remove'){
   if(!p)return {ok:false,message:'这块田已经不存在了。'};
@@ -123,10 +122,6 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   const gardening=next.mainline.gardening;
   if(gardening.plotId===plotId){gardening.plotId=null;if(!gardening.watered){gardening.planted=0;gardening.harvested=0;}}
   message='地块已移除，可在原地重新开垦';
- }else if(action==='legacy'){
-  for(let i=0;i<FARM_CROPS.length;i++){const n=Math.min(f.inventory[i],Math.floor((RESOURCE_CAP-next.coins)/FARM_CROPS[i].value));if(n>0){coins+=creditResource(next,'coins',n*FARM_CROPS[i].value);f.inventory[i]-=n;}}
-  if(!coins)return {ok:false,message:'没有可领取的旧收成，或金币已满。'};
-  recordEconomy(next,'income','farm:legacy',{coins});message='旧收成已结算，金币 +'+coins;
  }else return {ok:false,message:'未知农田操作。'};
  // 首次照料就给下一次种植的种子；旧档直接收获也能领取，二者共用一次性标记。
  if(['water','harvest'].includes(action)&&!f.lessonRewarded&&f.dug>0&&f.planted>0){f.lessonRewarded=true;grantFarmSeeds(f,1,2);lesson=true;message+=' · 园艺入门完成，胡萝卜种子 +2';}

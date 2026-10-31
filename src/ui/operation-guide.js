@@ -70,6 +70,7 @@ export function createOperationGuide({game,root,workshop}){
   }
   // 地图教学先指向手机内应用，不能高亮已经移除的战场地图入口。
   if(dialog?.id==='phone-dialog'&&action?.id==='phone-button')return cue('phone-map','#phone-dialog [data-pack-action="map"]','点击手机里的地图');
+  if(dialog?.id==='logistics-dialog'&&operation?.kind==='vehicle'&&operation.type==='upgrade')return cue('vehicle-fit',operation.part==='engine'?`[data-fit-engine="${operation.choice??1}"]`:'[data-fit-armor="add-armor"]',operation.part==='engine'?'选择发动机换装':'加装装甲，注意载重');
   if(dialog?.id==='workshop-dialog'){
    if(!operation?.kind)return closeCue(dialog,step.label);
    const current=workshop.guideState(),op={...operation};
@@ -78,6 +79,7 @@ export function createOperationGuide({game,root,workshop}){
    if(op.type==='trial')op.owned=game.progress[op.kind==='vehicle'?'vehicleHulls':'weapons'][op.index]>0;
    if(op.type==='drive'&&current.kind===op.kind&&current.index===op.index&&game.progress.vehicleIndex===op.index&&game.vehicle.active)return closeCue(dialog,'战车已开出，返回地图驾驶');
    if(op.native)op.turret=nativeVehicleWeapon(op.index)?.weaponIndex;
+   if(op.type==='upgrade'&&op.kind==='vehicle'&&['engine','armor'].includes(op.part)&&current.kind==='vehicle'&&current.index===op.index&&current.page==='upgrade')return cue('vehicle-fit','#ws-vehicle-fit','打开载具装配');
    const state=workshop.guideState(op.type==='upgrade'?op.part:undefined);
    const result=workshopGuideCue(op,state);
    if(result?.prepare)workshop.guidePreview(result.prepare);
@@ -94,6 +96,7 @@ export function createOperationGuide({game,root,workshop}){
    const selector=`[data-story-chapter="${operation.chapter}"]`,node=dialog.querySelector(selector);
    return node?.getAttribute('aria-pressed')==='true'?cue('story-enter','[data-story-command="enter"]','从这里开始故事'):cue('story-chapter',selector,'选择这章故事');
   }
+  if(operation?.type==='sell-crops'&&dialog?.id==='seed-shop-dialog')return cue('sell-crops','#seed-shop-sell','出售背包作物，金币到账');
   if(dialog&&operation?.type==='click'&&dialog.id===operation.dialog){
    if(dialog.id==='fire-dialog'&&game.fireRescue?.phase!=='offered')return closeCue(dialog,'返回森林，沿指引出动');
    const node=dialog.querySelector(operation.selector);
@@ -121,7 +124,7 @@ export function createOperationGuide({game,root,workshop}){
     const plot=plots.find(p=>p.crop===null);return plot?cue('farm-plant',`[data-farm-cell="${plot.id}"]`,game.farmWork?.tool==='seed'?'点击田块或拖过空田，猫猫会播种':'点击空田，打开种子袋'):null;
    }
    const mature=plots.find(p=>p.crop!==null&&p.readyAt<=Date.now());
-   if(mature)return game.farmWork?.tool==='harvest'?cue('farm-harvest',`[data-farm-cell="${mature.id}"]`,operation.id==='water'&&lesson?.kind==='grow'?'已成熟，收割后重新播种一茬并及时浇水':'点击成熟作物，走近收割赚金币'):cue('farm-sickle','#farm-sickle','选镰刀，再点击成熟作物');
+   if(mature)return game.farmWork?.tool==='harvest'?cue('farm-harvest',`[data-farm-cell="${mature.id}"]`,operation.id==='water'&&lesson?.kind==='grow'?'已成熟，收割后重新播种一茬并及时浇水':'点击成熟作物，走近收割装入背包，出售赚金币'):cue('farm-sickle','#farm-sickle','选镰刀，再点击成熟作物');
    const growing=plots.find(p=>p.crop!==null);if(!growing)return null;
    const seconds=Math.max(1,Math.ceil((growing.readyAt-Date.now())/1000));
    return !growing.watered?game.farmWork?.tool==='water'?cue('farm-water-target',`[data-farm-cell="${growing.id}"]`,'点击田块浇水，加快本茬成长'):cue('farm-water','#farm-water',operation.id==='water'?'本次委托需要给这块田浇水':'可选：浇水提前成熟，也可先去巡林'):cue('farm-wait','#mainline-hud',`约${seconds}秒后成熟，可先去巡林`);

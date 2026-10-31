@@ -328,11 +328,11 @@
       "goal": {
         "harvestFor": "pistol-upgrade"
       },
-      "text": "收获成熟作物，攒够手枪的升级金币。",
+      "text": "收获成熟作物并出售，攒够手枪的升级金币。",
       "lines": [
-        "巡护回来，看看前面种下的田吧。收获的金币正好用来整备手枪、锻炼体力。",
+        "巡护回来，看看前面种下的田吧。出售收成的金币正好用来整备手枪、锻炼体力。",
         "优先去已经成熟的自种田；还没成熟，就沿指引找营地外已经长好的野田。打开种地，选择镰刀，再点击成熟作物。",
-        "收获一次后若金币仍不足，继续收下一块田。攒够剩余升级所需金币会直接开始整备，无须回来交任务。"
+        "收获后到种子小屋出售，金币仍不足就继续种田。攒够剩余升级所需金币会直接开始整备，无须回来交任务。"
       ],
       "finish": "整备钱备好了，去升级手枪，带栗子战斗积累经验吧。",
       "reward": {},
@@ -341,7 +341,7 @@
         "thanks": "收成已到账，直接继续升级吧。",
         "steps": [
           {
-            "label": "收获田地，攒升级金币",
+            "label": "收获并出售，攒升级金币",
             "hint": "优先收获已种好的田，未成熟则寻找营地外野田",
             "operation": {
               "type": "farm",
@@ -352,7 +352,7 @@
       },
       "action": {
         "type": "farm",
-        "label": "打开种地，收获金币"
+        "label": "收获作物，再到柜台出售"
       }
     },
     {
@@ -1125,12 +1125,12 @@
       "goal": {
         "all": [
           {
-            "path": "progress.vehicleHulls.0",
-            "min": 2
+            "path": "progress.logistics.builds.0.plates",
+            "min": 1
           },
           {
-            "path": "progress.vehicleParts.0.engine",
-            "min": 2
+            "path": "progress.logistics.builds.0.engine",
+            "min": 1
           },
           {
             "nativeLevel": 0,
@@ -1142,11 +1142,11 @@
           }
         ]
       },
-      "text": "战车装甲、引擎、专属主炮伤害各升到2级，并下车一次。",
+      "text": "战车加装1层装甲、换装高扭矩发动机，专属主炮伤害升到2级，并下车一次。",
       "lines": [
         "小夜悄悄来问我，车要是停在林外，是不是只能一个人走回来。他担心的其实是你，不是那几封信。",
-        "把松果战车装甲、引擎和专属主炮伤害各升到2级。装甲撑住耐久，引擎改善机动，主炮负责清开挡路的怪群。",
-        "在载具工坊选择车体或武器部件，预览后长按升级；最后下车一次。手持枪升级不会代替专属主炮，载具损坏后要等修复再手动召回。"
+        "把松果战车加装1层装甲、换装高扭矩发动机，专属主炮伤害升到2级。装甲撑住耐久，引擎改善机动，主炮负责清开挡路的怪群。",
+        "在载具工坊选择装配，更换发动机与叠加装甲；主武器仍通过部件升级；最后下车一次。手持枪升级不会代替专属主炮，载具损坏后送修，修好会停入停车场。"
       ],
       "finish": "车检查好了。青芽想请你先守住下一段清缴路线，等你平安回来，小夜才好放心再出门。",
       "reward": {
@@ -1154,11 +1154,11 @@
         "wood": 60
       },
       "guide": {
-        "cue": "小夜怕你接了远路却回不来。把松果战车装甲、引擎、主炮升到2级，再下车检查一次，替他放下这份担心。",
+        "cue": "小夜怕你接了远路却回不来。把松果战车加装1层装甲、换装高扭矩发动机，主炮升到2级，再下车检查一次，替他放下这份担心。",
         "thanks": "车检查好了。青芽想请你先守住下一段清缴路线，等你平安回来，小夜才好放心再出门。",
         "steps": [
           {
-            "label": "战车装甲升到2级",
+            "label": "战车加装1层装甲",
             "hint": "在车库安装装甲",
             "operation": {
               "type": "upgrade",
@@ -1169,13 +1169,14 @@
             "navigation": "garageEntry"
           },
           {
-            "label": "引擎升到2级",
+            "label": "换装高扭矩发动机",
             "hint": "在车库安装引擎",
             "operation": {
               "type": "upgrade",
               "kind": "vehicle",
               "index": 0,
-              "part": "engine"
+              "part": "engine",
+              "choice": 1
             },
             "navigation": "garageEntry"
           },
@@ -1402,80 +1403,80 @@
           {
             "any": [
               {
-                "path": "progress.vehicleHulls.0",
-                "min": 3
+                "path": "progress.logistics.builds.0.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.1",
-                "min": 3
+                "path": "progress.logistics.builds.1.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.2",
-                "min": 3
+                "path": "progress.logistics.builds.2.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.3",
-                "min": 3
+                "path": "progress.logistics.builds.3.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.4",
-                "min": 3
+                "path": "progress.logistics.builds.4.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.5",
-                "min": 3
+                "path": "progress.logistics.builds.5.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.6",
-                "min": 3
+                "path": "progress.logistics.builds.6.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.7",
-                "min": 3
+                "path": "progress.logistics.builds.7.plates",
+                "min": 2
               },
               {
-                "path": "progress.vehicleHulls.8",
-                "min": 3
+                "path": "progress.logistics.builds.8.plates",
+                "min": 2
               }
             ]
           },
           {
             "any": [
               {
-                "path": "progress.vehicleParts.0.engine",
-                "min": 3
+                "path": "progress.logistics.builds.0.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.1.engine",
-                "min": 3
+                "path": "progress.logistics.builds.1.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.2.engine",
-                "min": 3
+                "path": "progress.logistics.builds.2.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.3.engine",
-                "min": 3
+                "path": "progress.logistics.builds.3.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.4.engine",
-                "min": 3
+                "path": "progress.logistics.builds.4.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.5.engine",
-                "min": 3
+                "path": "progress.logistics.builds.5.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.6.engine",
-                "min": 3
+                "path": "progress.logistics.builds.6.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.7.engine",
-                "min": 3
+                "path": "progress.logistics.builds.7.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.8.engine",
-                "min": 3
+                "path": "progress.logistics.builds.8.engine",
+                "min": 2
               }
             ]
           },
@@ -1509,9 +1510,9 @@
           }
         ]
       },
-      "text": "已有车体装甲、引擎和一门主力专属主炮各达到3级。",
+      "text": "已有车体加装2层装甲、换装重载发动机，主力专属主炮达到3级。",
       "lines": [
-        "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到3级，不必为这次委托另买高级载具。",
+        "下一班巡护又要出发了。沿用已有车辆，加装2层装甲、换装重载发动机，主力专属主炮提升到3级，不必为这次委托另买高级载具。",
         "不同已有车辆的整备成果都可核验；无主炮的代步车可配合已拥有战车的主炮完成检查。"
       ],
       "finish": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
@@ -1521,11 +1522,11 @@
         "parts": 4
       },
       "guide": {
-        "cue": "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到3级，不必为这次委托另买高级载具。",
+        "cue": "下一班巡护又要出发了。沿用已有车辆，加装2层装甲、换装重载发动机，主力专属主炮提升到3级，不必为这次委托另买高级载具。",
         "thanks": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
         "steps": [
           {
-            "label": "已有车体装甲达到3级",
+            "label": "已有车体加装2层装甲",
             "hint": "沿用已有装备，已达标无需重复升级",
             "operation": {
               "type": "upgrade",
@@ -1546,7 +1547,7 @@
             "navigation": "garageEntry"
           },
           {
-            "label": "已有车辆引擎达到3级",
+            "label": "已有车辆换装重载发动机",
             "hint": "沿用已有装备，已达标无需重复升级",
             "operation": {
               "type": "upgrade",
@@ -1562,7 +1563,8 @@
                 7,
                 8
               ],
-              "part": "engine"
+              "part": "engine",
+              "choice": 2
             },
             "navigation": "garageEntry"
           },
@@ -2025,80 +2027,80 @@
           {
             "any": [
               {
-                "path": "progress.vehicleHulls.0",
-                "min": 4
+                "path": "progress.logistics.builds.0.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.1",
-                "min": 4
+                "path": "progress.logistics.builds.1.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.2",
-                "min": 4
+                "path": "progress.logistics.builds.2.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.3",
-                "min": 4
+                "path": "progress.logistics.builds.3.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.4",
-                "min": 4
+                "path": "progress.logistics.builds.4.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.5",
-                "min": 4
+                "path": "progress.logistics.builds.5.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.6",
-                "min": 4
+                "path": "progress.logistics.builds.6.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.7",
-                "min": 4
+                "path": "progress.logistics.builds.7.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.8",
-                "min": 4
+                "path": "progress.logistics.builds.8.plates",
+                "min": 3
               }
             ]
           },
           {
             "any": [
               {
-                "path": "progress.vehicleParts.0.engine",
-                "min": 4
+                "path": "progress.logistics.builds.0.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.1.engine",
-                "min": 4
+                "path": "progress.logistics.builds.1.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.2.engine",
-                "min": 4
+                "path": "progress.logistics.builds.2.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.3.engine",
-                "min": 4
+                "path": "progress.logistics.builds.3.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.4.engine",
-                "min": 4
+                "path": "progress.logistics.builds.4.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.5.engine",
-                "min": 4
+                "path": "progress.logistics.builds.5.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.6.engine",
-                "min": 4
+                "path": "progress.logistics.builds.6.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.7.engine",
-                "min": 4
+                "path": "progress.logistics.builds.7.engine",
+                "min": 2
               },
               {
-                "path": "progress.vehicleParts.8.engine",
-                "min": 4
+                "path": "progress.logistics.builds.8.engine",
+                "min": 2
               }
             ]
           },
@@ -2132,9 +2134,9 @@
           }
         ]
       },
-      "text": "已有车体装甲、引擎和一门主力专属主炮各达到4级。",
+      "text": "已有车体加装3层装甲、换装重载发动机，主力专属主炮达到4级。",
       "lines": [
-        "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到4级，不必为这次委托另买高级载具。",
+        "下一班巡护又要出发了。沿用已有车辆，加装3层装甲、换装重载发动机，主力专属主炮提升到4级，不必为这次委托另买高级载具。",
         "不同已有车辆的整备成果都可核验；无主炮的代步车可配合已拥有战车的主炮完成检查。"
       ],
       "finish": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
@@ -2144,11 +2146,11 @@
         "parts": 4
       },
       "guide": {
-        "cue": "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到4级，不必为这次委托另买高级载具。",
+        "cue": "下一班巡护又要出发了。沿用已有车辆，加装3层装甲、换装重载发动机，主力专属主炮提升到4级，不必为这次委托另买高级载具。",
         "thanks": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
         "steps": [
           {
-            "label": "已有车体装甲达到4级",
+            "label": "已有车体加装3层装甲",
             "hint": "沿用已有装备，已达标无需重复升级",
             "operation": {
               "type": "upgrade",
@@ -2169,7 +2171,7 @@
             "navigation": "garageEntry"
           },
           {
-            "label": "已有车辆引擎达到4级",
+            "label": "已有车辆换装重载发动机",
             "hint": "沿用已有装备，已达标无需重复升级",
             "operation": {
               "type": "upgrade",
@@ -2185,7 +2187,8 @@
                 7,
                 8
               ],
-              "part": "engine"
+              "part": "engine",
+              "choice": 2
             },
             "navigation": "garageEntry"
           },
@@ -2807,40 +2810,40 @@
           {
             "any": [
               {
-                "path": "progress.vehicleHulls.0",
-                "min": 4
+                "path": "progress.logistics.builds.0.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.1",
-                "min": 4
+                "path": "progress.logistics.builds.1.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.2",
-                "min": 4
+                "path": "progress.logistics.builds.2.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.3",
-                "min": 4
+                "path": "progress.logistics.builds.3.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.4",
-                "min": 4
+                "path": "progress.logistics.builds.4.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.5",
-                "min": 4
+                "path": "progress.logistics.builds.5.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.6",
-                "min": 4
+                "path": "progress.logistics.builds.6.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.7",
-                "min": 4
+                "path": "progress.logistics.builds.7.plates",
+                "min": 3
               },
               {
-                "path": "progress.vehicleHulls.8",
-                "min": 4
+                "path": "progress.logistics.builds.8.plates",
+                "min": 3
               }
             ]
           }

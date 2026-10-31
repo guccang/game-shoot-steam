@@ -53,9 +53,11 @@ function condition(c,path){
 }
 // 操作只能调用已有入口；装备索引必须对应正式目录。
 function operation(op,path){
- object(op,path,['type'],['dialog','selector','label','kind','index','part','indices','chapter','native','id','gate','record','win']);
+ object(op,path,['type'],['dialog','selector','label','kind','index','part','indices','chapter','native','id','gate','record','win','choice']);
  if(!OPERATIONS.includes(op.type))fail(path+'.type','操作类型未实现');
  if(op.type==='farm'&&!['dig','plant','water','harvest'].includes(op.id))fail(path+'.id','农活步骤不存在');
+ // 发动机任务只指向正式可换装型号，报价和高亮使用相同选择。
+ if(op.choice!==undefined&&(op.type!=='upgrade'||op.kind!=='vehicle'||op.part!=='engine'||![1,2].includes(op.choice)))fail(path+'.choice','发动机型号不存在');
  if(op.kind&&!['weapons','vehicle'].includes(op.kind))fail(path+'.kind','装备类别不存在');
  const choices=op.indices||('index'in op?[op.index]:[]);
  if(op.indices)array(op.indices,path+'.indices');

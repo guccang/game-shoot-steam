@@ -1,0 +1,53 @@
+// 背包货物与载具装配共用手机底板，显示正式重量、费用和保存失败原因。
+import {createEventScope} from '../platform/events.js';
+import {catLoad,vehicleLoad,cropMass} from '../progression/load-weight.js';
+import {vehicleBuild,VEHICLE_ENGINES,LOAD_RULES,armorPlateMass} from '../config/vehicle-load.js';
+import {vehicleModel,vehicleMaxHp} from '../config/vehicles.js';
+import {FARM_CROPS,FARM_SEED_DOOR} from '../config/farm.js';
+import {transferCargo,cargoAccessible,sellCrops,canSellCrops} from '../core/cargo.js';
+import {configureVehicleBuild,vehicleBuildReason,vehicleBuildPrice} from '../core/vehicle-build.js';
+import {requestWorldNavigation} from '../core/world-navigation.js';
+// 按一位小数展示千克，运算仍使用原始重量。
+export function kg(n){return Number(n.toFixed(1))+' kg';}
+// 背包、货舱和装配使用独立状态；打开不会自动装卸或收费。
+export function createLogistics({game,root,dialogs,onChange}){
+ const scope=createEventScope(),panel=root.createElement('dialog');panel.id='logistics-dialog';panel.className='ui-panel ui-page logistics';panel.setAttribute('aria-labelledby','logistics-title');
+ panel.innerHTML='<header class="ui-panel__header"><div><h2 id="logistics-title">背包与货舱</h2><p id="logistics-subtitle"></p></div><button id="logistics-close" class="ui-close" aria-label="关闭货物与装配">×</button></header><div class="ui-panel__body" id="logistics-content"></div><footer class="ui-panel__footer"><p id="logistics-message" role="status"></p><button class="ui-button" data-load-action="close">返回</button></footer>';root.body.append(panel);
+ let mode='cargo',hull=null,message='';const get=id=>panel.querySelector('#logistics-'+id);
+ // 负重进度条以文字解释过载，避免只依赖颜色判断状态。
+ function meter(label,weight,capacity){return `<div class="ui-inset"><b>${label} ${kg(weight)} / ${kg(capacity)}</b><progress max="${capacity}" value="${Math.min(weight,capacity)}"></progress><small>${weight>capacity?'超重 '+kg(weight-capacity):'剩余 '+kg(capacity-weight)}</small></div>`;}
+ // 从实际背包和选中车型生成货物列表，切换车辆不会合并不同货舱。
+ function renderCargo(){
+  const cat=catLoad(game),owned=game.progress.vehicleHulls.map((n,i)=>n?i:null).filter(i=>i!==null);if(!owned.includes(hull))hull=owned[0]??null;
+  const b=hull===null?null:vehicleBuild(game.progress,hull),v=hull===null?null:vehicleLoad(game,hull,{driver:true}),accessible=hull!==null&&cargoAccessible(game,hull);
+  get('content').innerHTML=meter('猫猫背包',cat.weight,cat.capacity)+`<p>猫猫体重 ${kg(cat.body)} · 当前枪械 ${kg(cat.weapon)} · 弹夹与弹药 ${kg(cat.ammo)} · 作物 ${kg(cat.crops)}。背包超重时步行减速；其他枪械存于工坊。</p><div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`+
+   (b?`<label>选择货舱 <select id="logistics-hull">${owned.map(i=>`<option value="${i}" ${i===hull?'selected':''}>${vehicleModel(i).name}</option>`).join('')}</select></label>${meter('载荷（含驾驶员）',v.payload,v.capacity)}<p>空车含货物总重 ${kg(vehicleLoad(game,hull,{driver:false}).mass)} · 剩余牵引能力 ${kg(v.towCapacity)}。${accessible?'可以装卸。':'请到这辆车旁装卸。'}车辆超载时无法移动。</p>`:'<p>尚未拥有载具，可以先携带作物到收购点出售。</p>')+
+   FARM_CROPS.map((crop,i)=>({crop,i,bag:game.progress.farm.inventory[i],car:b?.cargo[i]||0})).filter(r=>r.bag||r.car).map(r=>`<section class="ui-section"><h3>${r.crop.name} · 每份 ${kg(cropMass(r.i))}</h3><p>背包 ${r.bag} · 货舱 ${r.car} · 收购价 ${r.crop.value} 金币/份</p><div class="logistics-actions">${[['load',r.bag,'装入'],['unload',r.car,'取出']].flatMap(([action,n,label])=>[1,10,n].filter((count,i,all)=>count>0&&all.indexOf(count)===i).map(count=>`<button class="ui-button" data-cargo="${action}" data-crop="${r.i}" data-count="${count}" ${accessible&&n>=count?'':'disabled'}>${label} ${count}</button>`)).join('')}</div></section>`).join('');
+ }
+ // 发动机、装甲、耐久、载重与价格都来自同一正式配置。
+ function renderFit(){
+  const p=game.progress,b=vehicleBuild(p,hull),load=vehicleLoad(game,hull,{driver:true}),reason=vehicleBuildReason(game,hull),hp=vehicleMaxHp({...p,vehicleIndex:hull});
+  get('content').innerHTML=`<h3>${vehicleModel(hull).name}</h3>${meter('当前载荷（含驾驶员）',load.payload,load.capacity)}<p>HP ${hp} · 剩余牵引能力 ${kg(load.towCapacity)} · 持有金币 ${p.coins}</p><p>${reason||'装配保留当前耐久损耗比例。已买发动机可免费切换，拆下装甲存入工坊。'}</p><h3>发动机换装</h3>`+VEHICLE_ENGINES.map((engine,i)=>{const cost=vehicleBuildPrice(p,hull,'engine',i);return `<section class="ui-section"><b>${engine.name}</b><p>载重 ×${engine.payload} · 牵引 ×${engine.tow} · 速度 ×${engine.speed}</p><button class="ui-button" data-fit-engine="${i}" ${reason||b.engine===i||p.coins<cost?'disabled':''}>${b.engine===i?'已安装':b.engines.includes(i)?'免费换装':`购买并安装 · ${cost} 金币`}</button></section>`;}).join('')+
+   `<section class="ui-section"><h3>叠加装甲 · ${b.plates} 层</h3><p>每层 +${vehicleModel(hull).hpGrowth} HP / +${kg(armorPlateMass(hull))}；工坊备用 ${b.spares} 层。装甲也占载重和牵引余量。</p><div class="logistics-actions"><button class="ui-button" data-fit-armor="add-armor" ${reason||b.plates>=LOAD_RULES.maxPlates||p.coins<vehicleBuildPrice(p,hull,'add-armor')?'disabled':''}>加装一层 · ${vehicleBuildPrice(p,hull,'add-armor')} 金币</button><button class="ui-button" data-fit-armor="remove-armor" ${reason||!b.plates?'disabled':''}>拆下一层</button></div></section>`;
+ }
+ // 仅操作后刷新，长列表不会被每帧重绘打断滚动。
+ function render(){get('title').textContent=mode==='fit'?'载具装配':'背包与货舱';get('subtitle').textContent=mode==='fit'?'发动机决定运力，装甲增加耐久和重量':'作物先收进背包，出售后获得金币';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();}
+ dialogs.register(panel.id,{focusId:'logistics-close',onOpen:render});
+ // 统一入口保持嵌套弹窗暂停归属。
+ function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';dialogs.open(panel.id);}
+ scope.on(get('close'),'click',()=>dialogs.close(panel.id));
+ scope.on(panel,'change',event=>{if(event.target.id==='logistics-hull'){hull=Number(event.target.value);render();}});
+ scope.on(panel,'click',event=>{
+  const node=event.target.closest('button');if(!node||node.disabled)return;let result;
+  if(node.dataset.loadAction==='close'){dialogs.close(panel.id);return;}
+  if(node.dataset.loadAction==='market'){requestWorldNavigation(game,FARM_SEED_DOOR,'前往作物收购点',{direct:true});for(const id of ['logistics-dialog','backpack-dialog','phone-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
+  if(node.dataset.loadAction==='sell')result=sellCrops(game);
+  if(node.dataset.cargo)result=transferCargo(game,hull,Number(node.dataset.crop),Number(node.dataset.count),node.dataset.cargo);
+  if(node.dataset.fitEngine!==undefined)result=configureVehicleBuild(game,hull,'engine',Number(node.dataset.fitEngine));
+  if(node.dataset.fitArmor)result=configureVehicleBuild(game,hull,node.dataset.fitArmor);
+  if(result){message=result.message;render();onChange();}
+ });
+ // 销毁时释放本页面事件和DOM。
+ function dispose(){scope.dispose();panel.remove();}
+ return {open,dispose};
+}

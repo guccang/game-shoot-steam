@@ -1,4 +1,5 @@
 import {heroTalentMultiplier} from './hero-talents.js';
+import {vehicleBuild} from './vehicle-load.js';
 // 战车属性来自内容表，名称、资源身份和载具机制保留稳定绑定。
 import content from './content/vehicles.json' with {type:'json'};
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
@@ -17,7 +18,8 @@ export const VEHICLE_MAX_LEVEL = GAMEPLAY_VALUES.progress.maxEquipmentLevel;
 export function vehicleMaxHp(progress) {
   if (Number.isFinite(progress.storyHull)) return progress.storyHull;
   const model = vehicleModel(progress.vehicleIndex);
-  return Math.round(armorHealth(model.baseHp,model.hpGrowth,progress.vehicleLevel,progress)*heroTalentMultiplier(progress,'hullHealth'));
+  const hp=progress.temporaryGrowth?armorHealth(model.baseHp,model.hpGrowth,progress.vehicleLevel,progress):model.baseHp+vehicleBuild(progress,progress.vehicleIndex).plates*model.hpGrowth;
+  return Math.round(hp*heroTalentMultiplier(progress,'hullHealth'));
 }
 // 升级费用随载具等级递增，与炮塔购买费用分别结算。
 export function vehicleUpgradeCost(level, index = 0, progress) {

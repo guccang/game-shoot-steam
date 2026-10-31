@@ -1,3 +1,5 @@
+import {vehicleBuild,installedEngine} from '../../config/vehicle-load.js';
+import {vehicleLoad} from '../../progression/load-weight.js';
 import {vehicleService,personalFleet} from '../../core/vehicle-repair.js';
 import {facilityOpen} from '../../config/town-restoration.js';
 import {parkingFleetApplies} from '../../core/camp-parking.js';
@@ -114,6 +116,8 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
       if(level){action.textContent=transfer.label;action.disabled=v.cooldown>0;}
     }
     if(level&&personalFleet(game)&&(v.hp<=0||vehicleService(game,viewed)?.phase))$('vehicle-collection-status').textContent=v.hp<=0?'报废 · 需要维修':'维修中心待取车';
+    // 永久车辆展示装甲、动力与载荷，隐藏已经停用的等级购买入口。
+    if(!game.realm?.loadout){$('vehicle-upgrade').parentElement.hidden=true;$('vehicle-upgrade').disabled=true;$('vehicle-collection-name').textContent=vehicle.name;for(const node of $('vehicle-roster').children){const i=Number(node.dataset.vehiclePreview);node.querySelector('small').textContent=p.vehicleHulls[i]?(p.vehicleIndex===i?'已选用 · ':'')+vehicleBuild(p,i).plates+'层装甲':'未拥有';}const weight=vehicleLoad(game,viewed,{driver:true});$('vehicle-upgrade-preview').textContent='';$('vehicle-collection-description').textContent=vehicle.description+' · '+installedEngine(p,viewed).name+' · '+vehicleBuild(p,viewed).plates+'层附加装甲 · 载荷 '+weight.payload.toFixed(1)+' / '+weight.capacity+' kg。前往载具工坊换装发动机或增减装甲。';}
     $('vehicle-collection-image').setAttribute('aria-label', vehicle.name);
     drawVehicleIcon($('vehicle-collection-image').getContext('2d'), viewed);
     $('vehicle-turret-owner').textContent = i18nText("ui.panels.vehicles.c1bd9db13e", { p0: (vehicleModel(p.vehicleIndex).name) });

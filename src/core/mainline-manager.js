@@ -1,5 +1,6 @@
 import {cottageRestGuideActive,cottageRestObjective} from './cottage-guide.js';
 import {beginGardeningLesson} from '../progression/mainline-gardening.js';
+import {FARM_SEED_DOOR} from '../config/farm.js';
 import {harvestBudget,harvestGuidePlot,harvestGuideHint} from './harvest-guide.js';
 import {restoredTaskToStart,startRestoredTask} from '../progression/restoration-task.js';
 import {mainlineResourceHint} from '../progression/mainline-cost.js';
@@ -55,6 +56,7 @@ export function mainlineSteps(game){
   const condition=conditions[index],done=mainlineCondition(game,condition),value=condition.path?Number(read(game,condition.path)):NaN;
   const progress=condition.min>1&&Number.isFinite(value)?`${Math.min(condition.min,Math.max(0,Math.floor(value)))}/${condition.min}`:'';
   const resourceHint=!done?(condition.harvestFor?harvestGuideHint(game,task):mainlineResourceHint(game.progress,condition)):'';
+  if(condition.harvestFor&&!done&&game.progress.farm.inventory.some(Boolean))return {...step,done,progress,resourceHint,hint:resourceHint,operation:{type:'sell-crops'}};
   // 极端旧档没有作物时沿用开田、选种教学，补种成熟后仍通过同一收割事务完成。
   if(condition.harvestFor&&!done&&!harvestGuidePlot(game))return {...step,done,progress,resourceHint,hint:resourceHint,operation:{type:'farm',id:game.progress.farm.plots.some(p=>p.mapId===game.mapId&&p.crop===null)?'plant':'dig'}};
   return {...step,done,progress,resourceHint,hint:resourceHint||step.hint};
@@ -96,6 +98,7 @@ export function mainlineObjective(game,{ignoreTracking=false}={}){
  const phase=game.progress.mainline.phase,step=mainlineStep(game);
  // 收获赚金币直接导航现有田块，采空后重新选择，不要求返回 NPC 交付。
  if(phase==='doing'&&task.goal.harvestFor){
+  if(game.progress.farm.inventory.some(Boolean))return {task,phase,key:'harvest-sale',site:{...FARM_SEED_DOOR,name:'种子小屋收购柜台'},navigation:true,label:'到种子小屋出售作物',hint:harvestGuideHint(game,task)};
   const plot=harvestGuidePlot(game);
   return {task,phase,key:plot?'harvest-plot-'+plot.id:'harvest-plant',site:plot?{...plot,name:plot.wild?'营地外成熟野田':'先前种下的田'}:{...game.player,mapId:game.mapId,name:'就近种田'},navigation:!!plot,label:step?.label||task.text,hint:harvestGuideHint(game,task,plot)};
  }

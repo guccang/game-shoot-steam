@@ -1746,3 +1746,9 @@ export async function inspectMailbox(game,root){
  const {unreadMailCount}=await import('../progression/mailbox.js');
  return {designCriterion:'phone-mail',unread:unreadMailCount(game.progress),count:game.progress.mailbox.items.length,parcels:game.progress.farm.delivery.parcels.length,open:!!root.getElementById('mailbox-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 负重验收读取正式重量、装配、牵引和页面边界，不生成替代展示状态。
+export async function inspectVehicleLoadoutWeight(game,root){
+ const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
+ return {designCriterion:'vehicle-loadout-weight',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),tow:game.progress.logistics.tow,build:game.progress.logistics.builds[game.vehicle.index],open:!!root.getElementById('logistics-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

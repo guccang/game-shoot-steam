@@ -2,6 +2,7 @@
 import {economyUpgradeCost,bindEconomy,economyFor} from '../config/economy.js';
 import {equipmentRecipe} from './equipment-goals.js';
 import {nativeVehicleWeapon,grantVehicleArmament} from '../config/vehicle-armaments.js';
+import {vehicleBuildPrice} from '../core/vehicle-build.js';
 import {MOD_COST} from '../config/weapon-mods.js';
 import {HEROES} from '../config/heroes.js';
 import {campPurchasePrice} from './camp-level.js';
@@ -35,6 +36,7 @@ function apply(p,condition,cost){
  if('nativeLevel' in condition){const hull=condition.nativeLevel;if(!p.vehicleHulls[hull])grow(p,cost,'vehicleHulls',hull,1);grow(p,cost,'vehicleWeapons',nativeVehicleWeapon(hull).weaponIndex,condition.min);return;}
  if(!condition.path||!condition.min)return;
  const [,field,raw,part]=condition.path.split('.'),index=Number(raw);
+ if(field==='logistics'){const pieces=condition.path.split('.'),hull=Number(pieces[3]),key=pieces[4],b=p.logistics.builds[hull];if(!p.vehicleHulls[hull])grow(p,cost,'vehicleHulls',hull,1);if(key==='plates'){while(b.plates<condition.min){cost.coins+=vehicleBuildPrice(p,hull,'add-armor');b.plates++;if(b.spares)b.spares--;}}else if(key==='engine'&&b.engine<condition.min){cost.coins+=vehicleBuildPrice(p,hull,'engine',condition.min);b.engine=condition.min;if(!b.engines.includes(b.engine))b.engines.push(b.engine);}return;}
  if(field==='mods'){if(!p.mods[index]){add(cost,MOD_COST);p.mods[index]=1;}return;}
  grow(p,cost,field,index,condition.min,part);
 }
@@ -42,7 +44,7 @@ function apply(p,condition,cost){
 export function mainlineConditionCost(progress,condition){const cost=Object.fromEntries(KEYS.map(k=>[k,0]));apply(copy(progress),condition,cost);return cost;}
 // 等级未变时复用正式预算，HUD 每帧与收获任务共用缓存；钱包变化不影响成本。
 export function cachedMainlineConditionCost(progress,condition){
- const signature=JSON.stringify([progress.weapons,progress.heroes,progress.vehicleHulls,progress.vehicleWeapons,progress.weaponParts,progress.vehicleParts,progress.turretParts,progress.mods,progress.campLevel?.xp,progress.arrival?.phase]);
+ const signature=JSON.stringify([progress.logistics,progress.weapons,progress.heroes,progress.vehicleHulls,progress.vehicleWeapons,progress.weaponParts,progress.vehicleParts,progress.turretParts,progress.mods,progress.campLevel?.xp,progress.arrival?.phase]);
  let cached=hintCosts.get(progress);if(!cached||cached.signature!==signature||cached.economy!==economyFor(progress)){cached={signature,economy:economyFor(progress),costs:new Map()};hintCosts.set(progress,cached);}
  if(!cached.costs.has(condition))cached.costs.set(condition,mainlineConditionCost(progress,condition));
  return cached.costs.get(condition);
@@ -53,6 +55,6 @@ export function mainlineResourceHint(progress,condition){
  const missing=KEYS.filter(k=>cost[k]>(['coins','wood'].includes(k)?progress[k]:progress.materials?.[k]||0));
  if(!missing.length)return '';
  const gaps=missing.map(k=>`${names[k]}${Math.ceil(cost[k]-(['coins','wood'].includes(k)?progress[k]:progress.materials?.[k]||0))}`);
- const routes=[];if(missing.includes('wood'))routes.push('木头：装备电锯，营地周围采树');if(missing.includes('coins'))routes.push('金币：种田收获是主要来源，使用掉落种子播种；任务和玩法奖励照常，怪物不掉金币');if(missing.some(k=>!['coins','wood'].includes(k)))routes.push('材料：清缴怪潮与领主，或完成娱乐挑战');
+ const routes=[];if(missing.includes('wood'))routes.push('木头：装备电锯，营地周围采树');if(missing.includes('coins'))routes.push('金币：种田收获后出售是主要来源，使用掉落种子播种；任务和玩法奖励照常，怪物不掉金币');if(missing.some(k=>!['coins','wood'].includes(k)))routes.push('材料：清缴怪潮与领主，或完成娱乐挑战');
  return `还差${gaps.join('、')}。${routes.join('；')}。`;
 }

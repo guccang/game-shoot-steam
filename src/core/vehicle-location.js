@@ -20,6 +20,7 @@ export function vehicleLocations(game){
   else if(v.index===4&&game.fireGarageParked){site={...FIRE_GARAGE,mapId:'forest'};status='消防站车库';}
   else if(record){site=parkingRecordSite(record);status=record.spot?'停车场':'原地停放';}
   else{site={...canonical(game.cottage?.outside||game.player),mapId:game.mapId};status='随行载具';}
+  if(game.progress.logistics?.tow?.target===v.index)status='自行牵引中';
   return {...site,id:'vehicle-location-'+v.index,hull:v.index,name:vehicleModel(v.index).shortName,status};
  });
 }

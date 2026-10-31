@@ -71,7 +71,7 @@ function drawTow(c,item,game){
 export function drawVehicleServiceObject(c,item,game,night=0,reduced=false){
  if(item.type==='repair-center'){drawCenter(c,item,night);return;}
  if(item.type==='repair-tow'){drawTow(c,item,game);return;}
- drawParkedHull(c,item,game,item.hull);
+ drawParkedHull(c,item,game,item.hull,game.progress.logistics?.tow?.target===item.hull?{wheel:game.progress.vehicleService[item.hull].wheel,track:game.progress.vehicleService[item.hull].wheel}:null);
  if(item.type==='repair-wreck'||item.order?.phase==='repairing')drawWreckDamage(c,item.x,item.y,reduced?0:game.time);
  if(item.type==='repair-bay'){
   const r=item.order;box(c,item.x-38,item.y+20,76,9,4,'#e9dfb5','#41634a',1.5);box(c,item.x-36,item.y+22,72*Math.min(1,r.timer/C.repairSeconds),5,2,'#79a674');

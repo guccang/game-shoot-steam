@@ -61,6 +61,7 @@ export function repairUnavailable(game,remote=false){
 }
 // 先核对路线、所有权与金币，再一次扣费落单；重复点击不会二次收费。
 export function requestVehicleRepair(game,index,remote=false){
+ if(game.progress.logistics?.tow?.target===index)return {ok:false,message:'这辆车正在自行牵引，请到厂交车享受优惠，或先解除牵引再呼叫救援。'};
  const reason=repairUnavailable(game,remote);if(reason)return {ok:false,message:reason};
  const v=game.vehicles[index],old=vehicleService(game,index);
  if(!v||!game.progress.vehicleHulls[index])return {ok:false,message:'尚未拥有这辆载具。'};

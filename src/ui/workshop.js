@@ -3,6 +3,7 @@ import {equipmentQuestStatus} from './equipment-quests.js';
 import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
 import {arrivalPistolPurchase} from '../config/ranger-arrival.js';
 import {workshopCatalog} from '../progression/workshop-catalog.js';
+import {vehicleBuild,installedEngine} from '../config/vehicle-load.js';
 import {WORKSHOP_FUNCTIONS,renderWorkshopFunctions} from './workshop/function-tabs.js';
 import {vehicleTransferState,activateVehicleTransfer} from './vehicle-transfer.js';
 import {challengeRankIcon} from '../rendering/challenge-rank.js';
@@ -37,7 +38,7 @@ import {recordMainlineTrial} from '../core/mainline-manager.js';
 import {mainlinePurchaseReason} from '../config/mainline-gates.js';
 
 // 所有入口共用一个弹窗；外部注入持久化事务和隔离靶场，界面不依赖 Game 类型。
-export function createWorkshop({ game, root, dialogs, commit, createTrial, onChange, onEquipmentStory }) {
+export function createWorkshop({ game, root, dialogs, commit, createTrial, onChange, onEquipmentStory, onVehicleFit }) {
   const host = root.defaultView, scope = createEventScope();
   const dialog = root.createElement('dialog');
   dialog.id = 'workshop-dialog'; dialog.className = 'workshop-dialog';
@@ -324,9 +325,11 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
       if(part.growthBounds||target.index===2&&part.bounds)drawWorkshopPartComparison(c,target.index,part,level);
       else {c.save();c.translate(60,36);c.scale(2,2);drawEquipmentPart(c,target.index,part,level,true);c.restore();}
     }
+    if(target.kind==='vehicle')$('ws-components').innerHTML='<button id="ws-vehicle-fit" data-ws-fit><b>发动机与装甲</b><small>换装发动机 · 叠加装甲 · 查看载重</small></button>';
     const levels = kind === 'weapons' ? p.weapons : p.vehicleHulls;
     const shownLevel=editingTurret===null?levels[index]:p.vehicleWeapons[editingTurret];
     $('ws-level').textContent = shownLevel ? i18nText("common.level", { p0: shownLevel }) : i18nText("ui.inventory.2f0baebfe7");
+    if(kind==='vehicle'&&editingTurret===null&&shownLevel)$('ws-level').textContent=vehicleBuild(p,index).plates+'层装甲 · '+installedEngine(p,index).name;
     // 武器与载具各页共用纯图标侧栏，完整名称和状态通过无障碍标签提供。
     $('ws-shelf').innerHTML = order.map(i =>
       `<button type="button" data-ws-item="${i}" aria-pressed="${i === index}" aria-label="${catalog[i].name}，${levels[i] ? i18nHtml("common.level", { p0: levels[i] }) : i18nText("ui.inventory.2f0baebfe7")}"><canvas width="150" height="100" aria-hidden="true"></canvas></button>`).join('');
@@ -375,7 +378,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     $('ws-turret-upgrade').hidden = kind !== 'vehicle' || selectedPart === null || !p.vehicleWeapons[selectedPart] || !!draft;
     if(tray==='components') $('ws-turret-buy').hidden=$('ws-turret-upgrade').hidden=true;
     $('ws-turret-buy').disabled = $('ws-turret-upgrade').disabled = !!draft;
-    if(functionPage==='upgrade'&&kind==='vehicle'&&editingTurret===null)$('ws-part-info').textContent='升级车体装甲与动力';
+    if(functionPage==='upgrade'&&kind==='vehicle'&&editingTurret===null)$('ws-part-info').textContent='换装发动机提升运力；叠加装甲增加耐久与重量';
     renderStats(); renderQuote(); paint();
     for (const item of scroll) { $(item.id).scrollLeft = item.left; $(item.id).scrollTop = item.top; }
   }
@@ -389,6 +392,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   }
   // 点选装备部件后自动播放替换预览，长按完成才执行实际升级。
   function placeUpgrade(key) {
+    if(kind==='vehicle'&&editingTurret===null){onVehicleFit(index);return;}
     comparison=null;
     stopTrial();construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0;
     selectedPart=null;selectedUpgrade=key;payment=null;before=false;
@@ -490,6 +494,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     const mode = event.target.closest('[data-ws-mode]'), item = event.target.closest('[data-ws-item]'), part = event.target.closest('[data-ws-part]');
     if (mode) choose(mode.dataset.wsMode, mode.dataset.wsMode === 'weapons' ? game.progress.weapon : game.progress.vehicleIndex);
     if (item) choose(kind, Number(item.dataset.wsItem));
+    if(event.target.closest('[data-ws-fit]')){onVehicleFit(index);return;}
     const upgrade=event.target.closest('[data-ws-upgrade]');if(upgrade&&!upgrade.disabled)placeUpgrade(upgrade.dataset.wsUpgrade);
     if(part&&!part.disabled)place(Number(part.dataset.wsPart));
   });

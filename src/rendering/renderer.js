@@ -1,4 +1,5 @@
 import {catHomeObjects,drawCatHome} from './cat-home.js';
+import {drawPlayerTow} from './player-towing.js';
 import {furnitureShopObjects,drawFurnitureShop} from './furniture-shop.js';
 import {vehicleServiceObjects,drawVehicleServiceObject} from './vehicle-repair.js';
 import {storyCampScene} from './story-camp.js';
@@ -323,6 +324,7 @@ export class Renderer {
     const riverCrossings=visibleBodies(riverCrossingObjects(source),view,120);
     for(const item of riverCrossings)drawRiverCrossingGround(c,item,light.night);
     for (const tree of g.trees) drawForestShadow(c, tree, light.night, winter, this.ground.season);
+    drawPlayerTow(c,source,g.player);
     const entrances = visibleBodies(valley ? [] : source.realm ? source.realm.mode === 'tower' ? [towerRealmLandmark(source.realm.arena)] : [] : REALM_ENTRANCES, view, 190);
     for (const entry of entrances) drawRealmEntranceGround(c, entry, light.night);
     const storyPosts=visibleBodies([...storyPostObjects(camp),...clearingPostObjects(camp)],view,150);

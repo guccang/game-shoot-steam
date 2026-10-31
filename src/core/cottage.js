@@ -1,3 +1,4 @@
+import {movementLoadFactor} from '../progression/load-weight.js';
 import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
 import {facilityOpen} from '../config/town-restoration.js';
@@ -37,7 +38,7 @@ export function updateCottage(game,dt,input){
   if(room.sleep){room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
   // 选择休息时间时不继续走动或推进出口计时，原生弹窗负责圈定操作焦点。
   if(room.restOpen){p.vx=p.vy=0;updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
-  const before={x:p.x,y:p.y},length=Math.max(1,Math.hypot(input.x,input.y)),dx=input.x/length*115*dt,dy=input.y/length*115*dt;
+  const before={x:p.x,y:p.y},length=Math.max(1,Math.hypot(input.x,input.y)),speed=115*movementLoadFactor(game),dx=input.x/length*speed*dt,dy=input.y/length*speed*dt;
   if(!cottageBlocked(p.x+dx,p.y,game))p.x+=dx;if(!cottageBlocked(p.x,p.y+dy,game))p.y+=dy;
   p.vx=(p.x-before.x)/Math.max(dt,.001);p.vy=(p.y-before.y)/Math.max(dt,.001);
   updateCatMotion(p.bodyAnimation,dt,Math.hypot(p.vx,p.vy),true);game.time+=dt;

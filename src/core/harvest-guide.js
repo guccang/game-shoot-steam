@@ -24,9 +24,10 @@ export function harvestGuidePlot(game,now=Date.now()){
 
 // 缺额随真实消费与收成变化，作物耗尽时仍提供种植入口，不保留已经收空的导航点。
 export function harvestGuideHint(game,task,plot=harvestGuidePlot(game),now=Date.now()){
+ if(game.progress.farm.inventory.some(Boolean))return '作物已装入背包，请到种子小屋柜台出售，再继续整备。';
  const {missing}=harvestBudget(game.progress,task),budget=missing?`升级还差${missing}金币`:'收获一次，学习赚金币';
  if(!plot)return `${budget}；打开种地，用库存种子播种后收获`;
  const crop=FARM_CROPS[plot.crop];
  if(farmGrowth(plot,now)<1)return `${budget}；${crop.name}约${Math.max(1,Math.ceil((plot.readyAt-now)/1000))}秒后成熟，可浇水加速`;
- return `${budget}；${plot.wild?'营地外野田':'已种好的田'} · ${crop.name}+${crop.value}金币`;
+ return `${budget}；${plot.wild?'营地外野田':'已种好的田'} · ${crop.name}，收获后出售可得${crop.value}金币`;
 }

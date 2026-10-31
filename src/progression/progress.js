@@ -1,4 +1,5 @@
 import {freshMailbox,normalizeMailbox,syncParcelMail} from './mailbox.js';
+import {freshLogistics,normalizeLogistics} from './vehicle-build.js';
 import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
 import {normalizeVehicleService} from './vehicle-repair.js';
 import {freshHome,normalizeHome} from './home-decor.js';
@@ -54,6 +55,7 @@ export function freshProgress() {
     arrival: null,
     farm:freshFarm(),
     mailbox:freshMailbox(),
+    logistics:freshLogistics(),
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
     keepsakes:normalizeKeepsakes(null,null),
@@ -263,6 +265,7 @@ export function validateProgress(raw) {
   p.vehicleLoadouts[RANGER.scooter]=null;
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
+  p.logistics=normalizeLogistics(raw.logistics,p);
   return p;
 }
 // 根据当前等级计算升级费用。

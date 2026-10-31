@@ -55,7 +55,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   return canUseFarm(game);
  }
  // 种地按钮在任何正常世界位置展开，驾驶中先下车，默认拿锄头。
- function open(){if(!enter(true))return;opened=true;combat=false;input.reset();setFarmTool(game,'hoe');popup=null;mailOpen=false;if(!introduced&&!game.progress.farm.lessonRewarded){introduced=true;say('开地 → 播种 → 浇水，然后继续其他委托；成熟后再收割赚金币');}if(!loaded)prepare();render();}
+ function open(){if(!enter(true))return;opened=true;combat=false;input.reset();setFarmTool(game,'hoe');popup=null;mailOpen=false;if(!introduced&&!game.progress.farm.lessonRewarded){introduced=true;say('开地 → 播种 → 浇水，然后继续其他委托；成熟后再收割装入背包，出售赚金币');}if(!loaded)prepare();render();}
  // 控件点击只排队，最终费用与收割结果以动作落点时的事务为准。
  function act(action,id){if(farmInteractionBlocked(game))return {ok:false,message:'战斗中暂不可种地'};const r=queueFarmWork(game,action,{plot:id,crop:selected});if(!r.ok){game.farmDragging=false;gesture=null;say(r.message);}render();return r;}
  // 拿起种子袋不自动播种，礼物种子优先消耗且可试种尚未解锁的品种。
@@ -169,7 +169,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(popup==='seed'&&key!==signature){
    signature=key;
    // 按页显示当前类别，短屏每页四种，保留点选与拖播的完整触控空间。
-   get('picker').innerHTML=farmCategoryMarkup(category,'data-farm-category',f.seeds)+'<div class="farm-seed-grid">'+categorySeeds.slice(seedPage*pageSize,(seedPage+1)*pageSize).map(({crop,i})=>`<button data-farm-seed="${i}" aria-label="${crop.name}种子，库存${f.seeds[i]}粒，${farmSeedRequirement(crop)}，${crop.seconds/60}分钟成熟，收获${crop.value}金币" title="${crop.name} · ${farmSeedRequirement(crop)}" ${!loaded||!f.seeds[i]?'disabled':''}>${farmCropMarkup(i)}<span>${crop.name}</span><span class="farm-seed-count" aria-hidden="true">${f.unlocked[i]||f.seeds[i]?f.seeds[i]:'未获'}</span></button>`).join('')+`</div><div class="farm-seed-pages" aria-label="种子翻页"><button data-farm-page="-1" ${seedPage===0?'disabled':''}>上一页</button><span aria-live="polite">${seedPage+1} / ${pageCount}</span><button data-farm-page="1" ${seedPage===pageCount-1?'disabled':''}>下一页</button></div><button data-farm-shop aria-label="种子小屋：购买种子与查看来源">种子小屋</button>`;
+   get('picker').innerHTML=farmCategoryMarkup(category,'data-farm-category',f.seeds)+'<div class="farm-seed-grid">'+categorySeeds.slice(seedPage*pageSize,(seedPage+1)*pageSize).map(({crop,i})=>`<button data-farm-seed="${i}" aria-label="${crop.name}种子，库存${f.seeds[i]}粒，${farmSeedRequirement(crop)}，${crop.seconds/60}分钟成熟，售价${crop.value}金币/份" title="${crop.name} · ${farmSeedRequirement(crop)}" ${!loaded||!f.seeds[i]?'disabled':''}>${farmCropMarkup(i)}<span>${crop.name}</span><span class="farm-seed-count" aria-hidden="true">${f.unlocked[i]||f.seeds[i]?f.seeds[i]:'未获'}</span></button>`).join('')+`</div><div class="farm-seed-pages" aria-label="种子翻页"><button data-farm-page="-1" ${seedPage===0?'disabled':''}>上一页</button><span aria-live="polite">${seedPage+1} / ${pageCount}</span><button data-farm-page="1" ${seedPage===pageCount-1?'disabled':''}>下一页</button></div><button data-farm-shop aria-label="种子小屋：购买种子与查看来源">种子小屋</button>`;
   }
   farmProperty(get('picker'),'hidden',popup!=='seed');farmProperty(get('harvest-pop'),'hidden',popup!=='harvest');farmProperty(get('harvest'),'disabled',!loaded||blocked);
   farmProperty(get('sickle'),'disabled',!loaded||blocked);
@@ -180,7 +180,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(!deliveryAvailable)farmProperty(get('delivery-hit'),'hidden',true);else placeSceneHit(get('delivery-hit'),FARM_DELIVERY,renderer,frame,{width:110,height:95,foot:8});
   if(mailOpen&&(!deliveryAvailable||worldDistance(game.player,FARM_DELIVERY)>140))mailOpen=false;farmProperty(get('mail'),'hidden',!mailOpen);
   const mailKey=JSON.stringify([f.delivery.parcels,f.inventory]);
-  if(mailOpen&&mailKey!==mailSignature){mailSignature=mailKey;get('mail').innerHTML='<header><b>种子快递站</b><button data-farm-mail-close aria-label="关闭快递">×</button></header><p>邻居只会寄来已解锁的种子</p>'+f.delivery.parcels.map(p=>`<article>${farmCropMarkup(p.crop)}<span><b>${FARM_SENDERS[p.sender]}寄来的礼物</b><small>${FARM_CROPS[p.crop].name}种子 ×${p.count}</small></span><button data-farm-parcel="${p.id}">领取</button></article>`).join('')+(parcelCount?'':'<p>暂时没有新包裹，先去种田或巡林吧。</p>')+(f.inventory.some(Boolean)?'<button data-farm-legacy>领取旧版收成金币</button>':'');}
+  if(mailOpen&&mailKey!==mailSignature){mailSignature=mailKey;get('mail').innerHTML='<header><b>种子快递站</b><button data-farm-mail-close aria-label="关闭快递">×</button></header><p>邻居只会寄来已解锁的种子</p>'+f.delivery.parcels.map(p=>`<article>${farmCropMarkup(p.crop)}<span><b>${FARM_SENDERS[p.sender]}寄来的礼物</b><small>${FARM_CROPS[p.crop].name}种子 ×${p.count}</small></span><button data-farm-parcel="${p.id}">领取</button></article>`).join('')+(parcelCount?'':'<p>暂时没有新包裹，先去种田或巡林吧。</p>')+(f.inventory.some(Boolean)?'<button data-farm-legacy>出售背包及在场货舱作物</button>':'');}
   if(mailOpen)positionPopup(get('mail'),FARM_DELIVERY);
   const result=game.farmWork?.result;if(result&&result!==lastResult){lastResult=result;if(!result.ok||game.farmWork?.job?.action==='saw')say(result.message);}
   for(const event of (game.farmSignals||[]).splice(0)){if(event.action==='harvest')flyCoins(event);if(event.message)say(event.message);onChange();}
@@ -219,7 +219,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   const page=e.target.closest('[data-farm-page]');if(page&&!page.disabled){seedPage=Math.max(0,seedPage+Number(page.dataset.farmPage));render();return;}
   if(e.target.closest('[data-farm-shop]')){stop();onSeedShop?.();return;}
   const parcel=e.target.closest('[data-farm-parcel]');if(parcel){const r=claimFarmParcel(game,Number(parcel.dataset.farmParcel));if(!r.ok)say(r.message);render();return;}
-  if(e.target.closest('[data-farm-mail-close]')){stop();return;}if(e.target.closest('[data-farm-legacy]')){say(farmAction(game,'legacy').message);render();return;}
+  if(e.target.closest('[data-farm-mail-close]')){stop();return;}if(e.target.closest('[data-farm-legacy]')){say(farmAction(game,'sell').message);render();return;}
   if(e.detail!==0)return;const cell=e.target.closest('[data-farm-cell]'),seed=e.target.closest('[data-farm-seed]');if(cell)tap(Number(cell.dataset.farmCell));else if(seed&&!seed.disabled)chooseSeed(Number(seed.dataset.farmSeed));else if(e.target.closest('#farm-harvest')&&loaded){popup=null;setFarmTool(game,'harvest');act('harvest',anchor);}
  });
  scope.on(menu,'click',()=>{if(farmInteractionBlocked(game)){say('战斗中暂不可种地');return;}opened&&!game.vehicle?.active?stop():open();});scope.on(get('hoe'),'click',()=>{if(!enter())return;input.reset();setFarmTool(game,'hoe');popup=null;render();});

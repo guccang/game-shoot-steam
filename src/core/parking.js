@@ -1,4 +1,5 @@
 import {parkingOccupied,leaveParkedVehicle} from './camp-parking.js';
+import {movementLoadFactor} from '../progression/load-weight.js';
 // 正常森林的点击停车：可取消的低速对齐和倒车，复用正式碰撞与车轮动作。
 import {PARKING as C,PARKING_SPOTS} from '../config/parking.js';
 import {pathDistance} from '../world/paths.js';
@@ -9,6 +10,7 @@ import {updateCatMotion} from './cat-motion.js';
 
 // 普通自有车都可停驻；消防任务、剧情与战斗活动仍使用各自的出入场流程。
 export function parkingAvailable(game){
+ if(movementLoadFactor(game)===0||game.progress.logistics?.tow)return false;
  return game.mapId==='forest'&&game.vehicle.active&&[0,1,2,3,4,5,6,7,8].includes(game.vehicle.index)&&!game.arrivalCinematic&&!game.realm&&!game.story&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&!game.player.arena&&!game.boss&&!game.livingBattle&&!game.cottage;
 }
 // 只有院内泊位及紧邻过道可以候停，路面和路肩即使静止也不会触发。
