@@ -3,6 +3,7 @@ import {box,poly,oval} from './primitives.js';
 import {drawWorldSign} from './world-signs.js';
 const EDGE='#365a48';
 const DESIGNS={
+ furniture:{w:136,h:120,roof:'#98a276',name:'家具小铺'},
  cottage:{w:130,h:135,roof:'#789865',name:'巡林小屋'},
  weapons:{w:146,h:132,roof:'#6c897b',name:'武器工坊'},
  seed:{w:114,h:110,roof:'#82a081',name:'种子小屋'},
@@ -50,6 +51,10 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
  oval(c,doorW/2-6,-20,2.4,2.4,'#e8cf83');box(c,-doorW/2-9,0,doorW+18,7,2,'#c8ccb0',EDGE,1.4);
  if(kind==='seed'){
   for(const side of [-1,1]){windowFrame(c,side<0?left+12:23,-52,22,27,night);box(c,side*37-12,-16,24,15,3,'#b39166',EDGE,1.2);for(const dx of [-5,4]){oval(c,side*37+dx,-20,5,8,'#82a76d',EDGE,1);}}
+ }else if(kind==='furniture'){
+  // 软垫橱窗与小木凳标识家具店，保持中央门槛可进入。
+  for(const x of [left+12,24]){windowFrame(c,x,-55,26,30,night);box(c,x+2,-34,22,10,3,'#95ac78',EDGE,1);box(c,x,-29,26,7,2,'#b2c28c',EDGE,1);}
+  poly(c,[[-55,-63],[55,-63],[59,-53],[-59,-53]],'#e5cea1',EDGE,1.6);
  }else if(kind==='weapons'){
   windowFrame(c,left+14,-58,27,29,night);box(c,29,-50,26,28,2,'#8a9b7b',EDGE,1.4);c.strokeStyle='#e9dca8';c.lineWidth=3;c.beginPath();c.moveTo(34,-42);c.lineTo(50,-29);c.moveTo(35,-31);c.lineTo(48,-44);c.stroke();
  }else{

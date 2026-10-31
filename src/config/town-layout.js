@@ -15,6 +15,7 @@ export const TOWN_LAYOUT = {
   garage: {x:350,y:990,width:220,height:175},
   repair: {x:-140,y:930,width:220,height:175},
   cottage: {x:850,y:300},
+  furniture: {x:570,y:550,width:136,height:120},
   letters: {x:900,y:490},
   story: {x:820,y:880},
   clearing: {x:1000,y:990},
@@ -28,6 +29,8 @@ export const TOWN_LAYOUT = {
 for(const [id,p] of Object.entries(TOWN_LAYOUT))TOWN_LAYOUT[id]=id==='bounds'?{...p,left:p.left+TOWN_SHIFT_X,right:p.right+TOWN_SHIFT_X}:townPoint(p);
 // 小径端点与原纵路相接；车位判断仍只使用原干道，不把院内支路误判为禁停区。
 export const TOWN_PATHS = [
+  // 家具小店连接主路，避开北停车场和武器工坊的正门。
+  [{x:570,y:610},{x:690,y:610}],
   // 西侧整备区连到横向主路及原车库院落，门前留出倒车通道。
   [{x:-340,y:729},{x:-340,y:1060},{x:-140,y:1060},{x:350,y:1065}],
   [{x:850,y:365},{x:750,y:365},{x:677,y:360}],
@@ -40,6 +43,7 @@ export const TOWN_PATHS = [
 ].map(path=>path.map(townPoint));
 // 铺地只覆盖各自门前，中央纵横主路与麦田仍有连续的草地间隔。
 export const TOWN_COURTS = [
+  {id:'furniture-yard',x:495,y:555,w:150,h:65,material:'earth'},
   {id:'repair-yard',x:-380,y:900,w:480,h:235,material:'earth'},
   {id:'weapons-yard',x:245,y:590,w:225,h:95,material:'earth'},
   {id:'garage-yard',x:225,y:970,w:285,h:135,material:'earth'},
@@ -51,7 +55,7 @@ export const TOWN_COURTS = [
 export const TOWN_SIGNS = [
   {id:'repair-district',x:-310,y:785,label:'维修整备区'},
   {id:'home',x:735,y:285,label:'生活区'},
-  {id:'workshops',x:550,y:570,label:'整备区'},
+  {id:'workshops',x:500,y:720,label:'整备区'},
   {id:'tasks',x:745,y:850,label:'任务广场'},
   {id:'challenges',x:560,y:1260,label:'挑战庭院'},
 ].map(sign=>({type:'scenery',kind:'district-sign',size:1,...townPoint(sign)}));

@@ -7,11 +7,14 @@ import {HOME_CATALOG,HOME_LIMIT} from '../src/config/home-decor.js';
 import {COTTAGE} from '../src/config/cottage.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {freshHome,placementError,plantState,homeFurniture} from '../src/progression/home-decor.js';
-import {buyDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../src/core/home-decor.js';
+import {buyDecor as purchaseDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../src/core/home-decor.js';
 import {enterCottage,cottageBlocked,sleepInCottage,leaveCottage} from '../src/core/cottage.js';
 
 // 通过正式入口进入已修复小屋，避免用过时的未修复营地夹具。
 function setup(){const p=freshProgress();p.coins=10000;p.mainline.completed=[...MAINLINE_IDS];p.restoration.repaired=['cottage'];const g=new Game(p,()=>.7);g.start();g.vehicle.active=false;Object.assign(g.player,COTTAGE.door);assert.ok(enterCottage(g));g.livingPersist=()=>true;return g;}
+
+// 商品交易显式模拟店内会话，随后回家继续验证原有布局和植物规则。
+function buyDecor(g,type){const room=g.cottage;if(room)g.cottage={...room,kind:'furniture'};try{return purchaseDecor(g,type);}finally{g.cottage=room;}}
 
 test('十五款目录稳定唯一，旧档免费家具保持原位且刷新不重复赠送',()=>{
  assert.equal(HOME_CATALOG.length,15);assert.equal(new Set(HOME_CATALOG.map(d=>d.id)).size,15);

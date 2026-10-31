@@ -1,4 +1,3 @@
-import {interiorShopkeeper} from '../config/workshop-interiors.js';
 // 小屋正式绘制器：家具、窗景和角色共用局部坐标与脚底排序，无独立预览替身。
 import {COTTAGE,COTTAGE_FURNITURE} from '../config/cottage.js';
 import {box,oval,poly} from './primitives.js';
@@ -65,9 +64,9 @@ export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calend
  for(const item of items.filter(i=>['wall','curtain','rug'].includes(i.layer)))drawHomeDecor(c,item,night,g.progress.living.calendar);
  // 门槛留空，出口地垫与下方出门按钮共同提示路线。
  box(c,143,320,74,22,4,'#8d9c77','#667d5b',1.5);c.fillStyle='#e5dfb6';c.font='12px sans-serif';c.textAlign='center';c.fillText('出门',180,336);
- for(const item of [COTTAGE_FURNITURE[0],...items.filter(i=>!i.layer||i.layer==='floor'),interiorShopkeeper({kind:'cottage'}),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){
+ for(const item of [COTTAGE_FURNITURE[0],...items.filter(i=>!i.layer||i.layer==='floor'),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){
   if(item.id==='player')drawCat(c,item.x,item.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,reduced?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
-  else if(item.type==='shopkeeper'){drawCat(c,item.x,item.y,4,Math.PI/2,PLAYER_SCALE,0,0,null,1,null,0,false,false,null,0,null,0,true);box(c,item.x-40,item.y-78,80,23,6,'#fff2d0','#58765c',1);c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText('家具售货员',item.x,item.y-62);}
+
   else if(!item.type||['desk','chair','cabinet','plant'].includes(item.type))drawFurniture(c,{...item,id:item.type||item.id},night);
   else drawHomeDecor(c,item,night,g.progress.living.calendar);
  }

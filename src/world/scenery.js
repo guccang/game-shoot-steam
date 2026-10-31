@@ -37,8 +37,8 @@ export const CAMP_PROPS = [
   { kind: 'logs', x: WORKSHOP.x+90, y: WORKSHOP.y-20, size: 0.9 },
   { kind: 'logs', x: 515+TOWN_SHIFT_X, y: 860, size: 0.85 },
   { kind: 'logs', x: RANGER_COTTAGE.x+90, y: RANGER_COTTAGE.y+20, size: 0.8 },
-  // 田牌旁石堆退到主路西侧，与大石成组，不占道路或田地入口。
-  { kind: 'stones', x: 615+TOWN_SHIFT_X, y: 590, size: 0.75 },
+  // 石堆退到家具店西侧，门前和新支路保持完整留白。
+  { kind: 'stones', x: 470+TOWN_SHIFT_X, y: 480, size: 0.75 },
   { kind: 'stones', x: 1100+TOWN_SHIFT_X, y: 678, size: 0.7 },
   { kind: 'stones', x: 1040+TOWN_SHIFT_X, y: 1120, size: 0.8 },
   { kind: 'flowers', x: 749+TOWN_SHIFT_X, y: 685, size: 0.9 },

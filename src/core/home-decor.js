@@ -4,11 +4,11 @@ import {freshHome,placementError,plantState,homeTime} from '../progression/home-
 import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
 
-// 购买页暂停期间可操作，睡眠、工坊和屋外不能远程装扮。
-function available(game){return game.cottage&&(!game.cottage.kind||game.cottage.kind==='cottage')&&!game.cottage.sleep&&!game.cottage.restOpen&&['playing','paused'].includes(game.state);}
+// 店内只购买，家中只布置；弹窗暂停可提交，睡眠和屋外不能操作。
+function available(game,shopping=false){return game.cottage&&(shopping?game.cottage.kind==='furniture':(!game.cottage.kind||game.cottage.kind==='cottage'))&&!game.cottage.sleep&&!game.cottage.restOpen&&['playing','paused'].includes(game.state);}
 // 候选存档携带室外安全位置，避免刷新后出生在小屋局部坐标。
-function commit(game,change){
- if(!available(game))return {ok:false,message:'请先回到小屋，再打开装扮。'};
+function commit(game,change,shopping=false){
+ if(!available(game,shopping))return {ok:false,message:shopping?'请进家具小铺，与售货员交谈购买。':'请先回到小屋，再打开装扮。'};
  const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));next.homeDecor??=freshHome();
  const message=change(next);if(message)return {ok:false,message};
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
@@ -17,7 +17,7 @@ function commit(game,change){
 }
 // 每次明确购买生成独立实例；默认收纳，购买不会覆盖现有布局。
 export function buyDecor(game,type){
- let uid;const result=commit(game,next=>{const d=HOME_CATALOG.find(i=>i.id===type);if(!d)return '这件家具暂未上架。';if(next.homeDecor.items.length>=HOME_LIMIT)return '家具已达40件，暂时无法继续购买。';if(next.coins<d.price)return '金币不足，去巡林攒一些再来吧。';uid=next.homeDecor.nextId++;next.coins-=d.price;next.homeDecor.items.push({uid,type,x:null,y:null,plant:null});return '';});
+ let uid;const result=commit(game,next=>{const d=HOME_CATALOG.find(i=>i.id===type);if(!d)return '这件家具暂未上架。';if(next.homeDecor.items.length>=HOME_LIMIT)return '家具已达40件，暂时无法继续购买。';if(next.coins<d.price)return '金币不足，去巡林攒一些再来吧。';uid=next.homeDecor.nextId++;next.coins-=d.price;next.homeDecor.items.push({uid,type,x:null,y:null,plant:null});return '';},true);
  return {...result,uid:result.ok?uid:null};
 }
 // 移动不收费；位置重新校验后一次保存，取消预览不触碰存档。

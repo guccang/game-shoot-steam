@@ -21,7 +21,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  const restDialog=panel.querySelector('#cottage-rest-dialog');
  frame.append(panel);
  prepareMobilePanel(restDialog);
- const workshopRoom=createWorkshopRoomControls({game,renderer,root,panel,input,openWorkshop:(kind,index)=>kind==='cottage'?homeDecor.open():openWorkshop(kind,index),onChange});
+ const workshopRoom=createWorkshopRoomControls({game,renderer,root,panel,input,openWorkshop:(kind,index)=>['cottage','furniture'].includes(kind)?homeDecor.open():openWorkshop(kind,index),onChange});
  const roomExit=createRoomExit({game,renderer,root,panel,input,onChange});
  const homeDecor=createHomeDecor({game,root,panel,dialogs,input,onChange:onDecorChange});
  // 上下车后清掉摇杆残量，避免点击动作留下持续行走输入。
@@ -62,7 +62,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
    const notice=panel.querySelector('#cottage-notice');
    // 睡醒结果保留在屋内底部，独立纸色底板让回血和保存失败信息都清楚可读。
    notice.dataset.result=String(home&&!!room.restResult&&!room.sleep&&!room.exitElapsed);
-   notice.textContent=room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':'床边可以休息，家具服务请点售货员；门口站定 1 秒出门。';
+   notice.textContent=room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':'床边可以休息，点击「装扮小屋」布置家具；门口站定 1 秒出门。';
    for(const mode of ['phase','morning'])panel.querySelector('#cottage-sleep-'+mode).disabled=!near||!!room.sleep||game.state!=='playing';
   }
   const list=campParkingVisible(game)&&game.state==='playing'&&!root.querySelector('dialog[open]')?parkedOwned(game).filter(s=>arrivalParkingAllowed(game,s.record.hull)&&worldDistance(s,game.player)<=155):[];

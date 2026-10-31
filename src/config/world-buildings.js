@@ -7,6 +7,7 @@ import {LEGENDARY_WORKSHOP} from './legendary-workshop.js';
 import {LIVING_PLACES} from './living-world.js';
 // 矩形为相对底座的实体墙面；门前进屋点始终留在实体外侧。
 export const WORLD_BUILDINGS=[
+ {id:'furniture',...TOWN_LAYOUT.furniture,rects:[[-63,-84,65,5]]},
  {id:'cottage',...TOWN_LAYOUT.cottage,rects:[[-60,-98,70,0]]},
  {id:'weapons',...TOWN_LAYOUT.weapons,rects:[[-68,-98,70,6]]},
  {id:'vehicle',...TOWN_LAYOUT.garage,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},

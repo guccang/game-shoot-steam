@@ -1,3 +1,4 @@
+import {drawHomeDecor} from './home-decor.js';
 import {interiorShopkeeper} from '../config/workshop-interiors.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
@@ -10,6 +11,7 @@ import { WEAPONS } from '../config/weapons.js';
 import { vehicleModel } from '../config/vehicles.js';
 import {
   interiorLayout,
+  interiorFurniture,
   interiorWeaponDisplays,
   interiorVehicleDisplays,
   VEHICLE_GALLERY,
@@ -301,7 +303,7 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
   c.fillText('出门', layout.exit.x, layout.height - 16);
   const items = garage
     ? [...GARAGE_FURNITURE, ...displays, ...(record ? [{ ...bay, type: 'vehicle' }] : [])]
-    : layout.service?[{id:'counter',type:'counter',x:180,y:205,width:130,height:36}]:interiorWeaponDisplays().filter((item) => item.y + 25 >= view.top && item.y - 60 <= view.bottom);
+    : layout.service?interiorFurniture(g):interiorWeaponDisplays().filter((item) => item.y + 25 >= view.top && item.y - 60 <= view.bottom);
   if (!garage && renderer.interiorArt) {
     const visible = new Set(items.map((item) => item.index));
     for (const key of renderer.interiorArt.images.keys())
@@ -336,8 +338,9 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
     else if(item.type==='shopkeeper'){
       drawCat(c,item.x,item.y,4,Math.PI/2,PLAYER_SCALE,0,0,null,1,null,0,false,false,null,0,null,0,true);
       c.fillStyle='#fff2d0';c.strokeStyle='#58765c';box(c,item.x-40,item.y-78,80,23,6,'#fff2d0','#58765c',1);
-      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText('售货员',item.x,item.y-62);
+      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(room.kind==='furniture'?'家具售货员':'售货员',item.x,item.y-62);
     }
+    else if(item.type==='furniture-display')drawHomeDecor(c,{...item,type:item.decor},night,g.progress.living.calendar);
     else if (item.type === 'vehicle-display') drawVehicleDisplay(c, item, g);
     else if (item.type === 'vehicle') drawParkedHull(c, item, g, record.hull, record);
     else if (item.type === 'rack') drawRack(c, item, renderer);

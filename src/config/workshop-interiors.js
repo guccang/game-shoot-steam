@@ -1,3 +1,4 @@
+import {FURNITURE_SHOP,FURNITURE_SHOP_DISPLAYS} from './furniture-shop.js';
 import {FARM_SEED_SHOP,FARM_SEED_DOOR} from './farm.js';
 import {REPAIR_CENTER} from './vehicle-repair.js';
 import {FIRE_STATION} from './fire-station-layout.js';
@@ -22,6 +23,7 @@ export const VEHICLE_DISPLAYS=purchasableVehicles.map((index,slot)=>({id:'showro
 // 小型营业房使用同一门槛和通道，服务名称决定室内柜台文案。
 function serviceRoom(id,name,site,door={x:site.x,y:site.y+22}){return {...WORKSHOP_ROOM,id,name,site,door,outside:{x:door.x,y:door.y+52},service:true};}
 export const WORKSHOP_INTERIORS={
+ furniture:serviceRoom('furniture','家具小铺',FURNITURE_SHOP),
  seed:serviceRoom('seed','种子小屋',FARM_SEED_SHOP,FARM_SEED_DOOR),
  repair:serviceRoom('repair','载具维修中心',REPAIR_CENTER),
  fire:serviceRoom('fire','森林消防站',FIRE_STATION),
@@ -49,7 +51,7 @@ export function interiorWeaponDisplays(){return WEAPON_DISPLAYS.map(s=>({...s}))
 export function interiorVehicleDisplays(){return VEHICLE_DISPLAYS.map(item=>({...item}));}
 // 武器柜与车库工具台使用同一碰撞来源；泊位只有停着车才阻挡角色。
 export function interiorFurniture(game){
- if(interiorLayout(game.cottage).service)return [{id:'counter',type:'counter',x:180,y:205,width:130,height:36}];
+ if(interiorLayout(game.cottage).service)return [{id:'counter',type:'counter',x:180,y:205,width:130,height:36},...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
  if(game.cottage?.kind==='weapons')return interiorWeaponDisplays();
  if(game.cottage?.kind==='vehicle')return [...GARAGE_FURNITURE,...VEHICLE_DISPLAYS,...(garageVehicleRecord(game)?[VEHICLE_BAY]:[])];
  return game.progress.homeDecor?homeFurniture(game.progress.homeDecor):COTTAGE_FURNITURE;
@@ -62,8 +64,8 @@ export const WORKSHOP_DISPLAY_ENTRY={wait:3,radius:32,releaseRadius:50,stopSpeed
 // 所有营业房只提供售货员热点，陈列柜继续保留展示与碰撞。
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;
- if(!kind||kind==='cottage')return {id:'shopkeeper',type:'shopkeeper',kind:'cottage',x:205,y:230,width:58,height:64,label:'家具售货员'};
- return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:layout.name+'售货员'};
+ if(!kind||kind==='cottage')return null;
+ return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='furniture'?'家具售货员':layout.name+'售货员'};
 }
 // 附近提示与画布点击共用售货员坐标。
 export function interiorWorkshopTargets(game){if(!game.cottage)return [];const seller=interiorShopkeeper(game.cottage);return seller?[seller]:[];}

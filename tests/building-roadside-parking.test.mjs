@@ -29,7 +29,7 @@ test('所有房屋站定一秒进入，移动取消，门口一秒离开并防�
   const g=setup();g.progress.vehicleHulls[6]=1;Object.assign(g.player,layout.door,{vx:0,vy:0});
   dwell(g,.65);assert.equal(g.cottage,null,layout.id);dwell(g,.05,{x:1,y:0});assert.equal(g.cottageEntry,null);
   dwell(g,.95);assert.equal(g.cottage,null);dwell(g,.05);assert.equal(g.cottage.kind,layout.id);
-  const seller=interiorShopkeeper(g.cottage);assert.ok(seller);assert.deepEqual(interiorWorkshopTargets(g),[seller]);
+  const seller=interiorShopkeeper(g.cottage);if(layout.id==='cottage'){assert.equal(seller,null);assert.deepEqual(interiorWorkshopTargets(g),[]);}else{assert.ok(seller);assert.deepEqual(interiorWorkshopTargets(g),[seller]);}
   Object.assign(g.player,layout.exit);dwell(g,.95);assert.ok(g.cottage);dwell(g,.05);assert.equal(g.cottage,null);
   assert.equal(g.cottageDoorLatch===true?'cottage':g.cottageDoorLatch,layout.id);dwell(g,2);assert.equal(g.cottage,null);
  }

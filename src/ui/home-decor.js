@@ -11,14 +11,14 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  const scope=createEventScope(),entry=root.createElement('button'),dialog=root.createElement('dialog');
  entry.id='home-decor-open';entry.textContent='装扮小屋';entry.className='ui-button';panel.querySelector(':scope > footer').append(entry);
  dialog.id='home-decor-dialog';dialog.className='ui-panel';dialog.setAttribute('aria-labelledby','home-decor-title');
- dialog.innerHTML=`<header class="ui-panel__header"><div><h2 id="home-decor-title">布置我的小屋</h2><p id="home-wallet"></p></div><button class="ui-close" id="home-close" aria-label="关闭小屋装扮">×</button></header>
+ dialog.innerHTML=`<header class="ui-panel__header"><div><h2 id="home-decor-title">布置我的小屋</h2><p id="home-wallet"></p></div><button class="ui-close" id="home-close" aria-label="关闭家具页面">×</button></header>
  <div class="ui-panel__body"><nav class="home-tabs" aria-label="装扮分类"><button class="ui-button" data-tab="room">我的家具</button><button class="ui-button" data-tab="shop">家具小铺 · 15款</button></nav>
- <section id="home-shop" hidden aria-label="金币家具商店"><p>买下后收入收纳，随时摆放和挪动。</p><div id="home-products"></div></section>
+ <section id="home-shop" hidden aria-label="金币家具商店"><p>买下后收入收纳，回巡林小屋布置。</p><div id="home-products"></div></section>
  <section id="home-room"><p id="home-hint">选一件家具，挪到喜欢的位置。床保留在原处。</p><canvas id="home-preview" width="720" height="720" tabindex="0" aria-label="小屋摆放预览；选择移动后，点击位置或使用方向键微调"></canvas>
  <div id="home-nudge" hidden aria-label="微调家具位置"><button class="ui-button" data-nudge="left" aria-label="向左移动">←</button><button class="ui-button" data-nudge="up" aria-label="向上移动">↑</button><button class="ui-button" data-nudge="down" aria-label="向下移动">↓</button><button class="ui-button" data-nudge="right" aria-label="向右移动">→</button></div>
  <div id="home-owned" aria-label="已拥有的家具"></div><section id="home-detail" aria-label="家具操作"></section></section></div>
  <footer class="ui-panel__footer"><p id="home-message" role="status" aria-live="polite"></p><div class="home-actions"><button class="ui-button" id="home-cancel" hidden>取消移动</button><button class="ui-button ui-button--primary" id="home-confirm">回到小屋</button></div></footer>`;
- panel.append(dialog);dialogs.register(dialog.id,{focusId:'home-close',onOpen:()=>{tab='room';selected=null;draft=null;message='';renderContent();}});
+ panel.append(dialog);dialogs.register(dialog.id,{focusId:'home-close',onOpen:()=>{tab=game.cottage?.kind==='furniture'?'shop':'room';selected=null;draft=null;message='';renderContent();}});
  let tab='room',selected=null,draft=null,message='',lastHome=null,lastCoins=null;
  const $=id=>dialog.querySelector('#'+id);
  // 目录小图共用正式主体绘制器，只调整显示比例，不替换造型。
@@ -31,7 +31,8 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  function apply(result,success){message=result.ok?success:result.message;if(result.ok)onChange();renderContent();return result.ok;}
  // 实例列表和商店只在操作时重建，不在游戏帧循环中创建画布。
  function renderContent(){
-  const home=game.progress.homeDecor;lastHome=home;lastCoins=game.progress.coins;
+  const home=game.progress.homeDecor,shopping=game.cottage?.kind==='furniture';lastHome=home;lastCoins=game.progress.coins;
+  tab=shopping?'shop':'room';dialog.querySelector('.home-tabs').hidden=true;$('home-decor-title').textContent=shopping?'家具小铺':'布置我的小屋';
   $('home-wallet').textContent=`金币 ${game.progress.coins} · 家具 ${home.items.length}/${HOME_LIMIT}`;
   for(const button of dialog.querySelectorAll('[data-tab]'))button.setAttribute('aria-pressed',String(button.dataset.tab===tab));
   $('home-shop').hidden=tab!=='shop';$('home-room').hidden=tab!=='room';
@@ -47,7 +48,7 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
    drawPreview();
   }
   const error=draft?placementError(home,selected,draft.x,draft.y,game.player):'';
-  $('home-nudge').hidden=!draft;$('home-cancel').hidden=!draft;$('home-confirm').textContent=draft?'确认摆放':'回到小屋';$('home-confirm').disabled=!!error;
+  $('home-nudge').hidden=!draft;$('home-cancel').hidden=!draft;$('home-confirm').textContent=draft?'确认摆放':shopping?'回到店内':'回到小屋';$('home-confirm').disabled=!!error;
   $('home-message').textContent=message||(draft?(error||'这个位置可以摆放。'):'购买和每次确认都会保存。');
  }
  // 候选实例仅存在于临时绘制副本，关闭或取消不改变正式布局。
@@ -71,7 +72,7 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  scope.on(dialog,'click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.dataset.tab){tab=b.dataset.tab;draft=null;message='';renderContent();}
-  else if(b.dataset.buy){const result=buyDecor(game,b.dataset.buy);if(result.ok){selected=result.uid;tab='room';draft=suggest(selection());}apply(result,'已购入收纳，选好位置后确认摆放。');}
+  else if(b.dataset.buy){const result=buyDecor(game,b.dataset.buy);if(result.ok){selected=null;draft=null;}apply(result,'已购入收纳，回巡林小屋后点击「装扮小屋」摆放。');}
   else if(b.dataset.select)select(Number(b.dataset.select));
   else if(b.hasAttribute('data-move')){const item=selection();draft=item.x===null?suggest(item):{x:item.x,y:item.y};message='';renderContent();}
   else if(b.hasAttribute('data-store'))apply(storeDecor(game,selected),'已收入收纳，需要时可重新摆放。');
@@ -82,10 +83,10 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  scope.on($('home-preview'),'click',e=>{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*360,y=(e.clientY-r.top)/r.height*360;if(draft)point(x,y);else{const item=placedDecor(game.progress.homeDecor).sort((a,b)=>b.y-a.y).find(i=>Math.abs(x-i.x)<Math.max(22,i.width/2)&&y>i.y-Math.max(30,i.height)&&y<i.y+i.height/2);if(item)select(item.uid);}});
  scope.on($('home-preview'),'keydown',e=>{const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];if(direction&&draft){e.preventDefault();nudge(direction);}});
  // 父级逐帧只同步可见性；存档对象或金币变化后才更新内容。
- function render(){entry.hidden=true;entry.disabled=!!game.cottage?.sleep||!!game.cottage?.restOpen||game.state!=='playing';if(dialog.open){if(!game.cottage){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
+ function render(){entry.hidden=!game.cottage||!!game.cottage.kind&&game.cottage.kind!=='cottage';entry.disabled=!!game.cottage?.sleep||!!game.cottage?.restOpen||game.state!=='playing';if(dialog.open){if(!game.cottage||game.cottage.kind&&!['cottage','furniture'].includes(game.cottage.kind)){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
  // 动态节点跟随小屋控制器卸载，避免重复事件和残留预览。
  function dispose(){scope.dispose();if(dialog.open)dialog.close();entry.remove();dialog.remove();}
  // 屋内售货员打开家具服务，保持原暂停与保存流程。
- function open(){if(game.cottage&&(!game.cottage.kind||game.cottage.kind==='cottage')&&!game.cottage.sleep&&!game.cottage.restOpen&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}}
+ function open(){if(game.cottage&&(!game.cottage.kind||['cottage','furniture'].includes(game.cottage.kind))&&!game.cottage.sleep&&!game.cottage.restOpen&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}}
  return {render,dispose,open};
 }

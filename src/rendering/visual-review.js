@@ -1722,3 +1722,9 @@ export async function inspectTowFrontView(game,root){
  const {TOW_TRUCK}=await import('../config/vehicle-repair.js');
  return {...await inspectVehicleRepair(game,root),designCriterion:'tow-front-view',tow:TOW_TRUCK};
 }
+
+// 家具店验收读取正式房屋、售货员与库存，不另造商店或室内预览场景。
+export async function inspectFurnitureShop(game,root){
+ const {FURNITURE_SHOP}=await import('../config/furniture-shop.js'),{interiorShopkeeper}=await import('../config/workshop-interiors.js');
+ return {designCriterion:'furniture-shop',site:FURNITURE_SHOP,room:game.cottage?.kind,seller:game.cottage?interiorShopkeeper(game.cottage):null,owned:game.progress.homeDecor.items.length,dialog:!!root.getElementById('home-decor-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
