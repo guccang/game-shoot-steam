@@ -8,7 +8,7 @@ import {requestWorldNavigation} from '../core/world-navigation.js';
 export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
  const scope=createEventScope(),panel=root.createElement('dialog');let remote=false,selection=null;
  panel.id='vehicle-repair-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','vehicle-repair-title');
- panel.innerHTML='<header class="ui-panel__header"><div><h2 id="vehicle-repair-title">载具维修中心</h2><p>让老伙计重新上路</p></div><button type="button" id="vehicle-repair-close" class="ui-close" aria-label="关闭维修中心">×</button></header><div class="ui-panel__body"><p class="ui-inset">报废救援含拖运与维修：基础车价的10%。未报废保养：基础车价×损失耐久比例×2%，向上取整。按金币结算，无需木头。</p><p data-repair-balance></p><div data-repair-list></div><p data-repair-message role="status"></p></div><footer class="ui-panel__footer"><button type="button" class="ui-button" data-repair-nav>前往维修中心</button><button type="button" class="ui-button ui-button--primary" data-repair-confirm disabled>选择车辆</button></footer>';
+ panel.innerHTML='<header class="ui-panel__header"><div><h2 id="vehicle-repair-title">载具维修中心</h2><p>让老伙计重新上路</p></div><button type="button" id="vehicle-repair-close" class="ui-close" aria-label="关闭维修中心">×</button></header><div class="ui-panel__body"><p class="ui-inset">维修费＝损失耐久比例×基础车价×修复系数0.5，金币向上取整。报废车辆损失比例为100%，费用含拖运与维修。无需木头。</p><p data-repair-balance></p><div data-repair-list></div><p data-repair-message role="status"></p></div><footer class="ui-panel__footer"><button type="button" class="ui-button" data-repair-nav>前往维修中心</button><button type="button" class="ui-button ui-button--primary" data-repair-confirm disabled>选择车辆</button></footer>';
  root.body.append(panel);
  // 页面打开时刷新一次；游戏暂停时不伪造进度或反复重建焦点。
  function render(){

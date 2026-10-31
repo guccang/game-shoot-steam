@@ -25,10 +25,16 @@ test('报废立即下车且等待、刷新、重生均不免费恢复',()=>{
  const loaded=new Game(structuredClone(g.progress));loaded.state='playing';assert.equal(loaded.vehicle.hp,0);assert.equal(loaded.summonVehicle(),false);
  g.reset();assert.equal(g.vehicle.hp,0);
 });
-test('报废固定一成、日常保养按损失比例百分之二报价',()=>{
- const g=game(),base=economyFor(g.progress).vehicles[0].coins;
- g.vehicle.hp=g.vehicle.maxHp*.5;assert.equal(vehicleRepairQuote(g,0),Math.ceil(base*.01));
- g.vehicle.hp=0;assert.equal(vehicleRepairQuote(g,0),Math.ceil(base*.1));g.vehicle.hp=g.vehicle.maxHp;assert.equal(vehicleRepairQuote(g,0),0);
+test('保养与报废统一按损失耐久比例乘车价和修复系数0.5报价',()=>{
+ const g=game();g.progress.vehicleHulls.fill(1);
+ for(const v of g.vehicles){
+  const base=economyFor(g.progress).vehicles[v.index].coins;
+  for(const [hpRatio,costRatio] of [[1,0],[.8,.1],[.5,.25],[0,.5]]){
+   v.hp=v.maxHp*hpRatio;assert.equal(vehicleRepairQuote(g,v.index),Math.ceil(base*costRatio),`车型${v.index} 耐久比例${hpRatio}`);
+  }
+  v.hp=v.maxHp-1;assert.equal(vehicleRepairQuote(g,v.index),Math.max(1,Math.ceil(base*.5/v.maxHp)));
+ }
+ g.progress.vehicleHulls[0]=0;assert.equal(vehicleRepairQuote(g,0),0);
 });
 test('钱不足和重复请求不扣款，暂停冻结，读档续接拖车与工时',()=>{
  const g=game();wreck(g);g.progress.coins=0;assert.equal(requestVehicleRepair(g,0,true).ok,false);assert.equal(vehicleService(g,0).phase,'wrecked');
@@ -39,7 +45,7 @@ test('钱不足和重复请求不扣款，暂停冻结，读档续接拖车与�
  finish(loaded);assert.equal(loaded.vehicle.hp,loaded.vehicle.maxHp);assert.equal(loaded.summonVehicle(),false);
  Object.assign(loaded.player,REPAIR_CENTER,{y:REPAIR_CENTER.y+50});assert.equal(collectRepairedVehicle(loaded,0).ok,false);assert.equal(loaded.vehicle.active,false);assert.equal(loaded.progress.coins,100000-cost);
 });
-test('手机不接保养，现场须驾驶目标车；交车后低价修满再取车',()=>{
+test('手机不接保养，现场须驾驶目标车；交车按新报价扣费并修满入场',()=>{
  const g=game();g.summonVehicle();g.vehicle.hp=g.vehicle.maxHp*.5;
  assert.equal(requestVehicleRepair(g,0,true).ok,false);Object.assign(g.player,REPAIR_BAY);
  const before=g.progress.coins,cost=vehicleRepairQuote(g,0);assert.equal(requestVehicleRepair(g,0).ok,true);assert.equal(g.vehicle.active,false);assert.equal(g.progress.coins,before-cost);

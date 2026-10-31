@@ -44,11 +44,11 @@ export function markVehicleWreck(game,position){
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==v.index);
  return true;
 }
-// 报废按购车基础金币价一成；普通损耗按损失比例乘百分之二，向上取整。
+// 保养与报废统一按损失耐久比例 × 基础车价 × 修复系数计算，金币向上取整。
 export function vehicleRepairQuote(game,index){
  const v=game.vehicles[index],price=economyFor(game.progress).vehicles[index]?.coins||0;
  if(!v||!game.progress.vehicleHulls[index])return 0;
- return v.hp>=v.maxHp?0:Math.max(1,Math.ceil(price*(v.hp<=0?C.wreckRate:C.wearRate*(1-v.hp/v.maxHp))));
+ return v.hp>=v.maxHp?0:Math.max(1,Math.ceil(price*C.repairRate*(1-Math.max(0,v.hp)/v.maxHp)));
 }
 // 手机只提供救援；现场检查真实位置，禁用按钮不是业务权限边界。
 export function repairUnavailable(game,remote=false){
