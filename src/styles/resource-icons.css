@@ -1,0 +1,50 @@
+/* 资源以图案和数量为主，名称与来源保留在可触摸说明和无障碍标签中。 */
+.resource-art { display: inline-block; width: 28px; height: 28px; flex-shrink: 0; vertical-align: middle; }
+.resource-info-button {
+  display: inline-flex; justify-content: center; align-items: center; flex-shrink: 0;
+  width: 38px; height: 38px; padding: 2px; border: 0; border-radius: 9px;
+  background: transparent; box-shadow: none; line-height: 1;
+}
+.resource-info-button .resource-art { width: 34px; height: 34px; pointer-events: none; }
+.resource-info-button:hover, .resource-info-button:focus-visible { background: #dbe7cb; outline-offset: 2px; }
+.resource-pill { padding-left: 2px; gap: 3px; }
+.resource-pill .resource-info-button { width: 30px; height: 30px; border-radius: 50%; }
+.resource-pill .resource-art { width: 27px; height: 27px; }
+.wallet { gap: 8px; }
+.wallet > div { gap: 6px; }
+.wallet > div + div { padding-left: 8px; }
+.wallet .resource-info-button { width: 38px; height: 38px; }
+.wallet b { font-size: clamp(16px, 4.5vw, 21px); }
+.material-wallet > span { display: flex; justify-content: center; gap: 3px; padding: 6px 3px; }
+.material-wallet b { font-size: 13px; min-width: 0; }
+.material-wallet .resource-info-button { width: 34px; height: 38px; }
+.material-wallet .resource-art { width: 32px; height: 32px; }
+.requirement-row { position: relative; padding-top: 4px; }
+.requirement-row > .resource-info-button { align-self: flex-start; }
+.resource-tap-hint { display: block; margin-top: 8px; color: #7b8969; font-size: 10px; }
+.icon-price { display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; vertical-align: middle; }
+.icon-price > span { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; }
+.icon-price .resource-art { width: 18px; height: 18px; }
+.card-buttons .cost { display: block; margin-top: 4px; }
+.vehicle-wallet > span { display: inline-flex; align-items: center; gap: 4px; }
+.goal-shortage { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; margin-left: 6px; }
+.goal-shortage .resource-art { width: 22px; height: 22px; }
+#resource-help-dialog { width: min(300px, calc(100vw - 24px)); text-align: center; padding: 28px 22px 22px; }
+#resource-help-art .resource-art { width: 88px; height: 88px; }
+#resource-help-title { margin: 14px 0 10px; font-size: 22px; }
+#resource-help-source { font-size: 13px; line-height: 1.9; color: #637556; margin-bottom: 0; }
+@media (max-width: 350px) {
+  .material-wallet .resource-info-button { width: 30px; }
+  .material-wallet .resource-art { width: 28px; height: 28px; }
+  .material-wallet b { font-size: 11px; }
+  .icon-price { gap: 4px; }
+  .icon-price > span { gap: 1px; font-size: 10px; }
+  .icon-price .resource-art { width: 16px; height: 16px; }
+}
+
+/* 追赶价成对分行，原价弱化但仍可读，手机无需悬停即可理解折扣。 */
+.upgrade-price{display:inline-flex;flex-direction:column;gap:2px;max-width:100%;font-size:11px}
+.upgrade-price > span{display:flex;align-items:center;justify-content:center;gap:4px}
+.upgrade-price-original{opacity:.8;font-weight:normal}
+.upgrade-price s{text-decoration:none}
+.upgrade-price s .icon-price > span{text-decoration:line-through}

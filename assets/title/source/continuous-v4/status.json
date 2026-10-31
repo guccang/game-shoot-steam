@@ -1,0 +1,58 @@
+{
+  "id": 22132,
+  "media_type": "video",
+  "request_id": "vid-ztj-forest-title-20261023-v4",
+  "input": {
+    "mode": "first_last_frame",
+    "model": "seedance-2.5",
+    "ratio": "adaptive",
+    "inputs": [
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110743-8jppoo/e7218172b815cb81-reference.png",
+        "role": "first_frame",
+        "type": "image"
+      },
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110743-8jppoo/e7218172b815cb81-reference.png",
+        "role": "last_frame",
+        "type": "image"
+      }
+    ],
+    "prompt": "Make a seamless 10-second animated idle loop of this exact 2D forest game image. This is an ongoing loop, already in motion at time 0 and still in motion at time 10. All ten seconds must contain subtle, visible local motion, with no static intro, no static outro, no freeze, no hold and no easing to a stop. The identical first and last reference images are two consecutive matching phases of periodic motion, NOT static bookends. Never jump or morph from the reference into a different character at the start or jump back at the end.\nPreserve the small orange tabby EXACTLY: same face, head size, ear shape, height, planted feet, front-facing pose, short green triangular neckerchief and handheld grey equipment. Keep the head and body outline stable. Do not add a long scarf, tassels, accessories, new limbs or new props. The feet, head position and handheld equipment remain fixed. Do NOT scale the body to imitate breathing. Cat animation: a gentle continuous small tail-tip swish, tiny natural ear movements, occasional quick blinks, minimal torso breathing inside its stable silhouette. Tail returns naturally through its reference curl at the end without stopping. Cat remains recognizable as the supplied original at every frame.\nKeep environmental motion visible throughout the full clip: wheat tips continuously bend gently in the breeze, leafy branch tips sway without moving the trunks, turquoise water carries small soft flowing ripples. Stagger these motions so they never all stop together, including the first and last seconds. Use restrained smooth periodic motions that complete whole cycles in ten seconds. Match both POSITION AND DIRECTION OF MOTION at the loop seam. Final moving frames must approach the first moving frames smoothly, not merely paste the reference on the last frame.\nFixed three-quarter overhead camera, fixed scene composition, fixed mail shelter and trees, no zoom, pan, cuts, whole-image wobble or sliding ground. Original flat forest storybook art, dark forest green outlines, muted plant greens, cream yellow, limited flat shading. Keep the original top and bottom safe areas for HTML menu overlays. No lighting change, no combat, no new characters, no dramatic effects, no text, no watermark, no UI. Gentle animation should be obvious at phone size but the original artwork must remain stable.",
+    "duration": 10,
+    "request_id": "vid-ztj-forest-title-20261023-v4",
+    "resolution": "720p",
+    "generate_audio": false,
+    "execution_expires_after": 10800
+  },
+  "output": {
+    "usage": {
+      "total_tokens": 216900,
+      "completion_tokens": 216900
+    },
+    "video": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-title-20261023-v4/video/video-52edcb5bd645882d.mp4",
+      "mime_type": "video/mp4",
+      "size_bytes": 3306502
+    },
+    "last_frame": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-title-20261023-v4/video/last-frame-e6461daf146893d8.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 251995
+    },
+    "media_type": "video",
+    "properties": {
+      "fps": 24,
+      "seed": 25356,
+      "ratio": "9:16",
+      "duration": 10,
+      "resolution": "720p",
+      "output_format": "mp4",
+      "generate_audio": false
+    },
+    "request_id": "vid-ztj-forest-title-20261023-v4",
+    "provider_task_id": "cgt-20261023110746-7v2dt"
+  },
+  "created_at": "2026-10-23T03:10:52.102433Z",
+  "updated_at": "2026-10-23T03:10:52.102433Z"
+}

@@ -1,0 +1,8 @@
+{
+  "_comment": "复制 locales/zh-CN.json 后翻译值，在 locales 登记文件并修改 defaultLocale；无需修改游戏代码，刷新生效。",
+  "defaultLocale": "zh-CN",
+  "locales": {
+    "zh-CN": "./locales/zh-CN.json",
+    "en-US": "./locales/en-US.json"
+  }
+}

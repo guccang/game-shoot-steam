@@ -1,0 +1,15 @@
+// 房屋泊位与自动停车参数共用世界坐标；车位不添加新的地形碰撞。
+import {townPoint,TOWN_SHIFT_X} from './town-layout.js';
+import {WORKSHOP,VEHICLE_WORKSHOP,RANGER_COTTAGE,GARAGE} from '../world/workshop.js';
+export const PARKING = Object.freeze({wait:3,radius:48,approachMargin:18,roadClearance:50,releaseRadius:115,stopSpeed:3,speed:55,acceleration:95,width:96,height:86});
+// 候停边界只覆盖车位及院内过道，主路和路肩保留通行；车库须驶到门前再候停。
+// 北门内侧六个公共车位，共用两条倒车过道，入口通道留在停车场东侧。
+export const NORTH_PARKING = Object.freeze({x:145+TOWN_SHIFT_X,y:145,width:380,height:280,entrance:townPoint({x:650,y:205})});
+export const PARKING_SPOTS = [
+ {id:'garage',building:'garage',name:'载具工坊',kind:'vehicle',indoor:true,x:VEHICLE_WORKSHOP.x,y:VEHICLE_WORKSHOP.y+GARAGE.parkingY,approachY:VEHICLE_WORKSHOP.y+10,disembarkY:VEHICLE_WORKSHOP.y+75},
+ {id:'weapons-west',building:'weapons',name:'武器工坊',kind:'weapons',x:WORKSHOP.x-55,y:WORKSHOP.y+60,approachY:WORKSHOP.y+115},
+ {id:'weapons-east',building:'weapons',name:'武器工坊',kind:'weapons',x:WORKSHOP.x+55,y:WORKSHOP.y+60,approachY:WORKSHOP.y+115},
+ // 小屋车位移到东侧快递站下方，南侧留出倒车入口；保留标识以兼容已有停驻车辆。
+ {id:'cottage',building:'cottage',name:'小屋停车位',x:RANGER_COTTAGE.x+160,y:RANGER_COTTAGE.y-20,approachY:RANGER_COTTAGE.y+45},
+ ...[200,340].flatMap((y,row)=>[210,330,450].map((x,column)=>({id:`north-${row}-${column}`,building:'north',name:'北门停车场',x:x+TOWN_SHIFT_X,y,approachY:y+65}))),
+];

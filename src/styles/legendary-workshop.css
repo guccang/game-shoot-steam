@@ -1,0 +1,26 @@
+/* 传奇工坊共用手机底板，以旧红漆信笺和真实坦克预览表达红狼传承。 */
+#legendary-dialog .ui-panel__body{padding:14px;line-height:1.65}
+#legendary-dialog .ui-panel__footer{display:flex;flex-direction:column;gap:8px}
+#legendary-dialog .ui-panel__footer>*{width:100%;box-sizing:border-box}
+#legendary-dialog h3{font-size:16px;margin:8px 0}
+#legendary-dialog p{margin:10px 0}
+.legendary-letter{border-left:4px solid #b45a49;padding-left:12px}
+.legendary-letter summary{min-height:44px;display:flex;align-items:center;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.legendary-abilities{margin-top:18px;border-top:1px solid #b3b88d;padding-top:8px}
+.legendary-abilities dt{font-weight:bold;margin-top:12px}
+.legendary-abilities dd{margin:3px 0 12px;font-size:13px}
+.legendary-note,.legendary-reason{font-size:12px;color:#526c51}
+.legendary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#legendary-dialog button,#legendary-dialog select{min-height:44px}
+.legendary-entry{position:absolute;transform:translateX(-50%);z-index:4;min-height:44px;padding:6px 12px;border:2px solid #315747;border-radius:12px;background:#fff6dc;color:#315747;font:inherit;white-space:nowrap}
+.legendary-vehicle{display:flex;gap:10px;align-items:center;margin-top:10px}
+.legendary-vehicle select{flex:1;min-width:0;background:#fff6dc;color:#315747;border:1px solid #809b67;border-radius:8px;font:inherit}
+#legendary-preview{width:100%;height:auto;display:block;background:#e6e5c3;border-radius:12px;margin-top:10px}
+#legendary-dialog fieldset{margin:12px 0;padding:8px;border:1px solid #a4b087;border-radius:8px;min-width:0}
+.legendary-swatches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.legendary-swatches button{font-size:11px;padding:5px 2px;display:flex;align-items:center;justify-content:center;gap:4px}
+.legendary-swatches i{display:inline-block;width:13px;height:13px;flex-shrink:0;border:1px solid #315747;border-radius:50%}
+.legendary-swatches [aria-pressed=true]{background:#315747;color:#fff6dc;outline:2px solid #c3a45f;outline-offset:1px}
+.legendary-scheme{display:grid;grid-template-columns:minmax(0,1fr) 54px 54px;align-items:center;gap:6px;margin:8px 0;font-size:12px}
+#legendary-status{font-size:12px;margin:0;padding:4px 12px;color:#8a4d36}
+#legendary-status:empty{display:none}

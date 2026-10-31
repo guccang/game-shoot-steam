@@ -1,0 +1,55 @@
+import { i18nText } from "../i18n/index.js";
+// 角色目录：数值与外观标识共享稳定索引，兼容已有存档。
+export const HEROES = [
+  {
+    id: 'chestnut',
+    name: i18nText("config.heroes.10cb799373"),
+    breed: i18nText("config.heroes.e0dbbbc18a"),
+    trait: i18nText("config.heroes.6ba64b115d"),
+    sprite: 0,
+    title: i18nText("config.heroes.e98a4edadd"),
+    description: i18nText("config.heroes.1d4c415524"),
+    hp: 120,
+    speed: 155,
+    bonus: 1,
+    coins: 0,
+    wood: 0,
+    color: '#efc783',
+  },
+  {
+    id: 'mint',
+    name: i18nText("config.heroes.ae506736a6"),
+    breed: i18nText("config.heroes.64de7fe959"),
+    trait: i18nText("config.heroes.4742674037"),
+    sprite: 1,
+    title: i18nText("config.heroes.4742674037"),
+    description: i18nText("config.heroes.ba0ea7c384"),
+    hp: 100,
+    speed: 185,
+    bonus: 1.25,
+    coins: 140,
+    wood: 65,
+    color: '#d2e7dc',
+  },
+  {
+    id: 'silver', name: i18nText("config.heroes.0e29e6bc2b"), breed: i18nText("config.heroes.6710f3cbf9"), title: i18nText("config.heroes.dbdcbb94c6"),
+    trait: i18nText("config.heroes.93578b7764"), description: i18nText("config.heroes.6e1f1e61b2"), sprite: 0, coat: 'tabby',
+    hp: 160, speed: 145, bonus: 1.1, coins: 260, wood: 110, color: '#b9c3c3',
+  },
+  {
+    id: 'mocha', name: i18nText("config.heroes.f2b9a88c64"), breed: i18nText("config.heroes.53404a0d78"), title: i18nText("config.heroes.d1ae4c0618"),
+    trait: i18nText("config.heroes.f225276fdf"), description: i18nText("config.heroes.0ac5db7db9"), sprite: 0, coat: 'point',
+    hp: 90, speed: 205, bonus: 1.15, coins: 320, wood: 135, color: '#e7d7b9',
+  },
+  {
+    id: 'snow', name: i18nText("config.heroes.dc520abc23"), breed: i18nText("config.heroes.0480714a46"), title: i18nText("config.heroes.ab4dcb69b0"),
+    trait: i18nText("config.heroes.0d3dca7381"), description: i18nText("config.heroes.2765959955"), sprite: 0, coat: 'bicolor',
+    hp: 180, speed: 135, bonus: 1, coins: 380, wood: 160, color: '#eee9dc',
+  },
+  {
+    id: 'ink', name: i18nText("config.heroes.233f074896"), breed: i18nText("config.heroes.3b264ee0b2"), title: i18nText("config.heroes.db66db33e6"),
+    trait: i18nText("config.heroes.1b519831b9"), description: i18nText("config.heroes.4984370f04"), sprite: 0, coat: 'black',
+    hp: 100, speed: 165, bonus: 1.4, coins: 440, wood: 185, color: '#626b70',
+  },
+  { id:'police',name:'警察猫·蓝哨',breed:'灰白虎斑猫',title:'森林巡警',trait:'巡逻熟练，换弹利落',description:'戴着警帽守护森林的热心巡警，灰白毛色与藏蓝制服格外精神。',sprite:0,coat:'tabby',hp:140,speed:175,bonus:1.15,coins:520,wood:220,color:'#c5d0d0' },
+];

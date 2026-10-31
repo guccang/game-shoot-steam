@@ -1,0 +1,627 @@
+{
+  "armoredEnemies": {
+    "shieldArmColor": "#c89a69",
+    "shieldArmColor2": "#8b956b"
+  },
+  "campDefense": {
+    "drawCampDefenseColor": "#c89a69"
+  },
+  "campProps": {
+    "fenceColor": "#b99162",
+    "fenceColor2": "#59402e",
+    "fenceValue": 2.5,
+    "fenceColor3": "#c9a06d",
+    "fenceColor4": "#59402e",
+    "fenceValue2": 2.6,
+    "logsColor": "#59402e",
+    "logsColor2": "#59402e",
+    "stonesColor": "#aaa99a",
+    "stonesColor2": "#59402e",
+    "stonesValue": 2.7,
+    "stonesColor3": "#c6c2aa",
+    "stonesColor4": "#949589",
+    "driftwoodColor": "#73563c",
+    "benchColor": "#59402e",
+    "benchColor2": "#73563c"
+  },
+  "clearingPost": {
+    "drawClearingPostColor": "#59402e",
+    "drawClearingPostColor2": "#c89a69",
+    "drawClearingPostColor3": "#edc18f",
+    "drawClearingPostValue": 3,
+    "drawClearingPostValue2": 2.3,
+    "drawClearingPostValue3": 3.5
+  },
+  "cottageArt": {
+    "materialColor": "#59402e",
+    "drawCottageArtworkValue": 3,
+    "drawCottageArtworkColor": "#f1dba7",
+    "drawCottageArtworkColor2": "#cdb68a",
+    "drawCottageArtworkColor3": "#c89a69",
+    "drawCottageArtworkColor4": "#789660",
+    "drawCottageArtworkValue2": 3.2,
+    "drawCottageArtworkColor5": "#a5bd7c",
+    "drawCottageArtwork_strokeStyleColor": "#56784f",
+    "drawCottageArtworkValue3": [
+      [
+        1,
+        -100,
+        32,
+        -112
+      ],
+      [
+        29,
+        -74,
+        63,
+        -87
+      ]
+    ],
+    "drawCottageArtworkValue4": 3.2
+  },
+  "dumplingBody": {
+    "drawDumplingBody_lineWidthValue": 3
+  },
+  "equipmentParts": {
+    "drawEquipmentPartColor": "#8b956b",
+    "drawEquipmentPartColor2": "#c89a69",
+    "drawEquipmentPartColor3": "#a7b574",
+    "drawEquipmentPartColor4": "#594b32"
+  },
+  "fireWorld": {
+    "drawBurningTreeColor": "#594b32"
+  },
+  "flyingMonster": {
+    "paintFlyingMonster_strokeStyleColor": "#594b32"
+  },
+  "forestArt": {
+    "gardenSpacing": 18,
+    "grass": "#d5df91",
+    "softGroundOverlay": false,
+    "groundGlaze": "#c6d77e10"
+  },
+  "forestRaceTrack": {
+    "drawRaceBaleColor": "#c89a69"
+  },
+  "forestRace": {
+    "drawRaceGround_strokeStyleColor": "#594b32",
+    "drawRaceMap_strokeStyleColor": "#c89a69"
+  },
+  "garage": {
+    "outline": "#59402e",
+    "strokeWidth": 3,
+    "wall": "#d6c393",
+    "wallShadow": "#a18d64",
+    "wallLight": "#f1dba7",
+    "roof": "#789660",
+    "roofStrokeWidth": 3.2,
+    "roofLight": "#a5bd7c",
+    "roofSeams": [
+      -48,
+      12,
+      72
+    ],
+    "roofSeamColor": "#56784f"
+  },
+  "gatlingArt": {
+    "drawGatlingBarrelsColor": "#8b956b"
+  },
+  "groundArt": {
+    "paintGroundStepsColor": "#aaa99e",
+    "paintGroundStepsColor2": "#59402e",
+    "paintGroundStepsValue": 3,
+    "paintGroundStepsColor3": "#c3c1b4",
+    "fineGrass": false,
+    "grassStrokeWidth": 3.2
+  },
+  "jiuzhaigouLandscape": {
+    "drawSlopeValue": [
+      "#9fbc7c",
+      "#b1cb88",
+      "#c4d996"
+    ],
+    "drawSlopeValue2": [
+      "#a8c576",
+      "#bed788",
+      "#d0df96"
+    ],
+    "drawUnderstoryColor": "#aaa99e",
+    "drawUnderstoryColor2": "#59402e",
+    "drawUnderstoryValue": 3,
+    "drawUnderstoryColor3": "#8bab68",
+    "drawUnderstoryColor4": "#594b32",
+    "drawUnderstoryValue2": 2.6
+  },
+  "jiuzhaigou": {
+    "paintLakeValue": [
+      "#66d7c6",
+      "#39c1c7",
+      "#28aebd"
+    ],
+    "paintLakeValue2": [
+      "#65d3d5",
+      "#3bbdce",
+      "#29a9c4"
+    ],
+    "paintLakeValue3": 12,
+    "paintJiuzhaigouSteps_fillStyleColor": "#c6d88b",
+    "paintJiuzhaigouStepsColor": "#b4ce80",
+    "paintJiuzhaigouStepsColor2": "#d0de96",
+    "paintJiuzhaigouSteps_strokeStyleColor": "#eddbad",
+    "paintJiuzhaigouSteps_fillStyleColor2": "#83dfd5",
+    "paintJiuzhaigouSteps_strokeStyleColor2": "#b3efdf46",
+    "paintJiuzhaigouStepsColor3": "#594b32",
+    "paintJiuzhaigouStepsValue": 2.5
+  },
+  "landscapeGround": {
+    "drawLandscapeGround_globalAlphaValue": 0.72,
+    "drawLandscapeGround_fillStyleColor": "#bdd38b",
+    "drawLandscapeGround_fillStyleColor2": "#acc77d",
+    "drawLandscapeGround_fillStyleColor3": "#d0de96",
+    "drawLandscapeGroundValue": 9
+  },
+  "lighting": {
+    "drawLightFixtureColor": "#59402e",
+    "drawLightFixtureColor2": "#aa9972",
+    "drawLightFixtureValue": 3.5,
+    "drawLightFixtureColor3": "#c89a69",
+    "drawLightFixtureColor4": "#a27852",
+    "drawLightFixtureColor5": "#8b704e"
+  },
+  "livingWorld": {
+    "materialColor": "#59402e",
+    "drawLivingGroundColor": "#e4d0a0",
+    "shelterValue": 3,
+    "shelterValue2": 3.2
+  },
+  "mechanical": {
+    "drawMechanicalCoreColor": "#8b956b",
+    "drawMechanicalCoreColor2": "#a7b574",
+    "drawMechanicalCatColor": "#594b32"
+  },
+  "monsterAtlas": {
+    "paintFrame_strokeStyleColor": "#594b32",
+    "paintFrame_lineWidthValue": 3,
+    "paintFrame_fillStyleColor": "#59402e"
+  },
+  "naturalTerrain": {
+    "lake_fillStyleColor": "#72d6ed",
+    "lake_fillStyleColor2": "#4ac8e7",
+    "lake_fillStyleColor3": "#2db4df",
+    "lake_fillStyleColor4": "#20a3d1",
+    "lakeValue": 70,
+    "lakeValue2": 96,
+    "lakeValue3": 43,
+    "lakeValue4": 6,
+    "lakeValue5": 8,
+    "lakeValue6": 8,
+    "lake_strokeStyleColor": "#b5ebf0",
+    "lake_lineWidthValue": 2.4,
+    "rockColumn_fillStyleColor": "#aaa99e",
+    "rockColumn_strokeStyleColor": "#59402e",
+    "rockColumn_lineWidthValue": 3.4,
+    "rockColumnColor": "#cbc6b6",
+    "rockColumnColor2": "#93968e",
+    "rockColumn_fillStyleColor2": "#96b86c",
+    "rockColumn_fillStyleColor3": "#cbc6b6",
+    "rockColumn_strokeStyleColor2": "#59402e",
+    "rockColumn_lineWidthValue2": 2.8,
+    "fineDetails": false
+  },
+  "pineWheels": {
+    "drawWheelValue3": 3,
+    "drawWheel_strokeStyleColor": "#aaa477",
+    "drawWheel_lineWidthValue": 2,
+    "drawWheelValue4": 1.8,
+    "drawWheel_strokeStyleColor2": "#62694c",
+    "drawWheel_lineWidthValue2": 1.7,
+    "drawWheelValue5": 1.8,
+    "drawWheelValue6": 2.5,
+    "drawWheelColor3": "#ffe1a0",
+    "drawPineRearValue": 9,
+    "drawPineRearColor": "#7f8054",
+    "drawPineRearValue2": 2.5,
+    "drawPineRearValue3": 12,
+    "drawPineRearValue4": 3.5,
+    "drawPineRearValue5": 1.6,
+    "drawPineFrontValue": 9,
+    "drawPineFrontColor": "#9ba36a",
+    "drawPineFrontValue2": 3,
+    "drawPineFrontColor2": "#c6cf8b",
+    "drawPineFrontColor3": "#7f8054",
+    "drawPineFrontColor4": "#ffe1a0",
+    "fineDetails": false,
+    "tire": "#68644b",
+    "tireStrokeWidth": 3.2,
+    "treadCount": 6,
+    "wheel": "#b8bd7f",
+    "hull": "#9ba36a",
+    "hullLight": "#c6cf8b"
+  },
+  "primitives": {
+    "outline": "#59402e",
+    "polygonStrokeWidth": 3
+  },
+  "rangedEnemies": {
+    "feetColor": "#8b956b",
+    "feetColor2": "#a7b574",
+    "drawRangedMonsterColor": "#c89a69"
+  },
+  "rangedReinforcements": {
+    "cannonColor": "#8b956b",
+    "cannonColor2": "#c89a69",
+    "cannonColor3": "#a7b574"
+  },
+  "rangerArrival": {
+    "drawBusStopColor": "#c89a69"
+  },
+  "realmEntrances": {
+    "drawTowerColor": "#f1d9a3",
+    "drawTowerValue": 3,
+    "fineTower": false
+  },
+  "riverCrossing": {
+    "materialColor": "#59402e",
+    "drawRiverCrossingGroundValue": 3
+  },
+  "river": {
+    "drawWaterStepsColor": "#269fc8",
+    "drawWaterStepsColor2": "#8bdff1",
+    "drawWaterStepsColor3": "#48c4e4",
+    "drawWaterSteps_fillStyleColor": "#70d8ef",
+    "drawWaterSteps_fillStyleColor2": "#d8f4ed",
+    "drawWaterSteps_fillStyleColor3": "#36badf",
+    "bankRock_fillStyleColor": "#aaa99e",
+    "bankRockColor": "#92958e",
+    "bankRock_strokeStyleColor": "#59402e",
+    "bankRock_lineWidthValue": 3.5,
+    "bankRockDetail": false,
+    "drawBridge_strokeStyleColor": "#59402e",
+    "drawBridgeValue": 8,
+    "drawBridge_fillStyleColor": "#c89a69",
+    "drawBridge_fillStyleColor2": "#d6a879",
+    "drawBridge_strokeStyleColor2": "#a5805230"
+  },
+  "roadArt": {
+    "drawSoftRoadsStepsValue": [
+      [
+        28,
+        0.2
+      ],
+      [
+        24,
+        1
+      ]
+    ],
+    "drawSoftRoadsSteps_strokeStyleColor": "#f1dba2"
+  },
+  "rotaryBarrels": {
+    "drawRotaryBarrelsColor": "#8b956b"
+  },
+  "sampleGround": {
+    "drawTerrainPatchesValue": [
+      [
+        810,
+        410,
+        230,
+        190,
+        "#83ad65"
+      ],
+      [
+        880,
+        680,
+        265,
+        137,
+        "#b5cd81"
+      ],
+      [
+        960,
+        885,
+        290,
+        200,
+        "#c6d98e"
+      ],
+      [
+        1470,
+        870,
+        210,
+        200,
+        "#b3cc7d"
+      ],
+      [
+        730,
+        1130,
+        145,
+        130,
+        "#90b671"
+      ],
+      [
+        690,
+        2100,
+        430,
+        370,
+        "#529c67"
+      ],
+      [
+        2340,
+        1020,
+        385,
+        340,
+        "#d7bd68"
+      ],
+      [
+        3020,
+        2200,
+        400,
+        350,
+        "#489469"
+      ]
+    ],
+    "drawSampleMeadowColor": "#d5df91",
+    "drawSampleMeadowColor2": "#d5df91df",
+    "drawSampleMeadowColor3": "#d5df9100",
+    "drawSampleMeadowValue": 24
+  },
+  "scenery": {
+    "fineWheat": false,
+    "wheatRowPeriod": 2
+  },
+  "seasonArt": {
+    "legacyLeafPalette": false
+  },
+  "settlements": {
+    "timberValue": 3,
+    "timberValue2": 2.3,
+    "postValue": 3.2,
+    "postValue2": 2.5,
+    "drawSettlementValue": [
+      "#99896b",
+      "#59402e",
+      "#c0b58f",
+      "#6f745e"
+    ],
+    "drawSettlementValue2": [
+      "#c89a69",
+      "#59402e",
+      "#edc18f",
+      "#a27852"
+    ]
+  },
+  "shoreArt": {
+    "drawShoreWaterStepsColor": "#72d6ed",
+    "drawShoreWaterStepsColor2": "#2db4df",
+    "drawShoreWaterStepsColor3": "#20a3d1",
+    "drawShoreWaterStepsValue": 0,
+    "shoreStone_fillStyleColor": "#aaa99e",
+    "shoreStone_strokeStyleColor": "#59402e",
+    "shoreStone_lineWidthValue": 2.8,
+    "shoreStone_fillStyleColor2": "#c3c1b4",
+    "fineWater": false
+  },
+  "signposts": {
+    "drawRegionSignpostColor": "#c89a69",
+    "drawRegionSignpostColor2": "#59402e",
+    "drawRegionSignpostValue": 3.5,
+    "drawRegionSignpostColor3": "#a27852",
+    "drawRegionSignpostColor4": "#59402e",
+    "drawRegionSignpostValue2": 3.5,
+    "drawRegionSignpostColor5": "#edc18f",
+    "drawRegionSignpostColor6": "#a27852",
+    "drawRegionSignpostValue3": 2.5
+  },
+  "spider": {
+    "spiderLegColor": "#8b956b",
+    "drawSpiderBodyColor": "#a7b574",
+    "drawSpiderBodyColor2": "#594b32"
+  },
+  "storyPosts": {
+    "materialColor": "#59402e",
+    "drawStoryPostColor": "#c89a69",
+    "drawStoryPostValue": 3.5,
+    "drawStoryPostColor2": "#83a269",
+    "drawStoryPostColor3": "#597c52",
+    "drawStoryPostValue2": 3
+  },
+  "storyProps": {
+    "materialColor": "#59402e",
+    "drawStoryShapeValue": 3,
+    "drawStoryShapeValue2": 3.2
+  },
+  "townLayout": {
+    "drawTownGroundColor": "#e4d5a7",
+    "drawTownGroundColor2": "#ead6a3",
+    "drawTownGround_strokeStyleColor": "#c9b78666",
+    "drawTownSignColor": "#c89a69",
+    "drawTownSignColor2": "#59402e"
+  },
+  "townRestoration": {
+    "drawWeatheredHouseValue": 3,
+    "drawRestorationTransfer_strokeStyleColor": "#59402e"
+  },
+  "treeCanopy": {
+    "trunk_strokeStyleColor": "#614b32",
+    "drawSampleTree_lineWidthValue": 3.2,
+    "drawSampleTree_globalAlphaValue": 0.55,
+    "drawSampleTree_globalAlphaValue2": 1,
+    "leafRamps": [
+      [
+        "#594b32",
+        "#75975a",
+        "#98b968",
+        "#b3ca78",
+        "#b3ca78"
+      ],
+      [
+        "#514d34",
+        "#65866a",
+        "#88a776",
+        "#a2bb83",
+        "#a2bb83"
+      ],
+      [
+        "#69492f",
+        "#bc904d",
+        "#dfb561",
+        "#edcb7a",
+        "#edcb7a"
+      ],
+      [
+        "#4c5037",
+        "#668c64",
+        "#85a66b",
+        "#a6bf7d",
+        "#a6bf7d"
+      ]
+    ],
+    "fineHighlights": false
+  },
+  "treeSpecies": {
+    "crown_lineWidthValue": 3.2,
+    "branch_lineWidthValue": 4,
+    "branch_strokeStyleColor": "#594b32",
+    "leafRamps": [
+      [
+        "#594b32",
+        "#75975a",
+        "#98b968",
+        "#b3ca78",
+        "#b3ca78"
+      ],
+      [
+        "#514d34",
+        "#65866a",
+        "#88a776",
+        "#a2bb83",
+        "#a2bb83"
+      ],
+      [
+        "#69492f",
+        "#bc904d",
+        "#dfb561",
+        "#edcb7a",
+        "#edcb7a"
+      ],
+      [
+        "#4c5037",
+        "#668c64",
+        "#85a66b",
+        "#a6bf7d",
+        "#a6bf7d"
+      ]
+    ]
+  },
+  "vehicleArmaments": {
+    "drawVehicleArmamentColor": "#a7b574",
+    "drawVehicleArmamentColor2": "#c89a69",
+    "drawVehicleArmamentColor3": "#8b956b",
+    "drawVehicleArmamentColor4": "#d0d99c",
+    "drawVehicleArmamentColor5": "#594b32",
+    "legacyGun": false
+  },
+  "vehicleModels": {
+    "drawHeavyRearColor": "#585943",
+    "drawHeavyRearColor2": "#a3a47c",
+    "drawHeavyRear_strokeStyleColor": "#594b32",
+    "drawHeavyRearColor3": "#89975e",
+    "drawHeavyFrontColor": "#a7b574"
+  },
+  "vehicle": {
+    "legacyArmor": false
+  },
+  "weaponWorkshopBuilding": {
+    "roofPanelColor": "#789660",
+    "roofPanelColor2": "#59402e",
+    "drawWeaponWorkshopColor": "#59402e",
+    "drawWeaponWorkshopValue": 3
+  },
+  "workshopBuilding": {
+    "drawWorkshopFacadeColor": "#c89a69"
+  },
+  "workshopInterior": {
+    "drawWallsColor": "#efe0b7",
+    "drawWallsColor2": "#59402e",
+    "drawWallsColor3": "#87917a",
+    "drawWallsColor4": "#e4dfb5",
+    "drawWallsColor5": "#e1bd87",
+    "drawWallsColor6": "#8f8967",
+    "drawWallsValue": 48,
+    "drawWallsDetail": false,
+    "drawWallsValue2": 50,
+    "drawWallsValue3": 100,
+    "drawWallsValue4": 46,
+    "drawWallsColor7": "#73583c",
+    "drawWallsColor8": "#59402e",
+    "drawRackColor": "#59402e",
+    "drawRackColor2": "#e4dcb7",
+    "drawRackColor3": "#73583c"
+  },
+  "worldSigns": {
+    "drawWorldSignColor": "#59402e",
+    "drawWorldSignValue": 2.5,
+    "drawWorldSignColor2": "#edc18f"
+  },
+  "treeArt": {},
+  "referenceMaterials": {
+    "equipment": {
+      "ink": "#59402e",
+      "leafInk": "#594b32",
+      "metalInk": "#59402e",
+      "grass": "#d5df91",
+      "shadeGrass": "#8eb76c",
+      "hull": "#9ba36a",
+      "hullLight": "#c6cf8b",
+      "tire": "#68644b",
+      "tread": "#aaa477",
+      "wheel": "#b8bd7f",
+      "cream": "#ffe1a0",
+      "wood": "#c89a69",
+      "woodLight": "#edc18f",
+      "woodShade": "#a27852"
+    },
+    "scene": {
+      "ink": "#59402e",
+      "wood": "#c89a69",
+      "woodLight": "#edc18f",
+      "wall": "#f1dba7",
+      "wallShade": "#cdb68a",
+      "roof": "#789660",
+      "roofLight": "#a5bd7c",
+      "roofShade": "#56784f",
+      "stone": "#aaa99e",
+      "stoneLight": "#cbc6b6",
+      "stoneShade": "#93968e",
+      "water": "#2db4df",
+      "waterLight": "#72d6ed",
+      "waterDeep": "#20a3d1"
+    },
+    "leafRamps": [
+      [
+        "#594b32",
+        "#75975a",
+        "#98b968",
+        "#b3ca78",
+        "#b3ca78"
+      ],
+      [
+        "#514d34",
+        "#65866a",
+        "#88a776",
+        "#a2bb83",
+        "#a2bb83"
+      ],
+      [
+        "#69492f",
+        "#bc904d",
+        "#dfb561",
+        "#edcb7a",
+        "#edcb7a"
+      ],
+      [
+        "#4c5037",
+        "#668c64",
+        "#85a66b",
+        "#a6bf7d",
+        "#a6bf7d"
+      ]
+    ]
+  }
+}

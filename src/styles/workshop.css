@@ -1,0 +1,319 @@
+/* 林间修造所：货架、工作台与零件托盘形成单一装配空间，手机保持拖拽两端同屏。 */
+dialog.workshop-dialog{width:min(1100px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 24px);padding:0;background:#ede8c9;color:#315c43;border:3px solid #315c43;border-radius:20px;box-shadow:0 18px 65px #132d3266;overflow:auto}
+.workshop-dialog *{box-sizing:border-box}
+.workshop-dialog [hidden]{display:none!important}
+/* 空货架复用手机框架内页，跨满现有内容区，不保留旧装备操作。 */
+#ws-empty-catalog{grid-column:1/-1}
+.workshop-dialog button{font:inherit;color:#315c43;cursor:pointer;border:2px solid #849777;border-radius:10px;background:#f4edcf;padding:8px 12px;min-height:44px;box-shadow:none}
+.workshop-dialog button:disabled{cursor:default;opacity:.45}
+.workshop-dialog button:focus-visible{outline:3px solid #b17932;outline-offset:3px}
+.workshop-dialog button[aria-pressed=true]{background:#d6dfb4;border-color:#315c43}
+.workshop-dialog h2,.workshop-dialog h3,.workshop-dialog p{margin:0}
+.ws-header{display:flex;align-items:center;gap:24px;padding:18px 24px;background:#315c43;color:#f4edcf;border-bottom:6px solid #b68a51}
+.ws-header small{font-size:11px;opacity:.8}.ws-header h2{font-size:24px;letter-spacing:2px}
+.ws-header nav{display:flex;gap:7px;margin-left:auto}.ws-header #ws-close{font-size:26px;border:0;background:transparent;color:#f4edcf;line-height:1}
+.ws-layout{display:grid;grid-template-columns:158px minmax(0,1fr) 184px;gap:16px;padding:20px}
+.ws-rack,.ws-parts{min-width:0}.ws-rack h3,.ws-parts h3{font-size:13px;margin-bottom:10px}
+#ws-shelf,#ws-parts{display:flex;flex-direction:column;gap:8px;max-height:480px;overflow:auto;padding:3px}
+#ws-shelf button,#ws-parts button{position:relative;flex:none;width:100%;display:flex;flex-direction:column;align-items:center;padding:4px 6px 9px;background:#e1d4aa}
+#ws-shelf button[aria-pressed=true],#ws-parts button[aria-pressed=true]{background:#f4edcf;border-color:#315c43;box-shadow:inset 4px 0 #315c43}
+#ws-shelf canvas{width:96px;height:64px}#ws-parts canvas{width:100px;height:60px;pointer-events:none}
+#ws-shelf b,#ws-parts b{font-size:12px;line-height:1.4}#ws-shelf small,#ws-parts small{font-size:10px;opacity:.75}
+#ws-parts button{touch-action:manipulation;user-select:none}
+.ws-center{min-width:0}.ws-title{display:flex;align-items:center;justify-content:space-between;padding:0 3px 12px;gap:8px}
+.ws-title h3{font-size:21px}.ws-title small{font-size:11px;opacity:.8}.ws-title>span{font-weight:bold;white-space:nowrap}
+.ws-bench{position:relative;border:8px solid #b68a51;border-radius:14px;background:#d1c395;box-shadow:inset 0 0 0 2px #795f3f;background-image:linear-gradient(90deg,transparent 49.7%,#b0a17455 50%,transparent 50.3%);overflow:hidden}
+#ws-stage{display:block;width:100%;aspect-ratio:1.65;object-fit:contain}
+.ws-stage-label{position:absolute;left:12px;top:10px;font-size:11px;background:#f4edcf;padding:4px 8px;border-radius:5px}
+#ws-socket{position:absolute;left:49%;top:53%;transform:translate(-50%,-50%);width:62px;height:56px;border:2px dashed #315c4399;background:#f4edcf22;border-radius:50%;padding:0}
+#ws-socket span{font-size:27px;color:#315c4399}#ws-socket.ready{border-color:#315c43;background:#d6dfb444}#ws-socket.over{background:#f4dca0bb;border-style:solid;box-shadow:0 0 0 9px #315c4333}
+#ws-before{position:absolute;right:8px;bottom:8px;width:90px;padding:0 4px 4px;min-height:0;font-size:10px;background:#ede8c9}
+#ws-original{display:block;width:75px;height:50px;margin:auto}
+.ws-hint{position:absolute;bottom:12px;left:12px;font-size:11px;pointer-events:none}
+.ws-tools{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0}.ws-tools button{font-size:12px;padding:5px 12px}
+#ws-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#ws-stats>div{padding:7px 9px;border-left:3px solid #a6b493;background:#e4e3bf}
+#ws-stats small{display:block;font-size:10px;opacity:.85}#ws-stats b{font-size:13px;white-space:nowrap}#ws-stats .changed{border-color:#315c43;background:#d6dfb4}
+#ws-part-info{font-size:11px;min-height:30px;padding:9px 4px}
+#ws-turret-buy,#ws-turret-upgrade{font-size:12px;width:100%}
+.ws-footer{position:sticky;bottom:0;background:#f1ecd1;border-top:3px solid #b68a51;padding:12px 20px;z-index:3}
+#ws-resources{display:flex;gap:16px;flex-wrap:wrap}.ws-resource{display:flex;align-items:center;gap:5px;font-size:12px}
+.ws-resource button{padding:4px!important;min-height:32px;width:32px;border:0;background:none}.ws-resource svg{width:26px;height:26px}
+.ws-resource small{display:block;font-size:10px;opacity:.85}.ws-resource.short{color:#954635}.ws-free{font-size:12px;opacity:.8}
+.ws-checkout{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px}.ws-checkout>div{display:flex;gap:7px}.ws-checkout button{font-size:12px;white-space:nowrap}
+#ws-confirm{background:#315c43;color:#f4edcf;border-color:#315c43;min-width:110px}#ws-feedback{font-size:11px}
+.world-workshop-entry{position:absolute;left:0;top:0;z-index:4;min-height:44px;padding:7px 13px;border:2px solid #315c43;border-radius:9px;background:#f4dca0;color:#315c43;font:700 12px inherit;pointer-events:auto}
+@media(max-width:700px){
+ dialog.workshop-dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);border-radius:14px}
+ .ws-header{padding:11px 12px;gap:8px;border-bottom-width:4px}.ws-header h2{font-size:19px;letter-spacing:0}.ws-header small{font-size:9px}
+ .ws-header nav{gap:4px}.ws-header nav button{font-size:12px;padding:6px 8px}.ws-header #ws-close{padding:4px;min-width:28px}
+ .ws-layout{display:flex;flex-direction:column;gap:10px;padding:10px}
+ .ws-rack h3{display:none}#ws-shelf{flex-direction:row;max-height:none;gap:6px;padding:1px 1px 5px}
+ #ws-shelf button{width:85px;min-width:85px;padding:1px 2px 5px}#ws-shelf canvas{width:65px;height:43px}#ws-shelf b{font-size:10px}#ws-shelf small{font-size:9px}
+ .ws-title{padding-bottom:7px}.ws-title h3{font-size:18px}.ws-title small{font-size:10px}.ws-title>span{font-size:12px}
+ .ws-bench{border-width:5px}#ws-stage{aspect-ratio:1.85;max-height:210px}.ws-stage-label{top:6px;left:6px;font-size:10px}.ws-hint{font-size:9px;left:7px;bottom:7px}
+ #ws-before{width:68px;bottom:5px;right:5px}#ws-original{width:56px;height:37px}#ws-socket{width:52px;height:48px}
+ .ws-tools{padding:7px 0;gap:4px}.ws-tools button{font-size:11px;padding:4px 8px;min-height:36px}
+ #ws-stats{gap:4px}#ws-stats>div{padding:4px 6px}#ws-stats b{font-size:11px}#ws-stats small{font-size:9px}
+ .ws-parts h3{font-size:11px;margin-bottom:3px}#ws-parts{flex-direction:row;max-height:none;padding:1px 1px 5px;gap:6px}
+ #ws-parts button{width:108px;min-width:108px;padding:1px 3px 5px}#ws-parts canvas{width:84px;height:46px}#ws-parts b{font-size:11px}#ws-parts small{font-size:9px}
+ #ws-part-info{padding:3px 1px;min-height:0;font-size:10px}#ws-turret-buy,#ws-turret-upgrade{width:auto;min-height:32px;padding:3px 10px}
+ .ws-footer{padding:8px 10px}.ws-resource{font-size:10px}.ws-resource small{font-size:9px}#ws-resources{gap:5px 12px}.ws-resource button{width:26px;min-height:28px}
+ .ws-checkout{flex-wrap:wrap;gap:5px;margin-top:6px}.ws-checkout>div{margin-left:auto}.ws-checkout button{min-height:38px;padding:5px 8px;font-size:11px}#ws-confirm{min-width:94px}#ws-feedback{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.workshop-dialog *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* 费用抬头说明当前结算对象，避免将升级费误读成装配费。 */
+#ws-cost-title{display:block;font-size:10px;opacity:.75;margin-bottom:5px}
+
+#ws-stats-title{display:block;font-size:10px;opacity:.75;margin-bottom:4px}
+
+/* 部件工坊固定上沿与宽度，详情只向下延伸；画布尺寸不受内在高度撑大。 */
+dialog.workshop-dialog{position:fixed;inset:12px 0 auto;margin:0 auto;box-sizing:border-box;width:min(1100px,calc(100vw - 24px));height:calc(100dvh - 24px);overflow:hidden;display:none}
+dialog.workshop-dialog[open]{display:flex;flex-direction:column}
+.ws-header{flex:none}.ws-layout{flex:1;min-height:0;overflow:auto;align-items:start;scrollbar-gutter:stable}.ws-footer{flex:none;position:relative;bottom:auto}
+.ws-header nav svg{display:block;width:38px;height:28px;fill:#90a875;stroke:#315c43;stroke-width:2.5;stroke-linejoin:round}
+.ws-header nav button{min-width:58px;min-height:46px;padding:6px 9px}
+.ws-bench{aspect-ratio:1.65}#ws-stage{width:100%;height:100%;max-height:none;aspect-ratio:auto;object-fit:contain}
+#ws-construction{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+#ws-socket{z-index:3;touch-action:none}#ws-before{z-index:3}
+#ws-components{display:flex;flex-direction:column;gap:8px;max-height:480px;overflow:auto;padding:3px}
+#ws-components button{flex:none;display:flex;flex-direction:column;align-items:center;padding:4px 6px 9px;width:100%;background:#e1d4aa;touch-action:none;user-select:none}
+#ws-components button[aria-pressed=true]{border-color:#315c43;background:#f4edcf;box-shadow:inset 4px 0 #315c43}
+#ws-components canvas{width:100px;height:63px;pointer-events:none}#ws-components b{font-size:12px}#ws-components small{font-size:10px}
+.ws-tray-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}.ws-tray-tabs button{font-size:11px;min-height:34px;padding:4px 8px}
+#ws-construction-tools{display:flex;align-items:center;gap:12px;border-top:2px solid #b68a51;border-bottom:2px solid #b68a51;margin:0 0 10px;padding:4px;background:#e1d4aa}
+#ws-tool{padding:0;width:58px;height:48px;touch-action:none;flex:none}#ws-tool-icon{width:54px;height:44px;pointer-events:none}#ws-work-progress{font-size:12px}
+@media(max-width:700px){
+ dialog.workshop-dialog{inset:6px 0 auto;width:calc(100vw - 12px);height:calc(100dvh - 12px)}
+ .ws-layout{display:block;padding:8px;scrollbar-gutter:auto}.ws-header nav button{min-width:42px;min-height:40px;padding:4px}.ws-header nav svg{width:28px;height:24px}
+ .ws-header h2{font-size:18px}.ws-header small{font-size:8px}.ws-header{gap:4px;padding:8px}
+ .ws-bench{aspect-ratio:1.85}#ws-stage{max-height:none}.ws-title{padding-top:4px}
+ #ws-shelf canvas{height:34px;width:54px}#ws-shelf button{min-width:76px;width:76px}
+ .ws-parts{margin-top:7px}.ws-tray-tabs{margin-bottom:4px}.ws-tray-tabs button{min-height:30px}
+ #ws-components{flex-direction:row;max-height:none;gap:6px;padding:1px 1px 4px}
+ #ws-components button{width:92px;min-width:92px;padding:1px 3px 5px}#ws-components canvas{width:76px;height:46px}#ws-components b{font-size:10px}#ws-components small{font-size:9px}
+ #ws-construction-tools{gap:7px;margin-bottom:5px;padding:2px}#ws-tool{height:40px;width:48px}#ws-tool-icon{height:36px;width:44px}#ws-work-progress{font-size:10px}
+ .ws-stage-label{pointer-events:none}.ws-hint{display:none}.ws-checkout .primary{margin-top:0}.ws-resource{font-size:10px}
+}
+
+/* 展示空间优先：收紧货架，将视口剩余高度分给工作台，详情展开不改变舞台尺寸。 */
+@media(min-width:701px){
+ dialog.workshop-dialog{width:min(1320px,calc(100vw - 24px))}
+ .ws-layout{grid-template-columns:124px minmax(0,1fr) 148px;gap:12px;padding:16px}
+ .ws-bench{height:clamp(300px,calc(100dvh - 454px),760px);aspect-ratio:auto}
+ #ws-shelf,#ws-parts,#ws-components{max-height:calc(100dvh - 270px)}
+ #ws-shelf canvas{width:78px;height:52px}
+ #ws-parts canvas,#ws-components canvas{width:80px;height:50px}
+ #ws-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ #ws-stats>div{padding:5px 7px}
+ .ws-tools{padding:8px 0}
+}
+/* 两层画布铺满同一内容盒，实际像素尺寸由观察器同步，保持真实绘制比例。 */
+#ws-stage{position:absolute;inset:0}
+.ws-stage-label{z-index:1;pointer-events:none}
+@media(max-width:700px){
+ .ws-bench{height:clamp(180px,26dvh,230px);aspect-ratio:auto}
+}
+/* 手机先呈现工作台、工具和零件托盘，参数后置，扩大舞台仍能同屏拖拽。 */
+@media(max-width:700px){
+ .ws-layout{display:flex;flex-direction:column;align-items:stretch;gap:0}
+ .ws-center{display:contents}
+ .ws-rack{order:0}.ws-title{order:1}
+ .ws-bench{order:2;flex:none}
+ .ws-tools{order:3;flex:none}
+ #ws-construction-tools{order:4;flex:none}
+ .ws-parts{order:5}
+ #ws-stats-title{order:6;margin-top:7px}
+ #ws-stats{order:7}
+}
+
+/* 下方施工区避开设备画面，手机手指保持在舞台之外。 */
+#ws-work-progress{flex:1;min-width:0}
+#ws-hold{min-height:48px;min-width:106px;flex:none;touch-action:none;user-select:none;-webkit-touch-callout:none;background:linear-gradient(to right,#90a875 var(--work-progress,0%),#f4ebc8 var(--work-progress,0%))}
+#ws-hold[aria-pressed="true"]{border-color:#315c43;box-shadow:inset 0 0 0 2px #315c43}
+#ws-construction-tools{user-select:none;-webkit-touch-callout:none}
+@media(max-width:700px){#ws-construction-tools{padding:5px;gap:7px}#ws-hold{padding:8px;min-width:100px;font-size:13px}}
+
+/* 部件对照移到台外：桌面与试射同排，手机上下排列，保持工作台完整。 */
+.ws-controls{display:flex;align-items:center;gap:10px;min-width:0}
+.ws-controls .ws-tools{flex:none;order:0}
+#ws-part-compare{display:flex;align-items:center;gap:6px;flex:1;order:1;min-width:0}
+#ws-part-compare button{display:flex;align-items:center;justify-content:center;gap:5px;flex:1;min-width:0;padding:3px 6px;min-height:56px;font-size:12px}
+#ws-part-compare canvas{width:80px;height:48px;flex:none}
+#ws-part-compare button[aria-pressed="true"]{background:#d4dfb5;box-shadow:inset 0 0 0 2px #315c43}
+#ws-part-compare button span{white-space:nowrap;flex:none;line-height:1.4}
+#ws-part-compare b,#ws-part-compare small{display:block;font-weight:normal}
+#ws-bench[data-part-compare="true"] #ws-before{display:none}
+/* 施工时仅隐藏插槽装饰，保留原有命中区域与键盘焦点。 */
+#ws-bench[data-tool-visible="true"] #ws-socket,#ws-bench[data-replacing="true"] #ws-socket{background:transparent;border-color:transparent;box-shadow:none}
+#ws-bench[data-tool-visible="true"] #ws-socket span,#ws-bench[data-replacing="true"] #ws-socket span{visibility:hidden}
+@media(max-width:700px){
+ .ws-controls{order:3;flex-direction:column;align-items:stretch;gap:0}
+ .ws-controls #ws-part-compare{order:0;margin-top:6px;flex:none}
+ .ws-controls .ws-tools{order:1}
+ #ws-part-compare canvas{width:72px;height:43.2px}
+ #ws-part-compare button{padding:3px;font-size:11px;gap:2px}
+ #ws-construction-tools{order:5}.ws-parts{order:6}#ws-stats-title{order:7}#ws-stats{order:8}
+}
+
+/* 完成结果紧邻工作台，短标签与旧→新数值让手机无需滚动寻找变化。 */
+#ws-result{flex:none;order:3;margin-top:6px;padding:7px 9px;border:2px solid #90a875;border-radius:10px;background:#e0e8c3;color:#315c43}
+.ws-result-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13px}
+#ws-result-level{white-space:nowrap;font-size:12px}
+#ws-result-fields{display:flex;gap:12px;margin-top:4px}
+#ws-result-fields>div{flex:1;min-width:0}
+#ws-result-fields small{display:block;font-size:11px}
+#ws-result-fields b{display:flex;align-items:baseline;gap:5px;font-size:15px;white-space:nowrap}
+#ws-result-fields b span{font-weight:normal;color:#718672}
+#ws-result-fields i,#ws-result-fields em{font-size:11px;font-style:normal}
+#ws-bench[data-completed="true"] #ws-socket{background:transparent;border-color:transparent;box-shadow:none;pointer-events:none}
+#ws-bench[data-completed="true"] #ws-socket span,#ws-bench[data-completed="true"] .ws-hint{visibility:hidden}
+@media(max-width:700px){#ws-result{padding:6px 8px}.ws-result-heading{font-size:12px}#ws-result-fields{gap:5px}#ws-result-fields small{font-size:10px}#ws-result-fields b{font-size:13px;gap:3px}}
+
+/* 极窄屏的三项变化改为短行，保留完整精度和前后箭头，不压缩字号。 */
+@media(max-width:360px){
+ #ws-result-fields[data-count="3"]{display:grid;gap:3px}
+ #ws-result-fields[data-count="3"]>div{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+ #ws-result-fields[data-count="3"] small{font-size:11px}
+}
+#ws-bench[data-completed="true"] #ws-socket{outline:none}
+
+/* 原位详情固定占位，点击、拖放与确认共用；不覆盖或挤动属性滚动区域。 */
+.ws-footer{height:118px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 16px}
+.ws-quote{min-width:0}#ws-purpose{font-size:12px;line-height:17px;min-height:34px;max-height:34px;overflow:auto;overflow-wrap:anywhere;font-weight:600}
+#ws-cost-title{margin:2px 0}#ws-resources{flex-wrap:nowrap;overflow-x:auto;gap:12px;min-height:36px;padding-bottom:2px}
+.ws-resource{flex:none}.ws-resource b{white-space:nowrap}.ws-resource button{flex:none;min-height:36px}
+.ws-checkout{flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:5px;margin:0;max-width:230px;min-width:0}
+#ws-feedback{line-height:15px;min-height:15px}.ws-layout{scroll-padding-bottom:12px}
+@media(max-width:700px){
+ .ws-footer{height:154px;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 40px;gap:3px;padding:6px 8px}
+ #ws-purpose{font-size:11px;line-height:15px;min-height:30px;max-height:30px}
+ #ws-resources{gap:10px;min-height:34px}.ws-resource{font-size:11px}.ws-resource small{font-size:10px}
+ .ws-checkout{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:nowrap;max-width:none;width:100%;gap:4px}
+ .ws-checkout>div{flex:none;gap:4px}#ws-feedback{font-size:10px}
+}
+
+/* 两类工坊独立进入后关闭键固定靠右。 */
+.ws-header #ws-close{margin-left:auto}
+
+/* 舞台操作贴右上角，不占下方属性空间；试射层仍覆盖按钮。 */
+.ws-stage-actions{position:absolute;top:8px;right:8px;z-index:3;display:flex;gap:6px;max-width:calc(100% - 112px)}
+.ws-stage-actions button{font-size:12px;min-width:44px;min-height:44px;padding:6px 10px;white-space:nowrap}
+.ws-tools:not(:has(button:not([hidden]))){display:none}
+@media(max-width:700px){
+ .ws-stage-actions{top:5px;right:5px;gap:4px;max-width:calc(100% - 100px)}
+ .ws-stage-actions button{font-size:10px;padding:5px 6px}
+}
+/* 熟练度与装备等级分开显示，信息条占正常布局，不覆盖工作台画布。 */
+#ws-mastery{margin:0 0 10px;padding:7px 10px 9px;background:#e2e6c6;border:1px solid #a2b48b;border-radius:10px;color:#315c43}
+.ws-mastery-top{display:flex;align-items:center;gap:8px;min-width:0}
+#ws-mastery-title{font-size:12px;line-height:1.4;min-width:0;flex:1;overflow-wrap:anywhere}
+#ws-mastery-count{font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#workshop-dialog #ws-mastery-help{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:transparent;font-weight:bold;font-size:17px;color:#315c43}
+#ws-mastery-help:focus-visible{outline:2px solid #315c43;outline-offset:1px}
+#ws-mastery-progress{display:block;width:100%;height:6px;margin:0 0 6px;accent-color:#315c43;border:0;border-radius:5px;overflow:hidden;background:#c6d1aa}
+#ws-mastery-progress[hidden]{display:none}
+#ws-mastery-progress::-webkit-progress-bar{background:#c6d1aa;border-radius:5px}
+#ws-mastery-progress::-webkit-progress-value{background:#315c43;border-radius:5px}
+#ws-mastery-progress::-moz-progress-bar{background:#315c43;border-radius:5px}
+#ws-mastery-hint{display:block;font-size:11px;line-height:1.5}
+#ws-mastery[data-locked="true"] #ws-mastery-hint{color:#77521f}
+.ws-mastery-dialog{width:min(440px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:20px;box-sizing:border-box;border:2px solid #90a875;border-radius:18px;background:#fff9e3;color:#315c43;overflow:auto}
+.ws-mastery-dialog::backdrop{background:#203e2b80}
+.ws-mastery-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ws-mastery-dialog h2{font-size:19px;margin:0}
+.ws-mastery-dialog header button{min-width:44px;min-height:44px;padding:0;font-size:24px}
+.ws-mastery-dialog p{font-weight:bold;font-size:13px;margin:10px 0}
+.ws-mastery-dialog ul{padding-left:19px;margin:14px 0;font-size:13px;line-height:1.7}
+.ws-mastery-dialog li+li{margin-top:10px}
+#ws-mastery-help-done{width:100%;min-height:44px;margin-top:4px}
+@media(max-width:540px){#ws-mastery{padding:3px 8px 7px;margin-bottom:8px}.ws-mastery-dialog{padding:14px}}
+/* 移动布局将中心区域展开为同级节点，熟练度紧跟名称，不能排到名称前面。 */
+#ws-mastery{order:1}
+/* 手机中心区展开后，挑战等级仍紧跟装备名称，图标不压缩底部缺口文字。 */
+#ws-challenge-level{order:1;flex:none}
+/* 换乘地点放在装备信息中，手机随工作区滚动，不覆盖驾驶与试射按钮。 */
+.ws-vehicle-parking{order:1;flex:none;margin:0 0 10px;padding:8px 10px;border-radius:9px;background:#f4edcf;color:#315c43;font-size:12px;line-height:1.5}
+.ws-vehicle-parking[hidden]{display:none}
+#ws-feedback:has(.challenge-rank-icon){display:flex;align-items:center;gap:3px;min-width:0}
+#ws-feedback .challenge-rank-icon{margin-right:0}
+.ws-mastery-dialog button{font:inherit;color:#315c43;cursor:pointer;border:2px solid #849777;border-radius:10px;background:#f4edcf;padding:8px 12px;box-shadow:none}
+.ws-mastery-dialog header button{padding:0;border:0;background:transparent;font-size:24px}
+.ws-mastery-dialog button:focus-visible{outline:2px solid #315c43;outline-offset:2px}
+#ws-mastery-help-done{background:#315c43;color:#fff9e3;border-color:#315c43}
+
+/* 功能导航固定在标题下；一页只呈现一组操作，资格详情不再挤占工作台。 */
+.ws-function-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:none;padding:6px 16px 0;gap:6px;border-bottom:1px solid #a2b48b;background:#e2e6c6}
+/* 载具固定使用主武器，移除挂载页后其余三个页签均分空间。 */
+[data-workshop-kind="vehicle"] .ws-function-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.workshop-dialog .ws-function-tabs button{min-height:44px;border:0;border-bottom:3px solid transparent;border-radius:8px 8px 0 0;background:transparent;font-size:14px;font-weight:bold}
+.workshop-dialog .ws-function-tabs button[aria-selected="true"]{border-bottom-color:#315c43;background:#ede8c9}
+.ws-function-tabs button:focus-visible{outline-offset:-3px}
+#ws-function-panel:focus{outline:none}
+#ws-unlock-panel{padding:18px;border:1px solid #a2b48b;border-radius:12px;background:#f4edcf}
+#ws-unlock-panel h3{font-size:18px;margin-bottom:10px}
+#ws-unlock-status{font-size:13px;line-height:1.6;margin-bottom:12px}
+#ws-unlock-rule{font-size:12px;line-height:1.7;padding-top:8px;color:#536b50}
+#ws-unlock-panel #ws-mastery{margin:14px 0 0}
+#ws-empty-modify{padding:10px;font-size:13px;line-height:1.6}
+.workshop-dialog[data-function="buy"] .ws-layout,.workshop-dialog[data-function="unlock"] .ws-layout{grid-template-columns:124px minmax(0,1fr)}
+.workshop-dialog[data-function="unlock"] .ws-bench,.workshop-dialog[data-function="unlock"] .ws-controls,
+.workshop-dialog[data-function="unlock"] #ws-stats,.workshop-dialog[data-function="unlock"] #ws-stats-title,
+.workshop-dialog[data-function="unlock"] .ws-footer,.workshop-dialog:not([data-function="buy"]) #ws-vehicle-parking{display:none}
+.workshop-dialog[data-function="buy"] .ws-controls{display:none}
+.workshop-dialog[data-function="modify"] .ws-tray-tabs,.workshop-dialog[data-workshop-kind="weapons"] .ws-tray-tabs{display:none}
+.workshop-dialog[data-function="upgrade"] #ws-reset{display:none}
+.workshop-dialog[data-function="buy"] .ws-bench{height:clamp(240px,calc(100dvh - 500px),700px)}
+.workshop-dialog .ws-footer{height:112px;gap:8px}
+.workshop-dialog #ws-purpose{min-height:17px;max-height:34px}
+.workshop-dialog #ws-unlock-link{background:transparent;border-color:transparent;font-size:11px;padding:4px;text-decoration:underline;text-underline-offset:3px}
+.workshop-dialog .ws-checkout{max-width:300px}
+.workshop-dialog .ws-bench{height:clamp(240px,calc(100dvh - 490px),700px)}
+.workshop-dialog #ws-components,.workshop-dialog #ws-parts,.workshop-dialog #ws-shelf{max-height:calc(100dvh - 370px)}
+.workshop-dialog .ws-header{padding:10px 18px;border-bottom-width:4px}
+.workshop-dialog[data-has-quote="false"] .ws-footer{height:70px}
+.workshop-dialog[data-has-quote="false"] #ws-cost-title,.workshop-dialog[data-has-quote="false"] #ws-resources{display:none}
+@media(max-width:700px){
+ .workshop-dialog .ws-header{padding:6px 10px}.ws-header small{display:none}
+ .ws-function-tabs{padding:3px 6px 0;gap:2px}.workshop-dialog .ws-function-tabs button{font-size:13px;padding:6px}
+ .workshop-dialog #ws-shelf{max-height:none;padding-bottom:4px}.workshop-dialog #ws-shelf button{min-width:76px;min-height:62px;padding:1px 3px 3px}
+ .workshop-dialog #ws-shelf canvas{width:48px;height:32px}
+ .workshop-dialog #ws-components,.workshop-dialog #ws-parts{max-height:none}
+ .workshop-dialog .ws-title{padding:5px 1px}.workshop-dialog .ws-title h3{font-size:17px}.workshop-dialog #ws-state{display:none}
+ .workshop-dialog .ws-bench,.workshop-dialog[data-function="buy"] .ws-bench{height:clamp(164px,24dvh,230px)}
+ .workshop-dialog .ws-footer{height:118px;grid-template-rows:minmax(0,1fr) 44px;padding:4px 8px;gap:1px}
+ .workshop-dialog #ws-purpose{font-size:10px;line-height:14px;min-height:14px;max-height:28px}
+ .workshop-dialog #ws-cost-title{font-size:9px;margin:0}
+ .workshop-dialog .ws-checkout{max-width:none}.workshop-dialog .ws-checkout button{min-height:44px}
+ .workshop-dialog #ws-resources{min-height:30px}.workshop-dialog .ws-resource button{min-height:28px}
+ .workshop-dialog .ws-parts{flex:none;margin-top:5px}.workshop-dialog #ws-part-info{font-size:10px;padding:2px 0}
+ .workshop-dialog #ws-components canvas,.workshop-dialog #ws-parts canvas{height:34px;width:62px}
+ .workshop-dialog #ws-components button,.workshop-dialog #ws-parts button{min-height:67px}
+ .workshop-dialog .ws-tray-tabs button{min-height:44px}
+ .workshop-dialog #ws-unlock-panel{order:2;padding:10px;flex:none}
+ .workshop-dialog #ws-empty-modify{order:3}
+ .workshop-dialog #ws-feedback{max-height:30px;overflow:auto}
+ .workshop-dialog #ws-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .workshop-dialog:has(#ws-part-compare:not([hidden])) #ws-stats,.workshop-dialog:has(#ws-part-compare:not([hidden])) #ws-stats-title{display:none}
+ .workshop-dialog #ws-vehicle-parking{font-size:11px;margin:0 0 6px;padding:5px 7px}
+ .workshop-dialog[data-has-quote="false"] .ws-footer{height:60px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto}
+ .workshop-dialog[data-has-quote="false"] .ws-checkout{width:auto}
+ .workshop-dialog #ws-resources{flex-wrap:wrap;overflow:visible;gap:3px 10px}
+ .workshop-dialog[data-function="buy"][data-has-quote="true"] .ws-footer,.workshop-dialog[data-function="modify"][data-has-quote="true"] .ws-footer{height:auto;min-height:118px;grid-template-rows:auto auto}
+ .workshop-dialog .ws-resource{font-size:10px}
+ .workshop-dialog[data-has-quote="true"] .ws-checkout{flex-wrap:wrap;gap:2px}
+ .workshop-dialog[data-has-quote="true"] #ws-feedback{width:100%;max-height:none;overflow:visible;min-height:0}
+ .workshop-dialog[data-has-quote="true"] #ws-feedback:empty{display:none}
+ .workshop-dialog[data-has-quote="true"] .ws-checkout>div{margin-left:auto}
+ .workshop-dialog[data-has-quote="true"] .ws-footer{height:auto;min-height:118px;grid-template-rows:auto auto}
+}
+/* 追赶报价增加原价行，预留空间避免桌面底部余额被裁切。 */
+.workshop-dialog .ws-footer[data-discounted="true"]{height:138px}
+@media(max-width:700px){.workshop-dialog .ws-footer[data-discounted="true"]{height:auto;min-height:148px}}
+
+/* 购买页用一行营地优惠衔接完整详情，保留装备舞台空间。 */
+#ws-buy-camp{flex:none;order:1;margin:0 0 8px}
+#ws-buy-camp button{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:1px solid #a2b48b;border-radius:10px;padding:6px 10px;background:#edf0d9;color:#315c43;font-size:12px;font-weight:700;min-height:44px}
+#ws-buy-camp .challenge-rank-icon{width:28px;height:32px}
+#ws-buy-camp small{display:block;font-size:10px;line-height:1.5}

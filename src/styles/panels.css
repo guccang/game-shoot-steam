@@ -1,0 +1,1125 @@
+/* 营地、设置与地图面板，以及原有响应式覆盖；顺序保持兼容。 */
+dialog {
+  color: var(--ink);
+  background: #fffef3;
+  border: 1px solid #d5dfc5;
+  border-radius: 22px;
+  padding: 28px;
+  max-width: 470px;
+  width: calc(100% - 24px);
+  max-height: calc(100dvh - 28px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 20px 90px #223e3340;
+}
+dialog::backdrop {
+  background: #152f2ab0;
+  /* 暗色遮罩无需实时采样背后的战场。 */
+}
+dialog h2 {
+  font-size: 22px;
+  margin: 10px 0 18px;
+}
+dialog p {
+  font-size: 12px;
+  color: #718365;
+  line-height: 1.9;
+}
+dialog .primary {
+  width: 100%;
+  margin-top: 17px;
+}
+.close {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d9e0c7;
+  border-radius: 50%;
+  background: #f4f3df;
+  font-size: 25px;
+  color: #62774e;
+  margin: -10px -10px 0 0;
+}
+.eyebrow {
+  font-size: 10px;
+  color: #81916e;
+}
+#camp-dialog {
+  max-width: 460px;
+  padding: 24px;
+  background: #f7f7eb;
+}
+.camp-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-right: 25px;
+}
+.camp-title h2 {
+  font-size: 24px;
+  margin: 6px 0 0;
+}
+.camp-symbol {
+  display: none;
+}
+.wallet {
+  display: flex;
+  background: #eeefdf;
+  border: 1px solid #e2e5d2;
+  border-radius: 12px;
+  padding: 12px;
+  gap: 15px;
+}
+.wallet > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+.wallet > div + div {
+  border-left: 1px solid #d8dec6;
+  padding-left: 14px;
+}
+.resource-icon {
+  font-size: 22px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.coin {
+  background: #efc66a;
+  border: 3px solid #e4b65a;
+  border-radius: 50%;
+  color: #a9792e;
+}
+.wood {
+  color: #895d37;
+  font-size: 34px;
+  transform: rotate(-22deg);
+}
+.wallet small {
+  display: block;
+  font-size: 10px;
+  color: #81906f;
+  margin-bottom: 4px;
+}
+.wallet b {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tabs {
+  display: flex;
+  margin: 20px 0 16px;
+  border-bottom: 1px solid #dce2d1;
+  gap: 24px;
+}
+.tabs button {
+  min-height: 42px;
+  padding: 0 0 10px;
+  border: 0;
+  background: none;
+  color: #7e8d6d;
+  font-size: 13px;
+  position: relative;
+}
+.tabs button span {
+  font-size: 10px;
+  margin-left: 4px;
+}
+.tabs .selected {
+  font-weight: 700;
+  color: #355c43;
+}
+.tabs .selected:after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #547851;
+  border-radius: 3px;
+}
+.inventory {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.item-card {
+  border: 1px solid #dde3d1;
+  background: #fffef7;
+  border-radius: 14px;
+  padding: 15px;
+}
+.item-card.equipped {
+  border-color: #809d6e;
+  background: #fbfdef;
+}
+.item-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.portrait {
+  background: #eef0d9;
+  width: 85px;
+  height: 85px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: block;
+}
+.item-title {
+  flex: 1;
+  min-width: 0;
+}
+.item-title h3 {
+  font-size: 15px;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.item-title small {
+  color: #7e8e6d;
+  font-size: 10px;
+  line-height: 1.7;
+  display: block;
+}
+.level {
+  font-size: 10px;
+  border: 1px solid #dbe4cb;
+  background: #f1f4e6;
+  border-radius: 4px;
+  padding: 3px 5px;
+  color: #71855d;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.item-tag {
+  font-size: 10px;
+  color: #67864e;
+  margin-top: 5px;
+  display: inline-block;
+  line-height: 1.5;
+}
+.item-stats {
+  display: flex;
+  margin: 12px 0;
+  gap: 20px;
+  font-size: 11px;
+  color: #81906f;
+}
+.item-stats b {
+  color: #4d6545;
+  font-weight: 600;
+  margin-left: 5px;
+}
+.card-buttons {
+  display: flex;
+  gap: 8px;
+}
+.card-buttons button {
+  border-radius: 8px;
+  border: 1px solid #cdd9bd;
+  background: #eaf0df;
+  color: #46653d;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 43px;
+  padding: 8px;
+  flex: 1;
+}
+.card-buttons button:hover:not(:disabled) {
+  background: #d8e6cb;
+}
+.card-buttons .equip {
+  flex: 0.7;
+  background: #fffef8;
+}
+.card-buttons button:disabled {
+  opacity: 0.55;
+}
+.card-buttons .equipped-label {
+  background: #f1f3e8;
+  color: #839575;
+}
+.cost {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+.camp-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  color: #8f9d79;
+}
+.camp-note > span {
+  font-size: 25px;
+}
+.camp-note p {
+  font-size: 10px;
+  line-height: 1.8;
+  margin: 0;
+}
+.camp-note small {
+  display: block;
+  font-size: 10px;
+}
+.journal {
+  border-top: 1px dashed #d6dec9;
+  padding-top: 14px;
+  margin-top: 16px;
+}
+.journal > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.journal h3 {
+  font-size: 12px;
+  margin: 0;
+}
+.journal span {
+  font-size: 10px;
+  color: #899b76;
+}
+.journal dl {
+  display: flex;
+  margin: 14px 0 0;
+}
+.journal dl > div {
+  flex: 1;
+}
+.journal dt {
+  font-size: 10px;
+  color: #7a8b66;
+}
+.journal dd {
+  margin: 6px 0 0;
+  font-size: 21px;
+  color: #657a53;
+}
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #81916f;
+  font-size: 10px;
+  margin-top: 17px;
+}
+/* 昼夜与天气已在场景画布中合成，避免全屏 CSS filter 与 multiply 重复处理。 */
+#game { filter: none; }
+.environment-tint { display: none; }
+#environment-dialog h3 {
+  font-size: 12px;
+  margin: 22px 0 10px;
+}
+.environment-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.environment-options button {
+  flex: 1;
+  min-width: 64px;
+  border: 1px solid #d5dfc6;
+  border-radius: 8px;
+  background: #f2f4e7;
+  padding: 12px 7px;
+  font-size: 12px;
+}
+.environment-options button[aria-pressed='true'] {
+  background: #dce9cc;
+  border-color: #809a6b;
+  color: #345735;
+  font-weight: 700;
+}
+.environment-setting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e3e7d6;
+  font-size: 12px;
+  cursor: pointer;
+}
+.environment-setting span {
+  font-size: 10px;
+  color: #81916f;
+  margin-left: auto;
+}
+.environment-setting input {
+  width: 18px;
+  height: 18px;
+  accent-color: #52794d;
+}
+#environment-dialog .environment-tip {
+  font-size: 10px;
+  margin-top: 17px;
+}
+@media (max-width: 350px) {
+  .game-top,
+  .hud-resources {
+    left: 10px;
+    right: 10px;
+  }
+  .location-chip {
+    font-size: 11px;
+    gap: 4px;
+  }
+  .location-chip > span {
+    font-size: 27px;
+  }
+  .resource-pill {
+    gap: 4px;
+    padding-right: 6px;
+  }
+  .resource-pill b {
+    font-size: 10px;
+  }
+  .utility-buttons .icon-button {
+    width: 30px;
+    height: 32px;
+  }
+  .utility-buttons {
+    gap: 3px;
+  }
+  .game-bottom {
+    left: 15px;
+    right: 10px;
+  }
+  .joystick {
+    width: 100px;
+    height: 100px;
+  }
+  .bottom-info {
+    width: 145px;
+  }
+  .field-menu {
+    right: 10px;
+  }
+  .field-menu button {
+    width: 55px;
+    height: 66px;
+  }
+  .field-menu canvas {
+    height: 47px;
+    width: 49px;
+  }
+  .quest {
+    left: 10px;
+    padding: 8px;
+  }
+  .quest small {
+    font-size: 8px;
+  }
+  #camp-dialog {
+    padding: 18px;
+  }
+  .portrait {
+    width: 68px;
+    height: 76px;
+  }
+  .item-card {
+    padding: 12px;
+  }
+  .item-title h3 {
+    font-size: 13px;
+  }
+  .item-tag {
+    font-size: 9px;
+  }
+}
+/* 四个入口在短屏排成两列，避免与顶部领主血条重叠。 */
+@media (max-height: 700px) {
+  .field-menu {
+    bottom: 165px;
+    display: grid;
+    grid-template-columns: repeat(2, 54px);
+    gap: 8px;
+  }
+  .field-menu button {
+    height: 60px;
+    width: 54px;
+  }
+  .field-menu canvas {
+    height: 42px;
+    width: 44px;
+  }
+}
+@media (max-height: 620px) {
+  .intro {
+    padding: 17px;
+  }
+  .intro-leaf {
+    display: none;
+  }
+  .intro h1 {
+    font-size: 23px;
+  }
+  .quest small {
+    display: none;
+  }
+  .quest {
+    padding: 6px 9px;
+  }
+  .game-bottom {
+    bottom: 12px;
+  }
+  .hud-resources {
+    top: 64px;
+  }
+  .game-top {
+    top: 10px;
+  }
+  .quest,
+  .boss-hud {
+    top: 106px;
+  }
+  .toast {
+    top: 150px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    transition: none !important;
+  }
+}
+/* 养成操作反馈位于原生弹窗内部，避免被顶层遮罩挡住。 */
+.camp-feedback:empty {
+  display: none;
+}
+.camp-feedback {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #e3edd5;
+  border: 1px solid #c4d5b3;
+  border-radius: 9px;
+  padding: 8px 12px;
+  color: #3e603c;
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+
+/* 准备、暂停和结算时，养成入口移到屏幕底部，不遮挡开始或继续按钮。 */
+.game-frame:not([data-state='playing']) .field-menu {
+  display: flex;
+  flex-direction: row;
+  bottom: max(20px, env(safe-area-inset-bottom));
+}
+.game-frame:not([data-state='playing']) .game-bottom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 区域导航与等级说明使用已有奶油色弹窗，不遮挡左手摇杆。 */
+.location-chip b {
+  font-size: 12px;
+}
+.field-menu .map-symbol {
+  font-size: 37px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: #74855e;
+}
+#region-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #b7c196;
+  border-radius: 12px;
+}
+/* 首张底图加载前明确等待，不显示空画布或被display:block覆盖的隐藏画布。 */
+#region-map[hidden] { display: none; }
+/* 旅行卡片沿用奶油底与森林绿描边；窄屏仍可并列显示两个明确的地图入口。 */
+#map-destinations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+#map-destinations button { min-height: 104px; padding: 12px; border: 2px solid #9caf86; border-radius: 12px; background: #f7f1d9; color: #36553e; text-align: left; white-space: normal; }
+#map-destinations button[aria-pressed="true"] { border-color: #416c57; background: #dce9cf; opacity: 1; }
+/* 窄屏下允许长地图名称换行，适配指定字体的实际字宽。 */
+#map-destinations b, #map-destinations small, #map-destinations span { display: block; overflow-wrap: anywhere; }
+#map-destinations small { margin: 6px 0 10px; font-size: 11px; line-height: 1.5; }
+#map-destinations span { font-size: 12px; font-weight: 700; }
+#map-travel-status { font-size: 12px; color: #657657; }
+#region-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+#region-legend div {
+  padding: 10px;
+  border-left: 4px solid var(--zone-color);
+  background: #edf0dc;
+  border-radius: 6px;
+  font-size: 12px;
+}
+#region-legend small {
+  display: block;
+  margin-top: 5px;
+  color: #697859;
+}
+
+/* 武器资格与资源费用分开展示，未达标时给出明确的永久进度。 */
+.weapon-requirement {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f2e9d2;
+  color: #80613d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.weapon-requirement small {
+  display: block;
+  font-size: 10px;
+  color: #887b62;
+}
+.weapon-requirement.met {
+  background: #e8efdf;
+  color: #537044;
+}
+
+/* 设置入口复用顶部工具位，说明收进面板，窄屏保持原有按钮宽度。 */
+.settings-row {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #d5dfc5;
+  background: #f0f3e4;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  color: #3d6148;
+}
+.reset-section {
+  margin-top: 22px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e5d2;
+}
+#settings-dialog h3 {
+  font-size: 15px;
+}
+.danger-button {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  border: 1px solid #b87865;
+  border-radius: 10px;
+  background: #f5e8dc;
+  color: #984b38;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+}
+.danger-button:hover {
+  background: #edd6c8;
+}
+.reset-actions {
+  display: grid;
+  gap: 12px;
+}
+.reset-actions .primary {
+  margin-top: 8px;
+}
+#reset-error {
+  padding: 10px;
+  background: #f6e3d9;
+  border-radius: 8px;
+  color: #984b38;
+}
+
+/* 暂停和倒下的遮罩上仍可打开设置，方便从任意状态重新开始。 */
+#settings-button {
+  position: relative;
+  z-index: 5;
+}
+/* 熟练度及互斥改装属于枪械卡片，窄屏上下排列，已选分支始终可识别。 */
+.weapon-mastery {
+  margin: 12px 0;
+  padding: 12px 0;
+  border-top: 1px solid #d8e0c9;
+  border-bottom: 1px solid #d8e0c9;
+}
+.mastery-heading,
+.mod-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.mastery-heading span,
+.mod-heading span {
+  color: #657650;
+  font-size: 10px;
+}
+.mastery-track {
+  height: 5px;
+  background: #e3e7d3;
+  border-radius: 4px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+.mastery-track i {
+  display: block;
+  height: 100%;
+  background: #b28a42;
+}
+.weapon-mastery small {
+  display: block;
+  color: #657650;
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+.mod-heading {
+  margin-top: 14px;
+}
+.mod-heading button {
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+  text-decoration: underline;
+  padding: 5px;
+}
+.mod-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 7px;
+}
+.mod-choice {
+  text-align: left;
+  border: 1px solid #cad4b6;
+  border-radius: 8px;
+  background: #f4f6e8;
+  padding: 10px;
+  min-width: 0;
+}
+.mod-choice b {
+  font-size: 11px;
+  display: block;
+  color: #365f47;
+}
+.mod-choice span {
+  font-size: 10px;
+  line-height: 1.6;
+  display: block;
+  margin-top: 5px;
+  color: #657650;
+}
+.mod-choice.active {
+  border-color: #547b58;
+  background: #e1ebcf;
+  box-shadow: inset 3px 0 #547b58;
+  opacity: 1;
+}
+.mod-choice:disabled:not(.active) {
+  opacity: 0.65;
+}
+@media (max-width: 360px) {
+  .mod-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 三炮数据逐项排布，窄屏仍保留完整的单发伤害和共享能源说明。 */
+.item-stats.funnel-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+.funnel-stats > span:first-child {
+  grid-column: 1 / -1;
+}
+
+/* 浮游炮配置延续浅纸色与深绿描边，以三槽页签区分独立武装。 */
+#funnel-dialog {
+  width: min(540px, calc(100vw - 24px));
+  padding: 25px 20px;
+}
+#funnel-dialog h2 {
+  margin: 8px 0;
+}
+.funnel-lead,
+.module-note {
+  color: #778970;
+  font-size: 11px;
+  line-height: 1.8;
+}
+#funnel-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 20px 0 12px;
+}
+#funnel-slots button {
+  padding: 12px 5px;
+  border: 1px solid #d2dcc2;
+  border-radius: 10px;
+  background: #edf0df;
+}
+#funnel-slots button[aria-selected='true'] {
+  background: #345b49;
+  color: #fff8dc;
+  border-color: #345b49;
+}
+#funnel-slots b {
+  display: block;
+  font-size: 13px;
+}
+#funnel-slots small {
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+}
+#funnel-module-panel {
+  background: #f1f2e4;
+  border: 1px solid #d6dec5;
+  border-radius: 14px;
+  padding: 15px;
+}
+.module-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.module-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d5e3cb;
+  color: #4e7d68;
+  font-size: 25px;
+}
+.module-heading h3 {
+  margin: 3px 0;
+  font-size: 16px;
+}
+.module-heading small {
+  color: #879778;
+  font-size: 10px;
+}
+#funnel-module-description,
+#funnel-module-status {
+  font-size: 10px;
+  color: #6b8066;
+  line-height: 1.7;
+  margin: 10px 0 0;
+}
+#funnel-module-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 15px;
+}
+#funnel-module-stats small {
+  display: block;
+  color: #7b8e72;
+  font-size: 9px;
+}
+#funnel-module-stats b {
+  display: block;
+  margin-top: 5px;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.module-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+}
+.module-list-heading h3 {
+  font-size: 14px;
+  margin: 0;
+}
+#funnel-choice-count {
+  font-size: 10px;
+  color: #829172;
+}
+#funnel-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+#funnel-choices button {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 9px;
+  background: #fffef6;
+  border: 1px solid #d6dfc7;
+  border-radius: 12px;
+  text-align: left;
+  min-width: 0;
+}
+#funnel-choices button[aria-pressed='true'] {
+  border-color: #749c7f;
+  background: #e9f0df;
+  opacity: 1;
+}
+#funnel-choices canvas {
+  width: 100%;
+  height: auto;
+  background: #edf0e2;
+  border-radius: 7px;
+}
+#funnel-choices b {
+  font-size: 11px;
+  margin-top: 9px;
+}
+#funnel-choices small {
+  font-size: 9px;
+  color: #7c8b70;
+  margin-top: 6px;
+}
+#funnel-choices span {
+  font-size: 10px;
+  color: #4c7b62;
+  margin-top: 10px;
+}
+#funnel-feedback {
+  color: #4f866b;
+  font-size: 11px;
+  min-height: 1em;
+}
+.funnel-config-button {
+  width: 100%;
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #72957a;
+  border-radius: 9px;
+  background: #e4ecda;
+  font-weight: 700;
+  text-align: left;
+}
+.funnel-config-button span {
+  display: block;
+  font-weight: 400;
+  font-size: 10px;
+  margin-top: 5px;
+  color: #6c8367;
+}
+/* 武器分类沿用林间绿色与奶油色，当前装备是唯一强调卡片。 */
+/* 图像分类固定一行，继续沿用森林绿选中态；名称由悬停及无障碍标签提供。 */
+.weapon-categories { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:4px; margin:10px 0 8px; }
+.weapon-categories button { display:grid;place-items:center;min-width:0;height:50px;padding:3px;border:1px solid #cbd8bb;border-radius:9px;background:#f2f4e7;color:#456349; }
+.weapon-categories button[aria-pressed='true'] { background:#dfeacb;border:2px solid #52754f;box-shadow:inset 0 -3px #52754f; }
+.weapon-categories canvas { width:100%;height:40px;object-fit:contain;pointer-events:none; }
+.weapon-category-hint {
+  margin: 0 0 14px;
+  font-size: 11px;
+}
+.equipped-heading {
+  color: #355c43;
+  font-size: 11px;
+  font-weight: 800;
+  padding-bottom: 10px;
+}
+.weapon-details {
+  border-top: 1px dashed #d4dfc6;
+  margin-top: 12px;
+}
+.weapon-details summary {
+  cursor: pointer;
+  padding: 12px 0;
+  color: #456349;
+  font-size: 12px;
+}
+.weapon-details[open] summary {
+  padding-bottom: 0;
+}
+.unlock-section {
+  border: 1px solid #d4dfc6;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  background: #eff3e5;
+}
+.unlock-section h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.unlock-section .primary {
+  margin-top: 5px;
+}
+#unlock-feedback:empty {
+  display: none;
+}
+/* 载具武器作为工坊内的轻量折叠项，使用原生选择控件。 */
+/* 收藏页延续战场奶油底和绿色描边，当前只展示一辆真正可用的战车。 */
+#vehicle-collection-dialog {
+  max-width: 390px;
+  padding: 22px;
+}
+#vehicle-collection-dialog h2 {
+  margin-bottom: 14px;
+}
+.vehicle-collection-card {
+  background: #f5f4e4;
+  border: 1px solid #d6dec2;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.vehicle-collection-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #e7ebd3;
+}
+.vehicle-collection-art canvas {
+  width: 208px;
+  height: 130px;
+  max-width: 100%;
+  object-fit: contain;
+}
+#vehicle-collection-status {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  color: #5e7752;
+  font-size: 10px;
+}
+.vehicle-collection-card h3 {
+  font-size: 16px;
+  margin: 14px 14px 4px;
+}
+.vehicle-collection-card p {
+  margin: 0 14px 12px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.vehicle-collection-card dl {
+  margin: 0;
+  padding: 0 14px 14px;
+  display: grid;
+  gap: 8px;
+  font-size: 11px;
+}
+.vehicle-collection-card dl div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+.vehicle-collection-card dt {
+  color: #7d8d6c;
+}
+.vehicle-collection-card dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+#vehicle-collection-hint {
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 12px 0 0;
+}
+#vehicle-collection-dialog .primary {
+  margin-top: 12px;
+}
+.vehicle-collection-back {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 18px;
+  border: 0;
+  background: none;
+  color: #647957;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* 载具工坊采用紧凑双页签，炮塔卡完整展示购买、安装与独立供给。 */
+.vehicle-wallet { display:flex;gap:20px;color:#657753;font-size:12px;margin-bottom:8px; }
+.vehicle-tabs { margin-bottom:8px; }
+#vehicle-feedback { color:#567d53;font-size:11px;line-height:1.5;margin:6px 0; }
+#vehicle-feedback:empty { display:none; }
+.vehicle-upgrade { display:grid;gap:7px;margin-top:12px;font-size:11px;color:#687f57; }
+.vehicle-upgrade button, .turret-actions button { border:1px solid #bccba6;border-radius:9px;background:#e9eedb;color:#35573f;padding:10px 6px;font:inherit;font-weight:700;cursor:pointer; }
+.vehicle-upgrade button:disabled, .turret-actions button:disabled { opacity:.55;cursor:default; }
+.turret-intro { font-size:11px;line-height:1.7;margin:0 0 10px; }
+.turret-filters { display:flex;gap:8px;margin-bottom:12px; }
+.turret-filters button { padding:7px 12px;border:1px solid #d6dec2;border-radius:20px;background:none;color:#59734f;font:inherit;font-size:11px;cursor:pointer; }
+.turret-filters [aria-pressed="true"] { background:#365d46;color:#fffbed;border-color:#365d46; }
+#turret-list { display:grid;gap:12px; }
+.turret-card { background:#f7f6ea;border:1px solid #d6dec2;border-radius:14px;padding:12px; }
+.turret-card.equipped { border-color:#7b9b62; }
+.turret-equipped { color:#577849;font-size:10px; }
+.turret-heading { display:flex;align-items:center;gap:8px; }
+.turret-heading canvas { width:80px;height:45px;flex-shrink:0;background:#e9ecd8;border-radius:8px; }
+.turret-heading h3 { margin:0 0 4px;font-size:13px; }
+.turret-heading small { font-size:10px;color:#7a8c67; }
+.turret-card p { margin:8px 0;font-size:10px;line-height:1.6; }
+.turret-stats { display:flex;gap:6px 12px;flex-wrap:wrap;font-size:10px;color:#54744e; }
+.turret-gate { display:block;font-size:10px;color:#8b815d;margin-top:8px; }
+.turret-actions { display:flex;gap:8px;margin-top:10px;font-size:11px; }
+.turret-actions button { flex:1; }
+.turret-actions small { display:block;margin-top:4px;font-weight:400;font-size:10px; }
+.turret-empty { font-size:12px;padding:16px 0; }
+
+/* 矮屏将载具画像与说明并排，保留升级和上下车操作的可见空间。 */
+@media (max-height:700px) {
+  #vehicle-collection-dialog { padding:18px; }
+  .vehicle-collection-card { display:grid;grid-template-columns:80px minmax(0,1fr); }
+  .vehicle-collection-art { grid-column:1;grid-row:1 / span 2; }
+  .vehicle-collection-art canvas { width:80px;height:80px; }
+  #vehicle-collection-status { top:4px;left:5px;font-size:8px; }
+  .vehicle-collection-card h3 { grid-column:2;font-size:13px;margin:10px 10px 4px; }
+  .vehicle-collection-card p { grid-column:2;font-size:10px;margin:0 10px 8px; }
+  .vehicle-collection-card dl { grid-column:1 / -1;padding:10px 12px; }
+}
+
+/* 四款载具保持紧凑横排，预览不自动更换正在驾驶的车体。 */
+.vehicle-roster { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; margin:8px 0 14px; }
+.vehicle-roster button { display:flex; flex-direction:column; align-items:center; min-width:0; padding:5px 2px 8px; border:1px solid #d7ddc5; border-radius:12px; background:#f8f8ef; color:#365d46; }
+.vehicle-roster button[aria-pressed="true"] { background:#e8efd8; border-color:#739069; box-shadow:inset 0 0 0 1px #739069; }
+.vehicle-roster canvas { width:100%; max-width:110px; height:66px; object-fit:contain; }
+.vehicle-roster b { font-size:12px; line-height:1.6; white-space:nowrap; }
+.vehicle-roster small { font-size:10px; color:#7b8b68; }
+.turret-owner { color:#365d46; font-weight:700; font-size:13px; margin:12px 0 4px; }
+@media(max-height:700px) { .vehicle-roster { margin-bottom:8px; } .vehicle-roster canvas { height:45px; } }
+
+/* 机械核心整队枪架：双列可触控卡片，固定顶部且长列表仅内部滚动。 */
+:is(#mechanical-dialog,#spider-dialog) { width:min(560px,calc(100vw - 20px)); max-height:calc(100dvh - 32px); box-sizing:border-box; margin:16px auto 0; padding:24px 16px; color:#315c43; }
+:is(#mechanical-dialog,#spider-dialog) h2 { margin:8px 30px 6px 0; }
+.mechanical-caption { font-size:12px; color:#718672; }
+.mechanical-vitals { display:flex; gap:12px; flex-wrap:wrap; font-size:13px; margin:16px 0; }
+:is(#mechanical-choices,#spider-choices) { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+:is(#mechanical-choices,#spider-choices) button { min-width:0;padding:8px;border:2px solid #90a875;border-radius:12px;background:#efebce;color:#315c43;display:flex;flex-direction:column;text-align:left;gap:6px; }
+:is(#mechanical-choices,#spider-choices) button[aria-pressed=true] { background:#d4dfb5;border-color:#315c43;box-shadow:inset 4px 0 #315c43; }
+:is(#mechanical-choices,#spider-choices) canvas { width:100%;height:auto;background:#d4c79b;border-radius:8px; }
+:is(#mechanical-choices,#spider-choices) small,:is(#mechanical-choices,#spider-choices) span { font-size:11px; }
+:is(#mechanical-feedback,#spider-feedback) { min-height:2.4em;font-size:12px; }
+:is(#mechanical-done,#spider-done) { min-height:44px;width:100%; }
+
+/* 角色成长说明沿用原卡片配色，小屏允许属性与长百分比自然换行。 */
+.item-stats.hero-stats {flex-wrap:wrap;gap:8px 16px;}
+.hero-growth {background:#f1f4e6;border:1px solid #dbe4cb;border-radius:8px;padding:9px 10px;margin:0 0 12px;color:#526c46;font-size:11px;line-height:1.7;overflow-wrap:anywhere;}
+.hero-growth p {margin:0 0 5px;}
+.hero-growth p:last-child {margin-bottom:0;}

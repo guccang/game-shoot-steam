@@ -1,0 +1,28 @@
+/* 手机诊断保持小面积、不接收战场触摸，报告在原设置页内查看。 */
+#performance-hud {
+  position: absolute;
+  z-index: 12;
+  top: 190px;
+  left: 12px;
+  max-width: min(300px, calc(100% - 90px));
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #17392ee8;
+  color: #f3f3cf;
+  font: 11px/1.5 var(--game-font-family);
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+#performance-hud[hidden] { display: none; }
+.performance-section { border-top: 1px dashed #a2ad87; padding-top: 14px; margin-top: 16px; }
+.performance-section label { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+.performance-section pre { white-space: pre-wrap; font: 12px/1.6 var(--game-font-family); }
+.performance-section small { display: block; color: #71845e; overflow-wrap: anywhere; }
+.performance-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.performance-actions button { padding: 9px; border: 1px solid #b9c4a1; border-radius: 8px; }
+#performance-report-text { box-sizing: border-box; width: 100%; font-size: 12px; margin-top: 8px; }
+/* 定位日志沿用手机诊断布局，短屏按钮可换行，文本不撑宽设置页。 */
+#gameplay-log-section button { min-height: 44px; }
+#gameplay-log-text, #gameplay-log-title-text { box-sizing: border-box; width: 100%; font-size: 12px; }
+#gameplay-log-title-panel { display: none; }
+body:has(.game-frame[data-page="title"]) #gameplay-log-title-panel { display: block; }

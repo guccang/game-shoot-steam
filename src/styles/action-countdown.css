@@ -1,0 +1,2 @@
+/* 场景与界面共用 68×34 的图形计时徽记，弹窗上方单独留出位置。 */
+.action-countdown{display:block;flex:none;width:70px;height:36px;align-self:center;pointer-events:none;}

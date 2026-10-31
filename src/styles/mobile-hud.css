@@ -1,0 +1,90 @@
+/* 战场工具归入设置；保留原纸色与森林绿，用紧凑行明确每个图标的操作。 */
+.settings-controls { margin: 12px 0; }
+.audio-volume input { width: 48%; min-width: 80px; accent-color: #557b55; min-height: 44px; }
+.audio-volume output { display: block; font-size: 10px; color: #6d805e; }
+.settings-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.settings-control .icon-button,
+.settings-control .game-button { width: 44px; height: 44px; }
+.settings-control #environment-button { min-height: 44px; font-size: 12px; }
+/* 整行标签可点击，复选框与说明沿用设置面板的森林绿配色。 */
+.focus-pause-setting { cursor: pointer; }
+.focus-pause-setting small { display: block; margin-top: 4px; color: #6d805e; font-size: 10px; }
+.focus-pause-setting input { flex: 0 0 22px; width: 22px; height: 22px; accent-color: #557b55; }
+#settings-patrol {
+  padding: 12px;
+  background: #edf0df;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+#settings-patrol .location-chip { color: var(--ink); text-shadow: none; }
+#settings-patrol .location-chip small { color: #637950; }
+/* 所有屏幕常驻一个菜单入口，沿用手机的双列面板，避免侧栏遮挡战场。 */
+/* 生命卡移到顶部后，折叠入口直接贴近右下安全区，不再预留旧血条高度。 */
+.field-menu { --field-menu-lift:0px; display:flex; width:44px; height:44px; gap:0; right:max(10px,env(safe-area-inset-right)); bottom:calc(max(20px,env(safe-area-inset-bottom)) + var(--field-menu-lift)); }
+/* 农具占据底边时只上移到工具栏上方，避免菜单盖住退出种地按钮。 */
+.game-frame:has(#farm-tools:not([hidden])) .field-menu { --field-menu-lift:78px; }
+/* 展开后的物品入口高于任务卡；短屏菜单向上延伸时，点按不能落到下面的任务。 */
+.field-menu[data-expanded='true'] { z-index: 40; }
+#field-menu-toggle {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  color: #547147;
+  background: #f7f5ddeb;
+}
+#field-menu-toggle .menu-close-mark { display: none; font-size: 28px; font-weight: 400; }
+#field-menu-toggle[aria-expanded='true'] svg { display: none; }
+#field-menu-toggle[aria-expanded='true'] .menu-close-mark { display: block; }
+.field-menu-items {
+  position: absolute;
+  right: 0;
+  bottom: 54px;
+  display: grid;
+  grid-template-columns: repeat(2, 54px);
+  /* 入口增长时在原底板内滚动，短屏顶部的手机和任务仍可触达。 */
+  grid-auto-rows: 60px;
+  max-height: calc(100dvh - max(20px, env(safe-area-inset-bottom)) - var(--field-menu-lift) - 54px - max(12px, env(safe-area-inset-top)));
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  gap: 8px;
+  padding: 8px;
+  background: #f4f2deed;
+  border: 1px solid #d4dcb7;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px #243f3524;
+}
+.field-menu-items button { width: 54px; height: 60px; }
+.field-menu-items canvas { width: 44px; height: 42px; }
+.field-menu:not([data-expanded='true']) .field-menu-items { display: none; }
+/* 手机资源栏和区域说明仍按原断点布局。 */
+@media (max-width: 600px) {
+  .game-top { display: none; }
+  .hud-resources { top: max(12px, env(safe-area-inset-top)); }
+  .utility-buttons .icon-button { width: 44px; height: 44px; font-size: 19px; }
+  .quest {
+    top: calc(max(12px, env(safe-area-inset-top)) + 54px);
+    width: min(282px, calc(100% - 28px));
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  #quest-count { margin-left: auto; padding-left: 0; }
+  .boss-hud { top: calc(max(12px, env(safe-area-inset-top)) + 54px); }
+  .toast { top: calc(max(12px, env(safe-area-inset-top)) + 128px); }
+}
+/* 横持短屏向左展开，避免两行图标顶出视口。 */
+@media (max-height: 500px) {
+  .field-menu-items { right: 54px; bottom: 0; }
+}

@@ -1,0 +1,216 @@
+{
+  "file": "assets\\title\\source\\continuous-v3\\original.mp4",
+  "sampleFps": 8,
+  "frames": 80,
+  "regions": {
+    "cat": [
+      {
+        "second": 0,
+        "meanDelta": 4.0513,
+        "changedPercent": 14.7259
+      },
+      {
+        "second": 1,
+        "meanDelta": 3.0366,
+        "changedPercent": 10.4519
+      },
+      {
+        "second": 2,
+        "meanDelta": 3.1981,
+        "changedPercent": 10.1885
+      },
+      {
+        "second": 3,
+        "meanDelta": 3.8027,
+        "changedPercent": 13.7112
+      },
+      {
+        "second": 4,
+        "meanDelta": 2.8737,
+        "changedPercent": 9.9358
+      },
+      {
+        "second": 5,
+        "meanDelta": 3.2814,
+        "changedPercent": 10.885
+      },
+      {
+        "second": 6,
+        "meanDelta": 3.081,
+        "changedPercent": 11.139
+      },
+      {
+        "second": 7,
+        "meanDelta": 2.5703,
+        "changedPercent": 9.1324
+      },
+      {
+        "second": 8,
+        "meanDelta": 2.3904,
+        "changedPercent": 8.3329
+      },
+      {
+        "second": 9,
+        "meanDelta": 3.5595,
+        "changedPercent": 12.4202
+      }
+    ],
+    "wheat": [
+      {
+        "second": 0,
+        "meanDelta": 0.9062,
+        "changedPercent": 0.9175
+      },
+      {
+        "second": 1,
+        "meanDelta": 0.5507,
+        "changedPercent": 0.4246
+      },
+      {
+        "second": 2,
+        "meanDelta": 0.5053,
+        "changedPercent": 0.1789
+      },
+      {
+        "second": 3,
+        "meanDelta": 0.539,
+        "changedPercent": 0.3333
+      },
+      {
+        "second": 4,
+        "meanDelta": 0.5641,
+        "changedPercent": 0.4447
+      },
+      {
+        "second": 5,
+        "meanDelta": 0.5826,
+        "changedPercent": 0.4623
+      },
+      {
+        "second": 6,
+        "meanDelta": 0.5103,
+        "changedPercent": 0.2404
+      },
+      {
+        "second": 7,
+        "meanDelta": 0.5833,
+        "changedPercent": 0.4316
+      },
+      {
+        "second": 8,
+        "meanDelta": 0.4695,
+        "changedPercent": 0.1956
+      },
+      {
+        "second": 9,
+        "meanDelta": 0.6683,
+        "changedPercent": 0.6927
+      }
+    ],
+    "tree": [
+      {
+        "second": 0,
+        "meanDelta": 0.4905,
+        "changedPercent": 0.4283
+      },
+      {
+        "second": 1,
+        "meanDelta": 0.2559,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 2,
+        "meanDelta": 0.2142,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 3,
+        "meanDelta": 0.2055,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 4,
+        "meanDelta": 0.1929,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 5,
+        "meanDelta": 0.2378,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 6,
+        "meanDelta": 0.2661,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 7,
+        "meanDelta": 0.238,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 8,
+        "meanDelta": 0.2364,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 9,
+        "meanDelta": 0.4497,
+        "changedPercent": 0.5861
+      }
+    ],
+    "water": [
+      {
+        "second": 0,
+        "meanDelta": 0.5071,
+        "changedPercent": 0.0023
+      },
+      {
+        "second": 1,
+        "meanDelta": 0.2579,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 2,
+        "meanDelta": 0.2238,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 3,
+        "meanDelta": 0.2083,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 4,
+        "meanDelta": 0.1949,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 5,
+        "meanDelta": 0.212,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 6,
+        "meanDelta": 0.2273,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 7,
+        "meanDelta": 0.2117,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 8,
+        "meanDelta": 0.2317,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 9,
+        "meanDelta": 0.4588,
+        "changedPercent": 0.0078
+      }
+    ]
+  },
+  "loopSeamMeanDelta": 1.4868
+}

@@ -1,0 +1,5 @@
+
+  Stream #1:0 (h264) -> psnr
+  psnr:default -> Stream #0:0 (wrapped_avframe)
+[Parsed_psnr_2 @ 0000020b4678b340] PSNR y:47.923499 u:50.970289 v:50.891201 average:48.714664 min:48.225848 max:49.368934
+frame=   72 fps= 31 q=-0.0 Lsize=N/A time=00:00:03.00 bitrate=N/A speed= 1.3x elapsed=0:00:02.30

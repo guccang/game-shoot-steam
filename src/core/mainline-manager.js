@@ -1,0 +1,226 @@
+import {cottageRestGuideActive,cottageRestObjective} from './cottage-guide.js';
+import {beginGardeningLesson} from '../progression/mainline-gardening.js';
+import {harvestBudget,harvestGuidePlot,harvestGuideHint} from './harvest-guide.js';
+import {restoredTaskToStart,startRestoredTask} from '../progression/restoration-task.js';
+import {mainlineResourceHint} from '../progression/mainline-cost.js';
+import {pendingRestoration} from '../config/town-restoration.js';
+import {restorationObjective,restorationStatus} from './town-restoration.js';
+import {rewardReceipt} from '../progression/reward-receipt.js';
+import {awardMainline} from '../progression/mainline-reward.js';
+import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
+// 主线解释器只理解条件、地点和阶段，不按任务ID分支，不创建或赠送装备。
+import {clearingObjective} from './clearing-guide.js';
+import {currentMainlineTask,MAINLINE_SITES,MAINLINE_NPCS} from '../config/mainline.js';
+import {recordMainlineExperience} from '../progression/mainline-experience.js';
+import {MAINLINE_SEEN} from '../progression/mainline-progress.js';
+import {arrivalPending} from '../config/ranger-arrival.js';
+import {nativeVehicleWeapon} from '../config/vehicle-armaments.js';
+import {bindEconomy,economyFor} from '../config/economy.js';
+import {validateProgress} from '../progression/progress.js';
+import {capturePatrol} from './patrol-session.js';
+import {vehicleParkingSite,parkedOwned} from './camp-parking.js';
+import {worldDistance} from '../world/coordinates.js';
+import {trackedLivingRequest} from './task-tracking.js';
+const positions=new WeakMap();
+// 新建战场释放对白与位置采样，清档或跨场景不能继承上一次交付。
+export function resetMainlineScene(game){positions.delete(game);game.mainlineSpeech=null;game.mainlineTalkDelay=0;game.mainlineError='';}
+
+// 缺少主线数据的独立测试/预览场景不自动生成任务。
+export function mainlineTask(game){return currentMainlineTask(game.progress?.mainline);}
+// 白名单点路径只读自身属性，配置不执行字符串代码。
+function read(source,path){return path.split('.').reduce((v,k)=>v&&Object.hasOwn(v,k)?v[k]:undefined,source);}
+// 所有条件只观察永久进度或真实操作标记，剧情借用武器不能满足拥有条件。
+export function mainlineCondition(game,condition){
+ if(condition.harvestFor)return harvestBudget(game.progress,mainlineTask(game)).ready;
+ if(condition.all)return condition.all.every(c=>mainlineCondition(game,c));
+ if(condition.any)return condition.any.some(c=>mainlineCondition(game,c));
+ if(condition.path){const value=read(game,condition.path);return 'equals' in condition?value===condition.equals:Number(value)>=condition.min;}
+ if('nativeLevel' in condition)return (game.progress.vehicleWeapons[nativeVehicleWeapon(condition.nativeLevel)?.weaponIndex]||0)>=condition.min;
+ if(condition.controllerReady)return [12,15,16].includes(game.progress.weapon)&&game.progress.weapons[game.progress.weapon]>0&&game.progress.mainline.seen.config>0;
+ if(condition.controllerLevel)return [12,15,16].some(i=>game.progress.weapons[i]>=condition.controllerLevel);
+ throw Error('未知主线条件：'+JSON.stringify(condition));
+}
+// 短清单直接读取原条件，勾选反馈不另建进度或改变完成门槛。
+export function mainlineSteps(game){
+ if(cottageRestGuideActive(game))return [{label:'进入小屋休息',hint:'先下车，靠近后点击「进入小屋」，也可在门前站定3秒进入；到床边点击休息，恢复猫猫全部生命。',done:false}];
+ const task=mainlineTask(game);if(!task)return [];
+ const f=pendingRestoration(game.progress);if(f){
+  const s=restorationStatus(game,f.id),repair={label:'修复'+f.name,hint:f.benefit,done:false,operation:{type:'restoration',id:f.id}};
+  // 材料充足或已投料时移除采集步骤；缺料在战场与详情都指明采集地点。
+  const resourceHint='还差 '+(f.wood-game.progress.wood)+' 木头 · 装备电锯，在营地周围采树';
+  return s.enough?[repair]:[{label:'补齐木头',hint:resourceHint,resourceHint,done:false,progress:game.progress.wood+'/'+f.wood},repair];
+ }
+ const conditions=task.goal.all||[task.goal];
+ return task.guide.steps.map((step,index)=>{
+  const condition=conditions[index],done=mainlineCondition(game,condition),value=condition.path?Number(read(game,condition.path)):NaN;
+  const progress=condition.min>1&&Number.isFinite(value)?`${Math.min(condition.min,Math.max(0,Math.floor(value)))}/${condition.min}`:'';
+  const resourceHint=!done?(condition.harvestFor?harvestGuideHint(game,task):mainlineResourceHint(game.progress,condition)):'';
+  // 极端旧档没有作物时沿用开田、选种教学，补种成熟后仍通过同一收割事务完成。
+  if(condition.harvestFor&&!done&&!harvestGuidePlot(game))return {...step,done,progress,resourceHint,hint:resourceHint,operation:{type:'farm',id:game.progress.farm.plots.some(p=>p.mapId===game.mapId&&p.crop===null)?'plant':'dig'}};
+  return {...step,done,progress,resourceHint,hint:resourceHint||step.hint};
+ });
+}
+// 只推荐尚未完成的动作；拥有多个目标时逐个呈现，不让玩家重复已完成项。
+export function mainlineStep(game){const steps=mainlineSteps(game);return steps.find(s=>!s.done)||null;}
+// 选择组允许沿用玩家正在看的合法装备；需要拥有时只选择永久库中的控制器。
+export function mainlineOperation(game){
+ const spec=mainlineStep(game)?.operation;if(!spec)return null;
+ if(!spec.indices)return {...spec};
+ const field=spec.kind==='vehicle'?'vehicleHulls':spec.kind==='heroes'?'heroes':'weapons';
+ const owns=spec.indices.filter(i=>game.progress[field][i]>0),choices=['buy','track','trial'].includes(spec.type)?spec.indices:owns;
+ const index=choices.includes(game.progress[spec.kind==='vehicle'?'vehicleIndex':spec.kind==='heroes'?'hero':'weapon'])?game.progress[spec.kind==='vehicle'?'vehicleIndex':spec.kind==='heroes'?'hero':'weapon']:choices[0]??spec.indices[0];
+ return {...spec,index,indices:choices.length?choices:[index]};
+}
+// 步骤可以覆盖入口，或明确要求回到世界操作；已接巡护时不再反复引导接取。
+export function mainlineAction(game){
+ if(cottageRestGuideActive(game))return null;
+ const task=mainlineTask(game),step=mainlineStep(game);
+ const f=pendingRestoration(game.progress);if(f)return {type:'restoration',id:f.id,label:'查看修复任务'};
+ if(!task||!step||['clearing','patrol-boss'].includes(step.operation?.type)&&task.targetWhen&&mainlineCondition(game,task.targetWhen))return null;
+ const operation=mainlineOperation(game);
+ if(operation?.type==='drive')return game.progress.vehicleIndex===operation.index&&!parkedOwned(game).some(s=>s.record.hull===operation.index)?null:{type:'workshop',kind:'vehicle',index:operation.index,label:'查看车辆停放位置'};
+ if(operation?.type==='camp-defense')return {type:'camp-defense',gate:operation.gate,label:step.label};
+ if(['clearing','patrol-boss'].includes(operation?.type))return {type:'clearing',label:'前往清缴告示牌'};
+ if(operation?.kind&&['upgrade','buy','equip','trial','modify','track','controller','drive'].includes(operation.type))return {type:'workshop',kind:operation.kind,index:operation.index,label:step.label};
+ return Object.hasOwn(step,'action')?step.action||null:task.action||null;
+}
+// 故事、秘境、消防和入职优先；切换到这些活动时不出场NPC、不开始对白。
+export function mainlineVisible(game){return !!mainlineTask(game)&&!game.campDefense&&!game.workshopTrial&&!arrivalPending(game.progress)&&!game.story&&!game.realm&&!game.fireActive;}
+// 一份目标同时驱动任务卡、地面导航和地图标记，不创建第二份坐标。
+export function mainlineObjective(game,{ignoreTracking=false}={}){
+ if(game.cottage&&cottageRestGuideActive(game))return null;
+ const rest=cottageRestObjective(game,mainlineTask(game));if(rest)return rest;
+ if(!ignoreTracking&&!pendingRestoration(game.progress)&&trackedLivingRequest(game))return null;
+ const task=mainlineTask(game);if(!task||!mainlineVisible(game))return null;
+ const restore=restorationObjective(game,task);if(restore)return restore;
+ const phase=game.progress.mainline.phase,step=mainlineStep(game);
+ // 收获赚金币直接导航现有田块，采空后重新选择，不要求返回 NPC 交付。
+ if(phase==='doing'&&task.goal.harvestFor){
+  const plot=harvestGuidePlot(game);
+  return {task,phase,key:plot?'harvest-plot-'+plot.id:'harvest-plant',site:plot?{...plot,name:plot.wild?'营地外成熟野田':'先前种下的田'}:{...game.player,mapId:game.mapId,name:'就近种田'},navigation:!!plot,label:step?.label||task.text,hint:harvestGuideHint(game,task,plot)};
+ }
+ // 照顾与收获指向本次真实播种的田，跨地图、读档和镜头移动后仍能找到。
+ if(phase==='doing'&&task.gardening?.kind==='grow'&&['water','harvest'].includes(step?.operation?.id)){
+  const plot=game.progress.farm.plots.find(p=>p.id===game.progress.mainline.gardening?.plotId);
+  if(plot)return {task,phase,key:'gardening-plot',site:{...plot,name:'委托胡萝卜田'},navigation:true,label:step.label};
+ }
+ // 首次购车的驾驶目标先引向实际泊位；取车后再自由行驶，不继续拉回工坊。
+ if(phase==='doing'&&step?.operation?.type==='drive'&&parkedOwned(game).some(s=>s.record.hull===step.operation.index)){
+  const site=vehicleParkingSite(game,step.operation.index);return {task,phase,key:'northParking',site:{...site,y:site.approachY??site.y},navigation:true,label:'到北停车场换乘松果战车'};
+ }
+ // 清缴前置只影响清缴步骤，不能遮住新增升级步骤的工坊和角色入口。
+ const canTarget=!['clearing','patrol-boss'].includes(step?.operation?.type)||!task.targetWhen||mainlineCondition(game,task.targetWhen);
+ const key=phase==='doing'&&canTarget?(step?.navigation||task.target||task.site):task.site,site=MAINLINE_SITES[key];
+ if(phase==='doing'&&['clearing','patrol-boss'].includes(step?.operation?.type))return {task,phase,...clearingObjective(game)};
+ return {task,phase,key,site,navigation:phase!=='doing'||step?.navigation!==false,label:phase==='meet'?'去找'+MAINLINE_NPCS[task.npc].name:phase==='report'?(task.seedDelivery?'交付种子 · ':'领取奖励 · ')+MAINLINE_NPCS[task.npc].name:!canTarget?'接取 Boss 清缴任务':step?.label||task.text};
+}
+// UI和正式游戏事件只记录有限操作事实，重复打开不会无限增加奖励。
+export function markMainline(game,key,amount=1){
+ const run=game.progress?.mainline;
+ if(key==='config'&&(game.story||game.realm||game.fireActive||![12,15,16].includes(game.progress.weapon)||!game.progress.weapons[game.progress.weapon]))return;
+ if(run&&MAINLINE_SEEN.includes(key)&&!arrivalPending(game.progress))run.seen[key]=Math.min(1e7,Math.max(run.seen[key],amount));
+}
+// 只接收演练场真实击破后的装备身份；临时试装不写入永久装备与钱包。
+export function recordMainlineTrial(game,{kind,index}){
+ markMainline(game,'trial');
+ if(kind==='vehicle'&&index===3)markMainline(game,'hoverTrial');
+ if(kind==='vehicle'&&index===2)markMainline(game,'aircraftTrial');
+ if(kind==='weapons'&&[12,15,16].includes(index))markMainline(game,'controllerTrial');
+}
+// 已成功发生的事件由应用适配器传入，失败购买/失败布防没有对应标记。
+export function recordMainlineEvent(game,type){
+ recordMainlineExperience(game,type);
+ if(type==='equipment-goal'&&game.progress.equipmentGoal)markMainline(game,'track');
+ if(type==='map-change'&&game.mapId==='jiuzhaigou')markMainline(game,'valley');
+ if(type==='realm-defense')markMainline(game,'defense');
+ if(type==='realm-change'&&Object.values(game.realm?.blessingCounts||{}).some(n=>n>0))markMainline(game,'blessing');
+ if(!game.story&&!game.realm&&['wave-clear','boss-ready'].includes(type))markMainline(game,'wave');
+ if(['funnel-config','mechanical-config','spider-config'].includes(type))markMainline(game,'config');
+}
+// 当前教学人物复用正式故事猫绘制器，不保存碰撞或战斗实体。
+export function mainlineActors(game){
+ const o=mainlineObjective(game);if(!o||o.restoration||o.cottageRest||game.mapId!==MAINLINE_SITES[o.task.site].mapId)return [];
+ return [{...MAINLINE_SITES[o.task.site],type:'story-prop',kind:'mainline-npc',actorHero:MAINLINE_NPCS[o.task.npc].hero}];
+}
+// 在安全的指定地点触发，远程点击任务卡不能隔空完成剧情或领资源。
+export function canTalkMainline(game){
+ const o=mainlineObjective(game);return !!o&&!o.restoration&&!o.cottageRest&&game.mapId===MAINLINE_SITES[o.task.site].mapId&&game.state==='playing'&&
+  worldDistance(game.player,MAINLINE_SITES[o.task.site])<=GAMEPLAY_VALUES.mainline.interactionRadius&&!game.boss&&!game.player.arena&&!game.enemies.some(e=>e.hp>0&&worldDistance(game.player,e)<GAMEPLAY_VALUES.mainline.safeEnemyDistance);
+}
+// 资源和完成记录写入同一候选存档，失败保持钱包与任务原样，可在原地重试。
+export function completeMainline(game){
+ const task=mainlineTask(game),run=game.progress.mainline;
+ const localHarvest=task?.goal.harvestFor&&game.state==='playing'&&mainlineVisible(game)&&!game.cottage&&mainlineCondition(game,task.goal);
+ if(!task||run.phase!=='report'||(task.goal.harvestFor?!localHarvest:!canTalkMainline(game)))return false;
+ // 种子必须仍在背包中，交付与奖励在同一候选存档提交，失败不吞种子。
+ const delivery=task.seedDelivery;
+ if(delivery&&(!mainlineCondition(game,task.goal)||game.progress.farm.seeds[delivery.crop]<delivery.count)){game.mainlineError='交付的种子不足，请到种子小屋补齐后再来。';run.phase='doing';return false;}
+ const before=game.progress,next=validateProgress(bindEconomy(structuredClone(game.progress),economyFor(game.progress)));
+ if(delivery)next.farm.seeds[delivery.crop]-=delivery.count;
+ // 巡游快照会更新生活位置，必须写入候选进度，保存失败时不污染正式对象。
+ const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
+ const reward=awardMainline(next,task.id);if(!reward)return false;
+ let saved=false;try{saved=(game.mainlinePersist?.(next)??true)===true;}catch{}
+ if(!saved){game.mainlineError='进度未保存，请在原地重试交付。';return false;}
+ game.progress=next;game.mainlineError='';game.mainlineSpeech=null;game.onEvent('mainline-complete',rewardReceipt(before,next,task.title));return true;
+}
+// 手动收起对白不跳过目标；重听由同一段台词开始，镜头始终由原游戏控制。
+export function dismissMainlineSpeech(game){game.mainlineSpeech=null;game.mainlineTalkDelay=GAMEPLAY_VALUES.mainline.speechGap;}
+// 主动读完或跳过共用安全距离和一次性事务，文字计时不接取或交付任务。
+export function advanceMainlineSpeech(game){
+ const task=mainlineTask(game),run=game.progress?.mainline,speech=game.mainlineSpeech;
+ if(!task||!speech||speech.id!==task.id||speech.phase!==run.phase||!canTalkMainline(game))return false;
+ if(speech.phase==='report')return completeMainline(game);
+ if(speech.phase!=='meet')return false;
+ game.mainlineSpeech=null;run.phase='doing';beginGardeningLesson(game.progress);game.onEvent('mainline-change');return true;
+}
+// 到点显示对白，玩家确认后开始操作或提交；菜单暂停时对白不推进。
+export function updateMainline(game,dt){
+ const task=mainlineTask(game),run=game.progress?.mainline;
+ if(!task||game.workshopTrial||arrivalPending(game.progress))return false;
+ if(!run.currentId)run.currentId=task.id;
+ if(pendingRestoration(game.progress)||cottageRestGuideActive(game)){game.mainlineSpeech=null;return false;}
+ // 收获任务就地接续并沿用正式存档事务，失败可重试，不能只凭旧收获次数跳过。
+ if(task.goal.harvestFor){
+  if(run.phase==='meet')run.phase='doing';beginGardeningLesson(game.progress);
+  if(run.phase==='report'&&!mainlineCondition(game,task.goal))run.phase='doing';
+  if(mainlineCondition(game,task.goal)){
+   run.phase='report';game.mainlineSpeech=null;
+   if(game.state==='playing'&&mainlineVisible(game)&&!game.cottage)completeMainline(game);
+   return false;
+  }
+ }
+ // 兼容提前修复及旧档：当前任务已有对应设施时就地接取，保存失败原地重试。
+ if(game.state==='playing'&&mainlineVisible(game)&&!game.cottage&&restoredTaskToStart(game.progress)){
+  game.mainlineSpeech=null;game.mainlineTalkDelay=Math.max(0,(game.mainlineTalkDelay||0)-dt);
+  if(game.mainlineTalkDelay)return false;
+  const next=validateProgress(bindEconomy(structuredClone(game.progress),economyFor(game.progress)));
+  startRestoredTask(next);const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
+  let saved=false;try{saved=(game.mainlinePersist?.(next)??true)===true;}catch{}
+  if(saved){game.progress=next;game.mainlineError='';}
+  else {game.mainlineError='任务进度未保存，正在原地重试。';game.mainlineTalkDelay=1;}
+  return false;
+ }
+ if(!game.story&&!game.realm&&!game.fireActive&&game.state==='playing'){
+  const previous=positions.get(game),p=game.player;
+  if(previous?.mapId===game.mapId){const distance=worldDistance(previous,p);if(distance<GAMEPLAY_VALUES.mainline.movementMaxStep){run.distance=Math.min(1e7,run.distance+distance);if(game.vehicle.active&&game.vehicle.index===0)run.seen.drive=Math.min(1e7,run.seen.drive+distance);}}
+  if(previous?.mounted&&!game.vehicle.active)markMainline(game,'dismount');
+  positions.set(game,{x:p.x,y:p.y,mapId:game.mapId,mounted:game.vehicle.active});
+  const controller=game.weapon().controller;
+  if(controller==='funnel'&&game.funnel?.primed&&game.funnel.deploy<=0||
+   controller==='mechanical'&&game.mechanical.nodes.some(n=>n.active&&n.ready&&n.hp>0)||
+   controller==='spider'&&game.spider.nodes.some(n=>n.active&&n.ready&&n.hp>0))markMainline(game,'companions');
+ }else positions.delete(game);
+ // 待交付期间种子被播种消耗时恢复寻找目标，不能空手领报酬。
+ if(run.phase==='report'&&task.seedDelivery&&!mainlineCondition(game,task.goal))run.phase='doing';
+ if(run.phase==='doing'&&mainlineCondition(game,task.goal))run.phase='report';
+ if(!mainlineVisible(game)){game.mainlineSpeech=null;return false;}
+ if(game.state!=='playing')return false;
+ game.mainlineTalkDelay=Math.max(0,(game.mainlineTalkDelay||0)-dt);
+ if(!game.mainlineSpeech&&run.phase!=='doing'&&!game.mainlineTalkDelay&&canTalkMainline(game))game.mainlineSpeech={id:task.id,phase:run.phase,line:0,elapsed:0};
+ const speech=game.mainlineSpeech;if(!speech)return false;
+ if(speech.id!==task.id||speech.phase!==run.phase||!canTalkMainline(game)){game.mainlineSpeech=null;return false;}
+ // 对话停留等待玩家操作，只保留场景时钟，不再按时长自动结束。
+ game.time+=dt;
+ return true;
+}

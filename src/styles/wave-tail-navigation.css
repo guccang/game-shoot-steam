@@ -1,0 +1,8 @@
+/* 小箭头和距离留在战场边缘，不新增可点击按钮，不遮断触屏移动。 */
+#wave-tail-navigation{position:absolute;inset:0;z-index:9;pointer-events:none}
+#wave-tail-navigation[hidden],.wave-tail-marker[hidden]{display:none}
+.wave-tail-marker{position:absolute;width:56px;height:54px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.wave-tail-marker svg{display:block;width:32px;height:32px;flex:none;overflow:visible}
+.wave-tail-marker circle{fill:#fff2c9;stroke:#456951;stroke-width:2}
+.wave-tail-marker path{fill:#456951;stroke:#315747;stroke-width:1.2;stroke-linejoin:round}
+.wave-tail-marker span{background:#315747;color:#fff5d6;border:1px solid #dddfaa;border-radius:7px;padding:1px 5px;font-size:11px;line-height:16px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}

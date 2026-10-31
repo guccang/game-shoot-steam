@@ -1,0 +1,14 @@
+// 金币、木材和三种材料统一封顶入账，返回实际增量供掉落、档案和经济账本使用。
+import { RESOURCE_CAP } from '../config/resource-limits.js';
+import {MATERIAL_KEYS,MATERIAL_CAP} from '../config/materials.js';
+import {recordResourceGain} from './game-statistics.js';
+// 超出容量的收益直接舍弃，消费后的容量可继续接收新收益。
+export function creditResource(progress,key,amount) {
+  if(!['coins','wood',...MATERIAL_KEYS].includes(key))return 0;
+  const material=MATERIAL_KEYS.includes(key),wallet=material?progress.materials:progress,cap=material?MATERIAL_CAP:RESOURCE_CAP;
+  const before=Math.max(0,Math.min(cap,Number(wallet[key])||0));
+  const received=Math.max(0,Math.min(cap-before,Math.floor(Number(amount)||0)));
+  recordResourceGain(progress,key,received);
+  wallet[key]=before+received;
+  return received;
+}

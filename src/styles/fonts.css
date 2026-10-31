@@ -1,0 +1,11 @@
+/* 用户指定的汉仪旗黑字体完整随包分发，界面和画布共享同一字体名。 */
+@font-face {
+  font-family: 'HYQiHei75S';
+  src: url('/assets/fonts/HYQiHei_75S.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+}
+:root { --game-font-family: 'HYQiHei75S', sans-serif; }
+/* 加载失败时明确阻止启动；错误本身保留可读的系统字体。 */
+#font-load-error { position:fixed;z-index:10000;inset:16px 16px auto;padding:16px;background:#fff5db;color:#8b3028;border:2px solid #8b3028;font:16px/1.5 sans-serif; }

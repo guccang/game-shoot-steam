@@ -1,0 +1,7 @@
+/* 复用原有波次卡提示怪潮，不增加遮挡战场的弹窗；静态金色描边兼容减少动态模式。 */
+.quest.incoming { background: #465d3ff2; box-shadow: inset 0 0 0 2px #e6bd62; }
+.quest.incoming b, .quest.incoming #quest-count { color: #ffe098; }
+.quest.incoming small { display: block; color: #f3edcf; font-size: 10px; line-height: 1.4; }
+/* 领主援兵预警沿用血条区域，避免新增常驻面板挤占手机战场。 */
+.boss-hud.incoming { box-shadow: inset 0 0 0 2px #d9ac50; }
+.boss-hud.incoming #boss-name { color: #926520; }

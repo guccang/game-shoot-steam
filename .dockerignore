@@ -1,0 +1,19 @@
+# 默认排除仓库、依赖、测试、截图、发布包和本机配置，只开放运行文件。
+**
+!*.html
+!package.json
+!server.mjs
+!visual-contract.json
+!src/
+!src/**
+!assets/
+!assets/**
+
+# 不发送源视频、生成请求与服务记录，以及已转为 WebP 的原始插画。
+assets/**/source
+assets/**/source/**
+assets/**/prompts.json
+assets/**/request.json
+assets/**/status.json
+assets/**/submit.json
+assets/realms/*.png

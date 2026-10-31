@@ -1,0 +1,46 @@
+/* 设置采用固定标题与返回栏；中间单独滚动，危险操作留在折叠区。 */
+#settings-dialog{padding:0;width:calc(100% - 24px);max-width:480px;max-height:calc(100dvh - 28px);overflow:hidden}
+#settings-dialog[open]{display:flex;flex-direction:column}
+.settings-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid #d5dfc5;flex:none}
+#settings-dialog .settings-heading h2{margin:0;font-size:22px}
+#settings-dialog .settings-heading p{margin:4px 0 0;font-size:12px}
+#settings-dialog .close{position:static;float:none;margin:0;flex:0 0 44px;width:44px;height:44px}
+#settings-options{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#settings-options[hidden],#reset-confirmation[hidden]{display:none}
+.settings-scroll{overflow:auto;overflow-anchor:none;overscroll-behavior:contain;min-height:0;padding:18px 22px;scroll-padding:12px}
+#settings-dialog .settings-group{margin:0 0 20px}
+#settings-dialog .settings-group h3{margin:0 0 6px;font-size:14px;color:#55734e}
+#settings-dialog .settings-controls{margin:0}
+#settings-dialog .settings-control{font-size:14px;min-height:56px;gap:10px;border-color:#e2e5d2}
+#settings-dialog .settings-control:last-child{border-bottom:0}
+#settings-dialog .focus-pause-setting small{font-size:11px;max-width:210px;line-height:1.5}
+#settings-dialog .audio-volume output{display:inline;margin-left:8px;font-size:12px;font-variant-numeric:tabular-nums}
+#settings-dialog #settings-patrol{margin-bottom:20px;padding:10px 12px}
+.settings-links{display:grid;gap:8px;margin:4px 0 16px}
+#settings-dialog .settings-row{min-height:44px;align-items:center;gap:10px;font-size:13px}
+.settings-links .settings-row span{font-size:11px;color:#6d805e}
+#settings-advanced{border-top:1px solid #d5dfc5;padding-top:6px}
+#settings-advanced>summary{cursor:pointer;padding:12px 0;font-size:14px;font-weight:700;min-height:48px}
+#settings-advanced>summary span{display:block;margin:5px 0 0 17px;font-size:11px;color:#718365;font-weight:400}
+#settings-dialog .reset-section{margin-top:16px;padding-top:4px}
+#settings-dialog .reset-section p{line-height:1.7;margin:8px 0 14px}
+#settings-dialog #debug-toggle{margin:4px 0 12px}
+/* 主次返回按钮位置稳定，手机同样并排，不会与清空入口紧贴。 */
+.settings-footer{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 22px max(14px,env(safe-area-inset-bottom));border-top:1px solid #d5dfc5;background:#f6f7e9;flex:none}
+#settings-dialog .settings-footer button{margin:0;min-height:48px;padding:10px 12px;font-size:13px;line-height:1.4;justify-content:center;text-align:center}
+.settings-footer:has(#settings-home[hidden]){grid-template-columns:1fr}
+#settings-dialog #settings-home[hidden]{display:none}
+#settings-dialog #settings-home{font-size:12px;padding-inline:8px;white-space:nowrap}
+#reset-confirmation{padding:20px 22px;overflow:auto;min-height:0}
+@media(max-width:360px){.settings-heading{padding:16px}.settings-scroll{padding:14px 16px}.settings-footer{padding:12px 16px;gap:10px}#settings-dialog .settings-control{font-size:12px}#settings-dialog .audio-volume output{margin-left:4px}}
+
+/* 版本信息属于标题区，小屏状态可折行，不挤压关闭按钮。 */
+#settings-dialog .settings-build{display:flex;flex-wrap:wrap;gap:4px 7px;align-items:center;font-size:11px;color:#607451}
+.settings-build code{font:12px ui-monospace,Consolas,monospace;color:#315c43;user-select:all}
+/* 风格选择复用设置按钮，窄屏独占一行并保留44像素触控高度。 */
+#settings-dialog .art-style-setting{display:flex;flex-wrap:wrap;align-items:center;padding-block:10px}
+.art-style-options{display:flex;gap:8px;width:100%}
+.art-style-options button{flex:1;min-height:44px;margin:0;padding:8px 10px;font-size:13px}
+.art-style-options button[aria-pressed="true"]{outline:2px solid #55734e;outline-offset:1px;font-weight:bold}
+#art-style-hint{width:100%;font-size:11px;line-height:1.5}
+#settings-git-state:empty{display:none}

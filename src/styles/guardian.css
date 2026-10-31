@@ -1,0 +1,124 @@
+/* 林间塔防的战场建造层；方格跟随世界坐标，纸色栏为触屏保留四十四像素目标。 */
+.guardian-ground-controls { position:absolute; inset:0; pointer-events:none; }
+.guardian-ground-pad { position:absolute; transform:translate(-50%,-50%); padding:0; border:2px solid transparent; border-radius:5px; background:transparent; pointer-events:auto; touch-action:none; }
+.guardian-ground-pad.ready { border-color:#f7e79c; box-shadow:0 0 0 2px #657e55, inset 0 0 0 2px #fff5c340; }
+.guardian-ground-pad:hover, .guardian-ground-pad[aria-pressed=true], .guardian-ground-pad:focus-visible { border-color:#ffec9c; outline:3px solid #a5773e; outline-offset:2px; background:#ffed9b25; }
+.guardian-build-panel { position:absolute; bottom:128px; left:12px; right:12px; border:2px solid #55745a; border-radius:14px; background:#f7f2dcf5; color:#345644; padding:9px 10px 7px; box-shadow:0 4px 0 #36564130; }
+.guardian-build-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.guardian-build-head b { font-size:15px; }
+.guardian-build-head small { display:block; font-size:11px; margin-top:3px; }
+.guardian-build-head>span { font-size:12px; }
+.guardian-build-panel button { min-height:44px; font:700 12px var(--game-font-family); cursor:pointer; }
+.guardian-build-head .primary { padding:8px 10px; border-radius:8px; margin:0; }
+.guardian-tabs { display:flex; gap:8px; margin:5px 0; }
+.guardian-tabs button { padding:4px 8px; border:0; border-bottom:2px solid transparent; background:transparent; color:#607658; }
+.guardian-tabs button[aria-pressed=true] { color:#2d543c; border-color:#55745a; }
+.guardian-tabs [data-guardian-cancel] { margin-left:auto; font-weight:400; }
+/* 目录由独立指针拖动处理，避免与战场摇杆和浏览器平移竞争。 */
+.guardian-catalog { display:flex; gap:7px; overflow-x:auto; overscroll-behavior:contain; touch-action:none; padding:2px 2px 5px; }
+.guardian-catalog button { flex:0 0 95px; min-width:0; padding:0 4px 5px; border:1px solid #bac7a5; border-radius:8px; background:#e7ecd5; color:#345644; }
+.guardian-catalog canvas { width:72px; height:45px; display:block; margin:auto; }
+.guardian-catalog span { display:block; font-size:11px; white-space:nowrap; }
+.guardian-catalog button[aria-pressed=true] { background:#f6e5aa; border:2px solid #9d783f; padding:0 3px 4px; }
+.guardian-catalog p { font-size:12px; margin:0; }
+.guardian-catalog.is-armed { display:none; }
+.guardian-build-panel button:disabled { opacity:.5; cursor:default; }
+.guardian-build-panel button:focus-visible { outline:3px solid #ae7c3e; outline-offset:1px; }
+.guardian-turret { display:flex; gap:10px; align-items:center; font-size:12px; margin-top:4px; }
+.guardian-turret select { min-height:44px; min-width:0; flex:1; border:1px solid #9db38c; border-radius:7px; background:#fff9e7; color:#345644; padding:5px; }
+.guardian-build-hint { margin:5px 0 0; font-size:11px; line-height:1.5; }
+.guardian-build-hint small { display:block; color:#708164; font-size:10px; }
+.guardian-selected>div:first-child { display:flex; align-items:center; justify-content:space-between; font-size:13px; }
+.guardian-selected [data-guardian-back] { width:44px; border:0; background:transparent; font-size:22px; }
+.guardian-selected>small { font-size:11px; }
+.guardian-actions { display:flex; gap:8px; margin:7px 0; }
+.guardian-actions button { flex:1; border:1px solid #9db38c; border-radius:8px; padding:6px; background:#e2ebd2; color:#345644; }
+/* 操作菜单与猫猫状态留在最下方，不与建造栏和方格争抢点击区域。 */
+.guardian-active .field-menu { bottom:24px; left:14px; right:auto; flex-direction:row; }
+.guardian-active .field-menu-items { bottom:54px; left:0; right:auto; }
+.guardian-active .equipment-goal { display:none; }
+@media (min-width:601px) { .guardian-active .field-menu { display:flex; gap:6px; } .guardian-active .field-menu button { width:48px; } }
+@media (max-height:740px) {
+  .guardian-build-panel { bottom:110px; padding:6px 8px; }
+  .guardian-tabs { margin:0; }
+  .guardian-catalog canvas { height:32px; width:52px; }
+  .guardian-build-hint small { display:none; }
+}
+
+/* 顶部使用秘境专属状态，森林资源栏让出位置。 */
+.guardian-active .game-top, .guardian-active .hud-resources>.resource-pill { display:none; }
+.guardian-active .hud-resources { top:max(12px,env(safe-area-inset-top)); }
+.guardian-active .quest { top:max(12px,env(safe-area-inset-top)); width:calc(100% - 86px); }
+.guardian-active .boss-hud { top:76px; }
+
+/* 准备与波间没有驾驶 HUD，建造栏下移释放小屏地图，功能菜单仍保留独立点击空间。 */
+.guardian-active[data-state='realm'] .guardian-build-panel { bottom:104px; }
+@media (max-width:600px) { .guardian-active[data-state='realm'] .guardian-build-panel { bottom:80px; } }
+
+/* 波间只显示可点击的倒计时，战斗中收起常驻状态栏。 */
+.guardian-wave-controls { position:absolute; bottom:128px; left:12px; right:12px; display:flex; align-items:center; flex-direction:column; gap:6px; pointer-events:none; }
+.guardian-wave-controls button, .guardian-wave-controls .guardian-placement-hint { pointer-events:auto; }
+.guardian-next-wave { min-height:44px; padding:8px 16px; border:2px solid #55745a; border-radius:12px; background:#f7f2dcf5; color:#345644; font-size:13px; font-weight:700; box-shadow:0 3px 0 #36564130; }
+.guardian-wave-controls .guardian-placement-hint { padding:4px 8px; border:1px solid #78936d; border-radius:10px; background:#f7f2dcf5; color:#345644; }
+.guardian-command-actions { display:flex; align-items:center; gap:6px; font-size:11px; }
+.guardian-command-actions button { min-height:44px; padding:6px 10px; border:1px solid #9db38c; border-radius:8px; background:#e2ebd2; color:#345644; font:700 12px var(--game-font-family); }
+.guardian-command-actions button.primary { background:#355c46; color:#fff4d7; }
+/* 选好装备后使用紧凑提示让出地面，南侧格位不被目录遮住。 */
+.guardian-placement-hint { display:flex; align-items:center; justify-content:space-between; gap:6px; font-size:11px; }
+.guardian-placement-hint button, .guardian-place-button { min-height:44px; padding:4px 10px; border:1px solid #9db38c; border-radius:8px; background:#e2ebd2; color:#345644; }
+.guardian-place-button { width:100%; margin-top:6px; }
+.guardian-command-actions [data-guardian-close] { min-width:44px; padding:0; background:transparent; border:0; font-size:22px; }
+.guardian-active[data-state='realm'] .guardian-wave-controls { bottom:104px; }
+@media (max-width:600px) { .guardian-active[data-state='realm'] .guardian-wave-controls { bottom:80px; } }
+@media (max-height:740px) { .guardian-wave-controls { bottom:110px; } }
+/* 守护波次、秘境币和女神生命集中在同一顶部条，避免额外浮层遮住格位。 */
+.guardian-active .quest { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:5px 7px; }
+.guardian-active #quest-count { padding-left:0; font-size:11px; }
+.guardian-live-status { grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center; gap:8px; border-top:1px solid #d1dcc140; padding-top:6px; font-size:11px; }
+.guardian-live-status b { font-size:12px; font-variant-numeric:tabular-nums; }
+.guardian-wallet { color:#f2d895; white-space:nowrap; }
+.guardian-health { display:grid; grid-template-columns:auto auto; gap:3px 5px; align-items:center; color:#e6eed8; }
+.guardian-health progress { grid-column:1 / -1; width:100%; height:5px; appearance:none; border:0; border-radius:3px; overflow:hidden; background:#213c2f; }
+.guardian-health progress::-webkit-progress-bar { background:#213c2f; }
+.guardian-health progress::-webkit-progress-value { background:#a9c989; }
+.guardian-health progress::-moz-progress-bar { background:#a9c989; }
+.guardian-active .boss-hud { top:116px; }
+/* 守护顶栏沿生命卡宽度压缩为两行，减少对上方布防格的遮挡。 */
+.game-frame.guardian-active #quest { left:max(10px,env(safe-area-inset-left)); width:min(var(--hud-card-width),calc(100% - 20px)); max-width:calc(100% - 20px); box-sizing:border-box; padding:6px 8px; gap:4px 6px; line-height:16px; }
+.game-frame.guardian-active #quest > div:first-child { min-width:0; }
+.game-frame.guardian-active #quest-title { font-size:11px; line-height:16px; }
+/* 操作提示保留供读屏读取，布防动作继续由地面格位和底部按钮引导。 */
+.game-frame.guardian-active #quest-detail { position:absolute; width:1px; height:1px; padding:0; margin:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.game-frame.guardian-active .guardian-live-status { gap:6px; padding-top:0; border-top:0; font-size:10px; line-height:14px; }
+.game-frame.guardian-active .guardian-live-status b { font-size:11px; }
+.game-frame.guardian-active .guardian-wallet { color:#76552e; }
+.game-frame.guardian-active .guardian-health { color:var(--ui-text,#314b3c); gap:2px 4px; white-space:nowrap; }
+.game-frame.guardian-active .guardian-health progress { height:4px; background:#d0dbb8; }
+.game-frame.guardian-active .guardian-health progress::-webkit-progress-bar { background:#d0dbb8; }
+.game-frame.guardian-active .guardian-health progress::-webkit-progress-value { background:#689368; }
+.game-frame.guardian-active .guardian-health progress::-moz-progress-bar { background:#689368; }
+/* 属性按当前/下级对齐，只有实际提升项加深；长面板在内部滚动。 */
+/* 横屏详情会覆盖底部驾驶栏，整体层级应保证升级和回收按钮能直接点击。 */
+.guardian-build-panel { z-index:4; max-height:calc(100% - 220px); overflow-y:auto; overscroll-behavior:contain; }
+.guardian-build-head { position:sticky; top:-9px; z-index:1; background:#f7f2dc; padding:3px 0 6px; }
+.guardian-build-head>div:first-child { min-width:0; }
+.guardian-stats { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; font-variant-numeric:tabular-nums; }
+.guardian-stats th,.guardian-stats td { padding:5px 3px; border-bottom:1px solid #bdc9a780; text-align:right; }
+.guardian-stats th:first-child { text-align:left; font-weight:400; }
+.guardian-stats thead { color:#728162; font-size:11px; }
+.guardian-stats .improved { color:#346a46; font-weight:700; }
+/* 属性本身就是升级入口，费用与等级独立显示，窄屏也保留四十四像素触点。 */
+.guardian-stats th button { width:100%; min-width:98px; text-align:left; padding:5px 6px; border:1px solid #9db38c; border-radius:7px; background:#e2ebd2; color:#345644; }
+.guardian-stats th button span,.guardian-stats th button>small { display:block; }
+.guardian-stats th button small { font-size:10px; font-weight:400; }
+.guardian-stats th button>small { margin-top:3px; color:#536b46; }
+.guardian-weapon-note,.guardian-upgrade-note,.guardian-catalog-title,.guardian-modules>p { font-size:11px; color:#64765c; line-height:1.5; margin:7px 0; }
+.guardian-actions { position:sticky; bottom:-7px; padding:7px 0; margin-bottom:0; background:#f7f2dc; }
+.guardian-module { margin-top:5px; border-top:1px solid #bcc9a9; }
+.guardian-module summary { min-height:44px; align-content:center; cursor:pointer; font-size:12px; font-weight:700; }
+.guardian-module label { display:flex; align-items:center; gap:8px; font-size:12px; }
+.guardian-module select { flex:1; min-width:0; min-height:44px; padding:5px; border:1px solid #9db38c; border-radius:7px; background:#fff9e7; color:#345644; }
+@media(max-height:500px) {
+  .guardian-build-panel { max-height:calc(100% - 140px); bottom:20px; }
+  .guardian-active[data-state='realm'] .guardian-build-panel { bottom:20px; }
+}

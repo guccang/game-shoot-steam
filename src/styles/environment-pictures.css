@@ -1,0 +1,109 @@
+/* 手机内按季节、昼夜、天气排列，沿用奶油底与森林绿轮廓。 */
+.utility-buttons { align-items:center; }
+.utility-buttons .icon-button { width:44px;height:44px;flex:0 0 44px; }
+.environment-picture {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:44px;height:44px;flex:0 0 44px;padding:1px 3px;border:1px solid #d6dfbc;
+  border-radius:12px;background:#fffceded;color:#365840;box-shadow:0 2px 0 #45603e22;
+  cursor:pointer;touch-action:manipulation;
+}
+.environment-picture img { width:28px;height:28px;pointer-events:none; }
+/* 默认图标隐藏文字，手机环境区在下方显示当前中文状态。 */
+.environment-picture span { display:none; }
+.environment-picture:hover { background:#ecf1d9; }
+.environment-picture:focus-visible { outline:3px solid #b49a55;outline-offset:2px; }
+.environment-picture:active { transform:translateY(1px); }
+/* 手机环境区使用独立稳定节点，图标与圆环在上、当前中文状态在下。 */
+.phone-environment { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 16px; }
+.phone-environment[hidden] { display:none; }
+.phone-environment .environment-picture { width:100%;height:72px;min-height:72px;gap:8px;padding:7px 4px; }
+.phone-environment .environment-picture span { display:block;font-size:12px;line-height:18px; }
+.phone-environment .season-clock-ring { top:22px; }
+/* 数值过长时收拢资源数字，按钮始终保持44像素触屏目标。 */
+.hud-resources .resource-pill { flex-shrink:1; }
+.hud-resources .resource-pill b { min-width:0;overflow:hidden;text-overflow:ellipsis; }
+/* 窄屏资源和设置按钮始终同行，收紧尺寸而不截断整数缩写。 */
+@media (max-width:430px) {
+  .hud-resources { left:10px;right:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:4px; }
+  .hud-resources .resource-pill { white-space:nowrap;padding:2px 3px 2px 1px;gap:2px;height:34px; }
+  .hud-resources .resource-pill b { font-size:11px; }
+  .hud-resources .resource-info-button { width:24px;height:30px;flex:0 0 24px; }
+  .hud-resources .resource-art { width:23px;height:23px; }
+  .hud-resources .resource-pill b { overflow:visible;text-overflow:clip; }
+  .hud-resources .utility-buttons { grid-column:3;justify-self:end;margin-left:0;gap:3px;flex-wrap:nowrap; }
+  .hud-resources .utility-buttons button { width:36px;height:40px;flex:0 0 36px;padding:1px; }
+}
+
+/* 四季一行并列，避免小屏把冬季独占一整行。 */
+.environment-options[aria-label="森林景色"] { display:grid;grid-template-columns:repeat(4,minmax(0,1fr)); }
+.environment-options[aria-label="森林景色"] button { min-width:0; }
+
+/* 季节圆环围绕原图标，不挤占44像素触控区或覆盖短标签。 */
+#season-picture, #time-picture, #weather-picture { position:relative; }
+.season-clock-ring { position:absolute;width:34px;height:34px;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-90deg);pointer-events:none;fill:none;stroke-width:1.8; }
+.season-clock-track { stroke:#d4dfbc; }
+#season-picture-progress, #time-picture-progress, #weather-picture-progress { stroke:#587d52;stroke-dasharray:100;stroke-dashoffset:0;stroke-linecap:round; }
+
+/* 固定时段与天气保留浅色圆环，明确表示各自自动轮转已暂停。 */
+#time-picture[data-running="false"] #time-picture-progress,
+#weather-picture[data-running="false"] #weather-picture-progress { opacity:.32;stroke-dasharray:3 3; }
+
+/* 设置中展示具体时长，双列标签在窄屏也保留可输入空间。 */
+.timing-grid { display:grid;gap:10px; }
+.timing-grid label { display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px; }
+.timing-grid input { box-sizing:border-box;width:80px;min-height:44px;padding:8px;border:1px solid #bdcba6;border-radius:9px;background:#fffef5;color:#315443;font:inherit; }
+.timing-actions { display:flex;gap:8px;margin-top:12px; }
+.timing-actions button { flex:1;min-height:44px;border:1px solid #b6c59e;border-radius:9px;background:#eef2df;color:#365840;font:inherit;font-size:12px;padding:8px; }
+#timing-save { background:#365d46;color:#fffbed; }
+#timing-feedback { font-size:12px;color:#526d42;min-height:1em; }
+#environment-countdown { font-variant-numeric:tabular-nums;line-height:1.8; }
+/* 档案是设置的次级页面，用稀疏卡片与条形占比表达，避免长篇规则。 */
+.chronicle-cards { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+.chronicle-cards section { display:flex;flex-direction:column;gap:8px;background:#edf1dd;border:1px solid #d5dfbe;border-radius:12px;padding:14px; }
+.chronicle-cards strong { color:#315443;font-size:20px; }
+.chronicle-cards small,.chronicle-cards span { font-size:11px;color:#7b8c66; }
+.chronicle-weather-row { display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #e0e5ce; }
+.chronicle-weather-row>div { flex:1;min-width:0; }
+.chronicle-weather-row b,.chronicle-weather-row small { display:block;font-size:12px; }
+.chronicle-weather-row small { margin:3px 0;color:#7b8c66;font-size:10px; }
+.chronicle-weather-row meter { width:100%;height:9px;accent-color:#739763; }
+.chronicle-weather-row strong { font-size:13px;min-width:45px;text-align:right; }
+/* 累计统计使用固定小规模行；小屏保留标签和整数，长数值不撑宽弹窗。 */
+#chronicle-statistics h3 { margin:20px 0 10px;font-size:15px;color:#315443; }
+#chronicle-combat { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.chronicle-stat-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px; }
+.chronicle-stat-row { display:flex;align-items:center;gap:7px;min-width:0;padding:10px 0;border-bottom:1px solid #dce3c8;font-size:13px; }
+.chronicle-stat-row .resource-art { width:26px;height:26px;flex-shrink:0; }
+.chronicle-stat-row span { flex:1;min-width:0; }
+.chronicle-stat-row strong,#chronicle-combat strong { color:#315443;font-variant-numeric:tabular-nums;overflow-wrap:anywhere; }
+.chronicle-rules { margin:16px 0 8px;font-size:12px;color:#607451; }
+.chronicle-rules summary { cursor:pointer;min-height:32px;display:flex;align-items:center; }
+.chronicle-rules p { line-height:1.8; }
+/* 装备明细只占一份表格，名称可换行，手机保留两列独立数字。 */
+/* 固定标题与关闭区，长表格仅在下方滚动，不让关闭按钮遮住页签和数量。 */
+#chronicle-dialog { padding:0;overflow:hidden; }
+#chronicle-dialog[open] { display:flex;flex-direction:column; }
+.chronicle-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border-bottom:1px solid #dce3c8;flex:none; }
+.chronicle-heading h2 { margin:4px 0 0; }
+#chronicle-dialog .close { position:static;float:none;margin:0;width:44px;height:44px;flex:0 0 44px; }
+.chronicle-scroll { min-height:0;overflow:auto;overscroll-behavior:contain;overflow-anchor:none;padding:20px 22px; }
+.chronicle-equipment-switch { display:flex;gap:8px;margin-bottom:10px; }
+.chronicle-equipment-switch button { transition:none;min-height:44px;flex:1;border:1px solid #9bb18a;border-radius:12px;background:#f6f4df;color:#315443; }
+.chronicle-equipment-switch button[aria-pressed="true"] { background:#315c43;color:#fffce9; }
+.chronicle-equipment-table { width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px; }
+.chronicle-equipment-table th,.chronicle-equipment-table td { padding:12px 4px;border-bottom:1px solid #dce3c8;vertical-align:middle; }
+.chronicle-equipment-table th { text-align:left;font-weight:500;color:#315443;overflow-wrap:anywhere; }
+.chronicle-equipment-table th:first-child { width:52%; }
+.chronicle-equipment-table td,.chronicle-equipment-table thead th:not(:first-child) { text-align:right;font-variant-numeric:tabular-nums; }
+@media(max-width:420px){ .chronicle-stat-grid { grid-template-columns:minmax(0,1fr); } }
+#debug-content[hidden] { display:none; }
+#debug-content { border:1px dashed #b9c5a0;border-radius:12px;padding:12px;margin:12px 0; }
+#debug-content .primary { margin-top:10px; }
+@media (max-width:350px) { .chronicle-cards { grid-template-columns:1fr; } }
+
+/* 最窄手机为万位小数保留宽度，不缩小数字或环境按钮。 */
+@media (max-width:350px) {
+  .hud-resources { left:4px;right:4px;gap:2px; }
+  .hud-resources .resource-pill { padding-right:1px; }
+  .hud-resources .utility-buttons { gap:1px; }
+}

@@ -1,0 +1,32 @@
+{
+  "request_id": "vid-ztj-forest-title-20261023-v1",
+  "prompt": "Create one continuous exactly 10 second seamless looping title background for the cozy 2D game Forest Patrol. Match the provided first and last frame precisely: original orange tabby cat, green scarf, small handheld equipment, village mail shelter, golden wheat, broadleaf trees, pale sandy river bank and turquoise water. Preserve the original flat hand-drawn forest storybook art, dark forest green outlines, muted botanical greens and warm cream yellow, three-quarter overhead game view, restrained three-tone shading, soft contact shadows. Fixed camera, fixed framing and character scale, NO zoom, NO cut, NO parallax camera move. 0-3 seconds: calm campsite, cat gently breathing with planted feet. 3-7 seconds: one subtle natural blink, tiny tail and scarf sway, leaves move gently and ripples flow softly. Cat remains front-facing with the same anatomy, outfit and handheld prop, no shooting or new props, no walking or translation. 7-10 seconds: settle smoothly into exactly the initial posture, with foliage and water phases returning gently for an invisible loop. Reserve upper and lower areas for HTML menus; keep the cat in its original middle location. All motion must be real localized organic motion, not whole-image zooming, shaking, stretching or rotation. No new characters, no extra limbs, no face redesign, no realistic fur, no 3D, no dramatic lighting, no explosions, no text, no letters, no numbers, no watermark, no logo, no UI. The final frame must match the supplied last frame without freeze-frame holds.",
+  "reference_sha256": "e7218172b815cb8143a0e1b1a95a9021585311bfc6ae2d92188a1a8d2c3210bf",
+  "preview": {
+    "dry_run": true,
+    "method": "POST",
+    "url": "http://10.1.9.154:8091/v1/video-generations",
+    "body": {
+      "request_id": "vid-ztj-forest-title-20261023-v1",
+      "model": "seedance-2.5",
+      "mode": "first_last_frame",
+      "prompt": "Create one continuous exactly 10 second seamless looping title background for the cozy 2D game Forest Patrol. Match the provided first and last frame precisely: original orange tabby cat, green scarf, small handheld equipment, village mail shelter, golden wheat, broadleaf trees, pale sandy river bank and turquoise water. Preserve the original flat hand-drawn forest storybook art, dark forest green outlines, muted botanical greens and warm cream yellow, three-quarter overhead game view, restrained three-tone shading, soft contact shadows. Fixed camera, fixed framing and character scale, NO zoom, NO cut, NO parallax camera move. 0-3 seconds: calm campsite, cat gently breathing with planted feet. 3-7 seconds: one subtle natural blink, tiny tail and scarf sway, leaves move gently and ripples flow softly. Cat remains front-facing with the same anatomy, outfit and handheld prop, no shooting or new props, no walking or translation. 7-10 seconds: settle smoothly into exactly the initial posture, with foliage and water phases returning gently for an invisible loop. Reserve upper and lower areas for HTML menus; keep the cat in its original middle location. All motion must be real localized organic motion, not whole-image zooming, shaking, stretching or rotation. No new characters, no extra limbs, no face redesign, no realistic fur, no 3D, no dramatic lighting, no explosions, no text, no letters, no numbers, no watermark, no logo, no UI. The final frame must match the supplied last frame without freeze-frame holds.",
+      "inputs": [
+        {
+          "type": "image",
+          "role": "first_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-100016-97dly2/e7218172b815cb81-reference.png"
+        },
+        {
+          "type": "image",
+          "role": "last_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-100016-97dly2/e7218172b815cb81-reference.png"
+        }
+      ],
+      "resolution": "720p",
+      "ratio": "9:16",
+      "duration": 10,
+      "generate_audio": false
+    }
+  }
+}

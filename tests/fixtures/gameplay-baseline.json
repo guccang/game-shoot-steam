@@ -1,0 +1,2133 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "recovery": false,
+      "difficulty": {
+        "total": 4,
+        "maxAlive": 4,
+        "interval": 0.66,
+        "batch": 3,
+        "health": 0.55,
+        "damage": 1,
+        "speed": 1,
+        "rankBonus": 0,
+        "rankCap": 0.76
+      },
+      "reward": 12
+    },
+    {
+      "wave": 1,
+      "recovery": true,
+      "difficulty": {
+        "total": 4,
+        "maxAlive": 4,
+        "interval": 0.66,
+        "batch": 3,
+        "health": 0.44000000000000006,
+        "damage": 0.8,
+        "speed": 1,
+        "rankBonus": 0,
+        "rankCap": 0.76
+      },
+      "reward": 12
+    },
+    {
+      "wave": 2,
+      "recovery": false,
+      "difficulty": {
+        "total": 8,
+        "maxAlive": 8,
+        "interval": 0.5940000000000001,
+        "batch": 3,
+        "health": 0.784,
+        "damage": 1.1749999999999998,
+        "speed": 1.055,
+        "rankBonus": 0.008,
+        "rankCap": 0.94
+      },
+      "reward": 18
+    },
+    {
+      "wave": 2,
+      "recovery": true,
+      "difficulty": {
+        "total": 8,
+        "maxAlive": 8,
+        "interval": 0.5940000000000001,
+        "batch": 3,
+        "health": 0.7056,
+        "damage": 1.0574999999999999,
+        "speed": 1.055,
+        "rankBonus": 0.008,
+        "rankCap": 0.94
+      },
+      "reward": 18
+    },
+    {
+      "wave": 3,
+      "recovery": false,
+      "difficulty": {
+        "total": 16,
+        "maxAlive": 16,
+        "interval": 0.5346000000000001,
+        "batch": 3,
+        "health": 1.054,
+        "damage": 1.3800000000000001,
+        "speed": 1.11,
+        "rankBonus": 0.016,
+        "rankCap": 0.999
+      },
+      "reward": 26
+    },
+    {
+      "wave": 3,
+      "recovery": true,
+      "difficulty": {
+        "total": 16,
+        "maxAlive": 16,
+        "interval": 0.5346000000000001,
+        "batch": 3,
+        "health": 1.0013,
+        "damage": 1.311,
+        "speed": 1.11,
+        "rankBonus": 0.016,
+        "rankCap": 0.999
+      },
+      "reward": 26
+    },
+    {
+      "wave": 5,
+      "recovery": false,
+      "difficulty": {
+        "total": 24,
+        "maxAlive": 24,
+        "interval": 0.433026,
+        "batch": 4,
+        "health": 1.48,
+        "damage": 1.8800000000000001,
+        "speed": 1.22,
+        "rankBonus": 0.032,
+        "rankCap": 0.999
+      },
+      "reward": 48
+    },
+    {
+      "wave": 5,
+      "recovery": true,
+      "difficulty": {
+        "total": 24,
+        "maxAlive": 24,
+        "interval": 0.433026,
+        "batch": 4,
+        "health": 1.48,
+        "damage": 1.8800000000000001,
+        "speed": 1.22,
+        "rankBonus": 0.032,
+        "rankCap": 0.999
+      },
+      "reward": 48
+    },
+    {
+      "wave": 10,
+      "recovery": false,
+      "difficulty": {
+        "total": 24,
+        "maxAlive": 24,
+        "interval": 0.36,
+        "batch": 6,
+        "health": 2.08,
+        "damage": 3.6550000000000002,
+        "speed": 1.495,
+        "rankBonus": 0.07200000000000001,
+        "rankCap": 0.999
+      },
+      "reward": 108
+    },
+    {
+      "wave": 10,
+      "recovery": true,
+      "difficulty": {
+        "total": 24,
+        "maxAlive": 24,
+        "interval": 0.36,
+        "batch": 6,
+        "health": 2.08,
+        "damage": 3.6550000000000002,
+        "speed": 1.495,
+        "rankBonus": 0.07200000000000001,
+        "rankCap": 0.999
+      },
+      "reward": 108
+    },
+    {
+      "wave": 16,
+      "recovery": false,
+      "difficulty": {
+        "total": 8,
+        "maxAlive": 8,
+        "interval": 0.36,
+        "batch": 8,
+        "health": 2.8,
+        "damage": 6.7749999999999995,
+        "speed": 1.825,
+        "rankBonus": 0.12,
+        "rankCap": 0.999
+      },
+      "reward": 156
+    },
+    {
+      "wave": 16,
+      "recovery": true,
+      "difficulty": {
+        "total": 8,
+        "maxAlive": 8,
+        "interval": 0.36,
+        "batch": 8,
+        "health": 2.8,
+        "damage": 6.7749999999999995,
+        "speed": 1.825,
+        "rankBonus": 0.12,
+        "rankCap": 0.999
+      },
+      "reward": 156
+    },
+    {
+      "wave": 30,
+      "recovery": false,
+      "difficulty": {
+        "total": 32,
+        "maxAlive": 32,
+        "interval": 0.36,
+        "batch": 8,
+        "health": 4.48,
+        "damage": 18.255,
+        "speed": 2.4,
+        "rankBonus": 0.16,
+        "rankCap": 0.999
+      },
+      "reward": 268
+    },
+    {
+      "wave": 30,
+      "recovery": true,
+      "difficulty": {
+        "total": 32,
+        "maxAlive": 32,
+        "interval": 0.36,
+        "batch": 8,
+        "health": 4.48,
+        "damage": 18.255,
+        "speed": 2.4,
+        "rankBonus": 0.16,
+        "rankCap": 0.999
+      },
+      "reward": 268
+    },
+    {
+      "wave": 100,
+      "recovery": false,
+      "difficulty": {
+        "total": 144,
+        "maxAlive": 96,
+        "interval": 0.36,
+        "batch": 8,
+        "health": 12.879999999999999,
+        "damage": 163.855,
+        "speed": 2.4,
+        "rankBonus": 0.16,
+        "rankCap": 0.999
+      },
+      "reward": 828
+    },
+    {
+      "wave": 100,
+      "recovery": true,
+      "difficulty": {
+        "total": 144,
+        "maxAlive": 96,
+        "interval": 0.36,
+        "batch": 8,
+        "health": 12.879999999999999,
+        "damage": 163.855,
+        "speed": 2.4,
+        "rankBonus": 0.16,
+        "rankCap": 0.999
+      },
+      "reward": 828
+    }
+  ],
+  "realms": [
+    {
+      "mode": "rogue",
+      "stage": 1,
+      "encounter": "swarm",
+      "spec": {
+        "total": 24,
+        "alive": 18,
+        "hp": 32,
+        "damage": 6,
+        "speed": 44,
+        "spacing": 0.24,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 2,
+        "crystal": 12,
+        "core": 0
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 1,
+      "encounter": "hunters",
+      "spec": {
+        "total": 24,
+        "alive": 18,
+        "hp": 32,
+        "damage": 6,
+        "speed": 57.2,
+        "spacing": 0.24,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 2,
+        "crystal": 12,
+        "core": 0
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 1,
+      "encounter": "elite",
+      "spec": {
+        "total": 24,
+        "alive": 18,
+        "hp": 32,
+        "damage": 6,
+        "speed": 39.6,
+        "spacing": 0.24,
+        "boss": false,
+        "elite": true
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 2,
+        "crystal": 12,
+        "core": 0
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 3,
+      "encounter": "swarm",
+      "spec": {
+        "total": 36,
+        "alive": 22,
+        "hp": 42,
+        "damage": 7.343999999999999,
+        "speed": 47,
+        "spacing": 0.22399999999999998,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 2,
+        "crystal": 12,
+        "core": 0
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 3,
+      "encounter": "hunters",
+      "spec": {
+        "total": 36,
+        "alive": 22,
+        "hp": 42,
+        "damage": 7.343999999999999,
+        "speed": 61.1,
+        "spacing": 0.22399999999999998,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 2,
+        "crystal": 12,
+        "core": 0
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 3,
+      "encounter": "elite",
+      "spec": {
+        "total": 36,
+        "alive": 22,
+        "hp": 42,
+        "damage": 7.343999999999999,
+        "speed": 42.300000000000004,
+        "spacing": 0.22399999999999998,
+        "boss": false,
+        "elite": true
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 2,
+        "crystal": 12,
+        "core": 0
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 5,
+      "encounter": "swarm",
+      "spec": {
+        "total": 48,
+        "alive": 26,
+        "hp": 56,
+        "damage": 8.975999999999999,
+        "speed": 50,
+        "spacing": 0.208,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 2,
+        "crystal": 12,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 5,
+      "encounter": "hunters",
+      "spec": {
+        "total": 48,
+        "alive": 26,
+        "hp": 56,
+        "damage": 8.975999999999999,
+        "speed": 65,
+        "spacing": 0.208,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 2,
+        "crystal": 12,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 5,
+      "encounter": "elite",
+      "spec": {
+        "total": 48,
+        "alive": 26,
+        "hp": 56,
+        "damage": 8.975999999999999,
+        "speed": 45,
+        "spacing": 0.208,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 2,
+        "crystal": 12,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 10,
+      "encounter": "swarm",
+      "spec": {
+        "total": 78,
+        "alive": 36,
+        "hp": 103,
+        "damage": 14.316,
+        "speed": 57.5,
+        "spacing": 0.16799999999999998,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 3,
+        "crystal": 16,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 10,
+      "encounter": "hunters",
+      "spec": {
+        "total": 78,
+        "alive": 36,
+        "hp": 103,
+        "damage": 14.316,
+        "speed": 74.75,
+        "spacing": 0.16799999999999998,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 3,
+        "crystal": 16,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 10,
+      "encounter": "elite",
+      "spec": {
+        "total": 78,
+        "alive": 36,
+        "hp": 103,
+        "damage": 14.316,
+        "speed": 51.75,
+        "spacing": 0.16799999999999998,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 3,
+        "crystal": 16,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 50,
+      "encounter": "swarm",
+      "spec": {
+        "total": 318,
+        "alive": 72,
+        "hp": 1174,
+        "damage": 121.83600000000001,
+        "speed": 88,
+        "spacing": 0.12,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 7,
+        "crystal": 41,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 50,
+      "encounter": "hunters",
+      "spec": {
+        "total": 318,
+        "alive": 72,
+        "hp": 1174,
+        "damage": 121.83600000000001,
+        "speed": 114.4,
+        "spacing": 0.12,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 7,
+        "crystal": 41,
+        "core": 1
+      }
+    },
+    {
+      "mode": "rogue",
+      "stage": 50,
+      "encounter": "elite",
+      "spec": {
+        "total": 318,
+        "alive": 72,
+        "hp": 1174,
+        "damage": 121.83600000000001,
+        "speed": 79.2,
+        "spacing": 0.12,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 7,
+        "crystal": 41,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 1,
+      "encounter": "swarm",
+      "spec": {
+        "total": 24,
+        "alive": 18,
+        "hp": 38,
+        "damage": 6.5,
+        "speed": 44,
+        "spacing": 0.24,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 3,
+        "crystal": 3,
+        "core": 0
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 1,
+      "encounter": "hunters",
+      "spec": {
+        "total": 24,
+        "alive": 18,
+        "hp": 38,
+        "damage": 6.5,
+        "speed": 44,
+        "spacing": 0.24,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 3,
+        "crystal": 3,
+        "core": 0
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 1,
+      "encounter": "elite",
+      "spec": {
+        "total": 24,
+        "alive": 18,
+        "hp": 38,
+        "damage": 6.5,
+        "speed": 44,
+        "spacing": 0.24,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 3,
+        "crystal": 3,
+        "core": 0
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 3,
+      "encounter": "swarm",
+      "spec": {
+        "total": 36,
+        "alive": 22,
+        "hp": 50,
+        "damage": 7.9559999999999995,
+        "speed": 47,
+        "spacing": 0.22399999999999998,
+        "boss": false,
+        "elite": true
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 3,
+        "crystal": 3,
+        "core": 0
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 3,
+      "encounter": "hunters",
+      "spec": {
+        "total": 36,
+        "alive": 22,
+        "hp": 50,
+        "damage": 7.9559999999999995,
+        "speed": 47,
+        "spacing": 0.22399999999999998,
+        "boss": false,
+        "elite": true
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 3,
+        "crystal": 3,
+        "core": 0
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 3,
+      "encounter": "elite",
+      "spec": {
+        "total": 36,
+        "alive": 22,
+        "hp": 50,
+        "damage": 7.9559999999999995,
+        "speed": 47,
+        "spacing": 0.22399999999999998,
+        "boss": false,
+        "elite": true
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 3,
+        "crystal": 3,
+        "core": 0
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 5,
+      "encounter": "swarm",
+      "spec": {
+        "total": 48,
+        "alive": 26,
+        "hp": 67,
+        "damage": 9.724,
+        "speed": 50,
+        "spacing": 0.208,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 3,
+        "crystal": 3,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 5,
+      "encounter": "hunters",
+      "spec": {
+        "total": 48,
+        "alive": 26,
+        "hp": 67,
+        "damage": 9.724,
+        "speed": 50,
+        "spacing": 0.208,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 3,
+        "crystal": 3,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 5,
+      "encounter": "elite",
+      "spec": {
+        "total": 48,
+        "alive": 26,
+        "hp": 67,
+        "damage": 9.724,
+        "speed": 50,
+        "spacing": 0.208,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 3,
+        "crystal": 3,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 10,
+      "encounter": "swarm",
+      "spec": {
+        "total": 78,
+        "alive": 36,
+        "hp": 123,
+        "damage": 15.509,
+        "speed": 57.5,
+        "spacing": 0.16799999999999998,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 4,
+        "crystal": 4,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 10,
+      "encounter": "hunters",
+      "spec": {
+        "total": 78,
+        "alive": 36,
+        "hp": 123,
+        "damage": 15.509,
+        "speed": 57.5,
+        "spacing": 0.16799999999999998,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 4,
+        "crystal": 4,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 10,
+      "encounter": "elite",
+      "spec": {
+        "total": 78,
+        "alive": 36,
+        "hp": 123,
+        "damage": 15.509,
+        "speed": 57.5,
+        "spacing": 0.16799999999999998,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 4,
+        "crystal": 4,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 50,
+      "encounter": "swarm",
+      "spec": {
+        "total": 318,
+        "alive": 72,
+        "hp": 1394,
+        "damage": 131.989,
+        "speed": 88,
+        "spacing": 0.12,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 11,
+        "crystal": 11,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 50,
+      "encounter": "hunters",
+      "spec": {
+        "total": 318,
+        "alive": 72,
+        "hp": 1394,
+        "damage": 131.989,
+        "speed": 88,
+        "spacing": 0.12,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 11,
+        "crystal": 11,
+        "core": 1
+      }
+    },
+    {
+      "mode": "tower",
+      "stage": 50,
+      "encounter": "elite",
+      "spec": {
+        "total": 318,
+        "alive": 72,
+        "hp": 1394,
+        "damage": 131.989,
+        "speed": 88,
+        "spacing": 0.12,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 11,
+        "crystal": 11,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 1,
+      "encounter": "swarm",
+      "spec": {
+        "total": 12,
+        "alive": 4,
+        "hp": 18,
+        "damage": 6,
+        "speed": 44,
+        "spacing": 1.8,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 12,
+        "crystal": 2,
+        "core": 0
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 1,
+      "encounter": "hunters",
+      "spec": {
+        "total": 12,
+        "alive": 4,
+        "hp": 18,
+        "damage": 6,
+        "speed": 44,
+        "spacing": 1.8,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 12,
+        "crystal": 2,
+        "core": 0
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 1,
+      "encounter": "elite",
+      "spec": {
+        "total": 12,
+        "alive": 4,
+        "hp": 18,
+        "damage": 6,
+        "speed": 44,
+        "spacing": 1.8,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 250,
+        "wood": 111,
+        "parts": 12,
+        "crystal": 2,
+        "core": 0
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 3,
+      "encounter": "swarm",
+      "spec": {
+        "total": 24,
+        "alive": 8,
+        "hp": 23,
+        "damage": 7.343999999999999,
+        "speed": 47,
+        "spacing": 1.4516129032258065,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 12,
+        "crystal": 2,
+        "core": 0
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 3,
+      "encounter": "hunters",
+      "spec": {
+        "total": 24,
+        "alive": 8,
+        "hp": 23,
+        "damage": 7.343999999999999,
+        "speed": 47,
+        "spacing": 1.4516129032258065,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 12,
+        "crystal": 2,
+        "core": 0
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 3,
+      "encounter": "elite",
+      "spec": {
+        "total": 24,
+        "alive": 8,
+        "hp": 23,
+        "damage": 7.343999999999999,
+        "speed": 47,
+        "spacing": 1.4516129032258065,
+        "boss": false,
+        "elite": false
+      },
+      "reward": {
+        "coins": 300,
+        "wood": 133,
+        "parts": 12,
+        "crystal": 2,
+        "core": 0
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 5,
+      "encounter": "swarm",
+      "spec": {
+        "total": 36,
+        "alive": 12,
+        "hp": 31,
+        "damage": 8.975999999999999,
+        "speed": 50,
+        "spacing": 1.2162162162162162,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 12,
+        "crystal": 2,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 5,
+      "encounter": "hunters",
+      "spec": {
+        "total": 36,
+        "alive": 12,
+        "hp": 31,
+        "damage": 8.975999999999999,
+        "speed": 50,
+        "spacing": 1.2162162162162162,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 12,
+        "crystal": 2,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 5,
+      "encounter": "elite",
+      "spec": {
+        "total": 36,
+        "alive": 12,
+        "hp": 31,
+        "damage": 8.975999999999999,
+        "speed": 50,
+        "spacing": 1.2162162162162162,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 350,
+        "wood": 155,
+        "parts": 12,
+        "crystal": 2,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 10,
+      "encounter": "swarm",
+      "spec": {
+        "total": 66,
+        "alive": 22,
+        "hp": 57,
+        "damage": 14.316,
+        "speed": 57.5,
+        "spacing": 0.8653846153846154,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 16,
+        "crystal": 3,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 10,
+      "encounter": "hunters",
+      "spec": {
+        "total": 66,
+        "alive": 22,
+        "hp": 57,
+        "damage": 14.316,
+        "speed": 57.5,
+        "spacing": 0.8653846153846154,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 16,
+        "crystal": 3,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 10,
+      "encounter": "elite",
+      "spec": {
+        "total": 66,
+        "alive": 22,
+        "hp": 57,
+        "damage": 14.316,
+        "speed": 57.5,
+        "spacing": 0.8653846153846154,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 618,
+        "wood": 273,
+        "parts": 16,
+        "crystal": 3,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 50,
+      "encounter": "swarm",
+      "spec": {
+        "total": 306,
+        "alive": 72,
+        "hp": 646,
+        "damage": 121.83600000000001,
+        "speed": 88,
+        "spacing": 0.35,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 41,
+        "crystal": 7,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 50,
+      "encounter": "hunters",
+      "spec": {
+        "total": 306,
+        "alive": 72,
+        "hp": 646,
+        "damage": 121.83600000000001,
+        "speed": 88,
+        "spacing": 0.35,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 41,
+        "crystal": 7,
+        "core": 1
+      }
+    },
+    {
+      "mode": "guardian",
+      "stage": 50,
+      "encounter": "elite",
+      "spec": {
+        "total": 306,
+        "alive": 72,
+        "hp": 646,
+        "damage": 121.83600000000001,
+        "speed": 88,
+        "spacing": 0.35,
+        "boss": true,
+        "elite": false
+      },
+      "reward": {
+        "coins": 5015,
+        "wood": 2210,
+        "parts": 41,
+        "crystal": 7,
+        "core": 1
+      }
+    }
+  ],
+  "enemies": [
+    {
+      "biome": "meadow",
+      "level": 1,
+      "rank": 0,
+      "tough": false,
+      "name": "芽团·基础",
+      "color": "#9bae71",
+      "accent": "#c8da91",
+      "mass": 1,
+      "hp": 36,
+      "damage": 8,
+      "speed": 44.7,
+      "reward": 15
+    },
+    {
+      "biome": "meadow",
+      "level": 1,
+      "rank": 1,
+      "tough": true,
+      "name": "芽团·高阶",
+      "color": "#9bae71",
+      "accent": "#c8da91",
+      "mass": 1.65,
+      "hp": 56,
+      "damage": 10,
+      "speed": 40.7,
+      "reward": 24
+    },
+    {
+      "biome": "meadow",
+      "level": 1,
+      "rank": 2,
+      "tough": true,
+      "name": "芽团·精英",
+      "color": "#9bae71",
+      "accent": "#c8da91",
+      "mass": 2.5,
+      "hp": 81,
+      "damage": 13,
+      "speed": 36.7,
+      "reward": 33
+    },
+    {
+      "biome": "pine",
+      "level": 4,
+      "rank": 0,
+      "tough": false,
+      "name": "霜团·基础",
+      "color": "#7c9eaa",
+      "accent": "#b5d5d9",
+      "mass": 1,
+      "hp": 58,
+      "damage": 13,
+      "speed": 46.8,
+      "reward": 24
+    },
+    {
+      "biome": "pine",
+      "level": 4,
+      "rank": 1,
+      "tough": true,
+      "name": "霜团·高阶",
+      "color": "#7c9eaa",
+      "accent": "#b5d5d9",
+      "mass": 1.65,
+      "hp": 89,
+      "damage": 16,
+      "speed": 42.8,
+      "reward": 33
+    },
+    {
+      "biome": "pine",
+      "level": 4,
+      "rank": 2,
+      "tough": true,
+      "name": "霜团·精英",
+      "color": "#7c9eaa",
+      "accent": "#b5d5d9",
+      "mass": 2.5,
+      "hp": 130,
+      "damage": 20,
+      "speed": 38.8,
+      "reward": 42
+    },
+    {
+      "biome": "amber",
+      "level": 7,
+      "rank": 0,
+      "tough": false,
+      "name": "岩团·基础",
+      "color": "#bc9561",
+      "accent": "#e0c58c",
+      "mass": 1,
+      "hp": 79,
+      "damage": 18,
+      "speed": 48.9,
+      "reward": 33
+    },
+    {
+      "biome": "amber",
+      "level": 7,
+      "rank": 1,
+      "tough": true,
+      "name": "岩团·高阶",
+      "color": "#bc9561",
+      "accent": "#e0c58c",
+      "mass": 1.65,
+      "hp": 123,
+      "damage": 22,
+      "speed": 44.9,
+      "reward": 42
+    },
+    {
+      "biome": "amber",
+      "level": 7,
+      "rank": 2,
+      "tough": true,
+      "name": "岩团·精英",
+      "color": "#bc9561",
+      "accent": "#e0c58c",
+      "mass": 2.5,
+      "hp": 178,
+      "damage": 28,
+      "speed": 40.9,
+      "reward": 51
+    },
+    {
+      "biome": "deep",
+      "level": 10,
+      "rank": 0,
+      "tough": false,
+      "name": "幽团·基础",
+      "color": "#a08aad",
+      "accent": "#cfb5e1",
+      "mass": 1,
+      "hp": 101,
+      "damage": 22,
+      "speed": 51,
+      "reward": 42
+    },
+    {
+      "biome": "deep",
+      "level": 10,
+      "rank": 1,
+      "tough": true,
+      "name": "幽团·高阶",
+      "color": "#a08aad",
+      "accent": "#cfb5e1",
+      "mass": 1.65,
+      "hp": 156,
+      "damage": 28,
+      "speed": 47,
+      "reward": 51
+    },
+    {
+      "biome": "deep",
+      "level": 10,
+      "rank": 2,
+      "tough": true,
+      "name": "幽团·精英",
+      "color": "#a08aad",
+      "accent": "#cfb5e1",
+      "mass": 2.5,
+      "hp": 227,
+      "damage": 36,
+      "speed": 43,
+      "reward": 60
+    }
+  ],
+  "growth": [
+    {
+      "level": 1,
+      "weapon": 1,
+      "hero": 1,
+      "health": 120,
+      "armor": 240,
+      "cost": {
+        "coins": 35,
+        "wood": 14
+      }
+    },
+    {
+      "level": 4,
+      "weapon": 1.6600000000000001,
+      "hero": 1.3,
+      "health": 192,
+      "armor": 360,
+      "cost": {
+        "coins": 244,
+        "wood": 98
+      }
+    },
+    {
+      "level": 5,
+      "weapon": 2.0749999999999997,
+      "hero": 1.4560000000000002,
+      "health": 230,
+      "armor": 432,
+      "cost": {
+        "coins": 334,
+        "wood": 134
+      }
+    },
+    {
+      "level": 10,
+      "weapon": 3.5287682400000002,
+      "hero": 1.9077117509632007,
+      "health": 376,
+      "armor": 705,
+      "cost": {
+        "coins": 450,
+        "wood": 180
+      }
+    },
+    {
+      "level": 20,
+      "weapon": 10.205474594530045,
+      "hero": 3.2750317494699996,
+      "health": 1003,
+      "armor": 1880,
+      "cost": {
+        "coins": 450,
+        "wood": 180
+      }
+    },
+    {
+      "level": 100,
+      "weapon": 10.205474594530045,
+      "hero": 3.2750317494699996,
+      "health": 2496,
+      "armor": 4200,
+      "cost": {
+        "coins": 450,
+        "wood": 180
+      }
+    }
+  ],
+  "projectiles": [
+    {
+      "id": "pistol",
+      "aimAssist": false,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 15,
+      "gravity": 160,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "pistol",
+      "aimAssist": true,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "shotgun",
+      "aimAssist": false,
+      "drag": 0.6,
+      "z": 9,
+      "vz": 15,
+      "gravity": 160,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "shotgun",
+      "aimAssist": true,
+      "drag": 0.6,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "water",
+      "aimAssist": false,
+      "drag": 0.85,
+      "z": 9,
+      "vz": 50,
+      "gravity": 210,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "water",
+      "aimAssist": true,
+      "drag": 0.85,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "flame",
+      "aimAssist": false,
+      "drag": 0.4,
+      "z": 9,
+      "vz": 0,
+      "gravity": 0,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "flame",
+      "aimAssist": true,
+      "drag": 0.4,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "frost",
+      "aimAssist": false,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "frost",
+      "aimAssist": true,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "ricochet",
+      "aimAssist": false,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 15,
+      "gravity": 80,
+      "groundBounces": 2,
+      "amount": 50
+    },
+    {
+      "id": "ricochet",
+      "aimAssist": true,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 2,
+      "amount": 50
+    },
+    {
+      "id": "funnel",
+      "aimAssist": false,
+      "drag": 0,
+      "z": 9,
+      "vz": 0,
+      "gravity": 0,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "funnel",
+      "aimAssist": true,
+      "drag": 0,
+      "z": 9,
+      "vz": 0,
+      "gravity": 0,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "drone",
+      "aimAssist": false,
+      "drag": 0,
+      "z": 9,
+      "vz": 0,
+      "gravity": 0,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "drone",
+      "aimAssist": true,
+      "drag": 0,
+      "z": 9,
+      "vz": 0,
+      "gravity": 0,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "pulse",
+      "aimAssist": false,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 15,
+      "gravity": 160,
+      "groundBounces": 0,
+      "amount": 50
+    },
+    {
+      "id": "pulse",
+      "aimAssist": true,
+      "drag": 0.08,
+      "z": 9,
+      "vz": 0,
+      "gravity": 12,
+      "groundBounces": 0,
+      "amount": 50
+    }
+  ],
+  "weapons": [
+    {
+      "index": 0,
+      "level": 1,
+      "damage": 25,
+      "interval": 0.3072,
+      "range": 299,
+      "magazine": 12,
+      "reload": 0.768
+    },
+    {
+      "index": 1,
+      "level": 1,
+      "damage": 17,
+      "interval": 0.1536,
+      "range": 345,
+      "magazine": 20,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 2,
+      "level": 1,
+      "damage": 10,
+      "interval": 0.048,
+      "range": 356.5,
+      "magazine": 80,
+      "reload": 1.92
+    },
+    {
+      "index": 3,
+      "level": 1,
+      "damage": 14,
+      "interval": 0.544,
+      "range": 252.99999999999997,
+      "magazine": 6,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 4,
+      "level": 1,
+      "damage": 27,
+      "interval": 0.41600000000000004,
+      "range": 379.49999999999994,
+      "magazine": 8,
+      "reload": 1.088
+    },
+    {
+      "index": 5,
+      "level": 1,
+      "damage": 8,
+      "interval": 0.0768,
+      "range": 264.5,
+      "magazine": 40,
+      "reload": 1.28
+    },
+    {
+      "index": 6,
+      "level": 1,
+      "damage": 24,
+      "interval": 0.2048,
+      "range": 333.5,
+      "magazine": 24,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 7,
+      "level": 1,
+      "damage": 11,
+      "interval": 0.064,
+      "range": 201.24999999999997,
+      "magazine": 50,
+      "reload": 1.6
+    },
+    {
+      "index": 8,
+      "level": 1,
+      "damage": 129,
+      "interval": 0.8640000000000001,
+      "range": 804.9999999999999,
+      "magazine": 5,
+      "reload": 1.536
+    },
+    {
+      "index": 9,
+      "level": 1,
+      "damage": 336,
+      "interval": 1.472,
+      "range": 942.9999999999999,
+      "magazine": 3,
+      "reload": 2.048
+    },
+    {
+      "index": 10,
+      "level": 1,
+      "damage": 53,
+      "interval": 0.44799999999999995,
+      "range": 379.49999999999994,
+      "magazine": 10,
+      "reload": 1.344
+    },
+    {
+      "index": 11,
+      "level": 1,
+      "damage": 34,
+      "interval": 0.28800000000000003,
+      "range": 402.49999999999994,
+      "magazine": 16,
+      "reload": 1.1520000000000001
+    },
+    {
+      "index": 12,
+      "level": 1,
+      "damage": 45,
+      "interval": 0.5760000000000001,
+      "range": 482.99999999999994,
+      "magazine": 12,
+      "reload": 2.048
+    },
+    {
+      "index": 13,
+      "level": 1,
+      "damage": 45,
+      "interval": 0.5760000000000001,
+      "range": 482.99999999999994,
+      "magazine": 36,
+      "reload": 2.048
+    },
+    {
+      "index": 14,
+      "level": 1,
+      "damage": 13,
+      "interval": 0.1024,
+      "range": 97.74999999999999,
+      "magazine": 60,
+      "reload": 1.28
+    },
+    {
+      "index": 15,
+      "level": 1,
+      "damage": 22,
+      "interval": 0.7168,
+      "range": 436.99999999999994,
+      "magazine": 36,
+      "reload": 1.6640000000000001
+    },
+    {
+      "index": 16,
+      "level": 1,
+      "damage": 336,
+      "interval": 1.472,
+      "range": 942.9999999999999,
+      "magazine": 40,
+      "reload": 2.048
+    },
+    {
+      "index": 0,
+      "level": 5,
+      "damage": 76,
+      "interval": 0.3072,
+      "range": 299,
+      "magazine": 12,
+      "reload": 0.768
+    },
+    {
+      "index": 1,
+      "level": 5,
+      "damage": 51,
+      "interval": 0.1536,
+      "range": 345,
+      "magazine": 20,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 2,
+      "level": 5,
+      "damage": 30,
+      "interval": 0.048,
+      "range": 356.5,
+      "magazine": 80,
+      "reload": 1.92
+    },
+    {
+      "index": 3,
+      "level": 5,
+      "damage": 42,
+      "interval": 0.544,
+      "range": 252.99999999999997,
+      "magazine": 6,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 4,
+      "level": 5,
+      "damage": 80,
+      "interval": 0.41600000000000004,
+      "range": 379.49999999999994,
+      "magazine": 8,
+      "reload": 1.088
+    },
+    {
+      "index": 5,
+      "level": 5,
+      "damage": 25,
+      "interval": 0.0768,
+      "range": 264.5,
+      "magazine": 40,
+      "reload": 1.28
+    },
+    {
+      "index": 6,
+      "level": 5,
+      "damage": 72,
+      "interval": 0.2048,
+      "range": 333.5,
+      "magazine": 24,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 7,
+      "level": 5,
+      "damage": 34,
+      "interval": 0.064,
+      "range": 201.24999999999997,
+      "magazine": 50,
+      "reload": 1.6
+    },
+    {
+      "index": 8,
+      "level": 5,
+      "damage": 389,
+      "interval": 0.8640000000000001,
+      "range": 804.9999999999999,
+      "magazine": 5,
+      "reload": 1.536
+    },
+    {
+      "index": 9,
+      "level": 5,
+      "damage": 1015,
+      "interval": 1.472,
+      "range": 942.9999999999999,
+      "magazine": 3,
+      "reload": 2.048
+    },
+    {
+      "index": 10,
+      "level": 5,
+      "damage": 161,
+      "interval": 0.44799999999999995,
+      "range": 379.49999999999994,
+      "magazine": 10,
+      "reload": 1.344
+    },
+    {
+      "index": 11,
+      "level": 5,
+      "damage": 102,
+      "interval": 0.28800000000000003,
+      "range": 402.49999999999994,
+      "magazine": 16,
+      "reload": 1.1520000000000001
+    },
+    {
+      "index": 12,
+      "level": 5,
+      "damage": 135,
+      "interval": 0.5760000000000001,
+      "range": 482.99999999999994,
+      "magazine": 12,
+      "reload": 2.048
+    },
+    {
+      "index": 13,
+      "level": 5,
+      "damage": 135,
+      "interval": 0.5760000000000001,
+      "range": 482.99999999999994,
+      "magazine": 36,
+      "reload": 2.048
+    },
+    {
+      "index": 14,
+      "level": 5,
+      "damage": 38,
+      "interval": 0.1024,
+      "range": 97.74999999999999,
+      "magazine": 60,
+      "reload": 1.28
+    },
+    {
+      "index": 15,
+      "level": 5,
+      "damage": 68,
+      "interval": 0.7168,
+      "range": 436.99999999999994,
+      "magazine": 36,
+      "reload": 1.6640000000000001
+    },
+    {
+      "index": 16,
+      "level": 5,
+      "damage": 1015,
+      "interval": 1.472,
+      "range": 942.9999999999999,
+      "magazine": 40,
+      "reload": 2.048
+    },
+    {
+      "index": 0,
+      "level": 20,
+      "damage": 842,
+      "interval": 0.3072,
+      "range": 299,
+      "magazine": 12,
+      "reload": 0.768
+    },
+    {
+      "index": 1,
+      "level": 20,
+      "damage": 562,
+      "interval": 0.1536,
+      "range": 345,
+      "magazine": 20,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 2,
+      "level": 20,
+      "damage": 328,
+      "interval": 0.048,
+      "range": 356.5,
+      "magazine": 80,
+      "reload": 1.92
+    },
+    {
+      "index": 3,
+      "level": 20,
+      "damage": 468,
+      "interval": 0.544,
+      "range": 252.99999999999997,
+      "magazine": 6,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 4,
+      "level": 20,
+      "damage": 889,
+      "interval": 0.41600000000000004,
+      "range": 379.49999999999994,
+      "magazine": 8,
+      "reload": 1.088
+    },
+    {
+      "index": 5,
+      "level": 20,
+      "damage": 281,
+      "interval": 0.0768,
+      "range": 264.5,
+      "magazine": 40,
+      "reload": 1.28
+    },
+    {
+      "index": 6,
+      "level": 20,
+      "damage": 795,
+      "interval": 0.2048,
+      "range": 333.5,
+      "magazine": 24,
+      "reload": 1.4080000000000001
+    },
+    {
+      "index": 7,
+      "level": 20,
+      "damage": 374,
+      "interval": 0.064,
+      "range": 201.24999999999997,
+      "magazine": 50,
+      "reload": 1.6
+    },
+    {
+      "index": 8,
+      "level": 20,
+      "damage": 4305,
+      "interval": 0.8640000000000001,
+      "range": 804.9999999999999,
+      "magazine": 5,
+      "reload": 1.536
+    },
+    {
+      "index": 9,
+      "level": 20,
+      "damage": 11230,
+      "interval": 1.472,
+      "range": 942.9999999999999,
+      "magazine": 3,
+      "reload": 2.048
+    },
+    {
+      "index": 10,
+      "level": 20,
+      "damage": 1778,
+      "interval": 0.44799999999999995,
+      "range": 379.49999999999994,
+      "magazine": 10,
+      "reload": 1.344
+    },
+    {
+      "index": 11,
+      "level": 20,
+      "damage": 1123,
+      "interval": 0.28800000000000003,
+      "range": 402.49999999999994,
+      "magazine": 16,
+      "reload": 1.1520000000000001
+    },
+    {
+      "index": 12,
+      "level": 20,
+      "damage": 1497,
+      "interval": 0.5760000000000001,
+      "range": 482.99999999999994,
+      "magazine": 12,
+      "reload": 2.048
+    },
+    {
+      "index": 13,
+      "level": 20,
+      "damage": 1497,
+      "interval": 0.5760000000000001,
+      "range": 482.99999999999994,
+      "magazine": 36,
+      "reload": 2.048
+    },
+    {
+      "index": 14,
+      "level": 20,
+      "damage": 421,
+      "interval": 0.1024,
+      "range": 97.74999999999999,
+      "magazine": 60,
+      "reload": 1.28
+    },
+    {
+      "index": 15,
+      "level": 20,
+      "damage": 749,
+      "interval": 0.7168,
+      "range": 436.99999999999994,
+      "magazine": 36,
+      "reload": 1.6640000000000001
+    },
+    {
+      "index": 16,
+      "level": 20,
+      "damage": 11230,
+      "interval": 1.472,
+      "range": 942.9999999999999,
+      "magazine": 40,
+      "reload": 2.048
+    }
+  ]
+}

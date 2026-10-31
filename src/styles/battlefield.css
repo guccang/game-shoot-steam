@@ -1,0 +1,708 @@
+/* 战场布局、资源与操作入口。 */
+/* 横屏保留竖版比例，手机占满动态视口；不再出现页面标题、侧栏或页面滚动。 */
+.portrait-shell {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 20%, #426049, #213d32 75%);
+}
+.game-frame {
+  position: relative;
+  width: min(100%, max(320px, 62.5vh));
+  width: min(100%, max(320px, 62.5dvh));
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: #bdd38a;
+  box-shadow: 0 0 70px #102b3866;
+}
+canvas#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.game-top {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: 14px;
+  right: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.location-chip {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: #f7f5d9;
+  text-shadow: 0 1px 3px #30452f80;
+  font-size: 13px;
+  font-weight: 700;
+}
+.location-chip > span {
+  font-size: 33px;
+  line-height: 1;
+}
+.location-chip small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  margin-top: 3px;
+  color: #f5f1cf;
+}
+.game-button,
+.icon-button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid #ffffd980;
+  background: #fffcedeb;
+  box-shadow: 0 2px 0 #45603e33;
+  border-radius: 11px;
+  width: 40px;
+  height: 40px;
+  font-size: 19px;
+}
+.game-button:disabled {
+  opacity: 0.55;
+}
+#environment-button {
+  height: 40px;
+  padding: 0 9px;
+  background: #fffcedeb;
+  border: 1px solid #ffffd980;
+  border-radius: 11px;
+  font-size: 10px;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 #45603e33;
+}
+#environment-button span {
+  color: #899b77;
+  margin-left: 2px;
+}
+.hud-resources {
+  position: absolute;
+  top: calc(max(14px, env(safe-area-inset-top)) + 54px);
+  left: 14px;
+  right: 14px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.resource-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 9px 4px 5px;
+  height: 34px;
+  border: 1px solid #f8efce99;
+  background: #fffceded;
+  border-radius: 20px;
+  box-shadow: 0 2px 0 #45603e22;
+}
+.resource-pill b {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.coin-mark {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  width: 23px;
+  height: 23px;
+  background: #efc66a;
+  color: #9a6a27;
+  border: 2px solid #e6b95e;
+}
+.wood-mark {
+  font-size: 24px;
+  line-height: 1;
+  color: #895d37;
+  transform: rotate(-20deg);
+}
+.utility-buttons {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.utility-buttons .icon-button {
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  border-radius: 50%;
+}
+.quest {
+  position: absolute;
+  top: calc(max(14px, env(safe-area-inset-top)) + 101px);
+  left: 14px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  max-width: calc(100% - 28px);
+  background: #294632df;
+  color: #fff9d8;
+  border-radius: 10px;
+  padding: 9px 12px;
+  pointer-events: none;
+}
+.quest b {
+  font-size: 11px;
+}
+.quest small {
+  display: block;
+  font-size: 9px;
+  margin-top: 4px;
+  color: #d1dcc1;
+}
+#quest-count {
+  font-size: 12px;
+  color: #edd48d;
+  padding-left: 8px;
+  white-space: nowrap;
+}
+.boss-hud {
+  position: absolute;
+  top: calc(max(14px, env(safe-area-inset-top)) + 101px);
+  left: 14px;
+  right: 14px;
+  max-width: 360px;
+  padding: 7px 10px;
+  background: #fff7e7e8;
+  border: 1px solid #f7d9a5;
+  border-radius: 10px;
+}
+.boss-hud > div:first-child {
+  gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 4px;
+  color: #8b493e;
+}
+.boss-hud .bar {
+  background: #e4c8a7;
+  height: 4px;
+}
+.boss-hud i {
+  background: #c96c56;
+}
+/* 右侧养成入口与左手摇杆分离，按钮始终位于拇指可达区域。 */
+.field-menu {
+  position: absolute;
+  right: 14px;
+  bottom: calc(max(20px, env(safe-area-inset-bottom)) + 145px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* 地图等常驻菜单优先于场景建筑点击区，接取后可直接查看目标。 */
+  z-index: 6;
+}
+.field-menu button {
+  position: relative;
+  width: 62px;
+  height: 72px;
+  border: 2px solid #fbf0ca;
+  background: #e8e7bddd;
+  border-radius: 15px;
+  box-shadow: 0 3px 0 #61764e80;
+  padding: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.field-menu button:hover {
+  background: #f5edcd;
+}
+.field-menu canvas {
+  width: 55px;
+  height: 53px;
+  display: block;
+  pointer-events: none;
+}
+.field-menu span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 17px;
+}
+.game-bottom {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 22px;
+  right: 14px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+  /* 停车场靠近工坊时，载具快捷按钮保持在建筑和车辆透明热点上方。 */
+  z-index: 6;
+}
+.joystick {
+  width: 112px;
+  height: 112px;
+  /* 位置由触点指定，摇杆仅展示，不覆盖战场按钮的事件命中。 */
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  border: 2px solid #fffff580;
+  border-radius: 50%;
+  background: #f6f8d932;
+  box-shadow: inset 0 0 0 12px #fff3;
+  touch-action: none;
+  pointer-events: none;
+  user-select: none;
+}
+.joystick-cross {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff9;
+  font-size: 45px;
+  font-weight: 100;
+}
+#stick {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -21px;
+  margin-top: -21px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fffdeaaf;
+  border: 2px solid #ffffe6;
+  box-shadow: 0 4px 8px #2e442521;
+  pointer-events: none;
+}
+.bottom-info {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 159px;
+}
+.player-hud {
+  background: #fffdecf0;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 3px 0 #2e442514;
+}
+.player-hud > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 7px;
+  gap: 5px;
+}
+.player-hud > div > span {
+  font-size: 9px;
+  color: #70805c;
+}
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #73a879;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.bar {
+  height: 6px;
+  background: #dce0c6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  background: #699867;
+  width: 100%;
+  border-radius: 8px;
+  transition: width 0.15s;
+}
+#boss-button {
+  position: relative;
+  pointer-events: auto;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 2px solid #f4cf72;
+  background: #fff0c9;
+  border-radius: 11px;
+  padding: 0;
+  box-shadow: 0 0 0 2px #edca7740;
+}
+#boss-button canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#boss-button-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+  border: 1px solid #fff0c9;
+  border-radius: 9px;
+  background: #edca77;
+  color: #3e4b32;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+#boss-button:disabled {
+  background: #d9dfc5;
+  border-color: #9caa85;
+  box-shadow: none;
+}
+#boss-button:disabled #boss-button-badge {
+  background: #486247;
+  color: #fff9d8;
+  border-color: #9caa85;
+}
+#boss-button:focus-visible {
+  outline: 2px solid #fff9d8;
+  outline-offset: 4px;
+}
+/* 猫爪从角色投影位置飞向头像；只动画合成层，不遮挡点击或移动手势。 */
+.boss-paw {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  left: 22px;
+  top: 19px;
+  z-index: 2;
+  pointer-events: none;
+  visibility: hidden;
+  transform-origin: 50% 50%;
+}
+.show-paw .boss-paw {
+  visibility: visible;
+}
+.intro {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(340px, 86%);
+  text-align: center;
+  background: #fffef3f5;
+  border: 2px solid #fff6de;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 12px 35px #35553735;
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+}
+/* 枪械作为出发页主视觉，保留营地纸色和森林绿，短屏内可滚动操作。 */
+.intro-equipment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #637950;
+  font-size: 12px;
+}
+.intro-equipment b {
+  color: #365f47;
+  font-variant-numeric: tabular-nums;
+}
+.intro-weapon-stage {
+  margin: 12px 0 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #dce5bf 0%, #e9edcf80 48%, transparent 72%);
+}
+.intro-weapon-stage canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.intro h1 {
+  font-size: clamp(20px, 4vw, 26px);
+  margin: 5px 0 8px;
+}
+.intro p {
+  font-size: 12px;
+  color: #62724f;
+  line-height: 1.6;
+  margin: 8px 0 16px;
+}
+.intro-weapon-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 11px;
+  color: #637950;
+  margin-bottom: 22px;
+}
+.intro-weapon-stats b {
+  color: #294338;
+}
+.intro small {
+  display: block;
+  font-size: 10px;
+  color: #82906f;
+  margin-top: 15px;
+}
+.primary {
+  background: #365f47;
+  color: #fff8df;
+  border: 1px solid #294e38;
+  border-radius: 10px;
+  min-height: 46px;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 3px 0 #23412e;
+}
+.primary:hover {
+  background: #477a59;
+}
+.intro .primary {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.primary span {
+  font-size: 17px;
+}
+.center-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #233b3360;
+  /* 暂停遮罩使用静态半透明底色，避免全屏背景模糊。 */
+  z-index: 2;
+}
+.center-overlay > div {
+  text-align: center;
+  background: #fffef0;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  padding: 28px;
+  width: min(340px, 85%);
+  box-shadow: 0 15px 40px #203b3330;
+}
+.center-overlay > div > span {
+  font-size: 38px;
+  color: #a0ad76;
+}
+.center-overlay h2 {
+  font-size: 23px;
+  margin: 12px 0;
+}
+.center-overlay p {
+  color: #758163;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.center-overlay button {
+  margin-top: 10px;
+  width: 100%;
+}
+.toast {
+  position: absolute;
+  /* 结果提示高于附近建筑按钮，短屏回城时死亡损失文字不会被入口盖住。 */
+  z-index: 30;
+  top: calc(max(14px, env(safe-area-inset-top)) + 166px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90%;
+  width: max-content;
+  background: #fff9e4f2;
+  color: #577047;
+  border: 1px solid #fff8;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.5;
+}
+.toast.visible {
+  opacity: 1;
+}
+/* 养成面板独立滚动；顶部关闭按钮和底部返回按钮都能退出。 */
+
+/* 血条下方仅保留一行仪表：三炮加载具在 145px 面板内仍能完整显示。 */
+.player-heading {
+  align-items: center;
+}
+#player-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.player-heading {
+  gap: 4px;
+}
+#player-health {
+  margin-left: auto;
+  white-space: nowrap;
+}
+#auto-label {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: #628663;
+}
+#auto-label svg {
+  width: 100%;
+  height: 100%;
+}
+#auto-label[data-kind='reload'],
+#auto-label[data-kind='charge'] {
+  color: #ad7b37;
+}
+.combat-instruments {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+  height: 36px;
+}
+#funnel-supply {
+  display: flex;
+  gap: 3px;
+}
+#funnel-supply[hidden],
+.status-ring[hidden] {
+  display: none;
+}
+.status-ring {
+  --ring-color: #649889;
+  position: relative;
+  width: 30px;
+  height: 34px;
+  flex: 0 0 30px;
+  color: #3f6657;
+  pointer-events: auto;
+}
+.status-ring:focus-visible {
+  outline: 2px solid #c69f50;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+.ring-meter {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 2px;
+  left: 0;
+  fill: none;
+  stroke-width: 2.6;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  stroke: #dce3ce;
+}
+.ring-value {
+  stroke: var(--ring-color);
+  stroke-linecap: round;
+}
+.ring-inner {
+  stroke: #91b7ab;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.ring-icon {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  top: 6px;
+  left: 8.5px;
+  display: flex;
+}
+.ring-icon svg,
+.ring-mark svg {
+  width: 100%;
+  height: 100%;
+}
+.ring-count {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 5px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.ring-slot {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  background: #fffdec;
+  border-radius: 4px;
+  padding: 0 2px;
+  font-size: 7px;
+  line-height: 9px;
+  color: #5f7854;
+}
+.ring-mark {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  background: #fffdec;
+  border-radius: 50%;
+  color: #9b7437;
+}
+.ring-mark:empty {
+  display: none;
+}
+.status-ring[data-state='reloading'],
+.status-ring[data-state='returning'] {
+  --ring-color: #bf963f;
+  color: #9c7436;
+}
+#vehicle-button {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  --ring-color: #82985d;
+}
+#vehicle-button[aria-pressed='true'] {
+  --ring-color: #b29249;
+}
+#vehicle-button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+.game-frame:not([data-state='playing']) .combat-instruments {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .player-hud .bar i {
+    transition: none;
+  }
+}
+
+/* Boss HUD 仅保留名称、数值与细血条，数字不折行，避免盖住战斗预警。 */
+#boss-hp { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#boss-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

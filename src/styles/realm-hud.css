@@ -1,0 +1,36 @@
+/* 秘境只显示局内 HUD；隐藏森林入口，退出后由模式类自动恢复。 */
+.realm-active .game-top,
+.realm-active .hud-resources,
+.realm-active .equipment-goal,
+.realm-active #performance-hud,
+.realm-active .story-post-marker,
+.realm-active .story-interact,
+.realm-active .story-navigation,
+.realm-active .story-speech,
+.realm-active .story-chatter,
+.realm-active .story-experience,
+.realm-active .world-workshop-entry,
+.realm-active .world-realm-entrances,
+.realm-active #field-menu-toggle,
+.realm-active #field-menu-items > button:not(#realm-button) { display:none !important; }
+
+/* 秘境按钮直接可见，不依赖手机菜单的展开状态，不覆盖原有布防区域。 */
+.game-frame.realm-active .field-menu-items {
+  display:contents;position:static;padding:0;border:0;background:none;box-shadow:none;
+}
+.realm-active .field-menu { width:auto;height:auto; }
+.game-frame.realm-active .quest,
+.game-frame.realm-active .boss-hud { top:max(12px,env(safe-area-inset-top)); }
+.game-frame.realm-active .toast { top:calc(max(12px,env(safe-area-inset-top)) + 90px); }
+.game-frame.realm-active.guardian-active .boss-hud { top:116px; }
+/* 远征进度与生命卡共用左侧安全区，顶部由任务布局按生命卡实际高度排列。 */
+.game-frame.rogue-active #quest { left:max(10px,env(safe-area-inset-left)); }
+/* 球赛计分栏不预留森林资源栏的空位，整块生命仪表随比赛隐藏，离场自动恢复。 */
+.game-frame.football-active #quest { top:max(10px,env(safe-area-inset-top)); }
+.game-frame.football-active .player-hud { display:none !important; }
+/* 首次远征引导沿用标准底板，两个选择在窄屏仍保持完整触控区域。 */
+.realm-first-guide { margin-bottom:16px; }
+.realm-first-guide button { display:block;width:100%;min-height:44px;margin-top:8px; }
+@media(max-width:600px) {
+  .game-frame.realm-active .field-menu #realm-button { width:54px;height:60px; }
+}

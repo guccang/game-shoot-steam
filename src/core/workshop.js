@@ -1,0 +1,41 @@
+import {arrivalPistolPurchase} from '../config/ranger-arrival.js';
+import {createMagazines} from '../combat/magazine.js';
+import { i18nText } from "../i18n/index.js";
+import { vehicleMaxHp } from '../config/vehicles.js';
+// 工坊提交先持久化候选成长，再同步战斗状态；存储失败时无任何正式副作用。
+import { quoteWorkshop } from '../progression/workshop.js';
+import { capturePatrol } from './patrol-session.js';
+import { createVehicle, configureVehicle } from '../combat/vehicle.js';
+
+// 单次方案原子提交，保存函数由应用注入；失败仍可继续编辑原草稿。
+export function commitWorkshop(game, plan, persist) {
+  if(game.fireActive)return {ok:false,reason:i18nText("core.map-travel.c5d64346b5")};
+  if (game.story) return {ok:false,reason:i18nText("core.workshop.f30c3779f7")};
+  const firstPistol=arrivalPistolPurchase(game.progress,plan.kind,plan.index,plan.action);
+  const quote = quoteWorkshop(game.progress, plan, !!game.realm);
+  if (!quote.ok) return quote;
+  quote.next.patrol = capturePatrol(game);
+  let saved = false;
+  try { saved = persist(quote.next) === true; } catch { saved = false; }
+  if (!saved) return { ...quote, ok: false, reason: i18nText("core.workshop.7d32e8a05c") };
+  const previousEvent = game.onEvent;
+  // 正式方法保留原有改装蓄能清理与装备副作用，事件在整笔事务完成后由界面反馈。
+  game.onEvent = () => {};
+  try {
+    if (plan.action === 'modify') game.modifyWeapon(plan.index, plan.choice);
+    if (plan.kind === 'weapons' && ['buy', 'upgrade'].includes(plan.action))
+      game.transact('weapons', plan.index, plan.action);
+    game.progress = quote.next;
+    if(firstPistol){game.arrivalScene=null;game.arrivalError=false;game.magazines=createMagazines(game.progress);game.aimLock=null;}
+    if (plan.kind === 'vehicle' && plan.action === 'buy')
+      game.vehicles[plan.index] = createVehicle(game.progress, game.maxHp(), plan.index);
+    if (plan.kind === 'vehicle' && (plan.action === 'upgrade' || plan.action === 'part' && plan.part === 'armor')) {
+      const vehicle = game.vehicles[plan.index], ratio = vehicle.maxHp ? vehicle.hp / vehicle.maxHp : 0;
+      vehicle.maxHp = vehicleMaxHp({...game.progress,vehicleIndex:plan.index,vehicleLevel:game.progress.vehicleHulls[plan.index]},game.maxHp());
+      vehicle.hp = vehicle.maxHp * ratio;
+    }
+    if (plan.action === 'mount') configureVehicle(game, plan.choice, plan.index);
+  } finally { game.onEvent = previousEvent; }
+  if(firstPistol)game.onEvent('arrival-complete');
+  return { ...quote, ok: true };
+}

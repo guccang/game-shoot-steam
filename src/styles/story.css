@@ -1,0 +1,166 @@
+/* 章节信件与装备卡沿用奶油和森林配色，触摸目标至少44像素。 */
+/* 故事、兽潮及清缴战斗共用精简顶栏，仅保留设置；战斗结束后恢复。 */
+:is(.story-active,.task-combat-active):not(.realm-active) .hud-resources>.resource-pill,:is(.story-active,.task-combat-active):not(.realm-active) .hud-resources .environment-picture{display:none}
+:is(.story-active,.task-combat-active):not(.realm-active) .hud-resources{left:auto;width:44px;grid-template-columns:44px;gap:0}
+:is(.story-active,.task-combat-active):not(.realm-active) .hud-resources .utility-buttons{grid-column:1}
+/* 指引移至顶边，右侧为设置按钮及安全区留白，手机与大屏沿用同一布局。 */
+.game-frame:is(.story-active,.task-combat-active):not(.realm-active) :is(#quest,#boss-hud,#camp-defense-hud){left:max(10px,env(safe-area-inset-left));box-sizing:border-box;max-width:calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)) - 52px)}
+.story-dialog{width:min(580px,calc(100vw - 20px));max-height:88dvh;padding:20px;color:#314b3c;background:#fbf3da;border:2px solid #657d56;border-radius:20px;overflow:auto;box-shadow:0 18px 60px #152c3266}
+.story-dialog::backdrop{background:#142c346b}.story-heading{display:flex;justify-content:space-between;align-items:start;gap:12px;border-bottom:1px solid #b8bd96;padding-bottom:14px;margin-bottom:16px}.story-heading>div{flex:1;min-width:0}.story-heading h2{font-size:23px;margin:5px 0}.story-heading small{color:#6f8059;letter-spacing:.12em}.story-dialog button{min-height:44px;border:1px solid #9cae83;border-radius:10px;background:#e9edcf;color:#304e3e;padding:9px 13px;font:inherit;cursor:pointer}.story-dialog button:disabled{opacity:.5;cursor:default}.story-dialog button:focus-visible{outline:3px solid #c5a455;outline-offset:2px}.story-dialog .story-primary{background:#456951;color:#fff5d5;border-color:#456951}.story-dialog p{line-height:1.75;font-size:14px;margin:10px 0}.story-lead{font-size:17px!important}.story-note,.story-dialog small{color:#67765b}.story-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.story-loadouts{display:grid;grid-template-columns:1fr;gap:10px}.story-dialog .story-loadout{text-align:left;display:grid;grid-template-columns:36px 1fr;gap:6px 10px;background:#fff9e8;padding:13px}.story-loadout strong,.story-loadout>span:not(.story-number),.story-loadout small{grid-column:2}.story-number{grid-column:1;grid-row:1/4;font-size:22px;color:#8e946d;align-self:center}.story-dialog .story-loadout.selected{border:2px solid #4a7554;background:#e8efcf;padding:12px}.story-routes{display:grid;gap:14px}.story-routes article{border:1px solid #b3bd97;background:#fff8e5;padding:16px;border-radius:12px}.story-routes h4{margin:0}.story-footer{border-top:1px solid #bec7a8;padding-top:16px;margin-top:20px;display:flex;flex-wrap:wrap;gap:10px}.story-footer small{flex-basis:100%}.story-error{color:#8f3e31!important}.story-log{border-bottom:1px dashed #b0ba95}.story-training{margin-top:14px}.story-training summary{cursor:pointer;min-height:44px;line-height:44px}
+@media(min-width:600px){.story-routes{grid-template-columns:1fr 1fr}}@media(max-width:360px){.story-dialog{padding:14px}.story-heading h2{font-size:20px}}
+/* 320像素下仍展示章节方向与来敌提示，不能沿用无尽怪潮的省略规则。 */
+.story-active .quest small{display:block;font-size:10px;line-height:1.4;white-space:normal}
+/* 圆盘与箭头采用奶油黄、森林绿；固定尺寸且不拦截战场拖动。 */
+.story-navigation{width:44px;min-height:60px;flex:0 0 44px;pointer-events:none;text-align:center}
+.story-navigation-distance{display:block;margin-top:2px;font-size:11px;line-height:14px;font-weight:700;color:#fff2c9;white-space:nowrap;font-variant-numeric:tabular-nums}
+.story-navigation[hidden]{display:none}
+.story-navigation svg{display:block;width:44px;height:44px;overflow:visible}
+.story-navigation-disc{fill:#fff2c9;stroke:#7d9a68;stroke-width:2}
+.story-navigation-arrow{fill:#3e6850;stroke:#284c3b;stroke-width:1.5;stroke-linejoin:round}
+.story-navigation-center{display:none;fill:#3e6850}
+.story-navigation[data-near="true"] .story-navigation-disc{fill:#dce9b8;stroke:#a0bf7d}
+.story-navigation[data-coincident="true"] .story-navigation-arrow{display:none}
+.story-navigation[data-coincident="true"] .story-navigation-center{display:block}
+/* 任务正文固定两行：标题和计数同排，发现提醒优先；左侧导航跨两行。 */
+.story-active .quest{display:grid;width:min(340px,calc(100% - 28px));padding:8px 10px;grid-template-columns:52px minmax(0,1fr) max-content;grid-template-rows:26px 26px;gap:0 6px}
+.story-active .quest>div:first-of-type:not(.story-navigation),.story-active .quest>.story-navigation+div{display:contents}
+.story-active .quest #quest-title{grid-column:2;grid-row:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:22px}
+.story-active .quest #quest-count{grid-column:3;grid-row:1;padding-left:0;margin-left:0;font-size:10px;line-height:22px}
+.story-active .quest #quest-count:not(:empty)::before{content:'（'}
+.story-active .quest #quest-count:not(:empty)::after{content:'）'}
+.story-active .quest #quest-count:empty{display:none}
+.story-active .quest:has(#quest-count:empty) #quest-title{grid-column:2 / -1}
+.story-active .quest #quest-detail,.story-active .quest .story-experience{grid-column:2 / -1;grid-row:2;min-width:0;line-height:22px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.story-active .quest:has(.story-experience:not([hidden])) #quest-detail{display:none}
+.story-active .quest .story-navigation{position:relative;grid-column:1;grid-row:1 / 3;width:52px;height:52px;min-height:0}
+.story-active .quest .story-navigation svg{width:52px;height:52px}
+.story-active .quest .story-navigation-distance{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);margin:0;padding:0 3px;border-radius:4px;background:#294632;font-size:10px;line-height:13px}
+.story-active .quest:has(.story-navigation[hidden]){grid-template-columns:0 minmax(0,1fr) max-content;column-gap:0}
+.story-active .quest:has(.story-navigation[hidden]) #quest-count{padding-left:6px}
+/* 窄屏将标题与进度分行，说明占底行，避免设置和寻路开关挤没任务名称。 */
+@media(max-width:480px),(max-height:720px){
+ .story-active .quest{grid-template-rows:22px 22px 22px}
+ .story-active .quest #quest-title{grid-column:2 / -1}
+ .story-active .quest #quest-count{grid-column:2 / -1;grid-row:2;padding-left:0}
+ .story-active .quest #quest-detail,.story-active .quest .story-experience{grid-column:1 / -1;grid-row:3}
+ .story-active .quest .story-navigation{width:44px;height:44px}
+ .story-active .quest .story-navigation svg{width:44px;height:44px}
+ .story-active .quest:has(#quest-count:empty){grid-template-rows:22px 22px}
+ .story-active .quest:has(#quest-count:empty) #quest-detail,.story-active .quest:has(#quest-count:empty) .story-experience{grid-column:2 / -1;grid-row:2}
+ /* 窄战场的领主名称与血量分行，导航和寻路按钮仍各占独立触控列。 */
+ .story-active .boss-hud>div:first-child{flex-direction:column;align-items:flex-start;gap:0}
+}
+/* 领主血条内给导航留出独立位置，预警文字与血量仍在右侧完整显示。 */
+.boss-hud.story-has-navigation{padding-left:64px;min-height:78px}
+.boss-hud.story-has-navigation .story-navigation{position:absolute;left:10px;top:8px}
+/* 领主栏为浅色底板，距离使用森林绿保持可读性。 */
+.boss-hud .story-navigation-distance{color:#315747}
+/* 领主任务提醒与浅色底板保持对比，避免沿用深色旧底板上的浅字。 */
+.story-active .boss-hud .story-experience{color:var(--ui-muted)}
+/* 场景对白给人物头顶留白，任务条与短暂消息不遮住气泡。 */
+.story-speaking .quest,.story-speaking .toast{display:none!important}
+.story-speech{position:absolute;z-index:14;width:260px;max-width:calc(100% - 24px);padding:12px 14px 8px;border:2px solid #52765a;border-radius:17px;background:#fff6d9;color:#304e3e;box-shadow:0 4px 0 #253e3526;pointer-events:none}
+.story-speech[hidden]{display:none}
+.story-speech b{font-size:13px;color:#476a46}
+.story-speech p{margin:7px 0 4px;font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.story-speech-actions{display:flex;justify-content:space-between;gap:8px}
+.story-speech button{pointer-events:auto;min-height:44px;padding:4px 7px;border:0;border-radius:8px;background:transparent;color:#687b56;font:inherit;font-size:11px;cursor:pointer;touch-action:manipulation}
+.story-speech button:hover,.story-speech button[aria-pressed="true"]{background:#e5edc8;color:#365940}
+.story-speech-tail{position:absolute;left:var(--speech-tail,50%);bottom:-9px;width:14px;height:14px;background:#fff6d9;border-right:2px solid #52765a;border-bottom:2px solid #52765a;transform:translateX(-50%) rotate(45deg)}
+
+/* 体验反馈使用紧凑气泡，沿用真实头部锚点且不抢占战场输入。 */
+.story-chatter{z-index:11;width:230px;padding:8px 11px 7px;border-radius:13px}
+.story-chatter b{font-size:11px}.story-chatter p{font-size:12px;line-height:1.5;margin:4px 0 0}
+.story-chatter[data-placement="below"] .story-speech-tail{top:-9px;bottom:auto;transform:translateX(-50%) rotate(225deg)}
+.story-chatter[data-placement="radio"] .story-speech-tail{display:none}
+.story-experience{display:block;grid-column:1 / -1;font-size:10px;line-height:1.4;color:#e7eac5;margin-top:4px;white-space:normal}
+.story-experience[hidden]{display:none}.story-experience[data-done="true"]{color:#bce6aa}
+.story-dialog .story-advice{border-left:3px solid #8aab73;padding-left:10px;color:#4f694b}
+.story-followup{border-top:1px solid #bec7a8;margin-top:16px;padding-top:12px}
+
+/* 单行目录固定排版高度，选择时不重新居中；展开与滚动状态由面板保留。 */
+/* 三类任务共用账本摘要，当前追踪突出一次，已领取请求保留清楚的状态。 */
+.story-task-overview{padding:12px 14px;border:1px solid #8ca77b;border-radius:12px;background:#e4ebcf}
+.story-task-overview h3,.story-task-group h3{margin:4px 0;font-size:17px}
+.story-task-group{border-top:1px solid #c5cbb0;margin-top:16px;padding-top:14px}
+.story-task-heading{margin:20px 0 0;font-size:17px}
+.story-dialog .story-neighbor-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;width:100%;text-align:left;margin-top:8px;background:#fff9e8;white-space:normal}
+.story-neighbor-row b{font-size:13px;overflow-wrap:anywhere}.story-neighbor-row small{font-size:11px}
+.story-neighbor-row span{grid-column:1/-1;font-size:12px;line-height:1.6}
+.story-dialog[data-view="catalog"]{height:min(780px,88dvh);overflow-anchor:none}
+.story-chapters{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:0 0 14px}
+.story-dialog .story-chapters button{display:grid;grid-template-columns:24px minmax(0,1fr) 20px;align-items:center;gap:10px;text-align:left;min-height:52px;padding:8px 12px;border:1px solid transparent;background:#f5f1dd;white-space:nowrap}
+.story-dialog .story-chapters button:hover:not(:disabled){background:#e9edcf}
+.story-dialog .story-chapters button[aria-pressed="true"]{border-color:#8ca77b;background:#e4ebcf;box-shadow:inset 3px 0 #315c43}
+.story-chapters b{font-size:14px;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.story-chapters button>svg,.story-selection-heading>svg,.story-collection>summary>svg{width:24px;height:24px;flex:none}
+.story-row-state{text-align:center;color:#718672;font-size:18px}.story-row-state svg{width:16px;height:16px}
+.story-catalog>summary{cursor:pointer;padding:12px 0;font-weight:700;min-height:44px;font-size:13px;color:#718672}
+.story-selection{min-height:210px;border-top:1px solid #c5cbb0;padding-top:10px}
+.story-selection-heading{display:grid;grid-template-columns:24px minmax(0,1fr) 44px;align-items:center;gap:8px}
+.story-selection-heading h3{font-size:17px;line-height:1.4;margin:0}
+.story-dialog .story-help-button{width:44px;height:44px;padding:0;background:transparent;border-color:transparent;color:#718672;border-radius:50%;font-size:19px}
+.story-dialog .story-help-button:hover{background:#e8edcf;border-color:#b3bd97}
+.story-dialog .story-selection-lead{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;color:#718672;margin:6px 0 12px}
+.story-selection>.story-primary{width:100%;margin-top:10px}
+.story-help-dialog{width:min(480px,calc(100vw - 20px))}.story-help-dialog h3{font-size:15px;margin:20px 0 8px}.story-help-dialog blockquote{margin:18px 0 0;padding-left:12px;border-left:2px solid #90a875;font-size:13px;line-height:1.7;color:#718672}
+
+/* 建筑上方的世界任务标签保留44像素触摸目标，远处只显示地名与靠近提示。 */
+.story-post-marker{position:absolute;z-index:11;transform:translate(-50%,-100%);width:max-content;min-height:44px;max-width:190px;padding:7px 11px;border:2px solid #526b4d;border-radius:13px;background:#fff2d1;color:#304b3d;box-shadow:0 3px 0 #29423530;font:600 12px/1.3 var(--game-font-family);cursor:pointer;touch-action:manipulation}
+.story-post-marker:disabled{background:#e4e8ce;color:#56674f;cursor:default}.story-post-marker[hidden]{display:none}.story-post-marker:focus-visible{outline:3px solid #b79744;outline-offset:3px}
+/* 奖励清单与整组谢礼保持绘本配色，小屏按单列展示完整装备名称。 */
+.story-rewards{margin:8px 0;color:#365a45;font-size:12px}
+.story-rewards>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.story-rewards span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.story-rewards svg{width:22px;height:22px;flex:none}
+.story-collection{padding:0 12px;background:#edf0d8;border:1px solid #b3bd97;border-radius:12px;margin-bottom:10px}
+.story-collection>summary{display:flex;align-items:center;gap:9px;min-height:60px;cursor:pointer;list-style:none}
+.story-collection>summary::-webkit-details-marker{display:none}
+.story-collection>summary>b{flex:1;min-width:0;font-size:14px}
+.story-collection>summary>span{font-size:11px;color:#718672;white-space:nowrap}
+.story-collection>summary::after{content:'⌄';color:#718672}.story-collection[open]>summary::after{content:'⌃'}
+.story-collection-tools{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#718672;border-top:1px solid #cbd3b5}
+.story-prizes article>b{margin:5px 0 12px}
+.story-collection h3{margin:5px 0}
+.story-collection p{font-size:13px;line-height:1.6}
+.story-prizes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.story-prizes article{background:#fff9e6;border:1px solid #b3bc8a;border-radius:10px;padding:12px;min-width:0}
+.story-prizes b,.story-prizes small{display:block}
+.story-prizes button{width:100%;white-space:normal}
+/* 单份赠礼使用整行；资源条目保持可换行，手机无需横向滚动。 */
+.story-prizes article:only-child{grid-column:1 / -1}
+.story-prizes .story-rewards span{white-space:normal}
+.story-source{padding:10px;background:#e8edcf;border-radius:8px;line-height:1.6}
+@media(max-width:480px){.story-prizes{grid-template-columns:1fr}.story-collection{padding:0 10px}}
+
+/* 对话铺满游戏底边，纸面、字体、边框和按钮继续使用各自原样式。 */
+.npc-bottom-dialogue{left:var(--npc-dialogue-left,50%)!important;top:auto!important;bottom:var(--npc-dialogue-bottom,0px)!important;transform:translateX(-50%);margin:0;box-sizing:border-box;width:var(--npc-dialogue-width,100%)!important;max-width:var(--npc-dialogue-width,100%)!important;max-height:var(--npc-dialogue-height,46dvh)!important;overflow:auto;z-index:46}
+dialog.npc-bottom-dialogue{position:fixed}
+.npc-bottom-dialogue .story-speech-tail,.compact-speech.npc-bottom-dialogue:after{display:none}
+.living-dialog.npc-bottom-dialogue header{position:sticky;top:-20px;background:inherit;z-index:1}
+.npc-bottom-dialogue .story-speech-copy{pointer-events:auto}
+@media(max-width:350px){.living-dialog.npc-bottom-dialogue header{top:-14px}}
+/* 对白出现时收起战场HUD与入口，隐藏或关闭最后一段对白后自动恢复，不改原有hidden状态。 */
+body:has(.npc-bottom-dialogue:not(dialog):not([hidden]),dialog.npc-bottom-dialogue[open]) #game-frame>:not(canvas):not(.environment-tint):not(.npc-bottom-dialogue):not(dialog){visibility:hidden!important;pointer-events:none!important}
+/* 入职旅程的跳过操作随对白移动，仍可直接结束导览。 */
+.npc-bottom-dialogue #arrival-skip{position:static;flex-shrink:0;margin:0;padding:4px 7px;font-size:11px}
+.npc-bottom-dialogue .story-speech-actions{flex-wrap:wrap}
+
+/* 目标本体透明命中区上方用轻点箭头提示，正式镜头移动时与物件保持同址。 */
+#game-frame .story-interact{bottom:auto;overflow:visible}
+.story-interact-cue{position:absolute;left:50%;top:0;display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;filter:drop-shadow(0 2px 2px #233b3950)}
+.story-interact-label{display:block;min-width:36px;padding:2px 7px;border:1.5px solid #365e49;border-radius:9px;background:#fff2c9;color:#304b3d;font-size:12px;font-weight:700;line-height:18px;white-space:nowrap}
+.story-interact-cue svg{display:block;width:28px;height:26px}
+.story-interact[data-cue="right"] .story-interact-cue{flex-direction:row-reverse}
+.story-interact[data-cue="left"] .story-interact-cue{flex-direction:row}
+.story-interact[data-cue="right"] svg{transform:rotate(90deg)}
+.story-interact[data-cue="left"] svg{transform:rotate(-90deg)}
+#game-frame .story-interact:disabled{opacity:1;cursor:default}
+.story-interact:disabled .story-interact-label{background:#e2e8c7}
+
+/* 全文预留同一行列的高度，打字机只改变可见层；正文点击和滚动留在对话内。 */
+.task-speech .story-speech-copy[role="button"]{pointer-events:auto;cursor:pointer;min-height:44px;touch-action:pan-y;-webkit-tap-highlight-color:transparent;user-select:none}
+.task-speech .story-speech-copy[role="button"]:focus-visible{outline:2px solid #52765a;outline-offset:2px;border-radius:4px}
+.task-speech .story-speech-copy p{display:grid}
+.speech-text-space,.speech-text-visible{grid-area:1/1;white-space:pre-wrap}
+.speech-text-space{visibility:hidden}

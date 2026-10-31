@@ -1,0 +1,3002 @@
+{
+  "_说明": "主线按战斗、整备与休闲交替编排；稳定任务 ID 保留，旧版顺序由 mainline-legacy.js 迁移，复习战斗只记录接取后的真实胜利。 新增园艺委托按接取后的战斗、柜台购买和同一田块农活记账，交付种子与奖励原子保存。 后期取消指定高级装备购装补贴，以免费演练和已有装备适度成长完成教学；旧存档保留已领取资源与任务阶段。",
+  "tasks": [
+    {
+      "id": "first-map",
+      "chapter": "接过巡林簿",
+      "title": "先认得回家的路",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.mainline.seen.map",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.distance",
+            "min": 80
+          }
+        ]
+      },
+      "text": "打开地图，步行探索80米，熟悉营地周围。",
+      "lines": [
+        "松伯托我把这本巡林簿交给你。先别急着往深林跑，认得回家的路，才走得远。",
+        "按WASD或方向键移动；手机在空白地面拖动。靠近怪物会自动开火，靠近树木可以采集。",
+        "展开右下方菜单，点手机里的地图，看看营地和工坊。主线箭头会显示距离，地上的光点帮你绕路。",
+        "松果手枪已经准备好了。青芽有一盆一直没种成的花，认完路去听听她的请求；你会知道种子从哪儿来，也能慢慢攒起种田的收入。",
+        "寻路默认开启。任务右侧带路线的箭头可随时开关指引，带斜杠表示关闭。不用特意切换，也不会影响任务进度。"
+      ],
+      "finish": "地图不是催你赶路的。以后缺什么，就知道该去哪里找。",
+      "reward": {
+        "coins": 60,
+        "wood": 80
+      },
+      "guide": {
+        "cue": "先看看地图，在营地附近走一圈。任务右侧的箭头可随时开关寻路，不影响任务进度。",
+        "thanks": "认得路就好。青芽想种雏菊，可她不敢去怪物出没的路边，去听听她要请你帮什么忙。",
+        "steps": [
+          {
+            "label": "打开地图",
+            "hint": "打开手机，再点击地图",
+            "operation": {
+              "type": "click",
+              "dialog": "map-dialog",
+              "selector": "#close-map",
+              "label": "返回森林，自由走一走"
+            },
+            "navigation": false
+          },
+          {
+            "label": "走一走",
+            "hint": "移动80米",
+            "action": false,
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "phone-button",
+        "label": "打开手机地图"
+      }
+    },
+    {
+      "id": "neighbor-seeds",
+      "chapter": "邻居的第一盆花",
+      "title": "青芽不敢走的那条路",
+      "npc": "mint",
+      "site": "camp",
+      "gardening": {
+        "kind": "drop",
+        "crop": 0
+      },
+      "seedDelivery": {
+        "crop": 0,
+        "count": 1
+      },
+      "goal": {
+        "all": [
+          {
+            "path": "progress.mainline.gardening.seedDrops",
+            "min": 1
+          },
+          {
+            "path": "progress.farm.seeds.0",
+            "min": 1
+          }
+        ]
+      },
+      "text": "前往歪锅营地，击败营地里的怪物，带回一粒雏菊种子交给青芽。",
+      "lines": [
+        "我想种一盆雏菊，可种子被野外营地的怪物带走了。",
+        "沿指引前往歪锅营地，进入营地后击败里面的5只怪物。清空营地就能获得雏菊种子，不需要接取清缴任务。",
+        "首次得到一种种子，种子小屋就能卖给你。请留一粒雏菊种子给我；如果先种掉了，到种子小屋补买即可。",
+        "拿到种子后沿光点直接回营找我，交付会从背包扣除一粒。"
+      ],
+      "finish": "真的是雏菊！这一粒我收下了。原来打怪能找回种子，得到过的品种还能在种子小屋买。",
+      "reward": {
+        "coins": 40
+      },
+      "guide": {
+        "cue": "请去野外的歪锅营地，击败营地里的5只怪物，帮我带回一粒雏菊种子。",
+        "thanks": "谢谢，这粒雏菊种子我收下了！首获已经解锁小屋购买。这40金币是谢礼，也够你去帮忙补买种子。",
+        "steps": [
+          {
+            "label": "清空歪锅营地，获取雏菊种子",
+            "hint": "沿光点进入野外怪物营地，击败5只营地怪物后获得种子",
+            "navigation": "seedCamp",
+            "action": null
+          },
+          {
+            "label": "背包留一粒雏菊种子交给青芽",
+            "hint": "不要把交付种子种掉；不足时去种子小屋补买",
+            "navigation": "seedShop",
+            "action": {
+              "type": "seed-shop",
+              "label": "打开种子小屋"
+            }
+          }
+        ]
+      },
+      "target": "seedCamp",
+      "action": null
+    },
+    {
+      "id": "neighbor-seed-shop",
+      "chapter": "邻居的第一盆花",
+      "title": "替青芽带一包种子",
+      "npc": "mint",
+      "site": "camp",
+      "gardening": {
+        "kind": "purchase",
+        "crop": 0
+      },
+      "seedDelivery": {
+        "crop": 0,
+        "count": 1
+      },
+      "goal": {
+        "all": [
+          {
+            "path": "progress.mainline.gardening.purchased",
+            "min": 2
+          },
+          {
+            "path": "progress.farm.seeds.0",
+            "min": 2
+          }
+        ]
+      },
+      "text": "在种子小屋购买至少两粒雏菊种子，带回一粒给青芽，留一粒自己种。",
+      "lines": [
+        "一盆摆在我门口，一盆留给夜里送信的小夜。能再去种子小屋帮我买一粒吗？你也带一粒，咱们一起试着种。",
+        "小屋在营地东侧。我们已经找到了雏菊种子，所以柜台现在能买；雏菊每粒10金币，先买两粒，点两次「购买1粒」即可。",
+        "这次要亲自在柜台购买，旧库存、快递和怪物掉落都不算购买次数。回来交给我一粒，至少给自己留一粒。",
+        "回来后，我还送你三粒雏菊作谢礼，直接放进种子袋并解锁小屋购买。和你留下的那粒一起，够试种几块田了。"
+      ],
+      "finish": "这一粒我收下，另送你三粒雏菊，已放进种子袋并解锁购买。你留下的那粒也能种，我们一起等第一朵花开。",
+      "reward": {
+        "wood": 20
+      },
+      "guide": {
+        "cue": "再帮我去种子小屋买两粒雏菊吧：一粒带给我，一粒留给你。已经得到过雏菊，现在能在柜台买了。",
+        "thanks": "这一粒我收下，另送你三粒雏菊，已放进种子袋并解锁购买。你留下的那粒也能种，我们一起等第一朵花开。",
+        "steps": [
+          {
+            "label": "到种子小屋买两粒雏菊种子",
+            "hint": "接取后到店购买；点两次「购买1粒」，共20金币",
+            "navigation": "seedShop",
+            "operation": {
+              "type": "click",
+              "dialog": "seed-shop-dialog",
+              "selector": "[data-buy-seed=\"0\"][data-count=\"1\"]",
+              "label": "购买雏菊种子"
+            }
+          },
+          {
+            "label": "留足两粒，再回去交付一粒",
+            "hint": "交付会扣一粒，另一粒留作自己的第一茬；不足时继续购买",
+            "navigation": "seedShop"
+          }
+        ]
+      },
+      "action": {
+        "type": "seed-shop",
+        "label": "打开种子小屋"
+      },
+      "seedReward": {
+        "crop": 0,
+        "count": 3
+      }
+    },
+    {
+      "id": "first-farm",
+      "chapter": "接过巡林簿",
+      "title": "把我们的雏菊种下来",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.farm.dug",
+            "min": 1
+          },
+          {
+            "path": "progress.farm.planted",
+            "min": 1
+          },
+          {
+            "any": [
+              {
+                "path": "progress.farm.watered",
+                "min": 1
+              },
+              {
+                "path": "progress.farm.harvested",
+                "min": 1
+              }
+            ]
+          }
+        ]
+      },
+      "text": "开田、播种并浇水，完成后继续巡护；收获由你自由安排。",
+      "lines": [
+        "给你的三粒雏菊谢礼已经放进种子袋，也直接解锁了小屋购买。小夜正学着种花，雪团约好花开时来画；你也从一小块田开始吧。",
+        "种田是主要金币来源，任务和玩法奖励照常；怪物不会掉金币。打怪或任务获得新品种后，种子小屋开放购买；快递只补充已解锁种子。",
+        "点任务按钮拿起锄头，再点能站立的草地；田块不能占到路面，路边草地可以种。新田对齐视野内最近的田块；看不到田时，从选中的位置开始。猫猫走近挥锄，森林和湖谷都能种，遇到树先清理。射程内发现怪物会自动迎敌，威胁清除后继续原农活队列。",
+        "点击空田，拿起库存种子，再点田块或拖过多块空田安排播种。猫猫撒种后才开始成长。",
+        "播种后选水壶，点击田块浇水；每茬最多提前25%成熟。浇完即可交付这份委托，继续巡护，不必站在这里等。",
+        "首次完成播种、浇水后会收到两粒胡萝卜种子。作物成熟后，你随时可以选镰刀收割，金币按实际作物到账；收获不作为任务要求。快递只补已解锁种子。"
+      ],
+      "finish": "水浇好了，让它慢慢长吧。胡萝卜种子留给你，下次替雪团照顾新叶时用。先去接巡护；作物成熟后，我们再回来收。",
+      "reward": {
+        "wood": 40
+      },
+      "guide": {
+        "cue": "我送的雏菊种子已经放进种子袋。先开田、播种、浇水，做完就去帮邻居；成熟后有空再收，不用守在田边等。",
+        "thanks": "水浇好了，让它慢慢长吧。胡萝卜种子留给你，下次替雪团照顾新叶时用。先去接巡护；作物成熟后，我们再回来收。",
+        "steps": [
+          {
+            "label": "用锄头开一块田",
+            "hint": "拿起锄头 → 点击可站立的地面，等待猫猫挥锄",
+            "operation": {
+              "type": "farm",
+              "id": "dig"
+            },
+            "navigation": false
+          },
+          {
+            "label": "播下一粒种子",
+            "hint": "点击空田 → 选赠送的雏菊种子 → 再点田块播种",
+            "operation": {
+              "type": "farm",
+              "id": "plant"
+            },
+            "navigation": false
+          },
+          {
+            "label": "给作物浇一次水",
+            "hint": "选水壶 → 点击正在生长的田块，浇完就去忙别的",
+            "operation": {
+              "type": "farm",
+              "id": "water"
+            },
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "farm",
+        "label": "打开种地工具"
+      }
+    },
+    {
+      "id": "first-patrol",
+      "chapter": "接过巡林簿",
+      "title": "把第一段路守下来",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.bosses",
+        "min": 1
+      },
+      "text": "在营地告示牌接取清缴，清完五批怪物并击败领主。",
+      "lines": [
+        "南边的邮路总被芽团挤住。先帮送信的邻居清出一段。",
+        "在营地南侧点击盾牌告示牌，点「接取并出发」，再沿指引走出安宁道路。怪潮开始后会停止新的随机遭遇，弹匣空了会自动装填。",
+        "击败一个 Boss 算一轮清缴。先清理5批怪物，Boss 会自动登场；想休息就回告示牌暂停，进度会保留。"
+      ],
+      "finish": "路通了。别把全部钱攥在手里，下一次巡护前先把工具修好。",
+      "reward": {
+        "coins": 210,
+        "wood": 190
+      },
+      "guide": {
+        "cue": "邮路堵着，信送不出去。去南侧告示牌接下清缴，帮邻居开条路吧。",
+        "thanks": "信能送到了。先收一茬田攒好整备钱，再请阿栎修枪、练练体力。自己的田没熟，就去营地外找成熟的野田。",
+        "steps": [
+          {
+            "label": "完成一轮清缴并击败领主",
+            "hint": "完成本轮怪群与领主战即可，武器和载具不限",
+            "operation": {
+              "type": "clearing"
+            },
+            "navigation": "patrol"
+          }
+        ]
+      },
+      "target": "patrol",
+      "targetWhen": {
+        "path": "progress.living.patrolActive",
+        "equals": true
+      },
+      "action": {
+        "type": "clearing",
+        "label": "前往清缴告示牌"
+      }
+    },
+    {
+      "id": "upgrade-harvest",
+      "chapter": "第一份整备计划",
+      "title": "收获田地，攒好整备钱",
+      "npc": "mint",
+      "site": "camp",
+      "gardening": {
+        "kind": "harvest"
+      },
+      "goal": {
+        "harvestFor": "pistol-upgrade"
+      },
+      "text": "收获成熟作物，攒够手枪和栗子的升级金币。",
+      "lines": [
+        "巡护回来，看看前面种下的田吧。收获的金币正好用来整备手枪、锻炼体力。",
+        "优先去已经成熟的自种田；还没成熟，就沿指引找营地外已经长好的野田。打开种地，选择镰刀，再点击成熟作物。",
+        "收获一次后若金币仍不足，继续收下一块田。攒够剩余升级所需金币会直接开始整备，无须回来交任务。"
+      ],
+      "finish": "整备钱备好了，去把手枪和栗子一起升级吧。",
+      "reward": {},
+      "guide": {
+        "cue": "先收一茬田，备好整备钱。自己的田没成熟，就到营地外收成熟的野田。",
+        "thanks": "收成已到账，直接继续升级吧。",
+        "steps": [
+          {
+            "label": "收获田地，攒升级金币",
+            "hint": "优先收获已种好的田，未成熟则寻找营地外野田",
+            "operation": {
+              "type": "farm",
+              "id": "harvest"
+            }
+          }
+        ]
+      },
+      "action": {
+        "type": "farm",
+        "label": "打开种地，收获金币"
+      }
+    },
+    {
+      "id": "pistol-upgrade",
+      "chapter": "第一份整备计划",
+      "title": "让送信的人安心出门",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.weapons.0",
+            "min": 3
+          },
+          {
+            "path": "progress.heroes.0",
+            "min": 2
+          }
+        ]
+      },
+      "text": "松果手枪升到3级，栗子升到2级。",
+      "lines": [
+        "小夜又要走远路送信，你的手枪却有些吃力。先把手枪升到3级、栗子练到2级，再替他探路。",
+        "走进武器工坊选手枪，点选攻击内芯自动试装，查看属性和费用，再长按确认升级。伤害部件就是武器等级。",
+        "角色页可以购买伙伴、升级和切换角色。这次先把栗子升到2级，和常用手枪一起养。"
+      ],
+      "finish": "手枪和体力都准备好了。去清缴一轮，确认信使经过时不用再躲那些怪群。",
+      "reward": {
+        "coins": 170,
+        "wood": 70
+      },
+      "guide": {
+        "cue": "小夜又要走远路送信，你的手枪却有些吃力。先把手枪升到3级、栗子练到2级，再替他探路。",
+        "thanks": "手枪和体力都准备好了。去清缴一轮，确认信使经过时不用再躲那些怪群。",
+        "steps": [
+          {
+            "label": "手枪升到3级",
+            "hint": "点选攻击内芯，长按确认升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "weapons",
+              "index": 0,
+              "part": "damage"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "栗子升到2级",
+            "hint": "打开角色页升级",
+            "action": {
+              "type": "menu",
+              "id": "heroes-button",
+              "label": "升级栗子"
+            },
+            "operation": {
+              "type": "hero",
+              "index": 0
+            },
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 0,
+        "label": "进入武器工坊"
+      }
+    },
+    {
+      "id": "pistol-field",
+      "chapter": "整备与实战",
+      "title": "替小夜探一回邮路",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.mainline.seen.pistolField",
+        "min": 1
+      },
+      "text": "完成一轮清缴，为小夜守好邮路。",
+      "lines": [
+        "小夜等着出发。完成一轮清缴，让他知道今天的邮路有人照应。",
+        "接取后完成本轮怪群与领主战即可，武器和载具不限。"
+      ],
+      "finish": "小夜收到平安的消息，终于肯背上邮袋了。你在工坊花的心思，变成了别人敢出门的底气。",
+      "reward": {
+        "coins": 300,
+        "wood": 180
+      },
+      "guide": {
+        "cue": "小夜等着出发。完成一轮清缴，让他知道今天的邮路有人照应。",
+        "thanks": "小夜收到平安的消息，终于肯背上邮袋了。你在工坊花的心思，变成了别人敢出门的底气。",
+        "steps": [
+          {
+            "label": "完成一轮清缴并击败领主",
+            "hint": "完成本轮怪群与领主战即可，武器和载具不限",
+            "operation": {
+              "type": "clearing",
+              "record": "pistolField"
+            },
+            "navigation": "patrol"
+          }
+        ]
+      },
+      "target": "patrol",
+      "targetWhen": {
+        "path": "progress.living.patrolActive",
+        "equals": true
+      }
+    },
+    {
+      "id": "first-letter",
+      "chapter": "邮路需要新工具",
+      "title": "没有寄出的回信",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.story.chapters.sunleaf-01.completed",
+        "equals": true
+      },
+      "text": "在晴叶回信驿完成第一章《没有寄出的回信》。",
+      "lines": [
+        "有封回信一直留在驿站。去看看那是谁还在等消息。",
+        "靠近委托板查看故事。故事中的枪车是临时借用，结束后回到你自己的装备。",
+        "先体验不同工具，再决定把辛苦攒下的金币花在哪里。故事结束别忘了回委托板交付。"
+      ],
+      "finish": "信送到了。回工坊整理一下弹匣和供弹机构，再去远征试试陌生装备。",
+      "reward": {
+        "coins": 740,
+        "wood": 500
+      },
+      "guide": {
+        "cue": "回信搁了好些天，收信的人还等着呢。去回信驿看看，替我跑一趟吧。",
+        "thanks": "信送到了。回工坊整理一下弹匣和供弹机构，再去远征试试陌生装备。",
+        "steps": [
+          {
+            "label": "完成故事第一章",
+            "hint": "晴叶回信驿",
+            "operation": {
+              "type": "story",
+              "chapter": "sunleaf-01"
+            },
+            "navigation": "storyPost"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "story-button",
+        "label": "查看回信故事"
+      }
+    },
+    {
+      "id": "pistol-parts",
+      "chapter": "第一份整备计划",
+      "title": "小夜不想再等那次换弹",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.weaponParts.0.capacity",
+            "min": 2
+          },
+          {
+            "path": "progress.weaponParts.0.reload",
+            "min": 2
+          },
+          {
+            "path": "progress.mainline.seen.trial",
+            "min": 1
+          }
+        ]
+      },
+      "text": "手枪弹匣和装填部件各升到2级，并在工坊演练命中靶子。",
+      "lines": [
+        "小夜来修一只被攥皱的信封。他没怪谁，只小声问：下次路上遇到怪物，换弹能不能快一点？",
+        "把松果手枪的弹匣与装填部件各升到2级。弹仓多装几发，供弹机构缩短装填等待；点选预览，再长按确认升级。",
+        "改好后去工坊演练场击毁试射靶，确认操作顺手。试装样枪只供演练，不会变成永久装备。"
+      ],
+      "finish": "这回装填利索了，小夜终于松开了信封。小灯在远征光门等你，去试试别的工具，也许下次能帮上不同的忙。",
+      "reward": {
+        "coins": 670,
+        "wood": 270
+      },
+      "guide": {
+        "cue": "小夜说，上回等你换弹时，他攥得信封都皱了。把弹匣和装填升到2级，再去演练场试好，他才放心同行。",
+        "thanks": "这回装填利索了，小夜终于松开了信封。小灯在远征光门等你，去试试别的工具，也许下次能帮上不同的忙。",
+        "steps": [
+          {
+            "label": "弹匣升到2级",
+            "hint": "安装弹仓",
+            "operation": {
+              "type": "upgrade",
+              "kind": "weapons",
+              "index": 0,
+              "part": "capacity"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "装填升到2级",
+            "hint": "安装供弹机构",
+            "operation": {
+              "type": "upgrade",
+              "kind": "weapons",
+              "index": 0,
+              "part": "reload"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "击毁试射靶",
+            "hint": "点工坊里的进入演练场",
+            "highlight": "#ws-test",
+            "operation": {
+              "type": "trial",
+              "kind": "weapons",
+              "index": 0
+            },
+            "navigation": "weaponsEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 0,
+        "label": "改装与试射"
+      }
+    },
+    {
+      "id": "expedition",
+      "chapter": "把见识带回营地",
+      "title": "带一套陌生装备出门",
+      "npc": "lumi",
+      "site": "rogue",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.realms.records.rogue.best",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.seen.blessing",
+            "min": 1
+          }
+        ]
+      },
+      "text": "完成远征至少一关，选一次祝福后返回森林。",
+      "lines": [
+        "你不必先买下所有武器，才知道自己喜欢什么。远征会给本局抽取的武器、车体和炮塔。",
+        "在光门里依次领取枪械和载具，主武器随车配套，确认后选择祝福。每关结束再选祝福，组合会慢慢长出自己的样子。",
+        "局内装备和祝福属于这次远征，已结算的资源带回森林。遇到难关也可以退出整备。"
+      ],
+      "finish": "带着祝福和见识回来了。把栗子培养到5级，检查领主战绩，再去挑一把新枪。",
+      "reward": {
+        "coins": 300,
+        "wood": 160,
+        "parts": 4
+      },
+      "guide": {
+        "cue": "远路上光靠熟悉的工具可不够。我备了借用装备，选个祝福试一趟吧。",
+        "thanks": "带着祝福和见识回来了。把栗子培养到5级，检查领主战绩，再去挑一把新枪。",
+        "steps": [
+          {
+            "label": "通过远征第一关",
+            "hint": "进入光门挑战",
+            "operation": {
+              "type": "click",
+              "dialog": "realm-dialog",
+              "selector": "[data-enter-realm=\"rogue\"]",
+              "label": "进入无尽远征"
+            },
+            "navigation": "rogueEntry"
+          },
+          {
+            "label": "选择一次祝福",
+            "hint": "在远征中选择祝福",
+            "navigation": "rogueEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "realm",
+        "mode": "rogue",
+        "label": "进入无尽远征"
+      }
+    },
+    {
+      "id": "first-boss",
+      "chapter": "第一份整备计划",
+      "title": "领主也会露出破绽",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.heroes.0",
+            "min": 5
+          },
+          {
+            "path": "progress.bosses",
+            "min": 1
+          }
+        ]
+      },
+      "text": "栗子升到5级，并取得一次森林领主战绩。",
+      "lines": [
+        "野猪王不是每次冲撞都能马上回头。看地上的蓄力预警，横向让开，再还击。",
+        "先把栗子升到5级。已经战胜过森林领主就不用重打；还没有战绩时，接取清缴并清完本轮怪群，领主会自动登场。"
+      ],
+      "finish": "第一枚核心拿到了。领主战绩、金币和材料一起决定你能购买哪些新工具。",
+      "reward": {
+        "coins": 1840,
+        "wood": 700,
+        "parts": 3
+      },
+      "guide": {
+        "cue": "先把栗子升到5级，再清完沿路怪潮挑战领主。看准冲撞，平安回来。",
+        "thanks": "回来就好！信袋旁还有成群芽团，找阿栎挑件能成片清路的工具吧。",
+        "steps": [
+          {
+            "label": "栗子升到5级",
+            "hint": "回工坊强化常用主力，再继续挑战",
+            "operation": {
+              "type": "hero",
+              "index": 0
+            },
+            "navigation": false,
+            "action": {
+              "type": "menu",
+              "id": "heroes-button",
+              "label": "升级栗子"
+            }
+          },
+          {
+            "label": "击败森林领主",
+            "hint": "清完5批怪物，击败领主完成本轮",
+            "operation": {
+              "type": "patrol-boss"
+            },
+            "navigation": "patrol"
+          }
+        ]
+      },
+      "target": "patrol",
+      "targetWhen": {
+        "path": "progress.living.patrolActive",
+        "equals": true
+      },
+      "action": {
+        "type": "clearing",
+        "label": "前往清缴告示牌"
+      }
+    },
+    {
+      "id": "buy-shotgun",
+      "chapter": "邮路需要新工具",
+      "title": "雪团画册里的空白页",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "path": "progress.weapons.3",
+                "min": 1
+              },
+              {
+                "path": "progress.weapons.1",
+                "min": 1
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "path": "progress.weapon",
+                "equals": 3
+              },
+              {
+                "path": "progress.weapon",
+                "equals": 1
+              }
+            ]
+          }
+        ]
+      },
+      "text": "任选橡果散弹枪或萤火激光步枪，购买并装备；已有的枪可直接使用。",
+      "lines": [
+        "雪团给我看了画册：花画了一半，剩下全是空白。她说路口的芽团太多，自己一靠近就只顾着跑。",
+        "橡果散弹枪能近处扫开一片，萤火激光步枪能穿透一列。到工坊演练比较，任选一把购买并装备；已经拥有就不用重买。",
+        "先备好工具，再接下一份清缴委托。她想带着小夜一起去看那片花，不想再让朋友跟着受惊。"
+      ],
+      "finish": "新枪备好了。雪团把空白页留着等你回来；下一趟请带这把枪去清缴，让她能安心出门。",
+      "reward": {
+        "coins": 230,
+        "wood": 80
+      },
+      "guide": {
+        "cue": "雪团想画林边的花，芽团却挤满了路口。替她挑一把散弹或激光，买好装备上，再去清路吧。",
+        "thanks": "新枪备好了。雪团把空白页留着等你回来；下一趟请带这把枪去清缴，让她能安心出门。",
+        "steps": [
+          {
+            "label": "任选一把清群武器",
+            "hint": "先演练，再决定购买",
+            "highlight": "#ws-purchase",
+            "operation": {
+              "type": "buy",
+              "kind": "weapons",
+              "indices": [
+                3,
+                1
+              ]
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "装备所选新枪",
+            "hint": "散弹或激光均可",
+            "action": {
+              "type": "menu",
+              "id": "weapons-button",
+              "label": "装备所选新枪"
+            },
+            "operation": {
+              "type": "equip",
+              "kind": "weapons",
+              "indices": [
+                3,
+                1
+              ]
+            },
+            "navigation": "weaponsEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 3,
+        "label": "挑选清群武器"
+      }
+    },
+    {
+      "id": "weapon-field",
+      "chapter": "邮路需要新工具",
+      "title": "替雪团守住写生的路",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.mainline.seen.weaponField",
+        "min": 1
+      },
+      "text": "完成一轮清缴，守住雪团写生的路。",
+      "lines": [
+        "雪团已经把画笔装进包里，却在门口来回检查。她怕自己又临阵退缩，让期待看花的小夜白等。",
+        "到告示牌接取清缴，完成这一轮怪群与领主战即可，武器和载具不限。",
+        "这次接取后取得的胜利才算帮忙，旧成绩和试射都不能代替。清缴结束回来告诉她，不用另外寻找画册物品。"
+      ],
+      "finish": "路守住了，谢谢你。雪团说，这一页要把等她的小夜也画进去，不再只画花。",
+      "reward": {
+        "coins": 300,
+        "wood": 180
+      },
+      "guide": {
+        "cue": "雪团和小夜约好看花，却还不敢出门。完成一轮清缴，把路口守下来。",
+        "thanks": "路守住了，谢谢你。雪团说，这一页要把等她的小夜也画进去，不再只画花。",
+        "steps": [
+          {
+            "label": "完成一轮清缴并击败领主",
+            "hint": "完成本轮怪群与领主战即可，武器和载具不限",
+            "operation": {
+              "type": "clearing",
+              "record": "weaponField"
+            },
+            "navigation": "patrol"
+          }
+        ]
+      },
+      "target": "patrol",
+      "targetWhen": {
+        "path": "progress.living.patrolActive",
+        "equals": true
+      }
+    },
+    {
+      "id": "football-day",
+      "chapter": "把大家平安带回来",
+      "title": "今天不把球当怪物",
+      "npc": "lumi",
+      "site": "footballEntry",
+      "goal": {
+        "path": "progress.realms.records.football.clears",
+        "min": 1
+      },
+      "text": "前往林间球场站，参加一场史莱姆足球并完成比赛。",
+      "lines": [
+        "邻居们借了块场地办球赛。这里比的是把球送进球门，不是谁打得最凶。",
+        "开赛前选本局用枪，利用弹道和击退推动球。比分和倒计时在场边，结束后再回森林。"
+      ],
+      "finish": "踢得痛快！雪团又有了新的写生想法，托青芽请你帮个小忙。",
+      "reward": {
+        "coins": 80,
+        "wood": 30
+      },
+      "guide": {
+        "cue": "大家等救援的人回来才开球，你的位置还空着呢。今天痛快玩一场吧！",
+        "thanks": "踢得痛快！雪团又有了新的写生想法，托青芽请你帮个小忙。",
+        "steps": [
+          {
+            "label": "完成一场史莱姆足球",
+            "hint": "用弹道把球推进球门",
+            "operation": {
+              "type": "click",
+              "dialog": "realm-dialog",
+              "selector": "[data-enter-realm=\"football\"]",
+              "label": "进入足球赛"
+            },
+            "navigation": "footballEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "realm",
+        "mode": "football",
+        "label": "参加史莱姆足球"
+      }
+    },
+    {
+      "id": "neighbor-garden",
+      "chapter": "写生路上的新叶",
+      "title": "替雪团照顾画里的新叶",
+      "npc": "mint",
+      "site": "camp",
+      "gardening": {
+        "kind": "grow",
+        "crop": 1
+      },
+      "goal": {
+        "all": [
+          {
+            "path": "progress.mainline.gardening.planted",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.gardening.watered",
+            "min": 1
+          }
+        ]
+      },
+      "text": "替雪团新种一块胡萝卜田，给同一块田浇水后即可交付。",
+      "lines": [
+        "护路和球赛忙过一阵，雪团把画册翻到了新的一页。她想画胡萝卜舒展开的新叶，托你替她播种、浇水，之后她会自己慢慢等着画。",
+        "用入门教学送的胡萝卜种子，接取后新种一块田，并给同一块田浇水。旧田和其他作物不能代替。",
+        "浇完即可交付、继续下一份委托。成熟后随时可以回来收获，收成归你，不要求一直守在田边。"
+      ],
+      "finish": "新叶有人照顾，雪团就放心了。谢谢你种下它、浇好水，接下来去忙别的吧，收成成熟后再来取。",
+      "reward": {
+        "wood": 20
+      },
+      "guide": {
+        "cue": "忙过护路和球赛，换个节奏帮雪团种一块胡萝卜田吧。给同一块田浇水后就能交付；不需要收获，也不用等成熟。",
+        "thanks": "新叶有人照顾，雪团就放心了。谢谢你种下它、浇好水，接下来去忙别的吧，收成成熟后再来取。",
+        "steps": [
+          {
+            "label": "新播种一块胡萝卜田",
+            "hint": "选空田 → 胡萝卜种子 → 播种；此前操作不计入",
+            "operation": {
+              "type": "farm",
+              "id": "plant"
+            },
+            "navigation": false
+          },
+          {
+            "label": "给这块胡萝卜田浇水",
+            "hint": "选水壶，浇刚种的那块田，随后回来交付",
+            "operation": {
+              "type": "farm",
+              "id": "water"
+            },
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "farm",
+        "label": "照顾这一茬胡萝卜"
+      }
+    },
+    {
+      "id": "weapon-style",
+      "chapter": "邮路需要新工具",
+      "title": "让雪团敢多画一会儿",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "any": [
+          {
+            "path": "progress.mods.0",
+            "min": 1
+          },
+          {
+            "path": "progress.mods.3",
+            "min": 1
+          },
+          {
+            "path": "progress.mods.1",
+            "min": 1
+          }
+        ]
+      },
+      "text": "用手枪、散弹或激光积累熟练度，安装一个改装套件。",
+      "lines": [
+        "雪团说自己画得慢，常常追不上花影。她不是催你打得快，只是希望下一次能从容些，不用画两笔就收拾。",
+        "继续用手枪、散弹或激光击败怪物、领主或砍树，积累熟练度；单纯命中不增加。满足要求后，到工坊安装一个改装套件。",
+        "套件会改变打法，也有取舍。先读属性，再选适合你护路习惯的一个；不必为这份请求买齐所有枪。"
+      ],
+      "finish": "工具顺手，陪人等一等也更有底气。苔轮听说你常替邻居跑远路，想和你聊聊第一辆战车。",
+      "reward": {
+        "coins": 120,
+        "wood": 130
+      },
+      "guide": {
+        "cue": "雪团想多留一会儿画花影，担心又拖累你。给熟悉的手枪、散弹或激光装个合手套件，备好下一趟护路工具。",
+        "thanks": "工具顺手，陪人等一等也更有底气。苔轮听说你常替邻居跑远路，想和你聊聊第一辆战车。",
+        "steps": [
+          {
+            "label": "安装一个改装套件",
+            "hint": "手枪、散弹或激光均可",
+            "operation": {
+              "type": "modify",
+              "kind": "weapons",
+              "indices": [
+                0,
+                3,
+                1
+              ]
+            },
+            "navigation": "weaponsEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 3,
+        "label": "查看改装套件"
+      }
+    },
+    {
+      "id": "first-vehicle",
+      "chapter": "车轮下的巡林路",
+      "title": "苔轮接不完的远路",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.vehicleHulls.0",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.seen.drive",
+            "min": 120
+          }
+        ]
+      },
+      "text": "购买松果战车，到北停车场换乘后驾驶120米。",
+      "lines": [
+        "小夜的信要送，铁牙的木料也在等。苔轮翻着行程簿，划掉自己的休息时间，却还是怕有人等急了。",
+        "去载具工坊购买松果战车。已有就直接使用；车辆停放位置会显示在工坊，按指引去取车。",
+        "选中松果战车，上车后在森林实际行驶120米。这次先熟悉驾驶，不要求交付信件或搬运额外货物。",
+        "车载炮与手持枪分别成长。车能帮你跑远路，也需要留意耐久，别为了赶路把自己困在林外。"
+      ],
+      "finish": "终于多了一个愿意跑远路的人。苔轮把休息时间重新写回簿子；先去西门帮忙守一轮，再回来照顾这辆新车。",
+      "reward": {
+        "coins": 200,
+        "wood": 150,
+        "parts": 4
+      },
+      "guide": {
+        "cue": "苔轮的代步车忙不过来，小夜的邮路又长。备一辆松果战车，亲自开一段，让大家多个能跑远路的帮手。",
+        "thanks": "终于多了一个愿意跑远路的人。苔轮把休息时间重新写回簿子；先去西门帮忙守一轮，再回来照顾这辆新车。",
+        "steps": [
+          {
+            "label": "购买松果战车",
+            "hint": "购买车体附带专属主炮",
+            "highlight": "#ws-purchase",
+            "operation": {
+              "type": "buy",
+              "kind": "vehicle",
+              "index": 0
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "驾驶120米",
+            "hint": "到北停车场靠近战车点击上车，旧车留在营地",
+            "action": false,
+            "highlight": "#vehicle-button",
+            "operation": {
+              "type": "drive",
+              "kind": "vehicle",
+              "index": 0
+            },
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "vehicle",
+        "index": 0,
+        "label": "查看轮式战车"
+      }
+    },
+    {
+      "id": "pine-patrol",
+      "chapter": "车轮下的巡林路",
+      "title": "西门的第一场怪潮",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "path": "progress.mainline.seen.westHorde",
+        "min": 1
+      },
+      "text": "前往西门，驾驶松果战车体验怪潮守门并领取结算奖励。",
+      "lines": [
+        "西门传来警铃！开着松果战车去帮伙伴守住拒马。",
+        "到西门点盾牌，选择开始守门。十波之后，点击领主头像迎战。",
+        "人倒下或拒马破损，伙伴会驾驶高阶装备接应。每次都有结算，领完奖励再回来整备。"
+      ],
+      "finish": "你已经守过家门，也见过伙伴的本领。现在回车库整备战车。",
+      "reward": {
+        "coins": 970,
+        "wood": 390
+      },
+      "guide": {
+        "cue": "西门又响铃了，伙伴们还守着拒马。开战车过去帮忙，我们会接应你。",
+        "thanks": "平安回来就好。车上添了不少凹痕，回库把装甲、引擎和主炮整备好。",
+        "steps": [
+          {
+            "label": "体验西门怪潮",
+            "hint": "点西门盾牌 → 守门 → 领取结算",
+            "operation": {
+              "type": "camp-defense",
+              "gate": "left",
+              "record": "westHorde"
+            },
+            "navigation": "westGate"
+          }
+        ]
+      },
+      "target": "westGate",
+      "action": {
+        "type": "camp-defense",
+        "gate": "left",
+        "label": "前往西门守门"
+      }
+    },
+    {
+      "id": "vehicle-service",
+      "chapter": "车轮下的巡林路",
+      "title": "别让小夜等在半路",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.vehicleHulls.0",
+            "min": 2
+          },
+          {
+            "path": "progress.vehicleParts.0.engine",
+            "min": 2
+          },
+          {
+            "nativeLevel": 0,
+            "min": 2
+          },
+          {
+            "path": "progress.mainline.seen.dismount",
+            "min": 1
+          }
+        ]
+      },
+      "text": "战车装甲、引擎、专属主炮伤害各升到2级，并下车一次。",
+      "lines": [
+        "小夜悄悄来问我，车要是停在林外，是不是只能一个人走回来。他担心的其实是你，不是那几封信。",
+        "把松果战车装甲、引擎和专属主炮伤害各升到2级。装甲撑住耐久，引擎改善机动，主炮负责清开挡路的怪群。",
+        "在载具工坊选择车体或武器部件，预览后长按升级；最后下车一次。手持枪升级不会代替专属主炮，载具损坏后要等修复再手动召回。"
+      ],
+      "finish": "车检查好了。青芽想请你先守住下一段清缴路线，等你平安回来，小夜才好放心再出门。",
+      "reward": {
+        "coins": 140,
+        "wood": 60
+      },
+      "guide": {
+        "cue": "小夜怕你接了远路却回不来。把松果战车装甲、引擎、主炮升到2级，再下车检查一次，替他放下这份担心。",
+        "thanks": "车检查好了。青芽想请你先守住下一段清缴路线，等你平安回来，小夜才好放心再出门。",
+        "steps": [
+          {
+            "label": "战车装甲升到2级",
+            "hint": "在车库安装装甲",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "index": 0,
+              "part": "armor"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "引擎升到2级",
+            "hint": "在车库安装引擎",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "index": 0,
+              "part": "engine"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "主炮升到2级",
+            "hint": "打开专属主炮部件",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "index": 0,
+              "part": "damage",
+              "native": true
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "下车一次",
+            "hint": "再点一次载具按钮",
+            "action": false,
+            "highlight": "#vehicle-button",
+            "operation": {
+              "type": "dismount"
+            },
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "vehicle",
+        "index": 0,
+        "label": "维护车体和主炮"
+      }
+    },
+    {
+      "id": "vehicle-field",
+      "chapter": "整备与实战",
+      "title": "替小夜守住下一段邮路",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.mainline.seen.vehicleField",
+        "min": 1
+      },
+      "text": "小夜还在等平安消息。完成一轮清缴，回来告诉他路守住了。",
+      "lines": [
+        "小夜没催你，只把明早的信又数了一遍。青芽想请你先去巡一段，免得他一路都提心吊胆。",
+        "到告示牌接取清缴，完成本轮怪群与领主战即可，武器和载具不限。",
+        "步行或驾驶任意载具都能完成；本次任务接取后的清缴成功才计入。"
+      ],
+      "finish": "你平安回来了，小夜终于把信袋背上肩。回信驿还有对岸的求助，去听听那封信吧。",
+      "reward": {
+        "coins": 300,
+        "wood": 180
+      },
+      "guide": {
+        "cue": "小夜还在等平安消息。完成一轮清缴，回来告诉他路守住了。",
+        "thanks": "你平安回来了，小夜终于把信袋背上肩。回信驿还有对岸的求助，去听听那封信吧。",
+        "steps": [
+          {
+            "label": "完成一轮清缴并击败领主",
+            "hint": "完成本轮怪群与领主战即可，武器和载具不限",
+            "operation": {
+              "type": "clearing",
+              "record": "vehicleField"
+            },
+            "navigation": "patrol"
+          }
+        ]
+      },
+      "target": "patrol",
+      "targetWhen": {
+        "path": "progress.living.patrolActive",
+        "equals": true
+      }
+    },
+    {
+      "id": "river-letter",
+      "chapter": "车轮下的巡林路",
+      "title": "送不到对岸的药箱",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.story.chapters.sunleaf-02.completed",
+        "equals": true
+      },
+      "text": "完成第二章，亲自体验气垫船渡河。",
+      "lines": [
+        "木桥正在维修，先到西岸补给点取药，再从木渡口开船送到东岸。",
+        "回信驿的第二章会借你一艘气垫船。潮汐水枪可以让目标潮湿，鸣雷电弧枪能利用这种状态。",
+        "火焰擅长持续灼烧，冰晶能限制移动；先理解环境和状态，再挑选元素装备。"
+      ],
+      "finish": "河不再只是地图上的一道蓝线。想把这种便利留在自己的车库，就要自己准备船的配方。",
+      "reward": {
+        "coins": 350,
+        "wood": 150,
+        "crystal": 4
+      },
+      "guide": {
+        "cue": "桥还没修好，对岸等着药呢。我借好了船，去西岸取药，从渡口送过去。",
+        "thanks": "药送到就好。去厨房吃点热的吧，阿团正愁铁牙的午饭没人送。",
+        "steps": [
+          {
+            "label": "完成故事第二章",
+            "hint": "体验气垫船渡河",
+            "operation": {
+              "type": "story",
+              "chapter": "sunleaf-02"
+            },
+            "navigation": "storyPost"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "story-button",
+        "label": "前往第二章"
+      }
+    },
+    {
+      "id": "neighbors",
+      "chapter": "森林不只有敌人",
+      "title": "领主的午饭也会凉",
+      "npc": "mint",
+      "site": "neighbors",
+      "goal": {
+        "path": "progress.living.requests.neighbors-lunch.completed",
+        "equals": true
+      },
+      "text": "在邻里面板接取并完成《野猪王的减盐午餐》。",
+      "lines": [
+        "野猪王拦路时凶得很，可它也会为一顿午饭着急。去厨房看看阿团，帮他把午餐送出去。",
+        "邻里面板可以接委托、看近况、回信和手记。追踪请求后，走近当前人物或道具会自动打开交互页面，由你确认继续。",
+        "每份请求都有资源报酬，全部完成还有独立赠礼。办完再来看看：邻居会洗碗、换班，每季最后一天还会开集市。"
+      ],
+      "finish": "午饭送到了，辛苦你跑这一趟。去工坊免费试驾气垫船，认识它的本领吧。",
+      "reward": {
+        "coins": 450,
+        "wood": 200
+      },
+      "guide": {
+        "cue": "铁牙的午饭快凉了，阿团却走不开。去厨房问问，帮他送一趟吧。",
+        "thanks": "午饭送到了，辛苦你跑这一趟。去工坊免费试驾气垫船，认识它的本领吧。",
+        "steps": [
+          {
+            "label": "送出减盐午餐",
+            "hint": "邻里 → 野猪王的减盐午餐",
+            "operation": {
+              "type": "click",
+              "dialog": "living-dialog",
+              "selector": "[data-living-accept=\"neighbors-lunch\"]",
+              "label": "接下减盐午餐"
+            },
+            "navigation": "neighbors"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "living-menu",
+        "label": "查看邻里请求"
+      }
+    },
+    {
+      "id": "own-hover",
+      "chapter": "把见识带回营地",
+      "title": "认识气垫船的本领",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "any": [
+          {
+            "path": "progress.vehicleHulls.3",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.seen.hoverTrial",
+            "min": 1
+          }
+        ]
+      },
+      "text": "免费试驾气垫船并击破靶标；已拥有也可直接交付。",
+      "lines": [
+        "苔轮想让你先认识气垫船的本领。工坊有免费演练，击破一个靶标就能带回心得；已有车辆也能直接交付。",
+        "演练使用临时装备，不消耗材料，不赠送所有权。是否购买由你决定，后续整备和守门可以沿用自己的车辆。"
+      ],
+      "finish": "这份心得记下了。照顾好已有的车辆，再去帮邻居守一班。",
+      "reward": {
+        "coins": 350,
+        "wood": 140
+      },
+      "guide": {
+        "cue": "苔轮想让你先认识气垫船的本领。工坊有免费演练，击破一个靶标就能带回心得；已有车辆也能直接交付。",
+        "thanks": "这份心得记下了。照顾好已有的车辆，再去帮邻居守一班。",
+        "steps": [
+          {
+            "label": "免费试驾气垫船并击破靶标",
+            "hint": "已有车辆可直接交付；不要求购买",
+            "operation": {
+              "type": "trial",
+              "kind": "vehicle",
+              "index": 3,
+              "record": "hoverTrial"
+            },
+            "navigation": "garageEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "vehicle",
+        "index": 3,
+        "label": "进入免费试驾"
+      }
+    },
+    {
+      "id": "hover-service",
+      "chapter": "载具成长",
+      "title": "把常用的车辆照顾好",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "path": "progress.vehicleHulls.0",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.1",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.2",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.3",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.4",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.5",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.6",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.7",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleHulls.8",
+                "min": 3
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "path": "progress.vehicleParts.0.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.1.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.2.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.3.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.4.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.5.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.6.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.7.engine",
+                "min": 3
+              },
+              {
+                "path": "progress.vehicleParts.8.engine",
+                "min": 3
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "nativeLevel": 0,
+                "min": 3
+              },
+              {
+                "nativeLevel": 1,
+                "min": 3
+              },
+              {
+                "nativeLevel": 2,
+                "min": 3
+              },
+              {
+                "nativeLevel": 3,
+                "min": 3
+              },
+              {
+                "nativeLevel": 6,
+                "min": 3
+              },
+              {
+                "nativeLevel": 7,
+                "min": 3
+              }
+            ]
+          }
+        ]
+      },
+      "text": "已有车体装甲、引擎和一门主力专属主炮各达到3级。",
+      "lines": [
+        "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到3级，不必为这次委托另买高级载具。",
+        "不同已有车辆的整备成果都可核验；无主炮的代步车可配合已拥有战车的主炮完成检查。"
+      ],
+      "finish": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
+      "reward": {
+        "coins": 240,
+        "wood": 160,
+        "parts": 4
+      },
+      "guide": {
+        "cue": "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到3级，不必为这次委托另买高级载具。",
+        "thanks": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
+        "steps": [
+          {
+            "label": "已有车体装甲达到3级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "part": "armor"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "已有车辆引擎达到3级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "part": "engine"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "一门主力专属主炮达到3级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                6,
+                7
+              ],
+              "part": "damage",
+              "native": true
+            },
+            "navigation": "garageEntry"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hover-horde",
+      "chapter": "整备与实战",
+      "title": "替枭爵守住热饭的时间",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "path": "progress.mainline.seen.hoverHorde",
+        "min": 1
+      },
+      "text": "使用自己顺手的装备，守住西门十波并击败领主。",
+      "lines": [
+        "带上自己顺手的装备，守住西门十波并击败领主。",
+        "只记录接取这份委托后的正式胜利，不要求使用指定载具或枪械。"
+      ],
+      "finish": "大家收到了平安的消息，这份辛苦记在巡林簿里。",
+      "reward": {
+        "coins": 300,
+        "wood": 180
+      },
+      "guide": {
+        "cue": "带上自己顺手的装备，守住西门十波并击败领主。",
+        "thanks": "大家收到了平安的消息，这份辛苦记在巡林簿里。",
+        "steps": [
+          {
+            "label": "守住西门十波并击败领主",
+            "hint": "使用顺手的装备完成本次正式战斗",
+            "operation": {
+              "type": "camp-defense",
+              "gate": "left",
+              "record": "hoverHorde",
+              "win": true
+            },
+            "navigation": "westGate"
+          }
+        ]
+      },
+      "target": "westGate"
+    },
+    {
+      "id": "road-trial",
+      "chapter": "更远的地方也有回信",
+      "title": "最后一班运木车",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.story.chapters.sunleaf-03.completed",
+        "equals": true
+      },
+      "text": "完成第三章，体验重坦与轻车的节奏。",
+      "lines": [
+        "运木队最后一班车不想丢下任何一个伙伴。去陪他们把路走完。",
+        "重坦耐久高、主炮重，但转移阵地不如轻车轻快。冰晶减速能给护送争取时间。"
+      ],
+      "finish": "路走完了，车队也认可你的重装驾驶能力。想购买重型坦克，仍要备齐原来的材料和金币。",
+      "reward": {
+        "coins": 600,
+        "wood": 240,
+        "parts": 5
+      },
+      "guide": {
+        "cue": "最后一班运木车要接回落后的伙伴。路不好走，你能去照应一趟吗？",
+        "thanks": "一个也没落下，真好。小灯想请你带常用装备登塔，看看能走多远。",
+        "steps": [
+          {
+            "label": "完成故事第三章",
+            "hint": "护送最后一班运木车",
+            "operation": {
+              "type": "story",
+              "chapter": "sunleaf-03"
+            },
+            "navigation": "storyPost"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "story-button",
+        "label": "前往第三章"
+      }
+    },
+    {
+      "id": "tower",
+      "chapter": "更远的地方也有回信",
+      "title": "小灯想放心守住的夜灯",
+      "npc": "lumi",
+      "site": "tower",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "path": "progress.weapons.0",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.1",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.2",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.3",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.4",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.5",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.6",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.7",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.8",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.9",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.10",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.11",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.12",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.13",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.14",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.15",
+                "min": 4
+              },
+              {
+                "path": "progress.weapons.16",
+                "min": 4
+              }
+            ]
+          },
+          {
+            "path": "progress.realms.records.tower.best",
+            "min": 3
+          }
+        ]
+      },
+      "text": "一件主力武器升到4级；使用永久装备完成时空塔前3层。",
+      "lines": [
+        "小灯说，夜里最怕的不是黑，是有人看着灯等她撑住。她想请你先把常用工具磨合好，再一起守灯。",
+        "将任意一件主力武器伤害升到4级，使用永久装备通过时空塔前三层。塔里检验的是自己的装备，远征借装不能代替。",
+        "每层清完可以休整，卡住就回工坊补强，不必一口气爬到顶。等你带回经验，她也想学着少慌一点。"
+      ],
+      "finish": "前三层走稳了，小灯记下了你的办法。维修棚的新伙伴也需要帮助，青芽请你先去陪陪它。",
+      "reward": {
+        "coins": 300,
+        "wood": 280,
+        "crystal": 4
+      },
+      "guide": {
+        "cue": "小灯担心下次独自守灯时撑不住。把一件主力武器升到4级，带自己的装备通过塔前三层，替她试好一套可靠办法。",
+        "thanks": "前三层走稳了，小灯记下了你的办法。维修棚的新伙伴也需要帮助，青芽请你先去陪陪它。",
+        "steps": [
+          {
+            "label": "一件主力武器升到4级",
+            "hint": "回工坊强化常用主力，再继续挑战",
+            "operation": {
+              "type": "upgrade",
+              "kind": "weapons",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ],
+              "part": "damage"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "通过时空塔3层",
+            "hint": "卡关就回工坊整备",
+            "operation": {
+              "type": "click",
+              "dialog": "realm-dialog",
+              "selector": "[data-enter-realm=\"tower\"]",
+              "label": "进入时空塔"
+            },
+            "navigation": "towerEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "realm",
+        "mode": "tower",
+        "label": "挑战时空塔"
+      }
+    },
+    {
+      "id": "mechanical-letter",
+      "chapter": "伙伴与天空",
+      "title": "没有名字的小队员",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.story.chapters.sunleaf-04.completed",
+        "equals": true
+      },
+      "text": "完成第四章，体验机械核心和小队命名。",
+      "lines": [
+        "维修棚里醒来一个没有名字的小队员。它需要的可能不只是一块新零件。",
+        "机械核心逐只部署伙伴，协调与能源决定它们能怎样协作；手中的控制器不等于它们身上的武器。",
+        "更高级的星环浮游炮、机械核心和机械蜘蛛，资源攒齐即可购买。先体验，慢慢做计划。"
+      ],
+      "finish": "新伙伴有名字了。接下来到守护祭坛试试布防，让伙伴和防线一起出力。",
+      "reward": {
+        "coins": 400,
+        "wood": 160,
+        "crystal": 5
+      },
+      "guide": {
+        "cue": "维修棚的小家伙醒了，却不肯出门，连名字也没有。去陪陪它吧。",
+        "thanks": "新伙伴有名字了。接下来到守护祭坛试试布防，让伙伴和防线一起出力。",
+        "steps": [
+          {
+            "label": "完成故事第四章",
+            "hint": "体验机械伙伴",
+            "operation": {
+              "type": "story",
+              "chapter": "sunleaf-04"
+            },
+            "navigation": "storyPost"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "story-button",
+        "label": "前往第四章"
+      }
+    },
+    {
+      "id": "guardian",
+      "chapter": "更远的地方也有回信",
+      "title": "让灯在夜里亮着",
+      "npc": "lumi",
+      "site": "guardian",
+      "goal": {
+        "all": [
+          {
+            "path": "progress.realms.records.guardian.best",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.seen.defense",
+            "min": 1
+          }
+        ]
+      },
+      "text": "守护女神至少清一波，并成功部署、升级或回收防御一次。",
+      "lines": [
+        "守灯不是一个人站在前面把所有攻击扛下来。选位置，让防御和你的走位互相照应。",
+        "在布防或休整阶段选择格位部署武器，用局内资源升级，也可以回收调整位置。",
+        "这里的布防货币只服务这次挑战，和工坊购买永久装备的钱分开。"
+      ],
+      "finish": "灯稳了，赶路的人不用摸黑了。回信驿又收到了树冠上方的消息，去看看吧。",
+      "reward": {
+        "coins": 250,
+        "wood": 100,
+        "parts": 5
+      },
+      "guide": {
+        "cue": "夜里赶路的人靠这盏灯认方向。我怕顾不过来，帮我布好防线吧。",
+        "thanks": "灯稳了，赶路的人不用摸黑了。回信驿又收到了树冠上方的消息，去看看吧。",
+        "steps": [
+          {
+            "label": "守护祭坛通过一波",
+            "hint": "进入守护挑战",
+            "operation": {
+              "type": "click",
+              "dialog": "realm-dialog",
+              "selector": "[data-enter-realm=\"guardian\"]",
+              "label": "进入守护祭坛"
+            },
+            "navigation": "guardianEntry"
+          },
+          {
+            "label": "布防一次",
+            "hint": "部署、升级或回收均可",
+            "navigation": "guardianEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "realm",
+        "mode": "guardian",
+        "label": "前往守护祭坛"
+      }
+    },
+    {
+      "id": "flight-trial",
+      "chapter": "伙伴与天空",
+      "title": "树冠上方的灯",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.story.chapters.sunleaf-05.completed",
+        "equals": true
+      },
+      "text": "完成第五章，实际飞行并在落点下机。",
+      "lines": [
+        "树冠上方的灯不是装饰。有人靠它辨认归途，需要你亲自去确认。",
+        "直升机能越过水面和地形，但低空仍会受伤。到落点时必须实际下机，飞过不算抵达。"
+      ],
+      "finish": "这次飞行让你熟悉了直升机。喜欢的话，攒齐配方就可以买一架。",
+      "reward": {
+        "coins": 700,
+        "wood": 280,
+        "parts": 6
+      },
+      "guide": {
+        "cue": "树冠上的人靠灯找家。这封信得请你飞上去送，也看看灯还亮不亮。",
+        "thanks": "灯的消息带回来了。找苔轮免费试驾，喜欢这种驾驶方式再考虑长期培养。",
+        "steps": [
+          {
+            "label": "完成故事第五章",
+            "hint": "飞到落点后记得下机",
+            "operation": {
+              "type": "story",
+              "chapter": "sunleaf-05"
+            },
+            "navigation": "storyPost"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "story-button",
+        "label": "前往第五章"
+      }
+    },
+    {
+      "id": "own-aircraft",
+      "chapter": "伙伴与天空",
+      "title": "认识直升机的本领",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "any": [
+          {
+            "path": "progress.vehicleHulls.2",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.seen.aircraftTrial",
+            "min": 1
+          }
+        ]
+      },
+      "text": "免费试驾直升机并击破靶标；已拥有也可直接交付。",
+      "lines": [
+        "苔轮想让你先认识直升机的本领。工坊有免费演练，击破一个靶标就能带回心得；已有车辆也能直接交付。",
+        "演练使用临时装备，不消耗材料，不赠送所有权。是否购买由你决定，后续整备和守门可以沿用自己的车辆。"
+      ],
+      "finish": "这份心得记下了。照顾好已有的车辆，再去帮邻居守一班。",
+      "reward": {
+        "coins": 400,
+        "wood": 200
+      },
+      "guide": {
+        "cue": "苔轮想让你先认识直升机的本领。工坊有免费演练，击破一个靶标就能带回心得；已有车辆也能直接交付。",
+        "thanks": "这份心得记下了。照顾好已有的车辆，再去帮邻居守一班。",
+        "steps": [
+          {
+            "label": "免费试驾直升机并击破靶标",
+            "hint": "已有车辆可直接交付；不要求购买",
+            "operation": {
+              "type": "trial",
+              "kind": "vehicle",
+              "index": 2,
+              "record": "aircraftTrial"
+            },
+            "navigation": "garageEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "vehicle",
+        "index": 2,
+        "label": "进入免费试驾"
+      }
+    },
+    {
+      "id": "aircraft-service",
+      "chapter": "载具成长",
+      "title": "把常用的车辆照顾好",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "path": "progress.vehicleHulls.0",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.1",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.2",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.3",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.4",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.5",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.6",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.7",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.8",
+                "min": 4
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "path": "progress.vehicleParts.0.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.1.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.2.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.3.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.4.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.5.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.6.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.7.engine",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleParts.8.engine",
+                "min": 4
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "nativeLevel": 0,
+                "min": 4
+              },
+              {
+                "nativeLevel": 1,
+                "min": 4
+              },
+              {
+                "nativeLevel": 2,
+                "min": 4
+              },
+              {
+                "nativeLevel": 3,
+                "min": 4
+              },
+              {
+                "nativeLevel": 6,
+                "min": 4
+              },
+              {
+                "nativeLevel": 7,
+                "min": 4
+              }
+            ]
+          }
+        ]
+      },
+      "text": "已有车体装甲、引擎和一门主力专属主炮各达到4级。",
+      "lines": [
+        "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到4级，不必为这次委托另买高级载具。",
+        "不同已有车辆的整备成果都可核验；无主炮的代步车可配合已拥有战车的主炮完成检查。"
+      ],
+      "finish": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
+      "reward": {
+        "coins": 240,
+        "wood": 160,
+        "parts": 4
+      },
+      "guide": {
+        "cue": "下一班巡护又要出发了。沿用已有车辆，把装甲、引擎和主力专属主炮各养到4级，不必为这次委托另买高级载具。",
+        "thanks": "常用装备准备好了，带自己顺手的装备去支援邻居吧。",
+        "steps": [
+          {
+            "label": "已有车体装甲达到4级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "part": "armor"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "已有车辆引擎达到4级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "part": "engine"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "一门主力专属主炮达到4级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                6,
+                7
+              ],
+              "part": "damage",
+              "native": true
+            },
+            "navigation": "garageEntry"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aircraft-field",
+      "chapter": "整备与实战",
+      "title": "给等灯的人一个平安消息",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.mainline.seen.aircraftField",
+        "min": 1
+      },
+      "text": "使用自己顺手的装备，完成一轮清缴并击败领主。",
+      "lines": [
+        "带上自己顺手的装备，完成一轮清缴并击败领主。",
+        "只记录接取这份委托后的正式胜利，不要求使用指定载具或枪械。"
+      ],
+      "finish": "大家收到了平安的消息，这份辛苦记在巡林簿里。",
+      "reward": {
+        "coins": 300,
+        "wood": 180
+      },
+      "guide": {
+        "cue": "带上自己顺手的装备，完成一轮清缴并击败领主。",
+        "thanks": "大家收到了平安的消息，这份辛苦记在巡林簿里。",
+        "steps": [
+          {
+            "label": "完成一轮清缴并击败领主",
+            "hint": "使用顺手的装备完成本次正式战斗",
+            "operation": {
+              "type": "clearing",
+              "record": "aircraftField"
+            },
+            "navigation": "patrol"
+          }
+        ]
+      },
+      "target": "patrol",
+      "targetWhen": {
+        "path": "progress.living.patrolActive",
+        "equals": true
+      }
+    },
+    {
+      "id": "other-map",
+      "chapter": "伙伴与天空",
+      "title": "把巡林簿带到别处",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.mainline.seen.valley",
+        "min": 1
+      },
+      "text": "从地图切换到九寨沟，再回晴叶营地。",
+      "lines": [
+        "巡林簿不该只有营地一页。湖泊、浅滩和山路，会让同一套装备有不同的用途。",
+        "打开手机里的地图，选择九寨沟。战斗、故事或特殊活动中可能暂时不能旅行，先按提示退出当前活动。",
+        "正式森林的昼夜和季节随游戏日期推进。点右上角看日程；结束巡护、回到安宁处后，可以在邻里面板休息到下一时段，离线时世界暂停。"
+      ],
+      "finish": "见过别处，才更懂得照顾自己的家。现在营地需要一趟救援。",
+      "reward": {
+        "coins": 60,
+        "wood": 300
+      },
+      "guide": {
+        "cue": "巡林簿还缺九寨沟那一页。去看看湖泊和山路，回来讲给我们听。",
+        "thanks": "路况记下了，多谢。消防站刚来消息，小灯正等帮手，快去看看。",
+        "steps": [
+          {
+            "label": "前往九寨沟",
+            "hint": "通过手机地图切换地区",
+            "operation": {
+              "type": "click",
+              "dialog": "map-dialog",
+              "selector": "[data-map=\"jiuzhaigou\"]",
+              "label": "前往九寨沟"
+            },
+            "navigation": false
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "phone-button",
+        "label": "打开手机，查看地图与旅行"
+      }
+    },
+    {
+      "id": "fire-duty",
+      "chapter": "把大家平安带回来",
+      "title": "一趟真正的救援",
+      "npc": "lumi",
+      "site": "fire",
+      "goal": {
+        "path": "progress.realms.records.fire.clears",
+        "min": 1
+      },
+      "text": "完成一次消防出动，补水、灭火并回站交接。",
+      "lines": [
+        "消防站的车是救援工具，不是普通武器商店里的商品。先接受调度，再出车。",
+        "按火警指引赶往火点，注意剩余水量；缺水时到补水点。清除火情后回站交接，任务才算结束。",
+        "火苗和普通怪潮不是一回事，带着空水箱冲进树林可帮不上忙。"
+      ],
+      "finish": "救援交接完成。青芽收齐了沿途的回信，去回信驿把大家的声音送到总站。",
+      "reward": {
+        "coins": 200,
+        "wood": 130,
+        "parts": 4
+      },
+      "guide": {
+        "cue": "林子起火了，人手不够！水车已备好，听完调度再出发，平安回来。",
+        "thanks": "救援交接完成。青芽收齐了沿途的回信，去回信驿把大家的声音送到总站。",
+        "steps": [
+          {
+            "label": "完成一次消防出动",
+            "hint": "灭火后回站交接",
+            "operation": {
+              "type": "click",
+              "dialog": "fire-dialog",
+              "selector": "[data-fire-accept]",
+              "label": "接警出动"
+            },
+            "navigation": "fireEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "fire",
+        "label": "查看消防调度"
+      }
+    },
+    {
+      "id": "last-letter",
+      "chapter": "把大家平安带回来",
+      "title": "让森林听见现在",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "path": "progress.story.chapters.sunleaf-06.completed",
+        "equals": true
+      },
+      "text": "完成第六章，把沿途的回信送到总站。",
+      "lines": [
+        "旧广播总在重复过去的求救。现在，该让森林听见大家今天的声音。",
+        "把渡河、护送、伙伴和飞行中学到的东西一起用上。选择适合路线的装备，守住上传点。"
+      ],
+      "finish": "森林听见了现在。你已经知道每种工具能帮谁，最后再选一个真正想长期养成的目标。",
+      "reward": {
+        "coins": 800,
+        "wood": 320,
+        "crystal": 6
+      },
+      "guide": {
+        "cue": "回信收齐了，旧广播却还在重复求救。送去总站，让大家听听新消息吧。",
+        "thanks": "广播里终于有大家的笑声了。找阿栎聊聊吧，往后想带什么一起巡林？",
+        "steps": [
+          {
+            "label": "完成故事第六章",
+            "hint": "把回信送到总站",
+            "operation": {
+              "type": "story",
+              "chapter": "sunleaf-06"
+            },
+            "navigation": "storyPost"
+          }
+        ]
+      },
+      "action": {
+        "type": "menu",
+        "id": "story-button",
+        "label": "完成终章回信"
+      }
+    },
+    {
+      "id": "advanced-license",
+      "chapter": "自己的巡林方式",
+      "title": "铁牙想找个搭班的伙伴",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "path": "progress.weapons.0",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.1",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.2",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.3",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.4",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.5",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.6",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.7",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.8",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.9",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.10",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.11",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.12",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.13",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.14",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.15",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.16",
+                "min": 5
+              }
+            ]
+          },
+          {
+            "path": "progress.mainline.seen.track",
+            "min": 1
+          }
+        ]
+      },
+      "text": "一件主力武器升到5级；追踪一件未拥有装备。",
+      "lines": [
+        "铁牙修花架、管维修棚，还总惦记路口。他说自己忙得过来，青芽却想请你找一套能分担巡护的伙伴。",
+        "先把一件常用武器升到5级，再在工坊追踪喜欢的高级装备。追踪是长期目标，不要求现在买下。",
+        "浮游模块、机械伙伴和子蛛各有配置方式。先看演练和配方，选适合自己的；追踪只记录缺口，不会替你购买。"
+      ],
+      "finish": "把想要的装备记下来，先免费演练再决定是否长期培养。",
+      "reward": {
+        "coins": 500,
+        "wood": 200,
+        "parts": 8
+      },
+      "guide": {
+        "cue": "铁牙总想一个人顾住几处路口。把主力武器升到5级，再追踪一套高级控制器，替他准备能分担的伙伴。",
+        "thanks": "把想要的装备记下来，先免费演练再决定是否长期培养。",
+        "steps": [
+          {
+            "label": "一件主力武器升到5级",
+            "hint": "回工坊强化常用主力，再继续挑战",
+            "operation": {
+              "type": "upgrade",
+              "kind": "weapons",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ],
+              "part": "damage"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "追踪一件未拥有装备",
+            "hint": "在工坊点追踪",
+            "highlight": "#ws-track",
+            "operation": {
+              "type": "track",
+              "kind": "weapons",
+              "indices": [
+                12,
+                15,
+                16
+              ]
+            },
+            "navigation": "weaponsEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 12,
+        "label": "查看高级装备与追踪"
+      }
+    },
+    {
+      "id": "own-controller",
+      "chapter": "自己的巡林方式",
+      "title": "认识搭班的新伙伴",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "any": [
+          {
+            "path": "progress.weapons.12",
+            "min": 1
+          },
+          {
+            "path": "progress.weapons.15",
+            "min": 1
+          },
+          {
+            "path": "progress.weapons.16",
+            "min": 1
+          },
+          {
+            "path": "progress.mainline.seen.controllerTrial",
+            "min": 1
+          }
+        ]
+      },
+      "text": "免费演练一种高级控制器并击破靶标；已拥有也可直接交付。",
+      "lines": [
+        "铁牙想请你认识浮游炮、机械猫和机械蜘蛛。挑一种免费演练，实际击破靶标；已经拥有任意一种也能交付。",
+        "演练不消耗资源、不赠送装备。体验后再决定是否购买，主线不要求买齐或买下高级控制器。"
+      ],
+      "finish": "伙伴的本领见识到了，接下来核验一次协同作战的心得。",
+      "reward": {
+        "coins": 300,
+        "wood": 120
+      },
+      "guide": {
+        "cue": "铁牙想请你认识浮游炮、机械猫和机械蜘蛛。挑一种免费演练，实际击破靶标；已经拥有任意一种也能交付。",
+        "thanks": "伙伴的本领见识到了，接下来核验一次协同作战的心得。",
+        "steps": [
+          {
+            "label": "免费演练一种高级控制器",
+            "hint": "击破靶标；已有装备可直接交付",
+            "operation": {
+              "type": "trial",
+              "kind": "weapons",
+              "indices": [
+                12,
+                15,
+                16
+              ],
+              "record": "controllerTrial"
+            },
+            "navigation": "weaponsEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 12,
+        "label": "进入免费演练"
+      }
+    },
+    {
+      "id": "controller-setup",
+      "chapter": "自己的巡林方式",
+      "title": "把协同作战的心得带回来",
+      "npc": "oak",
+      "site": "weapons",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "controllerReady": true
+              },
+              {
+                "path": "progress.mainline.seen.controllerTrial",
+                "min": 1
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "path": "progress.mainline.seen.companions",
+                "min": 1
+              },
+              {
+                "path": "progress.mainline.seen.controllerTrial",
+                "min": 1
+              }
+            ]
+          }
+        ]
+      },
+      "text": "完成控制器免费演练，或配置自己的控制器并实际部署伙伴。",
+      "lines": [
+        "铁牙想知道伙伴怎样和你配合。免费演练中实际击破过靶标，就能带回心得；已经完成的体验不必重做。",
+        "也可以装备自己的控制器，打开对应配置并在森林实际部署伙伴。两种方式都认可，不要求为教学购买装备。"
+      ],
+      "finish": "心得记下了。最后用自己顺手的装备，替邻居守一次西门。",
+      "reward": {
+        "coins": 600,
+        "wood": 240,
+        "crystal": 6
+      },
+      "guide": {
+        "cue": "铁牙想知道伙伴怎样和你配合。免费演练中实际击破过靶标，就能带回心得；已经完成的体验不必重做。",
+        "thanks": "心得记下了。最后用自己顺手的装备，替邻居守一次西门。",
+        "steps": [
+          {
+            "label": "认识控制器协同方式",
+            "hint": "免费演练中击破靶标即可；已有体验直接认可",
+            "operation": {
+              "type": "trial",
+              "kind": "weapons",
+              "indices": [
+                12,
+                15,
+                16
+              ],
+              "record": "controllerTrial"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "完成一次伙伴实战体验",
+            "hint": "免费演练中击破靶标即可；已有体验直接认可",
+            "operation": {
+              "type": "trial",
+              "kind": "weapons",
+              "indices": [
+                12,
+                15,
+                16
+              ],
+              "record": "controllerTrial"
+            },
+            "navigation": "weaponsEntry"
+          }
+        ]
+      },
+      "action": {
+        "type": "workshop",
+        "kind": "weapons",
+        "index": 12,
+        "label": "免费体验伙伴协同"
+      }
+    },
+    {
+      "id": "long-patrol",
+      "chapter": "自己的巡林方式",
+      "title": "给大家留一支靠得住的小队",
+      "npc": "mint",
+      "site": "camp",
+      "goal": {
+        "all": [
+          {
+            "any": [
+              {
+                "nativeLevel": 0,
+                "min": 4
+              },
+              {
+                "nativeLevel": 1,
+                "min": 4
+              },
+              {
+                "nativeLevel": 2,
+                "min": 4
+              },
+              {
+                "nativeLevel": 3,
+                "min": 4
+              },
+              {
+                "nativeLevel": 6,
+                "min": 4
+              },
+              {
+                "nativeLevel": 7,
+                "min": 4
+              }
+            ]
+          },
+          {
+            "path": "progress.heroes.0",
+            "min": 3
+          },
+          {
+            "any": [
+              {
+                "path": "progress.weapons.0",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.1",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.2",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.3",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.4",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.5",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.6",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.7",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.8",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.9",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.10",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.11",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.12",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.13",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.14",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.15",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.16",
+                "min": 5
+              },
+              {
+                "path": "progress.weapons.17",
+                "min": 5
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "path": "progress.vehicleHulls.0",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.1",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.2",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.3",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.4",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.5",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.6",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.7",
+                "min": 4
+              },
+              {
+                "path": "progress.vehicleHulls.8",
+                "min": 4
+              }
+            ]
+          }
+        ]
+      },
+      "text": "主力车炮4级、栗子3级、任意武器5级、已有车体4级。",
+      "lines": [
+        "青芽想让送信、看花和吃热饭都有人照应。准备好常用的小队，替大家接住最后一班西门守卫。",
+        "主力车炮4级、栗子3级、任意武器5级、已有车体4级即可；不需要高级控制器，也不要求把装备升到高等级。"
+      ],
+      "finish": "整队准备好了。带自己顺手的装备回西门，大家留着热饭等你。",
+      "reward": {
+        "coins": 400,
+        "wood": 160,
+        "core": 1
+      },
+      "guide": {
+        "cue": "青芽想让送信、看花和吃热饭都有人照应。准备好常用的小队，替大家接住最后一班西门守卫。",
+        "thanks": "整队准备好了。带自己顺手的装备回西门，大家留着热饭等你。",
+        "steps": [
+          {
+            "label": "一门主力车炮达到4级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                6,
+                7
+              ],
+              "native": true,
+              "part": "damage"
+            },
+            "navigation": "garageEntry"
+          },
+          {
+            "label": "栗子达到3级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "operation": {
+              "type": "hero",
+              "index": 0
+            },
+            "navigation": false,
+            "action": {
+              "type": "menu",
+              "id": "heroes-button",
+              "label": "升级栗子"
+            }
+          },
+          {
+            "label": "任意主力武器达到5级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "action": {
+              "type": "menu",
+              "id": "weapons-button",
+              "label": "打开武器页"
+            },
+            "operation": {
+              "type": "upgrade",
+              "kind": "weapons",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+              ],
+              "part": "damage"
+            },
+            "navigation": "weaponsEntry"
+          },
+          {
+            "label": "已有车体达到4级",
+            "hint": "沿用已有装备，已达标无需重复升级",
+            "action": {
+              "type": "menu",
+              "id": "vehicles-button",
+              "label": "打开载具页"
+            },
+            "operation": {
+              "type": "upgrade",
+              "kind": "vehicle",
+              "part": "armor",
+              "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ]
+            },
+            "navigation": "garageEntry"
+          }
+        ]
+      }
+    },
+    {
+      "id": "controller-horde",
+      "chapter": "整备与实战",
+      "title": "今晚让邻居安心回家",
+      "npc": "wheel",
+      "site": "garage",
+      "goal": {
+        "path": "progress.mainline.seen.controllerHorde",
+        "min": 1
+      },
+      "text": "使用自己顺手的装备，守住西门十波并击败领主。",
+      "lines": [
+        "带上自己顺手的装备，守住西门十波并击败领主。",
+        "只记录接取这份委托后的正式胜利，不要求使用指定载具或枪械。"
+      ],
+      "finish": "大家收到了平安的消息，这份辛苦记在巡林簿里。",
+      "reward": {
+        "coins": 300,
+        "wood": 180
+      },
+      "guide": {
+        "cue": "带上自己顺手的装备，守住西门十波并击败领主。",
+        "thanks": "大家收到了平安的消息，这份辛苦记在巡林簿里。",
+        "steps": [
+          {
+            "label": "守住西门十波并击败领主",
+            "hint": "使用顺手的装备完成本次正式战斗",
+            "operation": {
+              "type": "camp-defense",
+              "gate": "left",
+              "record": "controllerHorde",
+              "win": true
+            },
+            "navigation": "westGate"
+          }
+        ]
+      },
+      "target": "westGate"
+    }
+  ],
+  "gates": []
+}

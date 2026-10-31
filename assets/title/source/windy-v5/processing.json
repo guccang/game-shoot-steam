@@ -1,0 +1,34 @@
+{
+  "description": "连续截取新原片前240帧；不补帧、不复制、不倒放、不变速，保留原片供复核。",
+  "commands": [
+    [
+      "ffmpeg",
+      "-i",
+      "assets/title/source/windy-v5/original.mp4",
+      "-an",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "slow",
+      "-crf",
+      "23",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "-t",
+      "10",
+      "assets/title/background.mp4"
+    ],
+    [
+      "ffmpeg",
+      "-i",
+      "assets/title/background.mp4",
+      "-frames:v",
+      "1",
+      "-quality",
+      "85",
+      "assets/title/poster.webp"
+    ]
+  ]
+}

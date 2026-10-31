@@ -1,0 +1,25 @@
+/* 消防任务复用森林界面字号和触控标准，只增加主题图及短提示。 */
+/* 回镇黑屏覆盖游戏 HUD 和安全区，透明度由游戏时钟统一推进。 */
+#fire-town-transfer{position:absolute;inset:0;z-index:1000;background:#000;pointer-events:auto;touch-action:none;}
+#fire-town-transfer[hidden]{display:none;}
+.realm-fire .realm-art canvas {display:block;width:100%;height:100%;object-fit:cover;}
+.fire-banner {display:block;width:100%;height:180px;object-fit:contain;background:#d6dfb6;border-radius:12px;}
+.fire-call {font-weight:700;color:#8d4c40;font-size:17px;line-height:1.5;}
+.fire-start {width:100%;min-height:48px;}
+@media(max-width:400px){.fire-banner{height:150px;}.fire-call{font-size:15px;}}
+/* 世界消防告警位于战斗主HUD下方，按钮保留触控面积，路线仍由画布展示。 */
+.fire-notice{position:absolute;z-index:8;left:14px;right:14px;bottom:125px;display:flex;gap:6px;max-width:390px;background:#f7eed5ed;border:1px solid #b58b66;border-left:4px solid #bc6a4c;border-radius:12px;padding:6px;box-shadow:0 3px 12px #284e4220;}
+.fire-notice[hidden]{display:none;}.fire-notice button{min-height:44px;border:0;border-radius:8px;background:#e6e4c6;color:#315c43;padding:7px;font-size:12px;}
+.fire-notice-main{flex:1;text-align:left;background:transparent!important;min-width:0;}.fire-notice-main b,.fire-notice-main small{display:block;line-height:1.45;}.fire-notice-main small{font-size:11px;opacity:.75;}
+.fire-world-active .fire-notice{bottom:125px;}.fire-world-active #quest-detail{display:block;}.fire-dialog{width:min(440px,calc(100vw - 24px));max-height:85dvh;padding:18px;border:2px solid #48674e;border-radius:20px;background:#f6efda;color:#315c43;}.fire-dialog::backdrop{background:#183b3866;}.fire-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}.fire-dialog h2{font-size:22px;}.fire-dialog p{font-size:14px;line-height:1.65;}.fire-dialog button{min-height:44px;padding:10px 14px;border-radius:10px;}.fire-dialog #fire-content>button{width:100%;margin-top:8px;}.fire-dialog .fire-banner{height:150px;}
+@media(max-width:360px){.fire-notice{left:10px;right:10px;}.fire-notice-main b{font-size:11px;}.fire-dialog{padding:14px;}}
+
+/* 手机告警给右侧功能菜单保留完整触控区，不覆盖驾驶与载具按钮。 */
+@media(max-width:600px){.fire-notice{right:70px;z-index:3;}}
+@media(max-width:360px){.fire-notice{right:70px;}}
+
+/* 火警主题图保留独立轮廓，共用倒计时放在图标上方，不再显示文字秒数。 */
+.fire-notice.fire-notice-alert{right:auto;width:74px;max-width:none;padding:0;border:0;border-radius:0;background:transparent;gap:0;box-shadow:none;}
+.fire-notice-alert .fire-alert-button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:74px;min-height:86px;padding:2px;background:transparent;}
+.fire-alert-icon{display:block;width:40px;height:40px;flex:none;}
+.fire-alert-button:focus-visible{outline:3px solid #365a45;outline-offset:3px;}

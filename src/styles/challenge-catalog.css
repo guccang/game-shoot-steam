@@ -1,0 +1,27 @@
+/* 营地优惠与经验集中说明，等级导航与关闭按钮留在滚动区外。 */
+#challenge-catalog-dialog { width:min(680px,calc(100vw - 20px)); max-width:none; max-height:calc(100dvh - 24px); box-sizing:border-box; padding:18px; overflow:hidden; background:#fbf5df; color:#315c43; border:2px solid #819b70; border-radius:20px; }
+#challenge-catalog-dialog[open] { display:flex; flex-direction:column; gap:12px; }
+#challenge-catalog-dialog header { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+#challenge-catalog-title { margin:0; font-size:21px; line-height:1.4; }
+#challenge-catalog-current { margin:6px 0 0; font-size:12px; font-weight:700; }
+#challenge-catalog-close { flex:0 0 44px; height:44px; border:1px solid #92a574; border-radius:12px; background:#e8edce; font-size:26px; }
+#challenge-catalog-dialog .challenge-catalog-note { margin:0; font-size:12px; line-height:1.5; }
+#challenge-tier-nav { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; }
+#challenge-tier-nav button { transition:none; min-height:44px; padding:4px; border:1px solid #94a87c; border-radius:10px; background:#f6f0d7; font-size:13px; font-weight:700; }
+#challenge-tier-nav button.reached { background:#e5ecd2; }
+#challenge-tier-nav button[aria-pressed="true"] { background:#315c43; color:#fff1bb; border-color:#315c43; }
+#challenge-catalog-body { overflow:auto; min-height:0; padding:2px 3px 8px; overscroll-behavior:contain; }
+#challenge-tier-title { margin:2px 0 6px; font-size:18px; }
+#challenge-tier-condition { margin:0 0 12px; font-size:12px; line-height:1.6; }
+#challenge-catalog-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }
+.challenge-equipment { min-width:0; padding:8px; background:#ecedcf; border:1px solid #bcc69b; border-radius:12px; text-align:center; }
+.challenge-equipment canvas { display:block; width:100%; height:auto; aspect-ratio:3/2; }
+.challenge-equipment h4 { margin:4px 0; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+.challenge-equipment small { display:block; font-size:10px; line-height:1.5; color:#5b7150; }
+@media(max-width:600px) { #challenge-catalog-dialog { padding:14px; } #challenge-catalog-grid { grid-template-columns:minmax(0,1fr); gap:8px; } #challenge-catalog-title { font-size:18px; } }
+@media(max-width:380px) { #challenge-tier-nav { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+
+/* 经验规则集中排版，手机正文保持舒展行距。 */
+#challenge-catalog-grid section { font-size:13px; line-height:1.7; }
+#challenge-catalog-grid h4 { margin:8px 0; }
+#challenge-catalog-grid p { margin:8px 0; }

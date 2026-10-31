@@ -1,0 +1,54 @@
+# 本机依赖与包管理缓存
+node_modules/
+.npm/
+
+# 开发输出与构建中间产物；正式运行资源仍保留在 assets/ 和 src/ 中
+output/
+/dist/
+/build/
+
+# 浏览器测试临时文件、报告与覆盖率
+.playwright-cli/
+playwright-report/
+blob-report/
+test-results/
+coverage/
+.nyc_output/
+
+# 工具缓存与增量编译记录
+.cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# 日志、临时目录、编辑器交换文件与备份
+*.log
+/tmp/
+/temp/
+.tmp/
+.temp/
+.history/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# Python 脚本缓存及操作系统生成的文件
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 本地验收资料不上传；测试脚本、设计文档和正式美术资源仍保留
+/docs/art-reference/
+/docs/verification/
+/docs/balance-reports/
+/docs/qa/
+/docs/story-reports/
+/docs/performance/
+
+# 不按图片、视频或 JSON 后缀统一忽略：assets/**/source 仍需要入库

@@ -1,0 +1,93 @@
+{
+  "file": "assets\\title\\background.mp4",
+  "sampleFps": 8,
+  "frames": 22,
+  "regions": {
+    "cat": [
+      {
+        "second": 0,
+        "meanDelta": 2.3373,
+        "changedPercent": 8.4545
+      },
+      {
+        "second": 1,
+        "meanDelta": 2.0751,
+        "changedPercent": 7.1484
+      },
+      {
+        "second": 2,
+        "meanDelta": 2.0177,
+        "changedPercent": 8.1626
+      }
+    ],
+    "wheat": [
+      {
+        "second": 0,
+        "meanDelta": 0.1898,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 1,
+        "meanDelta": 0.1444,
+        "changedPercent": 0.0
+      },
+      {
+        "second": 2,
+        "meanDelta": 0.0365,
+        "changedPercent": 0.0
+      }
+    ],
+    "tree": [
+      {
+        "second": 0,
+        "meanDelta": 2.522,
+        "changedPercent": 12.0938
+      },
+      {
+        "second": 1,
+        "meanDelta": 2.5336,
+        "changedPercent": 12.0368
+      },
+      {
+        "second": 2,
+        "meanDelta": 2.1549,
+        "changedPercent": 10.3206
+      }
+    ],
+    "water": [
+      {
+        "second": 0,
+        "meanDelta": 2.0176,
+        "changedPercent": 13.6
+      },
+      {
+        "second": 1,
+        "meanDelta": 1.9681,
+        "changedPercent": 13.7864
+      },
+      {
+        "second": 2,
+        "meanDelta": 1.925,
+        "changedPercent": 13.48
+      }
+    ],
+    "scarf": [
+      {
+        "second": 0,
+        "meanDelta": 12.6745,
+        "changedPercent": 40.9844
+      },
+      {
+        "second": 1,
+        "meanDelta": 12.5436,
+        "changedPercent": 39.7969
+      },
+      {
+        "second": 2,
+        "meanDelta": 10.7919,
+        "changedPercent": 38.625
+      }
+    ]
+  },
+  "loopSeamMeanDelta": 0.6702
+}

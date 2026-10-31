@@ -1,0 +1,45 @@
+/* 样板展示区只负责摆放与背景，底板和按钮始终来自正式共享样式。 */
+html, body { height: auto; min-height: 100%; overflow: auto; background: #e8edda; }
+.ui-preview { max-width: 480px; margin: auto; padding: 24px 12px; }
+.preview-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 24px; }
+.preview-heading h1 { font-size: 30px; line-height: 1.2; margin: 10px 0 12px; color: var(--ui-forest); }
+.preview-heading p { font-size: 12px; color: var(--ui-muted); margin: 0; line-height: 1.7; }
+.preview-heading .preview-brand { font-size: 12px; color: var(--ui-forest); }
+.preview-heading a { flex: none; font-size: 12px; padding: 10px; }
+.preview-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; }
+.preview-stage { background: #bccda0; border-radius: 24px; padding: 14px 10px 10px; border: 1px solid #9fb38a; }
+.preview-stage[data-night] { background: #274b43; border-color: #234333; }
+.preview-stage-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 4px 20px; color: #315c43; font-size: 13px; }
+.preview-stage-top .ui-button { font-size: 12px; min-height: 44px; padding: 8px 12px; }
+.preview-stage[data-night] .preview-stage-top, .preview-stage[data-night] .preview-status { color: #e8edcf; }
+.preview-stage > .ui-panel { width: 100%; max-height: none; margin: 0 auto; }
+.preview-intro { display: flex; gap: 14px; align-items: center; margin-bottom: 22px; }
+.preview-intro h3 { margin: 0 0 5px; font-size: 18px; }
+.preview-intro p { margin: 0; font-size: 12px; }
+.preview-emblem { display: grid; place-items: center; width: 54px; height: 54px; flex: none; background: var(--ui-sage); border: 2px solid var(--ui-line); border-radius: 18px; font-size: 34px; color: var(--ui-forest); }
+.preview-list { margin: 0; font-size: 14px; }
+.preview-list > div { display: flex; justify-content: space-between; gap: 15px; padding: 12px 0; border-top: 1px solid #d5dbb9; }
+.preview-list > div:last-child { padding-bottom: 0; }
+.preview-list dt { color: var(--ui-muted); }
+.preview-list dd { margin: 0; text-align: right; }
+.ui-panel__body .preview-note { font-size: 12px; margin: 16px 0 0; }
+.preview-status { color: #3d5c40; font-size: 12px; line-height: 1.6; margin: 20px 0 6px; min-height: 20px; text-align: center; }
+.preview-specimens > section + section { margin-top: 28px; padding-top: 24px; border-top: 1px solid #b8c6a4; }
+.preview-specimens h2 { font-size: 18px; margin: 0 0 12px; color: var(--ui-forest); }
+.preview-specimens p { font-size: 12px; color: var(--ui-muted); line-height: 1.8; }
+.preview-anatomy { border: 2px solid var(--ui-forest); border-radius: 12px; overflow: hidden; margin-top: 16px; }
+.preview-anatomy > span { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; background: var(--ui-paper); font-size: 13px; }
+.preview-anatomy > span:first-child { background: var(--ui-forest); color: var(--ui-paper); }
+.preview-anatomy > span:last-child { background: var(--ui-sage); border-top: 1px solid #bcc8a6; }
+.preview-anatomy small { font-size: 11px; }
+.preview-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+.preview-palette { display: flex; justify-content: space-between; list-style: none; margin: 18px 0 0; padding: 0; gap: 12px; }
+.preview-palette li { font-size: 11px; text-align: center; }
+.preview-palette i { display: block; width: 48px; height: 36px; margin: 0 auto 9px; background: var(--swatch); border: 1px solid #879b78; border-radius: 9px; }
+.preview-footnote { padding-top: 26px; color: var(--ui-muted); font-size: 11px; line-height: 1.8; }
+/* 样板只展示手机单列结构，不提供桌面布局。 */
+#preview-full { width: 100%; margin-top: 16px; }
+.preview-specimens { padding: 0 8px; }
+.preview-stage .ui-panel__body { padding: 16px 14px; }
+.preview-stage .ui-panel__footer { padding: 14px; gap: 10px; }
+.preview-stage .ui-button { padding-inline: 10px; }

@@ -1,0 +1,59 @@
+{
+  "version": 4,
+  "id": "forest-title-approved-3-6",
+  "name": "晴叶营地·迎风衔接循环",
+  "model": "seedance-2.5",
+  "requestId": "vid-ztj-forest-title-20261023-v2",
+  "sourceUrl": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-title-20261023-v2/video/video-2cbda66ee26a046b.mp4",
+  "duration": 2.75,
+  "width": 720,
+  "height": 1280,
+  "fps": 24,
+  "frames": 66,
+  "audio": false,
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "loop": [
+    0,
+    2.75
+  ],
+  "runtimeFiles": [
+    "background.mp4",
+    "poster.webp",
+    "manifest.json"
+  ],
+  "excludeFromRuntime": [
+    "source/**"
+  ],
+  "video": {
+    "file": "background.mp4",
+    "bytes": 129631,
+    "sha256": "4340a65496c5fc272206445f5f54ef47efcc40a1fb187ee8d18d80553646a647"
+  },
+  "poster": {
+    "file": "poster.webp",
+    "bytes": 38496,
+    "sha256": "0fa1af7244632f02627c8d8cbef58afb2b7da11fc1ed72c82cf0050176ac8d29"
+  },
+  "source": {
+    "file": "source/original.mp4",
+    "bytes": 2767815,
+    "sha256": "2cbda66ee26a046ba44d952748148340709e8d322f8c474c9580ac8bad8e5468"
+  },
+  "referenceRenderer": "scripts/title-reference-browser.cjs → src/rendering/renderer.js#Renderer.draw; user-approved v2 source segment [3,6)",
+  "designCriterion": "title-background-video",
+  "motionAudit": "source/approved-cut-3-6/audit/motion.json",
+  "sourceClip": {
+    "start": 3,
+    "end": 6,
+    "startFrame": 72,
+    "endFrameExclusive": 144
+  },
+  "loopTransition": {
+    "type": "tail-head-crossfade",
+    "overlapSeconds": 0.25,
+    "overlapFrames": 6,
+    "speed": 1,
+    "firstSourceTime": 3.25
+  }
+}

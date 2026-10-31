@@ -1,0 +1,55 @@
+{
+  "_说明": "永久成长上限、部件成长、熟练度阈值与奖励、改装费用；经济曲线与购买配方继续使用 economy.js。",
+  "progress": {
+    "startCoins": 60,
+    "startWood": 30,
+    "maxEquipmentLevel": 20,
+    "modUnlockLevel": 2,
+    "masteryDamagePerLevel": 0.02,
+    "maxCoordinationLevel": 8,
+    "maxPartLevel": 5
+  },
+  "parts": {
+    "ratePerLevel": 0.08,
+    "capacityPerLevel": 0.1,
+    "reloadPerLevel": 0.08,
+    "rangePerLevel": 0.05,
+    "accuracyPerLevel": 0.05,
+    "enginePerLevel": 0.05
+  },
+  "growth": {
+    "catchupGap": 2,
+    "advancedVehicleCostScale": 2,
+    "legacyPartCoins": 35,
+    "legacyPartWood": 15,
+    "milestoneLevels": 5,
+    "earlyWeaponPerLevel": 0.22,
+    "earlyHeroPerLevel": 0.1,
+    "earlyHealthPerLevel": 24,
+    "legacyVehicleWood": 50,
+    "linearThroughLevel": 4
+  },
+  "masteryThresholds": [
+    0,
+    40,
+    120,
+    280,
+    550
+  ],
+  "masteryRewards": {
+    "tree": 1,
+    "enemy": 4,
+    "boss": 30
+  },
+  "modCost": {
+    "coins": 180,
+    "wood": 60
+  },
+  "guardian": {
+    "maxLevel": 10,
+    "cost": 40,
+    "ratePerLevel": 0.12,
+    "magazinePerLevel": 0.2,
+    "reloadPerLevel": 0.15
+  }
+}

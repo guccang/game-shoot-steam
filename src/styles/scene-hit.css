@@ -1,0 +1,9 @@
+/* 名称已经挂在建筑上；透明热点只在键盘或当前教学目标时显示操作轮廓。 */
+#game-frame .scene-hit{position:absolute;z-index:4;min-width:44px;min-height:44px;max-width:none;max-height:none;padding:0;border:0;border-radius:12px;background:transparent;color:transparent;font-size:0;box-shadow:none;cursor:pointer;touch-action:none;opacity:1;pointer-events:auto;}
+#game-frame .scene-hit::before{content:none}
+@media(hover:hover) and (pointer:fine){#game-frame .scene-hit:hover{background:transparent;outline:2px dashed #f7edc080;outline-offset:-3px}}
+#game-frame .scene-hit:focus:not(:focus-visible){outline:none}
+#game-frame .scene-hit:focus-visible{outline:3px solid #f7df91;outline-offset:2px}
+#game-frame .scene-hit.operation-source,#game-frame .scene-hit.mainline-cue-target{outline:3px solid #f7df91;outline-offset:2px}
+#game-frame .scene-hit[hidden]{display:none}
+#game-frame .resident-hit{z-index:5}

@@ -1,0 +1,17 @@
+/* 跑步只保留名次、路线和体力；冲刺位于右下方，左侧给原摇杆留空间。 */
+.race-active .bottom-info,.race-active #auto-label{display:none!important;}
+.race-controls{position:absolute;z-index:12;right:16px;bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none;}
+.race-controls[hidden]{display:none;}
+.race-controls canvas{width:120px;height:90px;border-radius:16px;background:#f8f0d7eb;border:1px solid #90a875;}
+.race-sprint{width:82px;height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:2px solid #315c43;border-radius:24px;background:#f4dca0;color:#315c43;pointer-events:auto;touch-action:none;user-select:none;}
+.race-sprint>span{font-size:27px;line-height:1;}.race-sprint>b{font-size:13px;}.race-sprint meter{width:54px;height:10px;accent-color:#315c43;}.race-sprint.pressed{background:#c5d9a4;}
+.race-instructions{display:grid;gap:8px;margin:18px 0;color:#315c43;font-weight:600;font-size:14px;}
+.realm-race .realm-art canvas{display:block;width:100%;height:100%;object-fit:cover;}
+.race-active .quest #quest-count{font-size:16px;white-space:nowrap;}.race-active .quest #quest-title{font-size:14px;}.race-active .quest #quest-detail{font-size:12px;}
+@media(max-width:360px){.race-controls{right:10px;bottom:14px;}.race-controls canvas{width:96px;height:72px;}.race-sprint{width:72px;height:80px;}}
+
+/* 参赛菜单固定在上方，不能被右下角小地图和冲刺按钮遮住。 */
+.game-frame.race-active .field-menu{top:96px;bottom:auto;right:12px;}
+
+/* 区域状态悬在地图上方，不移动右下冲刺触控区。 */
+.race-track-status{position:absolute;bottom:100%;margin-bottom:6px;padding:5px 10px;border:1px solid #90a875;border-radius:12px;background:#f4edce;color:#315c43;font-size:12px;white-space:nowrap;}

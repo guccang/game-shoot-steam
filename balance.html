@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- 数值工作台独立于玩家存档，全部资源来自本地项目。 -->
+<html lang="zh-CN">
+<head>
+<link rel="preload" href="/assets/fonts/HYQiHei_75S.ttf" as="font" type="font/ttf" crossorigin><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title data-i18n-text="balance.5c06b40a86"></title><link rel="stylesheet" href="/src/balance/style.css"></head>
+<body>
+<header class="masthead"><div><a href="/" class="back"><!--i18n:index.d75694ae48--></a><h1><!--i18n:balance.049d66a8cd--></h1><p><!--i18n:balance.4419af2a96--></p></div><div class="edition"><!--i18n:balance.67384244ea--><span><!--i18n:balance.026c528da8--></span></div></header>
+<!-- 使用指南保留在工具内部；页内导航让手机可以跳过长参数册直接看结果。 -->
+<div class="guide-wrap">
+<nav class="workbench-nav" data-i18n-aria-label="balance.041bdf3ef5"><a href="#usage-guide"><!--i18n:balance.b6e77060db--></a><a href="#scenario-section"><!--i18n:balance.a0a122caf5--></a><a href="#parameter-section"><!--i18n:balance.41454d4f5d--></a><a href="#run-panel"><!--i18n:balance.9ced955ed6--></a></nav>
+<details id="usage-guide" class="usage-guide" open><summary><!--i18n:balance.a5cac4a4dd--></summary>
+<p class="guide-intro"><!--i18n:balance.dc9dee60bd--></p>
+<p class="hint">当前模拟按29步主线、五波清缴、真实升级和购买顺序推进。默认目标：完成主线与购买清单，主武器15级、角色12级、车体10级、车载炮12级。默认自由活动含5%采集：树木只产木材，怪物及领主直接掉落不产木材；任务与秘境结算独立。零额外伐木是压力对照。低效率建议把模拟上限设为1500分钟，超时样本会完整保留。</p>
+<ol class="guide-steps">
+<li><strong><!--i18n:balance.2a7b18275b--></strong><p><!--i18n:balance.1a4a04c047--></p></li>
+<li><strong><!--i18n:balance.67196d4642--></strong><p><!--i18n:balance.2a8082f9a7--></p></li>
+<li><strong><!--i18n:balance.9a40db9c7d--></strong><p><!--i18n:balance.f07fbe861e--></p></li>
+<li><strong><!--i18n:balance.b40ec31dfe--></strong><p><!--i18n:balance.d1a3c666fe--></p></li>
+<li><strong><!--i18n:balance.94235ce4c7--></strong><p><!--i18n:balance.7e55fba4bd--></p></li>
+<li><strong><!--i18n:balance.ea29151b9c--></strong><p><!--i18n:balance.7ed0a531d4--></p></li>
+</ol>
+<details class="tuning-guide"><summary><!--i18n:balance.d060cff6a5--></summary>
+<dl><dt><!--i18n:balance.46886837a4--></dt><dd><!--i18n:balance.667f785579--></dd>
+<dt><!--i18n:balance.72136c79a7--></dt><dd><!--i18n:balance.a7a8d671dd--></dd>
+<dt><!--i18n:balance.93c6814ac8--></dt><dd><!--i18n:balance.2cbd06d938--></dd>
+<dt><!--i18n:balance.5827f6bde8--></dt><dd><!--i18n:balance.f4b52c7f68--></dd>
+<dt><!--i18n:balance.bcc0237fc6--></dt><dd><!--i18n:balance.56e5e9419e--></dd></dl>
+<p class="hint"><!--i18n:balance.af9e98d32b--></p>
+</details></details></div>
+<main class="workspace">
+<aside class="controls" data-i18n-aria-label="balance.8748fa5375">
+<section><h2><!--i18n:balance.b406924d6b--></h2><label><!--i18n:balance.b14523c600--><select id="preset"><option value="recommended"><!--i18n:balance.7f51aed6d4--></option><option value="original"><!--i18n:config.economy.485fec2aac--></option></select></label>
+<div class="pair"><button id="import-config"><!--i18n:balance.b48b651829--></button><button id="export-config"><!--i18n:balance.429ea3af44--></button></div><input id="config-file" type="file" accept=".json,application/json" hidden>
+<p class="hint"><!--i18n:balance.9daad2e7de--></p></section>
+<section id="scenario-section"><h2><!--i18n:balance.5aa29e1862--></h2><label><!--i18n:balance.31c6aeb489--><select id="route"><option value="mixed"><!--i18n:balance.e24e25cf0f--></option><option value="zeroLogging">混合玩法 · 零额外伐木（压力对照）</option><option value="forest"><!--i18n:balance.4df5dc3e20--></option><option value="rogue"><!--i18n:balance.b703ce7a6a--></option><option value="tower"><!--i18n:balance.a9482a0bd2--></option><option value="guardian"><!--i18n:balance.d5a512e6fb--></option></select></label>
+<div class="pair"><label><!--i18n:balance.app.2810c1ae78--><select id="efficiency"><option value=".65"><!--i18n:balance.dd9e1ced43--></option><option value="1" selected><!--i18n:balance.244c47d5c4--></option><option value="1.35"><!--i18n:balance.239dab912b--></option></select></label><label><!--i18n:balance.fea63e8a4a--><input id="minutes" type="number" min="1" max="1800" value="900"></label></div>
+<label><!--i18n:balance.f553d3075d--><select id="strategy"><option value="balanced"><!--i18n:balance.06f83e8cd2--></option><option value="save"><!--i18n:balance.e06005eb5b--></option></select></label>
+<label><!--i18n:balance.c084376501--><input id="priority" value="weapons heroes turret vehicle" data-i18n-aria-label="balance.d056dcbb51"></label>
+<div class="pair"><label><!--i18n:balance.999666d2f8--><input id="failure" type="number" min="0" max=".8" step=".01" value=".08"></label><label><!--i18n:balance.437f079d05--><input id="movement" type="number" min="0" max=".8" step=".01" value=".22"></label></div>
+<details><summary><!--i18n:balance.6fa75ee21e--></summary><div id="activity-weights"></div><div id="rate-fields"></div><p class="hint"><!--i18n:balance.27202871b8--></p></details>
+<label>邻里委托赠礼路线<select id="collection"><option value="none">按购买路线推进</option><option value="hovercraft">完成邻里整板，领取气垫船</option></select></label><p class="hint">赠礼路线额外计入三项生活委托耗时，只领取一次气垫船；不会把二选一奖励都计算为收入。</p>
+<details id="target-settings"><summary><!--i18n:balance.0335ef6c96--></summary><p class="hint"><!--i18n:balance.0e8803e0af--></p><div id="target-route" role="group" data-i18n-aria-label="balance.795eb83bfc"></div><label><!--i18n:balance.d606582002--><textarea id="initial-progress" rows="4"></textarea></label><button id="import-progress"><!--i18n:balance.17fed14320--></button></details>
+</section>
+<section id="parameter-section"><h2><!--i18n:balance.41454d4f5d--></h2><p class="hint"><!--i18n:balance.fb7d0d1eb7--></p><div id="parameter-editor"></div><details><summary><!--i18n:balance.5152fb1960--></summary><p class="hint"><!--i18n:balance.992dfdabb2--></p><textarea id="config-json" rows="10" data-i18n-aria-label="balance.31cafa0107"></textarea><button id="apply-json"><!--i18n:balance.35a2a76c27--></button></details></section>
+</aside>
+<div class="results">
+<section id="run-panel" class="run-panel"><div><h2><!--i18n:balance.4158a9ea2c--></h2><p><!--i18n:balance.d04620f88b--></p></div><div class="actions"><button class="primary" id="run"><!--i18n:balance.31be896757--></button><button id="cancel" hidden><!--i18n:balance.ca4d973c0b--></button></div><p id="status" role="status"><!--i18n:balance.7b29aeb5c4--></p><p class="hint"><!--i18n:balance.007da62cfc--></p></section>
+<section id="summary-panel" data-i18n-aria-label="balance.73f6cb5a33"><div class="section-heading"><h2><!--i18n:balance.167cb61ca8--></h2><span id="completion-label"><!--i18n:balance.563d250100--></span></div><div id="metrics" class="metrics"></div><details class="result-help"><summary><!--i18n:balance.8b78c2188a--></summary><dl>
+<dt><!--i18n:balance.percentiles--></dt><dd><!--i18n:balance.5e5eb7cd08--></dd>
+<dt><!--i18n:balance.app.6707de42c2--></dt><dd><!--i18n:balance.1509cba3e2--></dd>
+<dt><!--i18n:balance.app.df22bfc427--></dt><dd><!--i18n:balance.ee6b52482f--></dd>
+<dt><!--i18n:balance.11a2e5da3c--></dt><dd><!--i18n:balance.532efb8224--></dd>
+<dt><!--i18n:balance.4d49f0e063--></dt><dd><!--i18n:balance.15ba03eedf--></dd>
+</dl></details><div id="timeline" class="timeline"><p class="empty"><!--i18n:balance.a715e89666--></p></div><p class="hint"><!--i18n:balance.224609dae4--></p></section>
+<section><div class="section-heading"><h2><!--i18n:balance.ea2aefe246--></h2><select id="chart-resource" data-i18n-aria-label="balance.3bc5102a1e"><option value="coins"><!--i18n:balance.app.bbece6f829--></option><option value="wood"><!--i18n:balance.app.30a9333b4f--></option><option value="parts"><!--i18n:balance.app.04480d568c--></option><option value="crystal"><!--i18n:balance.app.00aedb5fc7--></option><option value="core"><!--i18n:balance.help.e6550a880a--></option></select></div>
+<svg id="resource-chart" viewBox="0 0 900 260" role="img" data-i18n-aria-label="balance.7691b19c9b"></svg><div class="table-scroll"><table id="resource-table"><caption><!--i18n:balance.50bf25e16c--></caption></table></div><div id="bottleneck"></div>
+<details><summary><!--i18n:balance.83acb0c20b--></summary><div id="source-table"></div><ul id="assumptions"></ul></details><details><summary>主线推进与任务奖励（代表种子）</summary><div id="task-timeline" class="timeline"></div></details></section>
+<section><div class="section-heading"><h2><!--i18n:balance.5ca5bb64aa--></h2><span><!--i18n:balance.01bcadb964--></span></div><p><!--i18n:balance.89a021644d--></p><p class="hint"><!--i18n:balance.4cbdb8f67a--></p>
+<div class="bench-controls"><label><!--i18n:ui.story-rewards.4fe131173e--><select id="bench-weapon"></select></label><label><!--i18n:balance.ef70f612c3--><input id="bench-level" type="number" min="1" max="19" value="4"></label><button id="benchmark"><!--i18n:balance.8dd511384d--></button></div>
+<p id="bench-status" role="status"></p><div class="table-scroll"><table id="benchmark-table"></table></div></section>
+<section><h2><!--i18n:balance.71bd4a4d80--></h2><p class="hint"><!--i18n:balance.bbb0de393c--></p><div class="pair"><button id="pin-report"><!--i18n:balance.ba28d92969--></button><button id="clear-comparison"><!--i18n:balance.ed51208197--></button></div><div id="comparison"></div><div class="actions"><button id="export-report"><!--i18n:balance.3f9eba6c9d--></button><button id="export-csv"><!--i18n:balance.45911468af--></button><button id="import-ledger"><!--i18n:balance.c1be83b26c--></button><input id="ledger-file" type="file" accept=".json" hidden></div><p class="hint"><!--i18n:balance.0e26d8b637--></p><p id="ledger-summary" class="hint"></p></section>
+</div></main>
+<footer><!--i18n:balance.0c4a7d57a5--></footer>
+<script type="module" src="/src/balance/app.js"></script>
+</body></html>

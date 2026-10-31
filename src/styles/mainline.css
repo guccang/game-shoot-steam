@@ -1,0 +1,42 @@
+/* 巡林簿沿用森林面板；战场只保留当前行动，完整章节放入手册。 */
+/* 短目标与导航占一条，长说明移到详情，保留44像素触控高度。 */
+.mainline-hud{position:absolute;left:12px;width:min(240px,calc(100% - 76px));min-height:44px;z-index:16;display:flex;gap:7px;align-items:center;padding:6px 9px;text-align:left;color:#fff2c9;background:#315747ed;border:1px solid #94aa78;border-radius:10px;box-shadow:none}
+.mainline-hud[hidden],.mainline-speech[hidden],.mainline-npc[hidden]{display:none}
+.mainline-hud>span:last-child{min-width:0;display:block}
+.mainline-hud b{font-size:12px;line-height:17px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mainline-kicker,.mainline-objective{display:none}
+.mainline-bearing{flex:0 0 30px;text-align:center}.mainline-bearing svg{display:block;width:26px;height:26px;margin:auto}.mainline-bearing circle{fill:#fff2c9;stroke:#8ca775;stroke-width:2}.mainline-bearing path{fill:#315747}.mainline-bearing small{display:block;font-size:10px;line-height:12px;white-space:nowrap}
+.mainline-npc{position:absolute;z-index:17;padding:5px 10px;font-size:12px;border:1px solid #83986b;border-radius:12px;background:#fff2c9;color:#315747}
+/* 主线共用故事气泡的正文、按钮与阅读进度，仅保留层级和下方避让。 */
+.mainline-speech{z-index:18}
+.mainline-speech.below-actor .story-speech-tail{bottom:auto;top:-9px;transform:translateX(-50%) rotate(225deg)}
+.mainline-book{width:min(580px,calc(100% - 20px));max-height:90dvh;overflow:auto;background:#fff9e5;color:#315747;border:2px solid #8ca775;border-radius:20px;padding:22px;box-sizing:border-box}
+.mainline-book button{border:1px solid #91a879;border-radius:11px;background:#edf0d6;color:#315747;padding:10px 12px;cursor:pointer;font:inherit;font-size:13px}.mainline-book button.primary{background:#315747;color:#fff9e5}.mainline-book button:focus-visible{outline:2px solid #315747;outline-offset:3px}
+.mainline-book header{display:flex;justify-content:space-between;align-items:start;gap:16px;border-bottom:1px solid #b5c39b;padding-bottom:14px}.mainline-book h2{margin:4px 0;font-size:25px}.mainline-book header small{font-size:12px}.mainline-book header button{flex:0 0 44px;height:44px}
+#mainline-current{padding:20px 0 12px}#mainline-current h3{font-size:21px;margin:7px 0 10px}#mainline-current p{line-height:1.7}.mainline-location{font-size:13px;color:#6f8467}.mainline-reward{padding:12px;background:#f5edc4;border-left:3px solid #8caa75;display:grid;gap:8px;font-size:13px;line-height:1.7}
+.mainline-book-actions{display:flex;flex-wrap:wrap;gap:8px}.mainline-book-actions button{min-height:44px;flex:1;min-width:120px}.mainline-rule{font-size:12px;line-height:1.7;color:#708363;padding:10px 0;border-bottom:1px solid #bdc8a6}
+#mainline-chapters details{border-bottom:1px solid #ccd3b4;padding:10px 0}#mainline-chapters summary{font-weight:700;cursor:pointer;min-height:28px}#mainline-chapters ol{padding-left:20px}#mainline-chapters li{padding:8px 0 12px;color:#7a896d}#mainline-chapters li span{display:block;font-size:12px;line-height:1.7;margin-top:4px}#mainline-chapters .current{color:#315747}#mainline-chapters .done{color:#597347}
+@media(max-width:360px){.mainline-hud{left:10px;width:min(240px,calc(100% - 72px));padding:6px 8px}.mainline-book{padding:16px}}
+/* 当前动作以勾选和短标签表达；详细规则仍保留在任务簿。 */
+.mainline-checklist{list-style:none;padding:0;margin:12px 0}.mainline-checklist li{display:flex;align-items:center;gap:10px;padding:10px 0;color:#6c7d63}.mainline-checklist li>span:nth-child(2){flex:1;min-width:0}.mainline-checklist small{display:block;font-size:12px;line-height:1.6}.mainline-checklist b{font-size:14px}.mainline-checklist .current{color:#315747}.mainline-check{display:grid;place-items:center;flex:0 0 26px;height:26px;border:1px solid #a6b790;border-radius:50%;font-size:12px}.current .mainline-check{background:#315747;color:#fff9e5}.done .mainline-check{background:#dbe8c0;color:#315747}
+.mainline-reward{display:flex;flex-wrap:wrap;gap:8px;padding:10px;font-size:12px;border-left:0;border-radius:8px}.mainline-reward b{font-weight:normal;color:#657959}
+.mainline-more{margin-top:14px;font-size:12px;line-height:1.7}.mainline-more>summary{cursor:pointer;min-height:30px;color:#627957}.mainline-more p{line-height:1.75}.mainline-book header{padding-bottom:8px}.mainline-book h2{font-size:22px}#mainline-current{padding:12px 0}#mainline-current h3{font-size:18px}
+.mainline-cue-target{box-shadow:0 0 0 3px #8caa75,0 0 0 5px #fff2c9!important}
+/* 主按钮不继承其他面板的顶端留白，两个动作保持同一触控基线。 */
+.mainline-book-actions{align-items:stretch}.mainline-book-actions button.primary{margin-top:0}.mainline-book-actions button{margin-bottom:0}
+
+/* 只有资源短缺时显示获取地点，窄屏自然换行且不遮住详情入口。 */
+.mainline-hud[data-resource-shortage="true"] .mainline-objective{display:block;font-size:11px;line-height:16px;margin-top:3px}
+
+/* 任务卡内部为右侧开关预留触控列，文字与按钮互不覆盖。 */
+.mainline-hud{left:10px;width:min(264px,calc(100% - 20px));min-height:44px;box-sizing:border-box;padding:3px 7px;gap:5px}
+#game-frame .task-route-anchor{box-sizing:border-box;min-height:44px;padding-right:46px;max-width:calc(100% - 20px);cursor:pointer;pointer-events:auto}
+#task-navigation-toggle{position:absolute;z-index:19;width:44px;height:44px;min-height:44px;padding:8px;display:grid;place-items:center;box-shadow:none;border:0;background:transparent}
+#task-navigation-toggle[hidden]{display:none}
+#task-navigation-toggle svg{width:24px;height:24px;pointer-events:none}
+#task-navigation-toggle[data-enabled="true"]{--button-face:var(--ui-sage)}
+.task-route-arrow{fill:currentColor}.task-route-slash{display:none}
+#task-navigation-toggle[data-enabled="false"] .task-route-arrow{fill:none}
+#task-navigation-toggle[data-enabled="false"] .task-route-trail{display:none}
+#task-navigation-toggle[data-enabled="false"] .task-route-slash{display:block}
+.mainline-hud[data-navigation-tutorial="true"] .mainline-objective{display:block;font-size:11px;line-height:16px;margin-top:3px}

@@ -1,0 +1,19 @@
+/* 清缴目标与战斗进度属于同一块面板，不另挂下一项主线卡片。 */
+.quest.wave-quest.clearing-focused,.boss-hud.clearing-focused{padding-top:28px}
+.clearing-objective{position:absolute;left:12px;top:8px;font-size:11px;line-height:14px;font-weight:700;color:inherit;white-space:nowrap;pointer-events:none}
+.clearing-objective[hidden]{display:none}
+/* 清缴标题仅占文字行，寻路放在问号后，保留独立的44像素触控区域。 */
+#game-frame.task-combat-active .wave-quest.clearing-focused.task-route-anchor{padding-top:26px;padding-right:54px}
+.task-combat-active .wave-quest.clearing-focused.task-route-anchor .clearing-objective{top:7px;right:8px;line-height:16px;overflow:hidden;text-overflow:ellipsis}
+/* 紧凑轨道缩小非交互圆点，倒计时圆环不覆盖相邻波次。 */
+.task-combat-active .wave-quest.task-route-anchor .wave-node{width:22px;height:22px}
+.task-combat-active .wave-quest.task-route-anchor .wave-countdown{width:30px;height:30px}
+/* 320窄屏还需避让右上设置：仅收紧非交互波次，三个按钮维持44像素。 */
+@media(max-width:360px){
+ .task-combat-active .wave-quest.task-route-anchor .wave-node{width:16px;height:16px;font-size:9px}
+ .task-combat-active .wave-quest.task-route-anchor .wave-countdown{width:20px;height:20px}
+}
+/* 领主血条没有问号轨道，继续让标题与寻路按钮独占各自空间。 */
+#game-frame.task-combat-active .boss-hud.clearing-focused.task-route-anchor{padding-top:52px;padding-right:8px}
+.task-combat-active .boss-hud.clearing-focused.task-route-anchor .clearing-objective{top:6px;right:58px;line-height:44px;overflow:hidden;text-overflow:ellipsis}
+/* 详情入口在奶油底板上使用森林绿，保持问号与触控边界清晰。 */

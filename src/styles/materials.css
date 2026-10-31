@@ -1,0 +1,74 @@
+/* 材料沿用纸色、森林绿与柔和金色；常规场景单行追踪，清缴展开材料进度。 */
+.material-wallet {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px; margin: 12px 0 16px;
+}
+.material-wallet > span {
+  display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 3px 6px;
+  padding: 9px 7px; background: #edf0df; border: 1px solid var(--line); border-radius: 10px;
+}
+.material-wallet i { grid-row: span 2; font-style: normal; color: #719582; font-size: 21px; }
+.material-wallet small { font-size: 10px; color: #697b5c; white-space: nowrap; }
+.material-wallet b { font-size: 14px; overflow-wrap: anywhere; }
+.equipment-requirements { margin: 12px 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #f4f5e9; }
+.requirements-heading { display: flex; gap: 8px; justify-content: space-between; align-items: center; font-size: 12px; }
+.requirements-heading button { min-height: 38px; padding: 6px 10px; background: #fffef3; border: 1px solid #b7c7a2; border-radius: 8px; font-size: 11px; }
+.requirements-heading button[aria-pressed='true'] { background: #3c6954; color: #fffbe4; }
+.requirement-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 10px; }
+.requirement-row { display: flex; flex-direction: column; gap: 4px; padding: 7px; border-radius: 7px; background: #f6ecd7; font-size: 11px; }
+.requirement-row b { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.requirement-row small { color: #96603e; font-size: 10px; }
+.requirement-row.met { background: #e7eedc; }
+.requirement-row.met small { color: #52794a; }
+.material-sources { margin-top: 10px; font-size: 11px; line-height: 1.7; color: #647452; }
+.material-sources summary { cursor: pointer; min-height: 32px; padding-top: 5px; }
+.material-sources p { margin: 7px 0; font-size: 11px; line-height: 1.7; }
+.equipment-goal {
+  z-index: 3;
+  position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 176px);
+  left: 14px; max-width: min(340px, calc(100% - 28px)); height: 32px;
+  padding: 4px 10px; text-align: left; font-size: 10px; border-radius: 9px;
+  border: 1px solid #d6dfbb; background: #fbf9e5eb; color: #46664b;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.equipment-goal.ready { background: #f6d785; border-color: #d9b456; color: #3c5941; }
+/* 清缴追踪沿用正式任务堆叠位置，两行紧凑展示，整卡保留44像素触控。 */
+.equipment-goal.clearing-material-goal { left:max(10px,env(safe-area-inset-left)); width:min(282px,calc(100% - 20px)); max-width:calc(100% - 20px); height:auto; min-height:54px; padding:5px 9px; white-space:normal; box-sizing:border-box; }
+.clearing-goal-title { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; line-height:16px; }
+.clearing-goal-resources { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; margin-top:3px; }
+.clearing-goal-resource { display:inline-flex; align-items:center; gap:2px; min-width:0; font-size:10px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.clearing-goal-resource .resource-art { width:18px; height:18px; flex-shrink:0; }
+#equipment-goal-dialog { max-width: 430px; }
+#goal-details > p { font-size: 12px; line-height: 1.8; color: #657454; }
+.equipment-goal:not([hidden]) ~ .toast { top: calc(max(14px, env(safe-area-inset-top)) + 214px); }
+@media (max-width: 600px) {
+  .equipment-goal { top: calc(max(12px, env(safe-area-inset-top)) + 126px); max-width: min(282px, calc(100% - 28px)); }
+  .equipment-goal:not([hidden]) ~ .toast { top: calc(max(12px, env(safe-area-inset-top)) + 164px); }
+}
+
+/* 等级采用独立文字分组，与图标资源网格区分；所有内容沿文档流占位。 */
+.challenge-level { display:block; width:100%; text-align:left; border:0; font:inherit; margin:12px 0; padding:10px 12px; border-left:3px solid #719582; background:#eef3e4; color:#315c43; border-radius:0 9px 9px 0; }
+.challenge-level-heading { display:flex; align-items:baseline; justify-content:space-between; gap:6px 12px; flex-wrap:wrap; }
+.challenge-level strong { font-size:12px; }.challenge-level strong b { margin-left:5px; font-size:18px; }
+.challenge-level-required { font-size:11px; font-weight:700; }.challenge-level.locked .challenge-level-required { color:#8a4b32; }
+.challenge-level-next { display:block; margin:5px 0 0; font-size:12px; line-height:1.5; }.challenge-level small { display:block; margin-top:3px; font-size:10px; line-height:1.5; color:#59724d; }
+#ws-challenge-level .challenge-level { margin:6px 0 10px; }
+
+.challenge-level-link { display:block; margin-top:6px; font-size:11px; color:#315c43; text-decoration:underline; text-underline-offset:3px; }
+.challenge-level:hover { background:#e3edcf; }
+/* 战绩徽章、累计进度和门槛共用同一组视觉；所有内容在小屏自然换行。 */
+.challenge-level{box-sizing:border-box}
+.challenge-rank-icon{display:inline-block;width:40px;height:44px;flex:none;vertical-align:middle}
+.challenge-level-identity{display:flex;align-items:center;gap:8px}
+.challenge-level-heading{align-items:center}
+.challenge-progress-label{display:block;margin-top:8px;font-size:12px;font-variant-numeric:tabular-nums}
+.challenge-progress-track{display:block;height:7px;margin-top:5px;overflow:hidden;border-radius:5px;background:#d5dfc7}
+.challenge-progress-track i{display:block;height:100%;border-radius:inherit;background:#789566}
+#ws-feedback .challenge-rank-icon,.turret-actions .challenge-rank-icon,.card-buttons .challenge-rank-icon{width:22px;height:24px;margin-right:4px}
+.challenge-result-change{margin:0 0 10px;text-align:center;font-size:22px;font-weight:700;color:#49684c}
+#task-reward-challenge .challenge-level{margin:0;background:#f4e5b5}
+#task-reward-challenge .challenge-level strong{font-size:14px}
+
+/* 升级和折扣各占一行，窄屏不拆开折扣数字与单位。 */
+.challenge-result-change span,.challenge-result-change small{display:block;white-space:nowrap}
+.challenge-result-change small{font-size:13px;margin-top:4px}

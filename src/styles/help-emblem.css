@@ -1,0 +1,10 @@
+/* 猫耳说明徽章沿用原按钮事件与显隐，只统一图案、触控范围和焦点。 */
+.help-emblem { display:block; width:32px; height:32px; margin:auto; flex:none; pointer-events:none; user-select:none; }
+:is(#ws-info,#ws-mastery-help,#wave-help,#camp-help,#realm-help,.story-help-button) { min-width:44px; min-height:44px; flex-shrink:0; }
+#camp-help { width:44px; }
+#realm-help::before { content:none; }
+/* 旧圆形文字按钮的下沿阴影不能叠在猫耳轮廓外。 */
+#story-dialog .story-help-button,#workshop-dialog #ws-mastery-help { border:0; box-shadow:none; background:transparent; }
+#story-dialog .story-help-button:hover,#workshop-dialog #ws-mastery-help:hover { background:#e8edcf; }
+:is(#wave-help,#camp-help,#realm-help,.story-help-button):hover:not(:disabled) { background:#e8edcf; border-radius:12px; }
+:is(#camp-help,#realm-help,.story-help-button):focus-visible { outline:2px solid #365d48; outline-offset:-2px; }

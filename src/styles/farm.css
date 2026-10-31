@@ -1,0 +1,103 @@
+/* 底部使用紧凑图标农具，说明进入任务簿或短提示，不再占用大块场景。 */
+/* 种田期间隐藏移动摇杆；保留尺寸测量和触摸移动，收起工具后自动恢复。 */
+#game-frame:has(#farm-tools:not([hidden]),#farm-picker:not([hidden])) #joystick{visibility:hidden;}
+/* 生命卡已移到钱包下方，种地和自动迎敌时也持续保留低生命提醒。 */
+#farm-world-layer{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden;}
+/* 与真实土地同尺寸的半透明预选格，红绿之外用勾叉和虚实线区分。 */
+#farm-placement{position:absolute;transform:translate(-50%,-50%);pointer-events:none;z-index:7;box-sizing:border-box;border:2px solid #f3ffdf;border-radius:6px;background:#6aa55966;box-shadow:0 0 0 1px #315c43;}
+#farm-placement[data-valid="false"]{border:2px dashed #ffdbd0;background:#c24b4666;box-shadow:0 0 0 1px #963d37;}
+#farm-placement span{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:4px;padding:2px 4px;border-radius:4px;background:#315c43e8;color:#fff6dc;font-size:10px;white-space:nowrap;line-height:14px;}
+#farm-placement[data-valid="false"] span{background:#963d37ed;}
+/* 空田以种子袋表达点击选种，取消禁止开垦的红框；图标不截获点击。 */
+#farm-placement .farm-placement-seed{display:none;position:absolute;width:30px;height:33px;left:50%;top:50%;transform:translate(-50%,-50%);filter:drop-shadow(0 1px 1px #31574766)}
+#farm-placement[data-mode="seed"]{border:0;background:none;box-shadow:none}
+#farm-placement[data-mode="seed"] .farm-placement-seed{display:block}
+#farm-placement[data-mode="seed"] span{display:none}
+/* 选种浮层可越过任务HUD；只解除父层的堆叠限制，不把整屏透明田块抬到任务之上。 */
+#farm-world-layer:has(#farm-picker:not([hidden])){z-index:auto;}
+#game-frame #farm-world-layer:has(#farm-picker:not([hidden]))>.scene-hit{z-index:6;}
+#farm-world-layer [hidden]{display:none!important}
+#farm-tools,#farm-picker,#farm-harvest-pop,#farm-mail{position:absolute;pointer-events:auto;color:#304b37;background:#fff5d9;border:2px solid #697c50;border-radius:14px;box-shadow:0 3px 0 #38574055;padding:6px;max-width:calc(100% - 16px);}
+/* 六个农具在底部安全区单行居中，窄屏仍保证每个按钮至少44像素宽。 */
+#farm-tools{z-index:6;bottom:max(20px,env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));margin-inline:auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;width:auto;max-width:440px;padding:5px;box-sizing:border-box;}
+#farm-tools button{width:100%;min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;}
+/* 移除和退出沿用单格入口，整栏不换行遮挡田地。 */
+#farm-tools #farm-exit{grid-column:auto;}
+#farm-tools .farm-remove-symbol{font-size:28px;line-height:28px;height:28px;}
+#farm-tools button,#farm-picker button,#farm-harvest,#farm-mail button{min-height:44px;min-width:44px;border:1px solid #95a37e;border-radius:9px;padding:5px;background:#f9edc8;color:#304b37;font-size:12px;touch-action:none;cursor:pointer;}
+#farm-tools canvas,#farm-tools svg{width:28px;height:28px;}#farm-tools [aria-pressed=true]{background:#d2e0b5;outline:2px solid #496d47;outline-offset:-2px;}
+/* 横持短屏使用图文并排的44像素按钮，短提示移到资源栏下方，互不压盖。 */
+@media(max-height:480px){
+ #farm-tools button{min-height:44px;flex-direction:row;padding:4px;gap:2px;font-size:11px;}
+ #farm-tools canvas,#farm-tools svg{width:16px;height:16px;}
+ #game-frame:has(#farm-tools:not([hidden])) .toast{top:calc(max(12px,env(safe-area-inset-top)) + 60px);}
+}
+#farm-notice{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+/* 种子按钮高于任务卡、导航和提示，原生模态弹窗仍由浏览器顶层管理。 */
+#farm-picker{z-index:50;width:260px;box-sizing:border-box;touch-action:none;}#farm-picker>b,#farm-picker>small{display:block;font-size:11px;margin:3px;}
+#farm-picker>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;}
+#farm-picker button{min-width:0;display:flex;flex-direction:column;align-items:center;padding:3px;font-size:11px;}
+#farm-picker svg{width:40px;height:42px;pointer-events:none;}#farm-picker small{font-size:10px;white-space:nowrap;}#farm-picker button:disabled{opacity:.5;}
+/* 收割入口用同源镰刀图标，点击区域保留足够尺寸。 */
+#farm-harvest-pop{z-index:7;}#farm-harvest{width:56px;height:52px;display:grid;place-items:center;}
+#farm-harvest canvas{width:40px;height:40px;pointer-events:none;}
+#farm-ghost{position:absolute;pointer-events:none;padding:8px;border-radius:12px;background:#e6cc8ce8;color:#36583a;font-size:12px;z-index:8;}
+#farm-menu canvas{width:32px;height:32px;}
+/* 选中、当前与排队统一用右下角小圆点，保持同等清晰且不遮作物。 */
+#game-frame .scene-hit.farm-cell[data-queued=true]{outline:none;}
+#game-frame .scene-hit.farm-cell:is([data-selected=true],[data-queued=true])::after{content:'';position:absolute;right:-2px;bottom:-3px;width:10px;height:10px;box-sizing:border-box;border:2px solid #294b35;border-radius:50%;background:#fff4b5;opacity:1;pointer-events:none;}
+/* 农田悬停与键盘提示使用静止实线，保留可辨识焦点及原有触控范围。 */
+@media(hover:hover) and (pointer:fine){#game-frame .scene-hit.farm-cell:hover{outline:1px solid #bdc3a1;outline-offset:-3px;background:#d7ddbd12;}}
+#game-frame .scene-hit.farm-cell:focus-visible{outline:2px solid var(--ui-paper);outline-offset:2px;}
+/* 农田教学框贴合土壤中心与实际大小，透明点击区仍不小于44px。 */
+#game-frame .scene-hit.farm-cell:is(.operation-source,.mainline-cue-target){outline:none!important;box-shadow:none!important;}
+#game-frame .scene-hit.farm-cell:is(.operation-source,.mainline-cue-target)::before{content:'';position:absolute;left:50%;top:50%;width:var(--farm-plot-width);height:var(--farm-plot-height);border-radius:var(--farm-plot-radius);transform:translate(-50%,-50%);background:transparent;box-shadow:0 0 0 3px #fff2c9,0 0 0 5px #315747;pointer-events:none;}
+/* 单枚金币与紧凑金额共同飞行，避免收获反馈遮住角色和相邻田块。 */
+.farm-coin-flight{position:absolute;z-index:20;pointer-events:none;color:#ffe07c;text-shadow:1px 1px #73582d,-1px -1px #73582d;font-size:14px;font-weight:bold;will-change:transform;white-space:nowrap;display:flex;align-items:center;gap:2px;}
+.farm-coin-flight svg{width:18px;height:18px;filter:drop-shadow(0 2px 1px #47633a66);flex-shrink:0;}
+#farm-mail{width:300px;z-index:9;max-height:65%;overflow-y:auto;}#farm-mail header{display:flex;align-items:center;justify-content:space-between;}#farm-mail p{font-size:12px;line-height:1.5;margin:6px 0;}#farm-mail article{display:flex;align-items:center;gap:7px;border-top:1px solid #b4bb98;padding:7px 0;}#farm-mail article svg{width:35px;height:40px;}#farm-mail article span{flex:1;font-size:12px;}#farm-mail small{display:block;font-size:11px;margin-top:4px;}
+#farm-lesson{margin:12px 0;padding:12px;background:#e6edcf;border:1px solid #9aaa79;border-radius:12px;}#farm-lesson h3{margin:0 0 6px;}#farm-lesson p{font-size:12px;line-height:1.6;}#farm-lesson li{font-size:12px;margin:6px 0;}#farm-lesson .done{color:#628052;}#farm-lesson-go{min-height:44px;}
+
+/* 水壶次数与名称保持一行，新增工具不抬高原有底栏。 */
+#farm-tools button>span{white-space:nowrap;}
+/* 种子小屋沿用手机标准底板，商品和来源单列排布，窄屏按钮可换行。 */
+#seed-shop-dialog{width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;overflow:hidden;}
+#seed-shop-dialog .ui-panel__body{overflow-y:auto;min-height:0;font-size:14px;line-height:1.6;}
+#seed-shop-dialog[open]{display:flex;flex-direction:column;}
+#seed-shop-dialog h3{margin:0;font-size:16px;}
+#seed-shop-dialog p{margin:6px 0;}
+#seed-shop-goods{display:grid;gap:12px;margin-top:12px;}
+.seed-shop-good{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;}
+.seed-shop-good>svg{width:48px;height:54px;}
+.seed-shop-good summary{min-height:44px;display:flex;align-items:center;color:var(--ui-forest);cursor:pointer;text-decoration:underline;}
+.seed-shop-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;}
+.seed-shop-actions button{flex:1 1 110px;min-height:44px;white-space:normal;}
+#seed-shop-message{color:var(--ui-forest);font-weight:bold;}
+#farm-picker [data-farm-shop]{margin:0;font-size:36px;line-height:1;}
+#farm-picker p{font-size:12px;margin:6px;}
+
+/* 种子仅显示同源作物图标和右下数量，库存更新不影响拖播命中面积。 */
+#farm-picker [data-farm-seed],#farm-picker [data-farm-shop]{position:relative;min-width:44px;min-height:58px;height:58px;padding:4px;justify-content:center;}
+#farm-picker [data-farm-seed] svg{width:44px;height:46px;max-width:100%;}
+#farm-picker .farm-seed-count{position:absolute;right:2px;bottom:2px;max-width:calc(100% - 4px);box-sizing:border-box;border-radius:5px;padding:1px 3px;background:#fff5d9;color:#304b37;font-size:11px;font-weight:bold;line-height:14px;font-variant-numeric:tabular-nums;pointer-events:none;}
+@media(max-height:480px){#farm-tools .farm-remove-symbol{font-size:20px;line-height:20px;height:20px;}}
+/* 分类与分页共同限制可见数量，选种页保持紧凑；小屋导航固定在可滚动商品区外。 */
+.farm-categories{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;}
+.farm-categories button{min-height:44px;min-width:44px;border:1px solid #95a37e;border-radius:9px;background:#f9edc8;color:#304b37;font-size:13px;cursor:pointer;}
+/* 名称与库存分两行，数量封顶99，窄屏页签保持紧凑。 */
+.farm-categories button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:14px;padding:3px;}
+.farm-category-count{font-size:11px;line-height:13px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.farm-categories button[aria-pressed=true],#farm-picker .farm-categories button[aria-pressed=true]{background:#d2e0b5;outline:2px solid #496d47;outline-offset:-2px;font-weight:bold;}
+#farm-picker .farm-categories{margin-bottom:6px;}
+#farm-picker [data-farm-seed],#farm-picker [data-farm-shop]{height:76px;min-height:76px;}
+#farm-picker .farm-seed-count{bottom:21px;}
+#farm-picker [data-farm-shop]{font-size:30px;}
+#seed-shop-categories{padding:8px 16px;flex-shrink:0;}
+#seed-shop-category-note{font-weight:bold;}
+/* 横持时缩小图案而不缩小触控区，浮层给底部农具留出空间。 */
+@media(max-height:480px){#farm-picker [data-farm-seed],#farm-picker [data-farm-shop]{height:58px;min-height:58px;}#farm-picker [data-farm-seed] svg{height:30px;}#farm-picker .farm-seed-count{bottom:17px;}}
+
+/* 翻页不使用滚动手势，避免与种子拖播冲突；小屋和翻页始终可达。 */
+#farm-picker>.farm-seed-pages{grid-template-columns:1fr 44px 1fr;align-items:center;gap:4px;margin-top:6px;text-align:center;font-size:12px;}
+#farm-picker>.farm-seed-pages button{min-height:44px;justify-content:center;}
+#farm-picker>[data-farm-shop]{width:100%;height:44px;min-height:44px;margin-top:6px;font-size:12px;}

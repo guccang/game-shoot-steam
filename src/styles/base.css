@@ -1,0 +1,49 @@
+/* 界面字体使用统一的本地资源。 */
+@import './fonts.css';
+/* 竖版战场：森林绿与木色沿用原画，界面只占边缘，中央留给战斗。 */
+:root {
+  font-family:var(--game-font-family);
+  color: #294338;
+  background: #213d32;
+  font-synthesis: none;
+  --ink: #294338;
+  --green: #3c765b;
+  --muted: #7d8c70;
+  --line: #d8e0c9;
+  --paper: #fffef3;
+  --gold: #edbd63;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+button:not(:disabled):active {
+  transform: translateY(1px);
+}
+button:focus-visible {
+  outline: 3px solid #cda14c;
+  outline-offset: 3px;
+}
+[hidden] {
+  display: none !important;
+}

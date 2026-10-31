@@ -1,0 +1,56 @@
+{
+  "description": "原片3–6秒，首尾各6帧重叠并线性融合；中间60帧原速保留，形成66帧、2.75秒连续循环。不补静帧、不倒放、不变速。",
+  "userFile": "D:/Download/video-2cbda66ee26a046b.mp4",
+  "source": {
+    "file": "source/original.mp4",
+    "bytes": 2767815,
+    "sha256": "2cbda66ee26a046ba44d952748148340709e8d322f8c474c9580ac8bad8e5468"
+  },
+  "sourceClip": {
+    "start": 3,
+    "end": 6,
+    "startFrame": 72,
+    "endFrameExclusive": 144
+  },
+  "commands": [
+    [
+      "ffmpeg",
+      "-i",
+      "assets/title/source/original.mp4",
+      "-filter_complex",
+      "[0:v]trim=start_frame=72:end_frame=144,setpts=PTS-STARTPTS,split=3[m][h][t];[m]trim=start_frame=6:end_frame=66,setpts=PTS-STARTPTS[mid];[h]trim=start_frame=0:end_frame=6,setpts=PTS-STARTPTS[head];[t]trim=start_frame=66:end_frame=72,setpts=PTS-STARTPTS[tail];[tail][head]blend=all_expr='A*(1-min(T*24/5,1))+B*min(T*24/5,1)'[join];[mid][join]concat=n=2:v=1:a=0[out]",
+      "-map",
+      "[out]",
+      "-an",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "slow",
+      "-crf",
+      "23",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "assets/title/background.mp4"
+    ],
+    [
+      "ffmpeg",
+      "-i",
+      "assets/title/background.mp4",
+      "-frames:v",
+      "1",
+      "-quality",
+      "85",
+      "assets/title/poster.webp"
+    ]
+  ],
+  "directCutComparison": "frame-comparison.txt仅记录融合前直接裁切与源片的逐帧一致性；最终融合质量见audit/seam-comparison.json。",
+  "transition": {
+    "type": "tail-head-crossfade",
+    "overlapSeconds": 0.25,
+    "overlapFrames": 6,
+    "speed": 1,
+    "firstSourceTime": 3.25
+  }
+}

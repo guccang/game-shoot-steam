@@ -1,0 +1,48 @@
+<!doctype html>
+<!-- 通用界面样板直接引用正式底板样式，供后续页面选型与交互复核。 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>林间告示板 · 通用界面</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/src/styles/base.css">
+  <link rel="stylesheet" href="/src/styles/ui-foundation.css">
+  <link rel="stylesheet" href="/src/styles/ui-foundation-preview.css">
+</head>
+<body>
+  <main class="ui-preview">
+    <header class="preview-heading">
+      <div><p class="preview-brand">森林巡游 · 界面样板</p><h1>林间告示板</h1><p>一套底板，装下森林里的每次相遇。</p></div>
+      <a class="ui-button" href="/">进入游戏</a>
+    </header>
+    <div class="preview-layout">
+      <section class="preview-stage" aria-label="标准底板预览">
+        <div class="preview-stage-top"><span>标准底板</span><button id="preview-light" class="ui-button" aria-pressed="false">切换夜色</button></div>
+        <article class="ui-panel" aria-labelledby="sample-title">
+          <header class="ui-panel__header"><div><h2 id="sample-title">巡游准备</h2><p>晴叶营地的出发清单</p></div><button class="ui-close" id="preview-close" aria-label="查看关闭确认">×</button></header>
+          <div class="ui-panel__body">
+            <div class="preview-intro"><span class="preview-emblem" aria-hidden="true">♧</span><div><h3>去林间走走吧</h3><p>带好装备，沿着小路出发。</p></div></div>
+            <section class="ui-section"><h3>这次的行装</h3><dl class="preview-list"><div><dt>巡游伙伴</dt><dd>橘猫</dd></div><div><dt>随身装备</dt><dd>初始手枪</dd></div><div><dt>出发地点</dt><dd>晴叶营地</dd></div></dl></section>
+            <p class="ui-inset preview-note">沿路采集木材，回来后可以整备装备。</p>
+          </div>
+          <footer class="ui-panel__footer"><button id="preview-stay" class="ui-button">留在营地</button><button id="preview-go" class="ui-button ui-button--primary">准备出发</button></footer>
+        </article>
+        <p id="preview-status" role="status" class="preview-status">点击按钮，试试按压与确认效果。</p>
+      </section>
+      <aside class="preview-specimens" aria-label="基础组件">
+        <section><h2>共同的轮廓</h2><p>厚边框托住内页，分区保持轻盈。<br>内容再多，也留住标题和操作。</p><div class="preview-anatomy"><span>标题栏 <small>名称 · 说明 · 关闭</small></span><span>内容区 <small>正文独立滚动</small></span><span>操作栏 <small>次操作在左，主操作在右</small></span></div><button id="preview-full" class="ui-button">查看手机全屏底板</button></section>
+        <section><h2>按钮有主次</h2><div class="preview-buttons"><button class="ui-button ui-button--primary" data-feedback="主要操作：用于确认、出发、保存。">主要操作</button><button class="ui-button" data-feedback="次要操作：用于返回、取消、查看。">次要操作</button><button class="ui-button ui-button--danger" id="preview-danger">危险操作</button><button class="ui-button" disabled>暂不可用</button></div><p>触控至少 44 像素，键盘焦点清晰可见。</p></section>
+        <section><h2>来自森林的颜色</h2><ul class="preview-palette"><li><i style="--swatch:var(--ui-forest)"></i>森林绿</li><li><i style="--swatch:var(--ui-paper)"></i>奶油纸</li><li><i style="--swatch:var(--ui-sage)"></i>浅草绿</li><li><i style="--swatch:var(--ui-gold)"></i>麦穗黄</li></ul></section>
+      </aside>
+    </div>
+    <footer class="preview-footnote">底板、标题栏、内容分区、操作栏和按钮共用正式样式。设置页已接入。</footer>
+  </main>
+  <dialog id="preview-dialog" class="ui-panel ui-panel--compact" aria-labelledby="confirm-title" aria-describedby="confirm-copy">
+    <header class="ui-panel__header"><div><h2 id="confirm-title">准备出发？</h2><p>晴叶营地</p></div><button class="ui-close" id="confirm-close" aria-label="关闭确认">×</button></header>
+    <div class="ui-panel__body"><p id="confirm-copy">行装已经备好，随时可以出发。</p></div>
+    <footer class="ui-panel__footer"><button class="ui-button" id="confirm-cancel" autofocus>再看看</button><button class="ui-button ui-button--primary" id="confirm-ok">确认</button></footer>
+  </dialog>
+  <script type="module" src="/src/ui/ui-foundation-preview.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+/* 小屋操作保持上下留白，中央整块画布供键盘和触屏自由走动。 */
+#game-frame.inside-cottage[data-page="game"] > :not(#game):not(#cottage-controls):not(#joystick):not(#nearby-interaction){display:none!important}
+#cottage-controls{position:absolute;inset:0;pointer-events:none;z-index:12;color:#f7eac4}
+#cottage-controls[hidden]{display:none}
+/* 场景说明只定位直属节点，不覆盖休息弹窗的共用标题和操作栏。 */
+#cottage-controls > header{position:absolute;top:18px;left:16px;right:16px;text-align:center;display:grid;gap:4px}
+#cottage-controls > header b{font-size:21px;letter-spacing:3px}
+#cottage-controls > header small{font-size:12px;color:#dce2be}
+#cottage-controls > footer{position:absolute;bottom:16px;left:12px;right:12px;text-align:center}
+#cottage-controls p{min-height:20px;font-size:12px;margin:0 0 8px}
+/* 休息结果用稳定的纸色提示，不再只有贴在场景上的一行浅色小字。 */
+#cottage-controls #cottage-notice[data-result="true"]{display:inline-block;box-sizing:border-box;max-width:100%;padding:10px 14px;border:1px solid var(--ui-line);border-radius:12px;background:var(--ui-paper);color:var(--ui-text);font-size:14px;font-weight:700;line-height:1.5}
+#cottage-controls > footer div{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+#cottage-controls button:where(:not(#home-decor-dialog *)){pointer-events:auto;min-height:44px;padding:8px 10px;font-size:12px;border:1px solid #8a9b76;border-radius:12px;background:#f4e6bc;color:#3e614b}
+#cottage-controls button:disabled{opacity:.5;cursor:default}
+/* 出口沿用画布地垫外观，只补充触控和键盘焦点，不叠加第二块按钮。 */
+#cottage-controls #cottage-exit{position:absolute;padding:0;border:0;background:transparent;box-shadow:none;transform:none;}
+#cottage-controls #cottage-exit:focus-visible{outline:3px solid #f7e5a6;outline-offset:2px;}
+#game-frame .parked-vehicle-hit{z-index:6}
+/* 休息选项沿用小屋的奶油色和森林绿，原生模态圈定焦点，窄屏按钮整行排列。 */
+#cottage-rest-dialog{box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:24px;pointer-events:auto;background:#f4e6bc;color:#3e614b;border:2px solid #6c805e;border-radius:18px;text-align:center}
+#cottage-rest-dialog::backdrop{background:#203c325c}
+#cottage-rest-dialog h2{margin:8px 0;font-size:23px}
+#cottage-rest-dialog small{font-size:12px;color:#687c58}
+#cottage-rest-dialog p{color:#526c4c;line-height:1.6;margin:0 0 18px}
+#cottage-rest-dialog .cottage-rest-options{display:grid;gap:10px}
+#cottage-rest-dialog button{min-height:46px;width:100%;font:inherit;border-color:#8b9b73;background:#fff7df}
+#cottage-rest-dialog #cottage-sleep-phase{background:#42674b;color:#fff5d5;border-color:#42674b}
+#cottage-rest-dialog #cottage-rest-cancel{background:transparent;border-color:transparent}
+#cottage-rest-dialog button:focus-visible{outline:3px solid #b58c45;outline-offset:2px}
+
+/* 标题和时间分两行，整块仍为同一个可点击按钮。 */
+#cottage-rest-dialog button span{display:block}
+#cottage-rest-dialog button small{display:block;margin-top:5px;font-size:13px;line-height:1.4;color:inherit;font-variant-numeric:tabular-nums}

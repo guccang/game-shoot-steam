@@ -1,0 +1,32 @@
+/* 拒马、当前波次和领主同一行；双环替代十个节点与总进度条。 */
+/* 与任务、设置共用奶油纸和森林绿，细边计入原48像素高度。 */
+#camp-defense-hud{position:absolute;left:14px;width:min(284px,calc(100% - 28px));display:flex;align-items:center;gap:6px;padding:1px 8px;background:#fff6dcf2;color:var(--ui-text);border:1px solid var(--ui-line);border-radius:14px;box-shadow:0 2px 0 #23433333;z-index:8;box-sizing:border-box}
+#camp-defense-hud[hidden]{display:none}
+/* 精简顶栏时详情仍保留44像素触摸宽度，设置按钮独立留在右侧。 */
+.task-combat-active #camp-help{width:44px}
+/* 六位累计次数在窄栏内自然分行，数字不拆开，仍保留拒马耐久与48像素总高度。 */
+.task-combat-active .camp-completed{white-space:normal;line-height:12px}
+.task-combat-active .camp-completed b{display:inline-block}
+.task-combat-active .camp-hp{gap:2px}
+/* 累计次数在上、拒马耐久在下；保持原48像素高度，并容纳完整六位场次。 */
+.camp-hp{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:4px;flex:1;min-width:0;font-size:11px;height:44px;white-space:nowrap}
+.camp-completed{display:block;color:var(--ui-forest);font-size:11px;line-height:14px;white-space:nowrap}.camp-completed b{color:var(--ui-text);font-variant-numeric:tabular-nums;font-size:12px}
+.camp-barricade{display:flex;align-items:center;gap:6px;line-height:12px}.camp-barricade>div{height:6px;background:#d0dbb8;flex:1;min-width:30px;border-radius:6px;overflow:hidden}.camp-hp i{display:block;height:100%;background:#587d52}
+.camp-wave-status{display:flex;align-items:center;gap:2px;flex:none;font-size:12px;white-space:nowrap}.camp-wave-orbit{position:relative;display:grid;place-items:center;width:36px;height:36px}.camp-wave-number{font-size:11px;font-variant-numeric:tabular-nums;line-height:1}.camp-wave-total{color:var(--ui-forest)}
+/* 浅草轨道配深麦穗外环、森林绿内环，浅底下仍可区分等待和清怪进度。 */
+.camp-wave-orbit svg{position:absolute;inset:0;width:36px;height:36px;transform:rotate(-90deg);fill:none;stroke-width:2;pointer-events:none}.camp-ring-track{stroke:#d0dbb8}.camp-ring-time{stroke:#8a682b;stroke-dasharray:100;stroke-linecap:round}.camp-ring-kills{stroke:var(--ui-forest);stroke-dasharray:100;stroke-linecap:round}
+/* 辅助进度保留读屏语义，不占用视觉行高或触摸区域。 */
+.camp-ring-accessible{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none}
+#camp-help,#camp-boss{flex:none;height:44px;min-height:44px;padding:0;border:0;background:none;color:inherit}
+#camp-help{width:28px;font-size:20px}#camp-boss{width:44px;font-size:11px;font-weight:700;border-radius:7px;position:relative}#camp-boss:disabled{opacity:1;color:var(--ui-muted)}#camp-boss[data-state="ready"],#camp-boss[data-state="active"]{color:#8a682b}#camp-boss[data-state="done"]{color:var(--ui-forest)}#camp-boss[data-state="active"]::after,#camp-boss[data-state="ready"]::after{content:'';position:absolute;left:8px;right:8px;bottom:8px;height:2px;border-radius:2px;background:currentColor}
+.camp-defense-dialog .camp-ring-key{font-size:12px;color:#63765c}
+/* 头像沿用正式领主画法，固定小尺寸并保留击败标记，不撑高单行进度。 */
+#camp-boss canvas{display:block;width:44px;height:44px;margin:auto;pointer-events:none}#camp-boss[data-state="pending"] canvas{opacity:.85}#camp-boss[data-state="active"]::after,#camp-boss[data-state="ready"]::after{bottom:3px}#camp-boss[data-state="done"]::after{content:'✓';position:absolute;right:2px;bottom:1px;font-size:12px;font-weight:700;color:var(--ui-forest)}
+.camp-defense-dialog{width:min(440px,calc(100vw - 24px));box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:auto;background:#fbf3da;color:#365442;border:2px solid #7a9569;border-radius:20px;padding:20px}.camp-defense-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}.camp-defense-dialog h2{font-size:21px;margin:0}.camp-defense-dialog p{line-height:1.7}.camp-defense-dialog button{min-height:44px;border-radius:10px}#camp-close{width:44px;padding:0}.camp-gates{display:flex;gap:8px;margin:18px 0}.camp-gates button{flex:1}.camp-gates [aria-pressed="true"]{background:#385e47;color:#fff0c9}.camp-grade{display:block;text-align:center;font-size:64px;color:#967331;line-height:1.3;margin:18px 0}.camp-rewards{display:flex;flex-wrap:wrap;gap:8px}.camp-rewards b{padding:8px;background:#eee5bd;border-radius:8px;font-size:14px}.camp-defense-dialog details{margin:18px 0;font-size:13px}.camp-defense-dialog .primary{width:100%}#camp-error{color:#a94431}.camp-defending #field-menu,.camp-defending #field-menu-items{display:none!important}
+
+/* 结算关闭按钮和门位选择沿用营地奶油底与绿边。 */
+#camp-close,.camp-gates button{border:1px solid #9caf83;background:#e8edcf;color:#365442;padding:8px 12px}.camp-gates [aria-pressed="true"]{background:#385e47;color:#fff0c9}
+
+/* 退出放在继续守门下方，以次级按钮区分行动，手机保持完整触控高度。 */
+#camp-leave{width:100%;border:1px solid #9caf83;background:#e8edcf;color:#365442;padding:10px 12px}
+#camp-leave-note{font-size:12px;margin:12px 0 8px;color:#63765c}

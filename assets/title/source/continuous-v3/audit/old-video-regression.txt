@@ -1,0 +1,2 @@
+### Error
+Error: 存在整秒静止区：[{"second":0,"samples":10,"average":0.027061310782241017},{"second":1,"samples":15,"average":0.0005884425651867512},{"second":2,"samples":12,"average":0},{"second":3,"samples":16,"average":0.15917679704016913},{"second":4,"samples":14,"average":0.11499169435215946},{"second":5,"samples":14,"average":0.10315992147387497},{"second":6,"samples":13,"average":0.10587900471621402},{"second":7,"samples":10,"average":0.11621564482029598},{"second":8,"samples":10,"average":0.0003752642706131078},{"second":9,"samples":10,"average":0.0012790697674418604}]

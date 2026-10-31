@@ -1,0 +1,53 @@
+{
+  "id": 21716,
+  "media_type": "video",
+  "request_id": "vid-ztj-forest-cat-front-20261021-1-v2",
+  "input": {
+    "mode": "first_frame",
+    "model": "seedance-2.5",
+    "ratio": "adaptive",
+    "inputs": [
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261021-074157-qusloy/4f044bade843a153-cat-1-reference.png",
+        "role": "first_frame",
+        "type": "image"
+      }
+    ],
+    "prompt": "Animate exactly the supplied cartoon cat body as a game sprite. Preserve its simple flat 2D colors, thick brown outlines, face, scarf, tail, proportions and any hat exactly. The cat must ALWAYS face straight FRONT toward the camera, never rotate or turn its head, even when walking. Fixed orthographic camera, fixed scale, fixed framing, entire character always visible. Stay centered in place at the initial feet baseline. Background stays perfectly flat pure BLUE #0000FF, no floor, no shadows, no scenery, no camera movement, no text, no motion blur. This is a BODY-ONLY animation layer: absolutely NO arms, NO hands, NO additional limbs, NO gun, NO weapon, NO props. Keep two short feet and the tail from the reference.\nOne continuous 10-second take. 0-3 seconds: quiet idle, soft breathing, one natural blink, tiny tail sway, feet planted. 3-4 seconds: gently start walking in place. 4-9 seconds: continuous gentle front-facing WALK IN PLACE, two short feet alternating small steps with smooth weight transfer, subtle body bounce, light scarf and tail follow-through. A readable repeated walk cycle about one second long. Feet must alternate forward and backward in perspective, no sideways travel, no turning, no running, no jumping. 9-10 seconds: settle back into the original idle. All movements should be soft, restrained, cozy and fluid. Keep the body stable for separate game-controlled hands. Match the first frame style precisely, do not redesign the cat or add realistic fur.",
+    "duration": 10,
+    "request_id": "vid-ztj-forest-cat-front-20261021-1-v2",
+    "resolution": "720p",
+    "generate_audio": false,
+    "execution_expires_after": 10800
+  },
+  "output": {
+    "usage": {
+      "total_tokens": 216900,
+      "completion_tokens": 216900
+    },
+    "video": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-cat-front-20261021-1-v2/video/video-b3b6bf2333c49f9c.mp4",
+      "mime_type": "video/mp4",
+      "size_bytes": 2632871
+    },
+    "last_frame": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-cat-front-20261021-1-v2/video/last-frame-57aa0e7dc3f3a315.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 139128
+    },
+    "media_type": "video",
+    "properties": {
+      "fps": 24,
+      "seed": 45953,
+      "ratio": "1:1",
+      "duration": 10,
+      "resolution": "720p",
+      "output_format": "mp4",
+      "generate_audio": false
+    },
+    "request_id": "vid-ztj-forest-cat-front-20261021-1-v2",
+    "provider_task_id": "cgt-20261021074158-rum3c"
+  },
+  "created_at": "2026-10-20T23:44:21.454751Z",
+  "updated_at": "2026-10-20T23:44:21.454751Z"
+}

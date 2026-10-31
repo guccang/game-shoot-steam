@@ -1,0 +1,32 @@
+{
+  "request_id": "vid-ztj-forest-title-20261023-v4",
+  "prompt": "Make a seamless 10-second animated idle loop of this exact 2D forest game image. This is an ongoing loop, already in motion at time 0 and still in motion at time 10. All ten seconds must contain subtle, visible local motion, with no static intro, no static outro, no freeze, no hold and no easing to a stop. The identical first and last reference images are two consecutive matching phases of periodic motion, NOT static bookends. Never jump or morph from the reference into a different character at the start or jump back at the end.\nPreserve the small orange tabby EXACTLY: same face, head size, ear shape, height, planted feet, front-facing pose, short green triangular neckerchief and handheld grey equipment. Keep the head and body outline stable. Do not add a long scarf, tassels, accessories, new limbs or new props. The feet, head position and handheld equipment remain fixed. Do NOT scale the body to imitate breathing. Cat animation: a gentle continuous small tail-tip swish, tiny natural ear movements, occasional quick blinks, minimal torso breathing inside its stable silhouette. Tail returns naturally through its reference curl at the end without stopping. Cat remains recognizable as the supplied original at every frame.\nKeep environmental motion visible throughout the full clip: wheat tips continuously bend gently in the breeze, leafy branch tips sway without moving the trunks, turquoise water carries small soft flowing ripples. Stagger these motions so they never all stop together, including the first and last seconds. Use restrained smooth periodic motions that complete whole cycles in ten seconds. Match both POSITION AND DIRECTION OF MOTION at the loop seam. Final moving frames must approach the first moving frames smoothly, not merely paste the reference on the last frame.\nFixed three-quarter overhead camera, fixed scene composition, fixed mail shelter and trees, no zoom, pan, cuts, whole-image wobble or sliding ground. Original flat forest storybook art, dark forest green outlines, muted plant greens, cream yellow, limited flat shading. Keep the original top and bottom safe areas for HTML menu overlays. No lighting change, no combat, no new characters, no dramatic effects, no text, no watermark, no UI. Gentle animation should be obvious at phone size but the original artwork must remain stable.",
+  "reference_sha256": "e7218172b815cb8143a0e1b1a95a9021585311bfc6ae2d92188a1a8d2c3210bf",
+  "preview": {
+    "dry_run": true,
+    "method": "POST",
+    "url": "http://10.1.9.154:8091/v1/video-generations",
+    "body": {
+      "request_id": "vid-ztj-forest-title-20261023-v4",
+      "model": "seedance-2.5",
+      "mode": "first_last_frame",
+      "prompt": "Make a seamless 10-second animated idle loop of this exact 2D forest game image. This is an ongoing loop, already in motion at time 0 and still in motion at time 10. All ten seconds must contain subtle, visible local motion, with no static intro, no static outro, no freeze, no hold and no easing to a stop. The identical first and last reference images are two consecutive matching phases of periodic motion, NOT static bookends. Never jump or morph from the reference into a different character at the start or jump back at the end.\nPreserve the small orange tabby EXACTLY: same face, head size, ear shape, height, planted feet, front-facing pose, short green triangular neckerchief and handheld grey equipment. Keep the head and body outline stable. Do not add a long scarf, tassels, accessories, new limbs or new props. The feet, head position and handheld equipment remain fixed. Do NOT scale the body to imitate breathing. Cat animation: a gentle continuous small tail-tip swish, tiny natural ear movements, occasional quick blinks, minimal torso breathing inside its stable silhouette. Tail returns naturally through its reference curl at the end without stopping. Cat remains recognizable as the supplied original at every frame.\nKeep environmental motion visible throughout the full clip: wheat tips continuously bend gently in the breeze, leafy branch tips sway without moving the trunks, turquoise water carries small soft flowing ripples. Stagger these motions so they never all stop together, including the first and last seconds. Use restrained smooth periodic motions that complete whole cycles in ten seconds. Match both POSITION AND DIRECTION OF MOTION at the loop seam. Final moving frames must approach the first moving frames smoothly, not merely paste the reference on the last frame.\nFixed three-quarter overhead camera, fixed scene composition, fixed mail shelter and trees, no zoom, pan, cuts, whole-image wobble or sliding ground. Original flat forest storybook art, dark forest green outlines, muted plant greens, cream yellow, limited flat shading. Keep the original top and bottom safe areas for HTML menu overlays. No lighting change, no combat, no new characters, no dramatic effects, no text, no watermark, no UI. Gentle animation should be obvious at phone size but the original artwork must remain stable.",
+      "inputs": [
+        {
+          "type": "image",
+          "role": "first_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110743-8jppoo/e7218172b815cb81-reference.png"
+        },
+        {
+          "type": "image",
+          "role": "last_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110743-8jppoo/e7218172b815cb81-reference.png"
+        }
+      ],
+      "resolution": "720p",
+      "ratio": "adaptive",
+      "duration": 10,
+      "generate_audio": false
+    }
+  }
+}

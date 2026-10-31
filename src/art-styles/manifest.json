@@ -1,0 +1,350 @@
+{
+  "classicRevision": "884e703",
+  "clearRevision": "16906ce",
+  "modules": [
+    "armored-enemies.js",
+    "camp-defense.js",
+    "camp-props.js",
+    "clearing-post.js",
+    "cottage-art.js",
+    "dumpling-body.js",
+    "equipment-parts.js",
+    "fire-world.js",
+    "flying-monster.js",
+    "forest-art.js",
+    "forest-race-track.js",
+    "forest-race.js",
+    "garage.js",
+    "gatling-art.js",
+    "ground-art.js",
+    "idle-cat-style.js",
+    "jiuzhaigou-landscape.js",
+    "jiuzhaigou.js",
+    "landscape-ground.js",
+    "lighting.js",
+    "living-world.js",
+    "mechanical.js",
+    "monster-atlas.js",
+    "natural-terrain.js",
+    "pine-wheels.js",
+    "primitives.js",
+    "ranged-enemies.js",
+    "ranged-reinforcements.js",
+    "ranger-arrival.js",
+    "realm-entrances.js",
+    "river-crossing.js",
+    "river.js",
+    "road-art.js",
+    "rotary-barrels.js",
+    "sample-ground.js",
+    "scenery.js",
+    "season-art.js",
+    "settlements.js",
+    "shore-art.js",
+    "signposts.js",
+    "spider.js",
+    "story-posts.js",
+    "story-props.js",
+    "town-layout.js",
+    "town-restoration.js",
+    "tree-canopy.js",
+    "tree-species.js",
+    "vehicle-armaments.js",
+    "vehicle-models.js",
+    "vehicle.js",
+    "weapon-workshop-building.js",
+    "workshop-building.js",
+    "workshop-interior.js",
+    "world-signs.js",
+    "tree-art.js",
+    "cozy-cottage.js"
+  ],
+  "architecture": "shared-rendering-profiles",
+  "exports": {
+    "armored-enemies.js": [
+      "drawArmoredMonster"
+    ],
+    "camp-defense.js": [
+      "campDefenseObjects",
+      "drawCampDefense",
+      "drawCampDefenseGround"
+    ],
+    "camp-props.js": [
+      "CAMP_PROP_SIZES",
+      "drawCampProp"
+    ],
+    "clearing-post.js": [
+      "clearingPostObjects",
+      "drawClearingPost"
+    ],
+    "cottage-art.js": [
+      "drawCottageArtwork",
+      "drawCottageRoofSnow",
+      "drawCottageWindowLight"
+    ],
+    "dumpling-body.js": [
+      "drawDumplingBody",
+      "drawDumplingFace",
+      "drawDumplingSprout"
+    ],
+    "equipment-parts.js": [
+      "drawEquipmentPart",
+      "drawVehicleParts",
+      "drawWeaponParts",
+      "partBounds"
+    ],
+    "fire-world.js": [
+      "drawBurningTree",
+      "drawFireRoute",
+      "drawWaterPump"
+    ],
+    "flying-monster.js": [
+      "paintFlyingMonster"
+    ],
+    "forest-art.js": [
+      "campCanopyAlpha",
+      "drawBiomeGround",
+      "drawBiomeGroundSteps",
+      "drawForestShadow",
+      "drawForestTree",
+      "drawGardenDetails"
+    ],
+    "forest-race-track.js": [
+      "drawRaceBale",
+      "drawRaceTrackEffects",
+      "drawRaceTrackGround"
+    ],
+    "forest-race.js": [
+      "drawRaceCard",
+      "drawRaceGround",
+      "drawRaceMap",
+      "drawRaceRunner"
+    ],
+    "garage.js": [
+      "clipGarageOpening",
+      "drawGarage",
+      "drawGarageGround"
+    ],
+    "gatling-art.js": [
+      "drawGatling",
+      "drawGatlingBarrels",
+      "drawGatlingPart"
+    ],
+    "ground-art.js": [
+      "paintGround",
+      "paintGroundSteps"
+    ],
+    "idle-cat-style.js": [
+      "CARTOON_LEAF_RAMPS",
+      "IDLE_CAT_STYLE",
+      "SCENE_ART"
+    ],
+    "jiuzhaigou-landscape.js": [
+      "paintJiuzhaigouLand"
+    ],
+    "jiuzhaigou.js": [
+      "drawJiuzhaigouWater",
+      "paintJiuzhaigou",
+      "paintJiuzhaigouSteps"
+    ],
+    "landscape-ground.js": [
+      "drawLandscapeGround"
+    ],
+    "lighting.js": [
+      "drawLampGround",
+      "drawLightFixture"
+    ],
+    "living-world.js": [
+      "clearArtStyleCache",
+      "clearLivingRenderCache",
+      "drawLivingGround",
+      "drawLivingObject",
+      "livingObjects",
+      "livingRenderBudget"
+    ],
+    "mechanical.js": [
+      "drawMechanicalCat",
+      "drawMechanicalCore",
+      "drawMechanicalPack",
+      "drawMechanicalPreview"
+    ],
+    "monster-atlas.js": [
+      "MONSTER_ATLAS",
+      "clearArtStyleCache",
+      "drawMonsterSprite",
+      "getMonsterAtlas",
+      "monsterAtlasStats",
+      "monsterFrame",
+      "slimeDeformation"
+    ],
+    "natural-terrain.js": [
+      "clearArtStyleCache",
+      "drawMountain",
+      "drawNaturalGround",
+      "drawNaturalMap",
+      "naturalAtlasStats"
+    ],
+    "pine-wheels.js": [
+      "drawPineFront",
+      "drawPineRear",
+      "drawWheel"
+    ],
+    "primitives.js": [
+      "box",
+      "outline",
+      "oval",
+      "poly"
+    ],
+    "ranged-enemies.js": [
+      "drawEnemyBolts",
+      "drawRangedMonster",
+      "drawRangedWarning"
+    ],
+    "ranged-reinforcements.js": [
+      "drawRangedReinforcement"
+    ],
+    "ranger-arrival.js": [
+      "arrivalObjects",
+      "drawArrivalGuidance",
+      "drawArrivalObject",
+      "drawOldRanger",
+      "drawWorkshopBuildCountdown"
+    ],
+    "realm-entrances.js": [
+      "drawRealmEntrance",
+      "drawRealmEntranceGround"
+    ],
+    "river-crossing.js": [
+      "drawRiverCrossing",
+      "drawRiverCrossingGround",
+      "riverCrossingObjects"
+    ],
+    "river.js": [
+      "BRIDGE",
+      "RiverRenderer",
+      "WATERFALL",
+      "drawRiverGround",
+      "drawRiverGroundSteps",
+      "nightColor",
+      "nightTexture",
+      "nightTextureSteps"
+    ],
+    "road-art.js": [
+      "drawSoftRoads",
+      "drawSoftRoadsSteps"
+    ],
+    "rotary-barrels.js": [
+      "drawRotaryBarrels"
+    ],
+    "sample-ground.js": [
+      "drawSampleMeadow",
+      "drawTerrainPatches",
+      "meadowPatch"
+    ],
+    "scenery.js": [
+      "clearArtStyleCache",
+      "drawScenery",
+      "drawSceneryGround",
+      "drawSceneryMap",
+      "sceneryAtlasStats"
+    ],
+    "season-art.js": [
+      "drawSeasonCanopy",
+      "seasonalLeafColor"
+    ],
+    "settlements.js": [
+      "drawSettlement",
+      "settlementObjects"
+    ],
+    "shore-art.js": [
+      "drawShoreDetails",
+      "drawShoreGround",
+      "drawShoreGroundSteps",
+      "drawShoreWater",
+      "drawShoreWaterSteps",
+      "shorePlant",
+      "shoreStone"
+    ],
+    "signposts.js": [
+      "drawRegionSignpost"
+    ],
+    "spider.js": [
+      "drawSpiderBody",
+      "drawSpiderController"
+    ],
+    "story-posts.js": [
+      "drawStoryPost",
+      "drawStoryPostGround",
+      "storyPostObjects"
+    ],
+    "story-props.js": [
+      "clearArtStyleCache",
+      "drawStoryProp",
+      "storyArtStats",
+      "storyCast",
+      "storyObjects"
+    ],
+    "town-layout.js": [
+      "drawTownGround",
+      "drawTownSign"
+    ],
+    "town-restoration.js": [
+      "drawRestorationArea",
+      "drawRestorationObject",
+      "drawRestorationScaffold",
+      "drawRestorationTransfer",
+      "restorationBuildingVisible",
+      "restorationForObject",
+      "restorationObjects",
+      "restorationTransferSamples"
+    ],
+    "tree-canopy.js": [
+      "drawSampleTree"
+    ],
+    "tree-species.js": [
+      "drawSpeciesTree"
+    ],
+    "vehicle-armaments.js": [
+      "drawTankShell",
+      "drawVehicleArmament"
+    ],
+    "vehicle-models.js": [
+      "drawHeavyFront",
+      "drawHeavyRear",
+      "drawHelicopterFront",
+      "drawHelicopterRear",
+      "drawHelicopterRotor"
+    ],
+    "vehicle.js": [
+      "drawVehicleArmor",
+      "drawVehicleIcon",
+      "drawVehicleTracks"
+    ],
+    "weapon-workshop-building.js": [
+      "drawWeaponWorkshop",
+      "drawWeaponWorkshopConstruction"
+    ],
+    "workshop-building.js": [
+      "drawWorkshopFacade"
+    ],
+    "workshop-interior.js": [
+      "drawWorkshopInterior",
+      "workshopInteriorView"
+    ],
+    "world-signs.js": [
+      "drawWorldSign"
+    ],
+    "tree-art.js": [
+      "clearArtStyleCache",
+      "drawTreeSprite",
+      "treeAtlasStats"
+    ],
+    "cozy-cottage.js": [
+      "cozyCottageStatus",
+      "drawCozyCottage",
+      "drawCozyCottageSnow",
+      "drawCozyCottageWarmth",
+      "loadCozyCottage"
+    ]
+  }
+}

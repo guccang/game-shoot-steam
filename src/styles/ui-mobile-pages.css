@@ -1,0 +1,102 @@
+/* 旧页只在显式接入后覆盖外框；ID优先级用于清除原页面尺寸，不影响场景控件。 */
+:is(#camp-dialog,#vehicle-collection-dialog,#map-dialog,#environment-dialog,#chronicle-dialog,#realm-dialog,#mainline-dialog,#funnel-dialog,#mechanical-dialog,#spider-dialog,#living-dialog,#camp-defense-dialog,#fire-dialog,#arrival-workshop-dialog,#equipment-goal-dialog,#help-dialog,#realm-help-dialog,#resource-help-dialog,#wave-help-dialog,#ws-mastery-dialog,#ws-equipment-dialog,#challenge-catalog-dialog,#cottage-rest-dialog,#workshop-dialog).ui-migrated {
+  box-sizing: border-box; width: min(480px,calc(100vw - var(--ui-safe-left) - var(--ui-safe-right)));
+  max-width: none; height: fit-content; max-height: calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom));
+  inset: var(--ui-safe-top) var(--ui-safe-right) var(--ui-safe-bottom) var(--ui-safe-left);
+  margin: auto; padding: 0; gap: 0; overflow: hidden;
+  border: 3px solid var(--ui-forest); border-radius: var(--ui-radius-panel);
+  background: var(--ui-paper); color: var(--ui-text); box-shadow: var(--ui-panel-shadow);
+}
+/* 标题与固定操作占自然高度，只给正文分配可滚动空间。 */
+.ui-migrated > .ui-panel__header { flex:none; position:static; margin:0; padding:16px var(--ui-space); gap:12px; }
+.ui-migrated > .ui-panel__body { flex:1 1 auto; min-height:0; min-width:0; max-height:none; margin:0; padding:var(--ui-space); overflow:auto; overscroll-behavior:contain; }
+.ui-migrated > .ui-panel__header h2 { margin:0; font-size:22px; letter-spacing:0; line-height:1.35; }
+.ui-migrated > .ui-panel__header :is(.eyebrow,small,p) { color:#dbe5c5; font-size:12px; margin:4px 0; line-height:1.5; }
+.ui-migrated > .ui-panel__footer { flex:none; margin:0; }
+.ui-migrated > .ui-panel__footer > :is(div,button) { min-width:0; }
+.ui-migrated > .ui-panel__footer > button { width:auto; }
+:is(#camp-dialog,#vehicle-collection-dialog,#map-dialog,#environment-dialog,#chronicle-dialog,#realm-dialog,#mainline-dialog,#funnel-dialog,#mechanical-dialog,#spider-dialog,#living-dialog,#camp-defense-dialog,#fire-dialog,#arrival-workshop-dialog,#equipment-goal-dialog,#help-dialog,#realm-help-dialog,#resource-help-dialog,#wave-help-dialog,#ws-mastery-dialog,#ws-equipment-dialog,#challenge-catalog-dialog,#cottage-rest-dialog,#workshop-dialog).ui-migrated > .ui-panel__header button.ui-close { position:static; float:none; margin:0; width:44px; height:44px; min-height:44px; min-width:44px; flex:0 0 44px; padding:0; color:var(--ui-forest); background:var(--ui-paper); border:2px solid var(--ui-forest); border-radius:12px; box-shadow:0 2px 0 var(--ui-deep); font-size:26px; }
+.ui-migrated :is(summary,input[type="number"]) { min-height:44px; }
+.ui-migrated summary { display:list-item; align-content:center; cursor:pointer; }
+.ui-migrated .ui-panel__body :is(h3,h4) { color:var(--ui-forest); }
+.ui-migrated .ui-panel__body > :first-child { margin-top:0; }
+.ui-migrated .ui-panel__body > :last-child { margin-bottom:0; }
+.ui-migrated > .ui-panel__body.ui-dynamic-body { display:flex; flex-direction:column; padding:0; overflow:hidden; }
+.ui-dynamic-body > .ui-scroll-content { padding:var(--ui-space); overflow:auto; min-height:0; overscroll-behavior:contain; }
+.ui-dynamic-body > .ui-panel__footer { flex:none; }
+.ui-dynamic-body > .ui-panel__footer button { width:auto; min-width:0; min-height:48px; margin:0; }
+.ui-dynamic-body > .ui-panel__footer button.primary { order:1; }
+/* 说明和确认使用浅标题；同一纸材、不同信息层级。 */
+dialog.ui-migrated.ui-sheet > .ui-panel__header { background:var(--ui-paper); color:var(--ui-forest); border-bottom:1px solid #c3cea9; }
+dialog.ui-migrated.ui-sheet > .ui-panel__header :is(h2,small,p,.eyebrow) { color:var(--ui-forest); }
+dialog.ui-migrated.ui-sheet > .ui-panel__header h2 { font-size:20px; }
+#cottage-rest-dialog.ui-migrated { width:min(360px,calc(100vw - var(--ui-safe-left) - var(--ui-safe-right))); }
+#resource-help-dialog.ui-migrated { text-align:left; }
+#resource-help-dialog #resource-help-art { margin:0 auto 16px; }
+.ui-migrated :is(.mainline-book-actions,.timing-actions) { display:flex; flex-wrap:wrap; gap:10px; margin:0; width:100%; }
+.ui-migrated .mainline-book-actions button { flex:1; min-width:0; width:auto; }
+.ui-migrated .camp-symbol { display:none; }
+.ui-migrated :is(.realm-catalog,.inventory,.chronicle-stat-grid) { min-width:0; }
+.ui-migrated .realm-catalog { grid-template-columns:minmax(0,1fr); }
+#realm-dialog.ui-migrated #realm-help { color:var(--ui-paper); flex:0 0 44px; }
+#realm-dialog.ui-migrated #realm-help::before { border-color:#c3cea9; }
+#map-dialog.ui-migrated #region-map { max-width:100%; height:auto; }
+#challenge-catalog-dialog.ui-migrated #challenge-catalog-body { overflow:visible; }
+#challenge-catalog-dialog.ui-migrated #challenge-tier-nav { margin:14px 0; grid-template-columns:repeat(3,minmax(0,1fr)); }
+.ui-migrated :is(.tabs,.living-tabs,.turret-filters,.chronicle-equipment-switch) { gap:6px; }
+/* 选择器保持轻面，不与确认按钮争夺注意；当前选项使用实绿并有原生状态语义。 */
+.ui-migrated button:is([aria-pressed],[role="tab"],[data-challenge-tier],[data-story-chapter]) { border:1px solid var(--ui-line); border-radius:12px; background:var(--ui-sage); color:var(--ui-forest); box-shadow:none; min-height:44px; }
+/* 已选页签沿用深绿悬停底色，避免通用按钮浅底与浅色文字叠加。 */
+.ui-migrated button:is([aria-pressed="true"],[aria-selected="true"]) { --button-hover:#416f4f; border-color:var(--ui-forest); background:var(--ui-forest); color:var(--ui-paper); }
+.ui-migrated button:is([aria-pressed="true"],[aria-selected="true"]) :is(small,b,span) { color:inherit; }
+.ui-migrated :is(.living-conversation,.living-current,.realm-summary,.mechanical-vitals) { background:var(--ui-sage); border-radius:12px; }
+/* 带ID的旧选项样式优先级较高，显式收口颜色，避免奶油底配浅色字。 */
+:is(#workshop-dialog,#camp-dialog,#vehicle-collection-dialog,#mechanical-dialog,#spider-dialog,#funnel-dialog,#challenge-catalog-dialog,#environment-dialog).ui-migrated button:is([aria-pressed],[role="tab"]) { background:var(--ui-sage); color:var(--ui-forest); border:1px solid var(--ui-line); box-shadow:none; }
+:is(#workshop-dialog,#camp-dialog,#vehicle-collection-dialog,#mechanical-dialog,#spider-dialog,#funnel-dialog,#challenge-catalog-dialog,#environment-dialog).ui-migrated button:is([aria-pressed="true"],[aria-selected="true"]) { background:var(--ui-forest); color:var(--ui-paper); border-color:var(--ui-forest); }
+:is(#camp-dialog,#vehicle-collection-dialog,#workshop-dialog,#equipment-goal-dialog).ui-migrated button.resource-info-button { min-width:44px; width:44px; min-height:44px; height:44px; flex-shrink:0; }
+.ui-migrated .material-wallet > div { min-width:0; padding-inline:4px; gap:2px; }
+.ui-migrated .material-wallet b { min-width:0; overflow-wrap:anywhere; }
+/* 同一邻里面板切入NPC时保留底部轻对白，固定姓名及关闭，正文独立滚动。 */
+#living-dialog.ui-migrated.npc-bottom-dialogue { inset:auto; margin:0; border-width:2px; border-radius:18px 18px 0 0; box-shadow:0 -3px 0 #23433326; }
+#living-dialog.ui-migrated.npc-bottom-dialogue > .ui-panel__header { background:var(--ui-paper); border-bottom:1px solid #c3cea9; padding:12px 14px; }
+#living-dialog.ui-migrated.npc-bottom-dialogue > .ui-panel__header :is(h2,small) { color:var(--ui-forest); }
+#living-dialog.ui-migrated.npc-bottom-dialogue > .ui-panel__body { padding:12px 14px max(12px,env(safe-area-inset-bottom)); }
+/* 工坊仍有独立舞台、拖拽托盘和报价；只替换外框，所有手机方向使用单列。 */
+#workshop-dialog.ui-migrated { height:calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom)); }
+#workshop-dialog.ui-migrated > .ui-panel__header { padding-block:10px; }
+#workshop-dialog.ui-migrated > .ui-panel__header #ws-close { background:var(--ui-paper); color:var(--ui-forest); border:2px solid var(--ui-forest); box-shadow:0 2px 0 var(--ui-deep); }
+#workshop-dialog.ui-migrated .ws-layout { display:block; padding:12px; }
+#workshop-dialog.ui-migrated .ws-function-tabs { padding:6px 12px; background:var(--ui-sage); }
+#workshop-dialog.ui-migrated :is(#ws-shelf,#ws-parts,#ws-components) { display:flex; flex-direction:row; max-height:none; overflow:auto; }
+#workshop-dialog.ui-migrated :is(#ws-shelf,#ws-parts,#ws-components) > button { min-width:82px; width:96px; flex:none; }
+#workshop-dialog.ui-migrated .ws-rack h3 { display:none; }
+#workshop-dialog.ui-migrated .ws-bench { border-color:#a48b58; }
+#workshop-dialog.ui-migrated .ws-footer { display:flex; flex-direction:column; align-items:stretch; height:auto; min-height:0; gap:6px; padding:8px 12px max(10px,env(safe-area-inset-bottom)); border-top:1px solid var(--ui-line); background:var(--ui-sage); }
+#workshop-dialog.ui-migrated[data-function="unlock"] .ws-footer { display:none; }
+#workshop-dialog.ui-migrated .ws-checkout > div { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+#workshop-dialog.ui-migrated .ws-checkout button { min-height:44px; margin:0; }
+#workshop-dialog.ui-migrated .ws-quote { min-height:0; }
+#workshop-dialog.ui-migrated .ws-checkout { width:100%; max-width:none; }
+#workshop-dialog.ui-migrated[data-has-quote="false"] #ws-purpose { min-height:0; }
+#workshop-dialog.ui-migrated #ws-unlock-link { border:1px solid var(--ui-line); background:var(--ui-paper); box-shadow:none; padding:8px 12px; font-size:12px; text-decoration:none; }
+/* 休息选项沿用按钮变量，避免场景控件颜色与轻确认底板混用。 */
+#cottage-rest-dialog.ui-migrated button { border:2px solid var(--button-edge); background:var(--button-face); color:var(--button-ink); font-size:14px; }
+#cottage-rest-dialog.ui-migrated #cottage-sleep-phase { --button-face:var(--ui-forest); --button-ink:var(--ui-paper); --button-edge:var(--ui-deep); background:var(--button-face); color:var(--button-ink); border-color:var(--button-edge); }
+#cottage-rest-dialog.ui-migrated #cottage-rest-cancel { background:var(--ui-paper); border-color:var(--ui-forest); }
+#cottage-rest-dialog.ui-migrated > .ui-panel__header small { color:var(--ui-muted); }
+/* 奖励收据保留独立倒计时与原来的自动关闭逻辑。 */
+#task-reward-dialog .task-reward-panel { background:var(--ui-paper); border-color:var(--ui-forest); }
+#task-reward-dialog header button { min-width:44px; min-height:44px; color:var(--ui-forest); border:2px solid var(--ui-forest); border-radius:12px; background:var(--ui-paper); box-shadow:0 2px 0 var(--ui-deep); }
+#task-reward-items li { background:var(--ui-sage); border-radius:12px; }
+@media(max-width:360px) {
+  .ui-migrated > .ui-panel__header { padding-block:12px; }
+  .ui-migrated > .ui-panel__header h2 { font-size:20px; }
+}
+@media(max-height:500px) {
+  .ui-migrated > .ui-panel__header { padding-block:8px; }
+  .ui-migrated > .ui-panel__footer { padding-block:8px; }
+  #workshop-dialog.ui-migrated .ws-quote { max-height:64px; overflow:auto; }
+}
+
+/* 装备故事条件独占结算区一行，窄屏不与材料提示、购买按钮争用宽度。 */
+#workshop-dialog.ui-migrated #ws-story-condition { width:100%; min-height:44px; flex-shrink:0; white-space:pre-line; overflow-wrap:anywhere; text-align:left; font-size:12px; line-height:1.5; padding:6px 10px; }

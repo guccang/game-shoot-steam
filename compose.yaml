@@ -1,0 +1,26 @@
+# 固定项目名，使主仓库与工作树调用同一个局域网部署。
+name: game-shoot-lan
+services:
+  game:
+    image: game-shoot:local
+    build:
+      context: .
+      args:
+        GAME_GIT_COMMIT: ${GAME_GIT_COMMIT:-unknown}
+    # 监听所有主机 IPv4 地址，手机使用电脑局域网地址访问。
+    ports:
+      - "0.0.0.0:4173:4173"
+    # 单容器无需独立子网，复用默认桥接网络，避免占用新的地址池。
+    network_mode: bridge
+    restart: unless-stopped
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

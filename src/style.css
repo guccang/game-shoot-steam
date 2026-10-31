@@ -1,0 +1,35 @@
+/* 样式入口保留原 URL，按基础、战场、面板顺序加载。 */
+@import './styles/base.css';
+@import './styles/camp-defense.css';
+@import './styles/battlefield.css';
+@import './styles/panels.css';
+@import './styles/diagnostics.css';
+@import './styles/mobile-hud.css';
+@import './styles/materials.css';
+@import './styles/challenge-catalog.css';
+@import './styles/resource-icons.css';
+@import './styles/wave-arrival.css';
+@import './styles/realms.css';
+
+@import './styles/guardian.css';
+@import './styles/camera.css';
+
+@import './styles/environment-pictures.css';
+
+@import './styles/story.css';
+@import './styles/mainline.css';
+@import './styles/wave-progress.css';
+@import './styles/wave-tail-navigation.css';
+@import './styles/clearing-flow.css';
+@import './styles/realm-hud.css';
+@import './styles/title-menu.css';
+@import './styles/start-loading.css';
+@import './styles/settings-layout.css';
+@import './styles/ranger-arrival.css';
+
+@import './styles/operation-guide.css';
+@import './styles/task-reward.css';
+
+@import './styles/action-countdown.css';
+
+@import './styles/workshop-room.css';

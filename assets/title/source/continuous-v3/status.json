@@ -1,0 +1,58 @@
+{
+  "id": 22130,
+  "media_type": "video",
+  "request_id": "vid-ztj-forest-title-20261023-v3",
+  "input": {
+    "mode": "first_last_frame",
+    "model": "seedance-2.5",
+    "ratio": "adaptive",
+    "inputs": [
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110118-r09o93/e7218172b815cb81-reference.png",
+        "role": "first_frame",
+        "type": "image"
+      },
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110118-r09o93/e7218172b815cb81-reference.png",
+        "role": "last_frame",
+        "type": "image"
+      }
+    ],
+    "prompt": "A continuously animated 10-second seamless looping 2D game background. CRITICAL: animation is already moving on frame 1 and is still moving on the final frame. Maintain visible gentle organic motion throughout EVERY second from 0.0 to 10.0. No opening still, no ending still, no settling down, no freeze frames, no hold, no slow motion ramp. Do not save the movement for the middle. The supplied identical first and last images specify the same animation phase, not a pause. Across the loop boundary the motion continues at its normal gentle speed.\nMatch the reference exactly: the same small orange striped tabby, green scarf, same handheld equipment, same planted feet and center location, village mail shelter, wheat patch, trees and sandy turquoise river. Preserve original flat forest storybook drawing, dark green outlines, soft botanical greens and cream yellow, limited flat shading and fixed three-quarter overhead view. Lock the camera, framing, buildings, ground, character proportions and lighting for all 10 seconds.\nAnimate continuous layered cycles: cat gently breathes in two smooth 5-second cycles without changing its silhouette identity, tail tip swishes softly in two smooth full cycles, green scarf flutters continuously in four 2.5-second cycles; two brief natural blinks during the loop. Wheat stalk tips and leafy branch tips sway softly throughout; river ripples flow continuously along the shore. Keep motion gentle but clearly visible at phone size. Offset the different motions so they never all stop simultaneously. Feet, tree trunks, ground, signs and structures stay fixed. Motion begins immediately in the first half second and remains clearly visible in the last half second, closing the natural periodic phase at 10 seconds. Last pose matches first while velocity carries through the seam.\nOne continuous shot, no cuts, no zoom, no pan, no whole-picture movement, no parallax, no whole-body scaling or stretching, no walking or translation, no duplicate limbs, no prop redesign, no extra characters, no gunfire, no new effects, no camera shake, no new text or UI, no letters, no watermark. Keep top and bottom safe for HTML menu overlay. Real independent local animation only; do not simply warp the entire reference image.",
+    "duration": 10,
+    "request_id": "vid-ztj-forest-title-20261023-v3",
+    "resolution": "720p",
+    "generate_audio": false,
+    "execution_expires_after": 10800
+  },
+  "output": {
+    "usage": {
+      "total_tokens": 216900,
+      "completion_tokens": 216900
+    },
+    "video": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-title-20261023-v3/video/video-6f2f409b0b9f3a69.mp4",
+      "mime_type": "video/mp4",
+      "size_bytes": 3410171
+    },
+    "last_frame": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-title-20261023-v3/video/last-frame-c3b937442206808e.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 252109
+    },
+    "media_type": "video",
+    "properties": {
+      "fps": 24,
+      "seed": 28308,
+      "ratio": "9:16",
+      "duration": 10,
+      "resolution": "720p",
+      "output_format": "mp4",
+      "generate_audio": false
+    },
+    "request_id": "vid-ztj-forest-title-20261023-v3",
+    "provider_task_id": "cgt-20261023110120-rbuh5"
+  },
+  "created_at": "2026-10-23T03:04:37.771179Z",
+  "updated_at": "2026-10-23T03:04:37.771179Z"
+}

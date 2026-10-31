@@ -1,0 +1,8 @@
+{
+  "activity_id": "generation/video/vid-ztj-forest-title-20261023-v1",
+  "error": "invalid video generation request: provider status 400: {\"error\":{\"code\":\"InvalidParameter.TaskTypeConstraint\",\"message\":\"The parameter ratio specified in the request is not valid. For first-frame or first-last-frame generation, the output ratio follows the first-frame image. Request id: 021792720819653114488fbfaf31238bc59a8d8e7bd24901d1d6d\",\"param\":\"ratio\",\"type\":\"BadRequest\"}}",
+  "phase": "submitted",
+  "request_id": "vid-ztj-forest-title-20261023-v1",
+  "run_id": "01a1667c-d545-71a1-97f9-2160aa583286",
+  "status": "failed"
+}

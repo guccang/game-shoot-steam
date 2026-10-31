@@ -1,0 +1,28 @@
+{
+  "request_id": "vid-ztj-forest-cat-front-20261021-0-v2",
+  "reference_url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261021-074156-jlc7ob/4ff0d94110bbbe46-cat-0-reference.png",
+  "prompt": "Animate exactly the supplied cartoon cat body as a game sprite. Preserve its simple flat 2D colors, thick brown outlines, face, scarf, tail, proportions and any hat exactly. The cat must ALWAYS face straight FRONT toward the camera, never rotate or turn its head, even when walking. Fixed orthographic camera, fixed scale, fixed framing, entire character always visible. Stay centered in place at the initial feet baseline. Background stays perfectly flat pure BLUE #0000FF, no floor, no shadows, no scenery, no camera movement, no text, no motion blur. This is a BODY-ONLY animation layer: absolutely NO arms, NO hands, NO additional limbs, NO gun, NO weapon, NO props. Keep two short feet and the tail from the reference.\nOne continuous 10-second take. 0-3 seconds: quiet idle, soft breathing, one natural blink, tiny tail sway, feet planted. 3-4 seconds: gently start walking in place. 4-9 seconds: continuous gentle front-facing WALK IN PLACE, two short feet alternating small steps with smooth weight transfer, subtle body bounce, light scarf and tail follow-through. A readable repeated walk cycle about one second long. Feet must alternate forward and backward in perspective, no sideways travel, no turning, no running, no jumping. 9-10 seconds: settle back into the original idle. All movements should be soft, restrained, cozy and fluid. Keep the body stable for separate game-controlled hands. Match the first frame style precisely, do not redesign the cat or add realistic fur.",
+  "preview": {
+    "dry_run": true,
+    "method": "POST",
+    "url": "http://10.1.9.154:8091/v1/video-generations",
+    "body": {
+      "request_id": "vid-ztj-forest-cat-front-20261021-0-v2",
+      "model": "seedance-2.5",
+      "mode": "first_frame",
+      "prompt": "Animate exactly the supplied cartoon cat body as a game sprite. Preserve its simple flat 2D colors, thick brown outlines, face, scarf, tail, proportions and any hat exactly. The cat must ALWAYS face straight FRONT toward the camera, never rotate or turn its head, even when walking. Fixed orthographic camera, fixed scale, fixed framing, entire character always visible. Stay centered in place at the initial feet baseline. Background stays perfectly flat pure BLUE #0000FF, no floor, no shadows, no scenery, no camera movement, no text, no motion blur. This is a BODY-ONLY animation layer: absolutely NO arms, NO hands, NO additional limbs, NO gun, NO weapon, NO props. Keep two short feet and the tail from the reference.\nOne continuous 10-second take. 0-3 seconds: quiet idle, soft breathing, one natural blink, tiny tail sway, feet planted. 3-4 seconds: gently start walking in place. 4-9 seconds: continuous gentle front-facing WALK IN PLACE, two short feet alternating small steps with smooth weight transfer, subtle body bounce, light scarf and tail follow-through. A readable repeated walk cycle about one second long. Feet must alternate forward and backward in perspective, no sideways travel, no turning, no running, no jumping. 9-10 seconds: settle back into the original idle. All movements should be soft, restrained, cozy and fluid. Keep the body stable for separate game-controlled hands. Match the first frame style precisely, do not redesign the cat or add realistic fur.",
+      "inputs": [
+        {
+          "type": "image",
+          "role": "first_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261021-074156-jlc7ob/4ff0d94110bbbe46-cat-0-reference.png"
+        }
+      ],
+      "resolution": "720p",
+      "ratio": "adaptive",
+      "duration": 10,
+      "generate_audio": false
+    }
+  },
+  "status": "submission_pending"
+}

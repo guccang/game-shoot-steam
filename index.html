@@ -1,0 +1,234 @@
+<!doctype html>
+<!-- 全屏竖版森林战场：养成入口在战场内，角色与武器共用暂停弹窗。 -->
+<html lang="zh-CN">
+<head>
+<link rel="preload" href="/assets/fonts/HYQiHei_75S.ttf" as="font" type="font/ttf" crossorigin>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#243f35"><title data-i18n-text="index.c0785c2c90">森林巡游</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='54'%3E🌲%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="stylesheet" href="/src/styles/workshop.css">
+  <link rel="stylesheet" href="/src/styles/legendary-workshop.css">
+  <link rel="stylesheet" href="/src/styles/weapon-trial-scene.css">
+  <link rel="stylesheet" href="/src/styles/living-world.css">
+  <link rel="stylesheet" href="/src/styles/farm.css">
+  <link rel="stylesheet" href="/src/styles/clearing.css">
+  <link rel="stylesheet" href="/src/styles/scene-hit.css">
+  <link rel="stylesheet" href="/src/styles/cottage.css">
+  <link rel="stylesheet" href="/src/styles/home-decor.css">
+  <link rel="stylesheet" href="/src/styles/keepsake-backpack.css">
+  <!-- 通用底板最后接入，让已有弹窗共享外观，新页面复用同一结构类。 -->
+  <link rel="stylesheet" href="/src/styles/ui-foundation.css">
+  <link rel="stylesheet" href="/src/styles/ui-mobile-pages.css">
+  <link rel="stylesheet" href="/src/styles/workshop-focus.css">
+  <link rel="stylesheet" href="/src/styles/help-emblem.css">
+</head>
+<body>
+  <main class="portrait-shell" data-i18n-aria-label="index.d75694ae48">
+    <div class="game-frame" id="game-frame" data-page="title">
+      <!-- 首页面板与战场状态独立，所有文字及交互均由HTML提供。 -->
+      <section id="title-menu" class="title-menu" aria-labelledby="title-name">
+        <img id="title-poster" src="/assets/title/poster.webp" alt="" aria-hidden="true">
+        <video id="title-video" muted loop playsinline preload="auto" hidden poster="/assets/title/poster.webp" aria-hidden="true"></video>
+        <div class="title-shade" aria-hidden="true"></div>
+        <!-- 首页沿用战场齿轮入口，放在右上角并保留无障碍名称。 -->
+        <div class="title-tools utility-buttons"><button id="title-settings" class="icon-button" type="button" data-i18n-title="ui.title-menu.57444f5c18" data-i18n-aria-label="ui.title-menu.57444f5c18" aria-haspopup="dialog" aria-controls="settings-dialog">⚙</button></div>
+        <header class="title-heading"><span class="title-leaf" aria-hidden="true">❧</span><h1 id="title-name">森林巡游</h1></header>
+        <div class="title-actions">
+          <button id="start" class="title-primary" disabled>开始游戏</button>
+          <!-- 媒体异常独立定位，正常加载不显示文案，也不推挤开始按钮。 -->
+          <div class="title-media-feedback">
+            <p id="title-save-warning" class="title-warning" role="status" hidden></p>
+            <p id="title-start-status" class="title-video-status" role="status"></p>
+            <p id="title-startup-error" class="title-warning" role="alert" hidden></p>
+            <p id="title-video-status" class="title-video-status" role="status"></p>
+            <button id="title-video-play" class="title-video-play" hidden>播放背景视频</button>
+          </div>
+        </div>
+        <!-- 健康忠告独立排版，给菜单留出空间；年龄标识固定在页脚右下安全区。 -->
+        <footer class="title-footer">
+          <section id="title-health" class="title-health" aria-labelledby="title-health-heading">
+            <h2 id="title-health-heading">游戏健康忠告</h2>
+            <p>抵制不良游戏，拒绝盗版游戏。<br>注意自我保护，谨防受骗上当。<br>适度游戏益脑，沉迷游戏伤身。<br>合理安排时间，享受健康生活。</p>
+          </section>
+          <span id="title-age" class="title-age" role="img" data-i18n-aria-label="index.78f29ea5bd">8+</span>
+        </footer>
+      </section>
+      <!-- 点击开始后的独立进度层，原首页视频继续播放。 -->
+      <section id="start-loading" class="start-loading" aria-label="正在出发" tabindex="-1" hidden>
+        <div class="start-loading-content">
+          <div id="start-loading-road" class="start-loading-road" aria-hidden="true"><div id="start-loading-van" class="start-loading-van"></div></div>
+          <div id="start-loading-progress" class="start-loading-progress" role="progressbar" aria-label="出发进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="start-loading-fill" class="start-loading-fill"></div></div>
+          <span id="start-loading-percent" class="start-loading-percent" aria-hidden="true">0%</span>
+        </div>
+      </section>
+      <canvas id="game" data-i18n-aria-label="index.affbd2bf74"></canvas>
+      <!-- 低生命提示只覆盖游戏视口边缘，不拦截移动、射击与按钮触控。 -->
+      <div class="health-edge-warning" aria-hidden="true"></div>
+      <div class="environment-tint" aria-hidden="true"></div><output id="performance-hud" hidden data-i18n-aria-label="index.dcc7013894"></output>
+      <header class="game-top">
+        <div class="location-chip" id="location-info"><span aria-hidden="true">♧</span><div><b id="zone-name"><!--i18n:world.biomes.7a12609293--></b><small id="wave-label"><!--i18n:index.87591e6af7--></small></div></div>
+      </header>
+      <div class="hud-resources">
+        <div class="resource-pill" data-i18n-aria-label="balance.app.bbece6f829"><span data-resource-icon="coins"></span><b data-coins>60</b></div>
+        <div class="resource-pill" data-i18n-aria-label="balance.app.30a9333b4f"><span data-resource-icon="wood"></span><b data-wood>30</b></div>
+        <div class="utility-buttons"><span class="settings-hud-control"><button id="settings-button" class="icon-button" data-i18n-title="ui.title-menu.57444f5c18" data-i18n-aria-label="ui.title-menu.57444f5c18" aria-haspopup="dialog" aria-controls="settings-dialog">⚙</button><span id="fps-display" aria-live="off" hidden>— FPS</span></span></div>
+      </div>
+      <div class="boss-hud" id="boss-hud" hidden><div><b id="boss-name"><!--i18n:index.d362c69d4e--></b><span id="boss-hp"></span></div><div class="bar"><i id="boss-fill"></i></div></div>
+      <div class="quest" id="quest"><div><b id="quest-title"><!--i18n:index.6f703ab915--></b><small id="quest-detail"><!--i18n:index.978d5e4f5a--></small></div><span id="quest-count">0 / 12</span><div id="wave-track" hidden data-i18n-aria-label="index.8ab6b96e27"><div id="wave-track-bar" role="progressbar" data-i18n-aria-label="index.feedbdfad2" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="wave-track-fill"></i></div><div id="wave-nodes"></div><button id="boss-button" disabled data-i18n-aria-label="index.311fe4ad36"><canvas id="boss-button-icon" width="112" height="112" aria-hidden="true"></canvas><span id="boss-button-badge" aria-hidden="true">12</span><!-- 共用引导猫爪：闭合圆掌与四颗趾垫，不带手腕，轻点由外层控制。 -->
+<svg class="boss-paw" viewBox="0 0 52 52" aria-hidden="true">
+ <path d="M11 27C5 27 2 22 4 17C5 12 10 10 14 13C12 7 15 3 20 3C25 3 27 8 26 12C28 5 31 3 35 5C40 7 40 12 38 16C43 13 48 16 49 21C50 26 47 29 43 30C47 35 46 41 42 45C38 49 31 49 26 47C20 49 13 49 9 45C4 41 5 33 11 27Z" fill="#fff5df" stroke="#657451" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M8 38C9 44 17 47 26 44C35 47 42 43 45 37C45 42 42 46 37 47C33 48 29 47 26 46C20 49 9 47 8 41Z" fill="#ecdbb9"/>
+ <g fill="#e5acac">
+  <ellipse cx="10.5" cy="20" rx="4.5" ry="5.8" transform="rotate(-28 10.5 20)"/>
+  <ellipse cx="20" cy="12.5" rx="4.7" ry="6" transform="rotate(-8 20 12.5)"/>
+  <ellipse cx="33" cy="13.5" rx="4.7" ry="6" transform="rotate(12 33 13.5)"/>
+  <ellipse cx="42" cy="22" rx="4.5" ry="5.8" transform="rotate(28 42 22)"/>
+  <path d="M15 36C15 32 19 30 21 27C23 23 28 23 31 27C33 30 38 32 38 37C38 43 31 44 26 41C21 44 15 42 15 36Z"/>
+ </g>
+ <path d="M16 36C16 40 21 42 26 39C31 42 36 40 37 36C39 42 32 45 26 42C20 45 14 41 16 36Z" fill="#d9959d"/>
+ <g fill="#f8d3ce"><ellipse cx="18.7" cy="10.4" rx="1.8" ry="2.4"/><ellipse cx="31.7" cy="11.2" rx="1.8" ry="2.4"/><ellipse cx="9.3" cy="18" rx="1.6" ry="2"/><ellipse cx="40.6" cy="20" rx="1.6" ry="2"/><ellipse cx="23" cy="29.5" rx="3" ry="1.8" transform="rotate(-28 23 29.5)"/></g>
+</svg></button></div></div>
+      <button id="equipment-goal" class="equipment-goal" hidden aria-haspopup="dialog" aria-controls="equipment-goal-dialog"></button>
+      <!-- 环境图标由手机页面接管，初始隐藏避免主画面闪现。 -->
+      <section id="phone-environment" class="phone-environment" aria-label="季节、时间和天气" hidden><button id="season-picture" class="environment-picture ui-button" type="button" data-i18n-aria-label="index.861cb22746" data-i18n-title="index.47e53ab4b8"><svg class="season-clock-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="season-clock-track" cx="18" cy="18" r="16"/><circle id="season-picture-progress" cx="18" cy="18" r="16" pathLength="100"/></svg><img id="season-picture-art" src="/assets/environment/season-winter.svg" width="30" height="30" alt=""><span id="season-picture-label"><!--i18n:world.seasons.0868fbc8c0--></span></button><button id="time-picture" class="environment-picture ui-button" type="button" data-i18n-aria-label="index.df5797a7e8" data-i18n-title="index.5c90a41162"><svg class="season-clock-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="season-clock-track" cx="18" cy="18" r="16"/><circle id="time-picture-progress" cx="18" cy="18" r="16" pathLength="100"/></svg><img id="time-picture-art" src="/assets/environment/time-day.svg" width="30" height="30" alt=""><span id="time-picture-label"><!--i18n:world.environment-timing.010ecccef0--></span></button><button id="weather-picture" class="environment-picture ui-button" type="button" data-i18n-aria-label="index.b5d8604e76" data-i18n-title="index.a1a8eb78d1"><svg class="season-clock-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="season-clock-track" cx="18" cy="18" r="16"/><circle id="weather-picture-progress" cx="18" cy="18" r="16" pathLength="100"/></svg><img id="weather-picture-art" src="/assets/environment/weather-sun.svg" width="30" height="30" alt=""><span id="weather-picture-label"><!--i18n:ui.panels.environment.749c359ed0--></span></button></section>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <nav class="field-menu" data-i18n-aria-label="index.853e342729">
+        <div id="field-menu-items" class="field-menu-items">
+        <button id="phone-button" type="button" aria-label="打开巡林手机" aria-haspopup="dialog" aria-controls="phone-dialog"><span class="phone-symbol" aria-hidden="true"></span><span>手机</span></button>
+        <button id="realm-button" data-i18n-aria-label="ui.panels.realms.f5dc54fbda" aria-haspopup="dialog" aria-controls="realm-dialog"><svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="40" rx="18" ry="5" fill="#47675640"/><path d="M10 37V23C10 3 38 3 38 23v14" fill="#a4b8a2" stroke="#456354" stroke-width="3"/><path d="M16 37V23c0-13 16-13 16 0v14z" fill="#8b82b0" stroke="#eee3bd" stroke-width="2"/><path d="m24 18 3 7 6 2-6 3-3 7-3-7-6-3 6-2z" fill="#f6e5ae"/></svg><span><!--i18n:index.61cc0e09df--></span></button>
+        <button id="heroes-button" data-i18n-aria-label="balance.app.c47b54e84e" aria-haspopup="dialog" aria-controls="camp-dialog"><canvas id="hero-button-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:balance.app.c47b54e84e--></span></button>
+        <button id="weapons-button" hidden data-i18n-aria-label="ui.inventory.235d93ed3b" aria-haspopup="dialog" aria-controls="workshop-dialog"><canvas id="weapon-button-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:ui.story-rewards.4fe131173e--></span></button>
+        <button id="vehicles-button" hidden data-i18n-aria-label="index.ecc66d941c" aria-haspopup="dialog" aria-controls="vehicle-collection-dialog"><canvas id="vehicle-menu-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:app.game-events.8f9f50d425--></span></button>
+        <!-- 地图收进手机；背包只保留随身物品格子。 -->
+        <button id="backpack-button" type="button" aria-label="打开小背包" aria-haspopup="dialog" aria-controls="backpack-dialog"><span class="backpack-symbol" aria-hidden="true"></span><span>背包</span></button>
+        </div>
+        <button id="field-menu-toggle" data-i18n-aria-label="ui.mobile-hud.d9b0e615ad" aria-expanded="false" aria-controls="field-menu-items"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="15" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="15" width="6" height="6" rx="1.5"/><rect x="15" y="15" width="6" height="6" rx="1.5"/></svg><span class="menu-close-mark" aria-hidden="true">×</span></button>
+      </nav>
+      <div class="joystick" id="joystick" hidden aria-hidden="true"><span class="joystick-cross">＋</span><span id="stick"></span></div>
+        <div class="bottom-info"><div class="player-hud"><div class="player-heading"><b id="player-name"><!--i18n:config.heroes.10cb799373--></b><span id="auto-label" role="img" data-i18n-aria-label="ui.hud.bb3cdc1737"></span><span id="player-health">120 / 120</span></div><div class="bar"><i id="health-fill"></i></div><div class="combat-instruments" data-i18n-aria-label="index.ce4ac11687"><div id="magazine-hud" class="status-ring" tabindex="0"></div><div id="funnel-supply" hidden></div><button id="vehicle-button" class="status-ring" data-i18n-aria-label="index.f7e72750ce" aria-pressed="false"></button></div></div></div>
+      <div class="game-bottom">
+      </div>
+      <!-- 出发前展示实际装备，画像与战场共用绘制，换枪后同步更新。 -->
+      <div class="intro" id="intro" aria-labelledby="intro-weapon-name">
+        <div class="intro-equipment"><span><!--i18n:ui.inventory.96dab22a52--></span><b id="intro-weapon-level"><!--i18n:common.initialLevel--></b></div>
+        <div class="intro-weapon-stage"><canvas id="intro-weapon-icon" width="640" height="300" role="img" data-i18n-aria-label="index.47e5199661"></canvas></div>
+        <h1 id="intro-weapon-name"><!--i18n:config.weapons.dcd6ef42b9--></h1>
+        <p id="intro-weapon-description"><!--i18n:config.weapons.d61210517d--></p>
+        <div class="intro-weapon-stats"><span><span id="intro-resource-label"><!--i18n:ui.inventory.f16f121dc0--></span> <b id="intro-weapon-ammo"><!--i18n:index.0c47da0eb6--></b></span><span><span id="intro-reload-label"><!--i18n:ui.inventory.eea36850d9--></span> <b id="intro-weapon-reload"><!--i18n:index.b655ecd2ae--></b></span></div>
+        <small><!--i18n:index.eb4b4b2216--></small>
+      </div>
+      <!-- 暂停与失败沿用原状态机，紧凑纸页和固定操作区共用手机底板。 -->
+      <div class="center-overlay" id="overlay" hidden><section class="ui-panel ui-panel--compact ui-pause" role="dialog" aria-labelledby="overlay-title" aria-describedby="overlay-text"><div class="ui-panel__body"><span id="overlay-icon" aria-hidden="true">☾</span><h2 id="overlay-title"><!--i18n:ui.hud.adf092bb4f--></h2><p id="overlay-text"><!--i18n:index.c37cec832f--></p></div><footer class="ui-panel__footer"><button class="ui-button ui-button--primary" id="resume"><!--i18n:ui.hud.b4064d6093--></button></footer></section></div>
+    </div>
+  </main>
+  <!-- 收藏入口展示当前已收集载具，上下车复用战场中的快捷按钮规则。 -->
+  <dialog id="vehicle-collection-dialog" aria-labelledby="vehicle-collection-title">
+    <button id="close-vehicle-collection" class="close" data-i18n-aria-label="index.f66c1bd2f1">×</button>
+    <span id="vehicle-collection-count" class="eyebrow"><!--i18n:index.e52811132d--></span>
+    <h2 id="vehicle-collection-title"><!--i18n:index.47d57c5092--></h2>
+    <div class="vehicle-wallet" data-i18n-aria-label="index.7aa33e0a83"><span><span data-resource-icon="coins"></span><b id="vehicle-coins"></b></span><span><span data-resource-icon="wood"></span><b id="vehicle-wood"></b></span></div>
+    <div data-challenge-level></div>
+    <div class="material-wallet" data-material-wallet data-i18n-aria-label="index.b74be7238e"></div>
+    <div class="tabs vehicle-tabs" role="tablist" data-i18n-aria-label="index.a7abf928b1"><button id="vehicle-tab-hull" role="tab" aria-controls="vehicle-hull-panel" data-vehicle-tab="hull" aria-selected="true"><!--i18n:index.f7d8d320d3--></button><button id="vehicle-tab-turrets" role="tab" aria-controls="vehicle-turrets-panel" data-vehicle-tab="turrets" aria-selected="false" tabindex="-1"><!--i18n:balance.app.49ec2a7840--></button></div>
+    <p id="vehicle-feedback" role="status" aria-live="polite"></p>
+    <section id="vehicle-hull-panel" role="tabpanel" aria-labelledby="vehicle-tab-hull">
+    <div id="vehicle-roster" class="vehicle-roster" role="group" data-i18n-aria-label="index.4dc816f665"></div>
+    <article class="vehicle-collection-card">
+      <div class="vehicle-collection-art"><span id="vehicle-collection-status"><!--i18n:ui.panels.vehicles.31d097d51c--></span><canvas id="vehicle-collection-image" width="320" height="200" data-i18n-aria-label="config.vehicles.38e28a9f00" role="img"></canvas></div>
+      <h3 id="vehicle-collection-name"><!--i18n:config.vehicles.38e28a9f00--></h3>
+      <p id="vehicle-collection-description"></p>
+      <dl><div><dt><!--i18n:index.033159c948--></dt><dd id="vehicle-collection-health"></dd></div><div><dt><!--i18n:balance.app.49ec2a7840--></dt><dd id="vehicle-collection-gun"></dd></div></dl>
+    </article>
+    <div class="vehicle-upgrade"><span id="vehicle-upgrade-preview"></span><button id="vehicle-upgrade"></button></div>
+    <p id="vehicle-collection-hint"></p>
+    <div id="vehicle-material-requirements"></div>
+    <button id="vehicle-board" class="primary"><!--i18n:ui.panels.vehicles.c528542c48--></button>
+    </section>
+    <section id="vehicle-turrets-panel" role="tabpanel" aria-labelledby="vehicle-tab-turrets" hidden>
+      <p id="vehicle-turret-owner" class="turret-owner"></p>
+      <p class="turret-intro"><!--i18n:ui.panels.vehicles.24599c9703--></p>
+      <div class="turret-filters" role="group" data-i18n-aria-label="index.986fae7b3b"><button data-turret-filter="all" aria-pressed="true"><!--i18n:index.e35b4282bd--></button><button data-turret-filter="owned" aria-pressed="false"><!--i18n:ui.panels.vehicles.9d17144725--></button></div>
+      <div id="turret-list"></div>
+    </section>
+    <button id="vehicle-collection-done" class="vehicle-collection-back"><!--i18n:ui.panels.realms.25aa5ece41--></button>
+  </dialog>
+  <!-- 营地等级优惠嵌套查看，不离开当前工坊。 -->
+  <dialog id="challenge-catalog-dialog" aria-labelledby="challenge-catalog-title">
+    <header><div><h2 id="challenge-catalog-title">营地等级 · 购买折扣</h2><p id="challenge-catalog-current"></p></div><button id="challenge-catalog-close" type="button" aria-label="关闭营地等级详情">×</button></header>
+    <p class="challenge-catalog-note">参与玩法提升营地等级，购买更优惠。</p>
+    <nav id="challenge-tier-nav" aria-label="选择营地等级"></nav>
+    <div id="challenge-catalog-body"><h3 id="challenge-tier-title"></h3><p id="challenge-tier-condition"></p><div id="challenge-catalog-grid"></div></div>
+  </dialog>
+  <dialog id="camp-dialog" aria-labelledby="camp-title"><button id="close-camp" class="close" data-i18n-aria-label="index.b1f32d46c9">×</button><div class="camp">
+      <div class="camp-title"><div><span class="eyebrow"><!--i18n:index.9826cde186--></span><h2 id="camp-title"><!--i18n:ui.inventory.2a6ad2fe8a--></h2></div><span class="camp-symbol">⌂</span></div>
+      <div class="wallet"><div><span data-resource-icon="coins"></span><div><b id="coins">60</b></div></div><div><span data-resource-icon="wood"></span><div><b id="wood">30</b></div></div></div>
+      <div data-challenge-level></div>
+      <div class="material-wallet" data-material-wallet data-i18n-aria-label="index.b74be7238e"></div>
+      <div class="tabs" role="tablist" data-i18n-aria-label="index.40583cdf0c"><button id="tab-heroes" class="selected" role="tab" aria-selected="true" aria-controls="inventory" data-tab="heroes"><!--i18n:index.69265c8adf--><span>06</span></button><button id="tab-weapons" role="tab" aria-selected="false" aria-controls="inventory" data-tab="weapons"><!--i18n:index.79fdb17f04--><span>12</span></button></div>
+      <p id="camp-feedback" class="camp-feedback" role="status" aria-live="polite"></p>
+      <div id="weapon-categories" class="weapon-categories" role="group" data-i18n-aria-label="index.9450f32afd" hidden></div><p id="weapon-category-hint" class="weapon-category-hint" hidden><!--i18n:index.b13326eb92--></p>
+      <div id="inventory" class="inventory" role="tabpanel" aria-labelledby="tab-heroes"></div>
+      <div class="camp-note"><span>✧</span><p><!--i18n:index.8a42606cab--><small><!--i18n:index.9500fdc6ed--></small></p></div>
+      <div class="journal"><div><h3><!--i18n:index.e26224de7c--></h3><span><!--i18n:index.4de8a49114--></span></div><dl><div><dt><!--i18n:index.bbae3b1697--></dt><dd id="kills">0</dd></div><div><dt><!--i18n:index.dcb2cf4979--></dt><dd id="trees">0</dd></div><div><dt><!--i18n:index.b97140b3c7--></dt><dd id="bosses">0</dd></div></dl></div>
+      <div class="save-status"><span class="status-dot"></span><span id="save-label"><!--i18n:app.progress-controller.5b87394b6c--></span></div>
+        <button id="camp-done" class="primary"><!--i18n:index.85a3d098e7--></button>
+  </div></dialog><dialog id="help-dialog"><button id="close-help" class="close" data-i18n-aria-label="index.9667e2fa91">×</button><span class="eyebrow"><!--i18n:index.0671998080--></span><h2><!--i18n:index.0e7e83f93d--></h2><p><!--i18n:index.36554a04c3--><b><!--i18n:index.83db627025--></b><!--i18n:index.76106f7fd4--></p><p><!--i18n:index.c4f98ad576--></p><p><!--i18n:index.a6d8ea2c4b--></p><p><!--i18n:index.84067ab6da--></p><p><!--i18n:index.592509cb55--></p><p><!--i18n:index.7d4b73a87f--></p><p><!--i18n:index.f8461b3116--></p><button class="primary" id="help-ok"><!--i18n:index.6f38a78a4e--></button></dialog>
+<!-- 装备目标只追踪一项，材料库存与来源在工坊查看，不新增常驻大面板。 -->
+<dialog id="equipment-goal-dialog" aria-labelledby="goal-title"><button id="close-goal" class="close" data-i18n-aria-label="index.0cfe1409ba">×</button><span class="eyebrow"><!--i18n:index.4fd3a3539e--></span><h2 id="goal-title"><!--i18n:ui.equipment-goals.463af2b552--></h2><div id="goal-details"></div><button id="goal-workshop" class="primary"><!--i18n:index.7b56857428--></button></dialog>
+<!-- 触摸资源图标即可查看来源；作为嵌套说明，关闭后返回原工坊。 -->
+<dialog id="resource-help-dialog" aria-labelledby="resource-help-title"><button id="close-resource-help" class="close" data-i18n-aria-label="index.be036099e1">×</button><div id="resource-help-art"></div><h2 id="resource-help-title"></h2><p id="resource-help-source"></p></dialog>
+<!-- 设置中的清空操作采用独立确认页，默认焦点放在取消，防止误删。 -->
+<dialog id="settings-dialog" aria-labelledby="settings-title"><header class="settings-heading"><div><h2 id="settings-title"><!--i18n:ui.title-menu.57444f5c18--></h2><p><!--i18n:index.b3faabcb92--></p><p class="settings-build"><span>Git 指纹</span><code id="settings-git-fingerprint" aria-label="Git 指纹加载中" tabindex="0">加载中</code><span id="settings-git-state"></span></p></div><button id="close-settings" class="close" data-i18n-aria-label="index.212f77f9f1">×</button></header>
+  <div id="settings-options"><div class="settings-scroll">
+    <!-- 常用控制集中到设置，手机巡游摘要复用战场节点，避免重复按钮和状态。 -->
+    <section id="settings-patrol" data-i18n-aria-label="index.7c27592242" hidden></section>
+    <section class="settings-group" aria-labelledby="settings-play-title"><h3 id="settings-play-title"><!--i18n:index.9d07c44cbc--></h3><div class="settings-controls" data-i18n-aria-label="index.a299905f49">
+      <div class="settings-control"><span><!--i18n:index.2bcc303af8--></span><button id="environment-button" data-i18n-aria-label="index.f812dc4f80" aria-haspopup="dialog" aria-controls="environment-dialog"><!--i18n:index.a23f503059--><span>⌄</span></button></div>
+      <div class="settings-control"><span id="pause-caption"><!--i18n:ui.hud.63dc641a6b--></span><button id="pause" class="game-button" data-i18n-aria-label="ui.hud.63dc641a6b" data-i18n-title="index.6b0fa0abdc">Ⅱ</button></div>
+      <!-- 默认失焦暂停；偏好独立保存，切换标签页与其他窗口共用此开关。 -->
+      <label class="settings-control focus-pause-setting" for="pause-on-blur"><span><!--i18n:index.9238cc4cb3--><small id="pause-on-blur-hint"><!--i18n:index.ac17090486--></small></span><input id="pause-on-blur" type="checkbox" aria-describedby="pause-on-blur-hint"></label>
+      <!-- 实际绘制帧率独立于25Hz逻辑；默认关闭，偏好持久化。 -->
+      <label class="settings-control focus-pause-setting" for="show-fps"><span>显示 FPS<small id="show-fps-hint">在设置按钮下方显示画面帧率</small></span><input id="show-fps" type="checkbox" aria-describedby="show-fps-hint"></label>
+      <div class="settings-control art-style-setting"><span id="art-style-label">画面风格</span><div id="art-style-options" class="art-style-options" role="group" aria-labelledby="art-style-label" aria-describedby="art-style-hint"></div><small id="art-style-hint" role="status">即时切换外观，保留当前游戏状态。</small></div>
+      <div class="settings-control"><span id="fullscreen-caption"><!--i18n:app.create-app.2ea6efe459--></span><button id="fullscreen" class="icon-button" data-i18n-title="app.create-app.2ea6efe459" data-i18n-aria-label="app.create-app.2ea6efe459">⛶</button></div>
+    </div></section>
+    <section class="settings-group" aria-labelledby="settings-audio-title"><h3 id="settings-audio-title"><!--i18n:index.473400815c--></h3>
+      <div class="settings-control"><span id="sound-caption"><!--i18n:ui.audio-controls.d10a1eff91--></span><button id="sound" class="icon-button" data-i18n-title="ui.audio-controls.d10a1eff91" data-i18n-aria-label="ui.audio-controls.d10a1eff91">♫</button></div>
+      <label class="settings-control audio-volume" for="music-volume"><span><!--i18n:index.1cfc799062--><output id="music-volume-value" for="music-volume">66%</output></span><input id="music-volume" type="range" min="0" max="100" step="1" value="66"></label>
+      <label class="settings-control audio-volume" for="effects-volume"><span><!--i18n:index.93bb479820--><output id="effects-volume-value" for="effects-volume">3%</output></span><input id="effects-volume" type="range" min="0" max="100" step="1" value="3"></label>
+    </section>
+    <nav class="settings-links" data-i18n-aria-label="index.bd66e9fa5b"><button id="help" class="settings-row"><!--i18n:index.694b6c5dd0--><span>↗</span></button><button id="chronicle-button" class="settings-row" aria-haspopup="dialog" aria-controls="chronicle-dialog"><!--i18n:index.5031feedd7--><span><!--i18n:index.1f146a7a3b--></span></button></nav><details id="settings-advanced"><summary><!--i18n:index.3e98c968fa--><span><!--i18n:index.5e61cba39d--></span></summary><button id="debug-toggle" class="settings-row" aria-expanded="false" aria-controls="debug-content"><!--i18n:common.debug--> <span><!--i18n:index.d157446dba--></span></button><div id="debug-content" hidden><section class="unlock-section"><h3><!--i18n:index.9b75b23d63--></h3><p><!--i18n:index.b92da0e5ae--></p><button id="unlock-weapons" class="primary"><!--i18n:ui.panels.settings.05d199c8e9--></button><button id="unlock-vehicles" class="primary"><!--i18n:index.8578146d17--></button><button id="unlock-buildings" class="primary">一键解锁所有建筑</button><button id="unlock-seeds" class="primary">解锁所有种子购买</button><button id="grant-resources" class="primary"><!--i18n:index.24c46b6163--></button><button id="max-weapons" class="primary">一键武器满级</button><button id="max-vehicles" class="primary">一键载具满级</button><p id="unlock-feedback" role="status" aria-live="polite"></p></section><section class="performance-section" aria-labelledby="performance-title">
+<h3 id="performance-title"><!--i18n:index.51464dd5dc--></h3>
+<p><!--i18n:index.145b19e6e3--></p>
+<label><input id="performance-record-toggle" type="checkbox" checked><!--i18n:index.d37b2d737f--></label>
+<label><input id="performance-overlay-toggle" type="checkbox"><!--i18n:index.1112042e71--></label>
+<pre id="performance-summary" role="status"></pre><small id="performance-version"></small>
+<div class="performance-actions"><button id="performance-report"><!--i18n:index.b16573f677--></button><button id="performance-previous" disabled><!--i18n:index.a40520c9dc--></button><button id="performance-download"><!--i18n:index.15a7bb14ac--></button><button id="performance-copy"><!--i18n:index.9da1918cdc--></button><button id="performance-clear"><!--i18n:index.70cada860c--></button></div>
+<details id="performance-report-details"><summary><!--i18n:index.d349affe5b--></summary><textarea id="performance-report-text" readonly data-i18n-aria-label="index.dedc37db2b" rows="8"></textarea></details>
+<p id="performance-feedback" role="status"></p>
+</section></div></details><section class="reset-section"><h3><!--i18n:index.cc92cb4b89--></h3><p><!--i18n:index.b567847ee0--></p><button id="reset-progress" class="danger-button"><!--i18n:index.0252403415--></button></section></div>
+    <!-- 返回动作固定在底部；危险操作留在存档区，不与返回按钮混排。 -->
+    <footer class="settings-footer"><button id="settings-home" class="settings-row"><!--i18n:index.58acea9e7e--></button><button id="settings-done" class="primary"><!--i18n:ui.title-menu.871430cf08--></button></footer></div>
+  <div id="reset-confirmation" hidden><h3><!--i18n:index.f06485a984--></h3><p><!--i18n:index.7028977998--></p><p id="reset-error" role="alert" hidden></p><div class="reset-actions"><button id="cancel-reset" class="primary"><!--i18n:index.9fbf49d91f--></button><button id="confirm-reset" class="danger-button"><!--i18n:index.3c7a4fb356--></button></div></div>
+</dialog>
+<!-- 浮游炮挂载面板独立于工坊，三炮分别选择已拥有的手持枪。 -->
+<dialog id="funnel-dialog" aria-labelledby="funnel-title"><button id="close-funnel" class="close" data-i18n-aria-label="index.b2e7ef8281">×</button>
+<span class="eyebrow"><!--i18n:index.3697e97fb8--></span><h2 id="funnel-title"><!--i18n:index.027980bef8--></h2><p class="funnel-lead"><!--i18n:index.e717d4746a--></p>
+<div id="funnel-slots" role="tablist" data-i18n-aria-label="index.471cd1f589"></div>
+<section id="funnel-module-panel" role="tabpanel"><div class="module-heading"><span class="module-mark">✦</span><div><small><!--i18n:index.045f6ce908--></small><h3 id="funnel-module-name"></h3></div></div><p id="funnel-module-description"></p><div id="funnel-module-stats"></div><p id="funnel-module-status"></p></section>
+<div class="module-list-heading"><h3><!--i18n:index.9eed33d50b--></h3><span id="funnel-choice-count"></span></div><p class="module-note"><!--i18n:index.5b1d0dedfd--></p>
+<div id="funnel-choices"></div><p id="funnel-feedback" role="status" aria-live="polite"></p>
+<p class="module-note"><!--i18n:index.effb8ce0e9--></p><button id="funnel-done" class="primary"><!--i18n:ui.panels.mechanical.8bfc704ed0--></button></dialog>
+<dialog id="map-dialog" aria-labelledby="map-title"><button id="close-map" class="close" data-i18n-aria-label="index.677dd734ea">×</button><span class="eyebrow"><!--i18n:index.629842a21c--></span><h2 id="map-title"><!--i18n:ui.title-menu.9c72997020--></h2><div id="map-destinations" data-i18n-aria-label="index.b146f79605"></div><p id="map-description"></p><p id="map-travel-status" role="status"></p><canvas id="region-map" width="720" height="560" data-i18n-aria-label="index.d1bb3584c7"></canvas><div id="region-legend"></div><p><!--i18n:index.64979aad1a--></p><button id="map-done" class="primary"><!--i18n:index.a8ab98831f--></button></dialog>
+<dialog id="environment-dialog" aria-labelledby="environment-title"><button id="close-environment" class="close" data-i18n-aria-label="index.264e0d2e36">×</button><span class="eyebrow"><!--i18n:index.9d2805532a--></span><h2 id="environment-title"><!--i18n:index.40d2951ab1--></h2><p><!--i18n:index.33f1d5a546--></p><h3><!--i18n:index.8da4bbfab5--></h3><div class="environment-options" role="group" data-i18n-aria-label="index.87c8b18b38"><button data-forest-season="spring" aria-pressed="false"><!--i18n:world.seasons.b3c33b7aba--></button><button data-forest-season="summer" aria-pressed="false"><!--i18n:world.seasons.8482432c02--></button><button data-forest-season="autumn" aria-pressed="false"><!--i18n:world.seasons.5a2e5e4b12--></button><button data-forest-season="winter" aria-pressed="true"><!--i18n:world.seasons.0868fbc8c0--></button></div><h3><!--i18n:world.environment-timing.4d94732547--></h3><div class="environment-options" role="group" data-i18n-aria-label="index.f4dc47ab89"><button data-weather="sun" aria-pressed="true"><!--i18n:index.a3d9d061ff--></button><button data-weather="cloud" aria-pressed="false"><!--i18n:index.bda5187c0b--></button><button data-weather="rain" aria-pressed="false"><!--i18n:index.9f11215125--></button><button data-weather="thunder" aria-pressed="false"><!--i18n:index.5c9ac1d164--></button><button data-weather="snow" aria-pressed="false"><!--i18n:index.e78f27ba57--></button></div><h3><!--i18n:index.7ffdc7a986--></h3><div class="environment-options" role="group" data-i18n-aria-label="index.5e08d20d8b"><button data-time="day" aria-pressed="true"><!--i18n:index.36bd1b0130--></button><button data-time="dusk" aria-pressed="false"><!--i18n:index.234698e7f7--></button><button data-time="night" aria-pressed="false"><!--i18n:index.c94acd7f14--></button></div><label class="environment-setting"><!--i18n:index.e78a6214ed--><span><!--i18n:index.c3ff5de716--></span><input id="auto-weather" type="checkbox" checked></label><label class="environment-setting"><!--i18n:index.2c6970c25a--><span><!--i18n:index.c3ff5de716--></span><input id="auto-time" type="checkbox" checked></label><section id="environment-timings" aria-labelledby="timing-title"><h3 id="timing-title"><!--i18n:index.55748efc8a--></h3><div class="timing-grid"><label for="timing-season"><span><!--i18n:world.environment-timing.f781245dee--></span><span><input id="timing-season" type="number" min="0.5" max="60" step="0.5" value="5" required inputmode="decimal" data-i18n-aria-label="index.5d6b5ee1f3"><!--i18n:index.40de54344d--></span></label><label for="timing-day"><span><!--i18n:world.environment-timing.010ecccef0--></span><span><input id="timing-day" type="number" min="0.5" max="60" step="0.5" value="2" required inputmode="decimal" data-i18n-aria-label="index.ba2185ed6a"><!--i18n:index.40de54344d--></span></label><label for="timing-dusk"><span><!--i18n:world.environment-timing.c8923db07d--></span><span><input id="timing-dusk" type="number" min="0.5" max="60" step="0.5" value="1" required inputmode="decimal" data-i18n-aria-label="index.c54f32790e"><!--i18n:index.40de54344d--></span></label><label for="timing-night"><span><!--i18n:world.environment-timing.b77ea2b347--></span><span><input id="timing-night" type="number" min="0.5" max="60" step="0.5" value="2" required inputmode="decimal" data-i18n-aria-label="index.86dfa08069"><!--i18n:index.40de54344d--></span></label><label for="timing-weather"><span><!--i18n:world.environment-timing.4d94732547--></span><span><input id="timing-weather" type="number" min="0.5" max="60" step="0.5" value="2" required inputmode="decimal" data-i18n-aria-label="index.6c469a0aca"><!--i18n:index.40de54344d--></span></label></div><p class="environment-tip"><!--i18n:index.4693b7264d--></p><div class="timing-actions"><button id="timing-defaults" type="button"><!--i18n:index.f242c94797--></button><button id="timing-save" type="button"><!--i18n:index.94d755e982--></button></div><p id="timing-feedback" role="status"></p><p id="environment-countdown" class="environment-tip"></p></section><p class="environment-tip"><!--i18n:index.67abd58d05--></p><button id="environment-ok" class="primary"><!--i18n:index.85a3d098e7--></button></dialog>
+<!-- 秘境独立面板承载入口、局内祝福与结算，森林进度在挑战期间冻结。 -->
+<dialog id="realm-dialog" aria-labelledby="realm-title"><button id="close-realm" class="close" data-i18n-aria-label="index.6eca52116b">×</button><div class="realm-heading"><h2 id="realm-title"><!--i18n:ui.panels.realms.f5dc54fbda--></h2><button id="realm-help" data-i18n-aria-label="ui.panels.realms.bdbe137c7e" data-i18n-title="index.b525f5847b" aria-haspopup="dialog" aria-controls="realm-help-dialog"><img class="help-emblem" src="/assets/ui/help-emblem.svg" width="32" height="32" alt="" aria-hidden="true" draggable="false"></button></div><div id="realm-content"></div></dialog>
+<!-- 说明按需打开，关闭后保留底层选择和暂停状态。 -->
+<dialog id="realm-help-dialog" aria-labelledby="realm-help-title"><button id="close-realm-help" class="close" data-i18n-aria-label="index.3095e46c52">×</button><h2 id="realm-help-title"><!--i18n:index.b525f5847b--></h2><div id="realm-help-content"></div><button id="realm-help-done" class="primary"><!--i18n:index.de32e20193--></button></dialog>
+<!-- 轻量开始入口先接收点击，游戏资源与背景视频随后独立准备。 -->
+<script type="module" src="/src/platform/title-start.js"></script>
+<script type="module" src="/src/main.js"></script>
+<!-- 游玩档案独立于调试区，仅展示真实累计时间和天气分布。 -->
+<dialog id="chronicle-dialog" aria-labelledby="chronicle-title"><header class="chronicle-heading"><div><span class="eyebrow"><!--i18n:index.159ab016c9--></span><h2 id="chronicle-title"><!--i18n:index.5e7c964a55--></h2></div><button id="close-chronicle" class="close" data-i18n-aria-label="index.28fdcff983">×</button></header><div class="chronicle-scroll"><div class="chronicle-cards"><section><small><!--i18n:index.a6ba70d23d--></small><strong id="chronicle-calendar"><!--i18n:index.0c43895794--></strong><span id="chronicle-total-days"><!--i18n:ui.panels.chronicle.3c22aaca27--></span></section><section><small><!--i18n:index.a850e3eabd--></small><strong id="chronicle-playtime"><!--i18n:index.3ecb4e9c25--></strong></section></div><details class="chronicle-rules"><summary>天气记录</summary><p class="environment-tip"><!--i18n:index.e8e1b8c659--></p><h3><!--i18n:index.dad7d9f6b2--></h3><p id="chronicle-empty" class="environment-tip"><!--i18n:index.7e7fa4cfe0--></p><div id="chronicle-weather"></div><p class="environment-tip"><!--i18n:index.2dd6cd465c--></p></details><button id="chronicle-ok" class="primary"><!--i18n:index.d00bfe7c68--></button></div></dialog>
+</body></html>

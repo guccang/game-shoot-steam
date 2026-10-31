@@ -1,0 +1,59 @@
+{
+  "_说明": "按稳定型号 ID 独立配置一级战车 HP、每级成长与移速，基础 HP 不读取驾驶员生命或等级；购买费用、材料、升级费用和挑战门槛仍引用 economy.js。",
+  "rows": [
+    {
+      "id": "pine-tank",
+      "baseHp": 240,
+      "hpGrowth": 40,
+      "speed": 1.2
+    },
+    {
+      "id": "heavy-tank",
+      "baseHp": 480,
+      "hpGrowth": 80,
+      "speed": 0.936
+    },
+    {
+      "id": "helicopter",
+      "baseHp": 180,
+      "hpGrowth": 30,
+      "speed": 1.5
+    },
+    {
+      "id": "hovercraft",
+      "baseHp": 300,
+      "hpGrowth": 50,
+      "speed": 1.344
+    },
+    {
+      "id": "fire-truck",
+      "baseHp": 360,
+      "hpGrowth": 55,
+      "speed": 1.272
+    },
+    {
+      "id": "ranger-scooter",
+      "baseHp": 120,
+      "hpGrowth": 15,
+      "speed": 1.344
+    },
+    {
+      "id": "red-wolf",
+      "baseHp": 1080,
+      "hpGrowth": 160,
+      "speed": 0.864
+    },
+    {
+      "id": "jinbei-van",
+      "baseHp": 336,
+      "hpGrowth": 45,
+      "speed": 1.176
+    },
+    {
+      "id": "police-car",
+      "baseHp": 216,
+      "hpGrowth": 30,
+      "speed": 1.536
+    }
+  ]
+}

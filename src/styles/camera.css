@@ -1,0 +1,10 @@
+/* 镜头控件只在设置中展示，四十四像素触控目标沿用纸色与森林绿。 */
+.camera-controls { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding:10px 0; border-bottom:1px solid var(--line); color:#345644; font-size:12px; }
+.camera-controls>span { font-weight:700; }
+.camera-adjustments { display:flex; flex:1 1 210px; align-items:center; gap:2px; }
+.camera-controls button { flex:0 0 44px; min-width:44px; min-height:44px; padding:0 5px; border:0; border-radius:8px; background:transparent; font-weight:700; }
+.camera-controls button[data-zoom='in'], .camera-controls button[data-zoom='out'] { font-size:20px; }
+.camera-controls button:disabled { opacity:.35; }
+.camera-controls button[aria-pressed='true'] { background:#e2ebd2; }
+.camera-controls input { flex:1; width:64px; min-width:40px; min-height:44px; accent-color:#557b55; }
+.camera-controls small { flex-basis:100%; color:#6d805e; font-size:11px; }

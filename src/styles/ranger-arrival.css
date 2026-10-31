@@ -1,0 +1,27 @@
+/* 入职短目标只占左上小块空间，底部交互区域交还给角色与地图。 */
+.ranger-arrival{position:absolute;z-index:18;left:14px;top:112px;width:min(250px,calc(100% - 104px));box-sizing:border-box;padding:10px 12px;border:1px solid #81996a;border-radius:12px;background:#fff6d9ed;color:#304e3e;pointer-events:none}
+.ranger-arrival[hidden]{display:none}.ranger-arrival b{font-size:14px}.ranger-arrival p{margin:5px 0 0;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.ranger-arrival button{pointer-events:auto;min-height:44px}
+/* 原任务卡整体可点，不额外增加一排按钮；禁用阶段仍保持原有文字可读性。 */
+#arrival-goal{display:block;width:100%;padding:0;border:0;border-radius:4px;background:transparent;color:inherit;font:inherit;text-align:left;box-shadow:none}
+#arrival-goal:disabled{opacity:1;cursor:default}#arrival-body{display:block;margin-top:5px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.arrival-active #quest,.arrival-active #wave-label{visibility:hidden}
+.arrival-cinematic .player-hud,.arrival-cinematic .field-menu,.arrival-cinematic .world-workshop-entry{visibility:hidden}
+/* 气泡尺寸、正文、尾角和按钮完全沿用故事组件。 */
+#arrival-speech{z-index:18}
+#arrival-skip{position:absolute;right:16px;bottom:24px;z-index:45;min-height:44px;padding:10px 18px;border:1px solid #71845d;border-radius:24px;background:#fff4d9;color:#355a47;font:inherit;cursor:pointer}
+/* 建筑页使用原生模态焦点管理，费用和产物紧邻唯一主操作。 */
+.arrival-workshop-dialog{box-sizing:border-box;width:min(440px,calc(100% - 24px));max-height:calc(100dvh - 32px);padding:22px;border:2px solid #718c60;border-radius:20px;background:#fff6d9;color:#304e3e;overflow:auto}
+.arrival-workshop-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+.arrival-workshop-dialog h2{margin:5px 0 0;font-size:24px}.arrival-workshop-dialog small{color:#73815a}.arrival-workshop-dialog button{min-height:44px;font:inherit;cursor:pointer}
+#arrival-workshop-close{min-width:44px;border:1px solid #9aab78;background:#eaf0cd;border-radius:10px;font-size:24px;color:#355844}
+.arrival-workbench{border:1px solid #a8b47e;border-radius:12px;padding:18px;background:#f4ebbc}.arrival-workbench b{font-size:19px}.arrival-workbench p{font-size:14px;line-height:1.6}.arrival-workbench div{font-weight:700;color:#526f45}
+#arrival-workshop-feedback{font-size:13px;line-height:1.6}#arrival-workshop-feedback:empty{display:none}
+#arrival-workshop-action{width:100%;margin-top:18px;border:1px solid #365a45;border-radius:11px;background:#365a45;color:#fff4cf;padding:12px 8px}#arrival-workshop-action:disabled{background:#d8dfbb;color:#708260;border-color:#a5b28a;cursor:default}
+@media(max-width:350px){.ranger-arrival{left:10px;top:108px;padding:8px 10px}.arrival-workshop-dialog{padding:17px}}
+
+/* 开场短句贴演员头顶，使用原纸面与绿边；不带底部阅读操作。 */
+#arrival-speech.arrival-head-bubble{width:max-content;max-width:min(220px,calc(100% - 24px));padding:8px 12px;min-height:0;transform:none;pointer-events:none}
+#arrival-speech.arrival-head-bubble p{margin:0;font-size:14px;line-height:1.4}
+#arrival-speech.arrival-head-bubble .story-speech-actions,
+#arrival-speech.arrival-head-bubble b{display:none}
+#arrival-skip.ui-button{border-radius:var(--ui-radius-button);border:2px solid var(--ui-forest);background:var(--ui-paper);color:var(--ui-text)}

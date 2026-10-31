@@ -1,0 +1,6 @@
+/* 室内实物按钮使用透明命中面，视觉内容来自正式画布；焦点轮廓仅在键盘操作显示。 */
+.workshop-room-hits{position:absolute;inset:0;pointer-events:none;}
+.workshop-room-hits[hidden]{display:none!important;}
+#cottage-controls .workshop-room-hits button{position:absolute;padding:0;border:0;border-radius:8px;background:transparent;box-shadow:none;pointer-events:auto;}
+#cottage-controls .workshop-room-hits button:focus-visible{outline:3px solid #f7e5a6;outline-offset:3px;background:#fff2be12;}
+#cottage-controls[data-room="weapons"] footer{bottom:10px;}

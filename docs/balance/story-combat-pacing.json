@@ -1,0 +1,352 @@
+{
+  "_说明": "任务战斗时长调整；只改故事敌人和夜班护路委托怪的生命预算。正式武器伤害、射速、装填、击退、移动、Boss技能和奖励保持原样。",
+  "date": "2026-10-26",
+  "method": "Game.update每步1/30秒，正式借装与碰撞命中；Boss使用简单追近及横向避冲锋输入。seconds从首次命中到击杀，entrySeconds包含接敌时间，clearSeconds包含半血援兵清理。",
+  "scope": {
+    "storyBosses": [
+      "sunleaf-01:boar"
+    ],
+    "storyCombatChapters": [
+      "sunleaf-01",
+      "sunleaf-02",
+      "sunleaf-03",
+      "sunleaf-04",
+      "sunleaf-05",
+      "sunleaf-06"
+    ],
+    "legacyNeighborChapters": [
+      "neighbors-lunch",
+      "neighbors-night",
+      "neighbors-market"
+    ],
+    "currentNeighborBattle": "neighbors-night：常驻护路怪上限48血",
+    "excursions": "两条秘境体验委托以实际进入为完成条件，无任务Boss击杀门槛；普通清缴和秘境成长不改。"
+  },
+  "health": {
+    "boss": [
+      3600,
+      720
+    ],
+    "normal": [
+      120,
+      48
+    ],
+    "tutorial": [
+      90,
+      40
+    ],
+    "heavy": [
+      320,
+      56
+    ],
+    "relay": "保留上一轮48/56覆盖",
+    "neighborRoad": "林区生成约108血，任务敌人单独限制为不超过48"
+  },
+  "gifts": [
+    {
+      "board": "sunleaf-post",
+      "gift": "frostbranch",
+      "weapon": 11,
+      "loadout": "frost-guard",
+      "matched": true
+    },
+    {
+      "board": "monster-neighbors",
+      "gift": "firefly",
+      "weapon": 1,
+      "loadout": "line-patrol",
+      "matched": true
+    },
+    {
+      "board": "monster-neighbors",
+      "gift": "hovercraft",
+      "vehicle": 3,
+      "turret": 20,
+      "loadout": "tide-arc",
+      "matched": true
+    }
+  ],
+  "before": [
+    {
+      "kind": "boss",
+      "loadoutId": "line-patrol",
+      "seed": 42,
+      "hp": 3600,
+      "seconds": 54.17,
+      "entrySeconds": 54.33,
+      "clearSeconds": 54.33,
+      "hits": 359,
+      "failed": false,
+      "stage": "Q70"
+    },
+    {
+      "kind": "boss",
+      "loadoutId": "tide-arc",
+      "seed": 42,
+      "hp": 3600,
+      "seconds": 57.47,
+      "entrySeconds": 57.67,
+      "clearSeconds": 57.67,
+      "hits": 181,
+      "failed": false,
+      "stage": "Q70"
+    },
+    {
+      "kind": "boss",
+      "loadoutId": "frost-guard",
+      "seed": 42,
+      "hp": 3600,
+      "seconds": 57.4,
+      "entrySeconds": 57.5,
+      "clearSeconds": 57.5,
+      "hits": 101,
+      "failed": false,
+      "stage": "Q70"
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "line-patrol",
+      "seed": 42,
+      "hp": 120,
+      "seconds": 6.07,
+      "entrySeconds": 7.03,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "line-patrol",
+      "seed": 42,
+      "hp": 320,
+      "seconds": 21,
+      "entrySeconds": 22.03,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "tide-arc",
+      "seed": 42,
+      "hp": 120,
+      "seconds": 3.4,
+      "entrySeconds": 4.47,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "tide-arc",
+      "seed": 42,
+      "hp": 320,
+      "seconds": 14.67,
+      "entrySeconds": 15.87,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "frost-guard",
+      "seed": 42,
+      "hp": 120,
+      "seconds": 0.03,
+      "entrySeconds": 0.33,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "frost-guard",
+      "seed": 42,
+      "hp": 320,
+      "seconds": 2.47,
+      "entrySeconds": 2.73,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "little-team",
+      "seed": 42,
+      "hp": 120,
+      "seconds": 6.07,
+      "entrySeconds": 7.03,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "little-team",
+      "seed": 42,
+      "hp": 320,
+      "seconds": 21,
+      "entrySeconds": 22.03,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "canopy-light",
+      "seed": 42,
+      "hp": 120,
+      "seconds": 1.3,
+      "entrySeconds": 1.63,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "canopy-light",
+      "seed": 42,
+      "hp": 320,
+      "seconds": 3.7,
+      "entrySeconds": 4.03,
+      "failed": false
+    }
+  ],
+  "after": [
+    {
+      "kind": "boss",
+      "loadoutId": "line-patrol",
+      "seed": 42,
+      "hp": 720,
+      "seconds": 9.3,
+      "entrySeconds": 9.47,
+      "clearSeconds": 12.73,
+      "hits": 73,
+      "failed": false,
+      "stage": "Q70"
+    },
+    {
+      "kind": "boss",
+      "loadoutId": "tide-arc",
+      "seed": 42,
+      "hp": 720,
+      "seconds": 12.4,
+      "entrySeconds": 12.6,
+      "clearSeconds": 13.33,
+      "hits": 37,
+      "failed": false,
+      "stage": "Q70"
+    },
+    {
+      "kind": "boss",
+      "loadoutId": "frost-guard",
+      "seed": 42,
+      "hp": 720,
+      "seconds": 11.03,
+      "entrySeconds": 11.13,
+      "clearSeconds": 13.77,
+      "hits": 21,
+      "failed": false,
+      "stage": "Q70"
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "line-patrol",
+      "seed": 42,
+      "hp": 48,
+      "seconds": 2.23,
+      "entrySeconds": 3.2,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "line-patrol",
+      "seed": 42,
+      "hp": 56,
+      "seconds": 2.57,
+      "entrySeconds": 3.6,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "tide-arc",
+      "seed": 42,
+      "hp": 48,
+      "seconds": 0.83,
+      "entrySeconds": 1.9,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "tide-arc",
+      "seed": 42,
+      "hp": 56,
+      "seconds": 1,
+      "entrySeconds": 2.2,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "frost-guard",
+      "seed": 42,
+      "hp": 48,
+      "seconds": 0.03,
+      "entrySeconds": 0.33,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "frost-guard",
+      "seed": 42,
+      "hp": 56,
+      "seconds": 0.03,
+      "entrySeconds": 0.3,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "little-team",
+      "seed": 42,
+      "hp": 48,
+      "seconds": 2.23,
+      "entrySeconds": 3.2,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "little-team",
+      "seed": 42,
+      "hp": 56,
+      "seconds": 2.57,
+      "entrySeconds": 3.6,
+      "failed": false
+    },
+    {
+      "kind": "normal",
+      "loadoutId": "canopy-light",
+      "seed": 42,
+      "hp": 48,
+      "seconds": 0.5,
+      "entrySeconds": 0.83,
+      "failed": false
+    },
+    {
+      "kind": "heavy",
+      "loadoutId": "canopy-light",
+      "seed": 42,
+      "hp": 56,
+      "seconds": 0.57,
+      "entrySeconds": 0.9,
+      "failed": false
+    }
+  ],
+  "secondSeedBosses": [
+    {
+      "loadoutId": "line-patrol",
+      "seed": 91,
+      "seconds": 9,
+      "clearSeconds": 13.33
+    },
+    {
+      "loadoutId": "tide-arc",
+      "seed": 91,
+      "seconds": 11.23,
+      "clearSeconds": 11.87
+    },
+    {
+      "loadoutId": "frost-guard",
+      "seed": 91,
+      "seconds": 8.8,
+      "clearSeconds": 13.73
+    }
+  ],
+  "verification": {
+    "passed": true,
+    "checks": "12项任务节奏专项、4项中继站专项、1项章节共用生命与边界合同；修正出生夹具后仅重跑失败项，未执行全量测试。",
+    "restoration": "检查点恢复与失败重试都采用720血，半血支援仍触发。",
+    "reward": "三种实际赠礼分别验证一级解锁、当前装备不变、重复领取拒绝。",
+    "neighbor": "仅生成未击杀的剩余名额，不影响周边常驻怪，清场后继续交付。"
+  }
+}

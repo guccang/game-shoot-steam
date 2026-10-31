@@ -1,0 +1,32 @@
+/* 奖励收据沿用森林绿与奶油黄；名称、数量分列，窄屏仍完整展示。 */
+#task-reward-dialog{box-sizing:border-box;width:min(340px,calc(100vw - 32px));max-height:calc(100dvh - 24px);padding:0;border:0;background:transparent;color:#36543e;overflow:visible;}
+#task-reward-dialog[open]{display:flex;flex-direction:column;align-items:stretch;gap:10px;}
+.task-reward-panel{box-sizing:border-box;min-height:0;max-height:calc(100dvh - 72px);padding:20px;border:3px solid #49684c;border-radius:20px;background:#fff3cf;box-shadow:0 8px 0 #28463133,0 16px 40px #18351d40;overflow:auto;}
+#task-reward-dialog::backdrop{background:#24442c45}
+#task-reward-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#task-reward-dialog h2{margin:0;font-size:23px;line-height:1.3}
+#task-reward-dialog header button{width:44px;height:44px;min-width:44px;padding:0;border:0;background:transparent;color:#49684c;font-size:26px}
+#task-reward-title{margin:4px 0 18px;font-size:14px;line-height:1.5;color:#697b50;overflow-wrap:anywhere}
+#task-reward-items{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+/* 营地卡与非空奖励列表保持同资源行一致的间距，避免同色底框贴合。 */
+#task-reward-challenge:not([hidden]) + #task-reward-items:not(:empty){margin-top:10px}
+#task-reward-items li{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 10px;background:#f4e5b5;border-radius:10px;font-size:16px}
+#task-reward-items .resource-art{width:40px;height:40px;flex:0 0 40px}
+#task-reward-items span{flex:1;min-width:0;overflow-wrap:anywhere}
+#task-reward-items strong{font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 装备画像单独占左列，名称和获得状态分行，窄屏不挤压主体图片。 */
+#task-reward-items .task-reward-equipment{display:grid;grid-template-columns:88px minmax(0,1fr);column-gap:12px;row-gap:4px}
+#task-reward-items .task-reward-portrait{grid-row:1 / 3;display:block;width:88px;height:68px}
+#task-reward-items .task-reward-equipment span{align-self:end;line-height:1.4}
+#task-reward-items .task-reward-equipment strong{align-self:start;font-size:14px;color:#697b50}
+#task-reward-dialog button:focus-visible{outline:3px solid #587945;outline-offset:1px;border-radius:8px}
+
+/* 清缴完成后提示回营接取，文字随窄屏换行。 */
+#task-reward-return-camp{margin:16px 0 0;border-top:1px solid #49684c44;padding-top:12px;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+/* 续接复用手机统一按钮，仅补充分区与窄屏换行，不引入另一套材质。 */
+#task-reward-next{margin-top:16px;border-top:1px solid #49684c44;padding-top:12px}
+#task-reward-next p{margin:0 0 10px;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+#task-reward-next #task-reward-error:empty{display:none}
+/* 结束位于续战上方，独立触控区留出间距，短屏沿用面板滚动。 */
+#task-reward-end-clearing,#task-reward-next-clearing{width:100%;min-height:44px;white-space:normal}
+#task-reward-end-clearing{margin-bottom:8px}

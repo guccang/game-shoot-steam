@@ -1,0 +1,644 @@
+{
+  "_说明": "基础松果战车与专属机枪各1级、松果手枪3级、栗子2级；正式Game以1/30秒步长完整走十波与领主，仅输入守位和蓄力横移，不改命中、生命、敌人或掉落。模拟代表可复现样本，不保证每位玩家的胜率。",
+  "复现命令": "node --input-type=module -e \"import {measureHorde} from './tests/helpers/horde-wave-pacing.mjs'; console.log(JSON.stringify([42,91,137].map(seed=>measureHorde(seed)),null,2))\"",
+  "波次配置": {
+    "等级": "1至10",
+    "数量": "18、23、28、33、38、43、48、53、58、63",
+    "生命": "18至45，每波增加3",
+    "伤害": "2至5，按波次取整",
+    "刷怪间隔秒": "0.36至0.198",
+    "总数": 405,
+    "跨场成长": "沿用每场5%",
+    "领主": "保留1900生命与原技能"
+  },
+  "before": [
+    {
+      "seed": 42,
+      "gateId": "left",
+      "seconds": 220.5,
+      "bossSeconds": 16.6,
+      "won": false,
+      "phase": "result",
+      "reason": "barricade",
+      "kills": 590,
+      "gateHp": 0,
+      "vehicleHp": 130,
+      "playerHp": 144,
+      "waves": [
+        {
+          "phase": "waves",
+          "wave": 1,
+          "seconds": 0,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 2,
+          "seconds": 11.17,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 3,
+          "seconds": 24.33,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 4,
+          "seconds": 38.47,
+          "gateHp": 1500,
+          "vehicleHp": 280,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 5,
+          "seconds": 55.27,
+          "gateHp": 1492,
+          "vehicleHp": 276,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 6,
+          "seconds": 73.33,
+          "gateHp": 1484,
+          "vehicleHp": 276,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 7,
+          "seconds": 93.53,
+          "gateHp": 1436,
+          "vehicleHp": 272,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 8,
+          "seconds": 115.97,
+          "gateHp": 1368,
+          "vehicleHp": 260,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 9,
+          "seconds": 141.77,
+          "gateHp": 1140,
+          "vehicleHp": 228,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 10,
+          "seconds": 173.83,
+          "gateHp": 560,
+          "vehicleHp": 180,
+          "playerHp": 144
+        },
+        {
+          "phase": "boss",
+          "wave": 10,
+          "seconds": 203.9,
+          "gateHp": 70,
+          "vehicleHp": 130,
+          "playerHp": 144
+        },
+        {
+          "phase": "rescue",
+          "wave": 10,
+          "seconds": 212.8,
+          "gateHp": 0,
+          "vehicleHp": 130,
+          "playerHp": 144
+        }
+      ]
+    },
+    {
+      "seed": 91,
+      "gateId": "left",
+      "seconds": 203.77,
+      "bossSeconds": null,
+      "won": false,
+      "phase": "result",
+      "reason": "barricade",
+      "kills": 561,
+      "gateHp": 0,
+      "vehicleHp": 122,
+      "playerHp": 144,
+      "waves": [
+        {
+          "phase": "waves",
+          "wave": 1,
+          "seconds": 0,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 2,
+          "seconds": 10.97,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 3,
+          "seconds": 24.47,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 4,
+          "seconds": 40.27,
+          "gateHp": 1488,
+          "vehicleHp": 280,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 5,
+          "seconds": 57.37,
+          "gateHp": 1468,
+          "vehicleHp": 272,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 6,
+          "seconds": 75.93,
+          "gateHp": 1440,
+          "vehicleHp": 264,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 7,
+          "seconds": 95.1,
+          "gateHp": 1408,
+          "vehicleHp": 256,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 8,
+          "seconds": 116.67,
+          "gateHp": 1332,
+          "vehicleHp": 244,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 9,
+          "seconds": 142.5,
+          "gateHp": 1040,
+          "vehicleHp": 216,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 10,
+          "seconds": 172.67,
+          "gateHp": 488,
+          "vehicleHp": 172,
+          "playerHp": 144
+        },
+        {
+          "phase": "rescue",
+          "wave": 10,
+          "seconds": 195.27,
+          "gateHp": 0,
+          "vehicleHp": 122,
+          "playerHp": 144
+        }
+      ]
+    },
+    {
+      "seed": 137,
+      "gateId": "left",
+      "seconds": 206.93,
+      "bossSeconds": null,
+      "won": false,
+      "phase": "result",
+      "reason": "barricade",
+      "kills": 580,
+      "gateHp": 0,
+      "vehicleHp": 123,
+      "playerHp": 144,
+      "waves": [
+        {
+          "phase": "waves",
+          "wave": 1,
+          "seconds": 0,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 2,
+          "seconds": 10.87,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 3,
+          "seconds": 24.17,
+          "gateHp": 1500,
+          "vehicleHp": 284,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 4,
+          "seconds": 38.67,
+          "gateHp": 1500,
+          "vehicleHp": 284,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 5,
+          "seconds": 55.03,
+          "gateHp": 1492,
+          "vehicleHp": 276,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 6,
+          "seconds": 73.3,
+          "gateHp": 1476,
+          "vehicleHp": 272,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 7,
+          "seconds": 92.77,
+          "gateHp": 1428,
+          "vehicleHp": 264,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 8,
+          "seconds": 113.63,
+          "gateHp": 1376,
+          "vehicleHp": 244,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 9,
+          "seconds": 141.33,
+          "gateHp": 1016,
+          "vehicleHp": 224,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 10,
+          "seconds": 169.1,
+          "gateHp": 776,
+          "vehicleHp": 188,
+          "playerHp": 144
+        },
+        {
+          "phase": "rescue",
+          "wave": 10,
+          "seconds": 199.23,
+          "gateHp": 0,
+          "vehicleHp": 123,
+          "playerHp": 144
+        }
+      ]
+    }
+  ],
+  "after": [
+    {
+      "seed": 42,
+      "gateId": "left",
+      "seconds": 185.53,
+      "bossSeconds": 13.23,
+      "won": true,
+      "phase": "result",
+      "reason": null,
+      "kills": 405,
+      "gateHp": 852,
+      "vehicleHp": 224,
+      "playerHp": 144,
+      "waves": [
+        {
+          "phase": "waves",
+          "wave": 1,
+          "seconds": 0,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 2,
+          "seconds": 9.43,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 3,
+          "seconds": 20.83,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 4,
+          "seconds": 33.17,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 5,
+          "seconds": 46.33,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 6,
+          "seconds": 62.17,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 7,
+          "seconds": 79.23,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 8,
+          "seconds": 97.87,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 9,
+          "seconds": 119.5,
+          "gateHp": 1472,
+          "vehicleHp": 284,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 10,
+          "seconds": 143.63,
+          "gateHp": 1367,
+          "vehicleHp": 264,
+          "playerHp": 144
+        },
+        {
+          "phase": "boss",
+          "wave": 10,
+          "seconds": 172.3,
+          "gateHp": 972,
+          "vehicleHp": 224,
+          "playerHp": 144
+        }
+      ]
+    },
+    {
+      "seed": 91,
+      "gateId": "left",
+      "seconds": 188.1,
+      "bossSeconds": 13.73,
+      "won": true,
+      "phase": "result",
+      "reason": null,
+      "kills": 405,
+      "gateHp": 664,
+      "vehicleHp": 195,
+      "playerHp": 144,
+      "waves": [
+        {
+          "phase": "waves",
+          "wave": 1,
+          "seconds": 0,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 2,
+          "seconds": 9.4,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 3,
+          "seconds": 20.7,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 4,
+          "seconds": 32.8,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 5,
+          "seconds": 46.03,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 6,
+          "seconds": 61.77,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 7,
+          "seconds": 78.17,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 8,
+          "seconds": 97.03,
+          "gateHp": 1492,
+          "vehicleHp": 276,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 9,
+          "seconds": 118.57,
+          "gateHp": 1424,
+          "vehicleHp": 260,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 10,
+          "seconds": 146.27,
+          "gateHp": 1124,
+          "vehicleHp": 230,
+          "playerHp": 144
+        },
+        {
+          "phase": "boss",
+          "wave": 10,
+          "seconds": 174.37,
+          "gateHp": 784,
+          "vehicleHp": 195,
+          "playerHp": 144
+        }
+      ]
+    },
+    {
+      "seed": 137,
+      "gateId": "left",
+      "seconds": 187.17,
+      "bossSeconds": 13.37,
+      "won": true,
+      "phase": "result",
+      "reason": null,
+      "kills": 405,
+      "gateHp": 506,
+      "vehicleHp": 188,
+      "playerHp": 144,
+      "waves": [
+        {
+          "phase": "waves",
+          "wave": 1,
+          "seconds": 0,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 2,
+          "seconds": 9.3,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 3,
+          "seconds": 20.4,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 4,
+          "seconds": 32.63,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 5,
+          "seconds": 45.9,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 6,
+          "seconds": 61.03,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 7,
+          "seconds": 78.27,
+          "gateHp": 1500,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 8,
+          "seconds": 97.17,
+          "gateHp": 1496,
+          "vehicleHp": 288,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 9,
+          "seconds": 118,
+          "gateHp": 1456,
+          "vehicleHp": 268,
+          "playerHp": 144
+        },
+        {
+          "phase": "waves",
+          "wave": 10,
+          "seconds": 147.33,
+          "gateHp": 961,
+          "vehicleHp": 218,
+          "playerHp": 144
+        },
+        {
+          "phase": "boss",
+          "wave": 10,
+          "seconds": 173.8,
+          "gateHp": 626,
+          "vehicleHp": 188,
+          "playerHp": 144
+        }
+      ]
+    }
+  ]
+}

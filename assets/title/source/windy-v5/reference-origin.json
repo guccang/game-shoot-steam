@@ -1,0 +1,17 @@
+{
+  "source": "assets/title/source/original.mp4",
+  "sourceRequest": "vid-ztj-forest-title-20261023-v2",
+  "timeSeconds": 4.5,
+  "frameIndex": 108,
+  "sha256": "964e5f5314551b3a9f1cfb645cef403d622b0933cf897731930af72943d0106d",
+  "extraction": [
+    "ffmpeg",
+    "-ss",
+    "4.5",
+    "-i",
+    "assets/title/source/original.mp4",
+    "-frames:v",
+    "1",
+    "assets\\title\\source\\windy-v5\\reference.png"
+  ]
+}

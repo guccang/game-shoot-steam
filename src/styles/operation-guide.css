@@ -1,0 +1,18 @@
+/* 操作引导使用静态双色边框；覆盖层不截获点击、触摸与拖拽，也不模拟键盘焦点。 */
+#operation-guide{position:fixed;inset:0;z-index:80;pointer-events:none;color:#315747;font-family:inherit}
+#operation-guide[hidden]{display:none}#operation-guide>svg{position:fixed;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#operation-guide marker path{fill:#315747}.operation-line{fill:none;stroke:#315747;stroke-width:3;stroke-dasharray:6 5;filter:drop-shadow(0 1px 1px #fff9e5)}
+.operation-line[hidden]{display:none}.operation-tip,.operation-destination{position:fixed;display:block;width:max-content;max-width:min(250px,calc(100vw - 32px));box-sizing:border-box;background:#fff9e5;border:2px solid #8caa75;border-radius:10px;padding:6px 9px;font-size:12px;line-height:1.5;font-weight:600;box-shadow:0 2px 0 #31574725}
+.operation-destination{background:#315747;color:#fff9e5;font-size:11px;padding:3px 7px}.operation-destination[hidden]{display:none}
+.operation-source{box-shadow:0 0 0 3px #fff2c9,0 0 0 5px #315747!important}.operation-target{box-shadow:0 0 0 4px #8caa75,0 0 0 7px #fff9e5!important}
+/* 菜单教学时任务卡暂时让位，避免窄屏的任务问号盖住待点按钮。 */
+#game-frame:has(.field-menu[data-expanded="true"] .operation-source) :is(#mainline-hud){visibility:hidden}
+
+/* 猫爪仅作视觉点击提示，沿用原按钮命中区；位移与缩放只作用于爪子本体。 */
+.operation-paw{position:fixed;display:block;width:42px;height:42px;pointer-events:none;filter:drop-shadow(0 1px 1px #fff9e5);}
+.operation-paw[hidden]{display:none}
+.operation-paw svg{display:block;width:100%;height:100%;overflow:visible;transform-origin:50% 50%;animation:operation-paw-tap 1.8s ease-in-out infinite;}
+.operation-paw[data-side=above] svg{rotate:180deg;transform-origin:50% 50%;}
+/* 圆掌轻轻压扁再回弹，以小幅形变表现柔软，不再围绕手腕摆动。 */
+@keyframes operation-paw-tap{0%,65%,100%{transform:translateY(3px) scale(1)}30%,45%{transform:translateY(0) scale(1.04,.95)}}
+@media(prefers-reduced-motion:reduce){.operation-paw svg{animation:none;}}

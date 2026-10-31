@@ -1,0 +1,412 @@
+/* 通用界面合同：底板、分区与操作复用同一组颜色、轮廓和厚度。 */
+:root {
+  --ui-forest: #315c43;
+  --ui-deep: #234333;
+  --ui-paper: #fff6dc;
+  --ui-sage: #e8edcf;
+  --ui-line: #879b78;
+  --ui-gold: #edbd63;
+  --ui-text: #294338;
+  --ui-muted: #5c7051;
+  --ui-scrollbar-thumb: #71856352;
+  --ui-scrollbar-hover: #71856385;
+  --ui-danger: #934b3a;
+  --ui-radius-panel: 22px;
+  --ui-radius-section: 12px;
+  --ui-radius-button: 12px;
+  --ui-space: 20px;
+  --ui-safe-top: max(16px, env(safe-area-inset-top));
+  --ui-safe-bottom: max(20px, env(safe-area-inset-bottom));
+  --ui-safe-left: max(12px, env(safe-area-inset-left));
+  --ui-safe-right: max(12px, env(safe-area-inset-right));
+  --ui-panel-shadow: inset 0 0 0 4px #f6e7bb, 0 6px 0 var(--ui-deep), 0 18px 44px #152f2a40;
+}
+
+/* 列表统一使用低对比细滚动条，透明轨道不再切割奶油色底板。 */
+* { scrollbar-width: thin; scrollbar-color: var(--ui-scrollbar-thumb) transparent; }
+/* 支持伪元素的浏览器使用精确宽度；重置标准属性，避免覆盖自定义滑块。 */
+@supports selector(::-webkit-scrollbar) {
+  * { scrollbar-width: auto; scrollbar-color: auto; }
+  *::-webkit-scrollbar { width: 4px; height: 4px; }
+  *::-webkit-scrollbar-track, *::-webkit-scrollbar-corner { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: var(--ui-scrollbar-thumb); border: 0; border-radius: 999px; }
+  *::-webkit-scrollbar-thumb:hover, *::-webkit-scrollbar-thumb:active { background: var(--ui-scrollbar-hover); }
+  *::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+}
+/* 系统高对比模式保留清楚的滚动位置提示。 */
+@media (forced-colors: active) {
+  * { scrollbar-color: auto; }
+  *::-webkit-scrollbar-thumb { background: CanvasText; }
+}
+
+/* 兼容已有弹窗，只统一表面；尺寸、滚动和玩法专用排版由原页面负责。 */
+dialog[id]:not(:where(#task-reward-dialog)), .ui-panel, .task-reward-panel,
+#camp-dialog, #challenge-catalog-dialog, #cottage-rest-dialog {
+  color: var(--ui-text);
+  background: var(--ui-paper);
+  border: 3px solid var(--ui-forest);
+  border-radius: var(--ui-radius-panel);
+  box-shadow: var(--ui-panel-shadow);
+}
+dialog[id]::backdrop { background: #152f2a8c; }
+/* 奖励弹窗的外层仅承载倒计时，实际底板在内部，避免出现双层阴影。 */
+#task-reward-dialog { box-shadow: none; }
+
+/* 新页面使用结构类：标题与底栏固定，正文独立滚动。 */
+.ui-panel {
+  width: min(480px, calc(100vw - var(--ui-safe-left) - var(--ui-safe-right)));
+  max-width: none;
+  max-height: calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom));
+  padding: 0;
+  overflow: hidden;
+}
+.ui-panel:not(dialog), dialog.ui-panel[open] { display: flex; flex-direction: column; }
+.ui-panel--compact { width: min(360px, calc(100vw - var(--ui-safe-left) - var(--ui-safe-right))); }
+dialog.ui-panel, #settings-dialog {
+  inset: var(--ui-safe-top) var(--ui-safe-right) var(--ui-safe-bottom) var(--ui-safe-left);
+  margin: auto;
+}
+#settings-dialog {
+  width: min(480px, calc(100vw - var(--ui-safe-left) - var(--ui-safe-right)));
+  max-height: calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom));
+}
+/* 手机全屏页保留上下安全区，横屏时仍使用单列和正文滚动。 */
+dialog.ui-panel--fullscreen {
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  inset: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.ui-panel--fullscreen .ui-panel__header { padding-top: max(18px, env(safe-area-inset-top)); }
+.ui-panel--fullscreen .ui-panel__body { flex: 1; }
+.ui-panel--fullscreen :is(.ui-panel__header, .ui-panel__body, .ui-panel__footer) {
+  padding-left: max(var(--ui-space), env(safe-area-inset-left));
+  padding-right: max(var(--ui-space), env(safe-area-inset-right));
+}
+.ui-panel__header, #settings-dialog .settings-heading {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px var(--ui-space);
+  background: var(--ui-forest);
+  color: var(--ui-paper);
+  border-bottom: 3px solid var(--ui-gold);
+}
+.ui-panel__header > div, .settings-heading > div { min-width: 0; }
+.ui-panel__header h2, #settings-dialog .settings-heading h2 {
+  margin: 0;
+  color: var(--ui-paper);
+  font-size: 22px;
+  line-height: 1.35;
+}
+.ui-panel__header p, #settings-dialog .settings-heading p {
+  margin: 5px 0 0;
+  color: #dbe5c5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+#settings-dialog .settings-build, #settings-dialog .settings-build code { color: #dbe5c5; }
+.ui-panel__body { padding: var(--ui-space); min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.ui-panel__body p { color: var(--ui-muted); font-size: 14px; line-height: 1.75; }
+.ui-panel__footer, #settings-dialog .settings-footer {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px var(--ui-space) max(18px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--ui-line);
+  background: var(--ui-sage);
+}
+#settings-dialog .settings-footer { display: grid; }
+.ui-panel__footer > button { flex: 1; }
+.ui-section {
+  padding: 16px;
+  border: 1px solid #bdc8a4;
+  border-radius: var(--ui-radius-section);
+  background: #f6f1d8;
+}
+.ui-section + .ui-section { margin-top: 16px; }
+.ui-section h3 { margin: 0 0 10px; font-size: 15px; color: var(--ui-forest); }
+.ui-inset { padding: 12px 14px; border-radius: 9px; background: var(--ui-sage); border: 1px solid #c3cea9; }
+
+/* 基础操作类兼容旧入口；不选择画布热点、技能按钮或拖拽零件。 */
+:is(button.ui-button, .ui-migrated button:where(:not(.ui-close,.resource-info-button,.challenge-level,#realm-help,#ws-socket,#ws-tool)), .primary, .secondary, .danger-button, .title-primary, .title-secondary),
+#settings-dialog .settings-footer button {
+  --button-face: var(--ui-paper);
+  --button-ink: var(--ui-forest);
+  --button-edge: var(--ui-forest);
+  --button-hover: #fffbe9;
+  min-height: 46px;
+  padding: 11px 18px;
+  border: 2px solid var(--button-edge);
+  border-radius: var(--ui-radius-button);
+  background: var(--button-face);
+  color: var(--button-ink);
+  box-shadow: inset 0 2px 0 #ffffff26, 0 3px 0 var(--button-edge);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: background .12s, transform .12s, box-shadow .12s;
+}
+:is(button.ui-button--primary, .primary, .title-primary), #settings-dialog .settings-footer .primary {
+  --button-face: var(--ui-forest);
+  --button-ink: var(--ui-paper);
+  --button-edge: var(--ui-deep);
+  --button-hover: #416f4f;
+}
+:is(button.ui-button--danger, .danger-button) {
+  --button-face: #fae8d8;
+  --button-ink: var(--ui-danger);
+  --button-edge: var(--ui-danger);
+  --button-hover: #f3d9c5;
+}
+:is(button.ui-button, .ui-migrated button:where(:not(.ui-close,.resource-info-button,.challenge-level,#realm-help,#ws-socket,#ws-tool)), .primary, .secondary, .danger-button, .title-primary, .title-secondary):hover:not(:disabled),
+#settings-dialog .settings-footer button:hover:not(:disabled) { background: var(--button-hover); }
+:is(button.ui-button, .ui-migrated button:where(:not(.ui-close,.resource-info-button,.challenge-level,#realm-help,#ws-socket,#ws-tool)), .primary, .secondary, .danger-button, .title-primary, .title-secondary):active:not(:disabled),
+#settings-dialog .settings-footer button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 #ffffff20, 0 1px 0 var(--button-edge);
+}
+:is(button.ui-button, .ui-migrated button:where(:not(.ui-close,.resource-info-button,.challenge-level,#realm-help,#ws-socket,#ws-tool)), .primary, .secondary, .danger-button, .title-primary, .title-secondary):disabled {
+  background: #e0e3ce;
+  color: #68765b;
+  border-color: #a6b291;
+  box-shadow: 0 2px 0 #a6b291;
+  opacity: 1;
+  transform: none;
+}
+:is(button.ui-button, .ui-migrated button:where(:not(.ui-close,.resource-info-button,.challenge-level,#realm-help,#ws-socket,#ws-tool)), .ui-close, .primary, .secondary, .danger-button, .title-primary, .title-secondary):focus-visible,
+dialog .close:focus-visible, #settings-dialog .settings-footer button:focus-visible {
+  outline: 3px solid var(--ui-gold);
+  outline-offset: 3px;
+}
+
+/* 关闭按钮单独统一触控尺寸，避免移动端装饰边框压缩命中区域。 */
+button.ui-close, dialog .close, #settings-dialog .close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--ui-forest);
+  border-radius: 12px;
+  background: var(--ui-paper);
+  color: var(--ui-forest);
+  font-size: 26px;
+  line-height: 1;
+  box-shadow: 0 2px 0 var(--ui-deep);
+}
+.ui-panel__header .ui-close, #settings-dialog .settings-heading .close { margin: 0; position: static; float: none; }
+.ui-close:hover, dialog .close:hover { background: #fffbe9; }
+
+/* 设置为首个完整接入页，正文沿用原控件结构，不接管控件行为。 */
+#settings-dialog .settings-scroll { padding: var(--ui-space); }
+#settings-dialog .settings-group { padding-bottom: 14px; border-bottom: 1px solid #c3cea9; margin-bottom: 18px; }
+#settings-dialog .settings-group h3 { color: var(--ui-forest); font-size: 15px; }
+#settings-dialog .settings-control { border-color: #d5dbb9; }
+#settings-dialog .settings-control > button, #settings-dialog .settings-links .settings-row {
+  background: var(--ui-sage);
+  border: 1px solid var(--ui-line);
+  border-radius: 10px;
+  color: var(--ui-forest);
+}
+#settings-dialog .settings-control > button { min-height: 44px; }
+#settings-dialog .settings-control > span, #settings-dialog .settings-control > label { color: var(--ui-text); }
+#settings-dialog input { accent-color: var(--ui-forest); }
+
+@media (max-width: 360px) {
+  :root { --ui-space: 14px; }
+  .ui-panel__header, #settings-dialog .settings-heading { padding-block: 14px; gap: 10px; }
+  .ui-panel__header h2, #settings-dialog .settings-heading h2 { font-size: 20px; }
+  .ui-panel__footer { gap: 10px; }
+  .ui-section { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(button.ui-button, .ui-migrated button:where(:not(.ui-close,.resource-info-button,.challenge-level,#realm-help,#ws-socket,#ws-tool)), .ui-close, .primary, .secondary, .danger-button, .title-primary, .title-secondary),
+  #settings-dialog .settings-footer button { transition: none; }
+}
+
+/* 手机三层合同：功能页固定框架，战场信息薄边，对话保留底部纸页。 */
+dialog.ui-panel.ui-page {
+  width: min(480px, calc(100vw - var(--ui-safe-left) - var(--ui-safe-right)));
+  max-height: calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom));
+  padding: 0;
+  overflow: hidden;
+}
+.ui-page .ui-panel__header { margin: 0; padding: 16px var(--ui-space); align-items: center; }
+.ui-page .ui-panel__header h2 { margin: 4px 0 0; font-size: 22px; color: var(--ui-paper); }
+.ui-page .ui-panel__header small { color: #dbe5c5; font-size: 12px; letter-spacing: 0; line-height: 1.5; }
+.ui-page .ui-panel__body { min-height: 0; overflow: auto; scroll-padding: 12px; scrollbar-gutter: stable; }
+.ui-page .ui-panel__footer button { min-width: 0; margin: 0; min-height: 48px; }
+.ui-page .ui-close { margin: 0; min-width: 44px; }
+.ui-page button.ui-choice { text-align: left; background: var(--ui-paper); border: 1px solid var(--ui-line); box-shadow: none; font-weight: 400; }
+.ui-page button.ui-choice:is(.selected,[aria-pressed="true"]) { background: var(--ui-sage); border: 2px solid var(--ui-forest); }
+.ui-page button.ui-choice:disabled { color: var(--ui-muted); background: #f1efd9; opacity: 1; }
+.ui-page .story-task-overview { background: var(--ui-sage); border-color: var(--ui-line); padding: 16px; }
+.ui-page :is(.story-task-group,.story-selection,.story-footer) { border-color: #bdc8a4; }
+.ui-page .story-task-group { padding-block: 16px; }
+.ui-page .story-neighbor-row { margin-top: 10px; }
+.ui-page .clearing-steps { margin: 0 0 20px; }
+.ui-page .clearing-steps svg { background: var(--ui-sage); border-color: var(--ui-line); stroke: var(--ui-forest); }
+.ui-page .clearing-steps [data-current="true"] svg { background: #f6dfa2; border-color: var(--ui-forest); box-shadow: none; }
+.ui-page #clearing-status { color: var(--ui-text); font-size: 14px; }
+.ui-page .clearing-loot { font-size: 12px; color: var(--ui-muted); }
+
+/* 暂停属于居中确认层，使用同材质轻标题，操作区便于拇指点击。 */
+#overlay { padding: var(--ui-safe-top) var(--ui-safe-right) var(--ui-safe-bottom) var(--ui-safe-left); background: #152f2a8c; }
+#overlay .ui-pause { width: min(360px, 100%); max-height: 100%; text-align: center; }
+.ui-pause .ui-panel__body { padding: 24px var(--ui-space) 20px; }
+#overlay-icon { display: block; font-size: 36px; color: var(--ui-forest); line-height: 1.2; }
+#overlay .ui-panel__body h2 { margin: 12px 0 8px; font-size: 22px; color: var(--ui-forest); }
+#overlay .ui-panel__body p { margin: 0; font-size: 14px; color: var(--ui-muted); }
+#overlay .ui-panel__footer { display: flex; flex-direction: column; gap: 12px; }
+#overlay .ui-panel__footer button { margin: 0; min-height: 48px; }
+
+/* HUD 统一薄边与短底影，不扩大中央战斗占用。资源整块可点而非仅图标可点。 */
+.hud-resources .resource-pill, .player-hud, .hud-resources .utility-buttons button,
+.field-menu #field-menu-toggle, .field-menu-items, .toast {
+  background: #fff6dcf2;
+  border: 1px solid var(--ui-line);
+  border-radius: 14px;
+  box-shadow: 0 2px 0 #23433333;
+  color: var(--ui-text);
+}
+.hud-resources { top: max(12px,env(safe-area-inset-top)); left: max(10px,env(safe-area-inset-left)); right: max(10px,env(safe-area-inset-right)); display: grid; grid-template-columns: 80px 80px minmax(0,1fr); gap: 4px; }
+.hud-resources .utility-buttons { display: flex; justify-self: end; gap: 3px; margin-left: 0; }
+.hud-resources .utility-buttons button { width: 44px; height: 44px; flex: 0 0 44px; padding: 1px; }
+/* 帧率位于设置按钮下方；生命卡按钱包底边排列，实际重叠时才避让帧率。 */
+.hud-resources, .hud-resources .utility-buttons { align-items: start; }
+.settings-hud-control { display: flex; flex-direction: column; width: 44px; flex: 0 0 44px; }
+#fps-display { width: 44px; margin-top: 3px; line-height: 18px; border-radius: 5px; background: var(--ui-paper); color: var(--ui-text); text-align: center; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+#fps-display[hidden] { display: none; }
+.hud-resources .resource-pill { position: relative; height: 44px; padding: 0 1px 0 27px; gap: 0; }
+.hud-resources .resource-pill .resource-info-button { position: absolute; inset: -1px; width: calc(100% + 2px); height: 44px; padding: 0 3px; justify-content: flex-start; border-radius: 13px; }
+.hud-resources .resource-pill .resource-art { width: 24px; height: 24px; }
+.hud-resources .resource-pill b { pointer-events: none; position: relative; font-size: 11px; }
+/* 资源栏按最大缩写留宽，不再随屏幕拉长；窄手机上下排列，保留44px触控区。 */
+@media (max-width: 380px) {
+  .hud-resources { grid-template-columns: 54px 54px minmax(0,1fr); column-gap: 3px; }
+  .hud-resources .resource-pill { padding: 23px 1px 2px; justify-content: center; }
+  .hud-resources .resource-pill .resource-info-button { align-items: flex-start; justify-content: center; padding-top: 3px; }
+  .hud-resources .resource-pill .resource-art { width: 20px; height: 20px; }
+}
+/* 名称和生命值相邻排列，压缩留白；右侧仪表仍保留44px触控区。 */
+.player-hud { padding:3px 6px; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:1fr 1fr; column-gap:4px; row-gap:2px; }
+.player-hud > .player-heading:first-child { grid-column:1; grid-row:1; margin:0; min-width:0; align-self:end; justify-content:flex-start; gap:3px; }
+.player-hud #player-health { margin-left:0; }
+.player-hud > .bar { grid-column:1; grid-row:2; margin:0; align-self:start; }
+/* 生命与弹药面板归入左上信息区，避开底部摇杆和农具。 */
+#game-frame { --hud-card-width:248px; }
+#game-frame > .bottom-info { position:absolute; z-index:16; left:max(10px,env(safe-area-inset-left)); top:calc(max(12px,env(safe-area-inset-top)) + 48px); width:min(var(--hud-card-width),calc(100% - 20px)); pointer-events:auto; }
+/* 三路独立弹药也保持横排，窄屏只压缩左侧可省略的名称区域。 */
+#game-frame[data-supply="independent"] { --hud-card-width:340px; }
+/* 新手和主线任务共用生命卡宽度与左边距，文字为右侧44px寻路按钮留白。 */
+#game-frame :is(#mainline-hud,#ranger-arrival) { left:max(10px,env(safe-area-inset-left)); width:min(var(--hud-card-width),calc(100% - 20px)); }
+#game-frame #ranger-arrival { padding:4px 7px; }
+#game-frame #ranger-arrival.task-route-anchor { padding-right:46px; }
+#ranger-arrival #arrival-title { font-size:12px; line-height:17px; }
+#ranger-arrival #arrival-body { margin-top:2px; font-size:11px; line-height:16px; }
+/* 秘境没有钱包栏，保留原底部战斗位置，避免遮住秘境专属状态与布防控件。 */
+#game-frame.realm-active > .bottom-info { top:auto!important; bottom:max(20px,env(safe-area-inset-bottom)); right:14px; left:auto; z-index:6; }
+/* 高塔、守护与远征的生命仪表归入左上安全区，进度及领主条按实际高度接续。 */
+#game-frame.realm-active:is(.tower-active,.guardian-active,.rogue-active) > .bottom-info { top:max(12px,env(safe-area-inset-top))!important; bottom:auto; right:auto; left:max(10px,env(safe-area-inset-left)); z-index:16; }
+#game-frame.realm-active:not([data-state="playing"]) > .bottom-info { visibility:hidden; pointer-events:none; }
+/* 低生命沿游戏视口四边缓慢呼吸；中心透明，状态栏本身不播放动画。 */
+.health-edge-warning { display:none; position:absolute; inset:0; z-index:30; pointer-events:none; background:transparent; box-shadow:inset 0 0 28px 6px #b4343480,inset 0 0 6px 1px #b4343470; }
+#game-frame:is([data-state="playing"],[data-state="paused"]):has(.player-hud.low-health) > .health-edge-warning { display:block; animation:health-edge-breathe 3s ease-in-out infinite; }
+@keyframes health-edge-breathe {
+  0%,100% { opacity:.18; }
+  50% { opacity:.8; }
+}
+#game-frame[data-state="paused"] > .health-edge-warning { animation-play-state:paused!important; }
+/* 减少动态时保留轻微静态红边，回血、死亡或回到首页后自动隐藏。 */
+@media(prefers-reduced-motion:reduce) { #game-frame > .health-edge-warning { animation:none!important; opacity:.4; } }
+.player-hud .bar { background: #d0dbb8; }
+.player-hud .bar i { background: #689368; }
+.player-hud .combat-instruments { grid-column:2; grid-row:1 / 3; margin:0; height:44px; align-items:center; padding-left:6px; border-left:1px solid #bdcba5; }
+.player-hud #vehicle-button { min-width: 44px; height: 44px; flex-basis: 44px; }
+#vehicle-button .ring-meter { left: 7px; top: 6px; }
+#vehicle-button .ring-icon { left: 15.5px; top: 10px; }
+#vehicle-button .ring-count { bottom: 11px; }
+/* 任务与资源栏共用奶油纸底和森林绿正文，靠层次而非深色大块区分。 */
+#quest, .mainline-hud, #ranger-arrival { background: #fff6dcf2; color: var(--ui-text); border: 1px solid var(--ui-line); border-radius: 14px; box-shadow: 0 2px 0 #23433333; }
+#quest small, #quest #quest-count { color: var(--ui-muted); }
+#quest { top: calc(max(12px,env(safe-area-inset-top)) + 58px); }
+.boss-hud { top: calc(max(12px,env(safe-area-inset-top)) + 58px); border: 1px solid var(--ui-line); border-radius: 14px; background: var(--ui-paper); box-shadow: 0 2px 0 #23433333; }
+.wave-node { background: var(--ui-deep); border-color: #a0b58b; }
+#wave-track #boss-button { border: 2px solid #b4c89a; background: var(--ui-sage); box-shadow: none; }
+#wave-track #boss-button:not(:disabled) { border-color: var(--ui-gold); }
+
+/* 对白姓名、正文、操作分层，但保持浅色与低高度，不挤走场景主体。 */
+.npc-bottom-dialogue:not(dialog), dialog.npc-bottom-dialogue {
+  background: var(--ui-paper);
+  border: 2px solid var(--ui-forest);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -3px 0 #23433326;
+  color: var(--ui-text);
+  padding: 12px max(14px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));
+}
+.ui-dialogue.npc-bottom-dialogue { display: flex; flex-direction: column; gap: 10px; overflow: hidden; pointer-events: auto; }
+.ui-dialogue .story-speech-copy { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.ui-dialogue .story-speech-copy > b { display: block; color: var(--ui-forest); font-size: 14px; }
+.ui-dialogue .story-speech-copy p { margin: 6px 0 0; line-height: 1.65; font-size: 14px; }
+.ui-dialogue .story-speech-actions { flex: none; display: flex; gap: 10px; padding-top: 10px; border-top: 1px solid #c3cea9; }
+.ui-dialogue .story-speech-actions .ui-button { flex: 1; min-width: 0; min-height: 44px; padding: 8px; font-size: 13px; box-shadow: 0 2px 0 var(--button-edge); }
+.ui-dialogue .story-speech-actions .ui-button[aria-pressed="true"] { background: var(--ui-sage); }
+.ui-dialogue #arrival-skip { flex: 1 1 100%; min-height: 44px; font-size: 12px; }
+/* 营地故事沿用底部对白，仅保留姓名、短正文和一次接话操作。 */
+#monster-camps-dialog:not([open]) { display:none; }
+#monster-camps-dialog .camp-story-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; flex:none; }
+#monster-camps-dialog .camp-story-heading small { font-size:12px; color:var(--ui-muted); }
+#monster-camps-dialog h2 { margin:3px 0 0; font-size:18px; color:var(--ui-forest); }
+/* 横持时压缩留白，给短故事保留两行以上的可滚动阅读区。 */
+@media(max-height:500px) {
+  #monster-camps-dialog { gap:6px; padding-block:8px; }
+  #monster-camps-dialog .camp-story-heading > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px; }
+  #monster-camps-dialog h2 { margin:0; font-size:16px; }
+  #monster-camps-dialog .story-speech-actions { padding-top:6px; }
+}
+.npc-bottom-dialogue.compact-speech b { display: block; font-size: 13px; color: var(--ui-forest); margin-bottom: 6px; }
+.npc-bottom-dialogue.compact-speech span { font-size: 14px; line-height: 1.65; }
+dialog.npc-bottom-dialogue header { border-bottom: 1px solid #c3cea9; padding-bottom: 10px; }
+dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: var(--ui-forest); }
+
+/* 手机横持仍采用相同单列体系，缩短标题留给正文；不引入桌面侧栏。 */
+@media (max-height: 500px) {
+  .ui-page .ui-panel__header { padding-block: 10px; }
+  .ui-page .ui-panel__footer { padding-block: 10px; }
+  .ui-pause .ui-panel__body { padding-block: 12px; }
+  #overlay-icon { font-size: 26px; }
+  #overlay .ui-panel__footer { padding-block: 12px; }
+}
+
+/* 附近操作沿用统一按钮，世界投影负责定位，触控区域保持至少44像素。 */
+/* 同一节点会从小按钮切成建筑透明热点；禁止背景与位移过渡，避免放大后的旧底色闪成白块。 */
+#nearby-interaction { transition:none; position:absolute; z-index:25; transform:translate(-50%,-50%); width:max-content; max-width:min(200px,calc(100% - 24px)); min-height:44px; padding:8px 12px; font-size:14px; pointer-events:auto; touch-action:manipulation; flex-direction:column; gap:3px; }
+#nearby-interaction[hidden] { display:none; }
+/* 附近弹出操作统一纸色；休息、展品和其他动作切换时始终保留深色文字。 */
+#nearby-interaction { --button-face:var(--ui-paper); --button-ink:var(--ui-text); --button-edge:var(--ui-line); --button-hover:var(--ui-sage); }
+#nearby-interaction small { display:block; font-size:11px; line-height:1.4; white-space:pre-line; }
+#nearby-interaction small[hidden] { display:none; }
+/* 车位上只显示停车标识与点击短提示，触控仍保留44px高度。 */
+#nearby-interaction[data-interaction="parking"]:not([hidden]) { display:flex; align-items:center; justify-content:center; flex-direction:row; gap:6px; min-width:76px; padding:6px 8px; font-size:12px; }
+#nearby-interaction .parking-hint-icon { display:flex; width:24px; height:24px; flex:none; pointer-events:none; }
+#nearby-interaction .parking-hint-icon[hidden] { display:none; }
+#nearby-interaction .parking-hint-icon svg { width:100%; height:100%; }
+/* 营地木牌自身就是入口；透明热点不生成纸底、空框或额外文字。 */
+#nearby-interaction[data-presentation="camp-sign"] { width:var(--camp-sign-width); height:var(--camp-sign-height); min-height:44px; min-width:44px; max-width:none; padding:0; border:0; border-radius:3px; background:transparent; box-shadow:none; transform:translate(-50%,-50%); transition:none; cursor:pointer; }
+#nearby-interaction[data-presentation="camp-sign"] > * { display:none; }
+#nearby-interaction[data-presentation="camp-sign"]:focus-visible { outline:2px dashed var(--ui-forest); outline-offset:3px; }
+/* 房屋本体热点不绘制文字或猫爪，尺寸由共用场景投影控制。 */
+#nearby-interaction.scene-hit > * { display:none; }

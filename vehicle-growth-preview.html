@@ -1,0 +1,14 @@
+<!doctype html>
+<!-- 载具结构工作台调用正式绘制器，驾驶试玩使用内存进度。 -->
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>载具改装 · 结构成长</title><link rel="stylesheet" href="/src/styles/fonts.css">
+<style>
+body{margin:20px;background:#edf0df;color:#3b5742;font:16px var(--game-font-family)}h1{font-size:25px}p{max-width:900px;line-height:1.7}.models,#catalog{display:flex;gap:12px;flex-wrap:wrap}figure{box-sizing:border-box;max-width:100%;margin:0;padding:12px;border-radius:14px;background:#dce3c8}figcaption{font-weight:600}canvas{width:280px;max-width:100%;height:auto}nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button,select{font:inherit;padding:10px;border:1px solid #78916c;border-radius:8px;background:#fff8df;color:inherit}#viewport{overflow:auto}iframe{display:block;width:390px;height:min(844px,calc(100vh - 110px));border:1px solid #78916c}pre{white-space:pre-wrap;font:12px var(--game-font-family)}details{margin:16px 0}#catalog figure{width:280px}select{max-width:100%}
+</style></head><body>
+<h1>载具改装 · 结构成长</h1><p>原装保留，装甲增加分层护板，动力增加独立机组。查看同尺度成长，再进入正式战场驾驶。此页仅使用临时进度。</p>
+<label>载具型号 <select id="vehicle"></select></label>
+<section class="models"><figure><figcaption>原装结构</figcaption><canvas id="base" width="560" height="360"></canvas></figure><figure><figcaption>中期改装</figcaption><canvas id="middle" width="560" height="360"></canvas></figure><figure><figcaption>满级结构</figcaption><canvas id="upgraded" width="560" height="360"></canvas></figure></section>
+<nav><label>装甲 <select id="armor"><option value="1">1级</option><option value="10">10级</option><option value="20">20级</option></select></label><label>动力 <select id="engine"><option value="1">1级</option><option value="3">3级</option><option value="5">5级</option></select></label><label>画面宽度 <select id="size"><option>390</option><option>320</option><option>1280</option></select></label><button data-command="drive">驾驶一圈</button><button data-command="night">切换昼夜</button><button data-command="turn">转向目标</button><button data-command="fire">停火／开火</button><button data-command="pause">暂停／继续</button><button data-command="workshop">载具工坊</button></nav>
+<div id="viewport"><iframe id="scene" title="载具驾驶试玩"></iframe></div>
+<h2>原装 → 满级</h2><section id="catalog"></section>
+<details><summary>验收与录像</summary><button id="check">检查结构与原装</button><button data-command="record">录制驾驶动作</button><pre id="checks"></pre><pre id="report"></pre><video id="recording" controls style="max-width:100%"></video></details>
+<script type="module" src="/src/art/vehicle-growth-preview.js"></script></body></html>

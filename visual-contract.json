@@ -1,0 +1,2637 @@
+{
+  "equipmentStoryExpansionCriterion":{"id":"equipment-story-expansion","designCriterion":"equipment-story-expansion","description":"能量盾邻居任务交付后开放首次购买，真实扣盾检测与巡林车护送；34份档案和8条旧任务对白扩写约50%，三种任务载具配图，手机昼夜长文无溢出、图片缺失明确提示。","entry":"src/ui/workshop/equipment-info.js / src/core/equipment-story-actions.js / src/rendering/visual-review.js#inspectEquipmentStoryExpansion","brief":"docs/art-tasks/equipment-story-expansion.md","unitTests":["tests/equipment-story-expansion.test.mjs","tests/equipment-quests.test.mjs"],"browserTests":["tests/equipment-story-expansion-browser.cjs"]},
+  "cottageDecorationCriterion":{"id":"cottage-decoration","designCriterion":"cottage-decoration","description":"十五款金币家具可购买、收纳及重排，花盆可播种、按游戏历法成长和采收；预览与实际小屋共用绘制器，家具脚底碰撞及床门通路一致，手机昼夜可读，失败不扣款，刷新保留布局和植物。","entry":"src/rendering/cottage.js#drawCottageRoom / src/rendering/home-decor.js#drawHomeDecor / src/rendering/visual-review.js#inspectHomeDecor","brief":"docs/art-tasks/cottage-decoration.md","unitTests":["tests/home-decor.test.mjs"],"browserTests":["tests/home-decor-browser.cjs"]},
+  "equipmentNeighborStoriesCriterion":{"id":"equipment-neighbor-stories","designCriterion":"equipment-neighbor-stories","description":"八件装备明确展示故事购买前提，借装照料与护送真实运行，昼夜手机同屏可读，已有装备和原整组谢礼保持有效。","entry":"src/rendering/visual-review.js#inspectEquipmentNeighborStories / src/rendering/story-props.js / src/rendering/living-world.js","brief":"docs/art-tasks/equipment-neighbor-stories.md","unitTests":["tests/equipment-quests.test.mjs"],"browserTests":["tests/equipment-quests-browser.cjs","tests/equipment-quests-playthrough-browser.cjs","tests/equipment-quests-visual-browser.cjs","tests/equipment-quests-timber-browser.cjs","tests/equipment-quests-cancel-browser.cjs"]},
+  "bossAttackVariety":{"designCriterion":"boss-attack-variety","description":"六种首领固定原招、统一召唤、专属招三招循环；预警无伤、锁定可躲避、恢复可反击。召唤替代自动刷怪，普通两只半血三只，上限六只，不推进活动击杀。手机昼夜连续阶段可辨。","entry":"src/rendering/boss-skills.js / src/rendering/visual-review.js#inspectBossAttackVariety","brief":"docs/art-tasks/boss-attack-variety.md","unitTests":["tests/boss-skills.test.mjs","tests/boss-combat-pressure.test.mjs"],"browserTests":["tests/boss-skills-browser.cjs"]},
+  "subtleScrollbarsCriterion":{"id":"subtle-scrollbars","designCriterion":"游戏列表共用低对比细滚动条，透明轨道及圆角滑块不抢视觉，手机昼夜可读，原生触摸和滚轮仍可滚动","entry":"src/styles/ui-foundation.css","brief":"docs/art-tasks/ui-foundation.md","browserTests":["tests/subtle-scrollbars-browser.cjs"]},
+  "vehicleNativeOnlyCriterion":{"id":"vehicle-native-only","designCriterion":"载具只使用本车型主武器，工坊无挂载页，主炮升级保留；远征主炮随车配套，电动车和警车保留骑乘手持攻击","entry":"src/ui/workshop/function-tabs.js / src/ui/panels/vehicles.js / src/ui/expedition-slots.js / src/combat/vehicle.js","brief":"docs/art-tasks/vehicle-exclusive-armament.md","unitTests":["tests/vehicle-native-only.test.mjs"],"browserTests":["tests/vehicle-native-only-browser.cjs"]},
+  "quickMenuTrimCriterion": {"id":"quick-menu-trim","designCriterion":"快捷菜单移除营地小故事、快递站、种子小屋和任务簿四个入口，剩余按钮紧凑双列排列，手机短屏昼夜可读，场景功能保留","entry":"src/ui/farm.js#createFarmPanel / src/ui/mainline.js#createMainline / src/ui/monster-camps.js#createMonsterCampPanel / src/ui/seed-shop.js#createSeedShop","brief":"docs/art-tasks/quick-menu-trim.md","browserTests":["tests/quick-menu-trim-browser.cjs"]},
+  "storyCampReturnCriterion":{"id":"story-camp-return","designCriterion":"所有森林章节从接取、对白、途中到返程，常驻建筑、农田和门牌按永久建设进度显示，章节节点不控制营地显隐，显示与底座碰撞一致，结尾对白后关闭交付页可继续移动，暂停恢复与旧档重载不锁死，奖励主动交付且失败可重试","entry":"src/rendering/renderer.js#draw / src/rendering/story-camp.js#storyCampScene / src/rendering/visual-review.js#inspectStoryCampReturn","brief":"docs/art-tasks/story-camp-return.md","unitTests":["tests/story-camp-return.test.mjs","tests/story-camp-visibility.test.mjs"],"browserTests":["tests/story-camp-return-browser.cjs","tests/story-camp-visibility-browser.cjs"]},
+  "stableCampCameraCriterion":{"id":"stable-camp-camera","designCriterion":"营地靠近、离开及切换建筑始终稳定跟随；房屋使用本体透明热点，不平移或缩放镜头；保持任务卡可读、44px触控及昼夜手机显示","entry":"src/rendering/renderer.js / src/ui/nearby-interaction.js / src/rendering/visual-review.js#inspectStableCampCamera","brief":"docs/art-tasks/stable-camp-camera.md","unitTests":["tests/building-camera-transition.test.mjs"],"browserTests":["tests/camera-workshop-jump-browser.cjs"]},
+  "clearingMaterialTracking":{"designCriterion":"clearing-material-tracking","description":"清缴怪潮与领主战保留已选装备追踪，波次栏下方仅显示尚有缺口资源的已有/需要，已满足资源自动移除，全部备齐时只显示资源已备齐提示，资源再次不足时重新显示；材料实时到账，点击详情暂停关闭恢复；无目标和已拥有目标隐藏。手机320/390及既有竖版容器昼夜可读，不挡寻路问号和设置。","entry":"src/ui/equipment-goals.js#createEquipmentGoals / src/rendering/visual-review.js#inspectClearingMaterialTracking","brief":"docs/art-tasks/clearing-material-tracking.md","browserTests":["tests/clearing-material-hud-browser.cjs","tests/clearing-hud-range-browser.cjs"],"unitTests":["tests/clearing-hud-range.test.mjs"]},
+  "wildFarmland": {"designCriterion":"wild-farmland","description":"保留两图三处固定示范田，森林大世界额外沿路边空地散布完整2×2小田，首茬随机常见成熟作物；避开城镇、树冠、水面、山体、设施及当前清缴圈，道路到田边步行连通。驾驶中可发现并点击安全下车收割，沿用原收益，退出种田恢复原车；旧档仅补一次，刷新不补收成，不赠种或冒充开垦播种教学。复用正式田埂、作物与农具，手机昼夜可辨；野田从生成或最近成功播种起，满一个游戏年未播种自动清理，旧档从当前游戏日期起算，自耕田保留。","entry":"src/rendering/visual-review.js#inspectWildFarm / src/rendering/farm.js#drawFarmGround / drawFarmCrop","brief":"docs/art-tasks/wild-farmland.md","unitTests":["tests/wild-farm.test.mjs","tests/wild-farm-scatter.test.mjs","tests/wild-farm-expiry.test.mjs"],"browserTests":["tests/wild-farm-browser.cjs","tests/wild-farm-scatter-browser.cjs","tests/wild-farm-expiry-browser.cjs"]},
+  "farmWatering": {"designCriterion":"farm-watering","description":"田块状态自动匹配工具：成熟田拿镰刀收割、幼苗拿水壶浇水、空田选种；拖过幼苗按首次经过顺序逐块走近浇水，跳过空田和成熟田并去重；湿田可重复浇水，每茬最多加速25%；仅湿土表示浇水状态，保留动作水流，暂停取消与存档正确。","entry":"src/rendering/farm.js#drawFarmTool / src/ui/farm.js#createFarmPanel","brief":"docs/art-tasks/farm-watering.md","unitTests":["tests/farm-watering.test.mjs"],"browserTests":["tests/farm-watering-browser.cjs","tests/farm-water-drag-browser.cjs"]},
+  "sharedArtRenderingCriterion": {
+    "id": "shared-art-rendering",
+    "designCriterion": "两种已确认风格使用唯一绘制主体与只读数据配置；固定相位像素一致，四轮、驾驶位、主炮、昼夜雨雪和原交互不变。设置切换不修改战斗状态，旧图集释放，缺图失败保留当前风格并可重试，手机320和390宽度无溢出。",
+    "entry": "src/art-styles/config.js / src/art-styles/controller.js / src/rendering/visual-review.js#inspectSharedArt",
+    "browserTests": ["tests/shared-art-parity-browser.cjs", "tests/art-style-switch-browser.cjs", "tests/art-style-resources-browser.cjs"],
+    "brief": "docs/art-tasks/shared-art-rendering.md"
+  },
+  "artStyleCriterion":{"id":"art-style-switch","designCriterion":"原版森林与清澈卡通按目录隔离，手机设置即时切换；场景、装备和地图同步，原游戏对象与昼夜天气过渡保持；缺图明确失败并保留当前风格，旧派生图集释放且无窄屏溢出","entry":"src/art-styles/controller.js / src/rendering/renderer.js#refreshArtStyle / src/rendering/visual-review.js#inspectArtStyle","brief":"docs/art-tasks/art-style-switch.md","unitTests":["tests/art-style-switch.test.mjs","tests/map-preview-cache.test.mjs","tests/vehicle-wheels.test.mjs","tests/season-transition.test.mjs"],"browserTests":["tests/art-style-switch-browser.cjs","tests/art-style-resources-browser.cjs"]},
+  "clearWorldCriterion":{"id":"clear-world-style","designCriterion":"延续已确认清澈画面，建筑与机械统一暖棕轮廓、奶油墙面和橄榄材质；四树种、六组山湖与九寨沟减少碎纹，保留身份色、雪顶、夜窗和原图形锚点；手机昼夜天气连续变化、驾驶射击与建筑进出正常","entry":"src/rendering/idle-cat-style.js / src/rendering/primitives.js / src/rendering/natural-terrain.js / src/rendering/visual-review.js#inspectClearWorld","brief":"docs/art-tasks/idle-cat-pine-sample.md","unitTests":["tests/idle-cat-style.test.mjs","tests/natural-terrain.test.mjs","tests/season-transition.test.mjs","tests/season-weather.test.mjs","tests/vehicle-wheels.test.mjs","tests/monster-hit-reactions.test.mjs","tests/monster-death.test.mjs"],"browserTests":["tests/clear-world-style-browser.cjs","tests/clear-world-assets-browser.cjs","tests/clear-world-interior-browser.cjs"]},
+  "idleCatPineCriterion":{"id":"idle-cat-pine-runtime","designCriterion":"暖色手绘卡通松果战车与营地同屏；保留四轮真实滚动/停车相位、驾驶位原角色连续帧、独立主炮瞄准后坐及原交互；暖棕粗外轮廓统一战车、木牌、灯柱、护栏与塔楼，草地留白、宽麦簇分行遮挡、蓝色短浪水面、树木风摆与水界保持，手机320/390昼夜及既有竖版容器可读","entry":"src/rendering/pine-wheels.js / src/rendering/vehicle-armaments.js / src/rendering/visual-review.js#inspectIdleCatPine","brief":"docs/art-tasks/idle-cat-pine-sample.md","unitTests":["tests/idle-cat-style.test.mjs","tests/vehicle-wheels.test.mjs","tests/exhibit-countdown-bridge.test.mjs"],"browserTests":["tests/idle-cat-pine-browser.cjs","tests/idle-cat-pine-scene-browser.cjs","tests/idle-cat-night-browser.cjs"]},
+  "keepsakeBackpackCriterion":{"id":"keepsake-backpack","designCriterion":"小背包三件物品剪影可辨、森林绿奶油纸统一；信可重读、钥匙提示小屋、手机地图与邻居电话及导航真实可用，切页及地图嵌套暂停正确；手机320/360/390/430、短屏横屏及桌面既有容器昼夜无溢出，44px触控，旧档补齐且通话不远程交付","entry":"src/ui/keepsake-backpack.js#createKeepsakeBackpack / src/ui/keepsake-icons.js#keepsakeIcon / src/rendering/visual-review.js#inspectKeepsakeBackpack","brief":"docs/art-tasks/keepsake-backpack.md","unitTests":["tests/keepsake-backpack.test.mjs"],"browserTests":["tests/keepsake-backpack-browser.cjs"]},
+  "arrivalVehicleInterpolationCriterion":{"id":"arrival-vehicle-interpolation","designCriterion":"剧情高速接送的车身、乘客、老人、头顶气泡和镜头共用连续表现位置，不发生25Hz逻辑与60Hz表现错帧抖动；保留原轮胎滚动、身体真实帧、路线速度、公交进站与退休离开，暂停读档和昼夜手机画面正常","entry":"src/core/ranger-arrival.js#poseArrival / src/rendering/render-interpolation.js#createRenderInterpolation / src/rendering/visual-review.js#inspectArrivalInterpolation / src/ui/ranger-arrival.js#createRangerArrival","brief":"docs/art-tasks/arrival-vehicle-interpolation.md","unitTests":["tests/arrival-interpolation.test.mjs"],"browserTests":["tests/arrival-interpolation-browser.cjs","tests/arrival-bubble-browser.cjs"]},
+  "seasonCacheStagingCriterion":{"id":"season-cache-staging","designCriterion":"换季提前分帧预制，旧季节地块保留到双池昼夜工作集就绪后才统一渐变；移动、快速换季、地图总览、取消和释放正确，最多两季，像素与原渐变一致，手机及既有竖版容器昼夜同屏无空白","entry":"src/rendering/season-ground-cache.js / src/rendering/visual-review.js#inspectSeasonGroundStaging","brief":"docs/art-tasks/season-cache-staging.md","unitTests":["tests/season-ground-cache.test.mjs","tests/season-prewarm.test.mjs"],"browserTests":["tests/season-ground-cache-browser.cjs","tests/season-ground-cache-live.cjs","tests/season-ground-cache-visual.cjs","tests/season-prewarm-browser.cjs"]},
+  "buildingProximityPromptCriterion":{"id":"building-proximity-prompt","designCriterion":"清缴告示牌直接点击本体，不叠加猫爪或文字提示；热点随实体投影且镜头稳定，保持44px触控与昼夜手机显示","entry":"src/ui/nearby-interaction.js#createNearbyInteraction / src/rendering/visual-review.js#inspectBuildingProximityPrompt","brief":"docs/art-tasks/building-proximity-prompts.md","unitTests":["tests/building-proximity-prompts.test.mjs"],"browserTests":["tests/camp-house-interaction-browser.cjs"]},
+  "footballStationScoreboardCriterion":{"id":"football-station-scoreboard","designCriterion":"已修复球场点击查看直接展示原玩法卡，主动点击进入才开局；足球站牌面常驻累计进球与单场最高进球，无需点击；结算与刷新一致，旧档缺历史时标明下限；手机昼夜可读，靠近操作不遮记录","entry":"src/rendering/town-restoration.js#drawRestorationObject / src/rendering/football-scoreboard.js#drawFootballScoreboard / src/rendering/visual-review.js#inspectFootballStationScoreboard","brief":"docs/art-tasks/football-station-scoreboard.md","unitTests":["tests/football-scoreboard.test.mjs","tests/slime-football.test.mjs"],"browserTests":["tests/football-scoreboard-browser.cjs","tests/football-entry-card-browser.cjs"]},
+  "keepsakeBackpackCriterion":{"id":"keepsake-backpack","designCriterion":"背包三列格子点击独立物品弹窗；手机为菜单第一入口，地图仅从手机进入，任务实际看图才记进度；信可重读、电话及导航保留，嵌套关闭暂停和焦点正确；手机320/360/390/430、短屏及既有竖版容器昼夜无溢出、44px触控","entry":"src/ui/keepsake-backpack.js#createKeepsakeBackpack / src/ui/keepsake-icons.js#keepsakeIcon / src/rendering/visual-review.js#inspectKeepsakeBackpack","brief":"docs/art-tasks/backpack-phone-entry.md","unitTests":["tests/keepsake-backpack.test.mjs"],"browserTests":["tests/keepsake-backpack-browser.cjs"]},
+  "buildingInteractionAnchorCriterion":{"id":"building-interaction-anchor","designCriterion":"停车与消防入库等附近操作固定到建筑、车位或家具；进出门和倒车徽记归属目标设施，不跟随主角；保持44px触控、真实点击和昼夜手机显示","entry":"src/ui/nearby-interaction.js / src/rendering/visual-review.js#inspectBuildingInteraction","brief":"docs/art-tasks/building-interaction-anchor.md","unitTests":["tests/interaction-anchors.test.mjs","tests/room-exit-countdown.test.mjs"],"browserTests":["tests/building-interaction-browser.cjs","tests/building-interaction-fire-browser.cjs","tests/gate-repair-ui-browser.cjs","tests/building-overhead-ui-browser.cjs","tests/keep-task-hud-browser.cjs"]},
+  "cozyCottageCriterion":{"id":"cozy-ranger-cottage","designCriterion":"小屋与武器/载具工坊同倍率并排采用统一森林绿描边、有限平涂和木色檐口；拱门、暖窗和单侧花箱保留温馨感，墙根及门槛同锚点且紧贴地面接触影，禁止悬空厚台和独立插画细节。保留门口、碰撞、站立进出和停车，手机昼夜与积雪同屏可读，必需透明PNG不静默回退且复用原图集预算","entry":"src/rendering/scenery.js#drawScenery / src/rendering/visual-review.js#inspectCozyCottage","brief":"docs/art-tasks/cozy-cottage.md","browserTests":["tests/cozy-cottage-browser.cjs","tests/cozy-cottage-interactions-browser.cjs","tests/cozy-cottage-resource-browser.cjs","tests/cottage-grounding-browser.cjs"]},
+  "fpsSettingCriterion":{"id":"fps-setting","designCriterion":"设置持久化显示FPS开关，实际渲染帧率位于44px设置按钮正下方，每秒更新且不遮挡任务栏，手机昼夜可读，关闭恢复布局","entry":"src/ui/fps-display.js / src/rendering/visual-review.js#inspectFpsDisplay","brief":"docs/art-tasks/fps-setting.md","unitTests":["tests/fps-display.test.mjs"],"browserTests":["tests/fps-setting-browser.cjs"]},
+  "sixtyFpsCriterion":{"id":"sixty-fps-hotpaths","designCriterion":"减少重复样式失效与表现集合分配，保留25Hz逻辑、60Hz绘制目标和真实连续动作；手机320/390及宽视口昼夜任务开关、热点、提示和对白状态一致，不以微基准冒充整帧或真机表现","entry":"src/ui/mainline.js#renderFrame / src/rendering/render-interpolation.js#sample / src/rendering/visual-review.js#inspectSixtyFps","brief":"docs/art-tasks/sixty-fps-hotpaths.md","unitTests":["tests/render-interpolation-reuse.test.mjs","tests/scene-layout.test.mjs","tests/fixed-step.test.mjs"],"browserTests":["tests/sixty-fps-browser.cjs","tests/sixty-fps-ui-browser.cjs"]},
+  "uiArtRollbackCriterion":{"id":"ui-art-rollback","designCriterion":"撤回两轮108枚UI运行PNG，武器载具恢复对应正式绘制器，任务环境恢复原SVG；动态圆环、导航、加载轮子和交互保持，手机昼夜可读，4175提供恢复后的效果","entry":"src/rendering/visual-review.js#inspectUiArtRollback","brief":"docs/art-tasks/ui-art-rollback.md","browserTests":["tests/ui-art-rollback-browser.cjs"]},
+  "renderSubmitCriterion":{"id":"render-submit-hud","designCriterion":"保留原角色动作和直接文字绘制；附近按钮与任务 HUD 只更新变化值，手机昼夜位置、目标、触控和模式切换正确","entry":"src/rendering/renderer.js / src/ui/nearby-interaction.js / src/rendering/visual-review.js#inspectRenderSubmit","brief":"docs/art-tasks/render-submit-performance.md","unitTests":["tests/render-submit.test.mjs"],"browserTests":["tests/render-submit-browser.cjs","tests/render-submit-hud-browser.cjs","tests/render-submit-command-browser.cjs"]},
+  "workshopStandingEntryCriterion":{"id":"workshop-standing-entry","designCriterion":"两工坊只显示打开升级界面的按钮，小屋与工坊仅下车后门前站定三秒入内；建筑屋面倒计时与前立面升级按钮不重叠，移动与驾驶取消，手机昼夜可读","entry":"src/ui/nearby-interaction.js#createNearbyInteraction / src/core/cottage.js#updateCottage / src/rendering/player-action-countdown.js#drawPlayerActionCountdown","brief":"docs/art-tasks/workshop-entry-actions.md","unitTests":["tests/workshop-entry-actions.test.mjs"],"browserTests":["tests/workshop-entry-actions-browser.cjs"]},
+  "mapPreviewCriterion":{"id":"map-preview-cache","designCriterion":"地图复用原绘制器生成的720×560底图，森林四季和湖谷资源完整；实时玩家、任务标记不烘焙；开图不重绘世界或清空战场缓存；最多两张解码图，加载失败明确提示并可重试；手机320/390昼夜可读","entry":"src/rendering/ground-cache.js#drawMap / src/ui/panels/map.js / src/rendering/visual-review.js#inspectMapPreview","brief":"docs/art-tasks/map-preview-cache.md","unitTests":["tests/map-preview-cache.test.mjs"],"browserTests":["tests/map-open-browser.cjs","tests/map-panel-browser.cjs","tests/map-preview-assets-browser.cjs"]},
+  "fixedStepCriterion":{"id":"fixed-logic-smooth-render","designCriterion":"25Hz逻辑与60Hz绘制调度分离，中间帧真实插值位置和连续动作时钟，保留原24FPS身体序列、独立枪械与载具部件；现实与模拟时间一致，暂停/切场景不追赶，手机320/390与桌面竖版昼夜同屏可读","entry":"src/rendering/renderer.js#draw / src/rendering/visual-review.js#inspectFixedStep","brief":"docs/art-tasks/fixed-logic-smooth-render.md","unitTests":["tests/fixed-step.test.mjs"],"browserTests":["tests/fixed-step-browser.cjs"]},
+  "monsterDeathBurstCriterion":{"id":"monster-death-burst","designCriterion":"沿致命弹道快速推出8枚前向碎屑、2枚短反溅，定向冲击弧与短拖尾体现力度；不随玩家转身或尸体翻滚改变方向，保留重击延迟、手机昼夜可读、减少动态与20个残影上限","entry":"src/rendering/visual-review.js#inspectMonsterDeath / src/rendering/monster-atlas.js#drawMonsterSprite / src/rendering/monster-death.js#drawMonsterDeath","brief":"docs/art-tasks/monster-death-burst.md","unitTests":["tests/monster-death.test.mjs"],"browserTests":["tests/monster-death-buildings-browser.cjs","tests/directional-death-browser.cjs"]},
+  "continuousResourcePickupCriterion":{"id":"continuous-resource-pickup","designCriterion":"木材每笔2～3枚、0.6秒内收束，减少动态仅1枚；金币沿用0.32～0.44秒飞行和1.6秒错峰发射，现有图标飞向移动角色并保留短拖尾，近远和循环边界正确；手机昼夜可辨，减少动态降低密度，最多96枚图标且不重复奖励","entry":"src/rendering/visual-review.js#inspectResourcePickup / src/rendering/resource-pickup.js#drawResourcePickups","brief":"docs/art-tasks/continuous-resource-pickup.md","unitTests":["tests/resource-pickup.test.mjs"],"browserTests":["tests/resource-pickup-browser.cjs"]},
+  "taskNavigationIconCriterion":{"id": "task-navigation-icon", "designCriterion": "巡林任务移除旧问号，44px寻路开关位于任务卡内部最右侧；清缴保留详情问号，寻路紧跟其右侧同排，标题压缩后面板高80px；奶油底与森林绿文字、两态可辨，手机昼夜无重叠或误触", "entry": "src/ui/task-navigation.js#createTaskNavigation / src/rendering/visual-review.js#inspectTaskNavigation", "brief": "docs/art-tasks/compact-task-ui.md", "unitTests": ["tests/task-navigation-toggle.test.mjs"], "browserTests": ["tests/task-navigation-icon-browser.cjs"]},
+  "townLayoutCriterion":{"id":"town-district-layout","designCriterion":"营地与邻里小院整体西移300，左右外栏共线且内部连接开放，建筑、道路、入口、任务、NPC、农田、停车与旧档同步；河桥原位且河岸间距充足，跨循环边界地面及碰撞连续，320/390手机与桌面竖版昼夜实际通行和点击合格","entry":"src/rendering/scenery.js#drawSceneryGround / src/rendering/town-layout.js / src/rendering/visual-review.js#inspectTownLayout","brief":"docs/art-tasks/town-layout.md","unitTests":["tests/town-layout.test.mjs","tests/town-west-migration.test.mjs"],"browserTests":["tests/town-layout-browser.cjs","tests/town-layout-touch-browser.cjs","tests/town-west-browser.cjs"]},
+  "expandedForestCriterion":{"id":"forest-map-threefold","designCriterion":"地图宽高各为原来的三倍，营地建筑角色不缩放；外围林团、草地与支路连续，320/390手机昼夜同屏可读，循环移动、保存恢复与局部地面缓存正确","entry":"src/rendering/ground-art.js / src/rendering/forest-art.js / src/rendering/visual-review.js#inspectExpandedForest","brief":"docs/art-tasks/map-camp-area-scale.md","unitTests":["tests/map-expansion.test.mjs"],"browserTests":["tests/map-expansion-browser.cjs","tests/map-expansion-boundary-browser.cjs"]},
+  "npcOverheadChatterCriterion":{"id":"npc-overhead-chatter","designCriterion":"居民日常口头禅、援军短句和任务战斗反馈使用168px以内头顶小气泡，尾尖与交谈轮廓读取Canvas同帧的居民插值位置及高度，避免移动时25Hz逻辑坐标引起抖动；空间不足隐藏；不遮挡操作、不隐藏HUD，正式交谈保持底部全宽","entry":"src/ui/compact-speech.js#createCompactSpeech / src/rendering/visual-review.js#inspectNpcChatter","brief":"docs/art-tasks/npc-overhead-chatter.md","unitTests":["tests/npc-bubble-interpolation.test.mjs","tests/render-interpolation-reuse.test.mjs"],"browserTests":["tests/npc-overhead-chatter-browser.cjs","tests/story-resume-bubbles-browser.cjs"]},
+  "mobileUiHierarchyCriterion": {"id":"mobile-ui-hierarchy","designCriterion":"手机战场薄边信息、功能页固定标题和操作栏、底部浅色对白与居中暂停共用配色与按钮；暂停仅保留继续巡游，球赛60秒结束直接恢复主场景；320/360/390/430及短屏无溢出，任务滚动不跳、接取暂停与对话继续正确，昼夜同屏可读","entry":"src/styles/ui-foundation.css / src/rendering/visual-review.js#inspectMobileUiHierarchy","brief":"docs/art-tasks/mobile-ui-hierarchy.md","browserTests":["tests/mobile-ui-hierarchy-browser.cjs","tests/slime-match-exit-browser.cjs"]},
+  "uiFoundationCriterion": {
+    "id": "ui-foundation",
+    "designCriterion": "手机专用森林绿厚框、奶油内页、标题与操作分区及主次按钮统一；标准、紧凑与全屏底板可复用，320/360/390/430手机与短屏横屏昼夜无溢出，设置真实开关、滚动、关闭、无障碍焦点与禁用状态正常",
+    "entry": "src/styles/ui-foundation.css / src/rendering/visual-review.js#inspectUiFoundation / index.html#settings-dialog",
+    "brief": "docs/art-tasks/ui-foundation.md",
+    "browserTests": ["tests/ui-foundation-browser.cjs"]
+  },
+  "neighborTaskFocusCriterion":{"id":"neighbor-task-focus","designCriterion":"邻居交接聚焦当前委托，突出步骤与目标，仅保留继续或导航行动；无重复确认、无无关闲聊及其他任务；回应和奖励折叠，完成后不切到新委托，手机昼夜与短屏可读","entry":"src/ui/living-world.js#createLivingPanel / src/rendering/visual-review.js#inspectNeighborTaskFocus","brief":"docs/art-tasks/neighbor-task-focus.md","browserTests":["tests/neighbor-confirm-layout-browser.cjs"]},
+  "npcBottomDialogueCriterion":{"id":"npc-bottom-dialogue","designCriterion":"NPC正式交谈、主线、入职和故事对白统一铺满游戏区域底边并显示说话者姓名，对白期间隐藏其他战场UI、结束后恢复；邻里闲聊无居中遮罩，委托节点交接使用标准居中任务页、唯一当前行动与滚动正文，保留原纸面、边框、字体及按钮；长句滚动可读，关闭和暂停继续正确，桌面及320/390手机昼夜无溢出","entry":"src/ui/npc-dialogue-layout.js / src/ui/living-world.js / src/ui/speech-bubble.js / src/rendering/visual-review.js#inspectNpcDialogue","brief":"docs/art-tasks/npc-bottom-dialogue.md","browserTests":["tests/npc-bottom-dialogue-browser.cjs","tests/neighbor-confirm-layout-browser.cjs"]},
+  "forestRaceTrackCriterion":{"id":"forest-race-track-features","designCriterion":"三处草捆可绕行、泥地减速与三条箭头加速带可辨；正式碰撞和绘制共用轮廓，玩家与对手均受影响，手机双指冲刺、昼夜与低动态清晰","entry":"src/rendering/forest-race-track.js / src/rendering/visual-review.js#inspectForestRace","brief":"docs/art-tasks/forest-sports-race.md","unitTests":["tests/forest-race-track.test.mjs","tests/forest-race.test.mjs"],"browserTests":["tests/forest-race-track-browser.cjs"]},
+  "forestSportsRaceCriterion": {"id":"forest-sports-race","designCriterion":"椭圆森林跑道与八旗标、四位原版猫连续跑步同屏；默认近景、两圈名次、下一旗标小地图和体力清晰，320/390手机可同时摇杆与冲刺；昼夜一致、退出还原森林，起跑停步不重置身体帧","entry":"src/rendering/forest-race.js / src/rendering/visual-review.js#inspectForestRace","brief":"docs/art-tasks/forest-sports-race.md","unitTests":["tests/forest-race.test.mjs"],"browserTests":["tests/forest-race-browser.cjs","tests/forest-race-preview.cjs"]},
+  "jinbeiCrewCriterion": {"id": "jinbei-cat-crew", "designCriterion": "金杯车身、车轮及升级部件缩至原尺寸70%，司机与小猫保持原尺寸；四只与八只小队上方落点在车壳避让圈外，绕车不被同伴挤回，转弯后减速稳定停步。奶油白金杯面包车逐只开门放出持扳手、勺子、叉子、树枝、棒球棍五种日常用品的小猫，身体保留真实连续行走帧、独立手臂挥击与脚底；桌面和320/390手机昼夜同屏、驾驶起停、近战归队与遮挡清晰", "entry": "src/rendering/visual-review.js#inspectJinbeiCrew / src/rendering/jinbei-van.js / src/rendering/cat-crew.js", "brief": "docs/art-tasks/jinbei-cat-crew.md", "unitTests": ["tests/jinbei-cat-crew.test.mjs"], "browserTests": ["tests/jinbei-cat-crew-browser.cjs", "tests/jinbei-cat-crew-motion-browser.cjs", "tests/jinbei-cat-crew-deploy-browser.cjs", "tests/jinbei-size-follow-browser.cjs", "tests/jinbei-everyday-items-browser.cjs"]},
+  "settingsFingerprintCriterion": {
+    "id": "settings-git-fingerprint",
+    "designCriterion": "主菜单与战场设置标题显示实际 Git 短指纹；未提交修改与未知状态清楚，320/390 手机及桌面昼夜不挤压关闭按钮",
+    "entry": "src/rendering/visual-review.js#inspectSettingsFingerprint / src/ui/panels/build-fingerprint.js#createBuildFingerprint",
+    "brief": "docs/art-tasks/settings-git-fingerprint.md",
+    "unitTests": ["tests/build-fingerprint.test.mjs"],
+    "browserTests": ["tests/build-fingerprint-browser.cjs"]
+  },
+  "gameStatisticsCriterion": {
+    "id": "game-profile-statistics",
+    "designCriterion": "设置中的游戏档案以战斗采集双卡、武器与载具杀怪伐木明细、累计资源行和玩法次数呈现真实统计；零值与旧档口径清楚，整数缩写保留完整无障碍数值，320/390手机和桌面昼夜无溢出，关闭返回设置并保持暂停关系",
+    "entry": "src/rendering/visual-review.js#inspectGameStatistics / src/ui/panels/chronicle.js#createChroniclePanel",
+    "brief": "docs/art-tasks/game-profile-statistics.md",
+    "browserTests": ["tests/game-statistics-browser.cjs", "tests/equipment-statistics-browser.cjs"],
+    "unitTests": ["tests/game-statistics.test.mjs", "tests/equipment-statistics.test.mjs"]
+  },
+  "gravityRedwolfCriterion": {"id":"gravity-gun-redwolf","designCriterion":"磁环聚怪枪与红色重型坦克独立辨识，256炮管后坐与位移履带真实，范围场不遮怪物、近敌就近聚拢且中心离身至少150、树木不受影响；桌面及320/390昼夜同屏清晰","entry":"src/rendering/visual-review.js#inspectGravityRedwolf","brief":"docs/art-tasks/gravity-gun-redwolf.md","browserTests":["tests/gravity-redwolf-browser.cjs","tests/gravity-redwolf-upgrades-browser.cjs","tests/gravity-safe-browser.cjs"]},
+  "exhibitCountdownBridgeCriterion": {
+    "id": "exhibit-countdown-bridge",
+    "designCriterion": "展品旁显示点击提示，明确点击后打开对应工坊，停留不触发，关闭后可原地再次点击；桥面上下沿在河岸交点双向顺畅，桥外水域与剧情封桥仍阻挡",
+    "entry": "src/rendering/visual-review.js#inspectExhibitCountdown / src/rendering/player-action-countdown.js / src/rendering/river.js",
+    "brief": "docs/art-tasks/exhibit-countdown-bridge.md",
+    "browserTests": ["tests/click-interactions-visual-browser.cjs", "tests/bridge-vehicle-edge-browser.cjs"]
+  },
+  "vehicleGalleryCriterion": {
+    "id": "vehicle-gallery",
+    "designCriterion": "维修间上方连续陈列全部可购买车型，步行滚动且点击对应车型；展车不占用玩家停车记录，维修环路保留，进出改为点击；手机桌面昼夜清晰，展车上移与名称牌留出空隙",
+    "entry": "src/rendering/visual-review.js#inspectVehicleGallery / src/rendering/workshop-interior.js#drawWorkshopInterior",
+    "brief": "docs/art-tasks/vehicle-gallery.md",
+    "clearanceBrief": "docs/art-tasks/vehicle-display-clearance.md",
+    "browserTests": ["tests/vehicle-gallery-browser.cjs"]
+  },
+  "dumplingFamilyCases": [
+    {"id":"dumpling-jelly-motion","designCriterion":"真实行程驱动胶体弹跳、受击挤压回弹，车轮贴地且护甲和武器独立；团子王落地双震荡环与胶滴在320/390手机可见，低动态不震荡；小/中/大团子与特色兵种名称清晰。","entry":"src/rendering/visual-review.js#renderVisualCase","brief":"docs/art-tasks/dumpling-monster-family.md","unitTests":["tests/dumpling-motion.test.mjs"],"browserTests":["tests/dumpling-motion-browser.cjs"]},
+    {"id":"dumpling-camp-family","designCriterion":"团子营地同族：圆胶体、豆眼笑脸与叶芽统一，叶翼、喷管、弹弓、弩、四轮车舱、重炮架与重盾轮廓独立可辨；保留正式动作、受击、死亡、碰撞和数值，桌面及320/390昼夜同屏清楚。","entry":"src/rendering/visual-review.js#renderVisualCase","brief":"docs/art-tasks/dumpling-monster-family.md","browserTests":["tests/dumpling-family-browser.cjs"]},
+    {"id":"dumpling-lord","designCriterion":"芽冠团子王有三瓣叶冠与宽胶腹，锁点蓄力、弹跳、落地与恢复连续；预警与真实伤害位置一致，可走位避开，不跨水界。","entry":"src/rendering/visual-review.js#renderVisualCase","brief":"docs/art-tasks/dumpling-monster-family.md","unitTests":["tests/dumpling-family.test.mjs"]}
+  ],
+  "garageWalkaroundCriterion": {
+    "id": "garage-walkaround-entry",
+    "designCriterion": "载具工坊工具靠墙、真实泊位四面可绕行，点击车辆整备；地图点击两工坊直接打开页面，门前点击提示进入室内；手机桌面昼夜可读",
+    "entry": "src/rendering/visual-review.js#inspectGarageWalkaround / src/rendering/workshop-interior.js#drawWorkshopInterior",
+    "brief": "docs/art-tasks/garage-walkaround-entry.md",
+    "browserTests": ["tests/garage-walkaround-entry-browser.cjs"]
+  },
+  "walkableWeaponGalleryCriterion": {
+    "id": "walkable-weapon-gallery",
+    "designCriterion": "全部武器唯一陈列于两列长展厅，中央宽走道贯通；向上行走带动镜头，不翻页，屏内点击对应装备，屏外热点不遮挡 UI；手机桌面昼夜清楚且画像缓存有界",
+    "entry": "src/rendering/visual-review.js#inspectWalkableWeaponGallery / src/rendering/workshop-interior.js#drawWorkshopInterior",
+    "brief": "docs/art-tasks/walkable-weapon-gallery.md",
+    "browserTests": ["tests/walkable-weapon-gallery-browser.cjs"]
+  },
+  "parkingRoadClearanceCriterion": {
+    "id": "parking-off-road",
+    "designCriterion": "停车位及点击提示区域退离主路，路面停留不触发倒车；小屋泊位位于小屋东侧快递站下方；院内点击入位、下车、工坊与入职通路保持正常，桌面及手机昼夜清楚",
+    "entry": "src/rendering/visual-review.js#inspectParkingRoadClearance / src/rendering/parking.js#drawParkingGround",
+    "brief": "docs/art-tasks/parking-off-road.md",
+    "browserTests": ["tests/parking-off-road-browser.cjs", "tests/cottage-parking-east-browser.cjs"]
+  },
+  "parkingHintColorsCriterion": {
+    "id":"parking-hint-colors",
+    "designCriterion":"停车入位提示使用浅奶油底、深绿文字与灰绿描边，沿用原触控尺寸及泊位锚点，手机昼夜可读且点击停车正常",
+    "entry":"src/styles/ui-foundation.css / src/ui/nearby-interaction.js#createNearbyInteraction",
+    "brief":"docs/art-tasks/parking-hint-colors.md"
+  },
+  "buildingEntryCriterion": {
+    "id":"building-entry-countdown",
+    "designCriterion":"进门、出门、床边及现有建筑入口统一显示明确点击按钮；停留不自动执行，关闭可原地再次点击；暂停隐藏，触控至少44像素，手机横竖屏与电脑昼夜可读。",
+    "entry":"src/rendering/player-action-countdown.js / src/rendering/action-countdown.js / src/rendering/visual-review.js#inspectBuildingEntry",
+    "brief":"docs/art-tasks/building-entry-countdown.md",
+    "unitTests":["tests/building-entry.test.mjs","tests/camp-home.test.mjs","tests/workshop-interiors.test.mjs","tests/parking.test.mjs"],
+    "browserTests":["tests/click-interactions-browser.cjs","tests/click-interactions-touch-browser.cjs"]
+  },
+  "workshopInteriorsCriterion": {
+    "id":"workshop-interiors-sci-fi-parking",
+    "designCriterion":"六款不同结构的科幻样车与全部可获得车型在北停车场避开视野轮换并保留空位；两座工坊可步行靠近后点击进出，武器实物可翻页选购，车库仅显示真实泊位车辆和维修家具；正式角色动作、昼夜及桌面和320/390布局清晰可通行。",
+    "entry":"src/rendering/science-vehicles.js / src/rendering/workshop-interior.js / src/rendering/visual-review.js#inspectWorkshopInteriors",
+    "brief":"docs/art-tasks/workshop-interiors-sci-fi-parking.md",
+    "unitTests":["tests/workshop-interiors.test.mjs","tests/camp-home.test.mjs","tests/parking.test.mjs","tests/workshop-lifecycle.test.mjs"],
+    "browserTests":["tests/workshop-interiors-browser.cjs","tests/workshop-interiors-actions-browser.cjs","tests/workshop-interiors-scene-browser.cjs"]
+  },
+  "actionCountdownCriterion": {
+    "id":"trial-manual-close-countdown",
+    "designCriterion":"试射达标后继续体验且手动结束；自动关闭徽记使用停车同源图形，奖励卡片正上方居中，火警及施工一致，场景入口改为点击提示；桌面与320/390昼夜可读不遮挡。",
+    "entry":"src/rendering/action-countdown.js / src/ui/action-countdown.js / src/rendering/visual-review.js#inspectActionCountdown",
+    "brief":"docs/art-tasks/trial-manual-close-countdown.md",
+    "unitTests":["tests/operation-guide.test.mjs","tests/workshop-lifecycle.test.mjs","tests/task-reward.test.mjs","tests/fire-alert-timeout.test.mjs","tests/parking.test.mjs","tests/camp-home.test.mjs","tests/workshop-rebuild.test.mjs"],
+    "browserTests":["tests/trial-manual-close-countdown-browser.cjs","tests/action-countdown-visual-browser.cjs","tests/operation-guide-browser.cjs"]
+  },
+  "fireAlertIconCriterion": {
+    "id":"fire-alert-icon-timeout",
+    "designCriterion":"未接火警用火警图标和十秒倒计时展示，无需点击收起；详情暂停、接受不误关、刷新续接；手机桌面昼夜清晰且不挡菜单。",
+    "entry":"src/ui/fire-rescue.js#fireAlertIcon / src/rendering/visual-review.js#inspectFireAlert",
+    "brief":"docs/art-tasks/fire-alert-icon-timeout.md",
+    "unitTests":["tests/fire-alert-timeout.test.mjs","tests/fire-rescue.test.mjs"],
+    "browserTests":["tests/fire-alert-timeout-browser.cjs"]
+  },
+  "weaponWorkshopRebuildCriterion": {
+    "id":"weapon-workshop-rebuild",
+    "designCriterion":"剧情初见破败工坊，低斜顶、开放案台和烟筒区别于小屋；从投料至重建完成共3秒，后续营地设施同为3秒，屋顶计时与逐块屋面施工同步，保存成功才换新建筑，暂停重载不重扣，昼夜和320/390桌面清楚且停车通道保留。",
+    "entry":"src/rendering/weapon-workshop-building.js / src/rendering/scenery.js / src/rendering/ranger-arrival.js#drawWorkshopBuildCountdown / src/rendering/visual-review.js#inspectWorkshopRebuild",
+    "brief":"docs/art-tasks/weapon-workshop-rebuild.md",
+    "unitTests":["tests/workshop-rebuild.test.mjs","tests/ranger-arrival.test.mjs","tests/building-repair-timing.test.mjs"],
+    "browserTests":["tests/workshop-rebuild-browser.cjs","tests/workshop-rebuild-visual-browser.cjs","tests/building-repair-timing-browser.cjs"]
+  },
+  "parkingVehicleTransferCriterion": {
+    "id":"parking-vehicle-transfer",
+    "designCriterion":"新购车辆停入北停车场，现场换乘仅携带一辆且保留旧车状态；任务借车仍可直接切换。车辆页面标明停放位置，电动车实际弹夹与HUD提升30%，桌面和320/390昼夜可读、停车通道畅通。驾驶时可点击换车，旧车优先同区空位；满位交换且不挤走访客。",
+    "entry":"src/rendering/parked-vehicles.js / src/ui/vehicle-transfer.js / src/rendering/visual-review.js#inspectVehicleTransfer",
+    "brief":"docs/art-tasks/parking-vehicle-transfer.md",
+    "swapBrief":"docs/art-tasks/parking-vehicle-swap.md",
+    "unitTests":["tests/parking-vehicle-transfer.test.mjs"],
+    "browserTests":["tests/parking-vehicle-transfer-browser.cjs","tests/parking-vehicle-swap-browser.cjs"]
+  },
+  "randomClearingCriterion": {
+    "id":"random-clearing-site",
+    "designCriterion":"每次新接取在真实1000–3000距离内随机生成可达清缴地点，导航、地图标识、现场和战斗共用持久化坐标；重复确认与恢复不换点；桌面及320/390昼夜清楚。",
+    "entry":"src/ui/clearing.js / src/ui/panels/map.js / src/rendering/settlements.js / src/rendering/visual-review.js#inspectRandomClearing",
+    "brief":"docs/art-tasks/camp-discounts.md",
+    "unitTests":["tests/random-clearing-site.test.mjs","tests/clearing-guide.test.mjs"],
+    "browserTests":["tests/random-clearing-site-browser.cjs"]
+  },
+  "challengeRankDisplayCriterion": {
+    "id": "camp-level-discount",
+    "designCriterion": "营地等级、累计经验与购买币木折扣同源；等级不限制购买，清缴整次结算。营地详情列明六档优惠和经验来源，桌面与320/390手机昼夜可读，保留原徽章与三秒奖励关闭。",
+    "entry": "src/rendering/challenge-rank.js / src/ui/challenge-feedback.js / src/ui/task-reward.js / src/rendering/visual-review.js#inspectChallengeRank / src/rendering/clearing-post.js#drawClearingPost",
+    "brief": "docs/art-tasks/camp-discounts.md",
+    "unitTests": [
+      "tests/camp-level.test.mjs",
+      "tests/clearing-boss-qualification.test.mjs",
+      "tests/challenge-catalog.test.mjs"
+    ],
+    "browserTests": [
+      "tests/camp-discounts-browser.cjs"
+    ]
+  },
+  "taskRewardCriterion": {
+    "id":"task-reward-popup",
+    "designCriterion":"任务成功交付后展示实际到账资源和装备，武器与载具显示对应正式画像和名称，3秒后关闭；连续奖励依次显示，失败和重复领取不弹出，嵌套对话与暂停正确恢复；清缴结算手动关闭，首轮起在原地继续下一轮上方提供结束按钮，结束关闭结算并恢复探索；续战消费当前收据，不重发奖励，桌面及320/390宽度昼夜清晰。",
+    "entry":"src/ui/task-reward.js / src/rendering/resource-icons.js / src/rendering/workshop.js#drawWorkshopEquipment / src/rendering/vehicle.js#drawVehicleIcon / src/rendering/visual-review.js#inspectTaskReward",
+    "brief":"docs/art-tasks/task-reward-popup.md",
+    "unitTests":["tests/task-reward.test.mjs","tests/clearing-next-reward.test.mjs"],
+    "browserTests":["tests/task-reward-browser.cjs","tests/task-reward-images-browser.cjs","tests/clearing-next-reward-browser.cjs","tests/story-clearing-actions-browser.cjs","tests/horde-feel-finish-browser.cjs"]
+  },
+  "campHomeParkingCriterion": {
+    "id":"camp-home-parking",
+    "designCriterion":"停妥自动下车、车辆唯一留位、靠近点击车辆或快捷入口上车且耐久供给不重置；北门访客车视野外轮换且保留空位；小屋与工坊下车站定三秒入室、出口停留一秒自动退出且移开取消、床边主动点击弹出休息选项、显示当前游戏钟点及两种休息的醒来时间与跳过时长、家具留出真实步行空间、睡眠推进同一历法；原入职入库完整保留，手机桌面昼夜可读。",
+    "entry":"src/rendering/parked-vehicles.js / src/rendering/cottage.js / src/rendering/visual-review.js#inspectCampHome",
+    "brief":"docs/art-tasks/camp-home-parking.md",
+    "unitTests":["tests/camp-home.test.mjs","tests/parking.test.mjs","tests/ranger-arrival.test.mjs"],
+    "browserTests":["tests/camp-home-browser.cjs","tests/camp-home-visual-browser.cjs","tests/camp-interaction-browser.cjs","tests/cottage-exit-browser.cjs","tests/cottage-bed-rest-browser.cjs"]
+  },
+  "automaticParkingCriterion": {
+    "id": "automatic-parking",
+    "designCriterion": "载具工坊、武器工坊和小屋各有独立车位，北门西侧六位公共停车场保留入口通道；停稳3秒显示车顶倒计时，连续对齐倒入，轮胎履带真实运动、门框遮挡正确；两类工坊到位只打开一次，手机桌面昼夜可读且通路开放。",
+    "entry": "src/rendering/parking.js / src/rendering/renderer.js / src/rendering/visual-review.js#inspectAutomaticParking",
+    "brief": "docs/art-tasks/automatic-parking.md",
+    "unitTests": ["tests/parking.test.mjs"],
+    "browserTests": ["tests/automatic-parking-browser.cjs"]
+  },
+  "compactTaskHudCriterion": {
+    "id": "early-clearing-compact-hud",
+    "designCriterion": "清缴只保留战斗进度，隐藏金币木材及季节昼夜天气，保留设置并上移战斗指引；寻路开关、五波进度与详情互不遮挡，结束或离场恢复资源环境及装备追踪；探索主线短条清楚且可操作，手机桌面昼夜不遮挡",
+    "entry": "src/rendering/visual-review.js#inspectCompactTaskHud / src/ui/mainline.js / src/ui/task-combat-layout.js",
+    "brief": "docs/art-tasks/early-clearing-compact-hud.md",
+    "browserTests": ["tests/early-clearing-compact-hud-browser.cjs", "tests/horde-clearing-hud-browser.cjs", "tests/horde-feel-browser.cjs", "tests/horde-feel-visual.cjs"]
+  },
+  "riverStoryMovementCriterion": {
+    "id": "river-story-movement",
+    "designCriterion": "故事战斗圈内可自由移动；西岸取药与真实两岸渡口清楚，水路必须实际驾驶，维修护栏可见且阻挡，交付后解封",
+    "entry": "src/rendering/visual-review.js#inspectRiverStory / src/rendering/river-crossing.js / src/rendering/story-props.js",
+    "brief": "docs/art-tasks/river-story-movement.md",
+    "browserTests": ["tests/river-story-movement-browser.cjs", "tests/river-story-visual-browser.cjs"]
+  },
+  "clearingContractOnboardingCriterion": {
+    "id": "clearing-contract-onboarding",
+    "designCriterion": "清缴期间只显示当前清缴目标，入职采木后用房屋与页面真实操作高亮引导修复和制作",
+    "entry": "src/rendering/visual-review.js#inspectClearingOnboarding / src/ui/operation-guide.js / src/ui/clearing.js",
+    "brief": "docs/art-tasks/clearing-contract-onboarding.md",
+    "browserTests": "tests/clearing-contract-onboarding-browser.cjs"
+  },
+  "waveTailNavigationCriterion": {
+    "id": "wave-tail-navigation",
+    "designCriterion": "每波最后三个名额的屏外怪物有清晰边缘箭头和直线距离，入镜及清波即隐藏，手机桌面昼夜均避开操作界面",
+    "entry": "src/rendering/visual-review.js#inspectWaveTailNavigation / src/ui/wave-tail-navigation.js",
+    "brief": "docs/art-tasks/wave-tail-navigation.md",
+    "browserTests": "tests/wave-tail-navigation-browser.cjs"
+  },
+  "waveEncounterFlowCriterion": {
+    "id":"wave-encounter-flow",
+    "designCriterion":"任务卡在波次与Boss进度上方，手机桌面昼夜均无互相遮挡；怪物近处入场、随机怪共用清缴进度且整波奖励保留。",
+    "entry":"src/rendering/visual-review.js#inspectWaveEncounterFlow / src/ui/task-combat-layout.js",
+    "brief":"docs/art-tasks/wave-encounter-flow.md",
+    "browserTests":["tests/wave-encounter-flow-browser.cjs"]
+  },
+  "worldDirectInteractionCriterion": {
+    "id":"world-direct-interaction",
+    "designCriterion":"点击邻居本人只处理该人物交互；建筑名称挂在场景木牌上、功能图案可辨，不再常驻悬浮按钮；触屏拖动、键盘焦点及昼夜手机桌面可用。",
+    "entry":"src/rendering/visual-review.js#inspectWorldDirectInteraction / src/rendering/world-signs.js#drawWorldSign",
+    "brief":"docs/art-tasks/world-direct-interaction.md",
+    "browserTests":["tests/world-direct-interaction-browser.cjs","tests/world-direct-targets-browser.cjs","tests/world-direct-focus-browser.cjs"]
+  },
+  "clearingSceneGuideCriterion": {
+    "id":"clearing-scene-guide",
+    "designCriterion":"清缴教学指向营地盾牌告示牌，靠近高亮现场入口，三节点短面板接取后自动转向野外清缴场，到场切换波次与Boss节点；昼夜、手机桌面可读，不需翻找邻里长列表。",
+    "entry":"src/rendering/visual-review.js#inspectClearingGuide / src/rendering/clearing-post.js#drawClearingPost / src/ui/clearing.js#createClearingPanel",
+    "unitTests":["tests/clearing-guide.test.mjs"],
+    "browserTests":["tests/clearing-scene-guide-browser.cjs","tests/clearing-scene-flow-browser.cjs","tests/clearing-scene-vehicle-browser.cjs"],
+    "brief":"docs/art-tasks/clearing-scene-guide.md"
+  },
+  "navigationClarityCriterion": {
+    "id": "navigation-clarity",
+    "designCriterion": "正式镜头下路点在草地、浅色道路和夜间清晰可辨，间隔箭头沿可通行路线；终点光圈贴地且悬浮标记不被建筑遮住，320/390与桌面可读；保持按需导航和减少动态规则。",
+    "entry": "src/rendering/visual-review.js#inspectNavigationClarity / src/rendering/story-guidance.js#drawStoryGuidance / src/rendering/story-guidance.js#drawStoryDestination",
+    "unitTests": ["tests/navigation-markers.test.mjs", "tests/quest-route.test.mjs", "tests/story-guidance.test.mjs"],
+    "browserTests": ["tests/navigation-clarity-browser.cjs", "tests/navigation-clarity-field-browser.cjs"],
+    "brief": "docs/art-tasks/navigation-clarity.md"
+  },
+  "navigationPathCacheCriterion": {
+    "id": "navigation-path-cache",
+      "designCriterion": "清缴接单首帧复用已验证路线，暂停对白与开关恢复不重算；短距离偏离用局部绕障接回，接入期间主路不消失，远处停车变化不清空路线，新增近路障碍与通行能力变化正确失效；按实际镜头裁剪光点，手机及既有竖版容器昼夜可读。",
+    "entry": "src/rendering/visual-review.js#inspectNavigationClarity / src/rendering/story-guidance.js#drawStoryGuidance",
+      "unitTests": ["tests/visual-route-cache.test.mjs", "tests/navigation-route-resume.test.mjs"],
+      "browserTests": ["tests/navigation-path-cache-browser.cjs", "tests/navigation-route-resume-browser.cjs"],
+    "brief": "docs/art-tasks/navigation-path-cache.md"
+  },
+  "arrivalWorldPolishCriterion": {
+  "id": "arrival-world-polish",
+  "designCriterion": "首屏加载按钮有中文；北侧公交站与故事气泡；点击建筑修复制作；短目标避开底部和右侧界面；道路自然汇合无叠边；木栏和门叶有厚度并正确通行、昼夜和手机可读。",
+  "entry": "src/rendering/settlements.js / src/rendering/road-art.js / src/ui/ranger-arrival.js / inspectArrivalWorld",
+  "brief": "docs/art-tasks/arrival-world-polish.md",
+  "browser": "tests/arrival-world-polish-browser.cjs"
+},
+  "forestExplorationCriterion": {
+    "id": "forest-exploration-flow",
+    "designCriterion": "木栏和门洞清楚显示聚落边界并真实可通行；安全区不显示或推进清缴，接取后到野外清缴场才开始；邻里优先显示行动与报酬，闲聊在镜头内自然出现，不挤压任务气泡；昼夜及320/390手机可读，右下角可跳过乘车，非赶路任务按需导航。",
+    "entry": "src/rendering/renderer.js / src/rendering/settlements.js / src/ui/living-world.js / src/ui/resident-chatter.js / src/rendering/visual-review.js#inspectForestExploration",
+    "unitTests": ["tests/forest-exploration.test.mjs","tests/story.test.mjs","tests/ranger-arrival.test.mjs"],
+    "browserTests": ["tests/forest-exploration-browser.cjs","tests/forest-exploration-visual.cjs","tests/forest-exploration-navigation.cjs"],
+    "brief": "docs/art-tasks/forest-exploration-flow.md"
+  },
+  "mainlineOperationCriterion": {
+    "id": "mainline-operation-guide",
+    "designCriterion": "主线准确标亮真实按钮；部件与安装圈同时可见并由方向线连接，工具就位后提示按住施工；仅正式成功推进下一步，失败不跳步；桌面及320/390手机昼夜可读、触摸穿透、键盘与减少动态可用。",
+    "entry": "src/ui/operation-guide.js / src/ui/workshop.js / src/rendering/visual-review.js#inspectOperationGuide",
+    "unitTests": ["tests/operation-guide.test.mjs", "tests/mainline.test.mjs", "tests/workshop-lifecycle.test.mjs"],
+    "browserTests": ["tests/operation-guide-browser.cjs", "tests/operation-guide-touch-browser.cjs", "tests/operation-guide-visual-browser.cjs", "tests/guide-cat-paw-browser.cjs", "tests/upgrade-harvest-browser.cjs"],
+    "brief": "docs/art-tasks/mainline-operation-guide.md"
+  },
+
+  "unifiedTaskDialogueCriterion": {
+    "id": "unified-task-dialogue",
+    "designCriterion": "主线与森林故事共用气泡结构、姓名正文、44像素暂停与上下文操作按钮及阅读进度；目录明确当前追踪、巡林主线、森林故事及邻里委托，已领取状态与正式账本一致；桌面320/390昼夜可读，切换不重发奖励。",
+    "entry": "src/ui/speech-bubble.js / src/ui/mainline.js / src/ui/story-speech.js / src/ui/story.js / src/rendering/visual-review.js#inspectTaskDialogue",
+    "unitTests": ["tests/mainline.test.mjs","tests/task-tracking.test.mjs"],
+    "browserTests": ["tests/unified-task-dialogue-browser.cjs","tests/task-catalog-restore-browser.cjs"],
+    "brief": "docs/art-tasks/unified-task-dialogue.md"
+  },
+
+  "mainlineConciseCriterion": {
+    "id": "mainline-concise-guide",
+    "designCriterion": "一句NPC提示即可开始；主线仅突出未完成动作，短清单真实勾选，现场一键进入对应操作且不代付；详细对白与旅程默认折叠；桌面及320/390昼夜无遮挡溢出，键盘与减少动态可用。",
+    "entry": "src/ui/mainline.js / src/rendering/visual-review.js#inspectConciseMainline",
+    "unitTests": ["tests/mainline.test.mjs", "tests/task-tracking.test.mjs"],
+    "browserTests": ["tests/mainline-concise-browser.cjs"],
+    "brief": "docs/art-tasks/mainline-concise-guide.md"
+
+  },
+  "activeTaskGuidanceCriterion": {
+    "id": "active-task-guidance",
+    "designCriterion": "唯一当前追踪任务同步驱动常驻任务卡、箭头、光点路线、目标圈与地图；主线不抢邻里任务对白，接取切换完成刷新后目标一致；桌面320/390昼夜可读。",
+    "entry": "src/ui/mainline.js / src/ui/living-world.js / src/rendering/story-guidance.js / src/rendering/visual-review.js#inspectActiveTask",
+    "unitTests": ["tests/task-tracking.test.mjs"],
+    "browserTests": ["tests/task-tracking-browser.cjs","tests/task-tracking-ui-browser.cjs"],
+    "brief": "docs/art-tasks/active-task-guidance.md"
+  },
+  "livingRoadGuidanceCriterion": {
+    "id": "living-road-guidance",
+    "designCriterion": "移动与循环地图接缝不出现竖直假路；当前追踪邻里委托显示可通行光点路径，随居民移动与阶段变化更新，暂停离场清理；任务优先级遵循active-task-guidance；桌面及320/390昼夜可读。",
+    "entry": "src/rendering/living-world.js#drawLivingGround / src/rendering/story-guidance.js#drawStoryGuidance / src/rendering/visual-review.js#inspectLivingGuidance",
+    "unitTests": ["tests/living-guidance.test.mjs"],
+    "browserTests": ["tests/living-guidance-browser.cjs","tests/living-guidance-vehicle-browser.cjs"],
+    "brief": "docs/art-tasks/living-road-guidance.md"
+  },
+  "mainlineLearningCriterion": {
+    "id": "mainline-learning",
+    "designCriterion": "巡林任务卡明确当前行动、距离和一次性资源；章节手册收拢后续任务；地点NPC使用正式连续帧与标注姓名的底部对白，不改变镜头；桌面及320/390手机昼夜不溢出、不遮主要操作；松果战车购车后先体验机枪与清缴，再整备并引出水路。",
+    "entry": "src/ui/mainline.js / src/rendering/renderer.js / src/rendering/story-props.js / src/rendering/visual-review.js#inspectMainline",
+    "unitTests": ["tests/mainline.test.mjs","tests/pine-patrol.test.mjs"],
+    "browserTests": ["tests/mainline-browser.cjs","tests/mainline-actions-browser.cjs","tests/mainline-living-browser.cjs","tests/pine-pacing-browser.cjs"],
+    "brief": "docs/art-tasks/mainline-learning.md"
+  },
+  "clearingNavigationCriterion": {
+    "id": "clearing-mix-long-navigation",
+    "designCriterion": "五波按顺序加入飞行、远程、车载、重装，出生团子至少为特殊怪三倍；约1500单位路线分帧搜索且沿途复用，不阻塞移动；桌面及320/390昼夜光点与怪物清楚，正式碰撞不变。",
+    "entry": "src/rendering/renderer.js / src/rendering/story-guidance.js / src/rendering/visual-review.js#inspectClearingNavigation",
+    "unitTests": ["tests/clearing-composition.test.mjs", "tests/quest-route-performance.test.mjs"],
+    "browserTests": ["tests/clearing-navigation-browser.cjs"],
+    "brief": "docs/art-tasks/clearing-mix-long-navigation.md"
+  },
+  "questLightPathCriterion": {
+    "id": "quest-light-path",
+    "designCriterion": "任务箭头下实时显示到目标的直线距离，地面稀疏光点沿实际可通行路线延伸；移动更新、绕树绕河、镜像一致；目标切换或任务退出不残留，暂停/对白隐藏，减少动态固定亮度；320/390/桌面昼夜清晰。",
+    "entry": "src/ui/story-navigation.js / src/core/story-route.js / src/rendering/story-guidance.js#drawStoryGuidance / src/rendering/visual-review.js#inspectQuestLightPath",
+    "unitTests": ["tests/quest-route.test.mjs","tests/story-navigation.test.mjs"],
+    "browserTests": ["tests/quest-light-path-browser.cjs"]
+  },
+  "scooterRiderWeaponCriterion": {
+    "id": "scooter-rider-weapon",
+    "designCriterion": "电动车骑手武器可见且弹道对齐，目录优先而编号不变",
+    "entry": "src/rendering/renderer.js / src/rendering/characters.js / src/rendering/visual-review.js#inspectScooterRider",
+    "unitTests": ["tests/scooter-rider-weapon.test.mjs"],
+    "browserTests": ["tests/scooter-rider-browser.cjs"],
+    "brief": "docs/art-tasks/scooter-rider-weapon.md"
+  },
+  "openFrontScooterCriterion": {
+    "id": "open-front-scooter",
+    "designCriterion": "无挡风玻璃的正面小摩托，低棕色软坐垫、裸露细车把、独立圆灯、短前罩与外露前叉。双人完整身体居中、单人驾驶和库内空车都自然；原装和满级工坊共用正式绘制器，轮纹真实、握把与升级部件不遮脸。",
+    "entry": "src/rendering/scooter.js / src/rendering/visual-review.js#inspectOpenScooter",
+    "browserTests": [
+      "tests/open-front-scooter-browser.cjs",
+      "tests/ranger-garage-walk.cjs"
+    ],
+    "unitTests": [
+      "tests/vehicle-wheels.test.mjs"
+    ]
+  },
+  "rangerGarageSeatingCriterion": {
+    "id": "ranger-garage-seating",
+    "designCriterion": "保留老人、完整玩家、车前罩的原前后座遮挡与猫连续帧；松伯自己的车接送并骑离，赠送的独立电动车留在原车库。营门真实上下车替代旧推车入库演出；车库及正常停车不变。",
+    "entry": "src/rendering/garage.js / src/rendering/ranger-arrival.js / src/rendering/visual-review.js#inspectGarageArrival",
+    "unitTests": [
+      "tests/ranger-arrival.test.mjs"
+    ],
+    "browserTests": ["tests/short-arrival-browser.cjs"]
+  },
+  "vehicleUpgradeCriterion": {"designCriterion":"vehicle-upgrade-structures","goal":"六款载具原装不变，装甲和动力分别形成结构成长，保留履带、车轮、旋翼、驾驶与实际组装","renderer":"src/rendering/vehicle.js:drawVehicleArmor","preview":"vehicle-growth-preview.html"},
+  "rangerShortArrivalCriterion": {
+    "id": "ranger-short-arrival",
+    "designCriterion": "三场景九秒内交回操控；下车后完整等待一秒；老人独立骑车带风接走、营门塞信、快乐退休骑离；玩家持信站定，信件可关闭重读且不阻塞任务。手机头顶气泡不遮脸，320/390与桌面竖版昼夜同屏合格。",
+    "entry": "src/core/ranger-arrival.js / src/rendering/ranger-arrival.js / src/ui/ranger-arrival.js / src/rendering/visual-review.js#inspectShortArrival",
+    "brief": "docs/art-tasks/short-arrival-story.md",
+    "unitTests": [
+        "tests/ranger-arrival.test.mjs"
+    ],
+    "browserTests": [
+        "tests/short-arrival-browser.cjs",
+        "tests/short-arrival-live-browser.cjs",
+        "tests/short-arrival-tasks-browser.cjs"
+    ]
+},
+  "rangerScenicArrivalCriterion": {
+    "id": "ranger-scenic-arrival",
+    "designCriterion": "开头改为九秒三场景：公交到站下车、站定一秒头顶气泡、老人带风接送到营门、塞信后开心骑走；玩家持信留在风中。长说明由自愿打开的中文信件承接。",
+    "entry": "src/rendering/ranger-arrival.js / src/rendering/scooter.js / src/ui/ranger-arrival.js / src/rendering/visual-review.js#inspectScenicArrival",
+    "unitTests": [
+      "tests/ranger-arrival.test.mjs"
+    ],
+    "browserTests": ["tests/short-arrival-browser.cjs"]
+  },
+  "weaponUpgradeCriterion": {"id":"weapon-upgrade-structures","designCriterion":"保留21型号原装外观；各武器的强化机匣、弹仓、压力罐、电容舱、护架或通信组件随自身等级出现，满级有明显结构成长。保留滑套、后坐、锯链、旋翼、六管、四足和舱门；工坊与正式场景共用部件绘制，320/390及桌面昼夜同屏可读。","entry":"src/rendering/weapon-upgrade-art.js#drawUpgradePart / src/rendering/visual-review.js#renderVisualCase","preview":"weapon-growth-preview.html"},
+  "rangerArrivalCriterion": {
+    "id": "ranger-arrival",
+    "designCriterion": "首次九秒短剧只交接电锯钥匙与车库电动车，不赠手枪或木材。采木、维修、购买手枪在正式任务中完成，维修后直接引导购买且不强制弹购枪页，骑乘可购买并保持骑乘，旧下车阶段自动续到购枪。旧档迁移、暂停、保存失败与单次扣料保持。",
+    "entry": "src/core/ranger-arrival.js / src/rendering/ranger-arrival.js / src/rendering/scooter.js / src/rendering/visual-review.js#inspectRangerArrival",
+    "unitTests": [
+      "tests/ranger-arrival.test.mjs"
+    ],
+    "browserTests": ["tests/short-arrival-browser.cjs"]
+  },
+  "gatlingArtCriterion": {"id":"gatling-art-quality","designCriterion":"初始保留简洁圆角机匣和无纹弹鼓；满级出现强化机匣、开放提把、散热器、供弹盒与下挂分层弹鼓，正常尺寸及剪影有明显成长差异；各部件独立随自身等级变化。六根管独立转动且起停连续，机匣与抱箍固定。后坐与枪口同源，六类部件逐级可辨并可拆装，升级不遮断转管。保留猫动作，手持与重坦挂载在320/390及桌面昼夜同屏协调。","entry":"src/rendering/gatling-art.js#drawGatling / src/rendering/characters.js#drawWeapon / src/rendering/visual-review.js#renderVisualCase","preview":"gatling-preview.html","unitTests":["tests/weapon-turn-hovercraft.test.mjs","tests/weapon-heat.test.mjs","tests/recoil.test.mjs"]},
+  "towerIntermissionCriterion": {
+    "id": "tower-intermission-motion",
+    "designCriterion": "高塔清层5秒仍可移动，角色待机、旋翼、伙伴和死亡余辉连续；暂停冻结、到点一次进入下一层，不推进战斗供给。玩法弹窗无重复设置入口。320/390/桌面昼夜同屏可读。",
+    "entry": "src/core/game.js / src/combat/transient-effects.js / src/rendering/visual-review.js#inspectTowerIntermission",
+    "unitTests": ["tests/tower-transition.test.mjs"],
+    "browserTests": ["tests/tower-intermission-motion-browser.cjs"]
+  },
+  "fireMotionCriterion":{"id":"fire-garage-motion","designCriterion":"接警先黑屏回到小镇，再从镇内主路步行到消防站登车，原车连续驶出；返回后点击入库按钮才倒车入库，停稳再下车走开交接。仅全黑回镇允许一次换位，后续五阶段无坐标跳变，原猫连续步态、真实车轮与车库前后遮挡保留，暂停刷新续接，桌面与320/390昼夜可读。","entry":"src/core/fire-transit.js / src/rendering/renderer.js / src/rendering/visual-review.js#inspectFireMotion","unitTests":["tests/fire-transit.test.mjs","tests/fire-rescue.test.mjs"],"browserTests":["tests/fire-town-transfer-browser.cjs","tests/fire-motion-browser.cjs","tests/camp-interaction-browser.cjs"]},
+  "fireGarageCriterion":{"id":"fire-station-garage","designCriterion":"交接后猫猫下车，原尺寸消防车独立停在消防站敞开车库；离开、关闭结算与刷新仍保留，靠近车库可快捷上车，下次接警亦可取车且不重复制车。桌面手机昼夜可见，停驻无发动机或轮转。","entry":"src/core/fire-rescue.js / src/rendering/fire-rescue.js#drawFireStation / src/rendering/visual-review.js#inspectFireGarage","unitTests":["tests/fire-rescue.test.mjs"],"browserTests":["tests/fire-garage-browser.cjs","tests/fire-garage-walk.cjs","tests/fire-garage-ui.cjs"]},
+  "fireReturnCriterion":{"id":"fire-return-audio","designCriterion":"灭火清怪后原车留在现场并按真实道路返站，站前停稳后才结算且车不消失；返程刷新可续接，手机桌面昼夜可读。消防独立启停/发动机/警笛/喷水/补水音效绑定操作并遵守暂停静音。","entry":"src/core/fire-rescue.js / src/ui/fire-rescue.js / src/rendering/visual-review.js#inspectFireReturn / src/platform/audio-fire.js","unitTests":["tests/fire-rescue.test.mjs","tests/audio.test.mjs"],"browserTests":["tests/fire-return-browser.cjs","tests/fire-return-settings.cjs"]},
+  "settingsLayoutCriterion": {
+    "id": "settings-layout",
+    "designCriterion": "设置按操作与画面、声音、帮助档案分组，中间滚动、标题及主次返回栏固定；清空进度在折叠的存档与高级区，保留二次确认。320/390/桌面昼夜及短屏无溢出、按钮不混排。",
+    "entry": "index.html#settings-dialog / src/styles/settings-layout.css / src/rendering/visual-review.js#inspectSettingsLayout",
+    "browserTests": ["tests/settings-layout-browser.cjs","tests/debug-max-equipment-browser.cjs"],
+    "unitTests": ["tests/debug-max-equipment.test.mjs"]
+  },
+  "fireWorldCriterion": {"id":"forest-fire-world","designCriterion":"真实森林可拒绝随机火警与主动接警，消防站出车，沿原道路扑救原树、河岸取水、清怪，首通永久得车；两片火场和邻树蔓延提供先灭火或先补水的选择；消防栓和一个武器架独立，车轮按位移滚动、火冠与双脚局部动作、受击与死亡保留。原猫视频连续帧不变。320/390/桌面昼夜同屏可读，消防站可透显、补水与火点通路畅通。",
+    "entry":"src/rendering/renderer.js / src/rendering/fire-world.js / src/rendering/fire-rescue.js / src/rendering/visual-review.js#inspectFireWorld", "unitTests":["tests/fire-rescue.test.mjs"], "browserTests":["tests/fire-world-browser.cjs","tests/fire-world-interaction.cjs","tests/fire-rescue-workshop.cjs"]},
+  "waveCompactHelpCriterion": {
+    "id": "wave-compact-help",
+    "designCriterion": "普通波次主面板只显示单行节点轨道、Boss与问号，高度收紧；问号打开详情显示真实当前波次和已击败/总数，关闭恢复战场。圆环、Boss手动入口、剧情秘境计数不变，320/390/桌面昼夜均可操作。",
+    "entry": "src/ui/wave-help.js#createWaveHelp / src/ui/wave-help.js#waveHelpState / src/rendering/visual-review.js#inspectWaveProgress",
+    "browserTests": ["tests/wave-compact-help-browser.cjs", "tests/wave-help-focus-browser.cjs"],
+    "focusCriterion": "问号仅在键盘操作时显示焦点外圈；鼠标与触屏打开、关闭后不显示，保留焦点恢复和触控区域。"
+  },
+  "waveNodeCountdownCriterion": {
+    "id": "wave-node-countdown",
+    "designCriterion": "普通波次不显示击杀计数和秒数；初始准备及波间单次3秒倒计时以目标节点同心圆环顺时针填满，波间不追加预警；暂停冻结、准备结束切换战斗节点，第五波完成自动进入领主战。320/390/桌面昼夜清楚，剧情秘境计数不受影响。",
+    "entry": "src/ui/wave-progress.js#waveCountdownState / src/ui/wave-progress.js#updateWaveProgress / src/rendering/visual-review.js#inspectWaveProgress",
+    "browserTests": ["tests/wave-node-countdown-browser.cjs"]
+  },
+  "storyCatalogCriterion": {
+    "id": "story-board-clean-layout",
+    "designCriterion": "故事与委托标题栏仅保留关闭按钮，无游戏设置入口；单行图标目录，选择保持滚动、展开状态与焦点；主界面仅简介、奖励与行动，参与/首通/重玩说明由问号二级弹窗展示；320/390/桌面昼夜可读，领取规则不变。",
+    "entry": "src/ui/story.js / src/ui/story-catalog.js / src/rendering/visual-review.js#inspectStoryCatalog",
+    "browserTests": ["tests/story-board-clean-layout-browser.cjs"]
+  },
+  "settingsOnlyHomeCriterion": {
+    "id": "settings-only-home",
+    "designCriterion": "返回主菜单仅存在于设置面板，暂停、死亡、任务和所有秘境弹窗均无重复入口；嵌套设置可键盘访问且保留原进度。",
+    "entry": "src/ui/title-menu.js / src/rendering/visual-review.js#inspectRealmDelivery",
+    "browserTests": ["tests/story-excursion-return-browser.cjs"]
+  },
+  "realmDeliveryCriteria": {
+    "id": "realm-direct-delivery",
+    "designCriterion": "秘境委托退出或失败直接显示营地领取页，无继续本章或回程对白；肉鸽入场补给页以右上角X替代底部退出按钮，完整结束挑战恢复森林；保存返回主菜单仅存在于设置中。暂停、死亡、消防、任务页面无重复返回按钮，320/390/桌面昼夜可读。",
+    "entry": "src/ui/story.js / src/ui/title-menu.js / src/rendering/visual-review.js#inspectRealmDelivery",
+    "browserTests": ["tests/story-excursion-return-browser.cjs","tests/rogue-entry-close-browser.cjs"]
+  },
+  "storyRewardHudSimplifyCriterion": {
+    "id": "story-reward-hud-simplify",
+    "designCriterion": "普通波次只通过进度条与节点表达完成进度，不显示重复文字行；剧情秘境目标正文不受影响。单篇故事与整组礼包最多三种资源，预览与入账一致；手机桌面昼夜可读。",
+    "entry": "src/ui/wave-progress.js#updateWaveProgress / src/ui/story-rewards.js / src/rendering/visual-review.js#inspectWaveProgress",
+    "browserTests": ["tests/story-reward-hud-simplify-browser.cjs"]
+  },
+  "storyBoardGiftsCriterion": {
+    "id": "story-board-gifts",
+    "designCriterion": "每块委托板都显示本板全部故事完成后的一次性赠礼、交付进度和领取状态；武器载具标明永久归属，资源礼包逐项列额；320/390/桌面可读且不可重复领取，旧存档完成记录有效。",
+    "entry": "src/ui/story-rewards.js#storyCollectionMarkup / src/ui/story.js#createStoryPanel / src/rendering/visual-review.js#inspectStoryBoardGifts",
+    "browserTests": ["tests/story-board-gifts-browser.cjs"]
+  },
+  "titleMenuCriteria": [
+    {
+      "id": "start-game-loading",
+      "designCriterion": "每次点击开始（含返回首页续游）都隐藏首页控件并播放过场，原视频继续播放；进度条贴画面底边且全宽，百分比居于条内；奶油白金杯从左驶向右且轮辐独立转动，进度从0到100%，地图就绪与约两秒过场共同完成后再进入；慢加载不提前完成，失败恢复首页，减少动态保留静止车与进度。",
+      "entry": "src/ui/start-loading.js#createStartLoading / src/rendering/loading-van.js#JINBEI_LOADING_SVG / src/app/create-app.js#prepareInitialFrame / src/rendering/visual-review.js#inspectStartLoading",
+      "unitTests": ["tests/start-loading.test.mjs"],
+      "browserTests": ["tests/start-loading-browser.cjs"]
+    },
+    {
+      "id": "title-menu",
+      "designCriterion": "竖版森林绘本首页保留中段原版猫猫，标题与菜单独立，去掉副标题、标语和开始按钮上方短句；右下显示8+，菜单上移并在下方完整展示四行游戏健康忠告，320/390/桌面可读可操作且互不遮挡。",
+      "entry": "src/ui/title-menu.js#createTitleMenu / src/platform/title-video.js#createTitleVideo / src/rendering/visual-review.js#inspectTitleMenu",
+      "browserTests": [
+        "tests/title-menu-browser.cjs",
+        "tests/title-menu-stability-browser.cjs",
+        "tests/title-menu-loading-browser.cjs",
+        "tests/title-menu-visual.cjs",
+        "tests/title-video-browser.cjs",
+        "tests/title-video-start-browser.cjs"
+      ]
+    },
+    {
+      "id": "menu-navigation",
+      "designCriterion": "首页固定一个开始游戏按钮，有档直接继续，去掉设备存储和正常加载说明，待机和存档状态不移动菜单，点击后隐藏控件并以原视频上的金杯进度条过场；首页设置不显示不可用的高级调试空分组，游戏内保留高级工具；清空存档仅在设置中提供，二次确认且失败保护，暂停/死亡/秘境/剧情返回菜单冻结现场并正确恢复，昼夜同屏可读。",
+      "entry": "src/ui/title-menu.js#createTitleMenu / src/platform/title-video.js#createTitleVideo / src/rendering/visual-review.js#inspectTitleMenu",
+      "browserTests": [
+        "tests/title-menu-browser.cjs",
+        "tests/title-menu-stability-browser.cjs",
+        "tests/title-menu-loading-browser.cjs",
+        "tests/title-menu-visual.cjs",
+        "tests/title-video-browser.cjs",
+        "tests/title-video-start-browser.cjs"
+      ]
+    },
+    {
+      "id": "title-background-video",
+      "designCriterion": "使用用户指定Seedance 2.5原片的3–6秒，以0.25秒首尾重叠融合消除水纹和姿态突变，原速2.75秒66帧循环；保留迎风围巾与森林氛围，持续三轮检查接缝无停顿或明显重影；切场景/后台暂停，减少动态使用同片海报，正常加载无状态文字，媒体错误明确可见且不移动菜单，预算合格。",
+      "entry": "src/ui/title-menu.js#createTitleMenu / src/platform/title-video.js#createTitleVideo / src/rendering/visual-review.js#inspectTitleMenu",
+      "browserTests": [
+        "tests/title-menu-browser.cjs",
+        "tests/title-menu-stability-browser.cjs",
+        "tests/title-menu-loading-browser.cjs",
+        "tests/title-menu-visual.cjs",
+        "tests/title-video-browser.cjs",
+        "tests/title-video-start-browser.cjs"
+      ]
+    }
+  ],
+  "storyBattleCameraCriterion": {
+    "id": "story-battle-camera-consistency",
+    "designCriterion": "剧情普通怪与Boss的战斗圈出现或清除时，不改变地图原有倍率和角色跟随；圈边界按当前视口显示，不为容纳整圈拉远。320/390/桌面昼夜一致，对白固定在屏幕下方。",
+    "entry": "src/rendering/renderer.js#prepareGround / src/rendering/renderer.js#draw / src/rendering/story-camera.js#StoryCamera / src/rendering/visual-review.js#inspectStoryCamera",
+    "unitTests": ["tests/story-camera.test.mjs"],
+    "browserTests": ["tests/story-battle-camera-browser.cjs"]
+  },
+  "waveProgressCriterion": {
+    "id": "wave-progress-track",
+    "designCriterion": "普通波次以进度线与编号节点显示，已完成打勾、当前高亮、最后为手动Boss节点；组数和进度跨刷新、休整、重试一致。320/390和桌面昼夜可读，按钮至少44像素，剧情秘境提示独立。",
+    "entry": "src/ui/hud.js#createHud / src/ui/wave-progress.js#updateWaveProgress / src/rendering/visual-review.js#inspectWaveProgress",
+    "brief": "docs/art-tasks/clearing-round-labels.md",
+    "roundDisplay": "每击败一个 Boss 完成一轮清缴，轮内五批怪物只计局部进度；标题、详情、摘要、续战和提示统一，昼夜手机桌面可读。",
+    "browserTests": ["tests/wave-progress-browser.cjs", "tests/clearing-round-labels-browser.cjs"]
+  },
+  "storyRingCleanupCriterion": {
+    "id": "story-rings-death-cleanup",
+    "designCriterion": "故事普通圈与剧情Boss圈半径扩大50%，绘制与碰撞统一，角色与敌人不能越界；边界随地图原有镜头显示，不强制完整同屏。活怪保留冰冻反馈，死亡后立即去除白圈冰刺，保留死亡爆裂与回收。",
+    "entry": "src/config/story.js#STORY_ENCOUNTERS / src/rendering/story-guidance.js#drawStoryGuidance / src/rendering/enemies.js#drawSlime / src/rendering/visual-review.js#inspectStoryBattleRing",
+    "browserTests": ["tests/story-rings-death-browser.cjs"]
+  },
+  "monsterNeighborCriterion": {
+    "id": "monster-neighbor-story-rewards",
+    "designCriterion": "雾松密林委托板可接三篇怪物生活故事；怪物和领主真实出场、底部对白标注姓名，友善角色不参与战斗。每篇奖励与整组永久装备二选一清晰，320/390/桌面昼夜可读，复用正式绘制无新资源。",
+    "entry": "src/rendering/story-posts.js#drawStoryPost / src/rendering/story-props.js#drawStoryProp / src/rendering/visual-review.js#inspectMonsterStories",
+    "browserTests": ["tests/monster-stories-browser.cjs", "tests/monster-stories-visual.cjs"]
+  },
+  "summonSustainCriterion": {
+    "id": "summon-sustain-deathburst",
+    "designCriterion": "机械小狗一秒逐只部署和补召；小蛛死亡原地短爆光仅伤害近邻敌人，每条生命一次；原生召唤能源未满持续恢复，普通挂枪装填保持。桌面和320/390手机昼夜同屏可读，保留步态、出舱和载具动作，无新增图集，粒子仍受260上限约束。",
+    "entry": "src/combat/spider-death.js#explodeSpiderling / src/rendering/particles.js#drawCombatFX / src/rendering/visual-review.js#renderVisualCase / src/rendering/visual-review.js#inspectSummonSustain",
+    "browserTests": [
+      "tests/summon-sustain-browser.cjs"
+    ]
+  },
+  "monsterHitReactionCases": [
+    {
+      "id": "monster-hit-type-slime",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-ironwood-bulwark",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-spore-spitter",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-acorn-slinger",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-reed-archer",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-stump-bombard",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-bramble-buggy",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    },
+    {
+      "id": "monster-hit-type-leaf-bat",
+      "designCriterion": "monsterHitBodyTypes：只有圆形团子翻滚，其余怪物使用有界关节、根足、悬挂或翼根动作表达受击；保留实际击退距离、控制时间与原战斗数值。",
+      "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/monster-atlas.js#drawMonsterSprite",
+      "browserTests": [
+        "tests/monster-hit-reactions-browser.cjs"
+      ]
+    }
+  ],
+  "armoredEnemyCases": [{"id":"armored-bulwark","designCriterion":"宽肩板甲、重盾与粗靴表达高生命慢移动；腿、肩肘和盾独立运动，真实血量驱动裂纹，长前摇可躲、死亡甲片散落；桌面与320/390手机昼夜同屏可辨，零新增图集缓存。","entry":"src/rendering/armored-enemies.js#drawArmoredMonster / src/rendering/visual-review.js#renderVisualCase","browserTests":["tests/armored-bulwark-browser.cjs"]}],
+  "rangedEnemyCases": [
+    {
+      "id": "ranged-enemy-reinforcements",
+      "designCriterion": "装甲四轮炮车、宽体树桩重炮与叶帽弩手剪影明确；轮转、脚步、后坐和拉弦由正式攻击时钟驱动；重炮落点圈对应45半径伤害，手机昼夜同屏可见且可躲；零新增图集、画布和持久缓存。",
+      "entry": "src/rendering/ranged-reinforcements.js#drawRangedReinforcement / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": ["tests/ranged-reinforcements-browser.cjs", "tests/ranged-reinforcements-animation.cjs"]
+    },
+    {
+      "id": "ranged-enemy-variety",
+      "designCriterion": "孢子菌盖喷嘴与橡果果壳弹弓两种剪影明确；根足实走、拉弦喷吐、锁点单发、打断和死亡沿正式运行时；远程名额少于近战且最多6只/6弹，昼夜与320/390/桌面混合近战和载具同屏可读，不新增图集。",
+      "entry": "src/rendering/ranged-enemies.js#drawRangedMonster / src/rendering/enemies.js#drawSlime / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/ranged-enemies-browser.cjs",
+        "tests/ranged-enemies-animation.cjs"
+      ]
+    }
+  ],
+  "version": 1,
+  "slimeFootballCriterion": {
+    "id": "slime-football-field",
+    "designCriterion": "真实武器击退驱动史莱姆翻滚入球场；白线计分区、内圈限球与外圈绕后道清楚，计时进球及奖励短标签可读。正式角色操枪与怪物连续帧保留，桌面和320/390手机昼夜可操作，不新增图集。",
+    "entry": "src/rendering/slime-football.js#drawFootballGround / src/rendering/visual-review.js#renderVisualCase",
+    "browserTests": [
+      "tests/slime-football-browser.cjs"
+    ]
+  },
+  "companionFormationCriteria": [
+    {
+      "id": "mechanical-driving-formation",
+      "designCriterion": "三只与十只机械伙伴行驶时分列后随，急转沿车壳外侧步行避让；停车渐变展开，四足、枪口和自然地形碰撞保留，四车型及手机昼夜清楚。",
+      "entry": "src/combat/mechanical-formation.js / src/rendering/visual-review.js#inspectMechanicalVehicleSpacing",
+      "browserTests": [
+        "tests/companion-formations-spider-browser.cjs"
+      ]
+    },
+    {
+      "id": "spider-mounted-swarm",
+      "designCriterion": "母体单枪架更换真实枪械、同步后坐枪口，最终伤害一次×1.5；小蛛上限8至20、2秒逐只出舱，十三级双排协同筋和双环归队可辨。工坊与实战同源，车载独立供给，无新组合图集。",
+      "entry": "src/rendering/spider-armed.js#drawArmedSpider / src/rendering/visual-review.js#renderVisualCase / src/rendering/visual-review.js#inspectSpiderSwarm",
+      "browserTests": [
+        "tests/companion-formations-spider-browser.cjs"
+      ]
+    }
+  ],
+  "mechanicalVehicleSpacingCriterion": {
+    "id": "mechanical-vehicle-spacing",
+    "designCriterion": "驾驶时机械伙伴停车归队半轴各外扩44世界单位，三只背枪伙伴与车壳留空隙；行驶与转弯按mechanical-driving-formation复核，十只队伍分离、实际移动瞄准、步行及蜘蛛队形保持。",
+    "entry": "src/combat/mechanical.js#updateMechanical / src/rendering/visual-review.js#inspectMechanicalVehicleSpacing",
+    "browserTests": [
+      "tests/mechanical-spacing-browser.cjs"
+    ]
+  },
+  "weaponPurchaseListCriterion": {
+    "id": "weapon-purchase-list",
+    "designCriterion": "武器购买页恢复左侧目录和右侧大图、名称与属性，底部展示正式资源报价和购买按钮；各页侧栏只显示武器图标，48×32同比放大30%至62.4×41.6，名称与状态保留为无障碍标签；目录独立滚动，正式购买、缺料提示及手机昼夜可读。",
+    "entry": "src/ui/workshop.js#createWorkshop / src/rendering/visual-review.js#inspectWeaponPurchaseList",
+    "browserTests": ["tests/weapon-purchase-list-browser.cjs"],
+    "brief": "docs/art-tasks/weapon-purchase-list.md"
+  },
+  "workshopFunctionTabsCriterion": {
+    "id": "workshop-function-tabs",
+    "designCriterion": "购买、升级、改装或挂载、成长通过固定页签分离；工坊不显示营地或领地等级，成长仅展示装备熟练度。切页取消免费草稿和试射。武器布局按 workshop-weapon-focus 检查单屏可见。",
+    "entry": "src/ui/workshop.js#createWorkshop / src/rendering/visual-review.js#inspectWorkshopFunctionTabs",
+    "browserTests": ["tests/workshop-focus-browser.cjs", "tests/workshop-focus-edges-browser.cjs",
+      "tests/workshop-tap-upgrade-browser.cjs",
+      "tests/workshop-tap-interrupt-browser.cjs"],
+    "unitTests": ["tests/operation-guide.test.mjs","tests/workshop.test.mjs","tests/workshop-components.test.mjs"],
+    "brief": "docs/art-tasks/workshop-function-tabs.md"
+  },
+  "workshopMasteryCriterion": {
+    "id": "workshop-mastery-guidance",
+    "designCriterion": "手持与同名车载枪显示真实熟练等级、经验和套件门槛；车体及专属主炮明确无熟练度要求；问号说明正式获得方式；320/390及桌面昼夜可读，二级说明不丢草稿、不恢复战斗。",
+    "entry": "src/ui/workshop/mastery.js / src/rendering/visual-review.js#inspectWorkshopMastery",
+    "unitTests": ["tests/workshop-mastery.test.mjs","tests/mastery-mods.test.mjs"],
+    "browserTests": ["tests/workshop-mastery-browser.cjs"],
+    "brief": "docs/art-tasks/immersive-workshop.md"
+  },
+  "workshopPatrolCriterion": {
+    "id": "workshop-labels-wave-revive",
+    "designCriterion": "工坊门牌可短按进入、拖动移动，不形成输入挡板；死亡复活后当前波、已完成节点及部分清怪进度保持。桌面和320/390手机昼夜入口与波次可读，未改变建筑、道路和角色动作。",
+    "entry": "src/rendering/visual-review.js#inspectWorkshopPatrol",
+    "browserTests": ["tests/workshop-labels-wave-revive-browser.cjs"],
+    "unitTests": ["tests/input.test.mjs", "tests/death-retention.test.mjs", "tests/wave-progress.test.mjs"]
+  },
+  "workshopStageActionsCriterion": {
+    "id": "workshop-stage-actions",
+    "designCriterion": "试射与驾驶/装备固定于工作台右上角，桌面及320/390手机横排可触控，不遮标签和装配插槽；试射覆盖时退出焦点顺序，原操作与草稿限制保持。",
+    "entry": "src/rendering/visual-review.js#inspectWorkshopStageActions / src/ui/workshop/markup.js",
+    "browserTests": ["tests/workshop-stage-actions-browser.cjs"]
+  },
+  "workshopDetailsCriterion": {
+    "id": "workshop-inline-details",
+    "designCriterion": "点击部件、套件或炮塔即在既有底栏显示短用途及正式费用，拖放不增高底栏、不覆盖属性；桌面和320/390手机可滚动查看完整参数，保持舞台尺寸和免费试装。",
+    "entry": "src/rendering/visual-review.js#inspectWorkshopDetails",
+    "browserTests": [
+      "tests/workshop-inline-details-browser.cjs"
+    ]
+  },
+  "entry": "src/rendering/visual-review.js",
+  "style": "game-shoot原版：森林绿描边、奶油黄与柔和草木配色、两级平涂、统一四分之三视角",
+  "bindings": {
+    "funnel": "src/rendering/funnel.js#drawFunnelCannon",
+    "funnelOrbit": "src/rendering/funnel.js#drawFunnelArray",
+    "controller": "src/rendering/funnel.js#drawFunnelController",
+    "handWeapon": "src/rendering/characters.js#drawWeapon",
+    "catBreeds": "src/rendering/cat-breed-shapes.js#shapeCatFrame",
+    "guardianGround": "src/rendering/guardian.js#drawGuardianGround",
+    "guardianDefense": "src/rendering/guardian.js#drawGuardianDefense",
+    "expeditionSlots": "src/rendering/expedition.js#drawExpeditionSlot",
+    "realmEntrances": "src/rendering/realm-entrances.js#drawRealmEntrance",
+    "landscapeGround": "src/rendering/landscape-ground.js#drawLandscapeGround",
+    "lakesideFireflies": "src/rendering/fireflies.js#FireflyRenderer",
+    "mountainVariants": "src/rendering/mountain-shapes.js#drawMountainShape",
+    "forestVariants": "src/rendering/tree-art.js#drawTreeSprite",
+    "jiuzhaigouGround": "src/rendering/jiuzhaigou.js#paintJiuzhaigou",
+    "jiuzhaigouWater": "src/rendering/jiuzhaigou.js#drawJiuzhaigouWater",
+    "winterSurfaces": "src/rendering/winter-art.js#snowCap",
+    "seasonLeaves": "src/rendering/season-art.js#seasonalLeafColor",
+    "snowfall": "src/rendering/snow.js#SnowRenderer",
+    "environmentPictures": "src/ui/panels/environment.js#createEnvironmentPanel",
+    "dayNightClock": "src/world/environment.js#dayPhaseRemaining",
+    "playChronicle": "src/ui/panels/chronicle.js#createChroniclePanel",
+    "environmentTone": "src/rendering/scene-tone.js#SceneTone",
+    "workshopEquipment": "src/rendering/workshop.js#drawWorkshopEquipment",
+    "workshopBuilding": "src/rendering/scenery.js#drawScenery",
+    "seasonGround": "src/rendering/season-ground.js#drawSeasonGround",
+    "autumnLeaves": "src/rendering/falling-leaves.js#FallingLeavesRenderer",
+    "worldSnow": "src/world/snowfall.js#snowSample",
+    "seasonTransition": "src/world/season-transition.js#SeasonTransition",
+    "seasonMaterialBlend": "src/rendering/season-raster.js#mixRaster",
+    "weatherTransition": "src/world/environment.js#EnvironmentTransition",
+    "mechanicalCore": "src/rendering/mechanical.js#drawMechanicalCore",
+    "mechanicalCat": "src/rendering/mechanical.js#drawMechanicalCat"
+  },
+  "funnelCases": [
+    "funnel-orbit"
+  ],
+  "funnelCriteria": [
+    {
+      "id": "funnel-orbit",
+      "designCriterion": "无目标时三炮等间隔连续环绕角色，约十秒一圈；炮口随飞行方向转动，身体与手持控制器保留空间，窄屏完整可见。"
+    },
+    {
+      "id": "funnel-orbit-transition",
+      "designCriterion": "角色移动时编队平滑跟随；发现目标错峰离队、失去目标回到移动槽位，单炮补给不打断其他炮巡航；暂停冻结，减少动态保留固定编队。"
+    },
+    {
+      "id": "funnel-orbit-day-night",
+      "designCriterion": "连续帧与真实交互共同复核，昼夜同屏检查角色、浮游炮、怪物、载具、地形和HUD，保持森林绿描边、奶油黄与原有比例。"
+    }
+  ],
+  "catBreedCases": [
+    "hero-breed-0",
+    "hero-breed-1",
+    "hero-breed-2",
+    "hero-breed-3",
+    "hero-breed-4",
+    "hero-breed-5",
+    "hero-breed-6"
+  ],
+  "guardianCases": [
+    "guardian-field-day",
+    "guardian-field-night"
+  ],
+  "guardianCriteria": {
+    "guardian-panel-dismiss": "枪械放置成功立即收起面板；建造或升级详情只保留一个关闭按钮。主界面常驻秘境币和女神HP，再点格位查看能力、升级或回收。",
+    "guardian-random-arrival": "怪物和领主从外围随机安全空地进攻中央女神，无固定行军路；避开玩家、树干与已有敌人，没有安全位置时等待重试。",
+    "guardian-field-layout": "复用随机主场景区域与正式地形、树木和装饰，只叠加八个预设方格与中央女神，清出会遮挡格位的装饰；角色比例与森林一致。",
+    "guardian-defense-motion": "部署火力复用正式绘制与动作时钟；直升机主尾旋翼连续转动，停驻履带不虚假滑动。守护准备和20秒休整中浮游炮归队环绕、无人机巡航、旋翼与女神光效继续运动，开波接续姿态；真正暂停才冻结，休整不攻击或补弹。",
+    "guardian-ui-economy": "格位只允许已拥有的枪械或独立阵列；旧车辆格位迁移为原枪，保留等级并退还40币车体差价一次。主界面显示实时秘境币和女神生命。",
+    "guardian-day-night": "白天和夜晚同屏核对草木、方格、角色、怪物、载具、枪械与UI，关键目标不被遮挡。",
+    "guardian-world-build-hit-targets": "320×568 至桌面尺寸全景显示完整秘境；准备、战中和波间均可布防，可见格位至少四十四像素，中心可点，触摸拖动不误建。",
+    "guardian-live-build": "通过地面方格打开建造面板；目录支持鼠标和单指拖动，面板不触发摇杆；PC物理WASD在输入法状态下仍可移动。实际点击完成枪械部署、升级回收及浮游炮独立挂载；战斗继续，刷新统一恢复波前布防和余额。",
+    "guardian-auto-wave": "守护清波后不显示祝福选择，显示单个二十秒倒计时按钮；自动到时或点击均只推进一波，暂停弹窗冻结计时，旧祝福页存档迁移为休整。",
+    "normal-scene-camera": "森林、高塔保留正常跟随和专用武器倍率；肉鸽远征固定默认战斗倍率，不随抽取武器拉远，角色不再因全场适配而过小；手机、桌面及昼夜实机可读，场景切换不继承守护女神缩放。",
+    "guardian-default-view": "守护女神默认可视宽高与普通大地图基础视野相同，跟随角色，不再自动拉远展示整场；新局恢复默认、窗口变化保持比例，同局暂停及换波保留手动缩放。角色、怪物、载具、地形和UI昼夜同屏可读。 正式复核 src/rendering/visual-review.js#inspectGuardianStart，tests/guardian-default-view-browser.cjs；首波12只、同场4只、1.8秒补兵，之后渐进。",
+    "guardian-battlefield-overview": "仅守护女神支持双指及设置内视角调整，离开后恢复原版正常跟随视角；森林和其他秘境不显示镜头控件、不响应缩放。默认使用普通地图基础战斗视野，设置的全景按钮主动查看完整战场；主页面不显示镜头控件，加减按钮、滑条和全景入口仅在设置中。手机双指张开放大、捏合缩小，连续等比缩放正式绘制，不误移动或建造，缩放后的地面格位准确命中，白天夜晚均可读。",
+    "guardian-stat-upgrades": "攻击、攻速、弹夹、换弹四项可独立点击升级，等级、费用、当前值和下一值明确；预览与实际火力相同，满级或缺币只禁用对应属性，三槽共享本塔成长，手机横竖屏可滚动并保留关闭与回收入口。",
+    "guardian-upgrade-panel": "唯一关闭入口；点击枪械查看攻击、攻速、弹夹、换弹时间、射程与弹丸数的当前/升级后数值，数值匹配真实火力。浮游炮三槽独立选择已拥有枪械，不补弹、不跳冷却，不影响玩家或其他塔，随波前检查点保存。手机竖屏/横屏内容可滚动且操作可达。",
+    "guardian-mixed-horde": "从第一波起混编绿芽团、蓝霜团、金岩团、紫幽团和飞行叶翼蝠，包含轻型与重卫。沿用正式地面形变、真实飞翼、受击与死亡动画；配额、领主节奏和安全出生保持，昼夜同屏区分颜色和形态。"
+  },
+  "expeditionCases": [
+    "expedition-weapon",
+    "expedition-vehicle",
+    "expedition-turret"
+  ],
+  "expeditionCriteria": [
+    {
+      "id": "expedition-supply",
+      "designCriterion": "三槽补给机采用森林绿描边、奶油黄机身与正式装备绘制器；手机端顺序领取清楚且无横向溢出。"
+    },
+    {
+      "id": "expedition-combat",
+      "designCriterion": "白天与夜晚设置下，角色、抽取枪械、载具、怪物、秘境地形与 HUD 实际同屏，武器和载具显示与真实攻击一致。"
+    },
+    {
+      "id": "expedition-motion",
+      "designCriterion": "连续帧采样覆盖转轮减速、停轮揭晓与实际行走、履带或旋翼动作；不以静态替代动作。"
+    }
+  ],
+  "realmEntranceCases": [
+    "realm-entrance-rogue",
+    "realm-entrance-tower",
+    "realm-entrance-guardian"
+  ],
+  "realmEntranceDesignCriterion": "三座建筑以拱门、高塔和女神双翼区分轮廓；同屏昼夜检查地面落影、脚底遮挡、门前留白以及手机点击和拖动互斥。",
+  "landscapeCases": [
+    "landscape-mountain",
+    "landscape-lake",
+    "landscape-lake-night",
+    "landscape-group-0",
+    "landscape-group-0-night",
+    "landscape-group-1",
+    "landscape-group-1-night",
+    "landscape-group-2",
+    "landscape-group-2-night",
+    "landscape-group-3",
+    "landscape-group-3-night",
+    "landscape-group-4",
+    "landscape-group-4-night",
+    "landscape-group-5",
+    "landscape-group-5-night",
+    "landscape-group-0-winter",
+    "landscape-group-0-winter-night",
+    "landscape-group-1-winter",
+    "landscape-group-1-winter-night",
+    "landscape-group-2-winter",
+    "landscape-group-2-winter-night",
+    "landscape-group-3-winter",
+    "landscape-group-3-winter-night",
+    "landscape-group-4-winter",
+    "landscape-group-4-winter-night",
+    "landscape-group-5-winter",
+    "landscape-group-5-winter-night"
+  ],
+  "landscapeDesignCriterion": "山脚草地、花石与林缘连续过渡；湖泊连接不对称宽沙滩、芦苇及低矮摆件，保留通行留白。昼夜与角色、怪物、载具同屏检查；湖畔萤火虫独立缓慢漂浮且低动态冻结，总量保持72只。",
+  "landscapeVarietyCriterion": "四类各六种以轮廓和结构区分，六组实际山湖沙岸连接外围树林；整组昼夜复核，手机同屏角色、怪物、载具及HUD，凹湖岸线与碰撞一致且主路畅通。",
+  "realmSceneCriteria": {
+    "realm-main-scene": "三种秘境随机选择原主场景干地区域，使用正式地形、树木、建筑、河流和昼夜光照；刷新保留区域，时空之塔每次换层重新选择不同区域，其他秘境跨关保留区域。",
+    "tower-floor-transition": "时空之塔通关后在战场显示5秒倒计时，结束自动进入下一层；暂停及查看面板冻结计时，传送保留装备状态，昼夜同屏可见当前区域的正式高塔、角色、怪物和载具。",
+    "realm-area-size": "可活动面积为原半径310圆域的三倍，边界可见，步行、飞行和击退均限制在圈内。",
+    "realm-camera": "三种秘境完全共用CombatCamera的角色跟随和武器镜头倍率，守护女神不再固定缩小到全场。",
+    "realm-day-night": "正式运行时同屏检查角色、怪物、载具武器、森林地形和界面，昼夜均可辨认。"
+  },
+  "realmBlessingCriteria": {
+    "guardian-wave-effects": "守护清波后保留移动和布防，飘字、光束余辉、爆炸碎屑及死亡残影自然消散；残留弹丸和伤害区域立即清理，昼夜同屏检查与下一波交互通过。",
+    "blessing-count-and-current": "祝福选择卡显示本局累计选择次数、当前总加成和本次效果；五层上限明确提示，即时回血与修复不伪装成持续加成；320像素窄屏无横向溢出，刷新保留次数。"
+  },
+  "jiuzhaigouCases": [
+    "jiuzhaigou-lake-day",
+    "jiuzhaigou-lake-night",
+    "jiuzhaigou-falls-day",
+    "jiuzhaigou-falls-night",
+    "jiuzhaigou-landmarks-day",
+    "jiuzhaigou-landmarks-night",
+    "jiuzhaigou-bank-pearl-falls-day",
+    "jiuzhaigou-bank-pearl-falls-night",
+    "jiuzhaigou-bank-nuorilang-falls-day",
+    "jiuzhaigou-bank-nuorilang-falls-night",
+    "jiuzhaigou-bank-shuzheng-falls-day",
+    "jiuzhaigou-bank-shuzheng-falls-night",
+    "jiuzhaigou-bank-lower-falls-day",
+    "jiuzhaigou-bank-lower-falls-night"
+  ],
+  "jiuzhaigouCriteria": [
+    {
+      "id": "jiuzhaigou-water-system",
+      "designCriterion": "Y形谷地中湖泊、浅滩和叠瀑相连；青碧深浅水层、沉木与奶油色钙华区别于森林沙湾，岸线与正式碰撞一致。"
+    },
+    {
+      "id": "jiuzhaigou-flow",
+      "designCriterion": "连续帧可见分股水帘向下流动与白沫扩散，静止角色不冻结瀑布；减少动态时保持静态可读景观。"
+    },
+    {
+      "id": "jiuzhaigou-vegetation",
+      "designCriterion": "高处针叶林、湖岸阔叶与少量秋色桦木成簇分布，近岸有低矮草木，瀑前和入口保留战斗通路。"
+    },
+    {
+      "id": "jiuzhaigou-day-night",
+      "designCriterion": "原角色、持枪、怪物、载具、湖瀑与HUD实际同屏检查昼夜，沿用森林绿描边、奶油黄和平涂比例，手机面板无横向溢出。"
+    },
+    {
+      "id": "jiuzhaigou-travel",
+      "designCriterion": "地图面板可往返森林与九寨沟，森林原景保留，生命弹药波次不重置，刷新与秘境返回保持正确地图。"
+    },
+    {
+      "id": "jiuzhaigou-landmarks",
+      "designCriterion": "八个湖滩、四组瀑布与三条沟谷均有干岸地名牌；名称、所属沟谷和方向清楚，广角适度放大，遮住角色时透显，地图编号与现场逐一对应。"
+    },
+    {
+      "id": "jiuzhaigou-forest-slopes",
+      "designCriterion": "外围形成连续林坡、针阔混交林与蕨草灌丛苔石的林下层；维持森林配色和平涂，步道、入口、每块牌前可步行抵达，原森林不受影响。"
+    },
+    {
+      "id": "jiuzhaigou-soft-banks",
+      "designCriterion": "湖溪瀑共用闭合、无自交的统一水界，四处接岸没有内缝、尖角折叠或矩形底板；变宽草岸、钙华与浅水柔和衔接，深水随湖形分布。昼夜同屏、连续水帘与通行碰撞一致。"
+    }
+  ],
+  "forestWinterCriteria": [
+    {
+      "id": "forest-biome-coherence",
+      "designCriterion": "四境各用阔叶、松、枫、柏作为主树，保持林团与道路留白；六树种仍在生成目录中。"
+    },
+    {
+      "id": "winter-snow-surfaces",
+      "designCriterion": "暖白积雪与蓝灰雪檐只落在树冠、山顶、屋顶及地面；露出叶层暗部和树干，湖岸水界保持可读。"
+    },
+    {
+      "id": "winter-season-roundtrip",
+      "designCriterion": "设置可切回原景，旧地块释放，九寨沟不受影响；重新打开游戏按入场规则随机季节。"
+    },
+    {
+      "id": "preserved-gameplay",
+      "designCriterion": "昼夜与桌面/320/390手机实机检查猫、怪物、载具与HUD同屏；移动、独立操枪、原碰撞与前后排序保留。"
+    }
+  ],
+  "seasonWeatherCases": [
+    "landscape-group-0-spring",
+    "landscape-group-0-spring-night",
+    "landscape-group-0-summer",
+    "landscape-group-0-summer-night",
+    "landscape-group-0-autumn",
+    "landscape-group-0-autumn-night",
+    "landscape-group-0-winter",
+    "landscape-group-0-winter-night",
+    "weather-snow",
+    "weather-snow-night",
+    "weather-autumn-leaves",
+    "weather-autumn-leaves-night",
+    "landscape-group-0-spring-to-summer",
+    "landscape-group-0-spring-to-summer-night",
+    "landscape-group-0-summer-to-autumn",
+    "landscape-group-0-summer-to-autumn-night",
+    "landscape-group-0-autumn-to-winter",
+    "landscape-group-0-autumn-to-winter-night",
+    "landscape-group-0-winter-to-spring",
+    "landscape-group-0-winter-to-spring-night",
+    "weather-change-sun-to-rain",
+    "weather-change-sun-to-rain-night",
+    "weather-change-rain-to-snow",
+    "weather-change-rain-to-snow-night",
+    "weather-change-snow-to-sun",
+    "weather-change-snow-to-sun-night",
+    "weather-change-sun-to-cloud",
+    "weather-change-sun-to-cloud-night",
+    "scene-clarity",
+    "scene-clarity-night"
+  ],
+  "seasonWeatherCriteria": [
+    {
+      "id": "season-phenology",
+      "designCriterion": "春嫩芽、夏浓绿、秋金叶落叶、冬积雪枯茎；主树剪影、碰撞、道路与活动空间不变。"
+    },
+    {
+      "id": "winter-ground-contact",
+      "designCriterion": "冬季盛开花朵明显减少，树根雪坡独立于风摆，山脚和湖岸以不对称低雪衔接，水域仍可辨认。"
+    },
+    {
+      "id": "snowfall-depth",
+      "designCriterion": "大雪为独立天气，前后层雪粒连续飘落且不遮挡战斗；昼夜一致，减少动态冻结，雪花不超过167。"
+    },
+    {
+      "id": "environment-picture-controls",
+      "designCriterion": "主界面两张SVG图片同步季节与天气，各有圆环余量；季节点击按春夏秋冬顺序，天气点击按季节权重随机且排除当前值；触屏/键盘可用，不触发移动或暂停，自动开关保存，320宽度不重叠。"
+    },
+    {
+      "id": "season-phenology-clear",
+      "designCriterion": "春季少量粉白花、夏季原冠内叶层与林下低蕨、秋季阔叶树下尖叶簇；不增加树数和冠幅，冬季六组昼夜像素与基线一致。"
+    },
+    {
+      "id": "season-open-space",
+      "designCriterion": "完整装饰范围避开道路、营地中央、门前、田前、沙滩与水面；树位和碰撞不变，昼夜320/390及桌面实机可读。"
+    },
+    {
+      "id": "season-weather-balance",
+      "designCriterion": "自动天气与图片随机切换共用季节权重，排除当前项；冬季偏雪、春夏偏晴雨，设置仍可指定任意天气。"
+    },
+    {
+      "id": "snowflake-readability",
+      "designCriterion": "大小雪花均六向晶体，偶发大雪花在世界格点缓入缓出；实际角色附近减淡，昼夜可辨，不用白点白幕，最多167片。"
+    },
+    {
+      "id": "autumn-leaf-motion",
+      "designCriterion": "秋季现有阔叶树附近稀疏旋落，最多18片，季节或地图切换清除，减少动态冻结；保留战斗预警与独立操枪。"
+    },
+    {
+      "id": "snow-world-motion",
+      "designCriterion": "所有尺寸雪花绑定固定世界格点，完整镜头位移和缩放统一投影；移动/转向/停止不贴屏、不屏幕回绕，周期镜像连续，减少动态冻结运动但仍随场景移动。"
+    },
+    {
+      "id": "season-clock-entry",
+      "designCriterion": "每次打开游戏随机季节与匹配天气；每季5分钟按春夏秋冬循环，圆环余量与季节时钟一致；手动换季重置计时，地图/秘境/复活不重新随机，保留战斗与手机操作。"
+    },
+    {
+      "id": "season-soft-transition",
+      "designCriterion": "自动与手动换季以15秒材质渐变连续改变树叶、草地、积雪与秋叶；快速重定向保留当前颜色，角色与小手不淡化，昼夜通行不变；来源缓存结束释放。"
+    },
+    {
+      "id": "season-ring-clock",
+      "designCriterion": "季节图片外围圆环表示余量，仅保留季节名称；无时间数字，手动顺序切季重置圆环，天气点击不重置，320/390与桌面触屏目标至少44像素。"
+    },
+    {
+      "id": "weather-soft-transition",
+      "designCriterion": "雨雪与晴阴光线15秒连续缓动，快速反向不闪回；固定粒子种子渐入渐出，强度不改变雨滴下落相位，角色附近降雨减淡；原雪场、上限与减少动态规则保留。"
+    },
+    {
+      "id": "scene-clarity",
+      "designCriterion": "减少季节罩色、全屏染色与宽路肩羽化；地形分区、主体暗面与原材质色保持可辨。以同镜头昼夜实战和天气与季节0/7.5/15秒过渡复核，无新增滤镜、纹理与活动空间变化。"
+    },
+    {
+      "id": "weather-ring-clock",
+      "designCriterion": "天气图片与季节图片使用同尺寸圆环，隐藏时间数字；自动或手动换天气重置天气圆环，不重置季节；关闭自动天气呈浅色暂停环。"
+    },
+    {
+      "id": "day-night-ring",
+      "designCriterion": "主界面按季节、昼夜、天气排列；白昼/黄昏/夜晚使用独立图片及当前时段圆环，点击按序前进，自动与暂停状态同步；不显示时间数字、不重置其他时钟；320/390和桌面保持44像素按钮及实战可读性。"
+    },
+    {
+      "id": "environment-calendar-light",
+      "designCriterion": "白昼保留原材质、黄昏暖橙、夜间突出有限半径灯芯与固定数量萤火虫；不用全屏雾幕且战斗可读。主界面圆环与设置可配时长一致，游玩档案记录实际可见游玩与天气占比；Debug默认折叠，窄屏、保存恢复及写入失败均验收。"
+    },
+    {
+      "id": "season-ordered-click",
+      "designCriterion": "点击季节图片和自动轮转均按春夏秋冬循环，点击无需随机数；首次入场随机与设置明确指定保持，过渡继续柔和衔接。"
+    }
+  ],
+  "workshopCriteria": [
+    {"id":"workshop-building-ruined-day","designCriterion":"破败武器工坊的缺顶、裸梁、封门板可辨，沿用正式图集与原坐标。"},
+    {"id":"workshop-building-ruined-night","designCriterion":"夜间破败建筑缺口和梁架清楚，非整栋小屋换色。"},
+    {"id":"workshop-building-rebuild-day","designCriterion":"0至5秒正式进度中独立屋面板依次落位，暂停保留姿态，脚手架不占停车通路。"},
+    {"id":"workshop-building-rebuild-night","designCriterion":"夜间施工板与破败基体同屏统一，完成后由正式阶段切换全新工坊。"},
+    {
+      "id": "workshop-building-day",
+      "designCriterion": "武器工坊独立低斜顶、宽工作间、侧烟筒与工具墙清楚区别于小屋；沿用原底座、道路、前后遮挡与统一昼夜形体。"
+    },
+    {
+      "id": "workshop-building-night",
+      "designCriterion": "武器工坊独立低斜顶、宽工作间、侧烟筒与工具墙清楚区别于小屋；沿用原底座、道路、前后遮挡与统一昼夜形体。"
+    },
+    {
+      "id": "workshop-weapon-0",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-1",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-2",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-3",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-4",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-5",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-6",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-7",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-8",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-9",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-10",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-11",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-12",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-13",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "workshop-weapon-14",
+      "designCriterion": "0/1/2 秒对应原厂和两个套件：部件结构可辨，锚点固定，工作台和战场使用相同绘制器，枪口与握持位置保持一致。"
+    },
+    {
+      "id": "chainsaw-range-contact",
+      "designCriterion": "范围1/3/5级锯链逐级伸长，机身与握柄比例固定；实际接触边界、后坐与骑乘高度一致，边界外怪物不受伤。"
+    },
+    {
+      "id": "workshop-vehicle-0",
+      "designCriterion": "按时间切换真实炮塔并保持车体形状；安装部位独立，旋翼连续运行，原车体与炮塔大小关系协调。"
+    },
+    {
+      "id": "workshop-vehicle-1",
+      "designCriterion": "按时间切换真实炮塔并保持车体形状；安装部位独立，旋翼连续运行，原车体与炮塔大小关系协调。"
+    },
+    {
+      "id": "workshop-vehicle-2",
+      "designCriterion": "按时间切换真实炮塔并保持车体形状；安装部位独立，旋翼连续运行，原车体与炮塔大小关系协调。"
+    },
+    {
+      "id": "workshop-vehicle-3",
+      "designCriterion": "按时间切换真实炮塔并保持车体形状；安装部位独立，旋翼连续运行，原车体与炮塔大小关系协调。"
+    },
+    {
+      "id": "workshop-components-weapons-0-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-0-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-0-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-0-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-0-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-1-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-1-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-1-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-1-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-1-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-2-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-2-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-2-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-2-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-2-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-2-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-3-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-3-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-3-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-3-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-3-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-3-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-4-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-4-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-4-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-4-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-4-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-5-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-5-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-5-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-5-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-5-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-5-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-6-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-6-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-6-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-6-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-6-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-6-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-7-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-7-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-7-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-7-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-7-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-7-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-8-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-8-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-8-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-8-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-8-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-9-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-9-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-9-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-9-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-9-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-10-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-10-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-10-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-10-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-10-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-11-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-11-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-11-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-11-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-11-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-11-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-12-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-12-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-12-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-12-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-12-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-13-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-13-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-13-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-13-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-13-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-14-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-14-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-14-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-14-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-weapons-14-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-0-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-0-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-0-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-0-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-0-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-1-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-1-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-1-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-1-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-1-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-2-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-2-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-2-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-2-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-2-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-2-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-3-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-3-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-3-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-3-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-3-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-3-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-4-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-4-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-4-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-4-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-4-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-5-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-5-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-5-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-5-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-5-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-5-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-6-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-6-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-6-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-6-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-6-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-6-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-7-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-7-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-7-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-7-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-7-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-7-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-8-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-8-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-8-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-8-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-8-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-9-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-9-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-9-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-9-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-9-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-10-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-10-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-10-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-10-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-10-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-11-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-11-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-11-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-11-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-11-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-11-accuracy",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-14-damage",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-14-rate",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-14-capacity",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-14-reload",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-turret-14-range",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-0-armor",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-0-engine",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-1-armor",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-1-engine",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-2-armor",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-2-engine",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-3-armor",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-components-vehicle-3-engine",
+      "designCriterion": "逐级采样真实部件：每级结构可辨、局部替换、握持和枪口不变，工坊与战场使用同一正式绘制器；车体履带与旋翼保持独立。"
+    },
+    {
+      "id": "workshop-construction-wrench",
+      "designCriterion": "工具头与连接点接触，按住1.5秒驱动扳手/紧固件转动或焊接，松开暂停，取消零扣费，减少动态保留定位与进度。"
+    },
+    {
+      "id": "workshop-construction-welder",
+      "designCriterion": "工具头与连接点接触，按住1.5秒驱动扳手/紧固件转动或焊接，松开暂停，取消零扣费，减少动态保留定位与进度。"
+    }
+  ],
+  "workshopCases": [
+    "workshop-building-day",
+    "workshop-building-night",
+    "workshop-weapon-0",
+    "workshop-weapon-1",
+    "workshop-weapon-2",
+    "workshop-weapon-3",
+    "workshop-weapon-4",
+    "workshop-weapon-5",
+    "workshop-weapon-6",
+    "workshop-weapon-7",
+    "workshop-weapon-8",
+    "workshop-weapon-9",
+    "workshop-weapon-10",
+    "workshop-weapon-11",
+    "workshop-weapon-12",
+    "workshop-weapon-13",
+    "workshop-weapon-14",
+    "workshop-vehicle-0",
+    "workshop-vehicle-1",
+    "workshop-vehicle-2",
+    "workshop-vehicle-3",
+    "workshop-components-weapons-0-damage",
+    "workshop-components-weapons-0-rate",
+    "workshop-components-weapons-0-capacity",
+    "workshop-components-weapons-0-reload",
+    "workshop-components-weapons-0-range",
+    "workshop-components-weapons-1-damage",
+    "workshop-components-weapons-1-rate",
+    "workshop-components-weapons-1-capacity",
+    "workshop-components-weapons-1-reload",
+    "workshop-components-weapons-1-range",
+    "workshop-components-weapons-2-damage",
+    "workshop-components-weapons-2-rate",
+    "workshop-components-weapons-2-capacity",
+    "workshop-components-weapons-2-reload",
+    "workshop-components-weapons-2-range",
+    "workshop-components-weapons-2-accuracy",
+    "workshop-components-weapons-3-damage",
+    "workshop-components-weapons-3-rate",
+    "workshop-components-weapons-3-capacity",
+    "workshop-components-weapons-3-reload",
+    "workshop-components-weapons-3-range",
+    "workshop-components-weapons-3-accuracy",
+    "workshop-components-weapons-4-damage",
+    "workshop-components-weapons-4-rate",
+    "workshop-components-weapons-4-capacity",
+    "workshop-components-weapons-4-reload",
+    "workshop-components-weapons-4-range",
+    "workshop-components-weapons-5-damage",
+    "workshop-components-weapons-5-rate",
+    "workshop-components-weapons-5-capacity",
+    "workshop-components-weapons-5-reload",
+    "workshop-components-weapons-5-range",
+    "workshop-components-weapons-5-accuracy",
+    "workshop-components-weapons-6-damage",
+    "workshop-components-weapons-6-rate",
+    "workshop-components-weapons-6-capacity",
+    "workshop-components-weapons-6-reload",
+    "workshop-components-weapons-6-range",
+    "workshop-components-weapons-6-accuracy",
+    "workshop-components-weapons-7-damage",
+    "workshop-components-weapons-7-rate",
+    "workshop-components-weapons-7-capacity",
+    "workshop-components-weapons-7-reload",
+    "workshop-components-weapons-7-range",
+    "workshop-components-weapons-7-accuracy",
+    "workshop-components-weapons-8-damage",
+    "workshop-components-weapons-8-rate",
+    "workshop-components-weapons-8-capacity",
+    "workshop-components-weapons-8-reload",
+    "workshop-components-weapons-8-range",
+    "workshop-components-weapons-9-damage",
+    "workshop-components-weapons-9-rate",
+    "workshop-components-weapons-9-capacity",
+    "workshop-components-weapons-9-reload",
+    "workshop-components-weapons-9-range",
+    "workshop-components-weapons-10-damage",
+    "workshop-components-weapons-10-rate",
+    "workshop-components-weapons-10-capacity",
+    "workshop-components-weapons-10-reload",
+    "workshop-components-weapons-10-range",
+    "workshop-components-weapons-11-damage",
+    "workshop-components-weapons-11-rate",
+    "workshop-components-weapons-11-capacity",
+    "workshop-components-weapons-11-reload",
+    "workshop-components-weapons-11-range",
+    "workshop-components-weapons-11-accuracy",
+    "workshop-components-weapons-12-damage",
+    "workshop-components-weapons-12-rate",
+    "workshop-components-weapons-12-capacity",
+    "workshop-components-weapons-12-reload",
+    "workshop-components-weapons-12-range",
+    "workshop-components-weapons-13-damage",
+    "workshop-components-weapons-13-rate",
+    "workshop-components-weapons-13-capacity",
+    "workshop-components-weapons-13-reload",
+    "workshop-components-weapons-13-range",
+    "workshop-components-weapons-14-damage",
+    "workshop-components-weapons-14-rate",
+    "workshop-components-weapons-14-capacity",
+    "workshop-components-weapons-14-reload",
+    "workshop-components-weapons-14-range",
+    "workshop-components-turret-0-damage",
+    "workshop-components-turret-0-rate",
+    "workshop-components-turret-0-capacity",
+    "workshop-components-turret-0-reload",
+    "workshop-components-turret-0-range",
+    "workshop-components-turret-1-damage",
+    "workshop-components-turret-1-rate",
+    "workshop-components-turret-1-capacity",
+    "workshop-components-turret-1-reload",
+    "workshop-components-turret-1-range",
+    "workshop-components-turret-2-damage",
+    "workshop-components-turret-2-rate",
+    "workshop-components-turret-2-capacity",
+    "workshop-components-turret-2-reload",
+    "workshop-components-turret-2-range",
+    "workshop-components-turret-2-accuracy",
+    "workshop-components-turret-3-damage",
+    "workshop-components-turret-3-rate",
+    "workshop-components-turret-3-capacity",
+    "workshop-components-turret-3-reload",
+    "workshop-components-turret-3-range",
+    "workshop-components-turret-3-accuracy",
+    "workshop-components-turret-4-damage",
+    "workshop-components-turret-4-rate",
+    "workshop-components-turret-4-capacity",
+    "workshop-components-turret-4-reload",
+    "workshop-components-turret-4-range",
+    "workshop-components-turret-5-damage",
+    "workshop-components-turret-5-rate",
+    "workshop-components-turret-5-capacity",
+    "workshop-components-turret-5-reload",
+    "workshop-components-turret-5-range",
+    "workshop-components-turret-5-accuracy",
+    "workshop-components-turret-6-damage",
+    "workshop-components-turret-6-rate",
+    "workshop-components-turret-6-capacity",
+    "workshop-components-turret-6-reload",
+    "workshop-components-turret-6-range",
+    "workshop-components-turret-6-accuracy",
+    "workshop-components-turret-7-damage",
+    "workshop-components-turret-7-rate",
+    "workshop-components-turret-7-capacity",
+    "workshop-components-turret-7-reload",
+    "workshop-components-turret-7-range",
+    "workshop-components-turret-7-accuracy",
+    "workshop-components-turret-8-damage",
+    "workshop-components-turret-8-rate",
+    "workshop-components-turret-8-capacity",
+    "workshop-components-turret-8-reload",
+    "workshop-components-turret-8-range",
+    "workshop-components-turret-9-damage",
+    "workshop-components-turret-9-rate",
+    "workshop-components-turret-9-capacity",
+    "workshop-components-turret-9-reload",
+    "workshop-components-turret-9-range",
+    "workshop-components-turret-10-damage",
+    "workshop-components-turret-10-rate",
+    "workshop-components-turret-10-capacity",
+    "workshop-components-turret-10-reload",
+    "workshop-components-turret-10-range",
+    "workshop-components-turret-11-damage",
+    "workshop-components-turret-11-rate",
+    "workshop-components-turret-11-capacity",
+    "workshop-components-turret-11-reload",
+    "workshop-components-turret-11-range",
+    "workshop-components-turret-11-accuracy",
+    "workshop-components-turret-14-damage",
+    "workshop-components-turret-14-rate",
+    "workshop-components-turret-14-capacity",
+    "workshop-components-turret-14-reload",
+    "workshop-components-turret-14-range",
+    "workshop-components-vehicle-0-armor",
+    "workshop-components-vehicle-0-engine",
+    "workshop-components-vehicle-1-armor",
+    "workshop-components-vehicle-1-engine",
+    "workshop-components-vehicle-2-armor",
+    "workshop-components-vehicle-2-engine",
+    "workshop-components-vehicle-3-armor",
+    "workshop-components-vehicle-3-engine",
+    "workshop-construction-wrench",
+    "workshop-construction-welder",
+    "workshop-construction-clarity",
+    "workshop-completion-feedback"
+  ],
+  "workshopInteractionCriteria": [
+    {
+      "id": "workshop-trial-targets",
+      "designCriterion": "试射靶标累计伤害后被击毁并从画面消失，整批清空后原位补满五靶并继续攻击；显示批次和累计击破，补靶不重置弹药或冷却，剩余靶位不串位、重开从第一批开始，无正式资源和奖励变化。",
+      "entry": "src/core/workshop-trial.js#createWorkshopTrial / src/rendering/workshop.js#drawWorkshopTrial",
+      "browserTests": [
+        "tests/workshop-targets-browser.cjs"
+      ]
+    },
+    {
+      "id": "workshop-stage-space",
+      "designCriterion": "中央工作台利用视口高度，两侧货架紧凑；桌面与320/390手机画布不拉伸，放大后部件连接点与工具施工准确，炮塔详情不改变舞台尺寸。",
+      "entry": "src/ui/workshop.js#createWorkshop / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/workshop-stage-space.cjs",
+        "tests/workshop-components-mobile.cjs"
+      ]
+    },
+    {
+      "id": "workshop-ui-stability",
+      "designCriterion": "武器/载具图标连续切换直接取消试装；脉冲炮预览后可恢复其他对象；炮塔检修不改变弹窗宽度、上沿及舞台尺寸。",
+      "entry": "src/ui/workshop.js#createWorkshop",
+      "browserTests": [
+        "tests/workshop-components-browser.cjs",
+        "tests/workshop-components-mobile.cjs",
+        "tests/workshop-components-edges.cjs"
+      ]
+    },
+    {
+      "id": "workshop-input-lifecycle",
+      "designCriterion": "拖部件、拖工具、按住1.5秒施工；松开暂停、取消零扣费、保存失败保留草稿；键盘和320/390真实触控可完成同一流程。",
+      "entry": "src/ui/workshop/construction.js#createWorkshopConstruction",
+      "browserTests": [
+        "tests/workshop-components-browser.cjs",
+        "tests/workshop-components-mobile.cjs",
+        "tests/workshop-components-edges.cjs"
+      ]
+    },
+    {
+      "id": "workshop-touch-construction",
+      "designCriterion": "320/390 手机拖工具就位后在工作台下方按住施工，手指不遮挡装备和工具动画；松开暂停、续作一次扣费，取消和无效放置零扣费，桌面鼠标及键盘保留。",
+      "entry": "src/ui/workshop/construction.js#createWorkshopConstruction / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/workshop-touch-construction.cjs"
+      ]
+    },
+    {
+      "id": "workshop-construction-clarity",
+      "designCriterion": "手机和桌面可见扳手受力/回程及螺栓单向紧固、焊枪沿缝焊接并留下焊珠；真实零件先拆出再插入，部件对照与整件前后切换在提交后保留。减少动态不闪烁，不改变施工扣费或战斗状态。",
+      "entry": "src/rendering/workshop-tools.js#drawWorkshopTool / src/rendering/workshop-assembly.js#drawWorkshopReplacement / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/workshop-animation-browser.cjs",
+        "tests/workshop-touch-construction.cjs",
+        "tests/workshop-touch-scene.cjs"
+      ]
+    },
+    {
+      "id": "workshop-completion-feedback",
+      "designCriterion": "保存成功后工具收回，升级部件局部描边收拢并静态保留；320/390手机同屏看到部件等级及正式属性旧值→新值。失败/取消无成功提示，查看旧件不标新件，切换清理、减少动态不闪烁。",
+      "entry": "src/rendering/workshop-completion.js#drawWorkshopCompletion / src/ui/workshop/completion.js#createWorkshopCompletion",
+      "browserTests": [
+        "tests/workshop-completion-browser.cjs",
+        "tests/workshop-completion-edges.cjs",
+        "tests/workshop-touch-construction.cjs"
+      ]
+    }
+  ],
+  "hudCriteria": [
+    {
+      "id": "hud-compact",
+      "designCriterion": "环境图标无可见文字且圆环居中，44像素触控区和辅助名称保留；k/w/Y资源在320/390与桌面均不截断，伤害为向下取整整数，昼夜实景可读。",
+      "entry": "src/rendering/visual-review.js#inspectHudCompact",
+      "browserTests": [
+        "tests/hud-compact-browser.cjs"
+      ]
+    }
+  ],
+  "mechanicalCases": [
+    "spider-motion",
+    "mechanical-mixed-pack",
+    "mechanical-core-ground-pack",
+    "workshop-weapon-15",
+    "workshop-components-weapons-15-damage",
+    "workshop-components-weapons-15-rate",
+    "workshop-components-weapons-15-capacity",
+    "workshop-components-weapons-15-reload",
+    "workshop-components-weapons-15-range",
+    "workshop-components-weapons-15-coordination",
+    "mechanical-companions",
+    "mechanical-armored-claws",
+    "mechanical-spider",
+    "workshop-weapon-16",
+    "workshop-components-weapons-16-coordination"
+  ],
+  "mechanicalCriteria": [
+    {
+      "id": "spider-motion",
+      "designCriterion": "八足分组抬落、侧舱开闭和真实小蛛伸足走出可辨；近战蓄势挥击朝向敌人，十蛛分散认领多敌且不聚拢母体，320/390手机及昼夜同屏可读。",
+      "entry": "src/rendering/spider.js#drawSpiderBody / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/spider-motion-browser.cjs"
+      ]
+    },
+    {
+      "id": "mechanical-mixed-pack",
+      "designCriterion": "固定前三槽可挂枪，满编三轻装远程与七重装近战在正式战场和工坊一致，后排独立追敌，生命比例及枪仓保持。",
+      "entry": "src/rendering/mechanical.js#drawMechanicalCat / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/spider-motion-browser.cjs"
+      ]
+    },
+    {
+      "id": "mechanical-armored-claws",
+      "designCriterion": "原生近战爪替换重装，肩甲面甲重爪结构可辨；300生命、低速追敌与挥爪同正式属性，远程恢复轻装且切换不回血。",
+      "entry": "src/rendering/mechanical.js#drawMechanicalCat / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/mechanical-spider-browser.cjs"
+      ]
+    },
+    {
+      "id": "mechanical-spider",
+      "designCriterion": "一母体与有限小蛛独立分层；八足真实行走、每2秒出舱、单枪架蓄能后坐、近战前爪与独立承伤均可辨，协同成长8至20，枪架按spider-mounted-swarm复核，昼夜及320/390和桌面同屏可读。",
+      "entry": "src/rendering/spider-armed.js#drawArmedSpider / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/mechanical-spider-browser.cjs",
+        "tests/mechanical-spider-scene.cjs"
+      ]
+    },
+    {
+      "id": "mechanical-core-ground-pack",
+      "designCriterion": "独立手持机械核心召唤地面机械猫，四肢关节随实际移动而交错，前爪近身攻击；协同模块 1–8 级对应 3–10 只，逐级增加端口；核心、猫体与飞行武器分离，按脚底排序，昼夜及手机可辨。",
+      "entry": "src/rendering/mechanical.js#drawMechanicalCat / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/mechanical-core-browser.cjs"
+      ]
+    },
+    {
+      "id": "mechanical-companions",
+      "designCriterion": "十猫分散追敌、预备挥爪和归队可辨；整队背枪跟随远程，枪架与真实枪口同步；独立生命、受击折叠与能量补召清楚；机械核心/无人机/浮游炮车载时主体独立、无补给串用，昼夜桌面及320/390手机可读。",
+      "entry": "src/rendering/mechanical-armed.js#drawArmedMechanicalCat / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/mechanical-companions-browser.cjs",
+        "tests/mechanical-companions-scene.cjs",
+        "tests/mechanical-companions-final.cjs"
+      ]
+    }
+  ],
+  "economyWorkbenchCriterion": {
+    "id": "economy-workbench-feedback",
+    "designCriterion": "工作台清楚展示模拟、正式靶场和实玩记录，以及全部种子的后期最大空档和超12分钟样本；正式工坊封顶价、追赶几折及原价/折后价、关键等级收益与森林/秘境资格可读，320/390/桌面昼夜同屏无溢出，费用与真实施工一致。",
+    "entry": "src/rendering/visual-review.js#inspectEconomyFeedback / src/core/workshop-trial.js#createWorkshopTrial",
+    "browserTests": [
+      "tests/balance-workbench-browser.cjs",
+      "tests/economy-feedback-browser.cjs",
+      "tests/upgrade-price-browser.cjs"
+    ]
+  },
+  "balanceRoutePickerCriterion": {
+    "id": "balance-route-picker",
+    "designCriterion": "目标装备以中文类别与名称直接选择，添加、删除、上下调整顺序可用键盘与触控完成；首末移动禁用、空列表可恢复、最多30件，默认顺序与模拟报告一致；320/390/桌面无横向溢出。",
+    "entry": "src/balance/route-editor.js#createRouteEditor / src/rendering/visual-review.js#inspectBalanceRoute",
+    "browserTests": [
+      "tests/balance-route-browser.cjs",
+      "tests/balance-workbench-browser.cjs"
+    ]
+  },
+  "balanceInlineHelpCriterion": {
+    "id": "balance-inline-help",
+    "designCriterion": "工作台内可完成初次运行、读数、对照、调参和导出；参数用途就地可见，调整影响可点击或键盘展开；产出/消费、保底方向、候选/正式规则区分清楚，320/390/桌面无横向溢出。",
+    "entry": "src/rendering/visual-review.js#inspectBalanceHelp / src/balance/app.js#renderEditor",
+    "browserTests": [
+      "tests/balance-help-browser.cjs",
+      "tests/balance-workbench-browser.cjs"
+    ]
+  },
+  "vehicleArmamentCases": [
+    {
+      "id": "vehicle-armament-0",
+      "designCriterion": "vehicle-exclusive-armament",
+      "description": "车载机枪独立供弹与短后坐；正式炮管动作、枪口与弹道同源，成长替换部件结构，保留猫、车体、履带和旋翼。桌面及320/390昼夜同屏，气垫船按weapon-turn-hovercraft复核双联潮汐炮。",
+      "entry": "src/rendering/vehicle-armaments.js#drawVehicleArmament / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/vehicle-armaments-browser.cjs"
+      ]
+    },
+    {
+      "id": "vehicle-armament-1",
+      "designCriterion": "vehicle-exclusive-armament",
+      "description": "125滑膛炮大行程阻尼复位、贯穿与击飞；正式炮管动作、枪口与弹道同源，成长替换部件结构，保留猫、车体、履带和旋翼。桌面及320/390昼夜同屏，气垫船按weapon-turn-hovercraft复核双联潮汐炮。",
+      "entry": "src/rendering/vehicle-armaments.js#drawVehicleArmament / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/vehicle-armaments-browser.cjs"
+      ]
+    },
+    {
+      "id": "vehicle-armament-2",
+      "designCriterion": "vehicle-exclusive-armament",
+      "description": "六管火神炮连续转子、停火减速；正式炮管动作、枪口与弹道同源，成长替换部件结构，保留猫、车体、履带和旋翼。桌面及320/390昼夜同屏，气垫船按weapon-turn-hovercraft复核双联潮汐炮。",
+      "entry": "src/rendering/vehicle-armaments.js#drawVehicleArmament / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/vehicle-armaments-browser.cjs"
+      ]
+    },
+    {
+      "id": "vehicle-armament-3",
+      "designCriterion": "vehicle-exclusive-armament",
+      "description": "气垫船无主炮；正式炮管动作、枪口与弹道同源，成长替换部件结构，保留猫、车体、履带和旋翼。桌面及320/390昼夜同屏，气垫船按weapon-turn-hovercraft复核双联潮汐炮。",
+      "entry": "src/rendering/vehicle-armaments.js#drawVehicleArmament / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/vehicle-armaments-browser.cjs"
+      ]
+    }
+  ],
+  "summonFollowCases": [
+    {
+      "id": "summon-natural-follow",
+      "designCriterion": "summon-natural-follow",
+      "description": "近距离留守、错峰抄近路、停车自然分散；全召唤物仅选视野内目标，手机昼夜实机绕圈与急转。",
+      "entry": "src/rendering/visual-review.js#inspectSummonFollow",
+      "browserTests": [
+        "tests/summon-follow-browser.cjs"
+      ]
+    },
+    {
+      "id": "summon-observe-catchup",
+      "designCriterion": "summon-observe-catchup",
+      "description": "目标出屏后错峰停步观察、平滑归队；高速移动优先追赶，桌面及手机昼夜同屏检查。",
+      "entry": "src/rendering/mechanical.js#drawMechanicalCat / src/rendering/visual-review.js#inspectSummonRecovery",
+      "browserTests": [
+        "tests/summon-recovery-browser.cjs"
+      ]
+    }
+  ],
+  "weaponTurnHovercraftCriterion": {
+    "id": "weapon-turn-hovercraft",
+    "designCriterion": "切换目标沿最短弧限速转向，真实枪口瞄准后发射；气垫船双联潮汐炮独立双喷口及后坐，允许外接炮塔且弹匣×1.5。加特林六管转子开火加速停火减速，低动态固定相位。正式战场、工坊和试射同源，桌面及320/390手机昼夜可辨。",
+    "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/rotary-barrels.js#drawRotaryBarrels",
+    "browserTests": [
+      "tests/weapon-turn-browser.cjs",
+      "tests/weapon-turn-animation.cjs"
+    ]
+  },
+  "vehicleWheelCases": [
+    {
+      "id": "vehicle-wheels",
+      "designCriterion": "松果战车四个独立轮胎、轮毂与前后轮间隙清楚，与重坦连续履带区分；实际位移滚动、倒车反转、停车保留轮姿，车壳不旋转假动。正式战场与收藏工坊同源，独立猫手、机枪及炮塔保留，320/390手机和桌面昼夜同屏可读。",
+      "entry": "src/rendering/pine-wheels.js#drawPineRear / src/rendering/vehicle.js / src/rendering/visual-review.js#renderVisualCase",
+      "browserTests": [
+        "tests/vehicle-wheels-browser.cjs",
+        "tests/vehicle-wheels-scene-browser.cjs"
+      ]
+    }
+  ],
+  "hoverTideCriterion": {
+    "id": "hover-tide-impact",
+    "designCriterion": "双喷口错峰0.12秒发射并独立后坐复进，固定炮架和气垫风扇保留。水压弹命中出现局部定向水冠和清楚后滑，普通水枪及领主抗性不变；桌面和320/390昼夜实机可辨、减少动态无密集水珠。",
+    "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/tide-cannon.js",
+    "browserTests": [
+      "tests/hover-tide-browser.cjs"
+    ]
+  },
+  "tankRecoilCriterion": {
+    "id": "tank-recoil",
+    "designCriterion": "125炮炮管急退、复进杆压缩，悬挂上方车体受力后沉并阻尼回稳；履带贴地不假滑，炮口与弹道同源，320/390及桌面昼夜可辨。",
+    "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/vehicle.js",
+    "browserTests": [
+      "tests/tank-recoil-browser.cjs"
+    ]
+  },
+  "spiderFollowStability": {
+    "id": "spider-follow-stability",
+    "designCriterion": "蜘蛛近身连续减速不来回走停，归队目标避开母体分离圈，八足按实际位移推进，远追/近战/出舱保留。",
+    "entry": "src/rendering/visual-review.js#inspectSpiderFollow",
+    "browserTests": [
+      "tests/spider-follow-stability-browser.cjs"
+    ]
+  },
+  "tankMuzzleFlash": {
+    "id": "tank-muzzle-flash",
+    "designCriterion": "125炮口无实体描边三角形，0.055秒短闪消退后仅保留真实炮管后坐，手机昼夜清楚。",
+    "entry": "src/rendering/visual-review.js#renderVisualCase / src/rendering/vehicle-armaments.js",
+    "browserTests": [
+      "tests/tank-recoil-browser.cjs"
+    ]
+  },
+  "sunleafCriteria": [
+    {
+      "id": "selected-cat-story-identity",
+      "designCriterion": "购买并选择的猫在章节换装、恢复与暂离前后保持身体、小手和名称一致，借用武器及固定战斗数值不受永久角色成长影响，手机与桌面昼夜均可辨认",
+      "entry": "src/rendering/visual-review.js#inspectSelectedCat / src/rendering/renderer.js#draw / src/ui/hud.js#createHud",
+      "browserTests": ["tests/selected-cat-browser.cjs"]
+    },
+    {
+      "id": "story-equipment-journey",
+      "designCriterion": "剧情随真实枪车体验回应，短气泡不暂停不拉镜头，手机桌面昼夜不遮挡玩家与操作，完成清理并可选进入真实工坊",
+      "entry": "src/rendering/visual-review.js#inspectStoryJourney / src/ui/story-chatter.js#createStoryChatter / src/rendering/renderer.js#draw",
+      "unitTests": ["tests/story-journey.test.mjs"],
+      "browserTests": ["tests/story-journey-browser.cjs", "tests/story-journey-layout-browser.cjs"]
+    },
+    {
+      "id": "story-table-driven",
+      "designCriterion": "第一章剧情、任务、人物出场和清理由纯数据配置驱动；异地节点按正式绕行路程1000–1500米编排，含主路、近道、中继站往返与回营；旧检查点跟随新落点并保留阶段和供给",
+      "entry": "src/rendering/visual-review.js#inspectStoryDefinition / src/rendering/story-props.js#storyObjects / src/rendering/renderer.js#draw",
+      "unitTests": ["tests/story-table.test.mjs", "tests/story-node-distance.test.mjs", "tests/first-task-route.test.mjs"],
+      "browserTests": ["tests/story-table-browser.cjs", "tests/story-table-map-browser.cjs"]
+    },
+    {
+      "id": "horde-completed-sign",
+      "designCriterion": "北门与西门兽群徽牌只显示已结算兽潮累计数字，点击查看详细说明，零次及多位数可读，点击区域贴合牌面，手机桌面昼夜不遮挡通行",
+      "entry": "src/rendering/camp-defense.js#drawCampDefense / src/rendering/visual-review.js#inspectHordeCompletedSign",
+      "browserTests": ["tests/horde-completed-sign-browser.cjs"]
+    },
+    {
+      "id": "story-camera-stability",
+      "designCriterion": "章节进入、暂离和恢复从新场景取景，不继承旧镜头扫动；同段对白切换说话者保持取景，底部对白不再为头顶空间移动镜头，结束平滑恢复，手机桌面昼夜可读",
+      "entry": "src/rendering/story-camera.js#StoryCamera / src/rendering/renderer.js#draw / src/rendering/visual-review.js#inspectStoryCamera",
+      "unitTests": ["tests/story-camera.test.mjs"],
+      "browserTests": ["tests/story-camera-browser.cjs", "tests/chapter-entry-camera-browser.cjs"]
+    },
+    {
+      "id": "story-world-guidance",
+      "designCriterion": "野猪战地面圆环与真实碰撞边界一致；当前目标光圈可见；剧情自动以标注说话者的底部对白呈现，手机桌面昼夜不遮挡且可暂停跳过",
+      "entry": "src/rendering/story-guidance.js#drawStoryGuidance / src/ui/story-speech.js#createStorySpeech / src/rendering/visual-review.js#inspectStoryGuidance",
+      "browserTests": ["tests/story-guidance-browser.cjs"]
+    },
+    {
+      "id": "story-target-direction",
+      "designCriterion": "圆圈内箭头实时指向当前任务最近镜像，阶段切换和暂停正确，昼夜320/390/桌面不遮挡任务、血条和操作",
+      "entry": "src/ui/story-navigation.js#createStoryNavigation / src/rendering/visual-review.js#inspectStoryNavigation",
+      "browserTests": ["tests/story-navigation-browser.cjs"]
+    },
+    {
+      "id": "compact-quest-tracker",
+      "designCriterion": "故事任务隐藏资源与环境栏，保留右上角设置并上移指引；宽战场标题计数同排，窄战场分行，说明保留，设置与寻路按钮不重叠，320/390及桌面昼夜清晰，退出章节恢复完整资源栏",
+      "entry": "src/ui/story.js#createStoryPanel / src/styles/story.css / src/rendering/visual-review.js#inspectCompactQuest",
+      "browserTests": ["tests/compact-quest-tracker-browser.cjs", "tests/task-combat-hud-browser.cjs"]
+    },
+    {
+      "id": "sunleaf-objective-readable",
+      "designCriterion": "章节目标、交互和方向在320/390/桌面与昼夜实战中可读",
+      "entry": "src/rendering/visual-review.js#inspectSunleaf / src/rendering/story-props.js#drawStoryProp / src/rendering/renderer.js#draw",
+      "browserTests": [
+        "tests/story-browser.cjs",
+        "tests/story-visual-browser.cjs"
+      ]
+    },
+    {
+      "id": "sunleaf-route-readable",
+      "designCriterion": "主路与近道名称和空间可区分，三套载具真实通行",
+      "entry": "src/rendering/visual-review.js#inspectSunleaf / src/rendering/story-props.js#drawStoryProp / src/rendering/renderer.js#draw",
+      "browserTests": [
+        "tests/story-browser.cjs",
+        "tests/story-visual-browser.cjs"
+      ]
+    },
+    {
+      "id": "sunleaf-relay-state",
+      "designCriterion": "三段修复、中继站生命和完成状态使用正式规则显示",
+      "entry": "src/rendering/visual-review.js#inspectSunleaf / src/rendering/story-props.js#drawStoryProp / src/rendering/renderer.js#draw",
+      "browserTests": [
+        "tests/story-browser.cjs",
+        "tests/story-visual-browser.cjs"
+      ]
+    },
+    {
+      "id": "sunleaf-loadout-identity",
+      "designCriterion": "三套借用枪车分别绘制，保留真实角色动作和独立主炮",
+      "entry": "src/rendering/visual-review.js#inspectSunleaf / src/rendering/story-props.js#drawStoryProp / src/rendering/renderer.js#draw",
+      "browserTests": [
+        "tests/story-browser.cjs",
+        "tests/story-visual-browser.cjs"
+      ]
+    },
+    {
+      "id": "sunleaf-boss-warning",
+      "designCriterion": "野猪王正式预警、冲锋和恢复不被任务UI遮挡",
+      "entry": "src/rendering/visual-review.js#inspectSunleaf / src/rendering/story-props.js#drawStoryProp / src/rendering/renderer.js#draw",
+      "browserTests": [
+        "tests/story-browser.cjs",
+        "tests/story-visual-browser.cjs"
+      ]
+    },
+    {
+      "id": "sunleaf-world-return",
+      "designCriterion": "完成或暂离后移除全部章节专属道具与人物，恢复原森林；保留通关记录和营地重玩入口",
+      "entry": "src/rendering/visual-review.js#inspectStoryReturn / src/rendering/story-props.js#storyObjects / src/rendering/renderer.js#draw",
+      "unitTests": ["tests/story-props.test.mjs"],
+      "browserTests": [
+        "tests/story-prop-cleanup-browser.cjs"
+      ]
+    },
+    {
+      "id": "story-battle-rings",
+      "designCriterion": "任务战斗圈与碰撞共用边界，玩家、怪物留在圈内；昼夜和320/390/桌面按地图视角显示边界，结束解除且机械伙伴沿干地攻击",
+      "entry": "src/rendering/visual-review.js#inspectStoryBattleRing / src/rendering/story-guidance.js#drawStoryGuidance",
+      "unitTests": ["tests/story-battle-rings.test.mjs"],
+      "browserTests": ["tests/story-natural-playthrough.cjs"]
+    },
+    {
+      "id": "camp-building-layout",
+      "designCriterion": "营地建筑分布在北西南各区，中央回信驿与桥路留白；主体及门牌不堆叠，入口干地可达，桌面与320/390昼夜同屏可读",
+      "entry": "src/rendering/visual-review.js#inspectCampLayout / src/rendering/renderer.js#draw",
+      "unitTests": ["tests/camp-building-layout.test.mjs", "tests/realm-entrances.test.mjs"],
+      "browserTests": ["tests/camp-building-layout-browser.cjs", "tests/camp-layout-walkthrough.cjs"]
+    },
+    {
+      "id": "world-story-posts",
+      "designCriterion": "世界任务驿牌有独立建筑和信封标记，靠近点击或E查看当地任务；地图同源、昼夜与320/390可读、退出恢复且不遮工坊门牌",
+      "entry": "src/rendering/visual-review.js#inspectStoryPosts / src/rendering/story-posts.js#drawStoryPost / src/ui/story-posts.js#createStoryPostMarkers",
+      "unitTests": ["tests/story-posts.test.mjs"],
+      "browserTests": ["tests/story-posts-browser.cjs"]
+    },
+    {
+      "id": "forest-story-campaign",
+      "designCriterion": "多章剧情与正式气垫船水路、机械猫、飞行降落和秘境体验衔接；首篇赶路节点按正式绕行路程1000–1500米编排，其余章节沿用既有距离要求，保留渡口与桥头短途教学点；昼夜人物同屏、窄屏目录可用、退出清理且不串章",
+      "entry": "src/rendering/visual-review.js#inspectStoryCampaign / src/rendering/renderer.js#draw",
+      "unitTests": [
+        "tests/story-campaign.test.mjs",
+        "tests/story-node-distance.test.mjs"
+      ],
+      "browserTests": [
+        "tests/story-campaign-browser.cjs",
+        "tests/story-campaign-side-browser.cjs",
+        "tests/story-campaign-visual-browser.cjs",
+        "tests/story-node-distance-browser.cjs",
+        "tests/first-task-distance-browser.cjs"
+      ]
+    }
+  ],
+  "mobileSingleRowHudCriterion": {
+    "id": "mobile-single-row-hud",
+    "designCriterion": "320/390手机顶部资源栏无重叠或横向溢出；金币木头十万以下显示完整整数，达到十万使用w并向下截取一位小数、去尾零，精确量仍可查看；正常字号与昼夜同屏可读。",
+    "entry": "src/rendering/visual-review.js#inspectHudCompact",
+    "browserTests": [
+      "tests/audio-mobile-hud-browser.cjs", "tests/wallet-number-threshold-browser.cjs"
+    ]
+  },
+  "realmOnlyHudCriterion": {
+    "id": "realm-only-hud",
+    "designCriterion": "四种秘境从准备到结算只显示秘境入口和局内必要 HUD；森林资源、环境与养成入口隐藏；320/390/桌面直接进入秘境面板，退出恢复森林菜单与焦点。",
+    "entry": "src/rendering/visual-review.js#inspectRealmHud",
+    "browserTests": [
+      "tests/realm-only-hud-browser.cjs",
+      "tests/realm-only-hud-transitions-browser.cjs"
+    ]
+  },
+  "typographyCriterion": {
+    "id": "hyqihei-font",
+    "designCriterion": "中英文 DOM 与 Canvas 文字统一使用用户提供的汉仪旗黑 75S；字体加载成功后才启动正式画布，缺失字体明确失败；320/390/桌面昼夜文字可读、控件可操作。",
+    "entry": "src/rendering/visual-review.js#inspectGameFont / src/rendering/text-style.js#canvasFont",
+    "browserTests": [
+      "tests/font-browser.cjs",
+      "tests/font-combat-browser.cjs",
+      "tests/font-arrival-browser.cjs"
+    ]
+  },
+  "forestLivingWorldCriterion": {
+    "id": "forest-living-world",
+    "designCriterion": "居民在任务外持续生活，帮助留下真实劳动、轮班与设施变化；安宁生活路与危险巡护分区，昼夜及手机桌面可读。",
+    "entry": "src/rendering/living-world.js / src/rendering/renderer.js / src/rendering/visual-review.js#inspectLivingWorld",
+    "unitTests": [
+      "tests/living-world.test.mjs"
+    ],
+    "browserTests": [
+      "tests/living-world-browser.cjs"
+    ],
+    "brief": "docs/art-tasks/forest-living-world.md"
+  },
+  "campDefenseCriterion": {
+    "id": "camp-horde-defense",
+    "designCriterion": "当前波次与十波总数清楚、拒马具有体积与耐久、随机顶级伙伴真实出营开火，任何结束都展示 B/A/S 结算",
+    "entry": "src/rendering/visual-review.js#inspectCampDefense / src/rendering/camp-defense.js",
+    "brief": "docs/art-tasks/camp-horde-defense.md",
+    "browserTests": "tests/camp-defense-browser.cjs"
+  },
+  "workshopNavigationCriterion": {
+    "id": "workshop-task-navigation",
+    "designCriterion": "入职工坊路点可达，点击任务不暂停导航；门前建筑高亮、制作完成清理旧目标，手机桌面昼夜可读",
+    "entry": "src/rendering/visual-review.js#inspectWorkshopNavigation / src/rendering/story-guidance.js",
+    "brief": "docs/art-tasks/workshop-task-navigation.md",
+    "browserTests": ["tests/workshop-navigation-browser.cjs"]
+  },
+  "sceneColorVibrancyCriterion": {
+    "id": "scene-color-vibrancy",
+    "designCriterion": "草地与树冠色阶鲜明、暖色材质在夜晚仍可分辨；四季天气保持色彩差异，手机桌面昼夜同屏清楚，无全屏滤镜或新增纹理缓存",
+    "entry": "src/rendering/visual-review.js#inspectSceneColor / src/rendering/scene-tone.js / src/rendering/river.js",
+    "brief": "docs/art-tasks/scene-color-vibrancy.md",
+    "browserTests": ["tests/scene-color-vibrancy-browser.cjs"]
+  },
+  "mainlineHordeDamageCriterion": {
+    "id": "mainline-horde-damage",
+    "designCriterion": "当前步骤点击后显示通往真实操作入口的路线；同枪散弹命中累计为清楚数字，不重叠同一枪的多颗弹丸；西门守门可直接体验并结算。",
+    "entry": "src/rendering/visual-review.js#inspectMainlineHordeDamage / src/rendering/renderer.js",
+    "brief": "docs/art-tasks/mainline-horde-damage.md",
+    "browserTests": [
+      "tests/mainline-horde-damage-browser.cjs",
+      "tests/mainline-entry-audit-browser.cjs"
+    ]
+  },
+  "compactHordeHudCriterion": {
+    "id": "compact-horde-hud",
+    "designCriterion": "左侧显示已完成兽潮次数与拒马耐久，右侧依次显示Boss图标、n/10双环进度、问号；累计场次与当前波次明确区分，完整显示0至999999次且读屏可辨，换波不虚增。外圈显示开波等待、内圈显示清怪进度；手机桌面昼夜清楚，兽潮主条高度不超过48像素，领主登场后在下方显示名称、当前/最大HP及实时血条，受伤和续档同步，弹窗及离场隐藏，详情与退出可操作",
+    "entry": "src/rendering/visual-review.js#inspectCompactHordeHud / src/ui/camp-defense.js",
+    "brief": "docs/art-tasks/compact-horde-hud.md",
+    "browserTests": ["tests/compact-horde-hud-browser.cjs", "tests/horde-completed-hud-browser.cjs", "tests/horde-wave-balance-browser.cjs", "tests/horde-clearing-hud-browser.cjs", "tests/horde-hud-colors-browser.cjs"],
+    "paletteCriterion": "与设置及任务栏共用奶油纸底、森林绿文字、叶灰细边和短底影；拒马深草绿、等待深麦穗、清怪森林绿，在浅底可辨。保留48像素高度、六位数次数和44像素触控，昼夜及领主状态均清楚",
+    "combatTopHud": "兽潮战斗隐藏金币木材及季节昼夜天气，设置与战斗指引顶边对齐；暂停和波间维持布局，结算及主动退出恢复完整资源环境栏"
+  },
+  "hordeCameraCriterion": {
+    "id": "horde-facing-camera",
+    "designCriterion": "怪潮沿稳定观察方向前方七成、后方三成；自动攻击与短促走位不晃镜头，持续改变移动方向才平滑调整，保留倍率、安全边界及手机桌面昼夜可读性",
+    "entry": "src/rendering/visual-review.js#inspectHordeCamera / src/rendering/camera.js",
+    "brief": "docs/art-tasks/horde-facing-camera.md",
+    "browserTests": ["tests/horde-camera-browser.cjs", "tests/horde-camera-input-browser.cjs", "tests/steady-horde-camera-browser.cjs"]
+  },
+  "campRescueCriterion": {
+    "id": "horde-rescue-neighbor-bubbles",
+    "designCriterion": "伙伴依次通过营门后实弹交战，火力随敌群强度匹配；营地口头禅与救援在头顶显示小气泡，不遮挡操作、不隐藏HUD",
+    "entry": "src/rendering/visual-review.js#inspectCampRescue / src/rendering/camp-defense.js / src/ui/compact-speech.js",
+    "brief": "docs/art-tasks/horde-rescue-neighbor-bubbles.md",
+    "browserTests": "tests/camp-rescue-browser.cjs"
+  },
+  "heroAttackCriterion": {
+    "id": "hero-attack-feedback",
+    "designCriterion": "角色卡片仅按武器和载具列出合并后的属性加成；320/390/桌面昼夜可读，真实换人升级即时生效，未拥有展示一级预览。",
+    "entry": "src/rendering/visual-review.js#inspectHeroAttack / src/ui/inventory.js#renderInventory",
+    "brief": "docs/art-tasks/hero-attack-feedback.md",
+    "browserTests": [
+      "tests/hero-talents-browser.cjs"
+    ]
+  },
+  "mobileUiPagesCriterion": {
+    "id": "mobile-ui-pages",
+    "designCriterion": "剩余手机功能页共用森林绿标题、奶油正文、浅绿固定操作栏；说明确认轻标题，NPC保留底部对白，工坊保留装配舞台。320至430竖屏及844×390横持无横向溢出、无标题操作栏重叠、触控至少44px，昼夜同屏可读。",
+    "entry": "src/rendering/visual-review.js#inspectMobileUiPages / src/ui/mobile-panels.js / src/styles/ui-mobile-pages.css",
+    "brief": "docs/art-tasks/mobile-ui-pages.md",
+    "browserTests": [
+      "tests/mobile-ui-pages-browser.cjs"
+    ]
+  },
+  "nearbyClickInteractionCriterion": {"designCriterion":"nearby-click-interaction","goal":"房屋直接点击本体，无悬浮猫爪；停车和家具保留语义按钮，切换目标不残留样式，手机触摸和键盘共用动作","runtime":"src/ui/nearby-interaction.js:createNearbyInteraction","review":"src/rendering/visual-review.js:inspectNearbyInteraction","evidence":"docs/art-tasks/camp-house-paw-hints.md","browserTests":["tests/camp-house-interaction-browser.cjs"]},
+  "weatheredHousesCriterion": {
+    "id": "weathered-houses",
+    "designCriterion": "旧屋保留连续屋面、闭合墙体与门窗，局部缺瓦封板体现破败而非废墟；靠近显示木材与修复方式，可提前修复，主线跳过已完成修复；昼夜手机与桌面同屏、原碰撞和独立动作保持。",
+    "entry": "src/rendering/visual-review.js#inspectWeatheredHouses / src/rendering/town-restoration.js#drawRestorationObject",
+    "brief": "docs/art-tasks/weathered-houses.md",
+    "unitTests": [
+      "tests/boss-repair-flow.test.mjs",
+      "tests/town-restoration.test.mjs",
+      "tests/explicit-building-repair.test.mjs"
+    ],
+    "browserTests": [
+      "tests/boss-repair-flow-browser.cjs"
+    ]
+  },
+  "townRestorationCriterion": {
+    "id": "town-restoration",
+    "designCriterion": "未修复设施保持原址破败结构；材料足够可提前步行或骑乘到达可见修复区，明确点击所选建筑才扣料开工；路过、站立和导航抵达不自动投料，无需额外采木；守备台可从任一营门内侧修复，范围标示与触发一致；木料在整个施工期间由猫猫持续飞到建筑，局部构件修复后开放功能；手机与昼夜同屏清晰，路口和独立角色动作保留",
+    "entry": "src/rendering/visual-review.js#inspectTownRestoration / src/rendering/town-restoration.js",
+    "brief": "docs/art-tasks/town-restoration.md",
+    "interactionBrief": "docs/art-tasks/explicit-building-repair.md",
+    "unitTests": [
+      "tests/town-restoration.test.mjs",
+      "tests/explicit-building-repair.test.mjs"
+    ],
+    "browserTests": [
+      "tests/explicit-building-repair-browser.cjs",
+      "tests/town-restoration-finish-browser.cjs",
+      "tests/north-gift-parking-browser.cjs"
+    ]
+  },
+  "weaponTrialScenesCriterion": {
+    "id": "weapon-trial-scenes",
+    "designCriterion": "点击工坊入口进入独立可移动场景，以纵列、散射、群体、多向和采伐布阵展示真实武器特点；手机昼夜同屏可读，正式动作与独立部件保留，返回工坊保留试装且不消耗真实资源",
+    "entry": "src/rendering/visual-review.js#inspectWeaponTrialSceneReview / src/rendering/weapon-trial-scene.js#drawWeaponTrialScene",
+    "brief": "docs/art-tasks/weapon-trial-scenes.md",
+    "unitTests": [
+      "tests/weapon-trial-scenes.test.mjs",
+      "tests/redwolf-trial.test.mjs"
+    ],
+    "browserTests": [
+      "tests/weapon-trial-scenes-browser.cjs",
+      "tests/weapon-trial-touch-browser.cjs",
+      "tests/weapon-trial-vehicle-browser.cjs",
+      "tests/weapon-trial-trees-browser.cjs",
+      "tests/redwolf-feedback-browser.cjs"
+    ]
+  },
+  "workshopWeaponFocusCriterion": {
+    "id": "workshop-weapon-focus",
+    "designCriterion": "购买按 weapon-purchase-list 恢复侧栏加右侧预览布局，各页侧栏仅显示放大30%的武器图标；升级与改装以武器预览为主体，升级显示真实部件缩略图，点选自动试装，预览属性与费用后长按确认，费用区材料相邻8px且常规双材料底栏112px，松手暂停，更换不扣费；升级完成保留当前页并刷新下一次报价，满级停留并禁用确认；改装显示两种方案，点选直接试装、长按确认，移除拖拽，成长只显示当前武器熟练度。工坊无领地等级；升级、改装与成长的左侧枪械缩略图列表独立划动，右侧在320×568至430×932及844×390手机无需滚动、无裁切、控件至少44px，昼夜复核正式交易和施工。",
+    "entry": "src/ui/workshop.js#createWorkshop / src/rendering/visual-review.js#inspectWorkshopFocus",
+    "browserTests": [
+      "tests/workshop-focus-browser.cjs",
+      "tests/workshop-focus-edges-browser.cjs",
+      "tests/workshop-tap-upgrade-browser.cjs",
+      "tests/workshop-tap-interrupt-browser.cjs",
+      "tests/workshop-compact-cost-browser.cjs",
+      "tests/workshop-compact-cost-edges-browser.cjs",
+      "tests/workshop-stay-hold-browser.cjs",
+      "tests/workshop-stay-hold-layout-browser.cjs"
+    ],
+    "brief": "docs/art-tasks/workshop-compact-cost.md"
+  },
+  "workshopVehicleFocusCriterion": {
+    "id": "workshop-vehicle-focus",
+    "designCriterion": "载具复用武器单屏工坊：左侧车型列表独立划动，各页只显示载具图标并同比放大30%，名称与状态保留为无障碍标签，购买与已拥有目录分离；升级区切换车体、当前武器及专属主炮，点选试装、紧凑费用、长按确认；挂载每页四项并点选预览、长按确认，购买挂载与免费挂载使用正式交易；车体和主炮升级完成留在当前操作页，下一次长按独立结算。主线依次定位更换部件、部件、长按确认及演练返回。320×568至430×932及844×390无需滚动详情，触控至少44px，正式昼夜同屏复核。",
+    "entry": "src/ui/workshop.js#createWorkshop / src/ui/operation-guide.js#createOperationGuide / src/rendering/visual-review.js#inspectWorkshopFocus",
+    "browserTests": [
+      "tests/vehicle-workshop-layout-browser.cjs",
+      "tests/vehicle-workshop-guide-browser.cjs",
+      "tests/vehicle-workshop-edges-browser.cjs",
+      "tests/workshop-stay-hold-browser.cjs",
+      "tests/workshop-stay-hold-layout-browser.cjs"
+    ],
+    "brief": "docs/art-tasks/vehicle-workshop-guide.md"
+  },
+  "policePatrolCases": ["hero-breed-6", "police-car-motion"],
+  "policePatrolCriteria": [
+    {"id":"hero-breed-6","designCriterion":"警帽、灰白猫与藏蓝制服清晰可辨；真实连续帧保留腿尾与表情，小手和武器独立。"},
+    {"id":"police-car-motion","designCriterion":"奶油白蓝车体与森林风格一致；轮胎按位移转动，停车保留姿态，警灯局部交替，暂停冻结。"}
+  ]
+,
+  "farmEconomy": {"designCriterion":"world-farm-delivery","description":"土壤保持地面层，营地田牌以杆底参与实体排序，不被田块覆盖；种田期间隐藏建筑头顶入口并停止为其调整镜头，切回战斗或退出后恢复；森林与湖谷仅禁止土壤占到实际路面，路边草地可开垦，不计作物高度和额外路缘留白，旧田读档旅行保持原位；点击时对齐视野内最近田块，无可见田则保留点击位置，行走期间不重新选址，长按选中与所有排队田格在作物右下角显示同等清晰的小圆点，开垦位置也用圆点；失焦释放输入但保留队列，自动暂停后继续原农活；完整空格可补齐，窄缝明确提示空间不足，无虚线框，小种子避免遮脸；成熟作物不显示常驻黄色圆点，驾驶时点击种地或田块安全下车并继续对应操作，无法下车明确提示；作物萌芽、渐长、成熟连续过渡，根部固定、叶茎错相轻摆，暂停与浇水加速兼容；锄头与镰刀独立蓄力、加速、接触短停、收势，种地工具栏依次为锄头、镰刀、水壶、电锯、战斗和退出；选择电锯点击树木后走近清理，空地明确提示，迎敌后恢复锯树；发现当前武器射程内活怪时自动迎敌，冻结动作和队列，受伤不清空；已交战目标短暂出射程或击退中继续保持迎敌，死亡/回收或持续3秒远离脱战范围后，先持枪警戒1.05秒再恢复原农活且不重复结算；新威胁重置警戒，暂停不计时；自动迎敌期间仍隐藏建筑提示；战斗按钮主动恢复武器并取消队列，退出收起种田界面；已选镰刀原地点击空田打开种子选择，也可从空田、幼苗或工具按钮长按拖选成熟田，不显示成长进度条；猫猫走近撒种、挥镰，金币从田块飞向HUD；任务强调主要金币来源并保留原奖励；小屋北侧快递站不定期收到种子，导航与领取同址；坐标存档、手机昼夜与取消暂停正确。","entry":"src/rendering/visual-review.js#inspectFarm","brief":"docs/art-tasks/world-farm-delivery.md","unitTests":["tests/farm-auto-combat.test.mjs","tests/farm-road-footprint.test.mjs","tests/farm-dismount.test.mjs","tests/farm-placement.test.mjs","tests/farm-gap.test.mjs","tests/farm-economy.test.mjs","tests/mainline.test.mjs","tests/farm-tools.test.mjs","tests/farm-growth.test.mjs"],"browserTests":["tests/farm-combat-transition-browser.cjs","tests/farm-saw-browser.cjs","tests/farm-auto-combat-browser.cjs","tests/farm-dismount-browser.cjs","tests/farm-placement-browser.cjs","tests/farm-empty-seed-preview-browser.cjs","tests/farm-field-ui-browser.cjs","tests/farm-selection-browser.cjs","tests/farm-combat-browser.cjs","tests/farm-focus-queue-browser.cjs","tests/farm-growth-browser.cjs","tests/farm-tools-motion-browser.cjs","tests/world-farm-delivery-browser.cjs","tests/world-farm-delivery-edges-browser.cjs","tests/world-farm-maps-browser.cjs","tests/farm-loading-browser.cjs","tests/farm-access-sign-browser.cjs","tests/repaired-entry-browser.cjs"]},
+  "seedProgressionCriterion": {
+    "id": "seed-progression",
+    "designCriterion": "四类作物各3至5种，分类选种浮层高于任务UI，短名称与库存可读；选种分类页签显示背包总粒数，零库存隐藏数字；种子小屋页签显示已解锁/总品种数，0解锁仍显示0/N，库存耗尽不减少解锁数；新作物三阶段共用正式绘制器，根部固定，手机昼夜可辨；门槛、购买与收获减半金额保持一致",
+    "entry": "src/rendering/visual-review.js#inspectSeedProgression / src/rendering/farm.js#drawFarmCrop",
+    "brief": "docs/art-tasks/seed-progression.md",
+    "unitTests": ["tests/seed-progression.test.mjs"],
+    "browserTests": ["tests/seed-progression-browser.cjs", "tests/seed-category-counts-browser.cjs", "tests/seed-picker-layer-browser.cjs", "tests/farm-harvest-feedback-browser.cjs", "tests/farm-loading-browser.cjs"]
+  },
+  "monsterCampsCriterion": {"id":"monster-camps","designCriterion":"营地破败小木牌只显示名称等级，面积增加30%，地面无警戒圈；边缘驻足注视并显示预警，深入开战、追出视野后返营；营内具名居民不可攻击，掉落与次数保留，手机昼夜可读","entry":"src/rendering/monster-camps.js#drawMonsterCampObject / src/rendering/visual-review.js#inspectMonsterCamps","brief":"docs/art-tasks/monster-camp-alerts.md","unitTests":["tests/monster-camps.test.mjs"],"browserTests":["tests/monster-camps-browser.cjs","tests/monster-camps-visual.cjs","tests/monster-camps-links.cjs","tests/monster-camps-menu.cjs","tests/seed-task-monster-camp-browser.cjs"]},
+  "campStoriesCriterion": {"id":"camp-stories","designCriterion":"营地居民底部短故事，一次一段，仅接话与关闭；现场听完才给线索，保留灰堆寻物和回访记忆","entry":"src/ui/monster-camps.js#createMonsterCampPanel","brief":"docs/art-tasks/camp-stories.md","browserTests":["tests/camp-stories-browser.cjs","tests/camp-stories-landscape.cjs"]},
+  "campResidentsCriterion": {"id":"camp-residents","designCriterion":"营地固定五人混编至少三类，保留飞翼、车轮、盾卫脚步和独立武器；警觉只注视不攻击，高个预警不遮挡，手机昼夜可辨","entry":"src/core/monster-camps.js#monsterCampObjects / src/rendering/monster-camps.js#drawMonsterCampObject","brief":"docs/art-tasks/camp-residents.md","unitTests":["tests/monster-camps.test.mjs","tests/dumpling-motion.test.mjs"],"browserTests":["tests/camp-residents-browser.cjs"]},
+  "campSignEntryCriterion": {"id":"camp-sign-entry","designCriterion":"营地木牌在预警圈外，牌面直接点击打开故事，无悬浮空白底板；触控至少44像素并随镜头投影，保留居民与灰堆入口","entry":"src/rendering/monster-camps.js#campRenderObjects / src/ui/nearby-interaction.js#createNearbyInteraction","brief":"docs/art-tasks/camp-sign-entry.md","unitTests":["tests/monster-camps.test.mjs","tests/interaction-anchors.test.mjs"],"browserTests":["tests/camp-sign-entry-browser.cjs"]},
+  "campHealingBarCriterion": {"id":"camp-healing-bar","designCriterion":"返营休养头顶绿色血条随真实HP缓慢增长，满血隐藏，兵种预警避让且不被相邻实体遮住，手机昼夜可读","entry":"src/rendering/enemies.js#enemyHealthBarView / src/rendering/renderer.js","brief":"docs/art-tasks/camp-healing-bar.md","unitTests":["tests/camp-healing-bar.test.mjs","tests/camp-health-recovery.test.mjs"],"browserTests":["tests/camp-healing-bar-browser.cjs"]},
+  "storyWorldInteractionCriterion": {"id": "story-world-interaction", "designCriterion": "赶路保持地面导航，靠近当前任务目标后改为指向人物或物品的动态点击箭头；直接短按本体操作，拖动仍可移动；对白、弹窗、未满足战斗条件及离开范围隐藏；手机昼夜可辨，减少动态静止，命中区至少44像素且跟随正式镜头。", "entry": "src/ui/story-interaction.js#createStoryInteraction / src/rendering/visual-review.js#inspectStoryInteraction", "brief": "docs/art-tasks/story-world-interaction.md", "unitTests": ["tests/story-interaction.test.mjs"], "browserTests": ["tests/story-interaction-browser.cjs"]},
+  "farmWaterStreamCriterion": {"id": "farm-water-stream", "designCriterion": "壶嘴与水流共用姿态，左右和斜上方操作位均从壶嘴向下倒入田块；暂停冻结，手机昼夜可辨；每次仍只浇一块田，原成熟加速规则不变。", "entry": "src/rendering/farm-water-tool.js#drawWatering / src/rendering/visual-review.js#inspectFarmWaterStream", "brief": "docs/art-tasks/farm-water-stream.md", "unitTests": ["tests/farm-water-stream.test.mjs", "tests/farm-watering.test.mjs", "tests/farm-tools.test.mjs"], "browserTests": ["tests/farm-water-stream-browser.cjs"]},
+  "legendaryWorkshop": {"designCriterion":"legendary-wolf-workshop","description":"红狼专属世界工坊、传承解锁、枪械LV20至30高额成长、坦克分部件配色与三份外观方案；正式显示与存档验证。","entry":"src/rendering/visual-review.js#inspectLegendaryWorkshop","brief":"docs/art-tasks/legendary-wolf-workshop.md","unitTests":["tests/legendary-workshop.test.mjs","tests/tank-paint.test.mjs"],"browserTests":["tests/legendary-workshop-browser.cjs","tests/legendary-upgrade-browser.cjs"]},
+  "helpEmblem": {"designCriterion":"help-emblem","description":"猫耳问询徽章统一说明入口，奶油底与森林绿路径、手机昼夜可辨、44像素触控，保留原说明交互。","entry":"src/rendering/visual-review.js#inspectHelpEmblem","brief":"docs/art-tasks/help-emblem.md","browserTests":["tests/help-emblem-browser.cjs"]},
+  "chapterTaskEntries": {"designCriterion":"chapter-cancel-horde-hint","description":"当前章节返场可管理、暂离或确认取消，固定底栏短屏可用；兽潮抵达后显示可读可点的站牌提示，两门身份准确、昼夜可见，触控不少于44像素。","entry":"src/rendering/visual-review.js#inspectChapterTaskEntries","brief":"docs/art-tasks/chapter-cancel-horde-hint.md","unitTests":["tests/chapter-cancel-horde-hint.test.mjs"],"browserTests":["tests/chapter-cancel-horde-hint-browser.cjs"]}
+}

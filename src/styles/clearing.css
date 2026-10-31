@@ -1,0 +1,20 @@
+/* 场景告示牌使用短按钮与三步图示，沿用森林绿和奶油纸色。 */
+.clearing-marker{position:absolute;z-index:14;transform:translateX(-50%);min-height:44px;padding:8px 12px;border:2px solid #315747;border-radius:12px;background:#fff0b9;color:#315747;font-weight:bold;white-space:nowrap}
+.clearing-marker::before{content:'';position:absolute;bottom:100%;left:10px;right:10px;height:95px}
+.clearing-marker:disabled{opacity:.88}
+.clearing-marker[hidden]{display:none}
+.clearing-dialog{box-sizing:border-box;width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:20px;background:#fcf3d9;color:#315747;border:2px solid #8fa575;border-radius:22px}
+.clearing-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.clearing-dialog h2{margin:4px 0 20px}.clearing-dialog header button{min-width:44px;min-height:44px}
+.clearing-steps{list-style:none;display:flex;gap:8px;padding:0;margin:8px 0 20px}
+.clearing-steps li{flex:1;min-width:0;display:grid;justify-items:center;gap:8px;color:#617554;text-align:center;font-size:12px}
+.clearing-steps svg{width:48px;height:48px;padding:7px;background:#e9eccd;border:2px solid #a3b18a;border-radius:50%;fill:none;stroke:#456444;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.clearing-steps [data-current=true] svg{background:#ffe39a;border-color:#315747;box-shadow:0 0 0 3px #a6b58c55}
+.clearing-dialog>button{display:block;width:100%;min-height:48px;margin-top:10px}.clearing-dialog>button[hidden]{display:none}
+.clearing-loot{font-size:12px;color:#71805c}#clearing-status{font-size:14px}#clearing-error:empty{display:none}
+.clearing-marker:focus:not(:focus-visible){outline:none;box-shadow:none}
+
+/* 给浮动操作提示留出空隙，不覆盖战利品说明。 */
+/* 禁用说明始终留在操作栏，短屏正文滚动后仍能读到当前阻碍。 */
+#clearing-blocked-reason{flex-basis:100%;margin:0;font-size:12px;line-height:1.5;color:#315747}
+#clearing-blocked-reason[hidden]{display:none}

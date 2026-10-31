@@ -1,0 +1,19 @@
+// 守门正式浏览器验收：门柱短按、十波 HUD、原镜头、伙伴救场与资源结算。
+async page=>{
+ if(new URL(page.url()).port!=='4268')throw Error('仅用于隔离端口4268');const errors=[],samples=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;await a.ready;a.destroy();const p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS;p.mainline.phase='complete';p.living.position={x:160,y:729};p.vehicleHulls[1]=2;p.vehicleIndex=1;localStorage.setItem('forest-patrol-v1',JSON.stringify(p));localStorage.setItem('forest-patrol-gameplay-v1',JSON.stringify({pauseOnBlur:false}));});
+ await page.reload();await page.locator('#start').click();await page.setViewportSize({width:390,height:900});await page.waitForTimeout(500);
+ await page.locator('[data-camp-gate="left"]').click();await page.locator('#camp-defense-dialog').waitFor({state:'visible'});await page.screenshot({path:'output/playwright/camp-defense/entry-390.png'});await page.locator('#camp-primary').click();
+ await page.locator('#camp-defense-hud').waitFor({state:'visible'});if(await page.locator('[data-camp-wave]').count()!==1||await page.locator('.camp-wave-total').textContent()!=='/10')throw Error('单行十波进度缺失');
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense;g.summonVehicle();g.attackTimer=999;g.vehicle.module.cooldown=999;r.timer=0;r.spawned=32;g.enemies=[];for(let i=0;i<28;i++){const e=g.spawnEnemy(0,0,{x:r.barrier.x-205-Math.floor(i/7)*35,y:r.barrier.y+(i%7-3)*30},{ambient:true});Object.assign(e,{campDefense:true,arena:r.arena,hp:1000,maxHp:1000,speed:0,damage:0});}a.environment.autoWeather=false;a.environment.weather='sun';a.refresh();});
+ for(const phase of ['day','night']){
+  await page.evaluate(async phase=>{const a=(await import('/src/main.js')).application;a.game.progress.living.calendar={day:1,elapsed:phase==='day'?400000:1100000};},phase);await page.waitForTimeout(21000);
+  for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});await page.waitForTimeout(250);const sample=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;return (await import('/src/rendering/visual-review.js')).inspectCampDefense(a.game,document);});if(sample.overflow||sample.overlappingHud)throw Error('界面遮挡或越界');samples.push({lighting:phase,width,...sample});await page.screenshot({path:`output/playwright/camp-defense/battle-${width}-${phase}.png`});}
+ }
+ // 继续真实移动，拒马前后与侧面均沿正式物理更新；不通过改坐标代替走位。
+ await page.setViewportSize({width:390,height:900});await page.keyboard.down('KeyA');await page.waitForTimeout(550);await page.keyboard.up('KeyA');await page.keyboard.down('KeyD');await page.waitForTimeout(550);await page.keyboard.up('KeyD');
+ await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;g.vehicle.active=false;g.player.invincible=0;g.player.hp=1;g.hurt(999);});
+ for(let i=0;i<3;i++){await page.waitForTimeout(650);await page.screenshot({path:`output/playwright/camp-defense/rescue-${i}.png`});}
+ await page.locator('.camp-grade').waitFor({state:'visible',timeout:45000});const grade=await page.locator('.camp-grade').textContent();if(grade!=='B')throw Error('救场错误提升评分');await page.screenshot({path:'output/playwright/camp-defense/result-B.png'});await page.locator('#camp-primary').click();
+ const result=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return {active:!!g.campDefense,coins:g.progress.coins,runs:g.progress.campDefense.runs,weapons:g.progress.weapons,vehicleHulls:g.progress.vehicleHulls};});if(result.active||result.runs!==1||result.coins!==360)throw Error('结算或恢复错误 '+JSON.stringify(result));if(errors.length)throw Error(errors.join('\n'));return {samples,grade,result,errors};
+}

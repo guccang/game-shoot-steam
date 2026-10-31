@@ -1,0 +1,159 @@
+{
+  "_说明": "怪物战斗属性、解锁与混编规则、地区等级成长；普通怪生命=baseHealth×同级标准装备攻击成长×(1+(等级-1)×healthPerLevel)，不读取当前玩家装备；枪口锚点与外观不属于此表。 普通团子质量兼容表仅首项生效，不随阶级；armored.mass与bramble-buggy.mass为固定质量，其余远程mass仍为倍率。",
+  "ranged": {
+    "spore-spitter": {
+      "reach": 330,
+      "windup": 0.65,
+      "recovery": 2,
+      "speed": 205,
+      "radius": 7,
+      "range": 400,
+      "damage": 0.85
+    },
+    "acorn-slinger": {
+      "reach": 360,
+      "windup": 0.8,
+      "recovery": 2.4,
+      "speed": 245,
+      "radius": 6,
+      "range": 440,
+      "damage": 1
+    },
+    "reed-archer": {
+      "reach": 390,
+      "windup": 0.65,
+      "recovery": 1.65,
+      "speed": 300,
+      "radius": 4,
+      "range": 460,
+      "damage": 0.85,
+      "health": 0.9,
+      "movement": 0.95,
+      "unlock": 2
+    },
+    "bramble-buggy": {
+      "reach": 350,
+      "windup": 0.75,
+      "recovery": 1.6,
+      "speed": 260,
+      "radius": 5,
+      "range": 430,
+      "damage": 1,
+      "health": 1.8,
+      "movement": 0.95,
+      "mass": 30,
+      "bodyRadius": 24,
+      "unlock": 4
+    },
+    "stump-bombard": {
+      "reach": 420,
+      "windup": 1.2,
+      "recovery": 3.2,
+      "speed": 200,
+      "radius": 9,
+      "range": 480,
+      "damage": 1.35,
+      "health": 1.45,
+      "movement": 0.65,
+      "mass": 1.4,
+      "bodyRadius": 23,
+      "splash": 45,
+      "unlock": 6
+    }
+  },
+  "armored": {
+    "id": "ironwood-bulwark",
+    "name": "铁甲盾团",
+    "health": 4.5,
+    "speed": 0.5,
+    "mass": 30,
+    "damage": 1.1,
+    "reward": 1.5,
+    "radius": 25,
+    "maxAlive": 3,
+    "attack": {
+      "reach": 82,
+      "windup": 0.95,
+      "lunge": 0.42,
+      "returning": 0.55,
+      "recovery": 1.1,
+      "damage": 9
+    }
+  },
+  "flyingAttack": {
+    "reach": 120,
+    "windup": 0.6,
+    "lunge": 0.24,
+    "returning": 0.38,
+    "recovery": 0.8,
+    "damage": 7
+  },
+  "rangedLimits": {
+    "alive": 6,
+    "bolts": 6,
+    "shotGap": 0.32,
+    "bossShotGap": 0.9
+  },
+  "rules": {
+    "enemy": {
+      "eliteRollThreshold": 0.94,
+      "toughRollThreshold": 0.76,
+      "zoneLevelSpan": 3,
+      "healthPerLevel": 0.12,
+      "baseHealth": 36,
+      "baseDamage": 8,
+      "damagePerLevel": 1.6,
+      "baseSpeed": 44,
+      "speedPerLevel": 0.7,
+      "rankSpeedPenalty": 4,
+      "baseReward": 15,
+      "rewardPerZoneLevel": 3,
+      "rewardPerRank": 9
+    },
+    "flying": {
+      "denseFromWave": 6,
+      "denseEvery": 4,
+      "unlockWave": 3,
+      "earlyEvery": 6,
+      "healthRatio": 0.75,
+      "damageRatio": 0.85,
+      "speedRatio": 1.45,
+      "massRatio": 0.8
+    },
+    "ranged": {
+      "unlockWave": 2,
+      "every": 3,
+      "ordinalRemainder": 2,
+      "denseFromWave": 6,
+      "earlyChance": 0.85,
+      "lateChance": 0.95,
+      "healthRatio": 0.85,
+      "speedRatio": 0.85,
+      "fullSplashRadiusRatio": 0.55,
+      "edgeSplashDamageRatio": 0.65
+    },
+    "armored": {
+      "unlockWave": 3,
+      "every": 7,
+      "ordinalRemainder": 3,
+      "chance": 0.8
+    }
+  },
+  "ranks": {
+    "enemyMassByRank": [
+      3,
+      3,
+      3
+    ],
+    "enemyHealthByRank": [
+      1,
+      1.55,
+      2.25
+    ],
+    "enemyDamageByRank": [
+      1,
+      1.25,
+      1.6
+    ]
+  }
+}

@@ -1,0 +1,3076 @@
+{
+  "source": "game-slg@c57eb86",
+  "sourceFiles": [
+    "game.js",
+    "gestures.js",
+    "art-manifest.js"
+  ],
+  "runtimeFiles": [
+    "crops-a-v2.png",
+    "crops-b-v2.png",
+    "crops-expansion.svg",
+    "crops-category-expansion.svg"
+  ],
+  "crops": {
+    "crop-0-0": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        127,
+        150,
+        146,
+        135
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-0-1": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        101,
+        484,
+        187,
+        150
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-0-2": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        50,
+        738,
+        274,
+        265
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-1-0": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        478,
+        153,
+        135,
+        126
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-1-1": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        452,
+        424,
+        188,
+        205
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-1-2": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        420,
+        727,
+        249,
+        275
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-2-0": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        847,
+        163,
+        122,
+        113
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-2-1": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        787,
+        426,
+        228,
+        192
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-2-2": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        762,
+        748,
+        290,
+        263
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-3-0": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        1186,
+        117,
+        165,
+        201
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-3-1": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        1161,
+        419,
+        207,
+        217
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-3-2": {
+      "file": "crops-a-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        1153,
+        707,
+        256,
+        299
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-4-0": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        115,
+        122,
+        164,
+        164
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-4-1": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        86,
+        422,
+        235,
+        223
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-4-2": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        60,
+        704,
+        273,
+        294
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-5-0": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        439,
+        103,
+        222,
+        202
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-5-1": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        424,
+        427,
+        239,
+        220
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-5-2": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        423,
+        709,
+        248,
+        288
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-6-0": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        806,
+        127,
+        213,
+        181
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-6-1": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        789,
+        468,
+        274,
+        174
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-6-2": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        764,
+        769,
+        305,
+        222
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-7-0": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        1178,
+        109,
+        196,
+        200
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-7-1": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        1169,
+        420,
+        225,
+        225
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-7-2": {
+      "file": "crops-b-v2.png",
+      "sheet": [
+        1448,
+        1086
+      ],
+      "rect": [
+        1155,
+        701,
+        229,
+        299
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-8-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        32,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-8-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        18,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-8-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        8,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-9-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        128,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-9-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        114,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-9-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        104,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-10-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        224,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-10-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        210,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-10-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        200,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-11-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        320,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-11-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        306,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-11-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        296,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-12-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        416,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-12-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        402,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-12-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        392,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-13-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        512,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-13-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        498,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-13-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        488,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-14-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        608,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-14-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        594,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-14-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        584,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-15-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        704,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-15-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        690,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-15-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        680,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-16-0": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        800,
+        67,
+        32,
+        23
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-16-1": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        786,
+        127,
+        60,
+        59
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-16-2": {
+      "file": "crops-expansion.svg",
+      "sheet": [
+        864,
+        288
+      ],
+      "rect": [
+        776,
+        197,
+        80,
+        85
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-17-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        30,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-17-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        18,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-17-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        6,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-18-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        126,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-18-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        114,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-18-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        102,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-19-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        222,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-19-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        210,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-19-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        198,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-20-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        318,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-20-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        306,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-20-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        294,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-21-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        414,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-21-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        402,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-21-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        390,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-22-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        510,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-22-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        498,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-22-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        486,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-23-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        606,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-23-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        594,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-23-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        582,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-24-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        702,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-24-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        690,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-24-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        678,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-25-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        798,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-25-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        786,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-25-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        774,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-26-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        894,
+        62,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-26-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        882,
+        124,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-26-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        870,
+        194,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-27-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        30,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-27-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        18,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-27-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        6,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-28-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        126,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-28-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        114,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-28-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        102,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-29-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        222,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-29-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        210,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-29-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        198,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-30-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        318,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-30-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        306,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-30-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        294,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-31-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        414,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-31-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        402,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-31-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        390,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-32-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        510,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-32-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        498,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-32-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        486,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-33-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        606,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-33-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        594,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-33-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        582,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-34-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        702,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-34-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        690,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-34-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        678,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-35-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        798,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-35-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        786,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-35-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        774,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-36-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        894,
+        350,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-36-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        882,
+        412,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-36-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        870,
+        482,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-37-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        30,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-37-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        18,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-37-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        6,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-38-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        126,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-38-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        114,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-38-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        102,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-39-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        222,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-39-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        210,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-39-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        198,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-40-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        318,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-40-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        306,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-40-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        294,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-41-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        414,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-41-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        402,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-41-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        390,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-42-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        510,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-42-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        498,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-42-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        486,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-43-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        606,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-43-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        594,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-43-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        582,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-44-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        702,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-44-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        690,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-44-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        678,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-45-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        798,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-45-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        786,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-45-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        774,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-46-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        894,
+        638,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-46-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        882,
+        700,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-46-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        870,
+        770,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-47-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        30,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-47-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        18,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-47-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        6,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-48-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        126,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-48-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        114,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-48-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        102,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-49-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        222,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-49-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        210,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-49-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        198,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-50-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        318,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-50-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        306,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-50-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        294,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-51-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        414,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-51-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        402,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-51-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        390,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-52-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        510,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-52-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        498,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-52-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        486,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-53-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        606,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-53-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        594,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-53-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        582,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-54-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        702,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-54-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        690,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-54-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        678,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-55-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        798,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-55-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        786,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-55-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        774,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-56-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        894,
+        926,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-56-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        882,
+        988,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-56-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        870,
+        1058,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-57-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        30,
+        1214,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-57-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        114,
+        1180,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-57-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        198,
+        1154,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-58-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        318,
+        1214,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-58-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        402,
+        1180,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-58-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        486,
+        1154,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-59-0": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        606,
+        1214,
+        36,
+        28
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-59-1": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        690,
+        1180,
+        60,
+        62
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    },
+    "crop-59-2": {
+      "file": "crops-category-expansion.svg",
+      "sheet": [
+        960,
+        1248
+      ],
+      "rect": [
+        774,
+        1154,
+        84,
+        88
+      ],
+      "anchor": [
+        0.5,
+        1
+      ]
+    }
+  }
+}

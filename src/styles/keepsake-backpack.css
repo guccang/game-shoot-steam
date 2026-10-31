@@ -1,0 +1,20 @@
+/* 小背包沿用公共底板；布袋格与手机通讯录只定义内容布局。 */
+.backpack-symbol svg,.phone-symbol svg{display:block;width:36px;height:36px}
+.keepsake-pockets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:18px}
+.keepsake-pockets .keepsake-pocket,.keepsake-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;aspect-ratio:1;min-height:80px;padding:7px 2px;font-size:12px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);background:var(--ui-sage);color:var(--ui-text);box-shadow:none}
+.keepsake-empty{background:var(--ui-paper);border-style:dashed}
+.keepsake-pocket svg{width:48px;height:48px;flex-shrink:0}
+.keepsake-pockets .keepsake-pocket:focus-visible{outline:3px solid var(--ui-gold);outline-offset:1px}
+.keepsake-backpack h3{font-size:18px;line-height:1.4;margin:0 0 10px}
+.keepsake-backpack p{font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+.keepsake-letter small,.keepsake-call>small,.keepsake-help,.keepsake-location{color:var(--ui-muted)}
+.keepsake-letter h3{margin-top:6px}.keepsake-signature{text-align:right}
+.keepsake-key>svg{display:block;width:64px;height:64px;margin:0 auto 16px}
+.keepsake-phone-heading{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.keepsake-phone-heading svg{width:56px;height:56px;flex-shrink:0}.keepsake-phone-heading p{margin:0;font-size:12px}
+.keepsake-apps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+.keepsake-contacts{display:flex;flex-direction:column;gap:6px}
+.keepsake-contacts .ui-choice{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;min-height:60px;width:100%}
+.keepsake-contacts small{display:block;margin-top:4px;color:var(--ui-muted);font-size:12px}
+.keepsake-call blockquote{margin:18px 0;padding:14px;border-left:3px solid var(--ui-gold);background:var(--ui-sage);font-size:16px;line-height:1.8}
+.keepsake-message{color:var(--ui-danger)}

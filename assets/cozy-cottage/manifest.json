@@ -1,0 +1,21 @@
+{
+  "id": "cozy-ranger-cottage",
+  "description": "营地平涂小屋：墙根与门槛同锚点，PNG由现有Canvas图元导出，窗光与积雪同源。",
+  "file": "cottage.png",
+  "width": 360,
+  "height": 328,
+  "bytes": 22108,
+  "sha256": "5366c3dfc5d973366bbe0cdcd8400a0c0fbd7a2b4a174cbced5ed44384850356",
+  "source": "src/rendering/cottage-art.js#drawCottageArtwork",
+  "logicalBounds": [
+    -90,
+    -148,
+    180,
+    164
+  ],
+  "anchor": "门槛中心(0,0)，门阶底部y=8",
+  "pixelAnchor": [
+    180,
+    296
+  ]
+}

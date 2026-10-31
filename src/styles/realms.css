@@ -1,0 +1,114 @@
+@import './fire-rescue.css';
+@import './forest-race.css';
+/* 秘境延续纸色面板；紫、金、青只区分三种玩法，手机优先单列阅读。 */
+#realm-dialog { width: min(620px, calc(100vw - 24px)); max-height: 90dvh; padding: 26px; }
+#realm-dialog h2 { margin: 0; }
+.realm-heading { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: -5px 38px 16px 0; }
+#realm-help { position: relative; display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #72856b; font-size: 18px; }
+#realm-help::before { content: ''; position: absolute; inset: 9px; border: 1px solid #a6b59a; border-radius: 50%; pointer-events: none; }
+#realm-help:hover { background: #e7eddb; }
+#realm-help-dialog { width: min(480px, calc(100vw - 24px)); max-height: 90dvh; }
+#realm-help-dialog h2 { margin-right: 32px; }
+#realm-help-content section { margin: 20px 0; }
+#realm-help-content h3 { font-size: 15px; margin-bottom: 7px; }
+#realm-help-content p { font-size: 13px; line-height: 1.8; color: #647467; margin: 7px 0; }
+.realm-lead { color: #647467; margin: 6px 0 22px; }
+.realm-catalog { display: grid; gap: 14px; }
+.realm-card { position: relative; border: 1px solid #cdd4c0; border-radius: 18px; background: #f0efdf; overflow: hidden; }
+.realm-rogue { background: linear-gradient(120deg, #edebf4, #f5f3e7); }
+.realm-tower { background: linear-gradient(120deg, #f1e8ce, #f5f3e7); }
+.realm-guardian { background: linear-gradient(120deg, #dfede1, #f5f3e7); }
+.realm-art { position: relative; aspect-ratio: 3 / 2; background: #b6cbb2; }
+.realm-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.realm-art canvas { display:block;width:100%;height:100%; }
+/* 球场准备页使用实物枪和短击退标签，手机两列且触控区域不小于44像素。 */
+.football-banner { display:block;width:100%;height:150px;object-fit:contain;background:#e9e5c5;border-radius:12px; }
+.football-steps { text-align:center;color:#587452;font-size:13px; }
+.football-guns { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+.football-guns button { display:flex;flex-direction:column;align-items:center;min-width:0;padding:8px;background:#ede9cf;border:2px solid #a7b58b;border-radius:12px;color:#315c43; }
+.football-guns button[aria-pressed=true] { background:#d6e2bc;border-color:#315c43;box-shadow:inset 4px 0 #315c43; }
+.football-guns canvas { width:100%;max-width:128px;height:auto; }
+.football-guns b { font-size:13px; }.football-guns small {font-size:11px;margin-top:4px;}
+.football-result {display:flex;flex-direction:column;align-items:center;color:#315c43;margin:24px 0;gap:6px;}.football-result b {font-size:64px;line-height:1;}
+.football-start {width:100%;min-height:48px;margin-top:14px;}
+/* 计分和倒计时在手机也保持清楚，说明只留一行短提示。 */
+.quest.football-score #quest-title {font-size:14px;line-height:1.4;}
+.quest.football-score #quest-detail {font-size:11px;line-height:1.5;}
+.quest.football-score #quest-count {font-size:20px;white-space:nowrap;}
+.realm-badge { position: absolute; top: 10px; left: 10px; padding: 5px 9px; border: 1px solid #ffffff70; border-radius: 20px; background: #fbf9e9ed; color: #405748; font-size: 11px; font-weight: 700; box-shadow: 0 2px 6px #27453820; }
+.realm-card-body { padding: 13px 16px 12px; }
+.realm-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.realm-card h3 { margin: 0 0 5px; font-size: 22px; }
+.realm-record { font-size: 12px; color: #69775f; }
+.realm-card .primary { width: auto; min-width: 86px; min-height: 44px; margin: 0; padding: 11px 14px; font-size: 13px; flex-shrink: 0; }
+.realm-card-loot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 11px; padding-top: 9px; border-top: 1px solid #cbd4bb80; color: #6e795f; font-size: 11px; }
+.realm-card-loot > span { display: inline-flex; align-items: center; gap: 3px; }
+.realm-card-loot svg { width: 22px; height: 22px; }
+.realm-choices { display: grid; gap: 10px; margin: 15px 0; }
+.realm-choices button { display: flex; gap: 12px; align-items: center; min-height: 86px; padding: 14px; text-align: left; border: 1px solid #bccdb9; background: #edf1e0; border-radius: 14px; color: #375445; }
+.realm-choices button:hover { background: #e1e9d1; border-color: #70977c; }
+.realm-choices .blessing-art { width: 64px; height: 64px; flex: 0 0 64px; }
+.realm-choices span { flex: 1; min-width: 0; }
+.realm-choices b, .realm-choices small { display: block; }
+.realm-choices small { margin-top: 5px; font-size: 12px; line-height: 1.5; color: #6b7c67; }
+/* 次数与当前加成分行，手机窄卡也能区分已有收益和本次选择效果。 */
+.realm-choices .blessing-count { color: #746344; font-size: 11px; }
+.realm-choices .blessing-current { color: #375445; font-weight: 700; }
+.realm-choices em { font-style: normal; font-size: 11px; white-space: nowrap; }
+.realm-choices button:focus-visible { outline: 3px solid #75947a; outline-offset: 3px; }
+.realm-buffs, .realm-earnings { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0; }
+.realm-buffs span { font-size: 11px; border: 1px solid #cdd2bf; border-radius: 6px; padding: 5px 7px; }
+.realm-earnings > span { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 9px; background: #e5ead7; font-size: 12px; }
+.realm-exit { width: 100%; min-height: 46px; margin-top: 18px; background: transparent; border: 1px solid #b3c3a5; border-radius: 10px; color: #5b7159; }
+#realm-button svg { width: 40px; height: 40px; }
+#realm-button.active { border-color: #a69abd; }
+@media (max-width: 380px) {
+  #realm-dialog { padding: 20px 16px; }
+  .realm-card-body { padding: 12px; }
+  .realm-card h3 { font-size: 20px; }
+  .realm-card .primary { min-width: 74px; padding: 10px 12px; }
+  .realm-choices button { padding: 11px; gap: 8px; }
+  .realm-choices .blessing-art { width: 54px; height: 54px; flex-basis: 54px; }
+}
+/* 世界门牌只显示玩法名；透明容器不拦截战场摇杆，菜单始终位于门牌上层。 */
+.world-realm-entrances { position: absolute; inset: 0; pointer-events: none; }
+.world-realm-entry { position: absolute; left: 0; top: 0; min-height: 44px; padding: 5px 11px; border: 2px solid #4c6853; border-radius: 13px; background: #fff4dce8; color: #36533f; box-shadow: 0 3px 0 #3e5a4833; font: 700 12px var(--game-font-family); white-space: nowrap; pointer-events: auto; cursor: pointer; transition: background .15s; }
+.world-realm-rogue { border-color: #817297; }
+.world-realm-tower { border-color: #aa8a55; }
+.world-realm-guardian { border-color: #5c9285; }
+.world-realm-entry:hover, .world-realm-entry:focus-visible { background: #fff9df; outline: 3px solid #f9df90; outline-offset: 2px; }
+/* 补给老虎机沿用森林绿描边、奶油黄机身；三槽顺序对应真实领取流程。 */
+.expedition-machine { border: 2px solid #425b4b; border-radius: 22px 22px 12px 12px; background: #ece7bb; padding: 18px 14px 14px; box-shadow: 0 5px 0 #b1bb91; }
+.expedition-machine-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #355542; }
+.expedition-machine-title b { font-size: 23px; }
+.expedition-machine-title span { font-size: 11px; border-bottom: 2px solid #7c956c; padding: 4px 0; }
+.expedition-machine p { font-size: 12px; line-height: 1.7; color: #52664f; margin: 10px 0; }
+.expedition-reels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.expedition-reel { min-width: 0; text-align: center; background: #faf6dc; border: 1px solid #819477; border-radius: 12px; padding: 9px; }
+.expedition-reel h3 { margin: 3px 0 8px; font-size: 13px; color: #526c50; }
+.expedition-window { overflow: hidden; border-block: 2px solid #9daa80; background: #e2e8cb; border-radius: 7px; }
+.expedition-window canvas { display: block; width: 100%; height: auto; }
+.expedition-reel strong { display: block; min-height: 42px; font-size: 14px; line-height: 1.4; margin-top: 10px; }
+.expedition-reel small { display: block; min-height: 30px; font-size: 10px; color: #637657; }
+.expedition-reel .primary { width: 100%; min-height: 44px; padding: 9px 3px; font-size: 12px; }
+.expedition-machine button:disabled { opacity: .55; cursor: default; }
+.expedition-machine button:focus-visible { outline: 3px solid #355542; outline-offset: 3px; }
+.expedition-ready { width: 100%; min-height: 46px; }
+.expedition-growth { text-align: center; }
+.expedition-summary { color: #52664f; font-size: 13px; line-height: 1.8; background: #e7ead4; padding: 10px 12px; border-radius: 8px; }
+.is-spinning .expedition-window canvas { animation: slot-shake .12s linear infinite; }
+@keyframes slot-shake { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
+@media (max-width: 380px) { .expedition-machine { padding: 12px 8px; } .expedition-reels { gap: 6px; } .expedition-reel { padding: 6px; } .expedition-reel strong { font-size: 12px; } .expedition-machine-title b { font-size: 20px; } }
+@media (prefers-reduced-motion: reduce) { .is-spinning .expedition-window canvas { animation: none; } }
+
+/* 手机端三个转轮逐行排列，图示和领取按钮同屏可读，不挤成窄列。 */
+@media (max-width: 520px) {
+  .expedition-reels { grid-template-columns: 1fr; gap: 8px; }
+  .expedition-reel { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 3px 10px; align-items: center; }
+  .expedition-reel .expedition-window { grid-column: 1; grid-row: 1 / 5; }
+  .expedition-reel h3, .expedition-reel strong, .expedition-reel small, .expedition-reel .primary { grid-column: 2; }
+  .expedition-reel h3 { margin: 0; }
+  .expedition-reel strong { min-height: 0; margin: 0; font-size: 13px; }
+  .expedition-reel small { min-height: 0; }
+  .expedition-reel .primary { min-height: 44px; margin-top: 3px; }
+}

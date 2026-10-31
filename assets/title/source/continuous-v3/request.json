@@ -1,0 +1,32 @@
+{
+  "request_id": "vid-ztj-forest-title-20261023-v3",
+  "prompt": "A continuously animated 10-second seamless looping 2D game background. CRITICAL: animation is already moving on frame 1 and is still moving on the final frame. Maintain visible gentle organic motion throughout EVERY second from 0.0 to 10.0. No opening still, no ending still, no settling down, no freeze frames, no hold, no slow motion ramp. Do not save the movement for the middle. The supplied identical first and last images specify the same animation phase, not a pause. Across the loop boundary the motion continues at its normal gentle speed.\nMatch the reference exactly: the same small orange striped tabby, green scarf, same handheld equipment, same planted feet and center location, village mail shelter, wheat patch, trees and sandy turquoise river. Preserve original flat forest storybook drawing, dark green outlines, soft botanical greens and cream yellow, limited flat shading and fixed three-quarter overhead view. Lock the camera, framing, buildings, ground, character proportions and lighting for all 10 seconds.\nAnimate continuous layered cycles: cat gently breathes in two smooth 5-second cycles without changing its silhouette identity, tail tip swishes softly in two smooth full cycles, green scarf flutters continuously in four 2.5-second cycles; two brief natural blinks during the loop. Wheat stalk tips and leafy branch tips sway softly throughout; river ripples flow continuously along the shore. Keep motion gentle but clearly visible at phone size. Offset the different motions so they never all stop simultaneously. Feet, tree trunks, ground, signs and structures stay fixed. Motion begins immediately in the first half second and remains clearly visible in the last half second, closing the natural periodic phase at 10 seconds. Last pose matches first while velocity carries through the seam.\nOne continuous shot, no cuts, no zoom, no pan, no whole-picture movement, no parallax, no whole-body scaling or stretching, no walking or translation, no duplicate limbs, no prop redesign, no extra characters, no gunfire, no new effects, no camera shake, no new text or UI, no letters, no watermark. Keep top and bottom safe for HTML menu overlay. Real independent local animation only; do not simply warp the entire reference image.",
+  "reference_sha256": "e7218172b815cb8143a0e1b1a95a9021585311bfc6ae2d92188a1a8d2c3210bf",
+  "preview": {
+    "dry_run": true,
+    "method": "POST",
+    "url": "http://10.1.9.154:8091/v1/video-generations",
+    "body": {
+      "request_id": "vid-ztj-forest-title-20261023-v3",
+      "model": "seedance-2.5",
+      "mode": "first_last_frame",
+      "prompt": "A continuously animated 10-second seamless looping 2D game background. CRITICAL: animation is already moving on frame 1 and is still moving on the final frame. Maintain visible gentle organic motion throughout EVERY second from 0.0 to 10.0. No opening still, no ending still, no settling down, no freeze frames, no hold, no slow motion ramp. Do not save the movement for the middle. The supplied identical first and last images specify the same animation phase, not a pause. Across the loop boundary the motion continues at its normal gentle speed.\nMatch the reference exactly: the same small orange striped tabby, green scarf, same handheld equipment, same planted feet and center location, village mail shelter, wheat patch, trees and sandy turquoise river. Preserve original flat forest storybook drawing, dark green outlines, soft botanical greens and cream yellow, limited flat shading and fixed three-quarter overhead view. Lock the camera, framing, buildings, ground, character proportions and lighting for all 10 seconds.\nAnimate continuous layered cycles: cat gently breathes in two smooth 5-second cycles without changing its silhouette identity, tail tip swishes softly in two smooth full cycles, green scarf flutters continuously in four 2.5-second cycles; two brief natural blinks during the loop. Wheat stalk tips and leafy branch tips sway softly throughout; river ripples flow continuously along the shore. Keep motion gentle but clearly visible at phone size. Offset the different motions so they never all stop simultaneously. Feet, tree trunks, ground, signs and structures stay fixed. Motion begins immediately in the first half second and remains clearly visible in the last half second, closing the natural periodic phase at 10 seconds. Last pose matches first while velocity carries through the seam.\nOne continuous shot, no cuts, no zoom, no pan, no whole-picture movement, no parallax, no whole-body scaling or stretching, no walking or translation, no duplicate limbs, no prop redesign, no extra characters, no gunfire, no new effects, no camera shake, no new text or UI, no letters, no watermark. Keep top and bottom safe for HTML menu overlay. Real independent local animation only; do not simply warp the entire reference image.",
+      "inputs": [
+        {
+          "type": "image",
+          "role": "first_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110118-r09o93/e7218172b815cb81-reference.png"
+        },
+        {
+          "type": "image",
+          "role": "last_frame",
+          "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261023-110118-r09o93/e7218172b815cb81-reference.png"
+        }
+      ],
+      "resolution": "720p",
+      "ratio": "adaptive",
+      "duration": 10,
+      "generate_audio": false
+    }
+  }
+}

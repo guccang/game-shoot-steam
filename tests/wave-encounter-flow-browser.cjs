@@ -1,0 +1,22 @@
+// 正式战场验证纵向布局、混合击杀、近处入场和野外移动遭遇，隔离端口不触碰用户存档。
+async page=>{
+ if(new URL(page.url()).port!=='4260')throw Error('仅使用隔离端口4260');
+ const errors=[],checks=[],samples=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;await a.ready;a.destroy();const p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.completed=['first-map'];p.mainline.phase='doing';p.living.position={x:1600,y:400};p.living.patrolActive=true;localStorage.setItem('forest-patrol-v1',JSON.stringify(p));localStorage.setItem('forest-patrol-gameplay-v1',JSON.stringify({pauseOnBlur:false}));});await page.reload();await page.locator('#start').click();
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.attackTimer=999;g.player.invincible=999;g.enemies=[];g.wave=1;g.bossWave=3;g.waveWarning=0;g.waveKills=g.waveSpawned=0;g.spawnTimer=0;a.refresh();});
+ // 自动刷出的敌人必须接近玩家；不通过测试直接生成波次怪。
+ await page.waitForTimeout(1500);const arrival=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;const {worldDistance}=await import('/src/world/coordinates.js');return g.enemies.filter(e=>e.wave===g.wave).map(e=>worldDistance(e,g.player));});if(!arrival.length||arrival.some(d=>d>310))throw Error('波次入场仍太远');checks.push({nearArrival:arrival});
+ // 留下已刷波次怪，击杀一只原地图怪完成最后一个名额，不再等待残余波次怪。
+ const mixed=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,total=(await import('/src/config/waves.js')).waveDifficulty(g.wave).total;g.waveKills=total-1;const alive=g.enemies.filter(e=>e.hp>0),id=alive[0].id,e=g.spawnEnemy(0,0,{x:1660,y:440},{ambient:true});g.hit(e,1e9);g.updateWaves(.01);a.refresh();return {kills:g.waveKills,total,rest:g.waveRest,kept:g.enemies.some(e=>e.id===id&&e.hp>0&&e.ambient)};});if(mixed.kills!==mixed.total||!mixed.rest||!mixed.kept)throw Error('随机怪未计数或达标后仍等残怪');checks.push(mixed);
+ // 循环场景画面按真实历法变化；止住自动射击以留出观察时长。
+ for(const width of [320,390,1280]){await page.setViewportSize({width,height:900});for(const phase of ['day','night']){
+ await page.evaluate(async phase=>{const a=(await import('/src/main.js')).application,g=a.game;g.enemies=[];g.wave=2;g.waveGroupStart=1;g.bossWave=4;g.waveKills=3;g.waveSpawned=18;g.waveRest=0;g.waveWarning=0;g.bossReady=false;g.spawnTimer=999;g.attackTimer=999;g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.progress.mainline.phase='doing';g.progress.mainline.completed=['first-map'];g.progress.living.patrolActive=true;Object.assign(g.player,{x:1600,y:400});g.player.invincible=999;g.progress.living.calendar={day:1,elapsed:phase==='day'?400000:1100000};a.environment.autoWeather=false;a.environment.weather='sun';a.refresh();},phase);await page.waitForTimeout(21000);
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.player.invincible=0;g.spawnEnemy(0,0,{x:1780,y:440},{ambient:true});g.attackTimer=999;a.refresh();});
+ const sample=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;return (await import('/src/rendering/visual-review.js')).inspectWaveEncounterFlow(a.game,document);});if(!sample.task||!sample.wave||sample.wave.top<sample.task.bottom+5||sample.overflow)throw Error('任务/波次顺序或遮挡错误');samples.push({width,phase,...sample});await page.screenshot({path:'output/playwright/wave-encounter-flow/'+width+'-'+phase+'.png'});
+ }}
+ await page.locator('#wave-help').click();if(!await page.locator('#wave-help-dialog').isVisible())throw Error('节点问号不可点击');await page.locator('#wave-help-close').click();checks.push('移动后问号正常可点');
+ // 主动移动正式更新遭遇计时，静止、波次和安全区仍不刷。
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.enemies=[];g.progress.living.patrolActive=false;Object.assign(g.player,{x:1800,y:900});g.player.invincible=999;g.encounterTimer=2;g.attackTimer=999;a.refresh();});await page.keyboard.down('ArrowRight');await page.waitForTimeout(8000);await page.keyboard.up('ArrowRight');
+ const wild=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;const {biomeAt}=await import('/src/world/biomes.js');return g.enemies.filter(e=>e.ambient).map(e=>({level:e.level,biome:e.biome,min:biomeAt(e.x,e.y,g.mapId).level}));});if(wild.length<2)throw Error('移动8秒遭遇密度不足');checks.push({wild});
+ if(errors.length)throw Error(errors.join(';'));return {checks,samples,errors};
+}

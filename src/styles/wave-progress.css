@@ -1,0 +1,44 @@
+/* 细线串联普通波次和末尾领主，沿用正式头像与奶油森林配色。 */
+.quest.wave-quest{display:flex;align-items:center;width:292px;gap:2px;padding:8px}
+/* 隐藏整个标题容器，不给普通波次留空行；剧情和秘境不使用此类。 */
+.wave-quest>div:not(#wave-track){display:none}
+/* 普通波次以轨道与圆环呈现，剧情/秘境继续使用自身计数。 */
+.wave-quest #quest-count{display:none}
+/* 仅普通波次省略正文，退出波次界面后剧情与秘境任务照常显示。 */
+.wave-quest #quest-detail{display:none}
+.wave-quest #quest-title{font-size:12px}
+#wave-track{flex:1;min-width:0;position:relative;display:flex;align-items:center;height:44px;margin:0}
+#wave-track[hidden]{display:none}
+#wave-nodes{display:flex;flex:1;justify-content:space-around;align-items:center;z-index:1;min-width:0}
+.wave-node{position:relative;display:grid;place-items:center;flex:none;width:23px;height:23px;border:2px solid #99ad83;border-radius:50%;background:#365642;color:#d1dcc1;font-size:11px;font-weight:700}
+.wave-node[data-state="done"]{background:#a7bf86;border-color:#c6d89e;color:#294632}
+.wave-node[data-state="current"]{background:#f3dc94;border-color:#fff3c9;color:#314b37;box-shadow:0 0 0 3px #f3dc9428}
+/* 圆环从顶部顺时针填充；完全由真实余时更新，暂停和减少动态时不会自行旋转。 */
+.wave-countdown{display:none;position:absolute;width:35px;height:35px;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-90deg);overflow:visible;pointer-events:none;fill:none;stroke-width:2.5}
+.wave-node[data-countdown="true"] .wave-countdown{display:block}
+.wave-node[data-countdown="true"]{background:#365642;border-color:#99ad83;color:#fff3c9;box-shadow:none}
+.wave-countdown-base{stroke:#78946c}
+.wave-countdown-fill{stroke:#ffe7a0;stroke-dasharray:100;stroke-linecap:round}
+#wave-track-bar{position:absolute;left:calc((100% - 44px) / (var(--wave-count) * 2));right:22px;height:4px;background:#607957;border-radius:4px;overflow:hidden}
+#wave-track-fill{display:block;height:100%;background:#dbca80;border-radius:4px}
+#wave-track #boss-button{flex:0 0 44px;border-radius:50%;z-index:2}
+#wave-track #boss-button-badge{font-size:9px;bottom:-3px;right:0;left:0;min-width:0;height:15px;line-height:13px;margin:auto;width:34px;padding:0}
+/* 清波、上车等短提示移到轨道下方，不能遮住末尾可点击的Boss。 */
+.game-frame:has(.wave-quest:not([hidden])) .toast{top:calc(max(14px,env(safe-area-inset-top)) + 196px)}
+/* 宽度包含边框与内边距，320屏仍可辨识五个普通节点及Boss触摸目标。 */
+@media(max-width:600px){.quest.wave-quest{width:min(292px,calc(100% - 28px));padding:8px}}
+@media(max-width:600px){.game-frame:has(.wave-quest:not([hidden])) .toast{top:calc(max(12px,env(safe-area-inset-top)) + 148px)}}
+/* 问号视觉轻量，但保留独立的44像素触摸区域，不与Boss共用点击范围。 */
+#wave-help{display:none;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#f9edc0;place-items:center;cursor:pointer;pointer-events:auto}
+.wave-quest #wave-help{display:grid}
+/* 只由键盘交互显示外圈；鼠标/触摸关闭弹窗后的程序焦点不绘制高亮。 */
+#wave-help:focus{outline:none}
+#wave-help[data-focus-input="keyboard"]:focus{outline:2px solid #ffe7a0;outline-offset:1px;border-radius:50%}
+.wave-help-dialog{width:min(360px,calc(100vw - 28px));max-height:calc(100dvh - 28px);padding:18px;background:#fbf3da;color:#314b3c;border:2px solid #657d56;border-radius:18px;overflow:auto}
+.wave-help-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.wave-help-dialog h2{margin:0;font-size:20px}
+#wave-help-close{width:44px;height:44px;min-height:44px;padding:0;border:1px solid #9cae83;border-radius:10px;background:#e9edcf;color:#304e3e;font-size:24px;cursor:pointer}
+.wave-help-dialog p{font-size:14px;line-height:1.6}
+.wave-help-counter{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid #b3bd97;border-radius:12px;background:#f5ebc3}
+.wave-help-counter strong{font-size:24px;white-space:nowrap}
+#wave-help-note{margin-bottom:0;color:#60704f}

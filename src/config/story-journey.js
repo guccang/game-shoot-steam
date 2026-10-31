@@ -1,0 +1,33 @@
+import { i18nText } from "../i18n/index.js";
+// 第一章体验叙事纯数据：真实事件、可选目标、分支回应及章后工坊入口，不修改战斗参数。
+export const STORY_JOURNEY = {
+  speech:{duration:5,gap:3,queueLimit:6},
+  experiences:{
+    'laser-line':{loadout:'line-patrol',event:'laser-pierce',match:{count:{min:2}},
+      goal:i18nText("config.story-journey.327bf01f12"),success:i18nText("config.story-journey.cbec10852a"),speaker:'player',
+      feedback:i18nText("config.story-journey.9a64d5b101"),
+      advice:i18nText("config.story-journey.b0a0ae6f30"),
+      route:i18nText("config.story-journey.9ea5f977a1"),
+      defense:i18nText("config.story-journey.adb4bdea97"),
+      boss:i18nText("config.story-journey.5e2c492b82"),trial:'line'},
+    'water-arc':{loadout:'tide-arc',event:'impact',match:{weaponIndex:10,wet:true},
+      goal:i18nText("config.story-journey.a4f24a5178"),success:i18nText("config.story-journey.3f6f9770b2"),speaker:'player',
+      feedback:i18nText("config.story-journey.257c85e2c0"),
+      advice:i18nText("config.story-journey.451d00d4c4"),
+      route:i18nText("config.story-journey.4979b3d876"),
+      defense:i18nText("config.story-journey.6850f6ea09"),
+      boss:i18nText("config.story-journey.a28c05da7a"),trial:'scatter'},
+    'frost-cannon':{loadout:'frost-guard',event:'impact',match:{weaponIndex:18,chill:true},
+      goal:i18nText("config.story-journey.9c827e6443"),success:i18nText("config.story-journey.831371a8b0"),speaker:'player',
+      feedback:i18nText("config.story-journey.729a64e8f2"),
+      advice:i18nText("config.story-journey.4d821b3177"),
+      route:i18nText("config.story-journey.ab09b5dde3"),
+      defense:i18nText("config.story-journey.0bf61be63a"),
+      boss:i18nText("config.story-journey.3692edc640"),trial:'approach'},
+    'dodge-charge':{event:'charge-end',match:{hit:false,travel:{min:40}},
+      goal:i18nText("config.story-journey.e1d2ea87df"),success:i18nText("config.story-journey.0f41cadb99"),
+      speaker:'mint',feedback:i18nText("config.story-journey.51bca03e47")},
+  },
+  followup:{title:i18nText("config.story-journey.72aa0468f8"),text:i18nText("config.story-journey.d24579dd74"),
+    weapon:i18nText("config.story-journey.34d748015c"),vehicle:i18nText("config.story-journey.4b57a9be1f"),dismiss:i18nText("config.story-journey.9d2055b957"),note:i18nText("config.story-journey.d28dc73f14")},
+};

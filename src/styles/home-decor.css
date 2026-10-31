@@ -1,0 +1,31 @@
+/* 小屋装扮只定义内容布局，底板、颜色、按钮与安全区复用手机UI框架。 */
+#home-decor-dialog{pointer-events:auto}
+#home-decor-dialog .ui-panel__body{padding:12px;min-height:0}
+#home-decor-dialog .ui-panel__header{padding:14px}
+#home-decor-dialog .ui-panel__header h2{font-size:20px}
+#home-decor-dialog .ui-panel__header p{color:inherit;margin:4px 0 0}
+#home-decor-dialog .ui-panel__footer{padding:10px 14px;display:block}
+#home-decor-dialog p{line-height:1.55;font-size:12px;min-height:0}
+#home-decor-dialog h3{font-size:15px;margin:0 0 6px}
+#home-decor-dialog button{min-height:44px;touch-action:manipulation}
+.home-tabs,.home-actions,#home-nudge{display:flex;gap:8px;flex-wrap:wrap}
+.home-tabs{margin-bottom:12px}
+.home-tabs button{flex:1}
+.home-tabs [aria-pressed="true"]{background:var(--ui-forest);color:var(--ui-paper)}
+#home-preview{display:block;width:100%;height:auto;max-width:360px;margin:auto;touch-action:pan-y;border-radius:8px}
+#home-preview:focus-visible{outline:3px solid var(--ui-gold);outline-offset:2px}
+#home-nudge{justify-content:center;margin:8px 0}
+#home-nudge button{min-width:48px}
+#home-owned{display:flex;gap:8px;overflow-x:auto;padding:10px 2px;margin-bottom:10px}
+#home-decor-dialog .home-owned-item{flex:none;width:96px;white-space:normal;display:flex;flex-direction:column;align-items:center;padding:5px;gap:3px;text-align:center}
+.home-owned-item canvas{width:64px;height:64px;flex:none}
+.home-owned-item b{font-size:12px;line-height:1.4}
+.home-owned-item small{font-size:11px}
+#home-decor-dialog .home-owned-item[aria-pressed="true"]{background:var(--ui-sage);outline:2px solid var(--ui-forest)}
+.home-product{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;padding:14px 0;border-bottom:1px solid var(--ui-line)}
+.home-product canvas{width:72px;height:72px}
+.home-product button{width:100%;font-size:13px}
+.home-plant{margin-top:12px;padding-top:10px;border-top:1px solid var(--ui-line);display:grid;gap:8px}
+.home-plant progress{width:100%;accent-color:var(--ui-forest)}
+#home-decor-dialog .home-actions button{flex:1}
+#home-decor-dialog [hidden]{display:none!important}

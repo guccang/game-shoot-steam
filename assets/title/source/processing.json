@@ -1,0 +1,35 @@
+{
+  "description": "保留原片，连续截取前240帧，编码运行视频并导出同片首帧海报；不复制或插值帧。",
+  "commands": [
+    [
+      "ffmpeg",
+      "-i",
+      "assets/title/source/original.mp4",
+      "-an",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "slow",
+      "-crf",
+      "23",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
+      "-t",
+      "10",
+      "assets/title/background.mp4"
+    ],
+    [
+      "ffmpeg",
+      "-i",
+      "assets/title/background.mp4",
+      "-frames:v",
+      "1",
+      "-quality",
+      "85",
+      "assets/title/poster.webp"
+    ]
+  ],
+  "verification": "ffprobe：720×1280、24/1 FPS、240帧、10.000000秒；运行资源大小及SHA256见../manifest.json"
+}

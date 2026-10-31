@@ -1,0 +1,46 @@
+{
+  "before": {
+    "cat": {
+      "seamDelta": 2.3704,
+      "medianStep": 1.4399,
+      "maxStep": 2.7256
+    },
+    "scarf": {
+      "seamDelta": 4.5383,
+      "medianStep": 8.1492,
+      "maxStep": 13.0154
+    },
+    "water": {
+      "seamDelta": 4.9891,
+      "medianStep": 0.7401,
+      "maxStep": 1.3697
+    },
+    "tree": {
+      "seamDelta": 2.2958,
+      "medianStep": 1.4143,
+      "maxStep": 4.2136
+    }
+  },
+  "after": {
+    "cat": {
+      "seamDelta": 2.5306,
+      "medianStep": 1.3377,
+      "maxStep": 2.6963
+    },
+    "scarf": {
+      "seamDelta": 7.8783,
+      "medianStep": 8.3221,
+      "maxStep": 12.9579
+    },
+    "water": {
+      "seamDelta": 1.6465,
+      "medianStep": 0.8682,
+      "maxStep": 1.7371
+    },
+    "tree": {
+      "seamDelta": 1.6402,
+      "medianStep": 1.5313,
+      "maxStep": 4.1692
+    }
+  }
+}

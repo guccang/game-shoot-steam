@@ -1,0 +1,451 @@
+{
+  "passed": true,
+  "criteria": [
+    "title-menu",
+    "menu-navigation"
+  ],
+  "samples": [
+    {
+      "width": 390,
+      "height": 844,
+      "designCriterion": [
+        "title-menu",
+        "menu-navigation",
+        "title-background-video"
+      ],
+      "page": "title",
+      "saveStatus": "missing",
+      "gameState": "ready",
+      "summary": "收拾行囊，出发去森林。",
+      "controls": [
+        {
+          "id": "title-settings",
+          "text": "⚙",
+          "disabled": false,
+          "box": {
+            "x": 332,
+            "y": 14,
+            "width": 44,
+            "height": 44,
+            "top": 14,
+            "right": 376,
+            "bottom": 58,
+            "left": 332
+          }
+        },
+        {
+          "id": "start",
+          "text": "开始游戏",
+          "disabled": false,
+          "box": {
+            "x": 39,
+            "y": 753,
+            "width": 312,
+            "height": 50,
+            "top": 753,
+            "right": 351,
+            "bottom": 803,
+            "left": 39
+          }
+        }
+      ],
+      "overflow": false,
+      "video": {
+        "src": "http://localhost:4188/assets/title/background.mp4",
+        "duration": 2.75,
+        "width": 720,
+        "height": 1280,
+        "time": 0.140466,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "error": null,
+        "readyState": 4,
+        "decoded": 74,
+        "status": ""
+      }
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "designCriterion": [
+        "title-menu",
+        "menu-navigation",
+        "title-background-video"
+      ],
+      "page": "title",
+      "saveStatus": "missing",
+      "gameState": "ready",
+      "summary": "收拾行囊，出发去森林。",
+      "controls": [
+        {
+          "id": "title-settings",
+          "text": "⚙",
+          "disabled": false,
+          "box": {
+            "x": 262,
+            "y": 14,
+            "width": 44,
+            "height": 44,
+            "top": 14,
+            "right": 306,
+            "bottom": 58,
+            "left": 262
+          }
+        },
+        {
+          "id": "start",
+          "text": "开始游戏",
+          "disabled": false,
+          "box": {
+            "x": 32,
+            "y": 490,
+            "width": 256,
+            "height": 46,
+            "top": 490,
+            "right": 288,
+            "bottom": 536,
+            "left": 32
+          }
+        }
+      ],
+      "overflow": false,
+      "video": {
+        "src": "http://localhost:4188/assets/title/background.mp4",
+        "duration": 2.75,
+        "width": 720,
+        "height": 1280,
+        "time": 0.472563,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "error": null,
+        "readyState": 4,
+        "decoded": 82,
+        "status": ""
+      }
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "designCriterion": [
+        "title-menu",
+        "menu-navigation",
+        "title-background-video"
+      ],
+      "page": "title",
+      "saveStatus": "missing",
+      "gameState": "ready",
+      "summary": "收拾行囊，出发去森林。",
+      "controls": [
+        {
+          "id": "title-settings",
+          "text": "⚙",
+          "disabled": false,
+          "box": {
+            "x": 863.25,
+            "y": 14,
+            "width": 44,
+            "height": 44,
+            "top": 14,
+            "right": 907.25,
+            "bottom": 58,
+            "left": 863.25
+          }
+        },
+        {
+          "id": "start",
+          "text": "开始游戏",
+          "disabled": false,
+          "box": {
+            "x": 470,
+            "y": 809,
+            "width": 340,
+            "height": 50,
+            "top": 809,
+            "right": 810,
+            "bottom": 859,
+            "left": 470
+          }
+        }
+      ],
+      "overflow": false,
+      "video": {
+        "src": "http://localhost:4188/assets/title/background.mp4",
+        "duration": 2.75,
+        "width": 720,
+        "height": 1280,
+        "time": 0.758709,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "error": null,
+        "readyState": 4,
+        "decoded": 88,
+        "status": ""
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "time": "day",
+      "gameState": "paused"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "time": "night",
+      "gameState": "paused"
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "time": "day",
+      "gameState": "paused"
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "time": "night",
+      "gameState": "paused"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "time": "day",
+      "gameState": "paused"
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "time": "night",
+      "gameState": "paused"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "designCriterion": [
+        "title-menu",
+        "menu-navigation",
+        "title-background-video"
+      ],
+      "page": "title",
+      "saveStatus": "valid",
+      "gameState": "paused",
+      "summary": "栗子 · Lv.1　四境森林 · 第 1 波",
+      "controls": [
+        {
+          "id": "title-settings",
+          "text": "⚙",
+          "disabled": false,
+          "box": {
+            "x": 332,
+            "y": 14,
+            "width": 44,
+            "height": 44,
+            "top": 14,
+            "right": 376,
+            "bottom": 58,
+            "left": 332
+          }
+        },
+        {
+          "id": "start",
+          "text": "继续游戏",
+          "disabled": false,
+          "box": {
+            "x": 39,
+            "y": 700,
+            "width": 312,
+            "height": 50,
+            "top": 700,
+            "right": 351,
+            "bottom": 750,
+            "left": 39
+          }
+        },
+        {
+          "id": "title-new",
+          "text": "重新开始",
+          "disabled": false,
+          "box": {
+            "x": 39,
+            "y": 759,
+            "width": 312,
+            "height": 44,
+            "top": 759,
+            "right": 351,
+            "bottom": 803,
+            "left": 39
+          }
+        }
+      ],
+      "overflow": false,
+      "video": {
+        "src": "http://localhost:4188/assets/title/background.mp4",
+        "duration": 2.75,
+        "width": 720,
+        "height": 1280,
+        "time": 1.895662,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "error": null,
+        "readyState": 4,
+        "decoded": 116,
+        "status": ""
+      }
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "designCriterion": [
+        "title-menu",
+        "menu-navigation",
+        "title-background-video"
+      ],
+      "page": "title",
+      "saveStatus": "valid",
+      "gameState": "paused",
+      "summary": "栗子 · Lv.1　四境森林 · 第 1 波",
+      "controls": [
+        {
+          "id": "title-settings",
+          "text": "⚙",
+          "disabled": false,
+          "box": {
+            "x": 262,
+            "y": 14,
+            "width": 44,
+            "height": 44,
+            "top": 14,
+            "right": 306,
+            "bottom": 58,
+            "left": 262
+          }
+        },
+        {
+          "id": "start",
+          "text": "继续游戏",
+          "disabled": false,
+          "box": {
+            "x": 32,
+            "y": 440,
+            "width": 256,
+            "height": 46,
+            "top": 440,
+            "right": 288,
+            "bottom": 486,
+            "left": 32
+          }
+        },
+        {
+          "id": "title-new",
+          "text": "重新开始",
+          "disabled": false,
+          "box": {
+            "x": 32,
+            "y": 492,
+            "width": 256,
+            "height": 44,
+            "top": 492,
+            "right": 288,
+            "bottom": 536,
+            "left": 32
+          }
+        }
+      ],
+      "overflow": false,
+      "video": {
+        "src": "http://localhost:4188/assets/title/background.mp4",
+        "duration": 2.75,
+        "width": 720,
+        "height": 1280,
+        "time": 0.177949,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "error": null,
+        "readyState": 4,
+        "decoded": 140,
+        "status": ""
+      }
+    },
+    {
+      "width": 1280,
+      "height": 900,
+      "designCriterion": [
+        "title-menu",
+        "menu-navigation",
+        "title-background-video"
+      ],
+      "page": "title",
+      "saveStatus": "valid",
+      "gameState": "paused",
+      "summary": "栗子 · Lv.1　四境森林 · 第 1 波",
+      "controls": [
+        {
+          "id": "title-settings",
+          "text": "⚙",
+          "disabled": false,
+          "box": {
+            "x": 863.25,
+            "y": 14,
+            "width": 44,
+            "height": 44,
+            "top": 14,
+            "right": 907.25,
+            "bottom": 58,
+            "left": 863.25
+          }
+        },
+        {
+          "id": "start",
+          "text": "继续游戏",
+          "disabled": false,
+          "box": {
+            "x": 470,
+            "y": 756,
+            "width": 340,
+            "height": 50,
+            "top": 756,
+            "right": 810,
+            "bottom": 806,
+            "left": 470
+          }
+        },
+        {
+          "id": "title-new",
+          "text": "重新开始",
+          "disabled": false,
+          "box": {
+            "x": 470,
+            "y": 815,
+            "width": 340,
+            "height": 44,
+            "top": 815,
+            "right": 810,
+            "bottom": 859,
+            "left": 470
+          }
+        }
+      ],
+      "overflow": false,
+      "video": {
+        "src": "http://localhost:4188/assets/title/background.mp4",
+        "duration": 2.75,
+        "width": 720,
+        "height": 1280,
+        "time": 1.466667,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "error": null,
+        "readyState": 4,
+        "decoded": 172,
+        "status": ""
+      }
+    }
+  ],
+  "errors": []
+}

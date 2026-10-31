@@ -1,0 +1,18 @@
+/* 加载只叠加在原首页视频上，不新增背景、底板或解释文字。 */
+.start-loading { position:absolute; inset:0; z-index:90; overflow:hidden; color:var(--ui-paper); outline:none; }
+.start-loading[hidden] { display:none; }
+#title-menu[data-loading="true"] { overflow:hidden; }
+#title-menu[data-loading="true"] > :not(video):not(img):not(.title-shade) { visibility:hidden; pointer-events:none; }
+/* 全宽进度贴底，底色延伸到手机安全区，百分比位于可读的条内上部。 */
+.start-loading-content { position:absolute; left:0; right:0; bottom:0; }
+.start-loading-road { position:absolute; left:0; right:0; top:-64px; height:62px; will-change:transform; }
+.start-loading-van { position:absolute; left:-112px; width:112px; height:61px; }
+.start-loading-van svg { display:block; width:100%; height:100%; }
+.start-loading-wheel { transform-box:fill-box; transform-origin:center; animation:start-loading-wheel .35s linear infinite; }
+.start-loading[data-phase="waiting"] .start-loading-wheel { animation-play-state:paused; }
+.start-loading-progress { height:calc(24px + env(safe-area-inset-bottom,0px)); width:100%; margin:0; border:2px solid var(--ui-paper); border-radius:0; padding:1px 0 calc(1px + env(safe-area-inset-bottom,0px)); overflow:hidden; background:#234333aa; box-shadow:0 2px 0 #18382c66; }
+.start-loading-fill { height:100%; border-radius:0; background:var(--ui-gold); transform:scaleX(0); transform-origin:left; }
+.start-loading-percent { position:absolute; top:0; left:0; right:0; display:block; margin:0; text-align:center; font-size:13px; line-height:24px; font-variant-numeric:tabular-nums; text-shadow:0 2px 0 var(--ui-deep); }
+@keyframes start-loading-wheel { to { transform:rotate(360deg); } }
+/* 减少动态保留车与可读进度，停用横穿画面和轮辐转动。 */
+@media(prefers-reduced-motion:reduce) { .start-loading-road { transform:translateX(50%); } .start-loading-van { left:-56px; } .start-loading-wheel { animation:none; } }

@@ -1,0 +1,228 @@
+/* 武器与载具工坊沿用手机底板：左侧枪械列表独立滑动，右侧预览、当前功能与结算固定，不以滚动承载整页。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] { --ui-safe-top: max(4px,env(safe-area-inset-top)); --ui-safe-bottom:max(4px,env(safe-area-inset-bottom)); --ui-safe-left:max(4px,env(safe-area-inset-left)); --ui-safe-right:max(4px,env(safe-area-inset-right)); }
+#workshop-dialog.ui-migrated[data-workshop-kind] > .ws-header { padding:4px 10px; border-bottom-width:2px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-header small { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-header h2 { font-size:20px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-function-tabs { padding:3px 8px; gap:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-function-tabs button { padding:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-layout { display:grid; grid-template-columns:var(--ws-rack-width,64px) minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; align-items:stretch; gap:6px; padding:6px; overflow:hidden; scrollbar-gutter:auto; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-center { display:flex; flex-direction:column; grid-column:2; grid-row:1; min-height:0; gap:6px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-rack { grid-column:1; grid-row:1 / 3; min-height:0; overflow:hidden; border-right:1px solid var(--ui-line); padding-right:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-title { order:1; padding:0; min-height:24px; flex:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-title h3 { font-size:16px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-state { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-bench { display:block; order:2; flex:1 1 0; height:auto; min-height:104px; aspect-ratio:auto; border-width:3px; }
+/* 舞台按钮单独占上沿，武器画布不会被试射和装备入口压住。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-stage-actions { position:relative; inset:auto; max-width:none; height:44px; justify-content:flex-end; gap:4px; padding:0 3px; z-index:4; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-stage-actions button { padding:3px 5px; font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] :is(#ws-stage,#ws-construction) { top:44px; height:calc(100% - 44px); }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-stage-label { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-socket { width:44px; height:44px; min-height:44px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] :is(#ws-hint,#ws-part-info,#ws-parts-title,#ws-stats-title) { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-parts { grid-column:2; grid-row:2; flex:none; margin:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-components { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; padding:0; overflow:visible; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-components > button { display:flex; flex-direction:column; justify-content:center; gap:0; width:auto; min-width:0; min-height:44px; padding:3px 5px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-components canvas { display:block; width:54px; height:34px; pointer-events:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-components b { font-size:12px; font-weight:600; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-components small { font-size:10px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-parts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:0; overflow:visible; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-parts > button { width:auto; min-width:0; min-height:64px; padding:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-parts canvas { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-parts b { font-size:14px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-parts small { font-size:11px; }
+/* 选择时展示目录，试装后原位置展示前后对比和施工工具，避免两套信息重复。 */
+#workshop-dialog.ui-migrated[data-workshop-kind][data-part-draft="true"] .ws-parts { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-controls { order:3; flex:none; display:flex; flex-direction:row; gap:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-controls:not(:has(button:not([hidden]))),
+#workshop-dialog.ui-migrated[data-workshop-kind][data-function="buy"] .ws-controls,
+#workshop-dialog.ui-migrated[data-workshop-kind][data-function="unlock"] .ws-controls { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare { margin:0; flex:1; gap:2px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare button { min-height:44px; padding:2px; gap:1px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare canvas { width:36px; height:24px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare button span { font-size:10px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-change-part { font-size:12px; padding:4px; min-width:64px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-tools { padding:0; gap:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-tools button { min-height:44px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-construction-tools { order:4; margin:0; padding:0; gap:4px; border:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-tool { height:44px; min-height:44px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-hold { min-height:44px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-stats { order:5; flex:none; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; max-height:none; overflow:visible; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-stats > div { padding:3px 5px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-stats small { font-size:10px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-stats b { font-size:12px; }
+#workshop-dialog.ui-migrated[data-workshop-kind]:not([data-function="buy"]) #ws-stats { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-result { order:3; margin:0; padding:4px 6px; }
+#workshop-dialog.ui-migrated[data-workshop-kind]:has(#ws-result:not([hidden])) :is(#ws-part-compare,.ws-parts,.ws-tools) { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-unlock-panel { order:4; flex:none; padding:10px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-unlock-panel h3 { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-unlock-status { font-size:12px; margin:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-unlock-rule { font-size:12px; line-height:1.5; padding-top:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-unlock-panel #ws-mastery { margin:6px 0 0; }
+/* 费用只给出所需数量与缺口；材料图标继续打开正式来源说明。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-footer { height:auto; min-height:0; gap:3px; padding:5px 10px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-quote { max-height:none; overflow:visible; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-purpose { height:auto; min-height:0; max-height:none; overflow:visible; font-size:12px; line-height:16px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-cost-title { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-resources { display:grid; grid-template-columns:repeat(var(--ws-resource-count,4),minmax(0,1fr)); gap:2px; min-height:0; padding:0; overflow:visible; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-resource { min-width:0; gap:0; font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-resource b { font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-checkout { margin:0; gap:4px; flex-wrap:nowrap; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-checkout > div { flex-wrap:nowrap; gap:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-feedback { width:auto; min-height:0; max-height:none; overflow:visible; font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-checkout="false"] .ws-footer { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-function="unlock"] .ws-footer { display:none; }
+/* 单个费用格保留44px来源按钮，五种资源仍在一行完整展示。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-resource { position:relative; display:flex; flex-direction:column; align-items:center; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-resource > span { margin-top:-12px; text-align:center; pointer-events:none; position:relative; line-height:13px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-resource svg { transform:translateY(-6px); width:22px; height:22px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-resource small { font-size:10px; }
+
+/* 枪械缩略图来自正式绘制器；仅此目录允许独立上下划动。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf { position:relative; display:flex; flex-direction:column; height:100%; max-height:none; padding:0 2px 0 0; gap:4px; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y;  }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf > button { min-width:0; width:100%; min-height:72px; padding:3px 1px; gap:0; box-shadow:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf canvas { width:48px; height:32px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf b { font-size:11px; line-height:14px; overflow-wrap:anywhere; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf small { font-size:10px; line-height:12px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare { flex-wrap:wrap; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare > span { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-part-compare canvas { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-unlock-panel { padding:6px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-mastery { padding:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-mastery-top { flex-wrap:wrap; gap:2px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-mastery-title { flex:auto; }
+/* 手机横屏仍保留左侧枪架，右侧将舞台与当前功能并排。 */
+@media (max-height:500px) and (min-width:600px) {
+ #workshop-dialog.ui-migrated[data-workshop-kind] { width:calc(100vw - var(--ui-safe-left) - var(--ui-safe-right)); }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-layout { grid-template-columns:var(--ws-rack-width,72px) minmax(0,1fr) minmax(0,1fr); grid-template-rows:24px minmax(0,1fr) auto; gap:6px 12px; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-rack { grid-column:1; grid-row:1 / 4; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-center { display:contents; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-title { grid-column:2; grid-row:1; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-bench { grid-column:2; grid-row:2 / 4; height:100%; min-height:60px; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] :is(.ws-parts,#ws-stats,#ws-unlock-panel) { grid-column:3; grid-row:1 / 4; align-self:center; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] :is(.ws-controls,#ws-result) { grid-column:3; grid-row:1 / 3; align-self:start; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] #ws-construction-tools { grid-column:3; grid-row:3; }
+ #workshop-dialog.ui-migrated[data-workshop-kind]:has(#ws-result:not([hidden])) .ws-parts { grid-row:2 / 4; align-self:end; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-footer { flex-direction:row; align-items:center; gap:12px; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-quote { flex:1; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] .ws-checkout { width:auto; flex:1; }
+}
+/* 试装期间专用配置入口本就不可操作，不与对比和恢复按钮争用短屏宽度。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-tools :is(#ws-mechanical,#ws-spider,#ws-funnel):disabled { display:none; }
+
+/* 武器点选卡展示真实部件，连接点仅作高亮，确认区集中在底部报价之后。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-components > button { cursor:pointer; touch-action:manipulation; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-function="upgrade"] #ws-socket { pointer-events:none; border-style:solid; background:transparent; box-shadow:0 0 0 3px #fff6dc99; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-function="upgrade"] #ws-socket span { visibility:hidden; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-upgrade-preview { display:grid; grid-template-columns:repeat(var(--ws-change-count,1),minmax(0,1fr)); gap:4px; padding:4px 0; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-upgrade-preview div { display:flex; flex-direction:column; gap:2px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-upgrade-preview small { font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-upgrade-preview b { font-size:13px; white-space:nowrap; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-upgrade-preview i { font-style:normal; opacity:.55; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-upgrade-preview strong { color:var(--ui-ink); }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-checkout:not(:has(button:not([hidden]))):has(#ws-feedback:empty) { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-construction-tools { width:100%; flex:none; background:transparent; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-work-progress { font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-hold { min-width:140px; font-size:14px; }
+@media (max-height:500px) and (min-width:600px) {
+ #workshop-dialog.ui-migrated[data-workshop-kind] #ws-construction-tools { width:180px; flex-direction:column; gap:2px; }
+ #workshop-dialog.ui-migrated[data-workshop-kind] #ws-hold { width:100%; }
+}
+
+/* 升级、改装与挂载共用底栏按内容占位：材料相邻靠左，长按确认靠右，属性名称与变化同行。 */
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] .ws-footer { display:grid; grid-template-columns:minmax(0,1fr) 140px; gap:2px 8px; padding:6px 10px; align-items:center; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] .ws-quote { display:contents; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] :is(#ws-purpose,#ws-upgrade-preview,.ws-checkout) { grid-column:1 / -1; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] #ws-upgrade-preview { display:flex; flex-wrap:wrap; column-gap:14px; row-gap:2px; padding:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] #ws-upgrade-preview div { flex-direction:row; align-items:baseline; flex-wrap:wrap; column-gap:6px; row-gap:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] #ws-resources { grid-column:1; grid-row:3; display:flex; flex-wrap:wrap; justify-content:flex-start; gap:2px 8px; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] .ws-resource { flex:none; min-width:44px; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] #ws-construction-tools { grid-column:2; grid-row:3; display:flex; flex-direction:column; align-items:stretch; width:auto; gap:2px; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] #ws-hold { order:0; width:100%; min-width:0; padding:6px 8px; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] #ws-work-progress { order:1; text-align:center; font-size:10px; line-height:14px; min-height:14px; }
+/* 三种以上材料独占一行，仍紧邻排布；确认与进度复用下一行，不挤压短屏按钮。 */
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"]:has(#ws-resources > :nth-child(3)) #ws-resources { grid-column:1 / -1; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"]:has(#ws-resources > :nth-child(3)) #ws-construction-tools { grid-column:1 / -1; flex-direction:row; align-items:center; gap:8px; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"]:has(#ws-resources > :nth-child(3)) #ws-work-progress { order:0; text-align:left; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"]:has(#ws-resources > :nth-child(3)) #ws-hold { order:1; width:140px; }
+/* 固定错误提示在操作行之后，缺料时也不把确认按钮挤到额外空行。 */
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"] .ws-checkout { grid-row:4; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"]:has(#ws-resources > :nth-child(3)) #ws-construction-tools { grid-row:4; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-hold-draft="true"]:has(#ws-resources > :nth-child(3)) .ws-checkout { grid-row:5; }
+
+/* 载具复用单屏底板：车体与武器切换明确，挂载卡片每页四项。 */
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] .ws-tray-tabs { gap:4px; margin:0 0 4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] .ws-tray-tabs button { flex:1; min-width:0; padding:4px; font-size:12px; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-components { grid-template-columns:repeat(3,minmax(0,1fr)); }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-parts canvas { display:block; width:54px; height:32px; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-parts b { font-size:11px; line-height:14px; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-parts button { min-height:74px; gap:0; }
+#workshop-dialog.ui-migrated #ws-mount-pages { display:flex; align-items:center; gap:4px; margin-top:4px; }
+#workshop-dialog.ui-migrated #ws-mount-pages button { min-height:44px; min-width:44px; padding:4px 8px; }
+#workshop-dialog.ui-migrated #ws-mount-page { flex:1; text-align:center; font-size:11px; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-vehicle-parking { order:6; padding:0; margin:0; font-size:11px; line-height:14px; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-empty-modify { order:4; margin:0; padding:6px; }
+#workshop-dialog.ui-migrated[data-draft="true"] .ws-parts { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-turret-buy { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-turret-upgrade { min-height:44px; padding:4px; font-size:12px; }
+@media (max-height:500px) and (min-width:600px) {
+ #workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-vehicle-parking { grid-column:3; grid-row:3; }
+}
+/* 点选挂载直接形成草稿，连接点只显示位置，不再要求二次点击。 */
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-socket { pointer-events:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-socket span { visibility:hidden; }
+
+/* 点选方案直接试装，安装圈只标注位置，不接收拖动或施工输入。 */
+#workshop-dialog.ui-migrated #ws-socket { pointer-events:none; }
+#workshop-dialog.ui-migrated #ws-socket span { visibility:hidden; }
+
+/* 武器与载具各页共用纯图标目录：48×32同比放大30%，为图标和滚动条留足空间。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] { --ws-rack-width:80px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf > button { min-height:60px; justify-content:center; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-shelf canvas { flex:none; width:62.4px; height:41.6px; }
+
+/* 属性容器默认不改变武器页布局，载具成长和升级页恢复完整当前数值。 */
+#ws-attributes { display:contents; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"]:is([data-function="upgrade"],[data-function="unlock"]) #ws-attributes { display:block; order:5; flex:none; min-width:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"]:is([data-function="upgrade"],[data-function="unlock"]) #ws-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"]:is([data-function="upgrade"],[data-function="unlock"]) #ws-stats-title { display:block; margin:0 0 4px; font-size:11px; opacity:1; }
+#ws-vehicle-traits { margin-top:6px; padding-top:5px; border-top:1px solid var(--ui-line); }
+#ws-vehicle-traits > small { font-size:11px; }
+#ws-trait-list { display:flex; flex-wrap:wrap; gap:4px; list-style:none; padding:0; margin:4px 0 0; }
+#ws-trait-list li { max-width:100%; padding:3px 6px; border-radius:6px; color:var(--ui-ink); background:#e4e3bf; font-size:11px; line-height:1.4; overflow-wrap:anywhere; }
+/* 载具没有熟练度门槛，成长页用简短说明为当前属性和特性留出空间。 */
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-unlock-panel { order:6; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] :is(#ws-unlock-status,#ws-mastery) { display:none; }
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-unlock-rule { margin:0; padding:0; }
+@media (max-width:360px) {
+ #workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-stats > div { padding:3px; }
+ #workshop-dialog.ui-migrated[data-workshop-kind="vehicle"] #ws-stats small { font-size:9px; }
+}
+/* 短屏允许详情区独立滚动，底部升级确认与左侧车型目录始终可触达。 */
+#workshop-dialog.ui-migrated[data-workshop-kind="vehicle"]:is([data-function="upgrade"],[data-function="unlock"]) .ws-center { overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; }
+@media (max-height:500px) and (min-width:600px) {
+ #workshop-dialog.ui-migrated[data-workshop-kind="vehicle"]:is([data-function="upgrade"],[data-function="unlock"]) .ws-center { display:flex; grid-column:2; grid-row:1 / 4; }
+ #workshop-dialog.ui-migrated[data-workshop-kind="vehicle"]:is([data-function="upgrade"],[data-function="unlock"]) .ws-bench { height:auto; flex:1 0 104px; }
+}
+/* 装备档案入口与名称同行，44px 触控区内使用轻量问号，长名称自然换行。 */
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-title { gap:4px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-title > div { min-width:0; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-info { flex:0 0 44px; width:44px; height:44px; min-height:44px; padding:0; border:0; box-shadow:none; background:transparent; color:var(--ui-forest); font-size:19px; font-weight:bold; line-height:1; }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-info:hover { background:var(--ui-paper); color:var(--ui-forest); }
+#workshop-dialog.ui-migrated[data-workshop-kind] #ws-info:focus-visible { outline:2px solid var(--ui-forest); outline-offset:-4px; border-radius:12px; }
+#workshop-dialog.ui-migrated[data-workshop-kind] .ws-title > span { margin-left:auto; }
+/* 档案像营地的纸页：沿用公共底板，只定义内容节奏，不复制外框样式。 */
+#ws-equipment-dialog .ws-equipment-copy { font-size:14px; line-height:1.8; overflow-wrap:anywhere; }
+#ws-equipment-dialog .ws-equipment-copy p { margin:0 0 14px; }
+#ws-equipment-dialog .ws-equipment-maker { color:var(--ui-forest); font-size:12px; }
+#ws-equipment-dialog .ws-equipment-story { border-top:1px solid #c5cfaa; padding-top:16px; }
+#ws-equipment-dialog .ws-equipment-story > small { color:#677951; font-size:11px; letter-spacing:1px; }
+#ws-equipment-dialog .ws-equipment-copy h3 { margin:4px 0 12px; font-size:18px; color:var(--ui-forest); }
+#ws-equipment-source-section { border-top:1px solid #c5cfaa; padding-top:12px; }
+#ws-equipment-dialog #ws-equipment-source-section h3 { font-size:14px; }
+#ws-equipment-dialog #ws-equipment-source { font-size:12px; margin-bottom:0; }
+
+/* 故事画像等比显示整张旧画纸，留言独立排版并随正文滚动。 */
+#ws-equipment-dialog .ws-equipment-portrait { margin:18px 0; }
+#ws-equipment-dialog .ws-equipment-portrait img { display:block; width:100%; height:auto; border-radius:8px; }
+#ws-equipment-dialog .ws-equipment-portrait img[hidden] { display:none; }
+#ws-equipment-dialog .ws-equipment-portrait figcaption { margin-top:8px; color:var(--ui-forest); font-size:12px; text-align:center; line-height:1.7; }
