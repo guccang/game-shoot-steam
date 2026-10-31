@@ -1,7 +1,6 @@
 import {assignRepairParking} from './repair-parking.js';
 import {vehicleFaults} from '../config/supplies.js';
 import {northParkingSpot} from '../progression/camp-parking.js';
-import {sendMail} from '../progression/mailbox.js';
 import {parkingRecordSite} from '../progression/roadside-parking.js';
 // 自有车辆报废、救援和维修的唯一业务入口；临时活动装备继续由各自会话管理。
 import {blocked} from '../physics/motion.js';
@@ -45,7 +44,6 @@ export function markVehicleWreck(game,position){
  const v=game.vehicle;game.progress.vehicleService??=[];
  game.progress.vehicleService[v.index]={hp:0,phase:'wrecked',mapId:game.mapId,position:canonical(position),wheel:v.wheelPhase||0};
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==v.index);
- sendMail(game.progress,{sender:'载具维修中心',title:vehicleModel(v.index).name+'损坏通知',body:'载具耐久已归零，需要维修。可通过手机载具救援呼叫拖车，或到维修中心安排救援。'});
  return true;
 }
 // 保养与报废统一按损失耐久比例 × 基础车价 × 修复系数计算，金币向上取整。
@@ -91,7 +89,6 @@ export function requestVehicleRepair(game,index,remote=false){
   order={layoutVersion:REPAIR_LAYOUT_VERSION,hp:v.hp/v.maxHp,phase:'repairing',mapId:'forest',position:{...REPAIR_BAY},truck:{...REPAIR_BAY},timer:0,wheel:0};
  }
  game.progress.coins-=cost;game.progress.vehicleService??=[];game.progress.vehicleService[index]=order;
- sendMail(game.progress,{sender:'载具维修中心',title:vehicleModel(index).name+'维修受理凭证',body:`已支付 ${cost} 金币，${wrecked?'拖车正在赶往损毁地点':'车辆已交付维修'}。维修完成后将放入北门停车场。`});
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  if(index===4)game.progress.fireDispatch.garage=null;
  if(order.phase==='repairing')assignRepairParking(game,index);
@@ -107,7 +104,6 @@ export function collectRepairedVehicle(game,index){
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  game.progress.campParking.owned.push({hull:index,spot:spot.id,hp:1,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:v.wheelPhase||0,track:0});
  game.parkingVisitors=(game.parkingVisitors||[]).filter(p=>p.spot!==spot.id);
- sendMail(game.progress,{sender:'载具维修中心',title:vehicleModel(index).name+'维修完成',body:'车辆耐久已恢复，现已停入北门停车场。可通过手机载具定位找到车辆，前往车旁上车。'});
  game.onEvent('vehicle-service',{text:vehicleModel(index).name+'已修好并停入北门停车场，可用手机定位。'});
  return {ok:true,message:'已停入北门停车场，请到车旁上车。'};
 }

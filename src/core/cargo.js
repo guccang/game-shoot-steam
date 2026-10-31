@@ -8,7 +8,6 @@ import {personalFleet} from './vehicle-repair.js';
 import {worldDistance} from '../world/coordinates.js';
 import {creditResource} from '../progression/resource-wallet.js';
 import {RESOURCE_CAP} from '../config/resource-limits.js';
-import {sendMail} from '../progression/mailbox.js';
 import {recordEconomy} from '../progression/economy-ledger.js';
 import {capturePatrol} from './patrol-session.js';
 // 有车体才有货舱；房内只访问实际停入当前建筑泊位的车辆。
@@ -35,6 +34,6 @@ export function sellCrops(game){
  const next=validateProgress(structuredClone(game.progress)),stores=[next.farm.inventory,...next.logistics.builds.filter((_,i)=>cargoAccessible(game,i)).map(b=>b.cargo)];let coins=0,count=0;
  for(const stock of stores)for(let i=0;i<FARM_CROPS.length;i++){const n=Math.min(stock[i],Math.floor((RESOURCE_CAP-next.coins)/FARM_CROPS[i].value));if(n>0){stock[i]-=n;count+=n;coins+=creditResource(next,'coins',n*FARM_CROPS[i].value);}}
  if(!count)return {ok:false,message:'没有可出售的作物，或金币已满。'};
- recordEconomy(next,'income','farm:sale',{coins});sendMail(next,{sender:'营地农产收购',title:'作物出售结算',body:`本次收购作物 ${count} 份，金币 +${coins}，已从背包及在场货舱扣除对应作物。`});
+ recordEconomy(next,'income','farm:sale',{coins});
  return commitCargo(game,next,`已售出 ${count} 份作物，金币 +${coins}。`);
 }

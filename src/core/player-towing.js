@@ -9,7 +9,6 @@ import {personalFleet,vehicleRepairQuote} from './vehicle-repair.js';
 import {worldDistance,nearest,canonical} from '../world/coordinates.js';
 import {blocked} from '../physics/motion.js';
 import {capturePatrol} from './patrol-session.js';
-import {sendMail} from '../progression/mailbox.js';
 // 拖行路径按残骸落地半径检查，不能借牵引穿过建筑、河岸和树林。
 function clearSegment(game,from,to,index){const at=nearest(to,from),d=worldDistance(from,at),steps=Math.max(1,Math.ceil(d/5));for(let i=1;i<=steps;i++)if(blocked(from.x+(at.x-from.x)*i/steps,from.y+(at.y-from.y)*i/steps,18,game.trees,{mapId:game.mapId,livingCollision:game.mapId==='forest',amphibious:!!vehicleModel(index).amphibious}))return false;return true;}
 // 挂接前验证同地图距离、真实总重和当前车的剩余牵引能力。
@@ -50,6 +49,5 @@ export function deliverTowedVehicle(game){
  const cost=selfTowRepairQuote(game);if(!cost||game.progress.coins<cost)return {ok:false,message:`金币不足，需要 ${cost} 金币。`};
  const next=validateProgress(structuredClone(game.progress));next.coins-=cost;next.logistics.tow=null;next.vehicleService[t.target]={hp:0,phase:'repairing',layoutVersion:REPAIR_LAYOUT_VERSION,mapId:'forest',position:{...REPAIR_BAY},truck:{...REPAIR_BAY},timer:0,wheel:r.wheel||0};
  assignRepairParking({...game,progress:next},t.target);
- sendMail(next,{sender:'载具维修中心',title:vehicleModel(t.target).name+'自行牵引维修手续',body:`已自行拖车到厂，按普通救援维修报价的40%收取 ${cost} 金币。维修完成后停入北门停车场，车内货物保留。`});
  return commitTow(game,next,`已交车维修，优惠费用 ${cost} 金币。`);
 }

@@ -4,7 +4,6 @@ import {vehicleBuild,VEHICLE_ENGINES,LOAD_RULES} from '../config/vehicle-load.js
 import {vehicleModel,vehicleMaxHp} from '../config/vehicles.js';
 import {economyFor} from '../config/economy.js';
 import {personalFleet} from './vehicle-repair.js';
-import {sendMail} from '../progression/mailbox.js';
 import {capturePatrol} from './patrol-session.js';
 // 不同底盘使用对应价格；已买发动机免费换装，拆下装甲保管在工坊。
 export function vehicleBuildPrice(progress,index,action,choice=0){
@@ -37,7 +36,6 @@ export function configureVehicleBuild(game,index,action,choice=0){
  else if(action==='add-armor'){b.plates++;if(b.spares)b.spares--;}
  else{b.plates--;b.spares++;}
  const ratio=v.maxHp?v.hp/v.maxHp:0,snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
- sendMail(next,{sender:'载具工坊',title:vehicleModel(index).name+'装配手续',body:`${label}，实际支付 ${cost} 金币。现有附加装甲 ${b.plates} 层。拆下的装甲和已购发动机存放在工坊，不计入随车重量。`});
  let saved=false;try{saved=game.livingPersist?.(next)===true;}catch{}
  if(!saved)return {ok:false,message:'保存失败，装配与费用未生效。'};
  game.progress=next;v.maxHp=vehicleMaxHp({...next,vehicleIndex:index});v.hp=Math.max(0,Math.min(v.maxHp,v.maxHp*ratio));

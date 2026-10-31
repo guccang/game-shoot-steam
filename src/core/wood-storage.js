@@ -7,7 +7,6 @@ import {personalFleet} from './vehicle-repair.js';
 import {cargoAccessible,commitCargo} from './cargo.js';
 import {validateProgress} from '../progression/progress.js';
 import {recordResourceGain} from '../progression/game-statistics.js';
-import {sendMail} from '../progression/mailbox.js';
 // 采集使用实际驾驶的自有载具；步行以及借用载具均不会把货物塞入远处车舱。
 export function collectWood(game,amount){
  const p=game.progress,vehicle=personalFleet(game)&&game.vehicle.active&&p.vehicleHulls[game.vehicle.index],store=vehicle?p.logistics.builds[game.vehicle.index]:p.logistics,key=vehicle?'wood':'bagWood',before=store[key]||0,count=Math.max(0,Math.min(RESOURCE_CAP-before,Math.floor(Number(amount)||0)));
@@ -35,6 +34,5 @@ export function storeWood(game){
  for(const [stock,key] of stores){const n=Math.min(stock[key]||0,RESOURCE_CAP-next.wood);stock[key]-=n;next.wood+=n;count+=n;}
  if(!count)return {ok:false,message:'没有可入库的木头，或营地仓库已满。'};
  if(next.arrival?.phase==='gather'&&next.wood>=RANGER.repairWood)next.arrival.phase='repair';
- sendMail(next,{sender:'营地仓库',title:'木材入库回执',body:`木头 ${count} 份已从背包及在场载具存入仓库，当前库存 ${next.wood} 份，可用于建设和制作。`});
  return commitCargo(game,next,`木头 ${count} 份已入库，仓库存量 ${next.wood} 份。`);
 }

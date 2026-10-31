@@ -1,6 +1,6 @@
 import {freshSupplies,normalizeSupplies} from './supplies.js';
 import {isVehicleArmament} from '../config/vehicle-armaments.js';
-import {freshMailbox,normalizeMailbox,syncParcelMail} from './mailbox.js';
+import {freshMailbox,normalizeMailbox} from './mailbox.js';
 import {freshLogistics,normalizeLogistics} from './vehicle-build.js';
 import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
 import {normalizeVehicleService} from './vehicle-repair.js';
@@ -150,7 +150,7 @@ export function validateProgress(raw) {
   p.legendaryWorkshop=normalizeLegendaryWorkshop(raw.legendaryWorkshop);
   p.restoration=validateRestoration(raw.restoration);
   p.farm=validateFarm(raw.farm);
-  p.mailbox=normalizeMailbox(raw.mailbox);syncParcelMail(p);
+  p.mailbox=normalizeMailbox(raw.mailbox);
   p.campLevel=validateCampLevel(raw.campLevel);
   p.mainline=validateMainline(raw.mainline);
   restoreFirstPlantSeeds(p);

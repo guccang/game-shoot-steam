@@ -8,7 +8,6 @@ import {personalFleet} from './vehicle-repair.js';
 import {vehicleLocations} from './vehicle-location.js';
 import {worldDistance} from '../world/coordinates.js';
 import {createVehicle} from '../combat/vehicle.js';
-import {sendMail} from '../progression/mailbox.js';
 import {cargoAccessible} from './cargo.js';
 // 弹药装卸保持总量不变，货舱超载后仍可卸货。
 export function transferSupplyAmmo(game,hull,key,count,direction){
@@ -38,7 +37,6 @@ export function tradeSupply(game,{kind,id,batches=1,craft=false,target='hand'}={
  const coins=craft?0:rule.coins*batches,wood=craft?rule.wood*batches:0,parts=craft?rule.parts*batches:0;
  if(next.coins<coins||next.wood<wood||next.materials.parts<parts)return {ok:false,message:'金币或制作材料不足。'};
  next.coins-=coins;next.wood-=wood;next.materials.parts-=parts;stock[id]+=amount;
- sendMail(next,{sender:'弹药补给铺',title:(craft?'弹药制作':'补给购买')+'手续',body:`${rule.name} ×${amount}，花费 ${coins} 金币、${wood} 木头、${parts} 机械零件；已放入${target==='vehicle'?'当前载具货舱':'猫猫背包'}。`});
  return commit(game,next,`${rule.name} +${amount}，已计入负重。`);
 }
 // 维修包只用于尚未完全损坏的部件；不恢复车体HP，也不能复活报废车。
@@ -67,7 +65,6 @@ export function mountMainGun(game,hull,gun){
  next.vehicleLoadouts[hull]=gun;
  // 计入主炮自身、备用弹药、装甲和驾驶员，不附加车型白名单。
  if(gun!==null&&vehicleLoad(game,hull,{progress:next,driver:true}).overloaded)return {ok:false,message:`装上这门主炮（${GUN_MASSES[gun]} kg）后会超载，请卸货、减装甲或换发动机。`};
- sendMail(next,{sender:'载具工坊',title:'主炮换装记录',body:gun===null?'主炮已拆下，存放于工坊。':`${VEHICLE_WEAPONS[gun].name}已安装。原车弹药留在原车，损坏状态随主炮保留。`});
  const result=commit(game,next,'主炮换装完成，弹药和故障均已保留。');if(!result.ok)return result;
  for(const i of changed){const v=game.vehicles[i],replacement=createVehicle(next,game.maxHp(),i);Object.assign(v,{weaponIndex:replacement.weaponIndex,module:replacement.module,modules:replacement.modules,targetId:null,recoil:replacement.recoil});}
  return result;
