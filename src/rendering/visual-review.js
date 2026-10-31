@@ -1716,3 +1716,9 @@ export async function inspectBuildingTowRedesign(game,root){
  const {WORLD_BUILDINGS}=await import('../config/world-buildings.js'),{TOW_TRUCK}=await import('../config/vehicle-repair.js');
  return {...await inspectVehicleRepair(game,root),designCriterion:'building-tow-redesign',buildings:WORLD_BUILDINGS,tow:TOW_TRUCK,parked:game.progress.campParking.owned};
 }
+
+// 正面救援车验收绑定真实订单与共用载台锚点，尺寸取自正式配置。
+export async function inspectTowFrontView(game,root){
+ const {TOW_TRUCK}=await import('../config/vehicle-repair.js');
+ return {...await inspectVehicleRepair(game,root),designCriterion:'tow-front-view',tow:TOW_TRUCK};
+}

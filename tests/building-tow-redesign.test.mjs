@@ -63,7 +63,7 @@ test('满停车场保管完成车，暂停不交付，空位后仅交付一次�
 test('旧档已修好订单自动交付，访客让出交付位且保留原持有金币',()=>{
  const g=setup(),slot=PARKING_SPOTS.find(s=>s.building==='north');g.parkingVisitors=[{spot:slot.id,model:'sample'}];g.progress.vehicleService[0]={hp:1,phase:'ready',position:REPAIR_BAY,mapId:'forest',timer:12};const coins=g.progress.coins;
  updateVehicleRepair(g,.1);assert.equal(g.progress.coins,coins);assert.equal(g.parkingVisitors.length,0);assert.equal(g.progress.campParking.owned[0].spot,slot.id);
- assert.ok(TOW_TRUCK.width>=210);assert.ok(TOW_TRUCK.navigationRadius>=30);
+ assert.ok(TOW_TRUCK.width<=110);assert.ok(TOW_TRUCK.navigationRadius>=30);
 });
 
 // 自动交付避开玩家正在驾驶但尚未形成停车记录的车辆。
