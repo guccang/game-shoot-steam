@@ -1,3 +1,4 @@
+import {enterParkedWorkshop} from './cottage.js';
 import {parkingOccupied,leaveParkedVehicle} from './camp-parking.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
 // 正常森林的点击停车：可取消的低速对齐和倒车，复用正式碰撞与车轮动作。
@@ -68,7 +69,7 @@ export function requestParking(game){
  p.vx=p.vy=0;game.mainlineSpeech=null;
  return true;
 }
-// 沿路径逐步加速刹停，位移、轮相与履带连续；到位后仅通知一次工坊入口。
+// 沿路径连续倒车；真正停稳并安全下车后，库内泊位直接进入所属建筑。
 function advanceParking(game,dt){
  const s=game.parking,p=game.player,previous={x:p.x,y:p.y},target=nearest(s.path[s.step],p);
  const dx=target.x-p.x,dy=target.y-p.y,distance=Math.hypot(dx,dy);
@@ -86,7 +87,8 @@ function advanceParking(game,dt){
   s.step++;s.speed=0;s.phase=s.step>=s.path.length-1?'reverse':'align';
   if(s.step===s.path.length){s.phase='parked';p.vx=p.vy=0;
    const spot=PARKING_SPOTS.find(spot=>spot.id===s.id);
-   leaveParkedVehicle(game,spot);
+   if(!leaveParkedVehicle(game,spot)){s.phase='cancelled';return true;}
+   if(spot.indoor)enterParkedWorkshop(game,spot.id);
    game.onEvent('vehicle-parked',{id:s.id,kind:spot.kind,index:game.vehicle.index});
   }
  }

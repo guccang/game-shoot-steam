@@ -17,7 +17,7 @@ import {requestParking,updateParking} from '../src/core/parking.js';
 import {boardParkedVehicle} from '../src/core/camp-parking.js';
 import {requestVehicleRepair,updateVehicleRepair,collectRepairedVehicle} from '../src/core/vehicle-repair.js';
 import {validateProgress} from '../src/progression/progress.js';
-import {enterWorkshop} from '../src/core/cottage.js';
+import {leaveCottage} from '../src/core/cottage.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
 import {parkedVehicleObjects} from '../src/rendering/parked-vehicles.js';
 import {parkingGaragePose} from '../src/rendering/parking.js';
@@ -58,7 +58,7 @@ test('三个维修泊位与周期镜像均可 P 倒车、刷新、重新上车�
   for(let i=0;i<300&&g.vehicle.active;i++)updateParking(g,.05);
   assert.equal(g.vehicle.active,false,spot.id);const saved=g.progress.campParking.owned[0];assert.equal(saved.spot,spot.id);assert.ok(saved.hp<.71);
   const loaded=validateProgress(structuredClone(g.progress));assert.equal(loaded.campParking.owned[0].spot,spot.id);
-  if(spot.indoor){const item=parkedVehicleObjects(g).find(s=>s.hull===0);assert.equal(item.y+item.depthOffset,R.y+2);assert.deepEqual(parkingGaragePose({x:spot.x+shift,y:spot.y},{active:true}),{x:R.x+shift,y:R.y});}
+  if(spot.indoor){assert.equal(g.cottage.kind,'repair');assert.ok(leaveCottage(g));const item=parkedVehicleObjects(g).find(s=>s.hull===0);assert.equal(item.y+item.depthOffset,R.y+2);assert.deepEqual(parkingGaragePose({x:spot.x+shift,y:spot.y},{active:true}),{x:R.x+shift,y:R.y});}
   Object.assign(g.player,{x:spot.x+shift,y:spot.y+65});assert.ok(boardParkedVehicle(g,0));assert.ok(g.vehicle.hp<g.vehicle.maxHp*.71);
  }
 });
@@ -66,7 +66,7 @@ test('三个维修泊位与周期镜像均可 P 倒车、刷新、重新上车�
 test('维修库内停驻车可由室内售货员保养，交车位置不压住房门',()=>{
  const g=setup(),spot=spots.find(s=>s.indoor);Object.assign(g.player,{x:spot.x,y:spot.approachY});g.summonVehicle();g.vehicle.hp*=.5;requestParking(g);
  for(let i=0;i<300&&g.vehicle.active;i++)updateParking(g,.05);
- Object.assign(g.player,WORKSHOP_INTERIORS.repair.door);assert.ok(enterWorkshop(g,'repair'));assert.ok(requestVehicleRepair(g,0).ok);updateVehicleRepair(g,13);assert.equal(collectRepairedVehicle(g,0).ok,false);
+ assert.equal(g.cottage.kind,'repair');assert.ok(requestVehicleRepair(g,0).ok);updateVehicleRepair(g,13);assert.equal(collectRepairedVehicle(g,0).ok,false);
  const car=parkingRecordSite(g.progress.campParking.owned[0]);assert.ok(worldDistance(car,WORKSHOP_INTERIORS.repair.door)>65);assert.equal(blocked(car.x,car.y,30,g.trees,{mapId:'forest',livingCollision:true}),false);
 });
 

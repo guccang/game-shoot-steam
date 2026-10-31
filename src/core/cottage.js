@@ -1,3 +1,4 @@
+import {PARKING_SPOTS} from '../config/parking.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
 import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
@@ -18,14 +19,20 @@ export function canClickCottage(game){return !game.cottage&&canEnterCottage(game
 export function enterCottage(game){return canClickCottage(game)&&enterInterior(game,'cottage');}
 // 两座工坊沿用小屋的距离和步行校验，入职重建仍使用自己的剧情入口。
 export function enterWorkshop(game,kind){return !!WORKSHOP_INTERIORS[kind]&&enterInterior(game,kind);}
+// 仅正式库内泊车完成后使用门外下车点入屋，不放宽普通步行进门的距离限制。
+export function enterParkedWorkshop(game,parkingId){
+ const spot=PARKING_SPOTS.find(s=>s.id===parkingId),state=game.parking;
+ if(!spot?.indoor||!WORKSHOP_INTERIORS[spot.kind]||state?.id!==spot.id||state.phase!=='parked'||state.hull!==game.vehicle.index||!game.progress.campParking.owned.some(r=>r.hull===state.hull&&r.spot===spot.id))return false;
+ return enterInterior(game,spot.kind,{x:spot.x,y:spot.disembarkY??spot.approachY+18});
+}
 // 入室前保存世界落点，室内使用独立坐标，存档仍记录外部安全位置。
-function enterInterior(game,kind){
+function enterInterior(game,kind,parkingEntrance=null){
  if(!facilityOpen(game.progress,kind==='vehicle'?'garage':kind))return false;
  const layout=interiorLayout({kind});
  if(kind==='legendary'&&!game.progress.vehicleHulls[6])return false;
- if(game.cottage||!canEnterCottage(game)||game.state!=='playing'||game.progress.restoration?.build||game.mainlineSpeech||worldDistance(game.player,layout.door)>layout.radius)return false;
+ if(game.cottage||!canEnterCottage(game)||game.state!=='playing'||game.progress.restoration?.build||game.mainlineSpeech||worldDistance(game.player,parkingEntrance||layout.door)>layout.radius)return false;
  const outside=nearest(layout.outside||{x:C.door.x+50,y:C.door.y+30},game.player);
- game.cottage={kind,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'点击售货员，查看服务。',sleep:null,exitElapsed:0,restElapsed:0,restOpen:false,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.parking=null;game.mainlineSpeech=null;
+ game.cottage={kind,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'点击售货员，查看服务。',sleep:null,exitElapsed:0,restElapsed:0,restOpen:false,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
  Object.assign(game.player,layout.spawn,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
 }
 // 家具按脚底底座碰撞；屋内一条中间通道连接床边与门口。
