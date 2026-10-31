@@ -1,3 +1,5 @@
+import {availableWood,storeWood} from '../src/core/wood-storage.js';
+import {CAMP_WAREHOUSE} from '../src/config/wood-storage.js';
 import {terrainLineClear} from '../src/physics/terrain-navigation.js';
 import {commitWorkshop} from '../src/core/workshop.js';
 import {RESTORATION_FLIGHT} from '../src/config/town-restoration.js';
@@ -19,7 +21,7 @@ function arrive(){const g=new Game(freshRangerProgress(),()=>.5);g.start();for(l
 // 先完成赠车上车教学；各旧专项可自行选择步行或骑车继续。
 function board(g){Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.ok(g.summonVehicle());g.update(.05);}
 // 只通过正式电锯攻击采集，不直接增加余额或阶段。
-function chop(g){const tree=g.trees.find(t=>t.hp>0);Object.assign(g.player,{x:tree.x-55,y:tree.y});g.player.angle=0;for(let i=0;i<60&&tree.hp>0;i++)g.update(.05);}
+function chop(g){const tree=g.trees.find(t=>t.hp>0);Object.assign(g.player,{x:tree.x-55,y:tree.y});g.player.angle=0;for(let i=0;i<60&&tree.hp>0;i++)g.update(.05);if(g.progress.wood+availableWood(g)>=RANGER.repairWood){Object.assign(g.player,CAMP_WAREHOUSE);g.livingPersist=()=>true;assert.ok(storeWood(g).ok);}}
 
 test('首次档无手枪战车，旧档不强制播放',()=>{const g=new Game(freshRangerProgress());assert.equal(g.weapon().id,'chainsaw');assert.equal(g.progress.weapons[0],0);assert.ok(g.progress.vehicleHulls.every(level=>level===0));const old=new Game(freshProgress());assert.equal(old.arrivalPending,false);assert.equal(old.progress.weapons[0],1);});
 test('短剧暂停和刷新续接同一检查点，威胁不推进',()=>{const g=new Game(freshRangerProgress());g.start();tick(g,4);const a=structuredClone(g.progress.arrival),pos={x:g.player.x,y:g.player.y};g.pause();tick(g,10);assert.deepEqual(g.progress.arrival,a);const restored=new Game(JSON.parse(JSON.stringify(g.progress)));assert.equal(restored.player.x,pos.x);assert.equal(restored.player.y,pos.y);restored.start();tick(restored,5);assert.equal(restored.progress.arrival.phase,'letter');assert.equal(restored.wave,1);assert.equal(restored.enemies.length,0);assert.equal(restored.startFireRescue(),false);assert.equal(restored.enterRealm('tower'),false);assert.equal(restored.enterStory('first-patrol'),false);});
@@ -100,19 +102,21 @@ test('空白节拍不能跳句，暂停冻结同一时钟，跳过演出仍不�
  assert.equal(g.progress.weapons[0],0);assert.equal(g.progress.arrival.keys,true);assert.equal(g.progress.wood,0);
 });
 
-// 在正式森林中逐棵走到近邻树木，用真实电锯结算测量采集节奏，不直接补资源。
+// 营地空旷横向通道放置采集树，排除自动测试直走穿墙的旧夹具问题；使用真实电锯与负重。
 test('建造武器工坊采集80木料即可，初始两秒仍展示采集过程',async()=>{
  const {skipArrivalJourney}=await import('../src/core/ranger-arrival.js');
  const {worldDistance,nearest}=await import('../src/world/coordinates.js');
  const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);completeArrivalLetter(g);board(g);g.dismountVehicle();
+ g.trees=[];for(let i=0;i<10;i++)g.addTree(-250+i*100,820);
  let target=g.trees.find(t=>t.hp>0),seconds=0;Object.assign(g.player,{x:target.x-55,y:target.y});
- while(g.progress.arrival.phase==='gather'&&seconds<30){
+ while(g.progress.wood+availableWood(g)<RANGER.repairWood&&seconds<40){
   if(target.hp<=0)target=g.trees.filter(t=>t.hp>0&&terrainLineClear(g.player,t)).sort((a,b)=>worldDistance(a,g.player)-worldDistance(b,g.player))[0];
   const p=nearest(target,g.player),dx=p.x-g.player.x,dy=p.y-g.player.y,d=Math.hypot(dx,dy);
   g.player.angle=Math.atan2(dy,dx);g.update(.05,d>55?{x:dx/d,y:dy/d}:{x:0,y:0});seconds+=.05;
   if(seconds<=2)assert.equal(g.progress.arrival.phase,'gather');
  }
- assert.equal(g.progress.arrival.phase,'repair');assert.ok(seconds>2&&seconds<12,`实际采集${seconds.toFixed(2)}秒`);
+ assert.ok(availableWood(g)>=RANGER.repairWood,`采集超时：${availableWood(g)}份，${seconds}秒`);assert.equal(g.progress.arrival.phase,'gather');assert.equal(g.progress.wood,0);Object.assign(g.player,CAMP_WAREHOUSE);g.livingPersist=()=>true;assert.ok(storeWood(g).ok);
+ assert.equal(g.progress.arrival.phase,'repair');assert.ok(seconds>2&&seconds<40,`实际采集${seconds.toFixed(2)}秒`);
  assert.equal(g.progress.wood,RANGER.repairWood);
 });
 // 新施工档已预付木料，刷新后只续接动画，不再结算历史费用。

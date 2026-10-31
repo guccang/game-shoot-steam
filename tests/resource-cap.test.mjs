@@ -1,3 +1,4 @@
+import {forestReward} from '../src/config/economy.js';
 // 资源上限回归：覆盖存档、实际采集、奖励事务与满仓后的再次获取。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,13 +30,14 @@ test('满仓收益舍弃，消费后能重新入账，调试赠送不改变材�
  p.coins-=20;assert.equal(creditResource(p,'coins',30),20);assert.equal(p.coins,RESOURCE_CAP);
  p.materials.parts=MATERIAL_CAP;const next=debugGrantProgress(p,'resources');assert.equal(next.coins,RESOURCE_CAP);assert.equal(next.wood,RESOURCE_CAP);assert.equal(next.materials.parts,MATERIAL_CAP);
 });
-test('实际伐木与击杀封顶，掉落和经济账本只记录到账差额',()=>{
- const g=new Game(nearCap(),()=>.5);g.start();g.trees=[];g.enemies=[];g.addTree(950,760);g.hit(g.trees[0],10000);
- assert.equal(g.progress.coins,RESOURCE_CAP-2);assert.equal(g.progress.wood,RESOURCE_CAP);
+test('木材背包与仓库独立封顶，采集与战斗只记录实际增量',()=>{
+ const g=new Game(nearCap(),()=>.5);g.start();g.trees=[];g.enemies=[];g.progress.logistics.bagWood=RESOURCE_CAP-2;g.addTree(950,760);g.hit(g.trees[0],10000);
+ assert.equal(g.progress.coins,RESOURCE_CAP-2);assert.equal(g.progress.wood,RESOURCE_CAP-2);
  assert.equal(g.drops[0].coins,0);assert.equal(g.drops[0].wood,2);
+ assert.equal(g.progress.logistics.bagWood,RESOURCE_CAP);
  assert.equal(g.progress.economyLog.income['forest:tree:coins']||0,0);
- const enemy=g.spawnEnemy(0,100);g.hit(enemy,100000);assert.equal(g.progress.coins,RESOURCE_CAP);assert.equal(g.progress.wood,RESOURCE_CAP);
- assert.equal(g.drops.at(-1).coins,2);assert.equal(g.drops.at(-1).wood,0);
+ const enemy=g.spawnEnemy(0,100),coins=Math.min(2,forestReward('enemy',enemy.reward,g.progress).coins);g.hit(enemy,100000);assert.equal(g.progress.coins,RESOURCE_CAP-2+coins);assert.equal(g.progress.wood,RESOURCE_CAP-2);
+ assert.equal(g.drops.at(-1).coins,coins);assert.equal(g.drops.at(-1).wood,0);
 });
 test('主线与比赛结算封顶，奖励记录保留实际到账量',()=>{
  const p=nearCap(),reward=awardMainline(p,'first-map');assert.equal(reward.coins,2);assert.equal(p.coins,RESOURCE_CAP);

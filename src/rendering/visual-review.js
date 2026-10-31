@@ -1773,3 +1773,6 @@ export function inspectVehicleAutoBoard(game,renderer){return {designCriterion:'
 
 // 正式背包与当前装备面板的只读验收入口，不建立替代预览。
 export function inspectInventoryCatalog(game,root){const bag=root.getElementById('backpack-dialog'),detail=root.getElementById('keepsake-dialog'),field=root.getElementById('field-equipment-dialog');return {designCriterion:'inventory-item-catalog',items:bag?.querySelectorAll('[data-keepsake]').length||0,emptySlots:bag?.querySelectorAll('.keepsake-empty').length||0,weight:bag?.querySelector('.inventory-load')?.textContent||'',detail:detail?.open?detail.textContent:'',field:field?.open?field.textContent:'',hpWeight:!!root.getElementById('load-weight-hud'),vehicleEntry:!root.getElementById('vehicles-button')?.hidden,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 当前猫详情与木材仓库读取正式弹窗，不建立另一个展示状态。
+export function inspectCatWoodStorage(game,root){return {designCriterion:'cat-details-wood-storage',hero:game.loadout.hero,catDetails:root.getElementById('current-cat-dialog')?.open,warehouse:game.progress.wood,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds.map(b=>b.wood),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}

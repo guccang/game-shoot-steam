@@ -11,14 +11,14 @@ import {RESOURCE_CAP} from '../config/resource-limits.js';
 import {sendMail} from '../progression/mailbox.js';
 import {recordEconomy} from '../progression/economy-ledger.js';
 import {capturePatrol} from './patrol-session.js';
-// 有车体才有货舱；房内仅能访问停在工坊泊位的车辆。
+// 有车体才有货舱；房内只访问实际停入当前建筑泊位的车辆。
 export function cargoAccessible(game,index){
  if(!personalFleet(game)||!['playing','paused'].includes(game.state)||!game.progress.vehicleHulls[index])return false;
- if(game.cottage)return game.cottage.kind==='vehicle'&&game.progress.campParking.owned.some(r=>r.hull===index&&PARKING_SPOTS.some(s=>s.id===r.spot&&s.building==='garage'));
+ if(game.cottage)return game.progress.campParking.owned.some(r=>r.hull===index&&PARKING_SPOTS.some(s=>s.id===r.spot&&s.indoor&&s.kind===game.cottage.kind));
  const site=vehicleLocations(game).find(v=>v.hull===index);return site?.mapId===game.mapId&&worldDistance(site,game.player)<=130&&!['outbound','hooking','towing','repairing','ready'].includes(game.progress.vehicleService?.[index]?.phase);
 }
 // 只提交候选进度，保存失败不吞货物；保存时同时记录当前车队位置。
-function commitCargo(game,next,message){const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);let saved=false;try{saved=game.livingPersist?.(next)===true;}catch{}if(!saved)return {ok:false,message:'保存失败，货物和金币均未改变。'};game.progress=next;return {ok:true,message};}
+export function commitCargo(game,next,message){const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);let saved=false;try{saved=game.livingPersist?.(next)===true;}catch{}if(!saved)return {ok:false,message:'保存失败，货物和金币均未改变。'};game.progress=next;return {ok:true,message};}
 // 数量必须为正整数；允许装到超载，由正式行驶规则停止车辆。
 export function transferCargo(game,index,crop,count,direction){
  if(!cargoAccessible(game,index))return {ok:false,message:'请靠近这辆载具后装卸。'};

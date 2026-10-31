@@ -48,7 +48,7 @@ export function mainlineSteps(game){
  const f=pendingRestoration(game.progress);if(f){
   const s=restorationStatus(game,f.id),repair={label:'修复'+f.name,hint:f.benefit,done:false,operation:{type:'restoration',id:f.id}};
   // 材料充足或已投料时移除采集步骤；缺料在战场与详情都指明采集地点。
-  const resourceHint='还差 '+(f.wood-game.progress.wood)+' 木头 · 装备电锯，在营地周围采树';
+  const resourceHint='还差 '+(f.wood-game.progress.wood)+' 仓库木头 · 采集后在营地打开背包，将木材入库';
   return s.enough?[repair]:[{label:'补齐木头',hint:resourceHint,resourceHint,done:false,progress:game.progress.wood+'/'+f.wood},repair];
  }
  const conditions=task.goal.all||[task.goal];

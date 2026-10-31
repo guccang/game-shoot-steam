@@ -1,3 +1,4 @@
+import {resourceIcon} from '../rendering/resource-icons.js';
 // 背包图标复用正式武器、农具与作物主体，补给品使用森林绿描边的固定矢量图案。
 import {keepsakeIcon} from './keepsake-icons.js';
 import {farmCropMarkup} from '../rendering/farm.js';
@@ -14,6 +15,7 @@ const drawings={
 };
 // 图标只接受目录中的稳定字段，数量和文字由外部可访问按钮提供。
 export function inventoryIcon(item){const icon=item.icon;
+ if(icon.kind==='resource')return resourceIcon(icon.key);
  if(icon.kind==='keepsake')return keepsakeIcon(icon.key);
  if(['crop','seed'].includes(icon.kind))return '<span class="inventory-crop">'+farmCropMarkup(icon.index)+(icon.kind==='seed'?'<small>种</small>':'')+'</span>';
  if(['weapon','tool'].includes(icon.kind))return `<canvas width="96" height="96" data-inventory-art="${item.id}" aria-hidden="true"></canvas>`;

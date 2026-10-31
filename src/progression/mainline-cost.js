@@ -55,6 +55,6 @@ export function mainlineResourceHint(progress,condition){
  const missing=KEYS.filter(k=>cost[k]>(['coins','wood'].includes(k)?progress[k]:progress.materials?.[k]||0));
  if(!missing.length)return '';
  const gaps=missing.map(k=>`${names[k]}${Math.ceil(cost[k]-(['coins','wood'].includes(k)?progress[k]:progress.materials?.[k]||0))}`);
- const routes=[];if(missing.includes('wood'))routes.push('木头：装备电锯，营地周围采树');if(missing.includes('coins'))routes.push('金币：种田收获后出售是主要来源，使用掉落种子播种；任务和玩法奖励照常，怪物不掉金币');if(missing.some(k=>!['coins','wood'].includes(k)))routes.push('材料：清缴怪潮与领主，或完成娱乐挑战');
+ const routes=[];if(missing.includes('wood'))routes.push('木头：装备电锯，营地周围采树，返回营地从背包存入仓库');if(missing.includes('coins'))routes.push('金币：种田收获后出售是主要来源，使用掉落种子播种；任务和玩法奖励照常，怪物不掉金币');if(missing.some(k=>!['coins','wood'].includes(k)))routes.push('材料：清缴怪潮与领主，或完成娱乐挑战');
  return `还差${gaps.join('、')}。${routes.join('；')}。`;
 }

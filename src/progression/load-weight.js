@@ -20,7 +20,7 @@ export function catLoad(game){
 }
 // 车辆自重包含底盘、发动机增重、附加装甲和车内货物；载荷含驾驶员及背包。
 export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.vehicle.index&&game.vehicle.active,progress=game.progress}={}){
- const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cat=catLoad(game),cargo=cropInventoryMass(b.cargo),armor=b.plates*armorPlateMass(index),engineMass=spec.mass*engine.mass;
+ const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cat=catLoad(game),cargo=cropInventoryMass(b.cargo)+(b.wood||0)*itemDefinition('material:wood').mass,armor=b.plates*armorPlateMass(index),engineMass=spec.mass*engine.mass;
  const gun=progress.vehicleLoadouts[index],key=ammoKind(VEHICLE_WEAPONS[gun]),loaded=progress===game.progress?game.vehicles?.[index]?.module?.magazine?.ammo:0;
  const ammo=ammunitionMass(progress.supplies?.vehicles[index])+Math.max(0,loaded||0)*(AMMO_TYPES[key]?.mass||0),gunMass=GUN_MASSES[gun]||0;
  const payload=cargo+armor+engineMass+ammo+gunMass+(driver?cat.body+cat.weight:0),capacity=spec.payload*engine.payload;

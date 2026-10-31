@@ -1,3 +1,5 @@
+import {CAMP_WAREHOUSE,WOOD_ITEM} from '../config/wood-storage.js';
+import {canStoreWood,storeWood,transferWood,availableWood} from '../core/wood-storage.js';
 // 背包货物与载具装配共用手机底板，显示正式重量、费用和保存失败原因。
 import {mountMainGun,transferSupplyAmmo} from '../core/supplies.js';
 import {VEHICLE_ARMAMENTS} from '../config/vehicle-armaments.js';
@@ -21,14 +23,16 @@ export function createLogistics({game,root,dialogs,onChange}){
  function meter(label,weight,capacity){return `<div class="ui-inset"><b>${label} ${kg(weight)} / ${kg(capacity)}</b><progress max="${capacity}" value="${Math.min(weight,capacity)}"></progress><small>${weight>capacity?'超重 '+kg(weight-capacity):'剩余 '+kg(capacity-weight)}</small></div>`;}
  // 从实际背包和选中车型生成货物列表，切换车辆不会合并不同货舱。
  function renderCargo(){
-  const cat=catLoad(game),owned=game.progress.vehicleHulls.map((n,i)=>n?i:null).filter(i=>i!==null);if(!owned.includes(hull))hull=owned[0]??null;
+  const cat=catLoad(game),owned=game.progress.vehicleHulls.map((n,i)=>n?i:null).filter(i=>i!==null);if(!owned.includes(hull))hull=owned.includes(game.vehicle.index)?game.vehicle.index:owned[0]??null;
   const b=hull===null?null:vehicleBuild(game.progress,hull),v=hull===null?null:vehicleLoad(game,hull,{driver:true}),accessible=hull!==null&&cargoAccessible(game,hull);
-  get('content').innerHTML=meter('猫猫背包',cat.weight,cat.capacity)+`<p>猫猫体重 ${kg(cat.body)} · 随身武器 ${kg(cat.weapon)} · 弹夹与弹药 ${kg(cat.ammo)} · 作物 ${kg(cat.crops)} · 其他物品 ${kg(cat.items)}。弹药含已装填和备用；背包超重时步行减速。</p><div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`+
+  get('content').innerHTML=woodStorageMarkup()+meter('猫猫背包',cat.weight,cat.capacity)+`<p>猫猫体重 ${kg(cat.body)} · 随身武器 ${kg(cat.weapon)} · 弹夹与弹药 ${kg(cat.ammo)} · 作物 ${kg(cat.crops)} · 其他物品 ${kg(cat.items)}。弹药含已装填和备用；背包超重时步行减速。</p><div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`+
    (b?`<label>选择货舱 <select id="logistics-hull">${owned.map(i=>`<option value="${i}" ${i===hull?'selected':''}>${vehicleModel(i).name}</option>`).join('')}</select></label>${meter('载荷（含驾驶员）',v.payload,v.capacity)}<p>空车含货物总重 ${kg(vehicleLoad(game,hull,{driver:false}).mass)} · 剩余牵引能力 ${kg(v.towCapacity)}。${accessible?'可以装卸。':'请到这辆车旁装卸。'}车辆超载时无法移动。</p>`:'<p>尚未拥有载具，可以先携带作物到收购点出售。</p>')+
    FARM_CROPS.map((crop,i)=>({crop,i,bag:game.progress.farm.inventory[i],car:b?.cargo[i]||0})).filter(r=>r.bag||r.car).map(r=>`<section class="ui-section"><h3>${r.crop.name} · 每份 ${kg(cropMass(r.i))}</h3><p>背包 ${r.bag} · 货舱 ${r.car} · 收购价 ${r.crop.value} 金币/份</p><div class="logistics-actions">${[['load',r.bag,'装入'],['unload',r.car,'取出']].flatMap(([action,n,label])=>[1,10,n].filter((count,i,all)=>count>0&&all.indexOf(count)===i).map(count=>`<button class="ui-button" data-cargo="${action}" data-crop="${r.i}" data-count="${count}" ${accessible&&n>=count?'':'disabled'}>${label} ${count}</button>`)).join('')}</div></section>`).join('');
   get('content').insertAdjacentHTML('beforeend','<h3>实物弹药装卸</h3>'+Object.entries(AMMO_TYPES).map(([key,r])=>{const bag=game.progress.supplies.hand[key],car=hull===null?0:game.progress.supplies.vehicles[hull][key];return `<section class="ui-section"><b>${r.name} · ${r.mass} kg/发</b><p>背包 ${bag} 发 · 货舱 ${car} 发</p><div class="logistics-actions">${[['load',bag,'装入'],['unload',car,'取出']].flatMap(([direction,n,label])=>[1,r.pack,n].filter((count,i,a)=>count>0&&a.indexOf(count)===i).map(count=>`<button class="ui-button" data-ammo-transfer="${direction}" data-ammo-key="${key}" data-count="${count}" ${accessible&&n>=count?'':'disabled'}>${label} ${count} 发</button>`)).join('')}</div></section>`;}).join(''));
 
  }
+ // 仓库存量与待入库木材分开呈现，远离营地时只有导航可用。
+ function woodStorageMarkup(){const p=game.progress,here=canStoreWood(game),bag=p.logistics.bagWood||0,car=hull===null?0:p.logistics.builds[hull].wood||0,accessible=hull!==null&&cargoAccessible(game,hull);return `<section class="ui-section"><h3>营地仓库</h3><p>已入库木头 ${p.wood} 份 · 仅仓库存量可用于建设和制作</p><p>待入库：背包 ${bag} 份 · 当前货舱 ${car} 份</p><p>木头每份 ${WOOD_ITEM.mass} kg。${here?'已在营地，可存入背包和身边载具中的木材。':'请带上木头返回营地，再进行入库。'}</p><div class="logistics-actions"><button class="ui-button ui-button--primary" data-load-action="store-wood" ${here&&availableWood(game)>0?'':'disabled'}>存入全部在场木材</button><button class="ui-button" data-load-action="warehouse">返回营地仓库</button></div></section>`+(hull===null?'':`<section class="ui-section"><h3>木材装卸</h3><p>背包 ${bag} 份 · ${vehicleModel(hull).name} ${car} 份</p><div class="logistics-actions">`+[['load',bag,'装入货舱'],['unload',car,'取回背包']].flatMap(([direction,n,label])=>[1,10,n].filter((count,i,all)=>count>0&&all.indexOf(count)===i).map(count=>`<button class="ui-button" data-wood-transfer="${direction}" data-count="${count}" ${accessible&&n>=count?'':'disabled'}>${label} ${count} 份</button>`)).join('')+'</div></section>');}
  // 发动机、装甲、耐久、载重与价格都来自同一正式配置。
  function renderFit(){
   const p=game.progress,b=vehicleBuild(p,hull),load=vehicleLoad(game,hull,{driver:true}),reason=vehicleBuildReason(game,hull),hp=vehicleMaxHp({...p,vehicleIndex:hull});
@@ -37,16 +41,19 @@ export function createLogistics({game,root,dialogs,onChange}){
   get('content').insertAdjacentHTML('beforeend','<h3>主炮换装 · 只受载重限制</h3><p>原车弹药退回原车，主炮损坏随炮保留。未装主炮存于工坊。</p>'+VEHICLE_ARMAMENTS.filter(w=>p.vehicleWeapons[w.weaponIndex]).map(w=>{const source=p.vehicleLoadouts.indexOf(w.weaponIndex);return `<section class="ui-section"><b>${w.name} · ${GUN_MASSES[w.weaponIndex]} kg</b><p>${source<0?'工坊库存':'安装于 '+vehicleModel(source).name} · 损坏 ${p.supplies.gunFaults[w.weaponIndex]}%</p><button class="ui-button" data-fit-gun="${w.weaponIndex}" ${source===hull||reason?'disabled':''}>${source===hull?'已安装':'拆取并安装'}</button></section>`;}).join('')+`<button class="ui-button" data-fit-gun="none" ${p.vehicleLoadouts[hull]===null||reason?'disabled':''}>拆下当前主炮</button>`);
  }
  // 仅操作后刷新，长列表不会被每帧重绘打断滚动。
- function render(){get('title').textContent=mode==='fit'?'载具装配':'背包与货舱';get('subtitle').textContent=mode==='fit'?'发动机决定运力，装甲增加耐久和重量':'作物先收进背包，出售后获得金币';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();}
+ function render(){get('title').textContent=mode==='fit'?'载具装配':'背包与货舱';get('subtitle').textContent=mode==='fit'?'发动机决定运力，装甲增加耐久和重量':'木材运回营地入库，作物携带到收购点出售';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();}
  dialogs.register(panel.id,{focusId:'logistics-close',onOpen:render});
- // 统一入口保持嵌套弹窗暂停归属。
- function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';dialogs.open(panel.id);}
+ // 从背包进入时将货舱放到文档末尾，使嵌套弹窗的触控层级与打开顺序一致。
+ function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
  scope.on(panel,'change',event=>{if(event.target.id==='logistics-hull'){hull=Number(event.target.value);render();}});
  scope.on(panel,'click',event=>{
   const node=event.target.closest('button');if(!node||node.disabled)return;let result;
   if(node.dataset.loadAction==='close'){dialogs.close(panel.id);return;}
   if(node.dataset.loadAction==='market'){requestWorldNavigation(game,FARM_SEED_DOOR,'前往作物收购点',{direct:true});for(const id of ['logistics-dialog','backpack-dialog','phone-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
+  if(node.dataset.loadAction==='warehouse'){requestWorldNavigation(game,CAMP_WAREHOUSE,'返回营地仓库',{direct:true});for(const id of ['logistics-dialog','backpack-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
+  if(node.dataset.loadAction==='store-wood')result=storeWood(game);
+  if(node.dataset.woodTransfer)result=transferWood(game,hull,Number(node.dataset.count),node.dataset.woodTransfer);
   if(node.dataset.loadAction==='sell')result=sellCrops(game);
   if(node.dataset.ammoTransfer)result=transferSupplyAmmo(game,hull,node.dataset.ammoKey,Number(node.dataset.count),node.dataset.ammoTransfer);
   if(node.dataset.cargo)result=transferCargo(game,hull,Number(node.dataset.crop),Number(node.dataset.count),node.dataset.cargo);

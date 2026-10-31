@@ -15,7 +15,7 @@ test('正式击杀与采集只入账一次，多枚动画和重复命中不会�
   const g=new Game(freshProgress(),()=>.5);g.start();g.trees=[];g.enemies=[];
   const target=kind==='tree'?(g.addTree(950,760),g.trees[0]):g.spawnEnemy(0,100,{x:950,y:760},{ambient:true});
   const before={coins:g.progress.coins,wood:g.progress.wood};g.hit(target,1e6);
-  const earned={coins:g.progress.coins-before.coins,wood:g.progress.wood-before.wood};
+  const earned={coins:g.progress.coins-before.coins,wood:g.progress.logistics.bagWood};
   // 当前经济规则下野怪不产币木，伐木仍应实际获得木材。
   if(kind==='tree')assert.ok(earned.wood>0);else assert.deepEqual(earned,{coins:0,wood:0});assert.equal(g.drops.length,1);
   assert.equal(g.drops[0].coins,earned.coins);assert.equal(g.drops[0].wood,earned.wood);

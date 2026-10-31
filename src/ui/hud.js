@@ -45,7 +45,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const wallet=game.story?game.progress:p;
     $('coins').textContent = wallet.coins.toLocaleString();
     $('wood').textContent = wallet.wood.toLocaleString();
-    for(const [key,name] of [['coins',i18nText("balance.app.bbece6f829")],['wood',i18nText("balance.app.30a9333b4f")]]) {
+    for(const [key,name] of [['coins',i18nText("balance.app.bbece6f829")],['wood','营地仓库木头']]) {
       const node=root.querySelector(`[data-${key}]`),exact=wallet[key].toLocaleString();
       node.textContent=compactWalletResource(wallet[key]);node.title=exact;
       node.parentElement.setAttribute('aria-label',`${name} ${exact}`);

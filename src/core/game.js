@@ -1,3 +1,4 @@
+import {collectWood} from './wood-storage.js';
 import {updateVehicleBoarding} from './vehicle-boarding.js';
 import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
@@ -654,9 +655,10 @@ export class Game {
     }
     ({coins,wood}=forestReward(target.type,coins,this.progress));
     if(share){coins=share.coins;wood=share.wood;}
-    // 资源立即封顶入账，账本和飞行图标只记录实际获得的数量。
+    // 金币入账，木材进入实物库存；账本与飞行图标只记录实际获得的数量。
     coins=creditResource(this.progress,'coins',coins);
-    wood=creditResource(this.progress,'wood',wood);
+    const collectedWood=collectWood(this,wood);wood=collectedWood.count;
+    if(wood)this.float(target.x,target.y-80,`木头 +${wood} → ${collectedWood.destination}`,'#e2f3ce');
     recordEconomy(this.progress,'income','forest:'+target.type,{coins,wood,...materials});
     if(target.type==='tree'){recordArrivalWood(this,wood,impact);recordRestorationWood(this,wood);}
     this.drops.push(createResourceDrop(target,coins,wood));

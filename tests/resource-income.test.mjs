@@ -16,17 +16,17 @@ function arena() {
   return g;
 }
 
-test('已有库存加载及重新开始不变，伐木只新增8木材、不产金币', () => {
+test('已有库存加载及重新开始不变，伐木向背包新增8木材、不直接入库或产金币', () => {
   const g = arena();
   assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 857);
   g.addTree(950, 760);
   const tree = g.trees[0];
   g.hit(tree, 10000);
-  assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 865);
+  assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 857);assert.equal(g.progress.logistics.bagWood,8);
   g.hit(tree, 10000);
-  assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 865);
+  assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 857);assert.equal(g.progress.logistics.bagWood,8);
   const saved = validateProgress(JSON.parse(JSON.stringify(g.progress)));
-  assert.equal(saved.coins, 57299); assert.equal(saved.wood, 865);
+  assert.equal(saved.coins, 57299); assert.equal(saved.wood, 857);assert.equal(saved.logistics.bagWood,8);
 });
 
 test('普通遭遇基础、高阶、精英及飞行怪按1.4倍发金币，不产木材且只结算一次', () => {

@@ -1,5 +1,4 @@
-import {CAT_HOME} from '../config/cat-home.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {createCurrentCat} from './current-cat.js';
 import {equipmentLevelCap} from '../config/legendary-workshop.js';
 import {heroGrowthMarkup} from './hero-growth.js';
 import {challengeLevelMarkup} from './challenge-feedback.js';
@@ -218,8 +217,8 @@ export function createInventory({ game, root, dialogs, onChange }) {
       $('camp-dialog').querySelector('.ui-panel__body').scrollTop = 0;
       dialogs.open('camp-dialog');
     });
-  // 原角色升级入口改为猫窝导航，获取和切换由屋内管理员提供。
-  scope.on($('heroes-button'),'click',()=>requestWorldNavigation(game,{...CAT_HOME,y:CAT_HOME.y+22},'前往猫窝',{direct:true}));
+  // 主菜单先查看当前猫猫，猫窝管理入口保持在建筑内。
+  const currentCat=createCurrentCat({game,root,dialogs});
   for (const id of ['close-camp', 'camp-done'])
     scope.on($(id), 'click', () => dialogs.close('camp-dialog'));
   root.querySelectorAll('[data-tab]').forEach((button) => {
@@ -266,6 +265,6 @@ export function createInventory({ game, root, dialogs, onChange }) {
     switchTab,
     reset,
     invalidateArt,
-    dispose: scope.dispose,
+    dispose: ()=>{currentCat.dispose();scope.dispose();},
   };
 }
