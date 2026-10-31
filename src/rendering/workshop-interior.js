@@ -1,5 +1,5 @@
 import {drawHomeDecor} from './home-decor.js';
-import {interiorShopkeeper} from '../config/workshop-interiors.js';
+import {interiorShopkeeper,interiorCounter} from '../config/workshop-interiors.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
@@ -304,6 +304,8 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
   const items = garage
     ? [...GARAGE_FURNITURE, ...displays, ...(record ? [{ ...bay, type: 'vehicle' }] : [])]
     : layout.service?interiorFurniture(g):interiorWeaponDisplays().filter((item) => item.y + 25 >= view.top && item.y - 60 <= view.bottom);
+  // 展厅也加入售货员柜台，小营业房已由统一家具列表提供，避免重复绘制。
+  if(!layout.service)items.push(interiorCounter(room));
   if (!garage && renderer.interiorArt) {
     const visible = new Set(items.map((item) => item.index));
     for (const key of renderer.interiorArt.images.keys())

@@ -51,9 +51,10 @@ export function interiorWeaponDisplays(){return WEAPON_DISPLAYS.map(s=>({...s}))
 export function interiorVehicleDisplays(){return VEHICLE_DISPLAYS.map(item=>({...item}));}
 // 武器柜与车库工具台使用同一碰撞来源；泊位只有停着车才阻挡角色。
 export function interiorFurniture(game){
- if(interiorLayout(game.cottage).service)return [{id:'counter',type:'counter',x:180,y:205,width:130,height:36},...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
- if(game.cottage?.kind==='weapons')return interiorWeaponDisplays();
- if(game.cottage?.kind==='vehicle')return [...GARAGE_FURNITURE,...VEHICLE_DISPLAYS,...(garageVehicleRecord(game)?[VEHICLE_BAY]:[])];
+ const counter=interiorCounter(game.cottage);
+ if(interiorLayout(game.cottage).service)return [counter,...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
+ if(game.cottage?.kind==='weapons')return [...interiorWeaponDisplays(),counter];
+ if(game.cottage?.kind==='vehicle')return [...GARAGE_FURNITURE,...VEHICLE_DISPLAYS,...(garageVehicleRecord(game)?[VEHICLE_BAY]:[]),counter];
  return game.progress.homeDecor?homeFurniture(game.progress.homeDecor):COTTAGE_FURNITURE;
 }
 // 维修泊位只展示 garage 真实记录；上方展车另走原厂样车，不复制玩家车辆。
@@ -67,5 +68,7 @@ export function interiorShopkeeper(room){
  if(!kind||kind==='cottage')return null;
  return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='furniture'?'家具售货员':layout.name+'售货员'};
 }
+// 柜台跟随售货员底座，绘制和碰撞共用同一位置；私人小屋没有柜台。
+export function interiorCounter(room){const seller=interiorShopkeeper(room);return seller?{id:'counter',type:'counter',x:seller.x,y:seller.y+30,width:130,height:36}:null;}
 // 附近提示与画布点击共用售货员坐标。
 export function interiorWorkshopTargets(game){if(!game.cottage)return [];const seller=interiorShopkeeper(game.cottage);return seller?[seller]:[];}

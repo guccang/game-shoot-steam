@@ -1728,3 +1728,9 @@ export async function inspectFurnitureShop(game,root){
  const {FURNITURE_SHOP}=await import('../config/furniture-shop.js'),{interiorShopkeeper}=await import('../config/workshop-interiors.js');
  return {designCriterion:'furniture-shop',site:FURNITURE_SHOP,room:game.cottage?.kind,seller:game.cottage?interiorShopkeeper(game.cottage):null,owned:game.progress.homeDecor.items.length,dialog:!!root.getElementById('home-decor-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 验收所有售货员柜台时直接读取正式家具与底座，不另建预览模型。
+export async function inspectShopkeeperCounters(game){
+ const {interiorFurniture,interiorShopkeeper}=await import('../config/workshop-interiors.js');
+ return {designCriterion:'shopkeeper-counters',room:game.cottage?.kind,seller:interiorShopkeeper(game.cottage),counters:game.cottage?interiorFurniture(game).filter(item=>item.type==='counter'):[]};
+}
