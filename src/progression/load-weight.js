@@ -1,16 +1,21 @@
+import {backpackEntries} from './backpack.js';
+import {itemDefinition} from '../config/items.js';
 // 同一重量计算供背包、工坊、行驶与牵引使用，不根据界面缓存判断能否移动。
-import {ammunitionMass,SUPPLY_ITEMS,AMMO_TYPES,GUN_MASSES,vehicleFaults} from '../config/supplies.js';
+import {ammunitionMass,AMMO_TYPES,GUN_MASSES,vehicleFaults} from '../config/supplies.js';
 import {VEHICLE_WEAPONS} from '../config/vehicle-armaments.js';
 import {ammoKind} from '../config/supplies.js';
-import {VEHICLE_LOADS,LOAD_RULES,WEAPON_MASSES,CROP_MASSES,armorPlateMass,vehicleBuild,installedEngine} from '../config/vehicle-load.js';
+import {VEHICLE_LOADS,LOAD_RULES,armorPlateMass,vehicleBuild,installedEngine} from '../config/vehicle-load.js';
 import {FARM_CROPS} from '../config/farm.js';
 // 作物库存保留真实数量；不同类别按配置计重，未知类别使用一千克。
-export function cropMass(index){return CROP_MASSES[FARM_CROPS[index]?.category]||1;}
+export function cropMass(index){return itemDefinition('crop:'+index)?.mass||1;}
 // 汇总一份背包或车厢内作物，不把种子与金币当作收获作物重复计重。
 export function cropInventoryMass(inventory){return FARM_CROPS.reduce((sum,_,i)=>sum+Math.max(0,inventory?.[i]||0)*cropMass(i),0);}
-// 只随身携带当前枪与实际装填弹夹；其余已拥有枪留在工坊库存。
+// 所有随身物品与背包明细使用同一份清单，避免显示总重与实际减速不同。
 export function catLoad(game){
- const p=game.progress,index=p.weapon,weapon=p.weapons[index]?WEAPON_MASSES[index]||4:0,mag=game.magazines?.[index],ammo=weapon?LOAD_RULES.magazineMass+Math.max(0,mag?.ammo||0)*LOAD_RULES.roundMass:0,crops=cropInventoryMass(p.farm.inventory),reserve=ammunitionMass(p.supplies?.hand),items=Object.entries(SUPPLY_ITEMS).reduce((n,[k,r])=>n+(p.supplies?.items[k]||0)*r.mass,0),weight=weapon+ammo+crops+reserve+items;
+ const p=game.progress,entries=backpackEntries(game);
+ // 保留货舱面板所需的分类汇总，弹药含备用与全部已装填弹匣。
+ const total=category=>entries.filter(r=>r.category===category).reduce((n,r)=>n+r.weight,0);
+ const weapon=total('weapon'),ammo=total('ammo'),crops=total('crop'),reserve=ammunitionMass(p.supplies?.hand),weight=Math.round(entries.reduce((n,r)=>n+r.weight,0)*1e6)/1e6,items=weight-weapon-ammo-crops;
  return {body:LOAD_RULES.catMass[p.hero]||40,weapon,ammo,crops,reserve,items,weight,capacity:LOAD_RULES.catCapacity,overloaded:weight>LOAD_RULES.catCapacity};
 }
 // 车辆自重包含底盘、发动机增重、附加装甲和车内货物；载荷含驾驶员及背包。

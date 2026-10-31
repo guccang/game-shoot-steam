@@ -1770,3 +1770,6 @@ export async function inspectRepairParkingDisplay(game){
 
 // 自动上车验收读取正式工时与屏幕徽记，不构造另一套倒计时预览。
 export function inspectVehicleAutoBoard(game,renderer){return {designCriterion:'vehicle-auto-board',active:game.vehicle.active,hull:game.vehicle.index,boarding:game.vehicleBoarding?{hull:game.vehicleBoarding.hull,elapsed:game.vehicleBoarding.elapsed,site:game.vehicleBoarding.site.id}:null,countdown:renderer.actionCountdownView,parked:game.progress.campParking.owned.map(s=>s.hull)};}
+
+// 正式背包与当前装备面板的只读验收入口，不建立替代预览。
+export function inspectInventoryCatalog(game,root){const bag=root.getElementById('backpack-dialog'),detail=root.getElementById('keepsake-dialog'),field=root.getElementById('field-equipment-dialog');return {designCriterion:'inventory-item-catalog',items:bag?.querySelectorAll('[data-keepsake]').length||0,emptySlots:bag?.querySelectorAll('.keepsake-empty').length||0,weight:bag?.querySelector('.inventory-load')?.textContent||'',detail:detail?.open?detail.textContent:'',field:field?.open?field.textContent:'',hpWeight:!!root.getElementById('load-weight-hud'),vehicleEntry:!root.getElementById('vehicles-button')?.hidden,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}

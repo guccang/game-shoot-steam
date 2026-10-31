@@ -1,4 +1,3 @@
-import {catLoad,vehicleLoad,movementLoadFactor} from '../progression/load-weight.js';
 import {heroExperience} from '../progression/hero-experience.js';
 import {unreadMailCount} from '../progression/mailbox.js';
 import { i18nText } from "../i18n/index.js";
@@ -41,8 +40,6 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const p = game.loadout,
       started = game.state !== 'ready';
     updateVehicleHud(root, game);
-    const weightNode=$('load-weight-hud'),load=game.vehicle.active?vehicleLoad(game):catLoad(game);
-    if(weightNode){weightNode.textContent=(game.vehicle.active?'载荷 ':'背包 ')+(load.payload??load.weight).toFixed(1)+' / '+load.capacity.toFixed(0)+' kg'+(movementLoadFactor(game)===0?' · 停驶':load.overloaded?' · 超重减速':game.progress.logistics?.tow?' · 牵引中':'');weightNode.classList.toggle('overloaded',load.overloaded||movementLoadFactor(game)===0);}
     $('game-frame').dataset.state = game.state;
     // 借用装备只替换战斗属性，钱包始终显示玩家实际持有资源。
     const wallet=game.story?game.progress:p;

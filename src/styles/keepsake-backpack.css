@@ -18,3 +18,9 @@
 .keepsake-contacts small{display:block;margin-top:4px;color:var(--ui-muted);font-size:12px}
 .keepsake-call blockquote{margin:18px 0;padding:14px;border-left:3px solid var(--ui-gold);background:var(--ui-sage);font-size:16px;line-height:1.8}
 .keepsake-message{color:var(--ui-danger)}
+
+/* 真实库存按内容扩展，物品名称与质量在窄屏仍能换行。 */
+.inventory-group{margin-top:16px}.inventory-group h3{display:flex;justify-content:space-between;gap:8px}.inventory-group h3 small{font-size:12px;font-weight:normal}
+.inventory-group .keepsake-pocket{height:auto;min-height:116px;aspect-ratio:auto;padding:8px 3px;gap:4px;overflow-wrap:anywhere}
+.inventory-group .keepsake-pocket small{font-size:11px;line-height:1.4;color:#536c50}.keepsake-pocket canvas,.inventory-crop{width:48px;height:48px;display:inline-block;flex-shrink:0}.inventory-crop{position:relative}.inventory-crop svg{width:100%;height:100%}.inventory-crop small{position:absolute;right:0;bottom:0;background:#fff6dc;border-radius:4px;padding:0 3px}
+.inventory-detail-icon{width:80px;height:80px;margin:4px auto 12px}.inventory-detail-icon>svg,.inventory-detail-icon>canvas,.inventory-detail-icon>.inventory-crop{width:100%;height:100%}.inventory-detail p,.inventory-load p{line-height:1.6}.inventory-detail h3{overflow-wrap:anywhere}

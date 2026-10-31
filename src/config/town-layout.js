@@ -13,7 +13,7 @@ export const TOWN_LAYOUT = {
   bounds: {left:-480,right:1090,top:110,bottom:1400},
   weapons: {x:350,y:570,width:150,height:135,scale:.95},
   garage: {x:350,y:990,width:220,height:175},
-  ammo: {x:-140,y:570,width:144,height:128},
+  ammo: {x:-140,y:570,width:220,height:175},
   repair: {x:-140,y:930,width:220,height:175},
   cottage: {x:850,y:300},
   catHome: {x:580,y:780,width:144,height:132},

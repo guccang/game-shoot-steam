@@ -53,9 +53,9 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
     $('game-frame').classList.toggle('football-active',r?.mode==='football');
     for (const id of ['story-button','phone-button', 'heroes-button'])
       if($(id))$(id).hidden = !!r;
-    // 装备入口随对应工坊修复开放；赠车驾驶快捷键仍独立可用。
+    // 武器入口沿用工坊开放条件；已有载具随时可查看，包含初始赠送电动车。
     $('weapons-button').hidden = !!r || !facilityOpen(game.progress,'weapons');
-    $('vehicles-button').hidden = !!r || !facilityOpen(game.progress,'garage');
+    $('vehicles-button').hidden = !!r || (!facilityOpen(game.progress,'garage')&&!game.progress.vehicleHulls.some(level=>level>0));
     $('unlock-weapons').disabled = !!r;
     $('boss-button').hidden = !!r;
     $('quest').classList.toggle('football-score',r?.mode==='football');
