@@ -20,6 +20,8 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
     if(type==='story-change'){input.reset();save();return;}
     if(type==='living-change'){input.reset();return;}
     if(type==='living-kill'){save();return;}
+    if(type==='vehicle-durability'){save();return;}
+    if(type==='vehicle-service'){save();if(data?.text)toast.show(data.text);return;}
     if(type==='story-hint'){toast.show(data.text);return;}
     if(type==='story-complete'){audio.play('victory');toast.show(i18nText("app.game-events.d6bdf7c915"));return;}
     // 单次进球不保存未结算比赛，也不清空正在按住的方向键。
@@ -62,7 +64,7 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
     }
     if (type === 'vehicle-dismount') audio.play(Number.isInteger(data?.index)?`vehicle-stop-${data.index}`:'vehicle-stop');
     if (type === 'vehicle-destroyed') {
-      toast.show(i18nText("app.game-events.d290571244", { p0: (data?.name || i18nText("app.game-events.8f9f50d425")) }));
+      toast.show(data?.permanent?`${data.name}已报废，请用手机呼叫救援或前往维修中心。`:i18nText("app.game-events.d290571244", { p0: (data?.name || i18nText("app.game-events.8f9f50d425")) }));
       audio.play('explosion');
     }
     if (type === 'reward') save();

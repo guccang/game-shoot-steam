@@ -1,3 +1,4 @@
+import {restoreVehicleService} from './vehicle-repair.js';
 import {farmCovers} from '../world/farm-land.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { createSpiderState } from '../combat/spider.js';
@@ -70,6 +71,7 @@ export function resetBattlefield(game, continuation = null) {
     createVehicle(loadout, game.maxHp(), index),
   );
   game.vehicle = game.vehicles[loadout.vehicleIndex];
+  restoreVehicleService(game);
   game.funnel = createFunnelState(game.magazines[12]);
   initializeFunnelLoadouts(game.funnel, loadout);
   game.drone = createFunnelState(null, 'drone');

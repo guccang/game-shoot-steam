@@ -1,3 +1,4 @@
+import {vehicleService} from './vehicle-repair.js';
 import {isRainWeather} from '../world/season-weather.js';
 import {facilityOpen} from '../config/town-restoration.js';
 import {awardCampXp} from '../progression/camp-level.js';
@@ -58,7 +59,7 @@ export function restoreFireRescue(game){
 // 首次借车不触碰其他车型；车库再次出车复用原车体、耐久和挂载。
 function borrowTruck(game,r){
  r.equipment=fireEquipment(game.progress);r.previousVehicle=game.vehicle;r.previousTruck=game.vehicles[4];game.vehicle.active=false;
- r.loan=game.progress.fireDispatch.garage?.parked&&game.progress.vehicleHulls[4]?game.vehicles[4]:createVehicle(r.equipment,game.maxHp(),4);game.vehicles[4]=game.vehicle=r.loan;
+ r.loan=game.progress.vehicleHulls[4]?game.vehicles[4]:createVehicle(r.equipment,game.maxHp(),4);game.vehicles[4]=game.vehicle=r.loan;
  // 任务借车也结束电动车骑乘，不能把扩容余弹带到消防车上。
  if(r.previousVehicle.index===5)clampRiderSupply(game);
  game.progress.fireDispatch.garage=null;
@@ -89,6 +90,8 @@ function unavailableFire(game,source){game.fireClock=C.cooldown;game.fireRescue=
 // 接受后在世界消防站领取任务车，地图、树木、敌人和巡游进度仍为原对象。
 export function startFireRescue(game){
  const r=game.fireRescue;if(r?.phase!=='offered'||game.realm||game.story||game.mapId!=='forest'||game.boss)return false;
+ // 自有消防车报废或在修时不能用任务借车覆盖永久订单。
+ if(game.progress.vehicleHulls[4]&&(game.vehicles[4].hp<=0||vehicleService(game,4)?.phase)){game.onEvent('story-hint',{text:'消防车需要先在维修中心修好并取回，才能再次出动。'});return false;}
  if(game.vehicle.active&&!game.dismountVehicle())return false;
  borrowTruck(game,r);game.state='playing';beginFireTownTransfer(game);
  recordActivity(game.progress,'fire');changed(game,fireMotionText('transferring'));return true;

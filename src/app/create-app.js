@@ -1,3 +1,4 @@
+import {createVehicleRepairPanel} from '../ui/vehicle-repair.js';
 import {facilityOpen} from '../config/town-restoration.js';
 
 import {createMonsterCampPanel} from '../ui/monster-camps.js';
@@ -249,7 +250,8 @@ export function createApplication({
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onEnter:()=>workshop.open('vehicle')});
   const vehicleControls = createVehicleControls({ game, root, onChange: () => refresh() });
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
-  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
+  const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
+  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true)});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});
@@ -293,7 +295,9 @@ export function createApplication({
   }});
   // 所有附近按钮只提交一次明确意图，沿用原页面、入室和载具控制器。
   const nearbyControls=createNearbyInteraction({game,renderer,root,input,activate:entry=>{
-    if(entry.type==='restoration'){
+    if(entry.type==='vehicle-repair')vehicleRepair.open();
+    else if(entry.type==='vehicle-wreck')toast.show('载具已损坏，需要维修。请用手机呼叫救援，或到维修中心安排拖车。');
+    else if(entry.type==='restoration'){
       // 自选建筑先显示修复页，扣料统一由页面修复按钮确认。
       // 已修好的球场直接查看玩法卡，进入比赛仍由卡片按钮确认。
       if(entry.key==='football'&&facilityOpen(game.progress,entry.key))realmPanel.open('football');
@@ -630,7 +634,7 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    backpack.dispose();
+    backpack.dispose();vehicleRepair.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();

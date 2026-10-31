@@ -1,3 +1,4 @@
+import {vehicleServiceObjects,drawVehicleServiceObject} from './vehicle-repair.js';
 import {storyCampScene} from './story-camp.js';
 import {drawFarmGround,farmObjects,drawFarmCrop,drawFarmTool,drawFarmDelivery,drawCampFarmSign} from './farm.js';
 import {drawSeedShop} from './seed-shop.js';
@@ -365,6 +366,7 @@ export class Renderer {
     const spiders=collectMechanicalSources(source,'spider').flatMap(g=>visibleBodies([g.spider.mother,...g.spider.nodes].filter(n=>n.active&&n.ready),view).map(n=>({...n,type:'mechanical-spider',weapon:g.weapon(),hatch:n.mother?g.spider.hatch:0,hatchSide:g.spider.hatchSide})));
     const activeStoryResidents=storyResidentIds(source);
     const objects = [
+      ...visibleBodies(vehicleServiceObjects(camp),view,180),
       ...visibleBodies(farmObjects(camp),view,90),
       ...visibleBodies(restorationObjects(camp),view,150),
       ...visibleBodies(campDefenseObjects(camp),view,160),
@@ -420,7 +422,8 @@ export class Renderer {
       if(item.type==='fire-station-back'&&!restorationBuildingVisible(camp,'fire'))continue;
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);continue;}
-      if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
+      if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches);
+      else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
       else if(item.type==='river-dock'||item.type==='river-barrier')drawRiverCrossing(c,item,light.night,g.player);
       else if(item.type==='fire-water')drawWaterPump(c,item,g.time,source.fireActive&&source.fireRescue.filling&&Math.hypot(item.x-g.player.x,item.y-g.player.y)<48,this.reduced.matches);
       else if(item.type==='fire-station-back')drawFireStation(c,item,g.player,time,'back');

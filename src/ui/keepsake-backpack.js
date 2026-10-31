@@ -13,7 +13,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 背包格子、物品详情和手机使用独立弹窗，逐层返回时保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice}){
+export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair}){
  const scope=createEventScope(),trigger=root.getElementById('backpack-button'),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -58,7 +58,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice}){
    actions.innerHTML=button('hangup','挂断')+button('visit','去找'+call.name,true);
   }else{
    const calendar=calendarView(game.progress.living.calendar),reason=phoneUnavailable(game);
-   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('map','看地图')}${button('home','回小屋')}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
+   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
    actions.innerHTML=button('close',bag.open?'返回背包':'收好手机',true);
   }
  }
@@ -81,6 +81,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice}){
   node=event.currentTarget;selectPanel();
   const contact=event.target.closest('[data-call]');if(contact){const result=callNeighbor(game,contact.dataset.call);if(result.ok){call=result;resetView();}else{message.textContent=result.message;message.hidden=false;}return;}
   const action=event.target.closest('[data-pack-action]')?.dataset.packAction;if(!action)return;
+  if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}
   if(action==='map'&&ownsKeepsake(game.progress,'patrol-phone')){dialogs.open('map-dialog');return;}
   if(action==='home'||action==='visit'){navigate(action==='home'?'home':call.id);return;}
   if(action==='hangup'){call=null;resetView();return;}

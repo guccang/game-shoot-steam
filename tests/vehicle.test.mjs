@@ -53,7 +53,7 @@ test('召唤改变形态与装甲，不改变角色血量、坐标、装备或�
   g.summonVehicle();
   assert.equal(g.vehicle.hp, 210, '主动下车不能修复');
 });
-test('装甲溢出不杀猫，原地步战，60秒后仅手动召唤才满血', () => {
+test('装甲溢出不杀猫，安全下车，等待不会自动修复报废车', () => {
   const g = arena();
   g.summonVehicle();
   g.player.hp = 80;
@@ -61,8 +61,9 @@ test('装甲溢出不杀猫，原地步战，60秒后仅手动召唤才满血', 
   g.hurt(9999);
   assert.equal(g.state, 'playing');
   assert.equal(g.vehicle.active, false);
-  assert.equal(g.vehicle.cooldown, 60);
-  assert.deepEqual([g.player.x, g.player.y], pos);
+  assert.equal(g.vehicle.cooldown, 0);
+  assert.deepEqual([g.progress.vehicleService[0].position.x,g.progress.vehicleService[0].position.y],pos);
+  assert.ok(Math.hypot(g.player.x-pos[0],g.player.y-pos[1])>=60);
   assert.equal(g.player.hp, 80);
   g.hurt(50);
   assert.equal(g.player.hp, 80, '破车短暂无敌');
@@ -72,8 +73,8 @@ test('装甲溢出不杀猫，原地步战，60秒后仅手动召唤才满血', 
   tick(g, 0.1);
   assert.equal(g.vehicle.active, false);
   assert.equal(g.vehicle.cooldown, 0);
-  assert.equal(g.summonVehicle(), true);
-  assert.equal(g.vehicle.hp, g.maxHp() * 2);
+  assert.equal(g.summonVehicle(), false);
+  assert.equal(g.vehicle.hp, 0);
   assert.equal(g.player.hp, 80);
 });
 test('暂停与死亡冻结冷却、弹夹和蓄能，重生及清档恢复步战初态', () => {

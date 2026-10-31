@@ -30,6 +30,8 @@ export function parkingInteractionAnchor(id) {
 export function nearbyInteractionAnchor(game,entry) {
  if(!entry)return null;
  switch(entry.type){
+  case 'vehicle-repair':return building(entry,156,112);
+  case 'vehicle-wreck':return at(entry,65);
   case 'seed-shop':return building(FARM_SEED_SHOP);
   case 'cottage':return building(TOWN_RESTORATIONS.find(f=>f.id==='cottage'));
   case 'parking':return parkingInteractionAnchor(entry.id.slice('parking-'.length));

@@ -36,7 +36,10 @@ export function createNearbyInteraction({game,renderer,root,input,activate}){
  // 所有附近操作固定到对应建筑、泊位或家具，玩家位置只参与核心交互资格判断。
  function render(){
   const entry=!root.hidden&&!root.querySelector('dialog[open]')&&nearbyInteraction(game);
-  const anchor=entry&&nearbyInteractionAnchor(game,entry),point=projectInteractionAnchor(anchor,renderer.view,renderer.cottageView);
+  let anchor=entry&&nearbyInteractionAnchor(game,entry);
+  // 短横屏中工坊本体可能被固定HUD覆盖，维修入口改为安全区内的明确按钮。
+  if(entry?.type==='vehicle-repair'&&root.defaultView.innerHeight<480){anchor={...anchor,hitbox:false};entry.presentation='task-entry';}
+  const point=projectInteractionAnchor(anchor,renderer.view,renderer.cottageView);
   if(!point){if(!button.hidden)button.hidden=true;return;}
   // 文案和辅助名称仅在内容改变时更新，避免每帧重建文字节点后强制重新排版。
   if(button.dataset.target!==entry.id)button.dataset.target=entry.id;

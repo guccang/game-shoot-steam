@@ -1,3 +1,4 @@
+import {normalizeVehicleService} from './vehicle-repair.js';
 import {freshHome,normalizeHome} from './home-decor.js';
 import {equipmentLevelCap,normalizeLegendaryWorkshop} from '../config/legendary-workshop.js';
 import {normalizeMonsterCamps} from './monster-camps.js';
@@ -55,6 +56,7 @@ export function freshProgress() {
     keepsakes:normalizeKeepsakes(null,null),
     restoration:freshRestoration(),
     campParking:{owned:[]},
+    vehicleService:[],
     campLevel:validateCampLevel(null),
     campDefense:validateCampDefense(null),
     mainline: validateMainline(null),
@@ -251,6 +253,7 @@ export function validateProgress(raw) {
     for(let i=0;i<COLLECTED_VEHICLES.length;i++)grantVehicleArmament(p,i);
   }
   p.vehicleLoadouts[RANGER.scooter]=null;
+  p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
   return p;
 }

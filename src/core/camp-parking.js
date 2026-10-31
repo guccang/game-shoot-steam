@@ -1,3 +1,5 @@
+import {vehicleService} from './vehicle-repair.js';
+import {REPAIR_BAY} from '../config/vehicle-repair.js';
 // 驾驶和停驻是同一辆车的两种状态，站在车旁点击才可重新上车。
 import {PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {availableParkingSpot,normalizeCampParking,northParkingSpot} from '../progression/camp-parking.js';
@@ -19,6 +21,7 @@ export function arrivalParkingAllowed(game){return !game.arrivalCinematic;}
 export function parkingFleetApplies(game){return !game.realm&&!game.story&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&arrivalParkingAllowed(game);}
 // 页面与导航读取同一实际停放地点；消防任务车保留消防站的专用车库。
 export function vehicleParkingSite(game,hull){
+ if(vehicleService(game,hull)?.phase)return {...REPAIR_BAY,id:'vehicle-repair',name:'载具维修中心',mapId:'forest'};
  if(hull===4&&game.fireGarageParked)return {...FIRE_GARAGE,id:'fire-garage',name:'消防站车库',mapId:'forest'};
  const parked=parkedOwned(game).find(s=>s.record.hull===hull);
  return parked?{...parked,mapId:'forest'}:{id:'north-parking',name:'北停车场',mapId:'forest',...NORTH_PARKING.entrance};
@@ -38,6 +41,7 @@ function swapParkingSpot(game,target){
 // 换乘前保存随行车的耐久与供给；已有停驻记录的车不被移动到另一个泊位。
 export function storeCarriedVehicle(game,v=game.vehicle,released=null){
  const p=game.progress;p.campParking??={owned:[]};
+ if(vehicleService(game,v.index)?.phase)return true;
  if(!p.vehicleHulls[v.index]||p.campParking.owned.some(r=>r.hull===v.index)||v.index===4&&game.fireGarageParked)return true;
  const spot=released?swapParkingSpot(game,released):availableParkingSpot(p,v.index);if(!spot)return false;
  if(v.active&&v===game.vehicle&&!dismountVehicle(game))return false;
@@ -80,6 +84,7 @@ export function boardParkedVehicle(game,hull){
  const parked=parkedOwned(game).find(s=>s.record.hull===hull);
  if(!parked||!campParkingVisible(game)||!arrivalParkingAllowed(game,hull)||game.fireActive||game.campDefense||game.workshopTrial||!['playing','paused'].includes(game.state)||game.vehicle.active&&game.vehicle.index===hull||worldDistance(game.player,parked)>155)return false;
  const v=game.vehicles[hull];if(!v||v.active||v.cooldown>0||!game.progress.vehicleHulls[hull])return false;
+ if(v.hp<=0||parked.record.hp<=0||vehicleService(game,hull)?.phase){game.onEvent('story-hint',{text:'载具已损坏，需要维修。请用手机呼叫救援。'});return false;}
  if(game.vehicle.index!==hull&&!storeCarriedVehicle(game,game.vehicle,parked))return false;
  // 满位时旧车已进入目标泊位，新车落在原驾驶位置；不能和旧车叠在同一泊位。
  const boarding=game.progress.campParking.owned.some(r=>r.spot===parked.id&&r.hull!==hull)?{x:game.player.x,y:game.player.y}:nearest(parked,game.player);
@@ -99,7 +104,7 @@ export function updateParkingVisitors(game,dt){
  if(game.state!=='playing')return;
  adoptArrivalParking(game);
  // 新购与赠礼车辆优先占位，访客不能与自有车重叠；旧档也在同一入口补齐停放记录。
- if(parkingFleetApplies(game)&&game.progress.vehicleHulls.some((level,hull)=>level&&hull!==game.progress.vehicleIndex&&!(hull===4&&game.fireGarageParked)&&!game.progress.campParking.owned.some(r=>r.hull===hull)))
+ if(parkingFleetApplies(game)&&game.progress.vehicleHulls.some((level,hull)=>level&&!vehicleService(game,hull)?.phase&&hull!==game.progress.vehicleIndex&&!(hull===4&&game.fireGarageParked)&&!game.progress.campParking.owned.some(r=>r.hull===hull)))
   game.progress.campParking=normalizeCampParking(game.progress.campParking,game.progress);
  game.parkingVisitors=(game.parkingVisitors||[]).filter(v=>!game.progress.campParking.owned.some(r=>r.spot===v.spot));
  game.parkingVisitors||=[];game.parkingVisitTimer??=8;

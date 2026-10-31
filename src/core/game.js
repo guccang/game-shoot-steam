@@ -1,3 +1,4 @@
+import {updateVehicleRepair,personalFleet,vehicleRequiresService,vehicleService,syncVehicleService} from './vehicle-repair.js';
 import {absorbEnergyShield} from '../combat/energy-shield.js';
 import {updateFarmDelivery} from './farm-delivery.js';
 import {recordMainlineVehiclePractice} from '../progression/mainline-combat.js';
@@ -301,6 +302,7 @@ export class Game {
   get fireGarageParked() { return !!this.progress.fireDispatch.garage?.parked&&!this.realm&&!this.story; }
   // 载具入口统一转交独立控制器，不改变主武器和角色坐标。
   summonVehicle() {
+    if(vehicleRequiresService(this)&&(this.vehicle.hp<=0||vehicleService(this,this.vehicle.index)?.phase)){this.onEvent('story-hint',{text:this.vehicle.hp<=0?'载具已损坏，需要维修。请用手机呼叫救援，或前往维修中心。':'载具在维修中心，请现场取车。'});return false;}
     if(this.cottage)return false;
     if(this.vehicle.index===4&&this.fireGarageParked)return boardFireGarage(this);
     // 跳过开场后的首个输入也先接管北广场赠车，不能趁下一帧到来前远程召走。
@@ -355,6 +357,7 @@ export class Game {
       return false;
     if(parkingFleetApplies(this)&&(!canSelectParkingVehicle(this,index)||!storeCarriedVehicle(this)))return false;
     if (this.vehicle.active && !this.dismountVehicle()) return false;
+    syncVehicleService(this);
     this.loadout.vehicleIndex = index;
     this.vehicle = this.vehicles[index];
     this.onEvent('vehicle-config');
@@ -899,6 +902,7 @@ export class Game {
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
     updateVehicle(this, dt, !!this.parking?.idle);
+    updateVehicleRepair(this,dt);
     updateGuardianDefenses(this, dt);
     profiler?.end('logic.weapons');
     profiler?.start('logic.projectiles');

@@ -1,3 +1,4 @@
+import {vehicleService,personalFleet} from '../../core/vehicle-repair.js';
 import {facilityOpen} from '../../config/town-restoration.js';
 import {parkingFleetApplies} from '../../core/camp-parking.js';
 import {vehicleTransferState,activateVehicleTransfer} from '../vehicle-transfer.js';
@@ -112,6 +113,7 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
       $('vehicle-collection-hint').textContent=transfer.description;
       if(level){action.textContent=transfer.label;action.disabled=v.cooldown>0;}
     }
+    if(level&&personalFleet(game)&&(v.hp<=0||vehicleService(game,viewed)?.phase))$('vehicle-collection-status').textContent=v.hp<=0?'报废 · 需要维修':'维修中心待取车';
     $('vehicle-collection-image').setAttribute('aria-label', vehicle.name);
     drawVehicleIcon($('vehicle-collection-image').getContext('2d'), viewed);
     $('vehicle-turret-owner').textContent = i18nText("ui.panels.vehicles.c1bd9db13e", { p0: (vehicleModel(p.vehicleIndex).name) });

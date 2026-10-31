@@ -1704,3 +1704,9 @@ export function inspectEquipmentNeighborStories(game,root){
   condition:root.getElementById('workshop-dialog')?.open&&condition&&!condition.hidden?condition.textContent:null,purchaseDisabled:root.getElementById('ws-purchase')?.disabled,
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 维修验收读取正式订单、世界实体与手机底板，不另造展示状态。
+export async function inspectVehicleRepair(game,root){
+ const {vehicleServiceObjects}=await import('./vehicle-repair.js'),panel=root.getElementById('vehicle-repair-dialog');
+ return {designCriterion:'vehicle-repair-service',objects:vehicleServiceObjects(game).map(o=>({type:o.type,x:o.x,y:o.y,hull:o.hull})),orders:game.progress.vehicleService,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,buttons:panel?.open?[...panel.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().height).map(b=>({text:b.textContent,height:b.getBoundingClientRect().height})):[],bitmapBytes:0};
+}

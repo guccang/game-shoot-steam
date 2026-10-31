@@ -11,7 +11,7 @@ export function availableParkingSpot(progress,hull){
 }
 // 新车与旧档未携带车辆归入北停车场，记录默认满供给但不改当前选用车辆。
 export function parkNewVehicle(progress,hull){
- if(!progress.vehicleHulls[hull])return false;
+ if(!progress.vehicleHulls[hull]||progress.vehicleService?.[hull]?.phase)return false;
  progress.campParking??={owned:[]};
  if(progress.campParking.owned.some(r=>r.hull===hull))return true;
  // 车型超过北场容量时使用既有工坊泊位，不凭空丢失新购车辆或挤占已有车。
@@ -23,7 +23,7 @@ export function parkNewVehicle(progress,hull){
 export function normalizeCampParking(raw,progress){
  const owned=[],hulls=new Set(),spots=new Set();
  for(const value of Array.isArray(raw?.owned)?raw.owned:[]){
-  if(![0,1,2,3,4,5,6,7,8].includes(value?.hull)||!progress.vehicleHulls[value.hull]||value.hull===4&&progress.fireDispatch?.garage?.parked||!PARKING_SPOTS.some(s=>s.id===value.spot)||hulls.has(value.hull)||spots.has(value.spot))continue;
+  if(progress.vehicleService?.[value?.hull]?.phase||![0,1,2,3,4,5,6,7,8].includes(value?.hull)||!progress.vehicleHulls[value.hull]||value.hull===4&&progress.fireDispatch?.garage?.parked||!PARKING_SPOTS.some(s=>s.id===value.spot)||hulls.has(value.hull)||spots.has(value.spot))continue;
   const finite=(n,lo,hi,fallback)=>Number.isFinite(n)?Math.max(lo,Math.min(hi,n)):fallback;
   owned.push({hull:value.hull,spot:value.spot,hp:finite(value.hp,0,1,1),ammo:finite(value.ammo,0,100000,0),reload:finite(value.reload,0,120,0),wheel:finite(value.wheel,-1e6,1e6,0),track:finite(value.track,0,1000,0)});
   hulls.add(value.hull);spots.add(value.spot);

@@ -1,3 +1,5 @@
+import {personalFleet,vehicleService} from './vehicle-repair.js';
+import {REPAIR_CENTER,VEHICLE_REPAIR} from '../config/vehicle-repair.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,campSignSite,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {monsterCampsAvailable} from './monster-camps.js';
 import {arrivalWorkReady} from './ranger-arrival.js';
@@ -43,6 +45,10 @@ export function nearbyInteraction(game){
  }
  if(canRequestParking(game))return {id:'parking-'+nearestParkingSpot(game).id,type:'parking',label:'停车入位'};
  const entries=[];
+ if(personalFleet(game)){
+  if(game.mapId==='forest'&&worldDistance(game.player,REPAIR_CENTER)<=VEHICLE_REPAIR.radius)entries.push({...REPAIR_CENTER,type:'vehicle-repair',label:'载具维修中心',detail:'维修保养 · 救援报废载具',distance:worldDistance(game.player,REPAIR_CENTER)});
+  for(const [hull,r] of (game.progress.vehicleService||[]).entries())if(r?.phase==='wrecked'&&r.mapId===game.mapId&&worldDistance(game.player,r.position)<=120)entries.push({...r.position,id:'wreck-'+hull,type:'vehicle-wreck',hull,label:'查看损坏载具',detail:'已报废 · 需要维修',distance:worldDistance(game.player,r.position)});
+ }
  // 外围故事绑定真实木牌；营内居民和冷灰堆继续使用自己的现场位置。
  if(monsterCampsAvailable(game))for(const c of MONSTER_CAMPS){if(c.mapId!==game.mapId)continue;
   const npc=CAMP_CHARACTERS.find(n=>n.camp===c.id),cache=CAMP_CHARACTERS.some(n=>n.destination===c.id&&game.progress.monsterCamps.clues.includes(n.id));

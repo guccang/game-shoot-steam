@@ -1,3 +1,4 @@
+import {personalFleet,vehicleRequiresService,vehicleService} from '../core/vehicle-repair.js';
 import { i18nText } from "../i18n/index.js";
 import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
 import { funnelWeapon } from '../config/funnel-loadouts.js';
@@ -47,7 +48,7 @@ export function updateVehicleHud(root, game) {
   updateRing(node, {
     icon: model.flying ? 'helicopter' : model.amphibious ? 'hovercraft' : 'vehicle',
     state: repairing ? 'reloading' : v.active ? 'mounted' : 'ready',
-    fill: repairing ? 1 - v.cooldown / VEHICLE_COOLDOWN : v.active ? v.hp / v.maxHp : 1,
+    fill: repairing ? 1 - v.cooldown / VEHICLE_COOLDOWN : v.hp / v.maxHp,
     inner:
       v.active && w ? (reloading ? 1 - m.remaining / w.reloadTime : ammo / capacity) : null,
     count: repairing ? Math.ceil(v.cooldown) : v.active && w ? ammo : '',
@@ -59,5 +60,6 @@ export function updateVehicleHud(root, game) {
   // 停驻状态明确引导回到车辆，快捷入口同样不能把车从远处召走。
   const campParked=!game.realm&&!game.story&&parkedOwned(game).find(s=>s.record.hull===v.index);
   if(campParked&&!v.active){node.setAttribute('aria-label','已停在'+campParked.name+'，靠近后点击快捷入口上车');node.title='已停在'+campParked.name;node.disabled||=worldDistance(game.player,campParked)>155||!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;}
+  if(vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase)){node.title=v.hp<=0?'已报废 · 需要维修':'维修中心待取车';node.setAttribute('aria-label',node.title);node.querySelector('.ring-count').textContent=v.hp<=0?'损坏':'维修';}
   node.setAttribute('aria-pressed', String(v.active));
 }

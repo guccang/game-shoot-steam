@@ -1,3 +1,4 @@
+import {personalFleet,vehicleRequiresService,vehicleService,markVehicleWreck,syncVehicleService} from '../core/vehicle-repair.js';
 import {RED_WOLF_HULL} from '../config/red-wolf-geometry.js';
 import {breakTreesAlong} from './boss-terrain.js';
 import {statisticsSource} from './statistics-source.js';
@@ -19,7 +20,7 @@ import {
   ownsVehicleWeapon,
   vehicleModel,
 } from '../config/vehicles.js';
-import { landVehicle } from './vehicle-landing.js';
+import { landVehicle,landingPoint } from './vehicle-landing.js';
 import { realmWeapon } from '../config/realms.js';
 import { worldDistance, nearest } from '../world/coordinates.js';
 import {attackTargetKnown,rememberCombatTarget} from './perception.js';
@@ -81,7 +82,7 @@ export function createVehicle(progress, _legacyHeroHp, index = progress.vehicleI
   };
 }
 
-// 活跃战斗或其暂停面板可召唤；损毁后必须等完整冷却，主动下车不会修复耐久。
+// 自有车报废必须维修；活动借用车沿用局内冷却，主动下车不恢复耐久。
 export function summonVehicle(game) {
   const v = game.vehicle;
   if (
@@ -91,6 +92,7 @@ export function summonVehicle(game) {
     v.cooldown > 0
   )
     return false;
+  if(vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase))return false;
   if (v.hp <= 0) v.hp = v.maxHp = vehicleMaxHp(game.loadout || game.progress);
   v.active = true;
   game.player.flying = !!vehicleModel(v.index).flying;
@@ -124,8 +126,13 @@ export function absorbVehicleHit(game, amount) {
   game.float(game.player.x, game.player.y, i18nText("combat.vehicle.ade5b0a1b1", { p0: (Math.floor(amount)) }), '#ffe2a0', true);
   game.onEvent('hurt', { armored: true });
   if (!v.hp) {
-    dismountVehicle(game);
-    v.cooldown = VEHICLE_COOLDOWN;
+    const permanent=markVehicleWreck(game,game.player);
+    // 报废必须解除驾驶；特殊地形仍优先走既有安全落地流程。
+    if(!dismountVehicle(game)){v.active=false;game.player.flying=false;game.player.amphibious=false;game.player.treePass=false;v.targetId=null;}
+    // 残骸留在原点，驾驶员移至旁侧安全步行点，画面不会仍像坐在废车上。
+    if(permanent&&worldDistance(game.player,vehicleService(game,v.index).position)<70){const side=landingPoint({...game.player,x:game.player.x+72,y:game.player.y+20},game.trees);if(side)Object.assign(game.player,side);}
+    game.player.vx=game.player.vy=game.player.pushX=game.player.pushY=0;
+    v.cooldown = permanent?0:VEHICLE_COOLDOWN;
     game.fx.add('ring', game.player.x, game.player.y, 0.4, { size: 65, color: '#ffda9d' });
     for (let i = 0; i < 10; i++) {
       const angle = (i * Math.PI) / 5;
@@ -136,8 +143,10 @@ export function absorbVehicleHit(game, amount) {
         color: i % 2 ? '#f5c775' : '#819277',
       });
     }
-    game.onEvent('vehicle-destroyed', { name: vehicleModel(v.index).name });
+    game.onEvent('vehicle-destroyed', { name: vehicleModel(v.index).name, permanent });
   }
+  syncVehicleService(game);
+  if(v.hp>0&&personalFleet(game))game.onEvent('vehicle-durability');
   return true;
 }
 
@@ -200,7 +209,7 @@ function vehicleTarget(game, weapon) {
 export function updateVehicle(game, dt, holdFire = false) {
   if (game.state !== 'playing') return;
   const v = game.vehicle;
-  // 车库中损毁载具也继续修复，收起的炮塔装填与技能保持冻结。
+  // 临时活动载具推进局内冷却，自有车订单由维修系统处理；收起的炮塔冻结。
   for (const hull of game.vehicles || [v]) {
     hull.cooldown = Math.max(0, hull.cooldown - dt);
     if (hull.cooldown < 1e-8) hull.cooldown = 0;
