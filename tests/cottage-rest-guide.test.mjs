@@ -25,7 +25,7 @@ test('小屋完工后出现一次休息指引，读档保留，原主线暂不�
  assert.deepEqual(worldNavigationObjective(g).site,{...COTTAGE.door,mapId:'forest',name:'巡林小屋门前'});
  const phase=g.progress.mainline.phase;updateMainline(g,10);assert.equal(g.progress.mainline.phase,phase);
  assert.equal(validateProgress(g.progress).restoration.cottageRested,false);
- g.vehicle.active=true;assert.match(mainlineObjective(g).label,/下车/);
+ g.vehicle.active=true;assert.match(mainlineObjective(g).label,/停稳1秒.*下车进屋/);
 });
 test('两种睡眠都恢复当前猫猫最大生命，存档保存回血和首次休息记录',()=>{
  for(const mode of ['phase','morning']){

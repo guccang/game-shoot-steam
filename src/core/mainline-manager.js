@@ -43,7 +43,7 @@ export function mainlineCondition(game,condition){
 }
 // 短清单直接读取原条件，勾选反馈不另建进度或改变完成门槛。
 export function mainlineSteps(game){
- if(cottageRestGuideActive(game))return [{label:'进入小屋休息',hint:'先下车，靠近后点击「进入小屋」，也可在门前站定3秒进入；到床边点击休息，恢复猫猫全部生命。',done:false}];
+ if(cottageRestGuideActive(game))return [{label:'进入小屋休息',hint:'在门前停留1秒进入；驾驶时载具留在门口。到床边点击休息，恢复猫猫全部生命。',done:false}];
  const task=mainlineTask(game);if(!task)return [];
  const f=pendingRestoration(game.progress);if(f){
   const s=restorationStatus(game,f.id),repair={label:'修复'+f.name,hint:f.benefit,done:false,operation:{type:'restoration',id:f.id}};

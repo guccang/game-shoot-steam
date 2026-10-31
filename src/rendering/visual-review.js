@@ -182,6 +182,11 @@ export function inspectBuildingEntry(game,root,renderer){
   footer:root.getElementById('cottage-notice')?.textContent,
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+// 驾驶进屋验收同时读取正式门口圆环、骑乘状态和真实停车记录。
+export function inspectVehicleDoorEntry(game,root,renderer){
+ return {...inspectBuildingEntry(game,root,renderer),designCriterion:'vehicle-door-entry',mounted:game.vehicle.active,
+  parking:game.progress.campParking.owned.find(r=>r.hull===game.vehicle.index)||null};
+}
 import {interiorWeaponDisplays,interiorVehicleDisplays,garageVehicleRecord} from '../config/workshop-interiors.js';
 // 工坊验收直接读取正式房间、陈列、真实泊位和交互热点，记录单页画像预算。
 export function inspectWorkshopInteriors(game,root,renderer){

@@ -8,11 +8,14 @@ import {doorwayInteractionAnchor,projectInteractionAnchor} from '../world/intera
 export function playerActionCountdown(game){
  const room=game.cottage;
  if(room)return !room.sleep&&!room.restOpen&&room.exitElapsed?{elapsed:room.exitElapsed,wait:interiorLayout(room).exitWait,icon:'exit'}:null;
- if(game.vehicle.active)return null;
+ // 驾驶时也显示房门候停进度，载具自身的上车徽记仍只用于步行状态。
+ if(game.vehicle.active&&!game.cottageEntry)return null;
  // 车头侧边徽记避开猫猫身体和短屏顶部HUD，仍固定于车辆而不随玩家漂移。
  if(game.vehicleBoarding){const front=vehicleBoardingPoint(game.vehicleBoarding.site);return {elapsed:game.vehicleBoarding.elapsed,wait:VEHICLE_BOARDING.wait,icon:'vehicle',anchor:{x:front.x+65,y:front.y+50,space:'world'}};}
  if(!game.cottageEntry)return null;
- return {elapsed:game.cottageEntry,wait:interiorLayout({kind:game.cottageEntryKind}).wait,icon:'home'};
+ const layout=interiorLayout({kind:game.cottageEntryKind});
+ // 驾驶进门圆环放在门前侧边，避免屋顶位置被短屏HUD和驾驶员遮挡。
+ return {elapsed:game.cottageEntry,wait:layout.wait,icon:'home',...(game.vehicle.active?{anchor:{x:layout.door.x+70,y:layout.door.y+70,space:'world'}}:{})};
 }
 // 在最终屏幕层绘制，避免天气、家具、出口地垫和场景色调把徽记盖住。
 export function drawPlayerActionCountdown(renderer){

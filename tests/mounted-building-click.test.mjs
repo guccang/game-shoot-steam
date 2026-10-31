@@ -57,8 +57,8 @@ test('其他建筑与告示的附近点击入口在步行、地面驾驶和飞�
  }
 });
 
-test('骑乘不能直接进入小屋或工坊室内，其他活动依旧拦截普通建筑入口',()=>{
- const g=scene();assert.equal(canEnterCottage(g),false);g.vehicle.active=false;assert.equal(canEnterCottage(g),true);
+test('骑乘允许门口候停入屋，其他活动依旧拦截普通建筑入口',()=>{
+ const g=scene();assert.equal(canEnterCottage(g),true);g.vehicle.active=false;assert.equal(canEnterCottage(g),true);
  for(const key of ['realm','story','cottage','arrivalCinematic','campDefense','fireActive','workshopTrial','boss','livingBattle','mainlineSpeech']){
   const g=scene();g[key]={};assert.equal(canInspectBuilding(g),false,key);
  }

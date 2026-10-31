@@ -1,4 +1,6 @@
 import {PARKING_SPOTS} from '../config/parking.js';
+import {dismountVehicle} from '../combat/vehicle.js';
+import {blocked} from '../physics/motion.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
 import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
@@ -11,10 +13,10 @@ import {updateCatMotion} from './cat-motion.js';
 import {calendarView,advanceLivingCalendar} from '../world/living-calendar.js';
 import {LIVING_DAY_MS} from '../config/living-world.js';
 
-// 过场、驾驶及事件战斗中不抢占控制；下车后在门前站定一秒入内。
-export function canEnterCottage(game){return game.mapId==='forest'&&!game.realm&&!game.story&&!game.arrivalCinematic&&!game.vehicle.active&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial;}
+// 步行和驾驶都可在门前候停；过场、事件战斗和自动倒车期间不抢占控制。
+export function canEnterCottage(game){return game.mapId==='forest'&&!game.realm&&!game.story&&!game.arrivalCinematic&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial&&!['align','reverse'].includes(game.parking?.phase);}
 // 兼容旧调用方的资格查询，实际入室仍核验门口范围。
-export function canClickCottage(game){return !game.cottage&&canEnterCottage(game)&&game.state==='playing'&&!game.progress.restoration?.build&&!game.mainlineSpeech&&facilityOpen(game.progress,'cottage')&&worldDistance(game.player,C.door)<=C.clickRadius;}
+export function canClickCottage(game){return !game.cottage&&!game.vehicle.active&&canEnterCottage(game)&&game.state==='playing'&&!game.progress.restoration?.build&&!game.mainlineSpeech&&facilityOpen(game.progress,'cottage')&&worldDistance(game.player,C.door)<=C.clickRadius;}
 // 门前候停完成后交给正式房间控制器。
 export function enterCottage(game){return canClickCottage(game)&&enterInterior(game,'cottage');}
 // 两座工坊沿用小屋的距离和步行校验，入职重建仍使用自己的剧情入口。
@@ -26,14 +28,27 @@ export function enterParkedWorkshop(game,parkingId){
  return enterInterior(game,spot.kind,{x:spot.x,y:spot.disembarkY??spot.approachY+18});
 }
 // 入室前保存世界落点，室内使用独立坐标，存档仍记录外部安全位置。
-function enterInterior(game,kind,parkingEntrance=null){
+function enterInterior(game,kind,parkingEntrance=null,mountedCountdown=false){
  if(!facilityOpen(game.progress,kind==='vehicle'?'garage':kind))return false;
  const layout=interiorLayout({kind});
  if(kind==='legendary'&&!game.progress.vehicleHulls[6])return false;
  if(game.cottage||!canEnterCottage(game)||game.state!=='playing'||game.progress.restoration?.build||game.mainlineSpeech||worldDistance(game.player,parkingEntrance||layout.door)>layout.radius)return false;
+ // 驾驶入屋只能由完整倒计时提交；先在门口留下真实车辆，再切换室内坐标。
+ if(game.vehicle.active&&(!mountedCountdown||!parkDoorVehicle(game)))return false;
  const outside=nearest(layout.outside||{x:C.door.x+50,y:C.door.y+30},game.player);
  game.cottage={kind,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'点击售货员，查看服务。',sleep:null,exitElapsed:0,restElapsed:0,restOpen:false,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
  Object.assign(game.player,layout.spawn,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
+}
+// 门槛附近按停驻车体校验空地，向门外小幅避让墙体；失败保留驾驶状态和原位置。
+function parkDoorVehicle(game){
+ const origin={x:game.player.x,y:game.player.y},body={...game.player,flying:false,amphibious:false,treePass:false};
+ for(let offset=0;offset<=96;offset+=16){
+  const point={x:origin.x,y:origin.y+offset};if(blocked(point.x,point.y,30,game.trees,body))continue;
+  Object.assign(game.player,point);
+  if(dismountVehicle(game))return true;
+  Object.assign(game.player,origin);return false;
+ }
+ return false;
 }
 // 家具按脚底底座碰撞；屋内一条中间通道连接床边与门口。
 export function cottageBlocked(x,y,game){const layout=interiorLayout(game?.cottage),furniture=game?interiorFurniture(game):COTTAGE_FURNITURE;return x<22||x>layout.width-22||y<76||y>layout.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
@@ -56,7 +71,7 @@ export function updateCottage(game,dt,input){
   return true;
  }
  if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech||game.vehicleBoarding){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
- // 页面暂停不消耗等待时间，关闭后继续；移动、驾驶和离开门口立即取消。
+ // 页面暂停不消耗等待时间，关闭后继续；步行和驾驶移动或离开门口立即取消。
  if(game.state!=='playing')return false;
  const layouts=[interiorLayout({kind:'cottage'}),...Object.values(WORKSHOP_INTERIORS)].filter(r=>r.id!=='legendary'||game.progress.vehicleHulls[6]);
  const layout=layouts.reduce((best,item)=>worldDistance(game.player,item.door)<worldDistance(game.player,best.door)?item:best);
@@ -68,7 +83,7 @@ export function updateCottage(game,dt,input){
  if(!facilityOpen(game.progress,layout.id==='vehicle'?'garage':layout.id)||worldDistance(game.player,layout.door)>layout.radius||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>3){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
  if(game.cottageEntryKind!==layout.id)game.cottageEntry=0;
  game.cottageEntryKind=layout.id;game.cottageEntry=(game.cottageEntry||0)+dt;
- return game.cottageEntry+1e-9>=layout.wait?enterInterior(game,layout.id):false;
+ return game.cottageEntry+1e-9>=layout.wait?enterInterior(game,layout.id,null,true):false;
 }
 // 床边主动点击只打开休息选项，仍需选择睡眠目标。
 export function openCottageRest(game){

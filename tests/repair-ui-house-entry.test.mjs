@@ -35,11 +35,11 @@ test('保存失败显示重试，结束与离开森林后无残留圆环',()=>{
  }
 });
 
-test('附近按钮立即进入小屋，任务卡明确说明点击及门前候停方式',()=>{
- const g=scene();assert.equal(nearbyInteraction(g).type,'cottage');assert.ok(canClickCottage(g));
- assert.match(mainlineObjective(g).label,/点击「进入小屋」/);assert.match(mainlineSteps(g)[0].hint,/站定3秒/);
+test('门前没有点击入屋按钮，任务卡说明一秒候停方式',()=>{
+ const g=scene();Object.assign(g.player,COTTAGE.door);assert.notEqual(nearbyInteraction(g)?.type,'cottage');assert.ok(canClickCottage(g));
+ assert.match(mainlineObjective(g).label,/停留1秒/);assert.match(mainlineSteps(g)[0].hint,/载具留在门口/);
  assert.ok(enterCottage(g));assert.equal(g.cottage.kind,'cottage');assert.equal(g.cottageEntry,null);assert.equal(enterCottage(g),false);
- assert.ok(leaveCottage(g));assert.ok(enterCottage(g),'显式点击可立即再次入屋，不被自动入屋防抖阻止');
+ assert.ok(leaveCottage(g));updateCottage(g,1,{x:0,y:0});assert.equal(g.cottage,null,'出门后不立即重复进屋');
 });
 
 test('未修复、距离、驾驶、暂停、施工与战斗均不能从点击绕过',()=>{
@@ -48,9 +48,9 @@ test('未修复、距离、驾驶、暂停、施工与战斗均不能从点击�
  }
 });
 
-test('门前站定三秒仍能自动进入，点击入口不抢先推进原倒计时',()=>{
+test('门前站定一秒自动进入，附近提示不抢先推进倒计时',()=>{
  const g=scene();Object.assign(g.player,COTTAGE.door);
- for(let i=0;i<59;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);assert.equal(nearbyInteraction(g)?.type,'cottage');
+ for(let i=0;i<19;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);assert.notEqual(nearbyInteraction(g)?.type,'cottage');
  updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage.kind,'cottage');
 });
 
