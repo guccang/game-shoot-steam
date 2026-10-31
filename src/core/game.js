@@ -1,3 +1,5 @@
+import {HERO_COMBAT_XP} from '../config/hero-experience.js';
+import {awardHeroXp} from '../progression/hero-experience.js';
 import {legendaryVisible} from './legendary-workshop.js';
 import {updateVehicleRepair,personalFleet,vehicleRequiresService,vehicleService,syncVehicleService} from './vehicle-repair.js';
 import {absorbEnergyShield} from '../combat/energy-shield.js';
@@ -599,6 +601,8 @@ export class Game {
     if(target.type==='boss')dismissBossSummons(this,target.id);
     if(target.bossSummon&&(this.story||this.realm||this.campDefense)){leaveEnemyRemnant(this,target,impact);return;}
     if(!this.workshopTrial&&!this.livingPreview&&!target.football)recordDefeat(this.progress,target.type,impact?.statisticsSource);
+    // 走过死亡保护后只发一次经验；试射、预览、伐木与召唤杂兵不计入角色成长。
+    if(!this.workshopTrial&&!this.livingPreview&&!target.football&&!target.bossSummon&&['enemy','boss'].includes(target.type)){const earned=awardHeroXp(this.progress,target.type==='boss'?HERO_COMBAT_XP.boss:target.tough?HERO_COMBAT_XP.tough:HERO_COMBAT_XP.enemy);if(earned.gained){this.float(target.x,target.y-75,earned.levels?`${HEROES[earned.index].name}升到${earned.level}级`:`经验 +${earned.gained}`,'#e8d69b');this.onEvent('hero-experience',earned);}}
     recordMainlineVehiclePractice(this,target,impact);
     if(campDefenseKill(this,target))return;
     if(this.story){storyKill(this,target);return;}

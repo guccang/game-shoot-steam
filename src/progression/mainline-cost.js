@@ -19,6 +19,8 @@ function grow(p,cost,field,index,target,part){
   const price=kind==='heroes'?campPurchasePrice(p,HEROES[index]):equipmentRecipe(kind,index,p);
   if(!price)return;add(cost,price);p[field][index]=1;if(kind==='vehicle')grantVehicleArmament(p,index);
  }
+ // 角色通过经验达到目标等级，不列入收获金币和升级材料预算。
+ if(kind==='heroes'){p.heroes[index]=Math.max(p.heroes[index],target);return;}
  let level=part?p[field][index]?.[part]||1:p[field][index];
  for(;level<Math.min(20,target);level++){add(cost,economyUpgradeCost(p,kind,index,level,part));if(part)p[field][index][part]=level+1;else p[field][index]=level+1;}
 }

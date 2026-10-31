@@ -1,3 +1,4 @@
+import {CAT_HOME} from '../config/cat-home.js';
 import {FURNITURE_SHOP} from '../config/furniture-shop.js';
 import {REPAIR_CENTER} from '../config/vehicle-repair.js';
 import {TOWN_LAYOUT,TOWN_SHIFT_X} from '../config/town-layout.js';
@@ -13,7 +14,7 @@ import {STORY_POSTS} from '../config/story-posts.js';
 import { canonical, worldDistance, nearest } from './coordinates.js';
 import { COTTAGES, WHEAT_FIELDS, SCENERY } from './scenery.js';
 // 快递站与小屋共用树冠净空，列表只创建一次，避免逐棵树分配。
-const CLEARING_BUILDINGS=[FURNITURE_SHOP,REPAIR_CENTER,...COTTAGES,FARM_DELIVERY,FARM_SEED_SHOP];
+const CLEARING_BUILDINGS=[CAT_HOME,FURNITURE_SHOP,REPAIR_CENTER,...COTTAGES,FARM_DELIVERY,FARM_SEED_SHOP];
 import { riverBeachWidth, excludesNaturalScenery } from './natural-terrain.js';
 import { riverXAt, riverHalfWidth } from './river-geometry.js';
 import { coversRealmEntrance } from './realm-entrances.js';

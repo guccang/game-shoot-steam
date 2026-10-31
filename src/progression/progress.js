@@ -1,3 +1,4 @@
+import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
 import {normalizeVehicleService} from './vehicle-repair.js';
 import {freshHome,normalizeHome} from './home-decor.js';
 import {equipmentLevelCap,normalizeLegendaryWorkshop} from '../config/legendary-workshop.js';
@@ -87,6 +88,7 @@ export function freshProgress() {
     wood: GAMEPLAY_VALUES.progress.startWood,
     hero: 0,
     weapon: 0,
+    heroXp: HEROES.map(()=>0),
     heroes: HEROES.map((_, index) => index === 0 ? 1 : 0),
     weapons: WEAPONS.map((_, index) => (index === 0 ? 1 : 0)),
     mastery: WEAPONS.map(() => 0),
@@ -155,6 +157,9 @@ export function validateProgress(raw) {
       p[key] = p[key].map((fallback, i) =>
         clamp(Math.floor(Number(raw[key][i]) || fallback), i === 0 ? 1 : 0, equipmentLevelCap(p,key)),
       );
+  p.heroXp=normalizeHeroXp(raw.heroXp,p.heroes);
+  // 合法的跨级经验恢复时自动结算，历史等级保持不变。
+  for(let i=0;i<p.heroes.length;i++)if(p.heroXp[i]>0){const xp=p.heroXp[i];p.heroXp[i]=0;awardHeroXp(p,xp,i);}
   p.hero = Number.isInteger(raw.hero) && p.heroes[raw.hero] ? raw.hero : 0;
   p.weapon = Number.isInteger(raw.weapon) && p.weapons[raw.weapon] ? raw.weapon : 0;
   // 明确记录的零所有权必须保留；仅无车体数组的历史存档保留原有免费战车。

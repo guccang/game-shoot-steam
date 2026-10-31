@@ -1,3 +1,4 @@
+import {heroExperience} from '../progression/hero-experience.js';
 import { i18nText } from "../i18n/index.js";
 import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
 import {deathCoinLoss} from '../core/death-penalty.js';
@@ -60,6 +61,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
         : i18nText("common.namedLevel", { p0: HEROES[game.progress.hero].name, p1: p.heroes[p.hero] }),
       healthLabel = mounted ? i18nText("ui.hud.20496aae49") : i18nText("ui.hud.6fb8ecc2a5");
     $('player-name').textContent = name;
+    const heroXp=heroExperience(game.progress);$('hero-experience-hud').textContent=heroXp.next?`经验 ${heroXp.xp} / ${heroXp.next}`:'角色已满级';
     $('player-name').title = mounted ? COLLECTED_VEHICLES[p.vehicleIndex].name : name;
     $('player-health').textContent = `${Math.ceil(hp)} / ${maxHp}`;
     $('player-health').setAttribute('aria-label', `${healthLabel} ${Math.ceil(hp)} / ${maxHp}`);

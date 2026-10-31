@@ -10,8 +10,10 @@ import { WEAPONS, isWeaponUnlocked } from '../config/weapons.js';
 import { upgradeCost } from './progress.js';
 import { payEquipment } from './equipment-goals.js';
 // 所有条件先校验再扣费，失败保持原进度不变；已有旧枪不重复检查购买门槛。
-export function transactProgress(progress, kind, index, action) {
-  if(action!=='equip'&&!facilityOpen(progress,'weapons'))return false;
+export function transactProgress(progress, kind, index, action, context={}) {
+  // 角色等级只由经验成长；获取仅允许猫窝事务，切换已有猫仍兼容原接口。
+  if(kind==='heroes'&&(action==='upgrade'||action==='buy'&&!context.catHome))return false;
+  if(kind!=='heroes'&&action!=='equip'&&!facilityOpen(progress,'weapons'))return false;
   if (
     !['heroes', 'weapons'].includes(kind) ||
     !Number.isInteger(index) ||

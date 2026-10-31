@@ -3,6 +3,7 @@ import {box,poly,oval} from './primitives.js';
 import {drawWorldSign} from './world-signs.js';
 const EDGE='#365a48';
 const DESIGNS={
+ 'cat-home':{w:144,h:132,roof:'#9b9474',name:'猫窝'},
  furniture:{w:136,h:120,roof:'#98a276',name:'家具小铺'},
  cottage:{w:130,h:135,roof:'#789865',name:'巡林小屋'},
  weapons:{w:146,h:132,roof:'#6c897b',name:'武器工坊'},
@@ -51,6 +52,10 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
  oval(c,doorW/2-6,-20,2.4,2.4,'#e8cf83');box(c,-doorW/2-9,0,doorW+18,7,2,'#c8ccb0',EDGE,1.4);
  if(kind==='seed'){
   for(const side of [-1,1]){windowFrame(c,side<0?left+12:23,-52,22,27,night);box(c,side*37-12,-16,24,15,3,'#b39166',EDGE,1.2);for(const dx of [-5,4]){oval(c,side*37+dx,-20,5,8,'#82a76d',EDGE,1);}}
+ }else if(kind==='cat-home'){
+  // 猫耳轮廓与软垫窗区别于普通住宅，爪印不覆盖中央入口。
+  for(const side of [-1,1]){poly(c,[[side*43-13,-h+27],[side*43,-h-7],[side*43+13,-h+27]],d.roof,EDGE,2);windowFrame(c,side<0?left+13:25,-55,25,28,night);oval(c,side*40,-25,13,5,'#e2c39a',EDGE,1);}
+  oval(c,0,-h+27,9,6,'#e8d3a8');for(const dx of [-9,-3,4,10])oval(c,dx,-h+15,3,4,'#e8d3a8');
  }else if(kind==='furniture'){
   // 软垫橱窗与小木凳标识家具店，保持中央门槛可进入。
   for(const x of [left+12,24]){windowFrame(c,x,-55,26,30,night);box(c,x+2,-34,22,10,3,'#95ac78',EDGE,1);box(c,x,-29,26,7,2,'#b2c28c',EDGE,1);}

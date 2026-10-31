@@ -180,7 +180,10 @@ function drawVehicleDisplay(c, item, game) {
 function drawTools(c, item) {
   const { x, y, width: w } = item;
   oval(c, x + 3, y + 9, w * 0.53, 9, '#35553e30');
-  if(item.type==='counter'){
+  if(item.type==='cat-bed'){
+    // 两侧软垫猫床保留中央柜台与出口通道。
+    oval(c,x,y,w*.5,19,'#b7966e','#4e6b50',2);oval(c,x,y-5,w*.42,13,'#e4cfa2','#879875',1.5);
+  }else if(item.type==='counter'){
     box(c,x-w/2,y-25,w,40,5,'#b59668','#4e6b50',2);box(c,x-w/2-4,y-31,w+8,12,4,'#e3cd98','#68714e',2);box(c,x-34,y-22,68,29,4,'#c8ad7b','#9a805a',1);
   }else if (item.type === 'tires') {
     for (const yy of [y + 5, y - 8, y - 21]) {
@@ -340,7 +343,7 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
     else if(item.type==='shopkeeper'){
       drawCat(c,item.x,item.y,4,Math.PI/2,PLAYER_SCALE,0,0,null,1,null,0,false,false,null,0,null,0,true);
       c.fillStyle='#fff2d0';c.strokeStyle='#58765c';box(c,item.x-40,item.y-78,80,23,6,'#fff2d0','#58765c',1);
-      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(room.kind==='furniture'?'家具售货员':'售货员',item.x,item.y-62);
+      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(room.kind==='cat-home'?'猫窝管理员':room.kind==='furniture'?'家具售货员':'售货员',item.x,item.y-62);
     }
     else if(item.type==='furniture-display')drawHomeDecor(c,{...item,type:item.decor},night,g.progress.living.calendar);
     else if (item.type === 'vehicle-display') drawVehicleDisplay(c, item, g);

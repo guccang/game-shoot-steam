@@ -13,7 +13,7 @@ import {HEROES} from './heroes.js';
 
 // 固定机制身份属于程序合同，配置不能凭空声明不存在的行为或美术。
 const RANGED_IDS=['spore-spitter','acorn-slinger','reed-archer','bramble-buggy','stump-bombard'];
-const OPERATIONS=['click','upgrade','hero','trial','patrol-boss','buy','equip','modify','story','drive','clearing','dismount','track','controller','menu','camp-defense','farm'];
+const OPERATIONS=['click','upgrade','hero-experience','trial','patrol-boss','buy','equip','modify','story','drive','clearing','dismount','track','controller','menu','camp-defense','farm'];
 const ACTIONS=['seed-shop','menu','workshop','clearing','fire','realm','camp-defense','farm'];
 const SEEN=MAINLINE_SEEN;
 // 校验错误始终包含可定位的内容路径。
@@ -59,7 +59,7 @@ function operation(op,path){
  if(op.kind&&!['weapons','vehicle'].includes(op.kind))fail(path+'.kind','装备类别不存在');
  const choices=op.indices||('index'in op?[op.index]:[]);
  if(op.indices)array(op.indices,path+'.indices');
- for(const index of choices){number(index,path+'.index',0,true);const rows=op.type==='hero'?HEROES:op.kind==='vehicle'?COLLECTED_VEHICLES:WEAPONS;if(!rows[index])fail(path+'.index','装备或角色不存在');}
+ for(const index of choices){number(index,path+'.index',0,true);const rows=op.type==='hero-experience'?HEROES:op.kind==='vehicle'?COLLECTED_VEHICLES:WEAPONS;if(!rows[index])fail(path+'.index','装备或角色不存在');}
  if(['upgrade','buy','equip','modify','drive','track','controller','trial'].includes(op.type)&&(!op.kind||!choices.length))fail(path,'缺少装备目标');
  if(op.type==='click'){text(op.dialog,path+'.dialog');text(op.selector,path+'.selector');}
  if(op.type==='camp-defense'){if(!CAMP_GATES.some(g=>g.id===op.gate))fail(path+'.gate','营门不存在');if(!SEEN.includes(op.record))fail(path+'.record','未注册的操作记录');}

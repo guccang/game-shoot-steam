@@ -50,10 +50,9 @@ test('所有正式购入类别使用折后价格，无等级和主线门槛，�
   if(index===5&&kind==='vehicle')assert.equal(q.next.vehicleLoadouts[5],null);
  }
 });
-test('英雄购买享折扣，升级不享营地折扣，不重复购入',()=>{
- const p=funded(),cost=campPurchasePrice(p,HEROES[1]),before=p.coins;assert.ok(transactProgress(p,'heroes',1,'buy'));assert.equal(before-p.coins,cost.coins);
- const saved=JSON.stringify(p);assert.equal(transactProgress(p,'heroes',1,'buy'),false);assert.equal(JSON.stringify(p),saved);
- const upgrade=upgradeCost(1,p,'heroes',1);p.campLevel.xp=10800;assert.deepEqual(upgradeCost(1,p,'heroes',1),upgrade);
+test('猫窝获取享折扣，不重复购入且不能付费升级',()=>{
+ const p=funded(),cost=campPurchasePrice(p,HEROES[1]),before=p.coins;assert.ok(transactProgress(p,'heroes',1,'buy',{catHome:true}));assert.equal(before-p.coins,cost.coins);
+ const saved=JSON.stringify(p);assert.equal(transactProgress(p,'heroes',1,'buy',{catHome:true}),false);assert.equal(transactProgress(p,'heroes',1,'upgrade'),false);assert.equal(JSON.stringify(p),saved);
 });
 test('主线经验和收据只在首次交付发放，完整旧候选补齐新增车型',()=>{
  const p=funded(),before=structuredClone(p);assert.ok(awardMainline(p,MAINLINE_IDS[0]));assert.equal(p.campLevel.xp,30);assert.equal(awardMainline(p,MAINLINE_IDS[0]),null);assert.equal(p.campLevel.xp,30);

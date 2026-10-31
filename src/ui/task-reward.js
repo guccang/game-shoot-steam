@@ -12,6 +12,7 @@ import {storyEquipmentName} from '../progression/story-rewards.js';
 import {drawVehicleIcon} from '../rendering/vehicle.js';
 import {drawWorkshopEquipment} from '../rendering/workshop.js';
 import {challengeProgressMarkup} from './challenge-feedback.js';
+import {HEROES} from '../config/heroes.js';
 
 // 奖励画像复用正式装备绘制器；高清透明画布按原比例显示，不使用通用占位图。
 function equipmentPortrait(root,progress,item){
@@ -60,6 +61,8 @@ export function createTaskReward({game,root,host,dialogs,input,onChange,isActive
    const row=root.createElement('li');row.innerHTML=resourceIcon(key);const name=root.createElement('span'),count=root.createElement('strong');name.textContent=resourceName(key);count.textContent='+'+amount;row.append(name,count);list.append(row);
   }
   for(const item of receipt.equipment||[]){const row=root.createElement('li'),name=root.createElement('span'),count=root.createElement('strong');row.className='task-reward-equipment';name.textContent=storyEquipmentName(item);count.textContent='已获得';row.append(equipmentPortrait(root,game.progress,item),name,count);list.append(row);}
+  // 经验使用已保存事务的收据，不因再次打开奖励页面重复发放。
+  if(receipt.heroExperience){const e=receipt.heroExperience,row=root.createElement('li');row.textContent=`${HEROES[e.index].name}经验 +${e.gained}${e.level>e.previousLevel?` · 升至 ${e.level} 级`:''}`;list.append(row);}
   // 空收据只确认任务完成，不能据此判断资源已满，也不显示空奖励占位。
   if(!list.children.length&&!q)node.querySelector('#task-reward-heading').textContent='任务完成';
   resume=game.state==='playing'||[...root.querySelectorAll('dialog[open]')].some(d=>dialogs.willResume(d.id));

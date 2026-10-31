@@ -1734,3 +1734,9 @@ export async function inspectShopkeeperCounters(game){
  const {interiorFurniture,interiorShopkeeper}=await import('../config/workshop-interiors.js');
  return {designCriterion:'shopkeeper-counters',room:game.cottage?.kind,seller:interiorShopkeeper(game.cottage),counters:game.cottage?interiorFurniture(game).filter(item=>item.type==='counter'):[]};
 }
+
+// 猫窝验收读取正式角色经验与房间存档，不伪造角色或购买结果。
+export async function inspectCatHome(game,root){
+ const {heroExperience}=await import('../progression/hero-experience.js');
+ return {designCriterion:'cat-home-progression',room:game.cottage?.kind,hero:game.progress.hero,experience:heroExperience(game.progress),owned:game.progress.heroes.filter(level=>level>0).length,oldHeroTab:!!root.getElementById('tab-heroes'),dialog:!!root.getElementById('cat-home-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

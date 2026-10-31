@@ -1,3 +1,4 @@
+import {createCatHome} from './cat-home.js';
 // 营地停驻车点击与小屋操作层：实际移动仍由正式输入和核心规则处理。
 import {createWorkshopRoomControls} from './workshop-room.js';
 import {createHomeDecor} from './home-decor.js';
@@ -21,8 +22,9 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  const restDialog=panel.querySelector('#cottage-rest-dialog');
  frame.append(panel);
  prepareMobilePanel(restDialog);
- const workshopRoom=createWorkshopRoomControls({game,renderer,root,panel,input,openWorkshop:(kind,index)=>['cottage','furniture'].includes(kind)?homeDecor.open():openWorkshop(kind,index),onChange});
+ const workshopRoom=createWorkshopRoomControls({game,renderer,root,panel,input,openWorkshop:(kind,index)=>kind==='cat-home'?catHome.open():['cottage','furniture'].includes(kind)?homeDecor.open():openWorkshop(kind,index),onChange});
  const roomExit=createRoomExit({game,renderer,root,panel,input,onChange});
+ const catHome=createCatHome({game,root,dialogs,input,onChange:onDecorChange});
  const homeDecor=createHomeDecor({game,root,panel,dialogs,input,onChange:onDecorChange});
  // 上下车后清掉摇杆残量，避免点击动作留下持续行走输入。
  function board(hull){input.reset();if(boardParkedVehicle(game,hull)){renderer.camera.time=null;onChange();}}
@@ -43,7 +45,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  }
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。
  function render(){
-  const room=game.cottage;frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;workshopRoom.render();roomExit.render();homeDecor.render();
+  const room=game.cottage;frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;workshopRoom.render();roomExit.render();homeDecor.render();catHome.render();
   panel.dataset.room=room?.kind||'cottage';panel.querySelector('header b').textContent=interiorLayout(room).name;
   if(!room?.restOpen&&restDialog.open)restDialog.close();
   if(room?.restOpen&&!restDialog.open&&game.state==='playing'&&!root.querySelector('dialog[open]')){
@@ -70,6 +72,6 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
   for(const s of list){let node=hits.get(s.record.hull);if(!node){node=root.createElement('button');sceneHit(node,'上车：'+vehicleModel(s.record.hull).shortName);node.classList.add('parked-vehicle-hit');node.dataset.parkedHull=s.record.hull;scope.on(node,'click',e=>{if(e.detail===0)board(s.record.hull);});frame.append(node);hits.set(s.record.hull,node);}node.setAttribute('aria-label',(game.vehicle.active?'换车：':'上车：')+vehicleModel(s.record.hull).shortName);placeSceneHit(node,s,renderer,frame,{width:90,height:86,foot:18});}
  }
  // 卸载清理动态热点，返回首页不能遗留室内样式。
- function dispose(){homeDecor.dispose();roomExit.dispose();workshopRoom.dispose();scope.dispose();if(restDialog.open)restDialog.close();cancelCottageRest(game);panel.remove();for(const node of hits.values())node.remove();frame.classList.remove('inside-cottage');}
+ function dispose(){catHome.dispose();homeDecor.dispose();roomExit.dispose();workshopRoom.dispose();scope.dispose();if(restDialog.open)restDialog.close();cancelCottageRest(game);panel.remove();for(const node of hits.values())node.remove();frame.classList.remove('inside-cottage');}
  return {tap,render,dispose,openHomeDecor:homeDecor.open};
 }

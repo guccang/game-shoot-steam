@@ -20,6 +20,7 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
     if(type==='story-change'){input.reset();save();return;}
     if(type==='living-change'){input.reset();return;}
     if(type==='living-kill'){save();return;}
+    if(type==='hero-experience'){save();return;}
     if(type==='vehicle-durability'){save();return;}
     if(type==='vehicle-service'){save();if(data?.text)toast.show(data.text);return;}
     if(type==='story-hint'){toast.show(data.text);return;}

@@ -1,3 +1,4 @@
+import {awardHeroXp,HERO_TASK_XP} from './hero-experience.js';
 // 营地经验、存档校验与首次购买报价共用规则，不改变战斗强度。
 import {CAMP_LEVELS,CAMP_ACTIVITY_XP,CAMP_BATCHES,CAMP_STORY_XP} from '../config/camp-level.js';
 // 损坏值和旧档缺项从零开始，不根据历史战绩补发经验。
@@ -16,6 +17,8 @@ export function campDiscountText(percent){return `${percent/10}折`;}
 export function campPurchasePrice(progress,base){const {percent}=campProgress(progress);return {...base,coins:Math.ceil(base.coins*percent/100),wood:Math.ceil(base.wood*percent/100)};}
 // 发放返回实际经验差额，封顶与资源钱包互相独立；调用方负责完成事件的一次性保护。
 export function awardCampXp(progress,activity,chapterId=null){
+ // 任务和挑战已完成的一次性事务同时发放角色经验，营地满级也继续成长。
+ awardHeroXp(progress,HERO_TASK_XP[activity]||0);
  const state=progress.campLevel=validateCampLevel(progress.campLevel),before=state.xp;
  const amount=activity==='story'?(chapterId?.startsWith('neighbors-')?CAMP_ACTIVITY_XP.living:CAMP_STORY_XP[chapterId]??240):CAMP_ACTIVITY_XP[activity]??0;
  state.xp=Math.min(CAMP_LEVELS.at(-1).xp,before+amount);return state.xp-before;

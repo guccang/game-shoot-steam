@@ -1,3 +1,5 @@
+import {CAT_HOME} from '../config/cat-home.js';
+import {requestWorldNavigation} from '../core/world-navigation.js';
 import {equipmentLevelCap} from '../config/legendary-workshop.js';
 import {heroGrowthMarkup} from './hero-growth.js';
 import {challengeLevelMarkup} from './challenge-feedback.js';
@@ -46,7 +48,7 @@ export function createInventory({ game, root, dialogs, onChange }) {
     scope = createEventScope();
   const expandedWeapons = new Set();
   let category = 'all';
-  let tab = 'heroes',
+  let tab = 'weapons',
     lastInventory = '',
     lastFieldIcons = '',
     lastIntro = '';
@@ -176,8 +178,8 @@ export function createInventory({ game, root, dialogs, onChange }) {
   // 切换标签时同步无障碍状态。
   function switchTab(next) {
     if (next === 'weapons' && tab !== next) category = 'all';
-    tab = next;
-    root.querySelector('#tab-heroes span').textContent = String(HEROES.length).padStart(2, '0');
+    tab = 'weapons';
+
     root.querySelector('#tab-weapons span').textContent = String(WEAPONS.length).padStart(2, '0');
     $('camp-title').textContent = tab === 'heroes' ? i18nText("ui.inventory.2a6ad2fe8a") : i18nText("ui.inventory.235d93ed3b");
     root.querySelectorAll('[data-tab]').forEach((b) => {
@@ -198,7 +200,7 @@ export function createInventory({ game, root, dialogs, onChange }) {
     lastFieldIcons = '';
     lastIntro = '';
     $('camp-feedback').textContent = '';
-    switchTab('heroes');
+    switchTab('weapons');
   }
   dialogs.register('camp-dialog', {
     onOpen: () => {
@@ -207,7 +209,7 @@ export function createInventory({ game, root, dialogs, onChange }) {
     focusId: 'close-camp',
   });
   for (const [id, kind] of [
-    ['heroes-button', 'heroes'],
+
     ['weapons-button', 'weapons'],
   ])
     scope.on($(id), 'click', () => {
@@ -216,6 +218,8 @@ export function createInventory({ game, root, dialogs, onChange }) {
       $('camp-dialog').querySelector('.ui-panel__body').scrollTop = 0;
       dialogs.open('camp-dialog');
     });
+  // 原角色升级入口改为猫窝导航，获取和切换由屋内管理员提供。
+  scope.on($('heroes-button'),'click',()=>requestWorldNavigation(game,{...CAT_HOME,y:CAT_HOME.y+22},'前往猫窝',{direct:true}));
   for (const id of ['close-camp', 'camp-done'])
     scope.on($(id), 'click', () => dialogs.close('camp-dialog'));
   root.querySelectorAll('[data-tab]').forEach((button) => {

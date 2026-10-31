@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/src/styles/scene-hit.css">
   <link rel="stylesheet" href="/src/styles/cottage.css">
   <link rel="stylesheet" href="/src/styles/home-decor.css">
+  <link rel="stylesheet" href="/src/styles/cat-home.css">
   <link rel="stylesheet" href="/src/styles/keepsake-backpack.css">
   <!-- 通用底板最后接入，让已有弹窗共享外观，新页面复用同一结构类。 -->
   <link rel="stylesheet" href="/src/styles/ui-foundation.css">
@@ -97,7 +98,7 @@
         <div id="field-menu-items" class="field-menu-items">
         <button id="phone-button" type="button" aria-label="打开巡林手机" aria-haspopup="dialog" aria-controls="phone-dialog"><span class="phone-symbol" aria-hidden="true"></span><span>手机</span></button>
         <button id="realm-button" data-i18n-aria-label="ui.panels.realms.f5dc54fbda" aria-haspopup="dialog" aria-controls="realm-dialog"><svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="40" rx="18" ry="5" fill="#47675640"/><path d="M10 37V23C10 3 38 3 38 23v14" fill="#a4b8a2" stroke="#456354" stroke-width="3"/><path d="M16 37V23c0-13 16-13 16 0v14z" fill="#8b82b0" stroke="#eee3bd" stroke-width="2"/><path d="m24 18 3 7 6 2-6 3-3 7-3-7-6-3 6-2z" fill="#f6e5ae"/></svg><span><!--i18n:index.61cc0e09df--></span></button>
-        <button id="heroes-button" data-i18n-aria-label="balance.app.c47b54e84e" aria-haspopup="dialog" aria-controls="camp-dialog"><canvas id="hero-button-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:balance.app.c47b54e84e--></span></button>
+        <button id="heroes-button" aria-label="定位猫窝"><canvas id="hero-button-icon" width="112" height="112" aria-hidden="true"></canvas><span>猫窝</span></button>
         <button id="weapons-button" hidden data-i18n-aria-label="ui.inventory.235d93ed3b" aria-haspopup="dialog" aria-controls="workshop-dialog"><canvas id="weapon-button-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:ui.story-rewards.4fe131173e--></span></button>
         <button id="vehicles-button" hidden data-i18n-aria-label="index.ecc66d941c" aria-haspopup="dialog" aria-controls="vehicle-collection-dialog"><canvas id="vehicle-menu-icon" width="112" height="112" aria-hidden="true"></canvas><span><!--i18n:app.game-events.8f9f50d425--></span></button>
         <!-- 地图收进手机；背包只保留随身物品格子。 -->
@@ -106,7 +107,7 @@
         <button id="field-menu-toggle" data-i18n-aria-label="ui.mobile-hud.d9b0e615ad" aria-expanded="false" aria-controls="field-menu-items"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="15" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="15" width="6" height="6" rx="1.5"/><rect x="15" y="15" width="6" height="6" rx="1.5"/></svg><span class="menu-close-mark" aria-hidden="true">×</span></button>
       </nav>
       <div class="joystick" id="joystick" hidden aria-hidden="true"><span class="joystick-cross">＋</span><span id="stick"></span></div>
-        <div class="bottom-info"><div class="player-hud"><div class="player-heading"><b id="player-name"><!--i18n:config.heroes.10cb799373--></b><span id="auto-label" role="img" data-i18n-aria-label="ui.hud.bb3cdc1737"></span><span id="player-health">120 / 120</span></div><div class="bar"><i id="health-fill"></i></div><div class="combat-instruments" data-i18n-aria-label="index.ce4ac11687"><div id="magazine-hud" class="status-ring" tabindex="0"></div><div id="funnel-supply" hidden></div><button id="vehicle-button" class="status-ring" data-i18n-aria-label="index.f7e72750ce" aria-pressed="false"></button></div></div></div>
+        <div class="bottom-info"><div class="player-hud"><div class="player-heading"><b id="player-name"><!--i18n:config.heroes.10cb799373--></b><span id="auto-label" role="img" data-i18n-aria-label="ui.hud.bb3cdc1737"></span><span id="player-health">120 / 120</span></div><div class="bar"><i id="health-fill"></i></div><small id="hero-experience-hud" aria-label="出战猫经验"></small><div class="combat-instruments" data-i18n-aria-label="index.ce4ac11687"><div id="magazine-hud" class="status-ring" tabindex="0"></div><div id="funnel-supply" hidden></div><button id="vehicle-button" class="status-ring" data-i18n-aria-label="index.f7e72750ce" aria-pressed="false"></button></div></div></div>
       <div class="game-bottom">
       </div>
       <!-- 出发前展示实际装备，画像与战场共用绘制，换枪后同步更新。 -->
@@ -165,10 +166,10 @@
       <div class="wallet"><div><span data-resource-icon="coins"></span><div><b id="coins">60</b></div></div><div><span data-resource-icon="wood"></span><div><b id="wood">30</b></div></div></div>
       <div data-challenge-level></div>
       <div class="material-wallet" data-material-wallet data-i18n-aria-label="index.b74be7238e"></div>
-      <div class="tabs" role="tablist" data-i18n-aria-label="index.40583cdf0c"><button id="tab-heroes" class="selected" role="tab" aria-selected="true" aria-controls="inventory" data-tab="heroes"><!--i18n:index.69265c8adf--><span>06</span></button><button id="tab-weapons" role="tab" aria-selected="false" aria-controls="inventory" data-tab="weapons"><!--i18n:index.79fdb17f04--><span>12</span></button></div>
+      <div class="tabs" role="tablist" data-i18n-aria-label="index.40583cdf0c"><button id="tab-weapons" role="tab" aria-selected="false" aria-controls="inventory" data-tab="weapons"><!--i18n:index.79fdb17f04--><span>12</span></button></div>
       <p id="camp-feedback" class="camp-feedback" role="status" aria-live="polite"></p>
       <div id="weapon-categories" class="weapon-categories" role="group" data-i18n-aria-label="index.9450f32afd" hidden></div><p id="weapon-category-hint" class="weapon-category-hint" hidden><!--i18n:index.b13326eb92--></p>
-      <div id="inventory" class="inventory" role="tabpanel" aria-labelledby="tab-heroes"></div>
+      <div id="inventory" class="inventory" role="tabpanel" aria-labelledby="tab-weapons"></div>
       <div class="camp-note"><span>✧</span><p><!--i18n:index.8a42606cab--><small><!--i18n:index.9500fdc6ed--></small></p></div>
       <div class="journal"><div><h3><!--i18n:index.e26224de7c--></h3><span><!--i18n:index.4de8a49114--></span></div><dl><div><dt><!--i18n:index.bbae3b1697--></dt><dd id="kills">0</dd></div><div><dt><!--i18n:index.dcb2cf4979--></dt><dd id="trees">0</dd></div><div><dt><!--i18n:index.b97140b3c7--></dt><dd id="bosses">0</dd></div></dl></div>
       <div class="save-status"><span class="status-dot"></span><span id="save-label"><!--i18n:app.progress-controller.5b87394b6c--></span></div>

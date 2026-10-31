@@ -85,9 +85,10 @@ export function createOperationGuide({game,root,workshop}){
    if(result&&result.source==='#ws-purchase'&&!state.affordable)return cue('purchase-short',visible(root.getElementById('ws-track'))?'#ws-track':'#ws-resources','条件未齐，追踪配方再准备');
    return result;
   }
-  if(dialog?.id==='camp-dialog'&&operation?.type==='hero'){
-   if(root.getElementById('tab-heroes').getAttribute('aria-selected')!=='true')return cue('heroes','#tab-heroes','切到角色页');
-   return cue('hero-upgrade',`[data-action="upgrade"][data-index="${operation.index}"]`,'点击升级栗子');
+  if(dialog?.id==='cat-home-dialog'&&operation?.type==='hero-experience'){
+   const selector=`[data-cat-equip="${operation.index}"]`,button=dialog.querySelector(selector);
+   if(button&&!button.disabled)return cue('hero-select',selector,'选择任务需要的出战猫');
+   return closeCue(dialog,'出门战斗或完成任务，积累经验自动升级');
   }
   if(dialog?.id==='story-dialog'&&operation?.type==='story'){
    const selector=`[data-story-chapter="${operation.chapter}"]`,node=dialog.querySelector(selector);
