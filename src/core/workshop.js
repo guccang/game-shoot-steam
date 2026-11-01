@@ -34,10 +34,10 @@ export function commitWorkshop(game, plan, persist) {
     game.progress = quote.next;
     if(firstPistol){game.arrivalScene=null;game.arrivalError=false;game.magazines=createMagazines(game.progress);game.aimLock=null;}
     if (plan.kind === 'vehicle' && plan.action === 'buy')
-      game.vehicles[plan.index] = createVehicle(game.progress, game.maxHp(), plan.index);
+      game.vehicles[plan.index] = createVehicle(game.progress, plan.index);
     if (plan.kind === 'vehicle' && (plan.action === 'upgrade' || plan.action === 'part' && plan.part === 'armor')) {
       const vehicle = game.vehicles[plan.index], ratio = vehicle.maxHp ? vehicle.hp / vehicle.maxHp : 0;
-      vehicle.maxHp = vehicleMaxHp({...game.progress,vehicleIndex:plan.index,vehicleLevel:game.progress.vehicleHulls[plan.index]},game.maxHp());
+      vehicle.maxHp = vehicleMaxHp({...game.progress,vehicleIndex:plan.index},game.maxHp());
       vehicle.hp = vehicle.maxHp * ratio;
     }
     if (plan.action === 'mount') configureVehicle(game, plan.choice, plan.index);

@@ -1,8 +1,8 @@
-import { legacyVehicleGame } from './helpers/legacy-vehicle.mjs';
+import { vehicleCombatFixture } from './helpers/vehicle-combat-fixture.mjs';
 // 加特林热量回归：运转时间、自然冷却、装填连续性及各类持有者的独立状态。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Game, freshProgress, WEAPONS } from '../src/game.js';
+import {freshProgress,WEAPONS} from '../src/game.js';
 import { gatlingHeat, advanceGatlingHeat, gatlingShotColor } from '../src/combat/weapon-heat.js';
 import { consumeRound, advanceReload } from '../src/combat/magazine.js';
 import { updateFunnel } from '../src/combat/funnel.js';
@@ -31,8 +31,8 @@ function arena(kind = 'hand') {
   p.weapon = kind === 'funnel' ? 12 : 2;
   p.funnelLoadout = [2, 2, 2];
   p.vehicleWeapons[2] = 1;
-  p.vehicleWeapon = 2;
-  const g = legacyVehicleGame(p, () => 0.5);
+  p.vehicleLoadouts[p.vehicleIndex||0] = 2;
+  const g = vehicleCombatFixture(p, () => 0.5);
   g.start();
   g.enemies = [];
   g.trees = [];

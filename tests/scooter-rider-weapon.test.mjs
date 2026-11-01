@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
-import { freshProgress, freshRangerProgress, validateProgress } from '../src/progression/progress.js';
+import {freshProgress,freshRangerProgress} from '../src/progression/progress.js';
 import { VEHICLE_DISPLAY_ORDER, COLLECTED_VEHICLES } from '../src/config/vehicles.js';
 import { riderPosition, SCOOTER_RIDER_LIFT } from '../src/config/vehicle-rider.js';
 import { shotSolution } from '../src/combat/aim.js';
@@ -70,18 +70,4 @@ test('电动车置顶但固定编号不变，新档不赠战车，600金币240�
   assert.equal(p.coins, 0); assert.equal(p.wood, 0); assert.equal(p.vehicleHulls[0], 1);
   assert.equal(p.vehicleWeapons[17], 1); assert.equal(p.vehicleLoadouts[0], 17);
   assert.equal(transactVehicle(p, 'vehicle', 0, 'buy'), false);
-});
-
-test('明确未购买的零记录不被补发，现代与旧版已拥有战车不回收不收费', () => {
-  const p = freshProgress(); p.vehicleIndex = 0;
-  const saved = validateProgress(JSON.parse(JSON.stringify(p)));
-  assert.equal(saved.vehicleHulls[0], 0); assert.equal(saved.vehicleWeapons[17], 0);
-  assert.equal(saved.vehicleIndex, 5); assert.deepEqual(validateProgress(JSON.parse(JSON.stringify(saved))), saved);
-  for (const raw of [{ ...saved, vehicleHulls: [6,0,0,0,0,1], vehicleIndex: 0 },
-    { version: 1, coins: 71, wood: 34, vehicleLevel: 6 }]) {
-    const old = validateProgress(raw); assert.equal(old.vehicleHulls[0], 6);
-    assert.equal(old.coins, raw.coins); assert.equal(old.wood, raw.wood);
-    assert.equal(old.vehicleWeapons[17], 1);
-    assert.deepEqual(validateProgress(JSON.parse(JSON.stringify(old))), old);
-  }
 });

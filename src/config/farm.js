@@ -36,9 +36,9 @@ export const FARM_MAX_PLOTS=512;
 export const FARM_STOCK_CAP=999999;
 // 水壶每次只浇选中的一块田；湿田可重复浇水，每茬只缩短一次原始生长时长的四分之一。
 export const FARM_WATER=Object.freeze({maxPlots:1,reduction:.25});
-// 旧营地位置供存档迁移和经济模拟使用，正常开垦不再限制在这里。
+// 固定营地采样点供经济模拟使用，正常开垦不再限制在这里。
 export const FARM_GARDEN=Object.freeze({id:'camp-farm',mapId:'forest',x:865+TOWN_SHIFT_X,y:672,radius:240});
-// 兼容旧版四列三行编号，新地块直接保存地图和世界坐标。
+// 经济模拟的十二块采样田坐标；正式农田直接保存世界坐标。
 export function farmCell(id){return Number.isInteger(id)&&id>=0&&id<12?{id,x:781+TOWN_SHIFT_X+(id%4)*56,y:620+Math.floor(id/4)*52}:null;}
 // 园艺经验只来自真实收获，与战斗等级及营地等级独立。
 export function farmLevel(farm){return Math.max(1,FARM_LEVEL_XP.findLastIndex(xp=>(farm?.xp||0)>=xp)+1);}
@@ -57,5 +57,5 @@ export const FARM_SEED_DROP=Object.freeze({chance:.08,pity:20,bossCount:2});
 export function farmSeedPool(progress){const rounds=Math.max(0,progress?.bosses||0);return FARM_CROPS.map((crop,index)=>({...crop,index})).filter(crop=>crop.rounds<=rounds);}
 // 来源说明与实际掉落共用门槛，达到门槛仍需首次获得才可购买。
 export function farmSeedRequirement(crop){return crop.rounds?'完成 '+crop.rounds+' 轮清剿后加入掉落池':'初始掉落池';}
-// 新地块按真实世界坐标存储，旧田编号仍可还原营地位置。
-export function farmPosition(plot){return Number.isFinite(plot?.x)&&Number.isFinite(plot?.y)?{x:plot.x,y:plot.y,mapId:plot.mapId||'forest'}:{...farmCell(plot?.id),mapId:'forest'};}
+// 地块直接使用已校验的世界坐标。
+export function farmPosition(plot){return {x:plot.x,y:plot.y,mapId:plot.mapId};}

@@ -48,7 +48,7 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     dialogs.close(letter.id);onChange();
   });
   // 建筑点击只打开详情；购买允许骑乘，真正操作仍校验钥匙、距离与材料。
-  function openWorkshop(){if(!game.arrivalPending||game.arrivalCinematic||game.state!=='playing')return;if(['dismount-guide','craft'].includes(game.progress.arrival.phase)){onOpenWeaponWorkshop();return;}dialogs.open(dialog.id);renderWorkshop();}
+  function openWorkshop(){if(!game.arrivalPending||game.arrivalCinematic||game.state!=='playing')return;if(['craft'].includes(game.progress.arrival.phase)){onOpenWeaponWorkshop();return;}dialogs.open(dialog.id);renderWorkshop();}
   // 每个阶段只展示一件当前要办的事，费用和得到的东西放在同一页。
   function renderWorkshop(){
     const cost=RANGER.repairWood,ready=arrivalWorkReady(game),enough=game.progress.wood>=cost;
@@ -68,7 +68,7 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     // 来信和目标卡不因靠近工坊隐藏，保持任务可读、可点击。
     card.hidden=!active||(!game.arrivalError&&(a.phase==='repairing'||a.phase==='craft'&&a.elapsed<RANGER.rebuildRevealSeconds))||(game.arrivalCinematic&&!game.arrivalError&&a.phase!=='crafting')||!!root.querySelector('dialog[open]');
     if(!active){node.hidden=true;return;}
-    const titles={letter:'查看松伯的信','ride-guide':'坐上电动车',gather:'采集木料',repair:'重建武器工坊',repairing:'重建中…','dismount-guide':'购买手枪',craft:'购买手枪',crafting:'领取手枪…'};
+    const titles={letter:'查看松伯的信','ride-guide':'坐上电动车',gather:'采集木料',repair:'重建武器工坊',repairing:'重建中…',craft:'购买手枪',crafting:'领取手枪…'};
     title.textContent=titles[a.phase]||'林间交接';
     const objective=arrivalWorkshopObjective(game),reading=a.phase==='letter';goal.disabled=!reading&&!objective;goal.setAttribute('aria-label',reading?'查看松伯的信，打开来信':objective?objective.label+'，查看相关详情':title.textContent);
     if(reading){goal.setAttribute('aria-haspopup','dialog');goal.setAttribute('aria-controls',letter.id);}else{goal.removeAttribute('aria-haspopup');goal.removeAttribute('aria-controls');}
@@ -76,7 +76,6 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     body.textContent=game.arrivalError?'保存失败，请重试。':a.phase==='gather'?`靠近树木采集 · 木材 ${game.progress.wood}/${RANGER.repairWood}`:a.phase==='repairing'?`屋顶重建 · ${Math.max(1,Math.ceil(RESTORATION_SECONDS-a.elapsed))}秒`:a.phase==='repair'?'靠近工坊，材料足够后自动修复':a.phase==='craft'?(game.progress.wood<RANGER.pistolWood?`还差 ${RANGER.pistolWood-game.progress.wood} 木材，靠近树木采集`:'靠近武器工坊，点击购买'):'稍等片刻';
     if(reading)body.textContent='点击任务，查看来信';
     if(a.phase==='ride-guide')body.textContent='前往北停车场找到电动车';
-    if(a.phase==='dismount-guide')body.textContent='靠近武器工坊，点击购买';
     retry.hidden=!game.arrivalError;card.dataset.phase=a.phase;
     if(dialog.open)renderWorkshop();
     renderFrame();

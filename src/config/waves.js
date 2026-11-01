@@ -10,15 +10,6 @@ export const WAVE_GROUP = Object.freeze({ min: 5, max: 5 });
 export function rollWaveGroup() { return WAVE_GROUP.max; }
 // 血量平衡版本用于迁移旧领主快照，不改变存档中的波次和装备成长。
 export const HEALTH_BALANCE_VERSION = 1;
-// 保留历史配额供旧档迁移；新波次按首轮五批数量与每轮增量取值。
-export const EARLY_CLEARING_WAVES = Object.freeze([
- Object.freeze([4,5,6,7,8]),Object.freeze([3,4,4,5,6]),Object.freeze([3,3,4,4,5]),
-]);
-export const CLEARING_WAVE_TOTALS = Object.freeze([4,5,6,7,8]);
-// 历史版本2至4的编成下限，仅供旧存档恢复。
-export const CLEARING_MIX_MINIMUM = Object.freeze([4,8,16,20,24]);
-// 版本4的历史分批上限，仅供旧存档按完成比例迁移。
-export const PREVIOUS_V4_WAVE_CAPS = Object.freeze([24,28,32,36,40]);
 // 版本5的配额仅用于历史迁移与奖励基数，每轮各批增加两只，最多四十只。
 export const CLEARING_OPENING_TOTALS = Object.freeze([2,4,6,8,10]);
 // 版本6首轮配额仅供旧档与奖励预算使用。
@@ -34,15 +25,6 @@ export function clearingRewardTotal(wave){
  const n=Math.max(0,Math.floor(Number.isFinite(wave)?wave:1)-1);
  return n<5?PREVIOUS_V6_TOTALS[n]:Math.min(40,CLEARING_OPENING_TOTALS[n%5]+2*Math.floor(n/5));
 }
-// 版本3的历史配额仅用于存档比例迁移，避免扩容后重新发放已领取奖励。
-export const PREVIOUS_CLEARING_WAVE_CAPS = Object.freeze([12,16,20,24,24]);
-// 旧配额只供存档完成节点迁移，新战斗一律读取 waveDifficulty。
-export function legacyWaveTotal(wave){
- const n=Math.max(0,Math.floor(wave)-1),group=Math.floor(n/5),slot=n%5;
- return EARLY_CLEARING_WAVES[group]?.[slot]??CLEARING_WAVE_TOTALS[slot]*(group-EARLY_CLEARING_WAVES.length+2);
-}
-// 历史前三次生命预算保留兼容；常驻森林正式生命预算读取 clearing-boss.js。
-export const EARLY_CLEARING_BOSS_HEALTH = Object.freeze([1258,1600,1900]);
 // 历史奖励份额仅供旧报告对照；正式奖励读取下面的固定清缴预算。
 export const WAVE_REWARD_TOTALS = Object.freeze([12, 18, 26, 36, 48, 60, 72, 84, 96]);
 // 返回原配额对应的奖励份数，开局表之后仍沿用原来的每波加8份。

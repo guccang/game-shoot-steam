@@ -23,7 +23,7 @@ function scene(phase='gather'){
 }
 
 test('入营各自由阶段可下车种地，真正过场与骑乘仍不可操作',()=>{
- for(const phase of ['letter','ride-guide','gather','repair','dismount-guide','craft']){
+ for(const phase of ['letter','ride-guide','gather','repair','craft']){
   const g=scene(phase);Object.assign(g.player,farmCell(0),{y:farmCell(0).y+34});
   assert.equal(g.arrivalPending,true);assert.equal(canUseFarm(g),true,phase);
   assert.ok(farmAction(g,'dig',{plot:0}).ok);assert.ok(farmAction(g,'plant',{plot:0,now:1000}).ok);
@@ -58,7 +58,7 @@ test('修复工坊后可升级电锯和载具，不必先买教学手枪',()=>{
  const car=workshopUpgrade(g.progress,'vehicle',5,'armor');assert.equal(quoteWorkshop(g.progress,car).ok,false);
  g.progress.restoration.repaired.push('garage');assert.ok(quoteWorkshop(g.progress,car).ok);assert.ok(arrivalParkingAllowed(g,0));
  // 刚修好但尚未完成下车引导也能购首枪；完成标记与扣费一起提交，不留下卡死的教学。
- g.progress.arrival.phase='dismount-guide';assert.ok(commitWorkshop(g,{kind:'weapons',index:0,action:'buy'},()=>true).ok);assert.equal(g.arrivalPending,false);
+ g.progress.arrival.phase='craft';assert.ok(commitWorkshop(g,{kind:'weapons',index:0,action:'buy'},()=>true).ok);assert.equal(g.arrivalPending,false);
 });
 
 test('秘境提前开放后推进战斗，刷新不被入营坐标拉回',()=>{

@@ -32,7 +32,7 @@ async page=>{
   g.progress.weapons.fill(1);g.progress.vehicleHulls.fill(1);g.progress.vehicleWeapons.fill(1);
   for(const [i,w]of [...WEAPONS,...VEHICLE_ARMAMENTS].entries())g.progress.statistics.equipment.weapons[w.id]={kills:i===0?123456789:10+i,trees:i===0?115122:i};
   for(const [i,v]of COLLECTED_VEHICLES.entries())g.progress.statistics.equipment.vehicles[v.id]={kills:30+i,trees:5+i};
-  grantVehicleArmament(g.progress,0);g.progress.vehicleIndex=0;g.vehicle=g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),0);g.vehicle.active=true;
+  grantVehicleArmament(g.progress,0);g.progress.vehicleIndex=0;g.vehicle=g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle.active=true;
   g.numbers=[];g.remnants=[];g.drops=[];g.spawnEnemy(0,0,{x:g.player.x+130,y:g.player.y+55},{ambient:true});a.refresh();
  });
  for(const [width,height]of [[1280,900],[390,844],[320,740]])for(const phase of ['day','night']){

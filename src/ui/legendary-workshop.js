@@ -1,11 +1,11 @@
 // 红狼专属传承页与坦克设计台；预览只修改草稿，保存与解锁走原子事务。
-import {LEGENDARY_WORKSHOP as SITE,LEGENDARY_STORY,TANK_PAINTS,TANK_BADGES,normalizeTankDesign} from '../config/legendary-workshop.js';
-import {legendaryAccessReason,legendaryVisible,legendaryNearby,travelLegendary,commitLegendary} from '../core/legendary-workshop.js';
+import {LEGENDARY_STORY,TANK_PAINTS,TANK_BADGES,normalizeTankDesign} from "../config/legendary-workshop.js";
+import {legendaryAccessReason,legendaryNearby,travelLegendary,commitLegendary} from "../core/legendary-workshop.js";
 import {COLLECTED_VEHICLES} from '../config/vehicles.js';
 import {createVehicle} from '../combat/vehicle.js';
 import {drawVehicleTracks,drawVehicleArmor} from '../rendering/vehicle.js';
 import {createEventScope} from '../platform/events.js';
-import {nearest} from '../world/coordinates.js';
+
 // 组装唯一传奇页面与世界门牌，所有事件随应用生命周期释放。
 export function createLegendaryWorkshop({game,root,renderer,dialogs,persist,onChange,onNotice,workshop}){
  const scope=createEventScope(),dialog=root.createElement('dialog'),entry=root.createElement('button'),frame=root.getElementById('game-frame');
@@ -16,7 +16,7 @@ export function createLegendaryWorkshop({game,root,renderer,dialogs,persist,onCh
  // 当前资格每次操作重新校验，打开面板后下车或切换场景也不能绕过门槛。
  function submit(action){const r=commitLegendary(game,action,persist);$('legendary-status').textContent=r.ok?action.type==='unlock'?'传奇工坊已解锁，枪械最高等级提升至 LV30。':action.type==='paint'?'配色已应用到坦克。':'外观方案已保存。':r.reason;if(r.ok){render();onChange();}return r.ok;}
  // 设计预览调用正式车体与主炮，不使用截图或替代模型。
- function paint(){const canvas=$('legendary-preview');if(!canvas)return;const p={...game.progress,legendaryWorkshop:{...game.progress.legendaryWorkshop,designs:{...game.progress.legendaryWorkshop.designs,[vehicle]:draft}}},c=canvas.getContext('2d'),v=createVehicle(p,120,vehicle);v.angle=-.15;c.clearRect(0,0,320,190);c.save();c.translate(135,105);c.scale(1.1,1.1);drawVehicleTracks(c,{x:0,y:0,walkPhase:0},v,true,0,p);drawVehicleArmor(c,{x:0,y:0},v,p,0,true);c.restore();}
+ function paint(){const canvas=$('legendary-preview');if(!canvas)return;const p={...game.progress,legendaryWorkshop:{...game.progress.legendaryWorkshop,designs:{...game.progress.legendaryWorkshop.designs,[vehicle]:draft}}},c=canvas.getContext('2d'),v=createVehicle(p, vehicle);v.angle=-.15;c.clearRect(0,0,320,190);c.save();c.translate(135,105);c.scale(1.1,1.1);drawVehicleTracks(c,{x:0,y:0,walkPhase:0},v,true,0,p);drawVehicleArmor(c,{x:0,y:0},v,p,0,true);c.restore();}
  // 能力介绍与真实权限一致；高阶升级延续原工坊的试装、报价和长按确认。
  function render(){
   const unlocked=game.progress.legendaryWorkshop.unlocked,near=legendaryNearby(game),reason=legendaryAccessReason(game),content=$('legendary-content'),primary=$('legendary-primary');

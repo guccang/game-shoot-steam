@@ -183,8 +183,8 @@ import {RANGER,RANGER_STAGES} from '../config/ranger-arrival.js';
 // 入口徽记验收直接读取正式最终屏幕层的位置、图标和进度，结合真实候停状态。
 export function inspectBuildingEntry(game,root,renderer){
  return {designCriterion:'building-entry-countdown',badge:renderer.actionCountdownView,
-  room:game.cottage?.kind||null,entry:game.buildingEntry?.id||game.cottageEntryKind||null,
-  latched:game.buildingEntryLatch?.id||null,dialog:root.querySelector('dialog[open]')?.id||null,
+  room:game.cottage?.kind||null,entry:game.cottageEntryKind||null,
+  dialog:root.querySelector('dialog[open]')?.id||null,
   footer:root.getElementById('cottage-notice')?.textContent,
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
@@ -993,7 +993,7 @@ export async function renderVisualCase(c,id,phase){
       // 枪械格位使用正式炮塔和后坐结构逐帧采样，工作台不会写入玩家装备。
       const defenses=[{slot:0,kind:'weapon',index:0,weaponIndex:0,level:1},{slot:3,kind:'weapon',index:1,weaponIndex:1,level:1}];
       for(const tower of defenses){
-        const vehicle=createVehicle({...progress,vehicleLoadouts:[tower.weaponIndex]},120,0);
+        const vehicle=createVehicle({...progress,vehicleLoadouts:[tower.weaponIndex]},0);
         tower.runtime={player:{...GUARDIAN_PADS[tower.slot],walkPhase:0,recoil:createRecoil()},vehicle,progress,weapon:()=>WEAPONS[tower.weaponIndex]};
       }
       c.scale(.32,.32);c.translate(-900,-710);
@@ -1028,7 +1028,7 @@ export async function renderVisualCase(c,id,phase){
       const {createVehicle}=await import('../combat/vehicle.js');
       const progress=freshProgress(),index=id==='police-car-motion'?8:0;
       progress.vehicleHulls[index]=1;progress.vehicleIndex=index;
-      const vehicle=createVehicle(progress,120,index);
+      const vehicle=createVehicle(progress, index);
       vehicle.wheelPhase=Math.min(Math.max(phase,0),2)*3;
       const player={x:0,y:0,walkPhase:0};
       drawVehicleTracks(c,player,vehicle,false,phase);

@@ -1,4 +1,4 @@
-// 重要物品与手机专项：正式交接事务、旧档迁移、电话只读及居民导航。
+// 重要物品与手机专项：正式交接事务、物品校验、电话只读及居民导航。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
@@ -14,16 +14,14 @@ const ids=KEEPSAKES.map(item=>item.id);
 // 仅初始化正式场景；电话和导航仍调用生产入口，不替换业务函数。
 function scene(progress=freshProgress()){const g=new Game(progress,()=>.5);g.start();g.mainlineSpeech=null;return g;}
 
-test('新入职背包为空，历史交接档补齐、去重并清理未知物品',()=>{
+test('新入职背包为空，读取只校验明确保存的交接物品',()=>{
  const p=freshRangerProgress();assert.deepEqual(p.keepsakes.items,[]);assert.equal(ownsKeepsake(p,'patrol-phone'),false);
  assert.deepEqual(validateProgress(p).keepsakes.items,[]);
- for(const arrival of [null,{version:3,phase:'gather',keys:true},{version:3,phase:'complete',keys:true}]){
-  const raw={...freshProgress(),arrival};delete raw.keepsakes;assert.deepEqual(validateProgress(raw).keepsakes.items,ids);
- }
- assert.deepEqual(normalizeKeepsakes({items:['elder-letter','elder-letter','fake']},null).items,ids);
- assert.deepEqual(normalizeKeepsakes({items:ids},p.arrival).items,[]);
+ const raw=freshProgress();delete raw.keepsakes;assert.deepEqual(validateProgress(raw).keepsakes.items,[]);
+ assert.deepEqual(normalizeKeepsakes({items:['elder-letter','elder-letter','fake']}).items,['elder-letter']);
  assert.deepEqual(validateProgress(JSON.parse(JSON.stringify(freshProgress()))).keepsakes.items,ids);
 });
+
 test('正常交接与跳过接送均原子保存三件物品，失败不提前入包',()=>{
  for(const skip of [false,true]){
   const g=scene(freshRangerProgress());if(!skip){g.progress.arrival.phase='handover';g.progress.arrival.elapsed=0;}

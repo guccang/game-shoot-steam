@@ -52,9 +52,9 @@ test('伐木只在树倒时入账，非致命攻击和试射不改变装备战�
 });
 
 test('车载正式发射快照车型及主炮，下车换车后命中仍归原车',()=>{
- const g=scene();g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;grantVehicleArmament(g.progress,0);g.vehicle=createVehicle(g.progress,g.maxHp(),0);g.vehicle.active=true;
+ const g=scene();g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;grantVehicleArmament(g.progress,0);g.vehicle=createVehicle(g.progress, 0);g.vehicle.active=true;
  enemy(g);updateVehicle(g,.05);assert.ok(g.projectiles.length>0);
- g.vehicle=createVehicle({...g.progress,vehicleHulls:[1,1,0,0,0,1]},g.maxHp(),1);g.vehicle.active=false;
+ g.vehicle=createVehicle({...g.progress,vehicleHulls:[1,1,0,0,0,1]},1);g.vehicle.active=false;
  updateBallistics(g,.4);assert.deepEqual(g.progress.statistics.equipment.vehicles['pine-tank'],{kills:1,trees:0});
  assert.equal(g.progress.statistics.equipment.weapons['vehicle-machinegun'].kills,1);assert.equal(g.progress.statistics.equipment.vehicles['heavy-tank'],undefined);
  assert.equal(g.progress.statistics.kills,1);
@@ -69,7 +69,7 @@ test('电动车手持攻击计入两种维度，普通手持及友军不误计�
 
 test('机械猫和浮游炮挂枪归核心，车载召唤物带车型，支架代理不冒认车体',()=>{
  const g=scene();g.progress.vehicleHulls[0]=1;g.progress.vehicleWeapons[15]=1;g.progress.vehicleLoadouts[0]=15;
- g.vehicle=createVehicle(g.progress,g.maxHp(),0);g.vehicle.active=true;const local=vehicleCompanionContext(g);assert.ok(local);
+ g.vehicle=createVehicle(g.progress, 0);g.vehicle.active=true;const local=vehicleCompanionContext(g);assert.ok(local);
  enemy(g);shot(local,{...g.weapon(),masteryOwnerIndex:15});g.vehicle.active=false;updateBallistics(g,.4);
  assert.equal(g.progress.statistics.equipment.weapons[WEAPONS[15].id].kills,1);assert.equal(g.progress.statistics.equipment.vehicles['pine-tank'].kills,1);
  assert.equal(g.progress.statistics.equipment.weapons.pistol,undefined);
@@ -88,7 +88,7 @@ test('榴弹爆炸、激光与电锯沿用实际来源，树木与怪物分别�
 });
 
 test('潮汐第二发存档快照保留原车型，小蜘蛛死亡爆炸归蜘蛛核心',()=>{
- const g=scene();g.progress.vehicleHulls[3]=1;g.progress.vehicleIndex=3;grantVehicleArmament(g.progress,3);g.vehicle=createVehicle(g.progress,g.maxHp(),3);g.vehicle.active=true;
+ const g=scene();g.progress.vehicleHulls[3]=1;g.progress.vehicleIndex=3;grantVehicleArmament(g.progress,3);g.vehicle=createVehicle(g.progress, 3);g.vehicle.active=true;
  enemy(g,1040,705);updateVehicle(g,.01);const m=g.vehicle.module.magazine;
  assert.ok(m.tide.pending);m.tide=validateTideState(JSON.parse(JSON.stringify(m.tide)));
  g.vehicle.active=false;g.projectiles=[];advanceTidePair(g,m,.2,{x:940,y:697},{x:1,y:0});

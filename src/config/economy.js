@@ -2,7 +2,6 @@ import {TREASURE_VEHICLES} from './treasure.js';
 import {legendaryUpgradeCost,equipmentLevelCap} from './legendary-workshop.js';
 import {campProgress} from '../progression/camp-level.js';
 import taskContent from './content/mainline.json' with {type:'json'};
-import {MAINLINE_V3_IDS} from './mainline-legacy.js';
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
 import { i18nText } from "../i18n/index.js";
 // 共享经济合同：正式游戏、网页候选方案和命令行模拟读取同一份纯数据与规则。
@@ -83,34 +82,8 @@ export function economyFor(progress){return progress?.economyConfig || RECOMMEND
 
 // 严格检查导入形状、有限数值与边界，拒绝错位目录、负费用与非法倍率。
 export function validateEconomy(raw){
-  if(!raw||![1,2,3,4].includes(raw.version))throw Error(i18nText("config.economy.dc423d1ca5"));
+  if(!raw||raw.version!==4)throw Error(i18nText("config.economy.dc423d1ca5"));
   const value=structuredClone(raw);
-  // 历史费用没有独立木材上限，迁移为不限制，避免改变自定义候选的木材价格。
-  if(raw.version<4){
-    if(value.upgrades&&'woodCeilings' in value.upgrades)throw Error('旧版配置不能携带木材上限字段');
-    if(value.upgrades)value.upgrades.woodCeilings=structuredClone(original.upgrades.woodCeilings);
-  }
-  // 旧候选只补无约束上限，保留原价，不把历史候选偷偷转换成推荐折扣。
-  if(value.version===1){
-    if(value.upgrades&&Object.hasOwn(value.upgrades,'ceilings'))throw Error(i18nText("config.economy.005558211f"));
-    if(value.upgrades)value.upgrades.ceilings=structuredClone(original.upgrades.ceilings);
-    value.version=2;
-  }
-  // 旧版本缺少任务与清缴预算；显式升级为当前玩法预算，其余价格保持原值。
-  if(value.version===2){
-    if('clearing' in value||'taskRewards' in value)throw Error('旧版配置不能携带新版预算字段');
-    value.clearing=structuredClone(recommended.clearing);value.taskRewards=structuredClone(recommended.taskRewards);value.version=4;
-  }
-  // 版本3按整波计价，导入时只补语义标识，不把旧总预算误当单怪掉落。
-  if(value.version===3){
-    if(value.clearing&&'perKill' in value.clearing)throw Error('旧版配置不能携带单怪计价字段');
-    if(value.clearing)value.clearing.perKill=false;value.version=4;
-  }
-  // 旧经济方案追加新装备配方，既有定价保持原样。
-  if([4,5,6,7,8].includes(value.vehicles?.length))value.vehicles.push(...structuredClone(recommended.vehicles.slice(value.vehicles.length)));
-  if([17,18].includes(value.weapons?.length))value.weapons.push(...structuredClone(recommended.weapons.slice(value.weapons.length)));
-  // 旧候选只补本轮新增任务，原任务的自定义奖励仍须完整且保持原值。
-  if(value.taskRewards)for(const task of taskContent.tasks)if(!MAINLINE_V3_IDS.includes(task.id)&&!Object.hasOwn(value.taskRewards,task.id))value.taskRewards[task.id]=structuredClone(recommended.taskRewards[task.id]);
   // 按完整模板验证，缺项不能悄悄使用旧值。
   function visit(v,t,path){
     if(typeof t==='number'){if(!Number.isFinite(v)||v<0||v>1e7)throw Error(i18nText("config.economy.0884aa25bb", { p0: (path) }));return;}

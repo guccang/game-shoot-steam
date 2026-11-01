@@ -2,7 +2,6 @@ import {recordMainlineCombat} from '../progression/mainline-combat.js';
 import {awardCampXp} from '../progression/camp-level.js';
 import {clearingDifficulty} from '../config/clearing-difficulty.js';
 import {clearingBossHealth,CLEARING_BOSS_HEALTH_VERSION} from '../config/clearing-boss.js';
-import {migrateClearingBossHealth} from '../progression/clearing-boss-migration.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import {livingProtected,livingWaveAllowed} from './living-safety.js';
 import {livingForest} from '../world/living-spaces.js';
@@ -40,8 +39,6 @@ export function summonBoss(game) {
         blastDamage:Math.round(GAMEPLAY_VALUES.boss.baseBlastDamage*clearingDifficulty(rounds).damage),speed:profile.speed});
     }
   }
-  // 尚未恢复实体的旧挑战也要迁移，失败后重新接单不会继续使用旧低血量。
-  if(livingForest(game))migrateClearingBossHealth(game.progress);
   // 开战只暂停后续随机刷怪，场上原有怪物继续战斗，不额外清场或结算。
   restoreBoss(game, game.progress.bossChallenge.maxHp);
   game.onEvent('boss', { name: profile.name, hint: profile.hint });

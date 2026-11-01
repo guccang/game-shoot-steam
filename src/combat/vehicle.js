@@ -12,7 +12,7 @@ import { i18nText } from "../i18n/index.js";
 import { turnWeapon,weaponTurnRate } from './weapon-turn.js';
 import { advanceTidePair } from './tide-cannon.js';
 import { tankHullPose } from '../config/tank-recoil.js';
-import { isVehicleArmament, nativeVehicleWeapon } from '../config/vehicle-armaments.js';
+import {isVehicleArmament} from "../config/vehicle-armaments.js";
 import { createMountedWeaponState, resetMountedWeaponCharge } from './summons/weapon-state.js';
 import { funnelWeapon } from '../config/funnel-loadouts.js';
 import { createVehicleCompanions, updateVehicleCompanions } from './vehicle-companions.js';
@@ -57,12 +57,11 @@ function createModule(weapon, full, progress) {
   };
 }
 
-// 新巡游按车型与车体等级建立独立耐久；第二参数仅兼容旧工厂调用，不参与 HP 计算。
-export function createVehicle(progress, _legacyHeroHp, index = progress.vehicleIndex || 0) {
+// 按车型与当前车体结构建立独立耐久，不接收驾驶员生命参数。
+export function createVehicle(progress, index = progress.vehicleIndex || 0) {
   const selected = {
     ...progress,
     vehicleIndex: index,
-    vehicleLevel: progress.vehicleHulls?.[index] || 1,
   };
   // 车体读取实际安装主炮，守护支架沿用临时挂载记录。
   const weaponIndex = progress.vehicleLoadouts?.[index];

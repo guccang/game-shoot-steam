@@ -19,6 +19,5 @@ export function validateFireProgress(raw){
   driving:transit?['departing','parking'].includes(r.phase):r.phase==='won'?false:r.driving!==false};
  // 转场检查点仅保存进度与一次换位标记，不重播已完成的回镇动作。
  if(r.phase==='transferring')Object.assign(value.run.transit,{transferElapsed:finite(r.transit.transferElapsed,0,FIRE_TRANSFER.duration,0),transferred:!!r.transit.transferred});
- // 旧版已交接存档迁移为车库待命，不重新发奖。
- if(r.phase==='won'&&!value.garage)value.garage={parked:true,truckHp:finite(r.truckHp,0,1,1)};return value;
+ return value;
 }

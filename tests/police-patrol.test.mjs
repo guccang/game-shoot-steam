@@ -30,9 +30,9 @@ test('购买警车进入停车场，升级增长耐久且保存无炮塔状态',
  assert.equal(COLLECTED_VEHICLES[8].id,'police-car');assert.ok(transactVehicle(p,'vehicle',8,'buy'));
  assert.equal(p.coins,before.coins-cost.coins);assert.equal(p.materials.parts,before.parts-cost.parts);
  assert.ok(p.campParking.owned.some(v=>v.hull===8));assert.equal(p.vehicleLoadouts[8],null);
- p.vehicleIndex=8;p.vehicleLevel=p.vehicleHulls[8];const hp=vehicleMaxHp(p,140);
- assert.ok(transactVehicle(p,'vehicle',8,'upgrade'));p.vehicleLevel=p.vehicleHulls[8];assert.ok(vehicleMaxHp(p,140)>hp);assert.ok(vehicleSpeed(p)>1);
- const restored=validateProgress(JSON.parse(JSON.stringify(p))),v=createVehicle(restored,140,8);
+ p.vehicleIndex=8;p.vehicleHulls[p.vehicleIndex||0]=p.vehicleHulls[8];const hp=vehicleMaxHp(p,140);
+ assert.ok(transactVehicle(p,'vehicle',8,'upgrade'));p.vehicleHulls[p.vehicleIndex||0]=p.vehicleHulls[8];assert.ok(vehicleMaxHp(p,140)>hp);assert.ok(vehicleSpeed(p)>1);
+ const restored=validateProgress(JSON.parse(JSON.stringify(p))),v=createVehicle(restored,8);
  assert.equal(restored.vehicleHulls[8],2);assert.ok(restored.campParking.owned.some(v=>v.hull===8));assert.equal(v.weaponIndex,null);assert.equal(v.module,null);assert.equal(canMountVehicleWeapon(restored,0,8),false);
 });
 

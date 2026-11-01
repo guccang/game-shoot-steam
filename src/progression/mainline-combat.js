@@ -17,7 +17,7 @@ export function recordMainlineCombat(progress,type,{gate=null,won=true}={}){
  const run=progress?.mainline;if(run?.phase!=='doing')return false;
  const op=currentMainlineTask(run)?.guide.steps.find(s=>s.operation?.type===type&&s.operation.record&&(!gate||s.operation.gate===gate))?.operation;
  if(!op||!won||!Object.hasOwn(run.seen,op.record))return false;
- // 清缴和兽潮只要求正式胜利；兼容旧装备字段，不再额外检查武器、驾驶或主炮击杀。
+ // 清缴和兽潮只要求正式胜利；不额外检查武器、驾驶或主炮击杀。
  if(!['clearing','camp-defense'].includes(type)){
   if(op.kind==='weapons'&&(!(op.indices||[op.index]).includes(progress.weapon)||!progress.weapons[progress.weapon]))return false;
   if(op.kind==='vehicle'&&run.combatPractice!==currentMainlineTask(run).id)return false;

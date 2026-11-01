@@ -9,23 +9,16 @@ function equipmentRecords(raw){
  for(const [id,row] of Object.entries(raw||{}).slice(0,128))if(/^[a-z][a-z0-9-]{0,63}$/.test(id))records[id]={kills:count(row?.kills),trees:count(row?.trees)};
  return records;
 }
-// 旧档只恢复已有巡游计数与经济账本，不用当前余额或通关层数猜测历史。
-export function validateGameStatistics(raw,legacy=null){
- const value={version:1,partial:raw?.version===1?!!raw.partial:!!legacy,kills:count(raw?.kills),trees:count(raw?.trees),resources:{},plays:{},clearingRound:Number.isSafeInteger(raw?.clearingRound)&&raw.clearingRound>=0?raw.clearingRound:-1};
- value.equipment={version:1,partial:raw?.equipment?.version===1?!!raw.equipment.partial:!!(raw||legacy),weapons:equipmentRecords(raw?.equipment?.weapons),vehicles:equipmentRecords(raw?.equipment?.vehicles)};
+// 只读取明确保存的统计字段，不从巡游与账本推算历史。
+export function validateGameStatistics(raw){
+ const value={version:1,partial:!!raw?.partial,kills:count(raw?.kills),trees:count(raw?.trees),resources:{},plays:{},clearingRound:Number.isSafeInteger(raw?.clearingRound)&&raw.clearingRound>=0?raw.clearingRound:-1};
+ value.equipment={version:1,partial:!!raw?.equipment?.partial,weapons:equipmentRecords(raw?.equipment?.weapons),vehicles:equipmentRecords(raw?.equipment?.vehicles)};
  for(const key of STAT_RESOURCES)value.resources[key]=count(raw?.resources?.[key]);
  for(const key of Object.keys(STAT_ACTIVITIES))value.plays[key]=count(raw?.plays?.[key]);
- if(raw?.version!==1&&legacy){
-  value.kills=count(legacy.patrol?.kills);value.trees=count(legacy.patrol?.chopped);
-  for(const [source,amount]of Object.entries(legacy.economyLog?.income||{})){
-   const key=source.split(':').at(-1);if(STAT_RESOURCES.includes(key))value.resources[key]=count(value.resources[key]+count(amount));
-  }
-  if(legacy.living?.patrolActive||legacy.living?.clearingSite)value.clearingRound=count(legacy.bosses);
- }
  return value;
 }
-// 无统计的外部旧进度按同一迁移规则补齐；正式游戏进度已在读取时校验。
-function statistics(progress){return progress.statistics??=validateGameStatistics(null,progress);}
+// 尚无统计的运行时对象创建空记录。
+function statistics(progress){return progress.statistics??=validateGameStatistics(null);}
 // 只在死亡状态首次确认后调用，普通怪、领主与伐倒树木分别记数。
 export function recordDefeat(progress,type,source=null){
  const key=type==='tree'?'trees':['enemy','boss'].includes(type)?'kills':null;

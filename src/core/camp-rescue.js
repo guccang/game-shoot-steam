@@ -40,7 +40,7 @@ export function prepareCampAllies(game){
   p.weapons.fill(r.rescuePower.level);p.heroes.fill(r.rescuePower.level);p.vehicleHulls.fill(r.rescuePower.level);p.vehicleWeapons.fill(r.rescuePower.level);
   p.vehicleIndex=spec.vehicle;p.vehicleLoadouts[spec.vehicle]=nativeVehicleWeapon(spec.vehicle).weaponIndex;
   const local=Object.create(game);local.statisticsExcluded=true;local.progress=p;local.player={...game.player,x:r.gate.x-r.gate.nx*(cfg.inside+i*cfg.queueGap),y:r.gate.y-r.gate.ny*(cfg.inside+i*cfg.queueGap),angle:Math.atan2(r.gate.ny,r.gate.nx),recoil:createRecoil(),bodyAnimation:createCatMotion(),walkPhase:0};
-  local.vehicle=createVehicle(p,game.maxHp(),spec.vehicle);local.vehicle.active=true;local.vehicle.angle=local.player.angle;local.vehicles=[local.vehicle];local.magazines=createMagazines(p);
+  local.vehicle=createVehicle(p, spec.vehicle);local.vehicle.active=true;local.vehicle.angle=local.player.angle;local.vehicles=[local.vehicle];local.magazines=createMagazines(p);
   // 伙伴采用背景音层与短击退，近身即时命中和在途弹丸都不把敌人抛离战场。
   local.hit=(target,amount,critical,impact)=>game.hit(target,amount,critical,{...impact,impulse:Math.min(40,impact?.impulse||0),pushLimit:50,audioSource:'companion'});
   local.onEvent=(type,data)=>game.onEvent(type,{...data,source:'companion'});local.float=game.float.bind(game);local.trees=[];local.attackTimer=0;local.aimLock=null;local.weaponCycle=createWeaponCycle();local.pulse=createPulseState();local.summonViewOrigin=game.player;

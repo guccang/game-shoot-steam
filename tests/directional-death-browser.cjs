@@ -8,7 +8,7 @@ async page=>{
   for(const [width,height] of [[320,568],[390,844],[1280,900]])for(const phase of ['day','night']){
    await t.setViewportSize({width,height});
    await t.evaluate(async phase=>{
-    const g=a.game;g.trees=[];g.enemies=[];g.remnants=[];g.drops=[];g.numbers=[];g.fx.items=[];g.parking=null;Object.assign(g.player,{x:1600,y:400});g.progress.vehicleHulls[5]=1;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,120,5);g.vehicle.active=true;
+    const g=a.game;g.trees=[];g.enemies=[];g.remnants=[];g.drops=[];g.numbers=[];g.fx.items=[];g.parking=null;Object.assign(g.player,{x:1600,y:400});g.progress.vehicleHulls[5]=1;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 5);g.vehicle.active=true;
     g.spawnEnemy(0,0,{x:1500,y:470},{ambient:true});
     g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===phase).start+1000;(await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);Object.assign(a.environment,{weather:'sun',autoWeather:false});
     a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.renderer.camera.time=null;a.refresh();

@@ -46,8 +46,6 @@ export function restoreFireRescue(game){
  attachTrees(game,r);
  if(game.fireActive){
   borrowTruck(game,r);Object.assign(game.player,r.position||FIRE_PARKING,{vx:0,vy:0});game.vehicle.hp=game.vehicle.maxHp*r.truckHp;game.vehicle.cooldown=r.truckCooldown;game.vehicle.active=r.driving&&game.vehicle.hp>0;game.vehicle.wheelPhase=r.wheelPhase;game.vehicle.angle=r.truckAngle;if(r.bodyMotion)Object.assign(game.player.bodyAnimation,r.bodyMotion);
-  // 旧版森林长途步行检查点统一改为黑屏回镇，已开始的新流程仍原地续接。
-  if(r.phase==='approaching'&&!r.townApproach)beginFireTownTransfer(game);
   if(game.fireTransit)r.route=r.transit.path.slice(r.transit.step);
   for(const e of saved.enemies)spawnEmber(game,e,e.hp);game.state=game.player.hp>0?'paused':'dead';
  }else if(r.phase==='won'){
@@ -59,7 +57,7 @@ export function restoreFireRescue(game){
 // 首次借车不触碰其他车型；车库再次出车复用原车体、耐久和挂载。
 function borrowTruck(game,r){
  r.equipment=fireEquipment(game.progress);r.previousVehicle=game.vehicle;r.previousTruck=game.vehicles[4];game.vehicle.active=false;
- r.loan=game.progress.vehicleHulls[4]?game.vehicles[4]:createVehicle(r.equipment,game.maxHp(),4);game.vehicles[4]=game.vehicle=r.loan;
+ r.loan=game.progress.vehicleHulls[4]?game.vehicles[4]:createVehicle(r.equipment, 4);game.vehicles[4]=game.vehicle=r.loan;
  // 任务借车也结束电动车骑乘，不能把扩容余弹带到消防车上。
  if(r.previousVehicle.index===5)clampRiderSupply(game);
  game.progress.fireDispatch.garage=null;

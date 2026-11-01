@@ -1,11 +1,11 @@
-// 入职交接与旧档迁移共用物品账本，物品永久保留且不重复发放。
+// 交接物品显式发放，读取账本只校验已有物品。
 import {KEEPSAKES} from '../config/keepsakes.js';
-// 旧普通档视为已交接；新档在拿到钥匙之前不补发任何交接物品。
-export function normalizeKeepsakes(raw,arrival){
- const handedOver=!arrival||arrival.keys||arrival.phase==='complete';
+// 新入职档为空；普通规则场景可明确选择已交接初始物品。
+export function freshKeepsakes(handedOver=false){return {items:handedOver?KEEPSAKES.map(item=>item.id):[]};}
+// 只保留已知物品，不从交接阶段推算或补发历史赠品。
+export function normalizeKeepsakes(raw){
  const items=new Set(Array.isArray(raw?.items)?raw.items:[]);
- if(handedOver)for(const item of KEEPSAKES)items.add(item.id);
- return {items:KEEPSAKES.filter(item=>handedOver&&items.has(item.id)).map(item=>item.id)};
+ return {items:KEEPSAKES.filter(item=>items.has(item.id)).map(item=>item.id)};
 }
-// 使用正式交接状态兜底历史存档；读取不改变存档或奖励。
-export function ownsKeepsake(progress,id){return normalizeKeepsakes(progress.keepsakes,progress.arrival).items.includes(id);}
+// 读取不改变存档或奖励。
+export function ownsKeepsake(progress,id){return progress.keepsakes?.items.includes(id)===true;}

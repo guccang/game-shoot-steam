@@ -19,7 +19,7 @@ export const VEHICLE_MAX_LEVEL = GAMEPLAY_VALUES.progress.maxEquipmentLevel;
 export function vehicleMaxHp(progress) {
   if (Number.isFinite(progress.storyHull)) return progress.storyHull;
   const model = vehicleModel(progress.vehicleIndex);
-  const hp=progress.temporaryGrowth?armorHealth(model.baseHp,model.hpGrowth,progress.vehicleLevel,progress):model.baseHp+vehicleBuild(progress,progress.vehicleIndex).plates*model.hpGrowth;
+  const hp=progress.temporaryGrowth?armorHealth(model.baseHp,model.hpGrowth,progress.vehicleHulls[progress.vehicleIndex],progress):model.baseHp+vehicleBuild(progress,progress.vehicleIndex).plates*model.hpGrowth;
   return Math.round(hp*heroTalentMultiplier(progress,'hullHealth'));
 }
 // 升级费用随载具等级递增，与炮塔购买费用分别结算。
@@ -36,7 +36,7 @@ export function ownsVehicleWeapon(progress, index) {
   return Number.isInteger(index)&&!!VEHICLE_WEAPONS[index]&&progress.vehicleWeapons?.[index]>0;
 }
 // 专属主炮读取自己的部件；旧型号兼容原熟练度与改装，等级始终独立。
-export function vehicleWeapon(progress, index = progress.vehicleWeapon) {
+export function vehicleWeapon(progress, index = progress.vehicleLoadouts[progress.vehicleIndex]) {
   if (!ownsVehicleWeapon(progress, index)) return null;
   // 守护支架使用手持目录，新枪编号不能被旧车载机枪解释。
   if(progress.guardianHandWeapons&&index>=17)return effectiveWeapon(progress,index);

@@ -14,7 +14,7 @@ async page=>{
  for(const [width,height] of [[320,568],[390,844],[1100,844]])for(const time of ['day','night']){
   await page.setViewportSize({width,height});
   await page.evaluate(async time=>{
-   const g=a.game;g.state='playing';g.progress.vehicleIndex=8;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),8);g.vehicle.active=true;g.vehicle.wheelPhase=.65;
+   const g=a.game;g.state='playing';g.progress.vehicleIndex=8;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 8);g.vehicle.active=true;g.vehicle.wheelPhase=.65;
    const phase=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time);
    g.progress.living.calendar={day:1,elapsed:phase.start+phase.duration/2};
    Object.assign(a.environment,{time:'dusk',livingPreview:false,weather:'sun',autoWeather:false});

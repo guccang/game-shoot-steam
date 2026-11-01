@@ -2,14 +2,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
-import {freshProgress,validateProgress} from '../src/progression/progress.js';
+import {freshProgress} from "../src/progression/progress.js";
 import {FIRE_STATION,FIRE_PARKING,FIRE_EXIT,FIRE_GARAGE,FIRE_DOOR,FIRE_APRON,FIRE_DOOR_APPROACH,fireRoute,fireWaterSources} from '../src/world/fire-navigation.js';
 import {REALM_ENTRANCES} from '../src/world/realm-entrances.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MAINLINE_SITES,MAINLINE_IDS} from '../src/config/mainline.js';
 import {isWaterBlocked,riverXAt,riverHalfWidth} from '../src/world/river-geometry.js';
 import {BUILDING_ENTRIES} from '../src/config/building-entries.js';
-import {migrateFireStationProgress} from '../src/progression/fire-station-migration.js';
+
 import {blocked} from '../src/physics/motion.js';
 import {requestFireParking,updateFireRescue,fireObjective} from '../src/core/fire-rescue.js';
 import {worldDistance} from '../src/world/coordinates.js';
@@ -61,39 +61,9 @@ test('低水量导航与存档恢复使用东岸取水点，到场后可实际�
  assert.ok(loaded.fireRescue.water>before,'东岸停靠后补水');assert.equal(loaded.fireRescue.refills,1);
 });
 
-test('东岸站内过场迁到西岸，保存重载保持阶段与路径且不重复平移',()=>{
- const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';
- const g=new Game(p,()=>.4);g.start();assert.ok(g.requestFireRescue());assert.ok(g.startFireRescue());
- for(let i=0;i<5000&&g.fireRescue.phase!=='boarding';i++)updateFireRescue(g,.05);
- assert.equal(g.fireRescue.phase,'boarding');g.syncFireRescue();
- for(const phase of ['boarding','departing','parking','exiting']){
-  const raw=JSON.parse(JSON.stringify(g.progress));delete raw.fireStationLayoutVersion;
-  raw.fireDispatch.run.phase=phase;raw.fireDispatch.run.position={x:1430,y:1173};raw.fireDispatch.run.transit.path=[{x:1371,y:1173}];
-  const original=JSON.stringify(raw),migrated=validateProgress(raw),run=migrated.fireDispatch.run;
-  assert.equal(run.phase,phase);assert.deepEqual(run.position,FIRE_DOOR);assert.deepEqual(run.transit.path,[FIRE_GARAGE]);
-  assert.equal(JSON.stringify(raw),original);assert.deepEqual(validateProgress(migrated).fireDispatch,migrated.fireDispatch);
-  const restored=new Game(migrated,()=>.4);assert.equal(restored.fireRescue.phase,phase);assert.ok(worldDistance(restored.player,FIRE_DOOR)<.01);
- }
- const walking=JSON.parse(JSON.stringify(g.progress));delete walking.fireStationLayoutVersion;
- walking.fireDispatch.run.phase='approaching';walking.fireDispatch.run.townApproach=true;walking.fireDispatch.run.position={x:1430,y:1280};walking.fireDispatch.run.transit.path=[{x:1430,y:1173}];
- const restored=new Game(validateProgress(walking),()=>.4);assert.equal(restored.fireRescue.phase,'transferring');restored.start();
- for(let i=0;i<5000&&restored.fireTransit;i++)updateFireRescue(restored,.05);
- assert.equal(restored.fireRescue.phase,'active');assert.ok(worldDistance(restored.player,FIRE_PARKING)<.01);
-});
 
-test('旧步行重规划、旧施工迁移，野外救援坐标与奖励保持不变',()=>{
- const raw={fireDispatch:{run:{phase:'approaching',townApproach:true,position:{x:1430,y:1280},fires:[{x:1500,y:1600}],water:33}},restoration:{build:{id:'fire',elapsed:1,x:1420,y:1222}},living:{position:{x:1420,y:1222}},coins:123};
- const migrated=migrateFireStationProgress(raw);
- assert.equal(migrated.fireDispatch.run.townApproach,false);assert.deepEqual(migrated.fireDispatch.run.position,raw.fireDispatch.run.position);
- assert.deepEqual(migrated.restoration.build,{id:'fire',elapsed:1,x:FIRE_STATION.x,y:1222});assert.equal(migrated.living.position.x,FIRE_STATION.x);
- assert.deepEqual(migrated.fireDispatch.run.fires,raw.fireDispatch.run.fires);assert.equal(migrated.coins,123);assert.equal(migrated.fireDispatch.run.water,33);
- assert.deepEqual(migrateFireStationProgress(migrated),migrated);
- for(const phase of ['active','returning','offered']){
-  raw.fireDispatch.run.phase=phase;assert.deepEqual(migrateFireStationProgress(raw).fireDispatch,raw.fireDispatch);
- }
- raw.fireDispatch.run.phase='won';raw.fireDispatch.run.position={x:1400,y:1270};assert.deepEqual(migrateFireStationProgress(raw).fireDispatch.run.position,FIRE_EXIT);
- raw.fireDispatch.run.position={x:2400,y:1700};assert.deepEqual(migrateFireStationProgress(raw).fireDispatch,raw.fireDispatch);
-});
+
+
 
 test('已修复消防站接警后在新址出库，返站交接停回新车库',()=>{
  const p=freshProgress();p.arrival=null;p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';

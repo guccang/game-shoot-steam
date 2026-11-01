@@ -47,7 +47,7 @@ export function claimStoryCollection(game,postId,optionId){
  let saved=false;try{saved=(game.storyPersist?.(next)??true)===true;}catch{saved=false;}
  if(!saved)return {ok:false,message:i18nText("progression.story-rewards.bb03856cd2")};
  game.progress=next;
- if(!owned&&option.kind==='vehicle')game.vehicles[option.index]=createVehicle(next,game.maxHp(),option.index);
+ if(!owned&&option.kind==='vehicle')game.vehicles[option.index]=createVehicle(next, option.index);
  game.onEvent('story-change');game.onEvent('task-reward',rewardReceipt(before,next,post.collection.title));
  return {ok:true,message:option.kind==='resources'?i18nText("progression.story-rewards.3aff123908", { p0: (storyEquipmentName(option)) }):owned?i18nText("progression.story-rewards.987b3d159d", { p0: (storyEquipmentName(option)), p1: (post.collection.duplicateCoins) }):i18nText("progression.story-rewards.a6704a7fd7", { p0: (storyEquipmentName(option)) })};
 }

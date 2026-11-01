@@ -2,7 +2,7 @@
 async page=>{
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.enemies=[];g.progress.living.patrolActive=false;g.progress.fireDispatch.next=600;
-  g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),0);g.vehicle=g.vehicles[0];g.summonVehicle();Object.assign(g.player,{x:415,y:1850});
+  g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle=g.vehicles[0];g.summonVehicle();Object.assign(g.player,{x:415,y:1850});
   a.environment.weather='sun';a.environment.autoWeather=false;a.environment.season='spring';a.environment.autoSeason=false;a.refresh();});
  const samples=[];
  for(const phase of ['day','night']){

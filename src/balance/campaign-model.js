@@ -65,9 +65,9 @@ export function simulateCampaign(seed,config,s){
   lastFarmVisit=seconds;const now=farmEpoch+seconds*1000;
   const scene={state:'playing',mapId:'forest',player:{...FARM_GARDEN},progress:p,livingPersist:()=>true,onEvent:()=>{}};
   // 每次事务都取更新后的进度，避免从旧副本重复收获同一块田。
-  const apply=(action,options={})=>{if(!spend(action==='legacy'?1:FARM_ACTION_TIMING[action].end+.6,'farm'))return {ok:false};const plot=p.farm.plots.find(p=>p.id===options.plot);if(plot)scene.player={...farmPosition(plot)};const result=farmAction(scene,action,{...options,now:farmEpoch+seconds*1000});p=bindEconomy(scene.progress,config);return result;};
+  const apply=(action,options={})=>{if(!spend(action==='sell'?1:FARM_ACTION_TIMING[action].end+.6,'farm'))return {ok:false};const plot=p.farm.plots.find(p=>p.id===options.plot);if(plot)scene.player={...farmPosition(plot)};const result=farmAction(scene,action,{...options,now:farmEpoch+seconds*1000});p=bindEconomy(scene.progress,config);return result;};
   for(const plot of [...p.farm.plots])if(plot.crop!==null&&farmGrowth(plot,now)>=1){const r=apply('harvest',{plot:plot.id});if(r.ok)income('farm',{coins:r.coins},true);}
-  if(p.farm.inventory.some(Boolean)){const r=apply('legacy');if(r.ok)income('farm',{coins:r.coins},true);}
+  if(p.farm.inventory.some(Boolean)){const r=apply('sell');if(r.ok)income('farm',{coins:r.coins},true);}
   for(let id=0;id<Math.min(12,FARM_MAX_PLOTS);id++)if(!p.farm.plots.some(plot=>plot.id===id)){const point=nearbyFarmLand(scene,{...farmCell(id),mapId:'forest'});if(!point)break;scene.player=point;if(!apply('dig',{point}).ok)break;}
   const crops=FARM_CROPS.map((c,i)=>({...c,index:i})).filter(c=>p.farm.unlocked[c.index]||p.farm.seeds[c.index]>0).sort((a,b)=>(b.value-b.cost)/b.seconds-(a.value-a.cost)/a.seconds);
   for(const plot of [...p.farm.plots])if(plot.crop===null){const crop=crops.find(c=>p.farm.seeds[c.index]>0||c.cost<=p.coins);if(!crop)continue;

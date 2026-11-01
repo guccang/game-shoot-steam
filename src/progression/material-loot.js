@@ -3,7 +3,7 @@ import {creditResource} from './resource-wallet.js';
 // 材料结算不创建物理拾取物；即时入账，保底随存档保留，死亡与刷新不能重掷奖励。
 import { MATERIAL_KEYS } from '../config/materials.js';
 
-// 只在正式击杀结算时调用一次；领主首次奖励按形象记录，旧战绩在迁移时补齐已见形象。
+// 只在正式击杀结算时调用一次；领主首次奖励按形象记录。
 export function awardMaterials(progress, target, random = Math.random, attempts = 1) {
   const c=economyFor(progress);
   const reward = { parts: 0, crystal: 0, core: 0 };

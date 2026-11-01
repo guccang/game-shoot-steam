@@ -9,7 +9,7 @@ import {canUseFarmDelivery,claimFarmParcel,updateFarmDelivery} from '../src/core
 import {canUseFarm,farmAction} from '../src/core/farm.js';
 import {buyFarmSeeds} from '../src/core/farm-seeds.js';
 import {nearbyInteraction} from '../src/core/nearby-interaction.js';
-import {canInspectBuilding,updateBuildingEntry} from '../src/core/building-entry.js';
+import {canInspectBuilding} from '../src/core/building-entry.js';
 import {canEnterCottage} from '../src/core/cottage.js';
 
 // 柜台夹具保留存档事务和载具状态，避免把领取变成隐式上下车。
@@ -53,7 +53,7 @@ test('其他建筑与告示的附近点击入口在步行、地面驾驶和飞�
  for(const entry of BUILDING_ENTRIES)for(const index of [-1,0,2]){
   const g=scene(Math.max(0,index));g.vehicle.active=index>=0;Object.assign(g.player,{x:entry.x,y:entry.y});
   assert.equal(canInspectBuilding(g),true);assert.equal(nearbyInteraction(g)?.id,entry.id,entry.id+' / '+index);
-  assert.equal(updateBuildingEntry(g),null);assert.equal(g.cottage,undefined);
+  assert.equal(g.cottage,undefined);
  }
 });
 

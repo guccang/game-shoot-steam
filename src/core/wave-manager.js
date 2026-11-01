@@ -18,7 +18,6 @@ export function resetWaves(game, wave = 1, continuation = null) {
   game.waveRest = continuation?.waveRest ?? 0;
   game.spawnTimer = 0;
   // 旧档击杀等待不再阻挡入场；休整续接不追加首次预警。
-  game.respawnDelay = 0;
   game.waveWarning = continuation?.bossReady || game.waveRest > 0 ? 0 : WAVE_WARNING_SECONDS;
   game.waveElapsed = 0;
   game.bossWave = continuation?.bossWave ?? wave + rollWaveGroup(game.random) - 1;
@@ -51,7 +50,6 @@ export function updateWaves(game, dt) {
   if (game.campDefense || game.state !== 'playing' || game.boss || game.story || game.realm) return;
   if(game.bossReady){summonBoss(game);return;}
   // 兼容旧会话遗留字段，但它不再参与任何刷怪门槛。
-  game.respawnDelay = 0;
   if (game.waveRest > 0) {
     game.waveRest = Math.max(0, game.waveRest - dt);
     if (game.waveRest > 1e-8) return;
@@ -72,7 +70,7 @@ export function updateWaves(game, dt) {
     // 达标立即推进；余怪留在现场继续战斗，不强迫寻找远处最后一只。
     for(const enemy of alive){enemy.wave=0;enemy.ambient=true;}
     if(game.wave>=game.bossWave){
-      game.bossReady=true;game.waveRest=0;game.spawnTimer=0;game.respawnDelay=0;
+      game.bossReady=true;game.waveRest=0;game.spawnTimer=0;
       summonBoss(game);game.onEvent('boss-ready',{wave:game.wave});return;
     }
     game.waveRest = WAVE_REST_SECONDS;

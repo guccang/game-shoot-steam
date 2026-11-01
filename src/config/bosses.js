@@ -76,11 +76,10 @@ export const BOSSES = [
 // 按永久胜场轮换，刷新与重新巡游不会总是遇到同一种领主。
 export function nextBoss(progress) {
   const count=Math.max(0,Math.floor(progress.bosses||0)),saved=progress.bossChallenge;
-  // 已开战旧档继续原五领主身份；新挑战快照显式记录编号，不因目录扩展换怪。
+  // 已开战快照使用明确物种编号，未记录有效身份时按当前轮次选择。
   if(saved&&saved.bosses===count){
     const profile=BOSSES.find(b=>b.id===saved.kind);
     if(profile)return profile;
-    return BOSSES.slice(0,-1)[count%5];
   }
   return BOSSES[(count+BOSSES.length-1)%BOSSES.length];
 }

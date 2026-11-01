@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {MAINLINE_IDS,MAINLINE_TASKS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
+import {MAINLINE_IDS,MAINLINE_TASKS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {LOGISTICS_LESSONS,inspectLogisticsLesson} from '../src/progression/mainline-logistics.js';
 import {mainlineCondition,mainlineTask,mainlineObjective,mainlineAction,updateMainline,completeMainline} from '../src/core/mainline-manager.js';
@@ -70,11 +70,7 @@ test('维修下单不能算修好，真实修复完成才记账',()=>{
  inspectLogisticsLesson(g,'repairVisited');assert.ok(requestVehicleRepair(g,0).ok);assert.equal(g.progress.mainline.seen.repairChecked,0);
  for(let i=0;i<200;i++)updateVehicleRepair(g,.1);assert.equal(g.progress.mainline.seen.repairChecked,1);assert.ok(mainlineCondition(g,mainlineTask(g).goal));
 });
-test('旧档当前任务和待领奖状态保留，全通旧档从新增教学见面开始',()=>{
- const old=MAINLINE_IDS.filter(id=>!Object.values(LOGISTICS_LESSONS).includes(id));
- for(const phase of ['doing','report']){const p=freshProgress();Object.assign(p.mainline,{version:10,currentId:'vehicle-service',phase,completed:old.slice(0,old.indexOf('vehicle-service'))});const next=validateProgress(p);assert.equal(currentMainlineTask(next.mainline).id,'vehicle-service');assert.equal(next.mainline.phase,phase);}
- const p=freshProgress();Object.assign(p.mainline,{version:10,currentId:null,phase:'complete',completed:old});const next=validateProgress(p);assert.equal(currentMainlineTask(next.mainline).id,'supply-ammo');assert.equal(next.mainline.phase,'meet');assert.deepEqual(next.mainline.completed,old);
-});
+
 test('新增任务交付失败不领奖，成功后按顺序续接且不会重复发奖',()=>{
  const g=scene('bag-cleanup');g.progress.logistics.bagWood=1;assert.ok(discardLoad(g,{id:'material:wood',count:1}).ok);Object.assign(g.player,MAINLINE_SITES.weapons);updateMainline(g,0);assert.equal(g.progress.mainline.phase,'report');
  const before=structuredClone(g.progress);g.mainlinePersist=()=>false;assert.equal(completeMainline(g),false);assert.deepEqual(g.progress,before);g.mainlinePersist=()=>true;assert.ok(completeMainline(g));assert.equal(mainlineTask(g).id,'first-patrol');assert.equal(completeMainline(g),false);

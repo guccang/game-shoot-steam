@@ -8,7 +8,7 @@ import { spiderGunDamage } from '../../config/spider-loadout.js';
 // 按本次升级部件选取真实变化值，最多三项，射速同时覆盖脉冲蓄能及冷却。
 export function workshopResultChanges(previous,next,plan,maxHp) {
   if(plan.kind==='vehicle') {
-    const read=plan.part==='armor'?p=>vehicleMaxHp({...p,vehicleIndex:plan.index,vehicleLevel:p.vehicleHulls[plan.index]},maxHp):p=>vehicleSpeed(p,plan.index);
+    const read=plan.part==='armor'?p=>vehicleMaxHp({...p,vehicleIndex:plan.index},maxHp):p=>vehicleSpeed(p,plan.index);
     return [{label:plan.part==='armor'?i18nText("ui.workshop.results.5ad0c596f2"):i18nText("ui.workshop.results.6217343c91"),old:read(previous),value:read(next)}];
   }
   const read=plan.kind==='turret'?vehicleWeapon:effectiveWeapon,a=read(previous,plan.index),b=read(next,plan.index);

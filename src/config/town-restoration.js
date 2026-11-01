@@ -44,7 +44,7 @@ export function validateRestoration(raw){
 
 // 武器工坊沿用入职修复；随身地图、背包和设置不属于建筑功能。
 export function facilityOpen(progress,id){
- if(id==='weapons')return !progress?.arrival||['dismount-guide','craft','crafting','complete'].includes(progress.arrival.phase);
+ if(id==='weapons')return !progress?.arrival||['craft','crafting','complete'].includes(progress.arrival.phase);
  return !TOWN_RESTORATIONS.some(f=>f.id===id)||!!progress?.restoration?.repaired.includes(id);
 }
 // 任务重排后按当前任务位置依次修复，不用完成条数推断建筑权限。

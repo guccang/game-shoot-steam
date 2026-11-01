@@ -9,7 +9,7 @@ export {FARM_ACTION_TIMING} from '../config/farm-tools.js';
 import {validateProgress} from '../progression/progress.js';
 import {farmGrowth,grantFarmSeeds,wetFarmPlot} from '../progression/farm.js';
 import {wildFarmTime} from '../progression/wild-farm-age.js';
-import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_WATER,farmCell,farmPosition} from '../config/farm.js';
+import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_WATER,farmPosition} from '../config/farm.js';
 import {worldDistance,nearest} from '../world/coordinates.js';
 import {farmLandReason,farmApproach,farmDigTarget} from '../world/farm-land.js';
 import {naturalWaypoint} from '../physics/terrain-navigation.js';
@@ -87,7 +87,7 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
  const next=validateProgress(structuredClone(game.progress)),f=next.farm,p=f.plots.find(p=>p.id===plotId),crop=FARM_CROPS[cropId];
  // 空田的湿度属于土壤；播种重置本茬加速状态时，保留这份已获得的水分。
  const plantedInWetSoil=action==='plant'&&p?.watered===true;
- const cell=action==='dig'?(point|| (farmCell(plotId)?{...farmCell(plotId),mapId:game.mapId}:null)):p?farmPosition(p):null;
+ const cell=action==='dig'?point:p?farmPosition(p):null;
  if(['dig','plant','harvest','water','remove'].includes(action)&&(!cell||cell.mapId!==game.mapId||worldDistance(game.player,cell)>78))return {ok:false,message:'先走到这块田边再操作。'};
  let message='',coins=0,harvest=null,lesson=false,wateredPlots=[],destination=null;
  if(action==='dig'){
@@ -151,7 +151,7 @@ export function setFarmTool(game,tool){game.farmWork=tool&&canUseFarm(game)?{too
 export function queueFarmWork(game,action,{plot,point,crop=0,tree,view,removal}={}){
  if(!canUseFarm(game))return {ok:false,message:'请下车后操作农具。'};
  const p=game.progress.farm.plots.find(p=>p.id===plot);
- const dig=action==='dig'?farmDigTarget(game,point||farmCell(plot)||game.player,view):null;
+ const dig=action==='dig'?farmDigTarget(game,point||game.player,view):null;
  const target=dig?dig.point:action==='saw'?tree:p;
  if(!target||action==='saw'&&!(target.hp>0))return {ok:false,message:'没有可操作的目标。'};
  if(dig?.reason)return {ok:false,message:dig.reason};
@@ -172,8 +172,6 @@ export function resolveHarvestLoad(game,job,accepted){
  if(!accepted){work.job=null;work.queue=[];work.result={ok:false,message:'已停止收割，作物仍留在田里。'};return work.result;}
  job.loadConfirmation=job.loadRequest.confirmation;job.loadRequest=null;return {ok:true,message:'已确认本次收获。'};
 }
-// 兼容旧的点击开垦入口，实际操作统一进入队列。
-export function requestFarmDig(game,id){return queueFarmWork(game,'dig',{plot:id}).ok;}
 // 迎敌冻结农活但允许走位，受伤不丢队列；普通农活中主动走位仍取消待办，切图退出模式。
 export function updateFarmWork(game,dt,input){
  const work=game.farmWork;if(!work)return input;if(!canUseFarm(game)){game.farmWork=null;return input;}

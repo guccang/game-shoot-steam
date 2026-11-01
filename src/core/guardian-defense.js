@@ -62,7 +62,7 @@ export function prepareGuardianDefense(game, tower) {
   local.player = { ...game.player, ...pad, arena: game.realm.arena, walkPhase: 0, recoil: createRecoil(), angle: 0, flying: tower.kind === 'vehicle' && tower.index === 2 };
   local.hit = game.hit.bind(game);
   local.float = game.float.bind(game);
-  local.vehicle = createVehicle(local.progress, game.maxHp(), tower.kind === 'vehicle' ? tower.index : 0);
+  local.vehicle = createVehicle(local.progress, tower.kind === 'vehicle' ? tower.index : 0);
   local.vehicle.active = true;
   local.vehicles = [local.vehicle];
   local.magazines = createMagazines(local.progress);

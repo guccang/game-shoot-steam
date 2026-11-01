@@ -2,8 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {waveDifficulty,waveRewardAmount,waveRewardTotal,legacyWaveTotal} from '../src/config/waves.js';
-import {validatePatrol} from '../src/progression/patrol-progress.js';
+import {waveDifficulty} from "../src/config/waves.js";
+
 import {RANGED_ENEMIES,RANGED_LIMITS} from '../src/config/ranged-enemies.js';
 import {ARMORED} from '../src/config/armored-enemies.js';
 
@@ -37,15 +37,5 @@ test('极端随机、飞行载具及高波次下任意出生前缀都有至少�
   for(const e of enemies){if(e.flying||RANGED_ENEMIES[e.species]||e.species===ARMORED.id)special++;else slime++;assert.ok(slime>=special*7);}
   assert.ok(enemies.filter(e=>RANGED_ENEMIES[e.species]).length<=RANGED_LIMITS.alive);
   assert.ok(enemies.filter(e=>e.species===ARMORED.id).length<=ARMORED.maxAlive);
- }
-});
-
-test('增加普通怪不改变整波奖励预算，死亡与刷新不重置完成节点',()=>{
- for(let n=1;n<=25;n++)assert.equal(Array.from({length:waveDifficulty(n).total},(_,i)=>waveRewardAmount(n,i,3)).reduce((a,b)=>a+b,0),waveRewardTotal(n)*3);
- for(const n of [2,5,10,15,20])for(const state of ['active','dead']){
-  const old={version:1,state,wave:n,waveKills:legacyWaveTotal(n),bossReady:n%5===0,waveRest:n%5?2:0,bossWave:Math.ceil(n/5)*5};
-  const saved=validatePatrol(old);assert.equal(saved.wave,n);assert.equal(saved.waveKills,waveDifficulty(n).total);assert.equal(saved.bossReady,old.bossReady);
-  assert.deepEqual(validatePatrol(saved),saved);
-  const ongoing=validatePatrol({...old,bossReady:false,waveRest:0,waveKills:2});assert.equal(ongoing.waveKills,Math.ceil(2*waveDifficulty(n).total/legacyWaveTotal(n)));
  }
 });

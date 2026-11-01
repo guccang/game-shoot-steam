@@ -1,9 +1,9 @@
-import { legacyVehicleGame } from './helpers/legacy-vehicle.mjs';
+import { vehicleCombatFixture } from './helpers/vehicle-combat-fixture.mjs';
 import { companionEnemyTarget, damageCompanion } from '../src/combat/companion-targets.js';
 // 逐只部署、持续回能和小蛛死亡爆炸的正式规则回归。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Game } from '../src/core/game.js';
+
 import { freshProgress } from '../src/progression/progress.js';
 import { updateMechanical, hurtMechanical, resetMechanicalFormation } from '../src/combat/mechanical.js';
 import { updateSpider } from '../src/combat/spider.js';
@@ -16,7 +16,7 @@ import { hitCenter } from '../src/combat/collision.js';
 function arena(index=15,vehicle=false){
  const p=freshProgress();p.weapons.fill(1);p.vehicleWeapons.fill(1);p.vehicleHulls.fill(1);
  p.weapon=index;p.weaponParts[15].coordination=8;p.vehicleLoadouts[0]=index;
- const g=legacyVehicleGame(p,()=>.5);g.state='playing';g.trees=[];g.enemies=[];g.boss=null;g.updateWaves=()=>{};
+ const g=vehicleCombatFixture(p,()=>.5);g.state='playing';g.trees=[];g.enemies=[];g.boss=null;g.updateWaves=()=>{};
  Object.assign(g.player,{x:900,y:800,arena:{x:900,y:800,radius:700}});g.vehicle.active=vehicle;return g;
 }
 // 定步长推进实际供给入口；只测部署时可关闭回能以核算一次扣费。

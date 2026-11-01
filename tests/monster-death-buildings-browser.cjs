@@ -22,7 +22,7 @@ async page=>{
   for(const [width,height] of [[320,568],[390,844],[1280,900]])for(const phase of ['day','night']){
    await t.setViewportSize({width,height});
    await t.evaluate(async phase=>{
-    const g=a.game;g.drops=[];g.remnants=[];g.enemies=[];g.trees=[];g.numbers=[];g.parking=null;Object.assign(g.player,{x:1600,y:400});g.progress.vehicleHulls[5]=1;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,120,5);g.vehicle.active=true;
+    const g=a.game;g.drops=[];g.remnants=[];g.enemies=[];g.trees=[];g.numbers=[];g.parking=null;Object.assign(g.player,{x:1600,y:400});g.progress.vehicleHulls[5]=1;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 5);g.vehicle.active=true;
     g.spawnEnemy(0,0,{x:1630,y:490},{ambient:true});
     const armored=(await import('/src/config/armored-enemies.js')).ARMORED.id;
     for(const [x,y,species,ember] of [[1510,345,'slime',false],[1600,290,armored,false],[1690,345,'leaf-bat',false]]){

@@ -63,14 +63,14 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
           : i18nText("ui.panels.vehicles.31d097d51c");
     $('vehicle-collection-health').textContent = level
       ? `${Math.ceil(v.hp)} / ${v.maxHp}`
-      : i18nText("ui.panels.vehicles.d450c14eef", { p0: vehicleMaxHp({...p,vehicleIndex:viewed,vehicleLevel:1}) });
+      : i18nText("ui.panels.vehicles.d450c14eef", { p0: vehicleMaxHp({...p,vehicleIndex:viewed,vehicleHulls:p.vehicleHulls.map((n,i)=>i===viewed?1:n)}) });
     $('vehicle-collection-gun').textContent = weapon
       ? i18nText("common.namedLevel", { p0: weapon.name, p1: p.vehicleWeapons[v.weaponIndex] })
       : viewed===3?i18nText("ui.panels.vehicles.b7c07f0137"):i18nText("ui.panels.vehicles.156219e305");
     const maxed = !game.realm?.loadout && level >= VEHICLE_MAX_LEVEL;
     $('vehicle-upgrade-preview').textContent = game.realm?.loadout ? i18nText("ui.panels.vehicles.eb5152cc31", { p0: (game.realm.stage + 1) }) : maxed
       ? i18nText("ui.panels.vehicles.0fc1924e39")
-      : i18nText("ui.panels.vehicles.4ad117918b", { p0: (v.maxHp), p1: (vehicleMaxHp({...p,vehicleIndex:viewed,vehicleLevel:level+1},game.maxHp())) });
+      : i18nText("ui.panels.vehicles.4ad117918b", { p0: (v.maxHp), p1: (vehicleMaxHp({...p,vehicleIndex:viewed,vehicleHulls:p.vehicleHulls.map((n,i)=>i===viewed?level+1:n)},game.maxHp())) });
     $('vehicle-upgrade').innerHTML = game.realm?.loadout ? i18nText("ui.panels.vehicles.f0d539f6ab") : maxed
       ? i18nText("progression.workshop.d6d8e1de4a")
       : game.realm ? i18nText("ui.panels.vehicles.b39eb2f8f1")

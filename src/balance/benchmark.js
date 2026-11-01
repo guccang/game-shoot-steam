@@ -26,7 +26,7 @@ export function benchmarkGrowth(config,index=0,level=4,seconds=30){
       for(let i=0;i<Math.round(seconds*60);i++)trial.advance(1/60);
       sides.push({level:current,damage:weaponDamage(p,index),effectiveDps:damage/seconds,hits,shots,kills:trial.destroyed,
         firstKillSeconds:firstKill,shotsPerKill:trial.destroyed?shots/trial.destroyed:null,
-        heroHp:heroHealth(HEROES[0].hp,current,p),hullHp:vehicleMaxHp(bindEconomy({...p,vehicleLevel:current},config),heroHealth(HEROES[0].hp,5,p))});
+        heroHp:heroHealth(HEROES[0].hp,current,p),hullHp:vehicleMaxHp(bindEconomy({...p,vehicleHulls:p.vehicleHulls.map((level,i)=>i===p.vehicleIndex?current:level)},config),heroHealth(HEROES[0].hp,5,p))});
     }
     results.push({...scenario,before:sides[0],after:sides[1]});
   }

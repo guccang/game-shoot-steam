@@ -17,7 +17,7 @@ async page=>{
  const route=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return (await import('/src/core/story-route.js')).storyRouteState(g);});
  if(!route?.reachable)throw Error('购船地点无可行路线');
  await page.screenshot({path:'output/playwright/forest-exploration/purchase-selected-route.png'});
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),0);g.vehicle=g.vehicles[0];g.summonVehicle();Object.assign(g.player,{x:600,y:1980});a.refresh();});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle=g.vehicles[0];g.summonVehicle();Object.assign(g.player,{x:600,y:1980});a.refresh();});
  await page.keyboard.down('ArrowDown');await page.waitForTimeout(1300);await page.keyboard.up('ArrowDown');
  const outside=await page.evaluate(async()=>(await import('/src/main.js')).application.game.player.y);
  if(outside<=2070)throw Error('载具被木门卡住 '+outside);

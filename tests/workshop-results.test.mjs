@@ -28,7 +28,7 @@ test('容量、装填、射程、精度与召唤摘要包含真实变化',()=>{
 test('车体摘要使用被编辑车型，未改动出战车或旧进度',()=>{
   for(const part of ['armor','engine']) {
     const {old,next,rows}=sample('vehicle',2,part);
-    const read=part==='engine'?p=>vehicleSpeed(p,2):p=>vehicleMaxHp({...p,vehicleIndex:2,vehicleLevel:p.vehicleHulls[2]},120);
+    const read=part==='engine'?p=>vehicleSpeed(p,2):p=>vehicleMaxHp({...p,vehicleIndex:2},120);
     assert.equal(rows[0].old,read(old));assert.equal(rows[0].value,read(next));assert.equal(old.vehicleHulls[2],1);assert.equal(next.vehicleIndex,old.vehicleIndex);
   }
 });

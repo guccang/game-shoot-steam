@@ -10,7 +10,7 @@ async page=>{
   const {freshRangerProgress}=await import('/src/progression/progress.js'),{WORKSHOP}=await import('/src/world/workshop.js'),{createVehicle}=await import('/src/combat/vehicle.js');
   const p=freshRangerProgress();Object.assign(p.arrival,{phase:'repair',keys:true,wood:0,x:WORKSHOP.x+190,y:WORKSHOP.y+30});p.wood=280;p.vehicleHulls[5]=1;p.vehicleIndex=5;
   g.progress=p;g.arrivalScene=null;g.enemies=[];g.boss=null;g.parking=null;g.attackTimer=999;
-  g.vehicles[5]=createVehicle(p,g.maxHp(),5);g.vehicle=g.vehicles[5];g.vehicle.active=true;
+  g.vehicles[5]=createVehicle(p, 5);g.vehicle=g.vehicles[5];g.vehicle.active=true;
   Object.assign(g.player,{x:p.arrival.x,y:p.arrival.y,vx:0,vy:0});g.state='playing';a.renderer.camera.time=null;a.refresh();
  });
  await page.keyboard.down('ArrowLeft');

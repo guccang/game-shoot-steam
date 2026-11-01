@@ -40,9 +40,6 @@ export function validateStory(raw) {
   const cueIds=new Set([...Object.keys(DEF.journey.experiences).map(id=>'experience:'+id),...Object.values(DEF.nodes).flatMap(n=>(n.cues||[]).map(c=>c.id))]);
   const lastExperienceLoadout=Object.entries(DEF.journey.experiences).some(([id,e])=>e.loadout===r.lastExperienceLoadout&&experiences[id])?r.lastExperienceLoadout:null;
   const routeVersion=DEF.world.routeVersion||0,checkpoint=storySupply(r.checkpoint,DEF);
-  // 仅首次读取旧路线存档时重定位已搬迁阶段；新版坐标及森林返回位置保持原值。
-  const checkpointSite=DEF.world.checkpointSites?.[r.stageId];
-  if((r.routeVersion||0)<routeVersion&&checkpointSite)Object.assign(checkpoint,DEF.world.sites[checkpointSite]);
   result.run={chapterId:DEF.id,definitionVersion:DEF.version,routeVersion,runId:typeof r.runId==='string'?r.runId.slice(0,80):'restored',
     replay:!!r.replay,stageId:r.stageId,phase:['prepare','active','dialogue','failed'].includes(r.phase)?r.phase:'prepare',
     loadoutId:chosen,routeId:Object.hasOwn(DEF.routes,r.routeId)?r.routeId:null,

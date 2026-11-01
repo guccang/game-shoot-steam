@@ -1,10 +1,10 @@
 import { ownedPineProgress as freshProgress } from './helpers/owned-pine-progress.mjs';
-import { legacyVehicleGame } from './helpers/legacy-vehicle.mjs';
+import { vehicleCombatFixture } from './helpers/vehicle-combat-fixture.mjs';
 import { WORLD } from '../src/world/coordinates.js';
 // 战车验收：装甲吸收、原地步战、战斗冷却、独立武器与永久配置兼容。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Game, validateProgress, WEAPONS } from '../src/game.js';
+import {WEAPONS} from '../src/game.js';
 import { updateVehicle, vehicleMuzzle } from '../src/combat/vehicle.js';
 
 // 静止耐久靶使用正式目标及弹道流程，不触发额外怪物波次。
@@ -12,8 +12,8 @@ function arena(index = 0) {
   const p = freshProgress();
   p.weapons.fill(1);
   p.vehicleWeapons = WEAPONS.map(w=>w.controller?0:1);
-  p.vehicleWeapon = index;
-  const g = legacyVehicleGame(p, () => 0.5);
+  p.vehicleLoadouts[p.vehicleIndex||0] = index;
+  const g = vehicleCombatFixture(p, () => 0.5);
   g.start();
   // 受伤断言在营地保护区外进行，不让新增的安全区规则吞掉伤害。
   Object.assign(g.player,{x:1200,y:2400});
@@ -94,7 +94,7 @@ test('暂停与死亡冻结冷却、弹夹和蓄能，重生及清档恢复步�
   assert.equal(g.vehicle.cooldown, 0);
   assert.equal(g.vehicle.weaponIndex, 9);
   g.resetProgress();
-  assert.equal(g.progress.vehicleWeapon, null);
+  assert.equal(g.progress.vehicleLoadouts[g.progress.vehicleIndex||0], null);
   assert.equal(g.vehicle.weaponIndex, null);
   assert.equal(g.progress.arrival.phase,'bus');
   assert.equal(g.summonVehicle(), false);
@@ -195,18 +195,7 @@ test('榴弹额外技能保留、炮塔在途弹换装后仍归属原枪、步�
   tick(g, 10);
   assert.equal(g.vehicle.module.magazine.remaining, remain);
 });
-test('旧档车体补齐专属炮，已购买独立炮塔保留挂载', () => {
-  const p = freshProgress();
-  delete p.vehicleWeapon;
-  assert.equal(validateProgress(p).vehicleWeapon, 17);
-  for (const bad of [9, 12, 13, 99, -1, '0']) {
-    p.vehicleWeapon = bad;
-    assert.equal(validateProgress(p).vehicleWeapon, 17);
-  }
-  p.vehicleWeapons[8] = 1;
-  p.vehicleWeapon = 8;
-  assert.equal(validateProgress(p).vehicleWeapon, 8);
-});
+
 
 test('正式游戏更新同时驱动主武器和炮塔，不挪用原枪弹夹', () => {
   const g = arena(1);

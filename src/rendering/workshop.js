@@ -59,7 +59,7 @@ export function drawWorkshopEquipment(c, progress, kind, index, time = 0, reduce
     }
   } else {
     const player = { x: 0, y: 0, walkPhase: 0 };
-    const vehicle = createVehicle(progress, 120, index); vehicle.angle = -.18;
+    const vehicle = createVehicle(progress, index); vehicle.angle = -.18;
     drawVehicleTracks(c, player, vehicle, reduced, time,progress);
     drawVehicleArmor(c, player, vehicle, progress, time, reduced, assembly);
   }

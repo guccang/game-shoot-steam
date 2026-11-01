@@ -17,7 +17,7 @@ test('全部车型固定车体等级时，所有驾驶员从1升到20级均不�
  for(const hero of HEROES.keys())for(const [index,model] of COLLECTED_VEHICLES.entries())for(const hullLevel of [1,5,20]){
   const p=freshProgress();p.hero=hero;p.vehicleIndex=index;p.vehicleHulls[index]=hullLevel;p.heroes[hero]=1;
   const expected=vehicleMaxHp(p);
-  for(const level of [1,5,10,20]){p.heroes[hero]=level;assert.equal(vehicleMaxHp(p,1e9),expected,`${model.id} / 角色${hero} / ${level}级`);assert.equal(createVehicle(p,1e9,index).maxHp,expected);}
+  for(const level of [1,5,10,20]){p.heroes[hero]=level;assert.equal(vehicleMaxHp(p,1e9),expected,`${model.id} / 角色${hero} / ${level}级`);assert.equal(createVehicle(p,index).maxHp,expected);}
  }
 });
 
@@ -45,5 +45,5 @@ test('装甲升级仍提高上限并保留受损比例，上下车不补血，�
  const damaged=g.vehicle.hp;assert.ok(summonVehicle(g));assert.ok(dismountVehicle(g));assert.equal(g.vehicle.hp,damaged);
  g.vehicle.hp=0;g.vehicle.cooldown=0;assert.ok(summonVehicle(g));assert.equal(g.vehicle.hp,vehicleMaxHp(g.progress));
  const saved=validateProgress(JSON.parse(JSON.stringify(g.progress))),loaded=new Game(saved,()=>.5);assert.equal(loaded.vehicle.maxHp,g.vehicle.maxHp);
- loaded.realm={buffs:{vitality:1000}};assert.equal(createVehicle(loaded.progress,loaded.maxHp(),0).maxHp,g.vehicle.maxHp);
+ loaded.realm={buffs:{vitality:1000}};assert.equal(createVehicle(loaded.progress, 0).maxHp,g.vehicle.maxHp);
 });

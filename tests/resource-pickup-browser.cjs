@@ -37,7 +37,7 @@ async page=>{
    await t.emulateMedia({reducedMotion:reduced?'reduce':'no-preference'});
    const sample=await t.evaluate(async({phase,reduced})=>{
     const g=a.game;g.drops=[];g.enemies=[];g.trees=[];Object.assign(g.player,{x:1600,y:400});g.progress.vehicleHulls[5]=1;
-    g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,120,5);g.vehicle.active=true;
+    g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 5);g.vehicle.active=true;
     const target=g.spawnEnemy(0,0,{x:1710,y:350},{ambient:true});g.hit(target,1e6);
     g.addTree(1490,370);g.hit(g.trees[0],1e6);
     (await import('/src/combat/transient-effects.js')).updateCombatTraces(g,.3);

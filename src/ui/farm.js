@@ -184,7 +184,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(!deliveryAvailable)farmProperty(get('delivery-hit'),'hidden',true);else placeSceneHit(get('delivery-hit'),FARM_DELIVERY,renderer,frame,{width:110,height:95,foot:8});
   if(mailOpen&&(!deliveryAvailable||worldDistance(game.player,FARM_DELIVERY)>140))mailOpen=false;farmProperty(get('mail'),'hidden',!mailOpen);
   const mailKey=JSON.stringify([f.delivery.parcels,f.inventory]);
-  if(mailOpen&&mailKey!==mailSignature){mailSignature=mailKey;get('mail').innerHTML='<header><b>种子快递站</b><button data-farm-mail-close aria-label="关闭快递">×</button></header><p>邻居只会寄来已解锁的种子</p>'+f.delivery.parcels.map(p=>`<article>${farmCropMarkup(p.crop)}<span><b>${FARM_SENDERS[p.sender]}寄来的礼物</b><small>${FARM_CROPS[p.crop].name}种子 ×${p.count}</small></span><button data-farm-parcel="${p.id}">领取</button></article>`).join('')+(parcelCount?'':'<p>暂时没有新包裹，先去种田或巡林吧。</p>')+(f.inventory.some(Boolean)?'<button data-farm-legacy>出售背包及在场货舱作物</button>':'');}
+  if(mailOpen&&mailKey!==mailSignature){mailSignature=mailKey;get('mail').innerHTML='<header><b>种子快递站</b><button data-farm-mail-close aria-label="关闭快递">×</button></header><p>邻居只会寄来已解锁的种子</p>'+f.delivery.parcels.map(p=>`<article>${farmCropMarkup(p.crop)}<span><b>${FARM_SENDERS[p.sender]}寄来的礼物</b><small>${FARM_CROPS[p.crop].name}种子 ×${p.count}</small></span><button data-farm-parcel="${p.id}">领取</button></article>`).join('')+(parcelCount?'':'<p>暂时没有新包裹，先去种田或巡林吧。</p>')+(f.inventory.some(Boolean)?'<button data-farm-sell>出售背包及在场货舱作物</button>':'');}
   if(mailOpen)positionPopup(get('mail'),FARM_DELIVERY);
   const result=game.farmWork?.result;if(result&&result!==lastResult){lastResult=result;if(!result.needsLoadConfirmation&&(!result.ok||game.farmWork?.job?.action==='saw'))say(result.message);}
   for(const event of (game.farmSignals||[]).splice(0)){if(event.action==='harvest')flyCoins(event);if(event.message)say(event.message);onChange();}
@@ -223,7 +223,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   const page=e.target.closest('[data-farm-page]');if(page&&!page.disabled){seedPage=Math.max(0,seedPage+Number(page.dataset.farmPage));render();return;}
   if(e.target.closest('[data-farm-shop]')){stop();onSeedShop?.();return;}
   const parcel=e.target.closest('[data-farm-parcel]');if(parcel){const r=claimFarmParcel(game,Number(parcel.dataset.farmParcel));if(!r.ok)say(r.message);render();return;}
-  if(e.target.closest('[data-farm-mail-close]')){stop();return;}if(e.target.closest('[data-farm-legacy]')){say(farmAction(game,'sell').message);render();return;}
+  if(e.target.closest('[data-farm-mail-close]')){stop();return;}if(e.target.closest('[data-farm-sell]')){say(farmAction(game,'sell').message);render();return;}
   if(e.detail!==0)return;const cell=e.target.closest('[data-farm-cell]'),seed=e.target.closest('[data-farm-seed]');if(cell)tap(Number(cell.dataset.farmCell));else if(seed&&!seed.disabled)chooseSeed(Number(seed.dataset.farmSeed));else if(e.target.closest('#farm-harvest')&&loaded){popup=null;setFarmTool(game,'harvest');act('harvest',anchor);}
  });
  scope.on(menu,'click',()=>{if(farmInteractionBlocked(game)){say('战斗中暂不可种地');return;}opened&&!game.vehicle?.active?stop():open();});scope.on(get('hoe'),'click',()=>{if(!enter())return;input.reset();setFarmTool(game,'hoe');popup=null;render();});

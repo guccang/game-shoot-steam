@@ -184,7 +184,9 @@
 
 新的 `tests/helpers/clearing-scene.mjs` 只供这四份专项使用：通过告示牌核心入口接单后移动到 `BOSS_CLEARING`；非资格测试仍可直接准备已完成的节点，但不会绕过实际领主工厂。原本“损坏、过期领主快照”用例虽然显示通过，实际可能没有召唤成功；现已增加召唤成功和非空快照断言，避免空对象对比导致假通过。
 
-实际代码修改集中在 `src/progression/clearing-boss-migration.js` 与 `src/progression/progress.js`。修复前，缺生活记录的旧森林领主保存了40%血量，却只套用通用旧公式（5490上限），接单标志为假且落在旧地点；修复后以4胜对应的15900上限恢复6360血量，玩家与领主在同一清缴场，可以受伤、死亡、重试和继续下一轮。迁移先补会话再换算属性，不扣资源、不发奖；已有合法位置、死亡状态及领主身份保留，重复读取幂等，无有效挑战、无在途领主、其他地图或专属场景不自动接取清缴。
+以下为历史修复记录；数据兼容性清理后已删除迁移模块，当前存档只做字段校验，不再执行血量或坐标转换。
+
+当时的代码修改集中在 `src/progression/clearing-boss-migration.js` 与 `src/progression/progress.js`。修复前，缺生活记录的旧森林领主保存了40%血量，却只套用通用旧公式（5490上限），接单标志为假且落在旧地点；修复后以4胜对应的15900上限恢复6360血量，玩家与领主在同一清缴场，可以受伤、死亡、重试和继续下一轮。迁移先补会话再换算属性，不扣资源、不发奖；已有合法位置、死亡状态及领主身份保留，重复读取幂等，无有效挑战、无在途领主、其他地图或专属场景不自动接取清缴。
 
 验证命令按实际修改分批执行，涉及：`boss-wave-management`、`enemy-arrival`、`health-balance`、`patrol-progress`、`clearing-three-boss-pacing`、`clearing-balance-density`、`clearing-boss-qualification`、`reset-progress`（均为 `tests/*.test.mjs`）。证据保存于主工作区 `output/clearing-legacy-tests/`。浏览器续档专项为 `tests/clearing-legacy-restore-browser.cjs`，使用隔离端口4279，截图与运行结果保存于 `output/playwright/clearing-legacy-restore/`。
 

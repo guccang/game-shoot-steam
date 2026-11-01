@@ -15,7 +15,7 @@ export function createResidentChatter({game,root,renderer,random=Math.random}){
  function render(){
   const v=renderer.view;
   // 候门期间给猫头顶徽记留白，闲聊延后，不遮住当前交互与角色。
-  if(!v||!livingForest(game)||game.state!=='playing'||game.arrivalPending||game.campDefense||game.mainlineSpeech||game.buildingEntry||game.cottageEntry||mainlineObjective(game)?.clearingStage==='accept'||root.querySelector('dialog[open]')){current=null;next=game.time+5;speech.hide();return;}
+  if(!v||!livingForest(game)||game.state!=='playing'||game.arrivalPending||game.campDefense||game.mainlineSpeech||game.cottageEntry||mainlineObjective(game)?.clearingStage==='accept'||root.querySelector('dialog[open]')){current=null;next=game.time+5;speech.hide();return;}
   if(current&&game.time>=until)current=null;
   // 闲聊间隔内无需读取布局或遍历候选居民；到时仍按当前镜头重新选人。
   if(!current&&game.time<next){speech.hide();return;}

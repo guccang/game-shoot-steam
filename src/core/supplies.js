@@ -85,6 +85,6 @@ export function mountMainGun(game,hull,gun){
  // 计入主炮自身、备用弹药、装甲和驾驶员，不附加车型白名单。
  if(gun!==null&&vehicleLoad(game,hull,{progress:next,driver:true}).overloaded)return {ok:false,message:`装上这门主炮（${GUN_MASSES[gun]} kg）后会超载，请卸货、减装甲或换发动机。`};
  const result=commit(game,next,'主炮换装完成，弹药和故障均已保留。');if(!result.ok)return result;
- for(const i of changed){const v=game.vehicles[i],replacement=createVehicle(next,game.maxHp(),i);Object.assign(v,{weaponIndex:replacement.weaponIndex,module:replacement.module,modules:replacement.modules,targetId:null,recoil:replacement.recoil});}
+ for(const i of changed){const v=game.vehicles[i],replacement=createVehicle(next, i);Object.assign(v,{weaponIndex:replacement.weaponIndex,module:replacement.module,modules:replacement.modules,targetId:null,recoil:replacement.recoil});}
  return result;
 }

@@ -18,10 +18,10 @@ export function partLevel(progress, kind, index, key) {
   // 原车部件画像根据实际装甲与发动机展示，不读取历史车体等级。
   if(kind==='vehicle'&&!progress.temporaryGrowth){const build=vehicleBuild(progress,index);return key==='armor'?Math.min(20,build.plates+1):key==='engine'?build.engine+1:1;}
   const w=(kind==='turret'?VEHICLE_WEAPONS:WEAPONS)[index];
-  const legacy = key === 'damage' ? (kind === 'turret' ? progress.vehicleWeapons : progress.weapons)?.[index]
+  const primary = key === 'damage' ? (kind === 'turret' ? progress.vehicleWeapons : progress.weapons)?.[index]
     : key === 'armor' ? progress.vehicleHulls?.[index] : null;
   const field = kind === 'vehicle' ? 'vehicleParts' : kind === 'turret' ? 'turretParts' : 'weaponParts';
-  const value = legacy ?? progress[field]?.[index]?.[key];
+  const value = primary ?? progress[field]?.[index]?.[key];
   return Number.isFinite(value) ? Math.max(1, Math.min(['damage', 'armor'].includes(key) ? equipmentLevelCap(progress,kind) : key === 'coordination' ? w?.crew?5:index===16?SPIDER_COORDINATION_MAX:GAMEPLAY_VALUES.progress.maxCoordinationLevel : GAMEPLAY_VALUES.progress.maxPartLevel, Math.floor(value))) : 1;
 }
 

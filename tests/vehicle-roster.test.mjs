@@ -6,7 +6,7 @@ import { Game, validateProgress } from '../src/game.js';
 import { COLLECTED_VEHICLES } from '../src/config/vehicles.js';
 import { updateVehicle } from '../src/combat/vehicle.js';
 import { landingPoint } from '../src/combat/vehicle-landing.js';
-import { unlockedWeaponProgress } from '../src/progression/unlock-weapons.js';
+
 import { moveBody, blocked } from '../src/physics/motion.js';
 import { riverXAt } from '../src/world/river-geometry.js';
 import { WORLD, worldDistance } from '../src/world/coordinates.js';
@@ -74,7 +74,7 @@ test('各型号升级按自己的装甲成长与费用，不治愈、不补弹�
     assert.equal(g.vehicle.hp, 0);
     assert.equal(g.vehicle.cooldown, 30);
     assert.equal(g.progress.vehicleHulls[0], 1);
-    g.progress.vehicleLevel = 20;
+    g.progress.vehicleHulls[g.progress.vehicleIndex||0] = 20;
     assert.equal(g.upgradeVehicle(), false);
   }
 });
@@ -208,43 +208,7 @@ test('正式游戏更新保留三种速度差异与低空承伤', () => {
   assert.ok(Math.abs(distances[2] / distances[0] - 1.25) < 0.001);
 });
 
-test('旧档迁移、分车型挂载和解锁武器后的别名绑定均可恢复', () => {
-  const raw = JSON.parse(JSON.stringify(freshProgress()));
-  delete raw.vehicleHulls;
-  delete raw.vehicleLoadouts;
-  delete raw.vehicleIndex;
-  raw.vehicleLevel = 6;
-  raw.vehicleWeapons[0] = 2;
-  raw.vehicleWeapon = 0;
-  const old = validateProgress(raw);
-  assert.deepEqual(old.vehicleHulls, [6, 0, 0, 0, 0, 0, 0]);
-  assert.deepEqual(old.vehicleLoadouts, [0, null, null, null, null, null, null]);
-  const g = arena();
-  g.buyVehicle(1);
-  g.buyVehicle(2);
-  g.transactTurret(0, 'buy');
-  g.transactTurret(1, 'buy');
 
-  g.selectVehicle(1);
-
-  g.upgradeVehicle();
-  g.selectVehicle(2);
-
-  g.progress = unlockedWeaponProgress(g.progress);
-  g.upgradeVehicle();
-  assert.deepEqual(g.progress.vehicleHulls, [1, 2, 2, 0, 0, 0]);
-  assert.deepEqual(g.progress.vehicleLoadouts, [17,18,19,null,null,null]);
-  const restored = new Game(JSON.parse(JSON.stringify(g.progress)));
-  assert.equal(restored.vehicle.index, 2);
-  assert.equal(restored.vehicle.maxHp, 210);
-  assert.deepEqual(restored.progress, g.progress);
-  assert.equal(restored.vehicles[1].weaponIndex,18);
-  assert.equal(restored.vehicle.active, false);
-  assert.equal(restored.player.flying, false);
-  restored.resetProgress();
-  assert.deepEqual(restored.progress.vehicleHulls, [0, 0, 0, 0, 0, 0, 0]);
-  assert.equal(restored.vehicle.index, 5);
-});
 
 test('非法车型索引与损坏数组回退，不授予未购买载具或自动武器炮塔', () => {
   const p = freshProgress();

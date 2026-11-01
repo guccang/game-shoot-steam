@@ -7,7 +7,7 @@ const STEPS={repair:{scene:'靠近自动修复武器工坊',action:'点击这里
 
 // 收齐木料后出现；未到门前先指向工坊，骑乘时同样可以购买。
 export function arrivalWorkshopGuide(game,dialogId=null){
- const savedPhase=game.progress.arrival?.phase,phase=savedPhase==='dismount-guide'?'craft':savedPhase,step=STEPS[phase];
+ const phase=game.progress.arrival?.phase,step=STEPS[phase];
  if(!arrivalGuidanceVisible(game)||game.arrivalError)return null;
  // 来信尚未阅读时指向真实任务按钮，打开任意弹窗后让出引导层。
  if(phase==='letter'&&!dialogId)return {id:'arrival-letter',source:'#arrival-goal',text:'点击任务，阅读松伯的信'};

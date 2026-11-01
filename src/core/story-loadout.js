@@ -24,7 +24,7 @@ export function equipStory(game) {
   const r=game.story;r.equipment=storyEquipment(r.loadoutId,game);
   const p=game.loadout;
   game.mechanical=createMechanicalState();
-  game.magazines=createMagazines(p);game.vehicles=p.vehicleHulls.map((_,i)=>createVehicle(p,storyDefinition(game).hp,i));game.vehicle=game.vehicles[p.vehicleIndex];
+  game.magazines=createMagazines(p);game.vehicles=p.vehicleHulls.map((_,i)=>createVehicle(p, i));game.vehicle=game.vehicles[p.vehicleIndex];
   game.player.hp=storyDefinition(game).hp;game.player.flying=false;game.player.amphibious=false;game.player.treePass=false;game.player.invincible=0;
   game.player.recoil=createRecoil();game.pulse=createPulseState();game.weaponCycle=createWeaponCycle();game.aimLock=null;game.attackTimer=GAMEPLAY_VALUES.player.firstAttackDelay;
   game.state='playing';game.summonVehicle();

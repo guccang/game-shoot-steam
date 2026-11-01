@@ -56,7 +56,7 @@ test('仅改内容数据可追加主线、扩展成长，并改变正式怪物�
   const {masteryInfo}=await import('./src/config/weapon-mods.js');
   assert.equal(masteryInfo({mastery:[1000]},0).level,6);assert.equal(masteryInfo({mastery:[1000]},0).next,1400);
   const {VEHICLE_MAX_LEVEL,vehicleMaxHp}=await import('./src/config/vehicles.js');
-  assert.equal(VEHICLE_MAX_LEVEL,25);assert.equal(vehicleMaxHp({vehicleIndex:0,vehicleLevel:1},100),300);
+  assert.equal(VEHICLE_MAX_LEVEL,25);assert.equal(vehicleMaxHp({vehicleIndex:0,vehicleHulls:[1]},100),300);
   const {rangedIdentity}=await import('./src/config/ranged-enemies.js');
   const enemy=rangedIdentity({hp:100,damage:10,speed:100,mass:1,rank:0},'reed-archer');
   assert.equal(enemy.hp,200);assert.equal(enemy.speed,95);

@@ -22,7 +22,7 @@ function visitorPreview(game,hull){
  if(!cache.has(hull)){
   const p={...game.progress,vehicleWeapons:[...game.progress.vehicleWeapons],vehicleLoadouts:[...game.progress.vehicleLoadouts]},native=nativeVehicleWeapon(hull)?.weaponIndex;
   if(Number.isInteger(native)){p.vehicleWeapons[native]=Math.max(1,p.vehicleWeapons[native]||0);p.vehicleLoadouts[hull]=native;}
-  cache.set(hull,{progress:p,vehicle:createVehicle(p,game.maxHp(),hull)});
+  cache.set(hull,{progress:p,vehicle:createVehicle(p, hull)});
  }
  return cache.get(hull);
 }

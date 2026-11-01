@@ -50,7 +50,7 @@ async(page)=>{
  await page.reload();await page.evaluate(async()=>{window.neighborApp=(await import('/src/main.js')).application;await neighborApp.ready;});
  if(await page.locator('#start').isVisible())await page.locator('#start').click();else if(await page.locator('#resume').isVisible())await page.locator('#resume').click();
  await page.evaluate(()=>{const a=neighborApp,g=a.game;Object.assign(g.player,{x:650,y:1840,invincible:999});g.enemies=[];g.waveWarning=0;g.spawnTimer=999;g.encounterTimer=999;g.selectVehicle(3);g.summonVehicle();a.renderer.camera.time=null;a.renderer.draw();a.refresh();});
- if(!await page.evaluate(()=>neighborApp.game.vehicle.active&&neighborApp.game.progress.vehicleWeapon===20))throw Error('重载后赠送载具不能驾驶');
+ if(!await page.evaluate(()=>neighborApp.game.vehicle.active&&neighborApp.game.progress.vehicleLoadouts[neighborApp.game.progress.vehicleIndex||0]===20))throw Error('重载后赠送载具不能驾驶');
  // 正式 WASD 验证入口前后与侧面通行，保留怪物区原来的地形边界。
  const before=await page.evaluate(()=>neighborApp.game.player.y);
  await page.keyboard.down('w');await page.waitForTimeout(650);await page.keyboard.up('w');

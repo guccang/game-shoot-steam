@@ -71,7 +71,7 @@ test('装备二选一先保存再授予，双击与重载不重复；载具立�
   for(const choice of POST.collection.options)assert.equal(claimStoryCollection(g,POST.id,choice.id).ok,false);
   const restored=new Game(validateProgress(JSON.parse(saved)),()=>.5);assert.equal(restored.progress.story.boardRewards[POST.id],option.id);
   Object.assign(restored.player,storyPostApproach(POST));assert.equal(claimStoryCollection(restored,POST.id,option.id).ok,false);
-  if(option.kind==='vehicle'){assert.ok(g.selectVehicle(3));assert.equal(g.progress.vehicleWeapon,20);assert.equal(g.progress.vehicleLevel,1);assert.equal(g.progress.vehicleWeapons[20],1);assert.ok(g.summonVehicle());assert.equal(g.player.amphibious,true);}
+  if(option.kind==='vehicle'){assert.ok(g.selectVehicle(3));assert.equal(g.progress.vehicleLoadouts[g.progress.vehicleIndex||0],20);assert.equal(g.progress.vehicleHulls[g.progress.vehicleIndex||0],1);assert.equal(g.progress.vehicleWeapons[20],1);assert.ok(g.summonVehicle());assert.equal(g.player.amphibious,true);}
   else assert.equal(g.progress.weapons[1],1);
  }
 });

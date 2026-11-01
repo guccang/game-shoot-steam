@@ -9,7 +9,7 @@ async (page) => {
     if (!await catSprites.load()) throw Error('正式角色图集缺失');
     g.progress.weapons[0]=8;g.progress.vehicleHulls[0]=8;g.progress.vehicleParts[0].engine=4;
     for(const parts of [g.progress.weaponParts[0],g.progress.turretParts[1]])for(const key of Object.keys(parts))parts[key]=4;
-    const {createVehicle}=await import('/src/combat/vehicle.js');g.vehicles=g.progress.vehicleHulls.map((_,i)=>createVehicle(g.progress,g.maxHp(),i));g.vehicle=g.vehicles[g.progress.vehicleIndex];
+    const {createVehicle}=await import('/src/combat/vehicle.js');g.vehicles=g.progress.vehicleHulls.map((_,i)=>createVehicle(g.progress, i));g.vehicle=g.vehicles[g.progress.vehicleIndex];
     g.start(); g.progress.vehicleWeapons.fill(1); g.configureVehicle(1);
     g.summonVehicle(); g.player.invincible = 0; g.hurt = () => {};
     g.enemies = []; g.spawnEnemy(0, 0, { x: 1140, y: 730 });

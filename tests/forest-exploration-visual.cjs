@@ -4,7 +4,7 @@ async page=>{
  await page.reload();await page.getByRole('button',{name:'继续游戏',exact:true}).click();
  await page.evaluate(async()=>{
   const a=(await import('/src/main.js')).application,g=a.game;Object.assign(g.player,{x:650,y:1940});g.mainlineTalkDelay=999;g.enemies=[];g.progress.living.patrolActive=false;
-  g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),0);g.vehicle=g.vehicles[0];g.summonVehicle();
+  g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle=g.vehicles[0];g.summonVehicle();
   a.environment.weather='sun';a.environment.autoWeather=false;a.refresh();
  });
  const samples=[];

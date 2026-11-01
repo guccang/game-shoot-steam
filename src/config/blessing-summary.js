@@ -6,13 +6,12 @@ import { BLESSINGS } from './realms.js';
 // 只读取合法非负整数，展示层不信任外部存档字符串。
 function count(value) { return Number.isFinite(value) ? Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, Math.floor(value))) : 0; }
 
-// 提供选择卡与已获祝福摘要，旧档缺失的历史次数明确显示为下限。
+// 提供选择卡与已获祝福摘要，次数读取独立记录。
 export function blessingSummary(key, realm) {
   if (!Object.hasOwn(BLESSINGS, key)) return null;
   const stacks = Math.min(GAMEPLAY_VALUES.blessings.maxStacks, count(realm.buffs?.[key]));
-  const selections = Math.max(stacks, count(realm.blessingCounts?.[key]));
-  const partial = realm.blessingCountsPartial || (!realm.blessingCounts && (realm.stage > 1 || realm.cleared > 0));
-  const selectionText = partial ? selections > 0 ? i18nText("config.blessing-summary.85dfa1edd4", { p0: (selections) }) : i18nText("config.blessing-summary.25b6e6df62") : i18nText("config.blessing-summary.ef21bd9787", { p0: (selections) });
+  const selections = count(realm.blessingCounts?.[key]);
+  const selectionText = i18nText("config.blessing-summary.ef21bd9787", { p0: selections });
   const effects = {
     power: i18nText("config.blessing-summary.2154c9ca53", { p0: (Number((stacks * GAMEPLAY_VALUES.blessings.powerPerStack * 100).toFixed(2))) }),
     haste: i18nText("config.blessing-summary.24184a31b8", { p0: (Number((stacks * GAMEPLAY_VALUES.blessings.hastePerStack * 100).toFixed(2))) }),

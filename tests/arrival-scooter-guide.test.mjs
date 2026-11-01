@@ -57,10 +57,8 @@ test('引导指向任务路线，车旁提示正面站定上车，骑车修复�
  Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});assert.equal(arrivalWorkshopGuide(g),null);
 });
 
-test('上车与旧下车阶段保存失败可重试，旧档续到购枪保持骑乘',()=>{
+test('上车阶段保存失败可重试',()=>{
  const g=ready();g.arrivalPersist=()=>false;board(g);assert.equal(g.progress.arrival.phase,'ride-guide');assert.equal(g.arrivalError,true);
  g.arrivalPersist=()=>true;assert.ok(g.advanceArrival());g.update(.05);assert.equal(g.progress.arrival.phase,'gather');
- g.progress.arrival.phase='dismount-guide';g.pause();g.update(.05);assert.equal(g.progress.arrival.phase,'dismount-guide');
- g.start();g.arrivalPersist=()=>false;g.update(.05);assert.equal(g.progress.arrival.phase,'dismount-guide');assert.equal(g.vehicle.active,true);
- g.arrivalPersist=()=>true;assert.ok(g.advanceArrival());g.update(.05);assert.equal(g.progress.arrival.phase,'craft');assert.equal(g.vehicle.active,true);
+
 });

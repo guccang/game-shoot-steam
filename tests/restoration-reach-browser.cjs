@@ -20,7 +20,7 @@ async page=>{
    const f=TOWN_RESTORATIONS.find(f=>f.id==='defense'),anchor=f.locations.find(p=>p.site.id==='repair-gate-'+gate),door=CAMP_GATES.find(g=>g.id===gate),p=freshProgress();
    p.mainline.completed=MAINLINE_IDS.slice(0,f.order);p.mainline.phase='doing';p.restoration.repaired=TOWN_RESTORATIONS.filter(v=>v.order<f.order).map(v=>v.id);p.wood=f.wood;p.vehicleHulls[0]=1;
    g.progress=p;g.enemies=[];g.boss=null;g.parking=null;g.mainlineSpeech=null;g.attackTimer=g.fireClock=999;g.arrivalScene=null;
-   const {createVehicle}=await import('/src/combat/vehicle.js');g.vehicles[0]=createVehicle(p,g.maxHp(),0);g.vehicle=g.vehicles[0];g.vehicle.active=mounted;
+   const {createVehicle}=await import('/src/combat/vehicle.js');g.vehicles[0]=createVehicle(p, 0);g.vehicle=g.vehicles[0];g.vehicle.active=mounted;
    Object.assign(g.player,{x:anchor.x-door.nx*180,y:anchor.y-door.ny*180+24,vx:0,vy:0});a.renderer.camera.time=null;
    const {EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');
    Object.assign(a.environment,{livingPreview:true,autoTime:false,autoWeather:false,autoSeason:false,weather:'sun',forestSeason:'summer',time:time==='day'?'night':'dusk'});

@@ -38,22 +38,21 @@ export const RANGER_LETTER={title:'松伯留给你的一封信',paragraphs:[
   '邻居的委托办完，记得回去领谢礼。春天看花，秋天听风；别光顾着工作，也要好好过日子。',
   '我先去湖边占个钓鱼位。退休第一天，忙得很！',
 ],signature:'—— 松伯（已退休）'};
-export const RANGER_PHASES=[...Object.keys(RANGER_STAGES),'letter','ride-guide','gather','repair','repairing','dismount-guide','craft','crafting','complete'];
+export const RANGER_PHASES=[...Object.keys(RANGER_STAGES),'letter','ride-guide','gather','repair','repairing','craft','crafting','complete'];
 export const RANGER_LINES=Object.values(RANGER_STAGES).flatMap(stage=>stage.lines);
-// 旧导览检查点统一迁移到营门交接，任务及完成档原样续接，不重复扣料。
+// 当前入职检查点仅恢复正式阶段，非法阶段从到站开始。
 export function validateArrival(raw){
-  if(!raw||![1,2,3].includes(raw.version))return null;
-  const legacy=raw.version<3,oldScene=['ride','dialogue','cottage','weapons','vehicle','dismount','parking','handover','leave','watch'].includes(raw.phase);
-  let phase=legacy&&oldScene?(raw.keys?'gather':'handover'):RANGER_PHASES.includes(raw.phase)?raw.phase:'bus';
-  return {version:3,phase,elapsed:legacy&&oldScene?0:Math.max(0,Math.min(RANGER_STAGES[phase]?.seconds||30,Number(raw.elapsed)||0)),
+  if(!raw||raw.version!==3)return null;
+  const phase=RANGER_PHASES.includes(raw.phase)?raw.phase:'bus';
+  return {version:3,phase,elapsed:Math.max(0,Math.min(RANGER_STAGES[phase]?.seconds||30,Number(raw.elapsed)||0)),
     ...(phase==='repairing'?{workWood:Number.isSafeInteger(raw.workWood)&&raw.workWood>0?raw.workWood:RANGER.repairWood}:{}),
     line:0,wood:Math.max(0,Math.min(999999,Math.floor(Number(raw.wood)||0))),keys:!!raw.keys,parked:raw.parked!==false,
-    x:legacy&&oldScene?RANGER.doorstep.x:Number.isFinite(raw.x)?raw.x:RANGER.doorstep.x,
-    y:legacy&&oldScene?RANGER.doorstep.y:Number.isFinite(raw.y)?raw.y:RANGER.doorstep.y};
+    x:Number.isFinite(raw.x)?raw.x:RANGER.doorstep.x,
+    y:Number.isFinite(raw.y)?raw.y:RANGER.doorstep.y};
 }
 // 完成标记保留，普通旧档不重新播放。
 export function arrivalPending(progress){return !!progress.arrival&&progress.arrival.phase!=='complete';}
 // 首枪只在工坊建成且钥匙已交接时开放正式购买，其他入职交易继续锁定。
-export function arrivalPistolPurchase(progress,kind,index,action){return ['dismount-guide','craft'].includes(progress?.arrival?.phase)&&progress.arrival.keys&&kind==='weapons'&&index===0&&action==='buy'&&!progress.weapons[0];}
+export function arrivalPistolPurchase(progress,kind,index,action){return ['craft'].includes(progress?.arrival?.phase)&&progress.arrival.keys&&kind==='weapons'&&index===0&&action==='buy'&&!progress.weapons[0];}
 // 施工与采集、购买准备一样交回操控，只有接送短剧和旧制枪演出冻结移动。
-export function arrivalCinematic(progress){return arrivalPending(progress)&&!['letter','ride-guide','gather','repair','repairing','dismount-guide','craft'].includes(progress.arrival.phase);}
+export function arrivalCinematic(progress){return arrivalPending(progress)&&!['letter','ride-guide','gather','repair','repairing','craft'].includes(progress.arrival.phase);}

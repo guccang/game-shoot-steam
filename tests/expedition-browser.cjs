@@ -75,7 +75,7 @@ async (page) => {
     const a=(await import('/src/main.js')).application,g=a.game;
     const {catSprites}=await import('/src/rendering/cat-animation.js');
     if(catSprites.status!=='ready')throw Error('正式猫猫动画图集没有加载');
-    return {turret:g.vehicle.weaponIndex,gun:g.loadout.weapon,vehicle:g.vehicle.index,active:g.vehicle.active,enemies:g.enemies.length,driver:g.player.hp,level:g.loadout.vehicleLevel};
+    return {turret:g.vehicle.weaponIndex,gun:g.loadout.weapon,vehicle:g.vehicle.index,active:g.vehicle.active,enemies:g.enemies.length,driver:g.player.hp,level:g.loadout.vehicleHulls[g.loadout.vehicleIndex||0]};
   });
   if(!combat.active||!combat.enemies)throw Error('角色、载具、怪物未同屏');
   // 使用正式命中入口完成首关，再由真实祝福按钮推进第二关。
@@ -91,7 +91,7 @@ async (page) => {
   await page.reload();
   const restored=await page.evaluate(async()=>{
     const g=(await import('/src/main.js')).application.game;
-    return {stage:g.realm.stage,gun:g.loadout.weapon,level:g.loadout.vehicleLevel,state:g.state,active:g.vehicle.active,turret:g.vehicle.weaponIndex,permanent:JSON.stringify(g.progress.weapons)};
+    return {stage:g.realm.stage,gun:g.loadout.weapon,level:g.loadout.vehicleHulls[g.loadout.vehicleIndex||0],state:g.state,active:g.vehicle.active,turret:g.vehicle.weaponIndex,permanent:JSON.stringify(g.progress.weapons)};
   });
   if(restored.stage!==2||restored.level!==2||restored.gun!==gun||restored.state!=='paused'||restored.permanent!==before)throw Error('升级、恢复或永久隔离失败');
   if(!restored.active||restored.turret!==autoBoard.turret)throw Error('刷新丢失自动驾驶或抽取炮塔');

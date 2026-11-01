@@ -30,8 +30,5 @@ export function normalizeCampParking(raw,progress){
   owned.push({hull:value.hull,spot:roadside?null:value.spot,...(roadside?{mapId:value.mapId,x:value.x,y:value.y}:{}),hp:finite(value.hp,0,1,1),ammo:finite(value.ammo,0,100000,0),reload:finite(value.reload,0,120,0),wheel:finite(value.wheel,-1e6,1e6,0),track:finite(value.track,0,1000,0)});
   hulls.add(value.hull);if(!roadside)spots.add(value.spot);
  }
- const next={...progress,campParking:{owned}};
- // 当前随行车保持原地；只迁移非当前车辆，入职电动车由交接流程保留在北广场。
- for(let hull=0;hull<progress.vehicleHulls.length;hull++)if(hull!==progress.vehicleIndex&&!(hull===4&&progress.fireDispatch?.garage?.parked))parkNewVehicle(next,hull);
- return next.campParking;
+ return {owned};
 }

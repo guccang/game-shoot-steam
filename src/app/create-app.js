@@ -18,7 +18,6 @@ import {requestParking} from '../core/parking.js';
 import {requestFireParking} from '../core/fire-rescue.js';
 import {campProgress,campDiscountText} from '../progression/camp-level.js';
 import {updateWorkshopDisplayEntry} from '../core/workshop-display-entry.js';
-import {updateBuildingEntry} from '../core/building-entry.js';
 import {STORY_POSTS} from '../config/story-posts.js';
 import {openCottageRest} from '../core/cottage.js';
 import {createTaskReward} from '../ui/task-reward.js';
@@ -561,7 +560,6 @@ export function createApplication({
           interpolation.beforeStep(game);
           game.update(step, vector);
           updateWorkshopDisplayEntry(game);
-          updateBuildingEntry(game);
           diagnostics.gameplay.observe();
         });
         livingSounds.update(game,dt,!root.hidden);

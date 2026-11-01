@@ -68,7 +68,7 @@ export function resetBattlefield(game, continuation = null) {
   const loadout=game.story?game.loadout:game.progress;
   game.magazines = createMagazines(loadout);
   game.vehicles = COLLECTED_VEHICLES.map((_, index) =>
-    createVehicle(loadout, game.maxHp(), index),
+    createVehicle(loadout, index),
   );
   game.vehicle = game.vehicles[loadout.vehicleIndex];
   restoreVehicleService(game);

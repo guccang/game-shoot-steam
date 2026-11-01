@@ -22,7 +22,7 @@ async(page)=>{
  if(await page.locator('#player-health').textContent()!=='280 / 280')throw Error('升级血条没刷新');
  await page.locator('#vehicle-tab-turrets').click();
  await page.locator('[data-turret-card="1"] [data-turret-action="buy"]').click();
- if(!await page.evaluate(async()=>{const p=(await import('/src/main.js')).application.game.progress;return p.vehicleWeapons[1]===1&&p.vehicleWeapon===null&&p.coins===18680&&p.wood===9530;}))throw Error('购买扣费或自动安装错误');
+ if(!await page.evaluate(async()=>{const p=(await import('/src/main.js')).application.game.progress;return p.vehicleWeapons[1]===1&&p.vehicleLoadouts[p.vehicleIndex||0]===null&&p.coins===18680&&p.wood===9530;}))throw Error('购买扣费或自动安装错误');
  await page.locator('[data-turret-card="1"] [data-turret-action="equip"]').click();
  await page.locator('[data-turret-card="1"] [data-turret-action="upgrade"]').click();
  if(await page.locator('[data-turret-card]').first().getAttribute('data-turret-card')!=='1')throw Error('当前炮塔未置顶');
@@ -46,7 +46,7 @@ async(page)=>{
  await page.keyboard.press('Escape');
  if(!await page.locator('#camp-dialog').evaluate(n=>n.open))throw Error('未返回原工坊');
  await page.keyboard.press('Escape');await page.reload();
- if(!await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return g.progress.vehicleLevel===2&&g.progress.vehicleWeapons[1]===2&&g.progress.vehicleWeapon===1&&!g.vehicle.active;}))throw Error('存档恢复失败');
+ if(!await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return g.progress.vehicleHulls[g.progress.vehicleIndex||0]===2&&g.progress.vehicleWeapons[1]===2&&g.progress.vehicleLoadouts[g.progress.vehicleIndex||0]===1&&!g.vehicle.active;}))throw Error('存档恢复失败');
  if(errors.length)throw Error(errors.join('\n'));
  return {purchases:true,installation:true,upgrades:true,persistence:true,layouts,errors};
 }

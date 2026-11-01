@@ -37,7 +37,7 @@ export function renderWorkshopStats({root,current,after,kind,index,maxHp,draft,c
     if (Number.isFinite(b.grenade[key])) values.push({ label: {damage:i18nText("ui.workshop.stats.a5c4d9a8f0"),radius:i18nText("ui.workshop.stats.3fb033e968"),charge:i18nText("ui.workshop.stats.af59bd944c")}[key],
       old:a?.grenade?.[key] || 0, value:b.grenade[key], changed:a?.grenade?.[key] !== b.grenade[key] });
   if (kind === 'vehicle') {
-    const hp = p => vehicleMaxHp({ ...p, vehicleIndex: index, vehicleLevel: p.vehicleHulls[index] }, maxHp);
+    const hp = p => vehicleMaxHp({ ...p, vehicleIndex: index }, maxHp);
     values.unshift({label:i18nText("ui.workshop.results.6217343c91"),old:vehicleSpeed(current.progress,index),value:vehicleSpeed(after.progress,index),changed:vehicleSpeed(current.progress,index)!==vehicleSpeed(after.progress,index)});
     values.unshift({ label: i18nText("ui.workshop.stats.e689117b7c"), old: hp(current.progress), value: hp(after.progress), changed: hp(current.progress) !== hp(after.progress) });
   }

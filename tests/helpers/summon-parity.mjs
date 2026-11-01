@@ -1,6 +1,6 @@
 // 固定场景回放召唤物，快照同时覆盖动作、伤害、供给和车载独立状态。
 import { createHash } from 'node:crypto';
-import { legacyVehicleGame } from './legacy-vehicle.mjs';
+import { vehicleCombatFixture } from './vehicle-combat-fixture.mjs';
 import { freshProgress } from '../../src/progression/progress.js';
 import { updateMechanical } from '../../src/combat/mechanical.js';
 import { updateSpider } from '../../src/combat/spider.js';
@@ -22,7 +22,7 @@ export function replaySummon(index,mounted,variable=false) {
   const p=freshProgress();p.weapons.fill(3);p.vehicleWeapons.fill(2);p.vehicleHulls.fill(1);
   p.weapon=index;p.vehicleLoadouts[0]=index;p.funnelLoadout=[9,7,12];p.mechanicalLoadout=9;p.spiderLoadout=7;
   p.weaponParts[15].coordination=p.turretParts[15].coordination=8;
-  const g=legacyVehicleGame(p,random);g.fx.random=()=>.5;g.state='playing';g.enemies=[];g.trees=[];g.boss=null;
+  const g=vehicleCombatFixture(p,random);g.fx.random=()=>.5;g.state='playing';g.enemies=[];g.trees=[];g.boss=null;
   Object.assign(g.player,{x:900,y:800,arena:{x:900,y:800,radius:900}});g.vehicle.active=mounted;
   g.onEvent=kind=>{if(kind==='shot')shots++;};
   for(let i=0;i<5;i++){const e=g.spawnEnemy(0,0,{x:960+i*45,y:780+i*24});Object.assign(e,{hp:100000,maxHp:100000,speed:0,flying:i===4,arena:g.player.arena});}

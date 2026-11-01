@@ -1,4 +1,3 @@
-import {latchBuildingEntry} from '../core/building-entry.js';
 import {BUILDING_ENTRIES} from '../config/building-entries.js';
 import { i18nText } from "../i18n/index.js";
 import {sceneHit,placeSceneHit} from './scene-hit.js';
@@ -31,7 +30,7 @@ export function createWorldRealms({ game, renderer, root, onEnter }) {
     return !game.cottage && !game.campDefense && !game.arrivalCinematic && game.state === 'playing' && game.mapId !== 'jiuzhaigou' && !game.realm && !game.story && !root.querySelector('dialog[open]');
   }
   // 点击和候停共用闩锁，离开秘境返回原门口时不会再次自动进入。
-  function enter(mode){if(['fire','tower'].includes(mode)||!available())return false;const entry=BUILDING_ENTRIES.find(e=>e.type==='realm'&&e.key===mode);if(!entry)return false;latchBuildingEntry(game,entry);return onEnter(mode);}
+  function enter(mode){if(['fire','tower'].includes(mode)||!available())return false;const entry=BUILDING_ENTRIES.find(e=>e.type==='realm'&&e.key===mode);if(!entry)return false;return onEnter(mode);}
   // 采用实际画布尺寸与镜头倍率，覆盖手机、广角武器以及循环世界镜像。
   function tap(event) {
     if (!available() || !renderer.view) return;

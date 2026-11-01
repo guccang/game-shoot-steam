@@ -22,7 +22,7 @@ export function restoreRealmVehicles(game, raw) {
     // 森林和活动快照保留实际炮型，跨车型安装不能恢复成原厂炮。
     const weaponIndex = hull.weaponIndex;
     p.vehicleLoadouts[index] = owned && ownsVehicleWeapon(p, weaponIndex) ? weaponIndex : null;
-    const v = createVehicle(p, game.maxHp(), index);
+    const v = createVehicle(p, index);
     v.maxHp = Math.max(1, Math.min(v.maxHp, hull.maxHp || v.maxHp));
     v.hp = Math.min(v.maxHp, hull.hp);
     v.cooldown = hull.cooldown;

@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS,MAINLINE_TASKS,currentMainlineTask} from '../src/config/mainline.js';
-import {MAINLINE_V3_IDS} from '../src/config/mainline-legacy.js';
-import {validateMainline} from '../src/progression/mainline-progress.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
+
+
+
 import {recordMainlineCombat} from '../src/progression/mainline-combat.js';
 import {TOWN_RESTORATIONS,pendingRestoration} from '../src/config/town-restoration.js';
 import {defeatBoss} from '../src/core/boss-manager.js';
@@ -15,28 +15,14 @@ import {startCampDefense,claimCampDefense} from '../src/core/camp-defense.js';
 import {beginStoryWave,updateStoryWave} from '../src/core/story-encounters.js';
 import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
 import {STORY_SITES} from '../src/config/story.js';
-import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
+
 // 只准备任务和建筑前置，战斗结算仍经过正式入口。
 function scene(id){const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf(id));p.mainline.phase='doing';const g=new Game(p,()=>.5);g.start();g.mainlineTalkDelay=999;return g;}
 // 按正式驿站入口进入第一章，在首处战斗圈检查出生节奏。
 function encounter(){const g=scene('first-letter');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));assert.ok(g.enterStory());g.advanceStoryDialogue(true);g.chooseStoryLoadout('line-patrol');g.startStoryStage();Object.assign(g.player,STORY_SITES.SIGN);return g;}
 
-test('旧版每个任务的接取和领奖阶段都保留，交付后只寻找未完成任务',()=>{
- for(let i=0;i<MAINLINE_V3_IDS.length;i++)for(const phase of ['meet','doing','report']){
-  const run=validateMainline({version:3,completed:MAINLINE_V3_IDS.slice(0,i),phase});
-  assert.equal(currentMainlineTask(run).id,MAINLINE_V3_IDS[i]);assert.equal(run.phase,phase);
-  assert.deepEqual(new Set(run.completed),new Set(MAINLINE_V3_IDS.slice(0,i)));
-  assert.deepEqual(validateMainline(run),run);
-  const p=freshProgress();p.mainline=run;const id=currentMainlineTask(run).id;assert.ok(awardMainline(p,id));assert.equal(awardMainline(p,id),null);
-  assert.equal(currentMainlineTask(p.mainline).id,MAINLINE_IDS.find(id=>!p.mainline.completed.includes(id)));
- }
-});
-test('旧版全通只补新增任务；一版松果巡护插入迁移仍有效',()=>{
- const run=validateMainline({version:3,completed:MAINLINE_V3_IDS,phase:'complete'});assert.equal(run.phase,'meet');assert.equal(currentMainlineTask(run).id,'pistol-field');assert.equal(run.completed.length,29);
- const old=MAINLINE_V3_IDS.filter(id=>id!=='pine-patrol'),i=old.indexOf('vehicle-service');
- const waiting=validateMainline({completed:old.slice(0,i),phase:'report'});assert.equal(currentMainlineTask(waiting).id,'pine-patrol');assert.equal(waiting.phase,'meet');
- const passed=validateMainline({completed:old.slice(0,i+1),phase:'doing'});assert.ok(passed.completed.includes('pine-patrol'));assert.equal(currentMainlineTask(passed).id,'river-letter');
-});
+
+
 test('重排后建筑按任务解锁，提前的足球和远征不会误指向后段修复',()=>{
  for(const id of ['expedition','football-day','hover-service','aircraft-service']){
   const g=scene(id);g.progress.restoration.repaired=[];
@@ -83,10 +69,7 @@ test('无出生空间重试保留配额，到时明确失败，不静默放行',
  try{cfg.spawn.attempts=0;for(let i=0;i<70&&g.story.phase!=='failed';i++)updateStoryWave(g,.31);assert.equal(g.story.combat.spawned,0);assert.equal(g.story.phase,'failed');assert.ok(g.story.error);}finally{cfg.spawn.attempts=attempts;}
 });
 import {storyDefinition} from '../src/core/story-definition.js';
-test('旧经济候选补新增任务但保持原奖励，缺失旧任务仍拒绝',()=>{
- const old=structuredClone(RECOMMENDED_ECONOMY);for(const id of MAINLINE_IDS.filter(id=>!MAINLINE_V3_IDS.includes(id)))delete old.taskRewards[id];old.taskRewards.expedition.coins=123;
- const next=validateEconomy(old);assert.equal(next.taskRewards.expedition.coins,123);assert.ok(next.taskRewards['hover-service']);delete old.taskRewards['first-map'];assert.throws(()=>validateEconomy(old));
-});
+
 // 三套正式借装自然清理成组首战与三波守点，不改伤害、血量或杀怪结果。
 import {pacingGame} from './helpers/story-combat-pacing.mjs';
 for(const loadout of ['line-patrol','tide-arc','frost-guard'])test(loadout+'自然战斗能清理批次遭遇与三波守点',t=>{
@@ -103,10 +86,3 @@ for(const loadout of ['line-patrol','tide-arc','frost-guard'])test(loadout+'自�
  }
 });
 // 取消强制购船后，旧档尚未领取的补贴统一使用新报酬，不回收既有钱包。
-import {mainlineReward} from '../src/config/economy.js';
-test('新旧档未领取奖励一致，不再恢复旧版大额购船补贴',()=>{
- const old=freshProgress(),fresh=freshProgress();old.mainline=validateMainline({version:3,completed:MAINLINE_V3_IDS.slice(0,13),phase:'doing'});
- const expedition=MAINLINE_TASKS.find(t=>t.id==='expedition'),neighbors=MAINLINE_TASKS.find(t=>t.id==='neighbors');
- for(const p of [old,fresh]){assert.equal(mainlineReward(expedition,p).coins,300);assert.equal(mainlineReward(neighbors,p).coins,450);}
- assert.equal(validateMainline(old.mainline).rewardVersion,5);
-});

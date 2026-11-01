@@ -30,7 +30,7 @@ async page=>{
   const {recordResourceGain,recordActivity,STAT_ACTIVITIES}=await import('/src/progression/game-statistics.js');
   const g=a.game;recordResourceGain(g.progress,'coins',123456789);recordResourceGain(g.progress,'wood',115122);
   for(const key of Object.keys(STAT_ACTIVITIES))recordActivity(g.progress,key);
-  g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicle=g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),0);g.vehicle.active=true;g.numbers=[];g.remnants=[];g.drops=[];
+  g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicle=g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle.active=true;g.numbers=[];g.remnants=[];g.drops=[];
   g.spawnEnemy(0,0,{x:g.player.x+130,y:g.player.y+55},{ambient:true});a.save();
  });
  for(const [width,height] of [[1280,900],[390,844],[320,740]])for(const phase of ['day','night']){

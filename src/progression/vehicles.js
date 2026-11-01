@@ -5,15 +5,12 @@ import {availableParkingSpot,parkNewVehicle} from './camp-parking.js';
 // 载具与独立炮塔交易：先验证全部条件，再一次性扣除资源。
 import { VEHICLE_WEAPONS, grantVehicleArmament, isVehicleArmament } from '../config/vehicle-armaments.js';
 import {
-  vehicleUpgradeCost,
   ownsVehicleWeapon,
-  VEHICLE_MAX_LEVEL,
-  COLLECTED_VEHICLES,
 } from '../config/vehicles.js';
 import { upgradeCost } from './progress.js';
 import { payEquipment } from './equipment-goals.js';
 
-// 车体购买附带专属主炮；旧炮塔保留独立交易兼容，角色枪械不随之获取。
+// 购买车体附带专属主炮，主炮可以独立升级；车体部件由整备事务升级。
 export function transactVehicle(progress, kind, index, action) {
   if(kind==='vehicle'&&action==='upgrade')return false;
   if(!facilityOpen(progress,'garage'))return false;
@@ -27,11 +24,7 @@ export function transactVehicle(progress, kind, index, action) {
     return true;
   }
   let cost;
-  if (kind === 'vehicle' && Number.isInteger(index) && COLLECTED_VEHICLES[index]) {
-    const level = progress.vehicleHulls[index];
-    if (action === 'upgrade' && level > 0 && level < VEHICLE_MAX_LEVEL)
-      cost = vehicleUpgradeCost(level, index, progress);
-  } else if (
+  if (
     kind === 'turret' &&
     Number.isInteger(index) &&
     VEHICLE_WEAPONS[index]
@@ -44,7 +37,6 @@ export function transactVehicle(progress, kind, index, action) {
   recordEconomy(progress,'expense','upgrade:'+kind+':'+index,cost);
   progress.coins -= cost.coins;
   progress.wood -= cost.wood;
-  if (kind === 'vehicle') progress.vehicleHulls[index]++;
-  else progress.vehicleWeapons[index]++;
+  progress.vehicleWeapons[index]++;
   return true;
 }

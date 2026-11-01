@@ -89,7 +89,7 @@ export function createProgressController({
     // 一级解锁和满级奖励均即时同步车体与主炮，保留耐久、冷却和弹夹；临时玩法装备独立。
     if((kind==='vehicles'||kind==='max-vehicles')&&!game.realm&&!game.fireActive)for(const vehicle of game.vehicles){
       const ratio=vehicle.maxHp>0?vehicle.hp/vehicle.maxHp:0;
-      vehicle.maxHp=vehicleMaxHp({...next,vehicleIndex:vehicle.index,vehicleLevel:next.vehicleHulls[vehicle.index]},game.maxHp());
+      vehicle.maxHp=vehicleMaxHp({...next,vehicleIndex:vehicle.index},game.maxHp());
       vehicle.hp=vehicle.maxHp*ratio;
       const weapon=next.vehicleLoadouts[vehicle.index];if(weapon!==null)configureVehicle(game,weapon,vehicle.index);
     }

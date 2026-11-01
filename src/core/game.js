@@ -10,7 +10,7 @@ import {movementLoadFactor} from '../progression/load-weight.js';
 import {maintainPlayerTow,advancePlayerTow} from './player-towing.js';
 import {awardHeroXp} from '../progression/hero-experience.js';
 import {legendaryVisible} from './legendary-workshop.js';
-import {updateVehicleRepair,personalFleet,vehicleRequiresService,vehicleService,syncVehicleService} from './vehicle-repair.js';
+import {updateVehicleRepair,vehicleRequiresService,vehicleService,syncVehicleService} from "./vehicle-repair.js";
 import {absorbEnergyShield} from '../combat/energy-shield.js';
 import {updateFarmDelivery} from './farm-delivery.js';
 import {recordMainlineVehiclePractice} from '../progression/mainline-combat.js';
@@ -27,7 +27,7 @@ import {recordDefeat} from '../progression/game-statistics.js';
 import {markDumplingHit} from '../combat/dumpling-motion.js';
 import {updateCottage} from './cottage.js';
 import {scooterCapacity} from '../config/scooter-capacity.js';
-import {updateParkingVisitors,boardParkedVehicle,parkedOwned,parkingFleetApplies,canSelectParkingVehicle,storeCarriedVehicle,adoptArrivalParking} from './camp-parking.js';
+import {updateParkingVisitors,boardParkedVehicle,parkingFleetApplies,canSelectParkingVehicle,storeCarriedVehicle,adoptArrivalParking} from "./camp-parking.js";
 import {updateParking} from './parking.js';
 import {showDamageNumber} from '../combat/damage-numbers.js';
 import {startCampDefense,updateCampDefense,campDefenseKill,rescueCampDefense} from './camp-defense.js';
@@ -109,7 +109,7 @@ import { equipFunnelModule, resetFunnelModuleCharge } from '../combat/funnel-loa
 import { updateBallistics } from '../combat/ballistics.js';
 import { driveBody, applyImpulse } from '../physics/motion.js';
 import { HEROES } from '../config/heroes.js';
-import { WORLD, nearest, worldDistance } from '../world/coordinates.js';
+import {WORLD,worldDistance} from "../world/coordinates.js";
 import { clamp } from './math.js';
 import { freshProgress, freshRangerProgress, validateProgress } from '../progression/progress.js';
 import { vehicleModel } from '../config/vehicles.js';
@@ -198,7 +198,7 @@ export class Game {
     this.farmWork=null;this.farmVehicleReturn=null;this.farmSignals=[];this.farmDragging=false;this.farmCursor=null;this.farmDeliveryCheck=0;
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
-    this.buildingEntry=null;this.buildingEntryLatch=null;this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
+    this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
     this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
@@ -353,7 +353,7 @@ export class Game {
   buyVehicle(index) {
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
     if (!transactVehicle(this.progress, 'vehicle', index, 'buy')) return false;
-    this.vehicles[index] = createVehicle(this.progress, this.maxHp(), index);
+    this.vehicles[index] = createVehicle(this.progress, index);
     this.onEvent('purchase', { name: vehicleModel(index).name, action: 'buy' });
     return true;
   }
@@ -433,7 +433,7 @@ export class Game {
     // 换人只同步固定天赋差异；角色升级不提高车体 HP，受损比例与冷却保持不变。
     if(kind==='heroes')for(const hull of this.vehicles){
       const ratio=hull.maxHp?hull.hp/hull.maxHp:0;
-      const selected={...this.progress,vehicleIndex:hull.index,vehicleLevel:this.progress.vehicleHulls[hull.index]||1};
+      const selected={...this.progress,vehicleIndex:hull.index};
       const maxHp=vehicleMaxHp(selected);
       if(hull.maxHp!==maxHp){hull.maxHp=maxHp;hull.hp=Math.min(maxHp,maxHp*ratio);}
     }

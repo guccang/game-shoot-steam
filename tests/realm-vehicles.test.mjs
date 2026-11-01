@@ -56,7 +56,7 @@ test('局内切车与炮塔保留供给；返回森林恢复原挂载与驾驶�
   assert.equal(g.buyVehicle(1), false); assert.equal(g.upgradeVehicle(), false);
   assert.equal(g.transactTurret(1, 'upgrade'), false);
   g.leaveRealm(); assert.equal(g.vehicles, original); assert.equal(g.progress.vehicleIndex, 0);
-  assert.equal(g.progress.vehicleWeapon, 0); assert.deepEqual(g.progress.vehicleLoadouts, original.map(v=>v.weaponIndex));
+  assert.equal(g.progress.vehicleLoadouts[g.progress.vehicleIndex||0], 0); assert.deepEqual(g.progress.vehicleLoadouts, original.map(v=>v.weaponIndex));
   assert.equal(g.vehicle.active, true);
 });
 
@@ -86,7 +86,7 @@ test('刷新恢复所有车体和备用炮塔检查点，退出仍恢复入场�
   assert.equal(r.vehicles[0].module.cooldown, .2); assert.equal(r.vehicles[0].modules[0].magazine.ammo, 3);
   r.leaveRealm(); assert.equal(r.vehicle.index, 0); assert.equal(r.vehicle.active, true);
   assert.equal(r.vehicle.hp, r.vehicle.maxHp - 31); assert.equal(r.vehicle.module.magazine.ammo, 3);
-  assert.equal(r.progress.vehicleIndex, 0); assert.equal(r.progress.vehicleWeapon, 0);
+  assert.equal(r.progress.vehicleIndex, 0); assert.equal(r.progress.vehicleLoadouts[r.progress.vehicleIndex||0], 0);
 });
 
 test('独立炮塔实际开火、装填和跨层供给持续生效，直升机仍受秘境边界限制', () => {

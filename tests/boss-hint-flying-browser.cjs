@@ -60,7 +60,7 @@ async (page) => {
   await page.locator('[data-turret-card="14"] [data-turret-action="equip"]').click();
   if (!await page.evaluate(async () => {
     const p = (await import('/src/main.js')).application.game.progress;
-    return p.coins === 0 && p.wood === 0 && p.vehicleWeapons[14] === 1 && p.vehicleWeapon === 14 && p.weapons[14] === 0;
+    return p.coins === 0 && p.wood === 0 && p.vehicleWeapons[14] === 1 && p.vehicleLoadouts[p.vehicleIndex||0] === 14 && p.weapons[14] === 0;
   })) throw Error('炮塔扣费、安装或手持隔离错误');
   await page.locator('#vehicle-collection-done').click();
   await page.reload();

@@ -1,9 +1,9 @@
 import {syncSupplyAmmo} from '../combat/supply-ammo.js';
 import {syncVehicleService} from './vehicle-repair.js';
-import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
+
 // 巡游会话负责战场与可序列化进度之间的映射，不访问浏览器存储。
 import { validatePatrol } from '../progression/patrol-progress.js';
-import { waveDifficulty, CLEARING_QUOTA_VERSION } from '../config/waves.js';
+import {CLEARING_QUOTA_VERSION} from "../config/waves.js";
 import { restoreBoss } from './boss-manager.js';
 import { WAVE_WARNING_SECONDS } from './wave-manager.js';
 import {canonical} from '../world/coordinates.js';
@@ -52,7 +52,6 @@ export function capturePatrol(game) {
     waveGroupStart: game.waveGroupStart,
     bossReady: game.bossReady,
     spawnTimer: game.spawnTimer,
-    respawnDelay: game.respawnDelay,
     kills: game.kills,
     chopped: game.chopped,
     roundBosses: game.roundBosses,
@@ -79,7 +78,6 @@ export function restorePatrol(game, snapshot) {
     'waveGroupStart',
     'bossReady',
     'spawnTimer',
-    'respawnDelay',
     'kills',
     'chopped',
     'roundBosses',
@@ -101,12 +99,7 @@ export function restorePatrol(game, snapshot) {
   game.enemies = [];
   game.aimLock = null;
   game.waveSpawned = game.waveKills;
-  if (saved.bossHp !== null && restoreBoss(game, saved.bossHp)) {
-    // 历史领主战没有生活圈位置，恢复到林外挑战点，避免卡在禁止开火的营地。
-    if(game.mapId==='forest'&&!game.progress.living.position){Object.assign(game.player,{x:GAMEPLAY_VALUES.living.initialX,y:GAMEPLAY_VALUES.living.initialY});}
-    // 旧版允许波中召唤，迁移到完整领主节点；伪造血量而没有强度快照不能解锁。
-    game.bossReady=true;game.bossWave=game.wave;game.waveKills=waveDifficulty(game.wave).total;game.waveSpawned=game.waveKills;
-  }
+  if (saved.bossReady && saved.bossHp !== null) restoreBoss(game, saved.bossHp);
   // 只补剩余名额；休整期间不生成敌人，避免完成波次后又刷一轮。
   // 波中重建先准备三秒；波间只续接剩余休整，领主节点不增加准备时间。
   game.waveWarning = game.waveRest > 0 || game.bossReady || game.boss ? 0 : WAVE_WARNING_SECONDS;

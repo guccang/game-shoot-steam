@@ -1,8 +1,8 @@
-import { legacyVehicleGame } from './helpers/legacy-vehicle.mjs';
+import { vehicleCombatFixture } from './helpers/vehicle-combat-fixture.mjs';
 // 伙伴配置、承伤、编队与车载隔离的正式规则回归。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Game } from '../src/core/game.js';
+
 import { freshProgress, validateProgress } from '../src/progression/progress.js';
 import { canMountMechanical } from '../src/config/mechanical-loadout.js';
 import { configureMechanical } from '../src/core/mechanical-loadout.js';
@@ -20,7 +20,7 @@ function arena(weapon=15,vehicle=null,index=0) {
   const p=freshProgress();p.weapons.fill(1);p.vehicleWeapons.fill(1);p.vehicleHulls.fill(1);
   p.weapon=weapon;p.weaponParts[15].coordination=8;p.turretParts[15].coordination=8;
   p.vehicleIndex=index;p.vehicleLoadouts[index]=vehicle;p.coins=p.wood=999999;p.bosses=100;p.materials={parts:9999,crystal:9999,core:999};
-  const g=legacyVehicleGame(p,()=>.5);g.trees=[];g.enemies=[];g.boss=null;g.state='playing';g.updateWaves=()=>{};
+  const g=vehicleCombatFixture(p,()=>.5);g.trees=[];g.enemies=[];g.boss=null;g.state='playing';g.updateWaves=()=>{};
   Object.assign(g.player,{x:900,y:750,arena:{x:900,y:750,radius:700}});
   g.vehicle.active=vehicle!==null;return g;
 }
@@ -111,7 +111,7 @@ test('三类控制器可作为独立挂载，未提交前仍保留原主炮',()=
 
 test('车载浮游炮初始弹仓按各挂枪容量构造，更换枪只启用空仓且保留原槽',()=>{
  const p=arena(0,12).progress;p.funnelLoadout=[0,9,12];
- const g=legacyVehicleGame(p,()=>.5);g.state='playing';g.vehicle.active=true;
+ const g=vehicleCombatFixture(p,()=>.5);g.state='playing';g.vehicle.active=true;
  const m=g.vehicle.module;assert.deepEqual(m.magazine.modules.map(n=>n.ammo),[18,4,18]);
  updateVehicle(g,0);const nodes=m.companions.nodes,old=nodes[0].magazine;old.ammo=2;
  g.progress.funnelLoadout[0]=1;updateVehicle(g,0);assert.equal(nodes[0].magazine.ammo,0);assert.ok(nodes[0].magazine.remaining>0);

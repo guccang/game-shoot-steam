@@ -3,7 +3,7 @@ async (page)=>{
  if(new URL(page.url()).port!=='4174')throw Error('只允许隔离端口');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setViewportSize({width:390,height:844});
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;a.destroy();const {freshProgress}=await import('/src/game.js');const p=freshProgress();p.weapons.fill(1);p.vehicleWeapons=p.weapons.map((n,i)=>i<12?n:0);p.vehicleWeapon=0;localStorage.setItem('forest-patrol-v1',JSON.stringify(p));});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;a.destroy();const {freshProgress}=await import('/src/game.js');const p=freshProgress();p.weapons.fill(1);p.vehicleWeapons=p.weapons.map((n,i)=>i<12?n:0);p.vehicleLoadouts[p.vehicleIndex||0]=0;localStorage.setItem('forest-patrol-v1',JSON.stringify(p));});
  await page.reload();await page.locator('#start').click();
  if(await page.locator('#vehicle-dialog, #vehicle-hud, #weapon-status').count())throw Error('旧面板仍存在');
  await page.locator('#vehicle-button').click();
@@ -23,7 +23,7 @@ async (page)=>{
  await page.locator('#resume').click();await page.locator('#vehicle-button').click();
  if(!await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return g.vehicle.active&&g.vehicle.hp===g.vehicle.maxHp;}))throw Error('未满血召唤');
  await page.reload();await page.locator('#start').click();await page.locator('#weapons-button').click();
- if(!await page.evaluate(async()=>(await import('/src/main.js')).application.game.progress.vehicleWeapon===6))throw Error('配置未保存');
+ if(!await page.evaluate(async()=>(await import('/src/main.js')).application.game.progress.vehicleLoadouts[(await import('/src/main.js')).application.game.progress.vehicleIndex||0]===6))throw Error('配置未保存');
  if(await page.locator('#vehicle-collection-dialog').evaluate(n=>n.open))await page.locator('#close-vehicle-collection').click();await page.locator('#close-camp').click();
  const shots=[];
  for(const width of [320,390,580]){
@@ -31,7 +31,7 @@ async (page)=>{
   for(const mode of ['pistol','funnel','supply','night','destroyed']){
    await page.evaluate(async({mode})=>{
     const a=(await import('/src/main.js')).application,g=a.game;a.destroy();
-    g.progress.weapon=mode==='pistol'?0:12;g.progress.funnelLoadout=[3,0,9];g.progress.vehicleWeapon=6;g.reset();g.state='playing';g.enemies=[];g.spawnTimer=999;g.summonVehicle();
+    g.progress.weapon=mode==='pistol'?0:12;g.progress.funnelLoadout=[3,0,9];g.progress.vehicleLoadouts[g.progress.vehicleIndex||0]=6;g.reset();g.state='playing';g.enemies=[];g.spawnTimer=999;g.summonVehicle();
     g.trees=g.trees.filter(t=>Math.hypot(t.x-g.player.x,t.y-g.player.y)>500);
     a.renderer.resize();g.setViewport(a.renderer.width,a.renderer.height);
     for(let i=0;i<30;i++)g.update(.02,{x:0,y:0});

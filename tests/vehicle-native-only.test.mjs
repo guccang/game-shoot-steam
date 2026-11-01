@@ -39,7 +39,7 @@ test('运行时、试装和交易均拒绝喵喵枪械或跨车型主炮，失�
  for(let hull=0;hull<p.vehicleHulls.length;hull++){
   for(const weapon of [0,9,12,15,16]){assert.equal(canMountVehicleWeapon(p,weapon,hull),false);assert.equal(configureVehicle(g,weapon,hull),false);assert.equal(quoteWorkshop(p,workshopDraft(p,'vehicle',hull,weapon)).ok,false);}
   const raw={...p,vehicleLoadouts:p.vehicleLoadouts.map(()=>9)};
-  assert.equal(createVehicle(raw,120,hull).weaponIndex,nativeVehicleWeapon(hull)?.weaponIndex??null);
+  assert.equal(createVehicle(raw, hull).weaponIndex,nativeVehicleWeapon(hull)?.weaponIndex??null);
   assert.equal(previewWorkshop(raw,'vehicle',hull,9).weapon?.weaponIndex??null,nativeVehicleWeapon(hull)?.weaponIndex??null);
  }
  assert.equal(configureVehicle(g,18,0),false);assert.equal(transactVehicle(p,'turret',9,'upgrade'),false);assert.equal(transactVehicle(p,'turret',8,'buy'),false);
@@ -69,12 +69,12 @@ test('远征车体自动配套主炮，不再抽取角色枪械炮塔，无炮�
 test('旧远征装备迁移不改角色与模块，消防车不再借用手枪',()=>{
  const p=progress(),l={weapon:1,vehicle:1,turret:9,modules:[0,1,2]};
  const e=expeditionEquipment(p,l,4);assert.equal(e.vehicleLoadouts[1],18);assert.equal(e.vehicleWeapons[18],4);assert.equal(e.vehicleWeapons[9],0);assert.equal(e.weapon,1);assert.deepEqual(e.funnelLoadout,[0,1,2]);
- assert.equal(fireEquipment(p).vehicleLoadouts[4],null);assert.equal(createVehicle(fireEquipment(p),120,4).weaponIndex,null);
+ assert.equal(fireEquipment(p).vehicleLoadouts[4],null);assert.equal(createVehicle(fireEquipment(p), 4).weaponIndex,null);
  const g=new Game(p,()=>.1);g.enterRealm('rogue');g.rollRealmEquipment('weapon');g.rollRealmEquipment('vehicle');g.readyRealm();g.chooseRealmBlessing(g.realm.offers[0]);
  const saved=JSON.parse(JSON.stringify(g.progress.realms));saved.run.loadout.turret=9;
  const migrated=validateRealms(saved);assert.ok(migrated.run);assert.equal(migrated.run.loadout.turret,nativeVehicleWeapon(saved.run.loadout.vehicle)?.weaponIndex??null);assert.equal(migrated.run.stage,saved.run.stage);
 });
 test('电动车和警车继续使用角色手持武器，守护固定支架不受驾驶载具限制',()=>{
  for(const hull of [5,8]){const g=game(hull);g.enemies=[{id:900,type:'enemy',x:960,y:750,hp:10000,radius:14}];assert.equal(g.vehicle.weaponIndex,null);assert.ok(g.attack());assert.ok(g.projectiles.length>0);}
- const p=guardianProgress(progress(),{kind:'weapon',weaponIndex:1,level:1});assert.equal(createVehicle(p,120,0).weaponIndex,1);
+ const p=guardianProgress(progress(),{kind:'weapon',weaponIndex:1,level:1});assert.equal(createVehicle(p, 0).weaponIndex,1);
 });

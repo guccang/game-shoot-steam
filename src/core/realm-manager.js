@@ -142,7 +142,7 @@ function prepareExpeditionEquipment(game) {
   game.drone = createFunnelState(null, 'drone');
   game.mechanical = createMechanicalState();
   game.spider = createSpiderState();
-  game.vehicles = COLLECTED_VEHICLES.map((_, i) => createVehicle(p, game.maxHp(), i));
+  game.vehicles = COLLECTED_VEHICLES.map((_, i) => createVehicle(p, i));
   game.vehicle = game.vehicles[p.vehicleIndex];
 }
 // 抽签结果先保存再播放转轮；刷新不会重新抽奖，连点无法领取第二份装备。
@@ -176,11 +176,7 @@ export function readyRealm(game) {
 export function chooseRealmBlessing(game, key) {
   const r = game.realm;
   if (!r || r.mode !== 'rogue' || r.phase !== 'choice' || !r.offers.includes(key)) return false;
-  // 次数在合法选择事务内累加；旧档只有叠加层数，保留历史统计不完整标记。
-  if (!r.blessingCounts) {
-    r.blessingCounts = { ...r.buffs };
-    r.blessingCountsPartial = r.stage > 1 || r.cleared > 0;
-  }
+  // 次数只在合法选择事务内累加，不从叠加层数反推历史。
   r.blessingCounts[key] = Math.min(Number.MAX_SAFE_INTEGER, (r.blessingCounts[key] || 0) + 1);
   if (key === 'mend') r.goddess.hp = Math.min(GAMEPLAY_VALUES.realm.goddessHealth, r.goddess.hp + GAMEPLAY_VALUES.blessings.mendHealth);
   else if (key === 'heal') game.player.hp = Math.min(game.maxHp(), game.player.hp + game.maxHp() * GAMEPLAY_VALUES.blessings.healRatio);

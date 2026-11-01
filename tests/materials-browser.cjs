@@ -106,7 +106,7 @@ async (page) => {
   await page.locator('[data-turret-card="0"] [data-turret-action="equip"]').click();
   if (!await page.evaluate(async () => {
     const p = (await import('/src/main.js')).application.game.progress;
-    return p.vehicleWeapons[0] === 1 && p.vehicleWeapon === 0 && p.materials.parts === 1 &&
+    return p.vehicleWeapons[0] === 1 && p.vehicleLoadouts[p.vehicleIndex||0] === 0 && p.materials.parts === 1 &&
       p.equipmentGoal?.kind === 'turret' && p.equipmentGoal.index === 14;
   })) throw Error('炮塔购买安装或无关目标保留错误');
   await page.locator('#vehicle-collection-done').click();

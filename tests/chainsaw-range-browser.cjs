@@ -32,7 +32,7 @@ async (page) => {
    const {createVehicle}=await import('/src/combat/vehicle.js');const {updateRecoil,triggerRecoil}=await import('/src/combat/recoil.js');
    const {EnvironmentTransition}=await import('/src/world/environment.js');const {SceneTone}=await import('/src/rendering/scene-tone.js');
    const {heldChainsawSegment}=await import('/src/combat/chainsaw-geometry.js');const {riderPosition}=await import('/src/config/vehicle-rider.js');
-   if(frame===0){g.progress.vehicleHulls[5]=1;g.vehicle=createVehicle(g.progress,g.maxHp(),5);g.vehicle.active=true;triggerRecoil(g.player.recoil,14);}
+   if(frame===0){g.progress.vehicleHulls[5]=1;g.vehicle=createVehicle(g.progress, 5);g.vehicle.active=true;triggerRecoil(g.player.recoil,14);}
    else updateRecoil(g.player.recoil,14,1/30);
    const segment=heldChainsawSegment(riderPosition(g.player,g.vehicle),g.weapon().range);g.enemies[0].x=segment.end.x+segment.radius+g.enemies[0].radius-1;g.enemies[0].y=segment.end.y+8;
    Object.assign(a.environment,{time,weather:'sun'});a.renderer.light=new EnvironmentTransition(a.environment);a.renderer.tone=new SceneTone(a.environment);a.renderer.resize();a.refresh();a.renderer.draw();
@@ -54,4 +54,3 @@ async (page) => {
  if(errors.length)throw Error(errors.join('\n'));
  console.log(JSON.stringify({designCriterion:'chainsaw-range-contact',results,errors}));
 }
-

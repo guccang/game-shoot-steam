@@ -4,7 +4,7 @@ import {availableWood} from './wood-storage.js';
 import {CAMP_WAREHOUSE} from '../config/wood-storage.js';
 import {vehicleBoardingPoint} from './vehicle-boarding.js';
 import {creditResource} from '../progression/resource-wallet.js';
-import {normalizeKeepsakes} from '../progression/keepsakes.js';
+import {freshKeepsakes} from '../progression/keepsakes.js';
 import {RESTORATION_FLIGHT} from '../config/town-restoration.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 入职导演只推进正式场景中的角色和任务检查点，不替代采集与战斗规则。
@@ -50,7 +50,7 @@ function commitArrival(game, change) {
   const next=validateProgress(bindEconomy(JSON.parse(JSON.stringify(game.progress)),economyFor(game.progress)));
   change(next);
   // 信、钥匙与手机随交接一起落盘，保存失败时不会提前进入小背包。
-  next.keepsakes=normalizeKeepsakes(next.keepsakes,next.arrival);
+  if(!game.progress.arrival.keys&&next.arrival.keys)next.keepsakes=freshKeepsakes(true);
   try {if(game.arrivalPersist && game.arrivalPersist(next)!==true){game.arrivalError=true;return false;}}
   catch {game.arrivalError=true;return false;}
   game.progress=next;game.arrivalError=false;game.onEvent('arrival-change');return true;
@@ -158,7 +158,7 @@ export function skipArrivalJourney(game){
   p.weapons[RANGER.saw]=Math.max(1,p.weapons[RANGER.saw]);p.weapon=RANGER.saw;
   p.vehicleHulls[RANGER.scooter]=Math.max(1,p.vehicleHulls[RANGER.scooter]);p.vehicleIndex=RANGER.scooter;p.vehicleLoadouts[RANGER.scooter]=null;
  }))return false;
- game.vehicles[RANGER.scooter]=createVehicle(game.progress,game.maxHp(),RANGER.scooter);
+ game.vehicles[RANGER.scooter]=createVehicle(game.progress, RANGER.scooter);
  game.vehicle=game.vehicles[RANGER.scooter];game.magazines=createMagazines(game.progress);
  Object.assign(game.player,RANGER.doorstep);restoreArrival(game);return true;
 }
@@ -177,7 +177,6 @@ export function updateArrival(game,dt) {
   if(a.phase==='ride-guide'&&game.vehicle.active&&game.vehicle.index===RANGER.scooter)
     return !phaseArrival(game,game.progress.wood>=RANGER.repairWood?'repair':'gather');
   // 旧存档的下车阶段直接续到购枪，保留当前骑乘状态及保存失败重试。
-  if(a.phase==='dismount-guide')return !phaseArrival(game,'craft');
   // 已有材料直接转向工坊；花掉材料后只补差额，不要求重新采满任务配额。
   if(['gather','repair'].includes(a.phase))a.phase=game.progress.wood>=RANGER.repairWood?'repair':'gather';
   // 首次工坊属于入职任务，材料齐备且靠近时自动投料；保存失败仍由原界面重试。
@@ -191,7 +190,7 @@ export function updateArrival(game,dt) {
     const phases=Object.keys(RANGER_STAGES),next=phases[phases.indexOf(a.phase)+1]||'letter';
     if(a.phase==='handover'){
       if(phaseArrival(game,next,p=>{p.arrival.keys=true;p.arrival.parked=true;p.weapons[RANGER.saw]=Math.max(1,p.weapons[RANGER.saw]);p.weapon=RANGER.saw;p.vehicleHulls[RANGER.scooter]=Math.max(1,p.vehicleHulls[RANGER.scooter]);p.vehicleIndex=RANGER.scooter;p.vehicleLoadouts[RANGER.scooter]=null;})){
-        game.vehicles[RANGER.scooter]=createVehicle(game.progress,game.maxHp(),RANGER.scooter);game.vehicle=game.vehicles[RANGER.scooter];game.magazines=createMagazines(game.progress);
+        game.vehicles[RANGER.scooter]=createVehicle(game.progress, RANGER.scooter);game.vehicle=game.vehicles[RANGER.scooter];game.magazines=createMagazines(game.progress);
       }
     }else phaseArrival(game,next);
     if(!game.arrivalError)poseArrival(game,0);
@@ -239,10 +238,10 @@ export function arrivalTarget(game) {
 
 // 正式场景和验收共用建筑状态；保存成功进入制枪阶段后才切换完整工坊。
 export function workshopBuildView(game){
- const a=game.progress.arrival,ready=!a||['dismount-guide','craft','crafting','complete'].includes(a.phase),building=a?.phase==='repairing';
+ const a=game.progress.arrival,ready=!a||['craft','crafting','complete'].includes(a.phase),building=a?.phase==='repairing';
  return {state:ready?'ready':building?'rebuilding':'ruined',
   progress:building?Math.max(0,Math.min(1,(a.elapsed-RESTORATION_FLIGHT)/RANGER.rebuildSeconds)):ready?1:0,
   seconds:building?Math.max(0,Math.ceil(RANGER.rebuildSeconds+RESTORATION_FLIGHT-a.elapsed)):0,
-  success:['dismount-guide','craft'].includes(a?.phase)&&a.elapsed<RANGER.rebuildRevealSeconds,
+  success:['craft'].includes(a?.phase)&&a.elapsed<RANGER.rebuildRevealSeconds,
   failed:building&&!!game.arrivalError};
 }

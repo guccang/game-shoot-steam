@@ -1,8 +1,7 @@
 import {displayMeters} from '../world/distance-units.js';
 import {forestRuleLines} from '../config/forest-rules.js';
-import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
+import {facilityOpen} from "../config/town-restoration.js";
 import {worldDistance} from '../world/coordinates.js';
-import {EARLY_CLEARING_BOSS_HEALTH} from '../config/waves.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 // 清缴场景交互：点告示牌接取，确认后自动接续正式导航，不借用邻里长列表。
 import {CLEARING_POST,CLEARING_APPROACH,CLEARING_STEPS,CLEARING_SITE_RULES,CLEARING_STARTER_RULES} from '../config/clearing.js';
@@ -37,7 +36,7 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
  function render(){if(!dialog.open)return;const active=game.progress.living.patrolActive;
   challenge.innerHTML=challengeLevelMarkup(game.progress);
   [...dialog.querySelectorAll('li')].forEach((n,i)=>n.dataset.current=String(i===(active?1:0)));
-  dialog.querySelector('.clearing-loot').textContent=game.progress.bosses<EARLY_CLEARING_BOSS_HEALTH.length?'入门清缴 · 团怪成群，特殊怪穿插':'进阶清缴 · 成群团怪与特殊强敌';
+  dialog.querySelector('.clearing-loot').textContent=game.progress.bosses<3?'入门清缴 · 团怪成群，特殊怪穿插':'进阶清缴 · 成群团怪与特殊强敌';
   dialog.querySelector('.clearing-loot').textContent+=' · 击败怪物获得装备材料；金币来自种地，木材通过采集与任务获取';
   dialog.querySelector('.clearing-loot').textContent+=' · 完成后营地经验 +180';
   const rules=game.progress.bosses===0?CLEARING_STARTER_RULES:CLEARING_SITE_RULES;

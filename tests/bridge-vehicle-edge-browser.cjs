@@ -2,7 +2,7 @@
 async page=>{
  if(new URL(page.url()).port!=='4289')throw Error('仅限隔离端口4289');
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- const bridge=await page.evaluate(async()=>{const g=a.game;g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress,g.maxHp(),0);g.vehicles[0]=g.vehicle;g.vehicle.active=true;g.enemies=[];return (await import('/src/world/river-geometry.js')).BRIDGE;});
+ const bridge=await page.evaluate(async()=>{const g=a.game;g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicle=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicles[0]=g.vehicle;g.vehicle.active=true;g.enemies=[];return (await import('/src/world/river-geometry.js')).BRIDGE;});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(160);
  for(const sign of [1,-1]){
   const x=sign===1?bridge.x-32:bridge.x+bridge.width+32,y=sign===1?bridge.y+6:bridge.y+bridge.height-6;
