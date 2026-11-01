@@ -1,8 +1,7 @@
-// 小屋楼梯与武器架共用真实场景热点；存取面板沿用手机底板与暂停管理。
+// 小屋武器架使用真实场景热点，楼梯由站定倒计时控制；存取面板沿用手机底板与暂停管理。
 import {createEventScope} from '../platform/events.js';
 import {sceneHit} from './scene-hit.js';
-import {COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
-import {changeCottageFloor} from '../core/cottage.js';
+import {cottageFloor} from '../config/cottage.js';
 import {placedDecor} from '../progression/home-decor.js';
 import {carriedWeapon} from '../progression/weapon-storage.js';
 import {accessibleWeaponRack,weaponStorageReason,transferRackWeapon} from '../core/weapon-storage.js';
@@ -18,8 +17,8 @@ export function createCottageStorage({game,renderer,root,panel,dialogs,input,onC
  dialog.id='weapon-rack-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','weapon-rack-title');
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="weapon-rack-title">武器收纳架</h2><p id="weapon-rack-summary"></p></div><button id="weapon-rack-close" class="ui-close" aria-label="关闭武器架">×</button></header><div class="ui-panel__body" id="weapon-rack-content"></div><footer class="ui-panel__footer" style="display:block"><p id="weapon-rack-message" role="status"></p><button class="ui-button" data-rack-close>回到小屋</button></footer>';root.body.append(dialog);
  let uid=null,message='',signature='';const get=id=>root.getElementById('weapon-rack-'+id);
- // 当前楼层的真实家具与楼梯是唯一热点来源，未摆放家具不产生幽灵按钮。
- function targets(){return game.cottage?.kind==='cottage'?[{id:'stairs',x:COTTAGE_STAIRS.x,y:COTTAGE_STAIRS.y+40,width:76,height:110,label:cottageFloor(game.cottage)?'下楼到一楼':'上楼到二楼'},...placedDecor(game.progress.homeDecor,cottageFloor(game.cottage)).filter(i=>i.type==='weapon-rack').map(i=>({...i,id:'rack-'+i.uid,height:90,label:'打开武器架 '+i.uid}))]:[];}
+ // 当前楼层的真实武器架是唯一点击热点来源，未摆放家具不产生幽灵按钮。
+ function targets(){return game.cottage?.kind==='cottage'?placedDecor(game.progress.homeDecor,cottageFloor(game.cottage)).filter(i=>i.type==='weapon-rack').map(i=>({...i,id:'rack-'+i.uid,height:90,label:'打开武器架 '+i.uid})):[];}
  // 每次提交后重读存档，重复点击不会复制武器，也不会使用上次页面的数量。
  function renderContent(){
   const rack=accessibleWeaponRack(game,uid),p=game.progress,load=catLoad(game);
@@ -35,7 +34,6 @@ export function createCottageStorage({game,renderer,root,panel,dialogs,input,onC
  function activate(item){
   if(game.state!=='playing'||game.cottage?.sleep||game.cottage?.restOpen||root.querySelector('dialog[open]'))return;
   input.reset();game.cottage.exitElapsed=0;
-  if(item.id==='stairs'){if(!changeCottageFloor(game))game.cottage.storageNotice='请走到楼梯前，再点击上下楼。';else game.cottage.storageNotice='';onChange();return;}
   if(!accessibleWeaponRack(game,item.uid)){game.cottage.storageNotice='请靠近武器架，再点击存取。';return;}
   game.cottage.storageNotice='';uid=item.uid;message='';dialogs.open(dialog.id);
  }

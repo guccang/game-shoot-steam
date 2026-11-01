@@ -54,7 +54,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
    const notice=panel.querySelector('#cottage-notice');
    // 睡醒结果保留在屋内底部，独立纸色底板让回血和保存失败信息都清楚可读。
    notice.dataset.result=String(home&&!!room.restResult&&!room.sleep&&!room.exitElapsed);
-   notice.textContent=room.storageNotice|| (room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':room.floor?'二楼可布置武器架。靠近并点击架子存取，点击楼梯下楼。':'床边可休息。装扮小屋摆放家具；右侧楼梯通往二楼。');
+   notice.textContent=(room.stairsElapsed!=null?'楼梯前站定 1 秒'+(room.floor?'下楼':'上楼')+' · 移开可取消':room.stairsLatch?'已到'+(room.floor?'二楼':'一楼')+'，移开楼梯后可再次上下楼。':room.storageNotice)|| (room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':room.floor?'二楼可布置武器架。靠近并点击架子存取，楼梯前站定 1 秒下楼。':'床边可休息。装扮小屋摆放家具；右侧楼梯前站定 1 秒上楼。');
    for(const mode of ['phase','morning'])panel.querySelector('#cottage-sleep-'+mode).disabled=!near||!!room.sleep||game.state!=='playing';
   }
 

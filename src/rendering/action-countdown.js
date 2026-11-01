@@ -7,6 +7,10 @@ function drawIcon(c,icon){
  if(icon==='parking'||icon==='vehicle'){
   box(c,-6,-4,12,9,3,'#82a376','#41664b',1.3);box(c,-4,-7,8,5,2,'#dce5b9','#41664b',1);
   for(const x of [-5,4])oval(c,x,5,1.5,2,'#41664b');
+ }else if(icon==='stairs-up'||icon==='stairs-down'){
+  // 阶梯和方向箭头独立绘制，上下楼共用同一轮廓与进度环。
+  c.strokeStyle='#41664b';c.lineWidth=1.7;c.beginPath();c.moveTo(-7,6);c.lineTo(-2,6);c.lineTo(-2,1);c.lineTo(3,1);c.lineTo(3,-4);c.lineTo(8,-4);c.stroke();
+  const d=icon==='stairs-up'?-1:1;c.beginPath();c.moveTo(-5,-d*6);c.lineTo(-5,d*6);c.moveTo(-8,d*3);c.lineTo(-5,d*6);c.lineTo(-2,d*3);c.stroke();
  }else if(icon==='wood'){
   drawResourceIcon(c,'wood',0,0,18);
  }else if(icon==='weapon'){

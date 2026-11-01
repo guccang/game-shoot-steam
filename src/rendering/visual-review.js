@@ -1799,3 +1799,6 @@ export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoa
 
 // 快捷清理与一级种地入口读取正式DOM，记录真实数量、来源及拖拽浮标。
 export async function inspectCleanupDrag(game,root){return {...await inspectLoadCleanup(game,root),designCriterion:'load-cleanup-drag',source:root.querySelector('[data-cleanup-source][aria-pressed=true]')?.dataset.cleanupSource,range:root.getElementById('cleanup-quantity-range')?.value,ghosts:root.querySelectorAll('.cleanup-ghost').length,farmPrimary:root.getElementById('farm-menu')?.parentElement?.classList.contains('field-menu'),farmOpen:!root.getElementById('farm-tools')?.hidden};}
+
+// 自动楼梯验收直接读取室内计时、楼层与正式屏幕徽记，确认不存在点击热点。
+export function inspectCottageStairs(game,renderer,root){return {designCriterion:'stairs-auto-transition',floor:game.cottage?.floor,elapsed:game.cottage?.stairsElapsed,latch:game.cottage?.stairsLatch,countdown:renderer.actionCountdownView,clickTargets:root.querySelectorAll('[data-cottage-target="stairs"]').length};}

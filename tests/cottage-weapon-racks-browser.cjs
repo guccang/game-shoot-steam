@@ -21,12 +21,12 @@ async original=>{
   await page.evaluate(()=>{window.realSave=a.game.livingPersist;a.game.livingPersist=()=>false;});await page.locator('[data-rack-take="0"]').tap();if(!await page.locator('#weapon-rack-message').textContent().then(s=>s.includes('保存失败')))throw Error('保存失败无反馈');if(!await page.evaluate(uid=>a.game.progress.homeDecor.items.find(i=>i.uid===uid).weapons.includes(0),ids[0]))throw Error('保存失败仍移动武器');await page.evaluate(()=>a.game.livingPersist=realSave);await page.locator('[data-rack-take="0"]').tap();await shot('take-and-equip');await page.locator('#weapon-rack-close').tap();
   // 真实按键绕过武器架，确认家具碰撞与原猫动作仍使用正常更新。
   await approach(168,355);await page.keyboard.down('ArrowUp');await page.waitForTimeout(650);await page.keyboard.up('ArrowUp');if(await page.evaluate(()=>a.game.player.y)<315)throw Error('穿过武器架');
-  await approach(410,490);await page.locator('[data-cottage-target="stairs"]').tap();await page.waitForFunction(()=>a.game.cottage.floor===1);await place(ids[1],168,288);await approach(168,360);await page.locator('[data-cottage-target="rack-'+ids[1]+'"]').tap();await page.locator('[data-rack-store="0"]').tap();await page.locator('#weapon-rack-close').tap();
+  await approach(410,490);await page.waitForFunction(()=>a.game.cottage.floor===1);await place(ids[1],168,288);await approach(168,360);await page.locator('[data-cottage-target="rack-'+ids[1]+'"]').tap();await page.locator('[data-rack-store="0"]').tap();await page.locator('#weapon-rack-close').tap();
   for(const [width,height] of [[320,568],[390,844],[844,390],[900,1280]])for(const night of [false,true]){
    await page.setViewportSize({width,height});await page.evaluate(async night=>{const g=a.game,{LIVING_DAY_MS}=await import('/src/config/living-world.js');g.progress.living.calendar.elapsed=LIVING_DAY_MS*(night?.85:.3);},night);
-   await approach(410,490);if(await page.evaluate(()=>a.game.cottage.floor)===1){await page.locator('[data-cottage-target="stairs"]').tap();await page.waitForFunction(()=>a.game.cottage.floor===0);}
+   await approach(410,490);if(await page.evaluate(()=>a.game.cottage.floor)===1){await page.waitForFunction(()=>a.game.cottage.floor===0);}
    await approach(210,320);await shot('floor1-'+width+'-'+(night?'night':'day'));
-   await approach(410,490);await page.locator('[data-cottage-target="stairs"]').tap();await page.waitForFunction(()=>a.game.cottage.floor===1);await approach(168,360);await shot('floor2-'+width+'-'+(night?'night':'day'));
+   await approach(410,490);await page.waitForFunction(()=>a.game.cottage.floor===1);await approach(168,360);await shot('floor2-'+width+'-'+(night?'night':'day'));
    await page.locator('[data-cottage-target="rack-'+ids[1]+'"]').tap();await shot('storage-'+width+'-'+(night?'night':'day'));await page.locator('#weapon-rack-close').tap();
   }
   await approach(240,538);await page.waitForTimeout(1300);if(!await page.evaluate(()=>a.game.cottage?.floor===1))throw Error('二楼从不存在的门退出');

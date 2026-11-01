@@ -36,7 +36,7 @@ function enterInterior(game,kind,parkingEntrance=null,mountedCountdown=false){
  // 驾驶入屋只能由完整倒计时提交；先在门口留下真实车辆，再切换室内坐标。
  if(game.vehicle.active&&(!mountedCountdown||!parkDoorVehicle(game)))return false;
  const outside=nearest(layout.outside||{x:C.door.x+50,y:C.door.y+30},game.player);
- game.cottage={kind,floor:0,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'点击售货员，查看服务。',sleep:null,exitElapsed:0,restElapsed:0,restOpen:false,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
+ game.cottage={kind,floor:0,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'点击售货员，查看服务。',sleep:null,stairsElapsed:null,stairsLatch:false,exitElapsed:0,restElapsed:0,restOpen:false,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
  Object.assign(game.player,layout.spawn,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
 }
 // 门槛附近按停驻车体校验空地，向门外小幅避让墙体；失败保留驾驶状态和原位置。
@@ -57,13 +57,14 @@ export function updateCottage(game,dt,input){
  if(game.cottage){
   if(game.state!=='playing')return true;
   const room=game.cottage,p=game.player,layout=interiorLayout(room);
-  if(room.sleep){room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
+  if(room.sleep){room.stairsElapsed=null;room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
   // 选择休息时间时不继续走动或推进出口计时，原生弹窗负责圈定操作焦点。
-  if(room.restOpen){p.vx=p.vy=0;updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
+  if(room.restOpen){room.stairsElapsed=null;p.vx=p.vy=0;updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
   const before={x:p.x,y:p.y},length=Math.max(1,Math.hypot(input.x,input.y)),speed=115*movementLoadFactor(game),dx=input.x/length*speed*dt,dy=input.y/length*speed*dt;
   if(!cottageBlocked(p.x+dx,p.y,game))p.x+=dx;if(!cottageBlocked(p.x,p.y+dy,game))p.y+=dy;
   p.vx=(p.x-before.x)/Math.max(dt,.001);p.vy=(p.y-before.y)/Math.max(dt,.001);
   updateCatMotion(p.bodyAnimation,dt,Math.hypot(p.vx,p.vy),true);game.time+=dt;
+  if(updateCottageStairs(game,dt,input))return true;
   // 床边仍主动点击；进入出口范围累计一秒，移开归零，入室出生点不触发。
   room.restElapsed=0;
   room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)===1)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
@@ -127,8 +128,16 @@ function finishCottageSleep(game){
  game.cottage.restResult=game.cottage.notice=`HP 已恢复至满值（${hp}/${hp}）`;game.onEvent('cottage-change');
 }
 
-// 只有楼梯前可以切层，楼层互相独立；落脚处预留通道，不改变室外返回位置。
+// 连续站定一秒才上下楼，首次采样不计时；切层落地后先移开才允许再次触发。
+function updateCottageStairs(game,dt,input){
+ const room=game.cottage,near=Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)<=COTTAGE_STAIRS.radius;
+ if(!near)room.stairsLatch=false;
+ if(room.kind!=='cottage'||game.player.hp<=0||!near||room.stairsLatch||Math.hypot(input.x,input.y)>.01){room.stairsElapsed=null;return false;}
+ const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.stairsElapsed=room.stairsElapsed==null?0:room.stairsElapsed+tick;
+ return room.stairsElapsed+1e-9>=COTTAGE_STAIRS.wait&&changeCottageFloor(game);
+}
+// 切层只能由已完成的候停提交，点击或直接调用不能跳过一秒；室外返回位置不变。
 export function changeCottageFloor(game){
- const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||room.restOpen||game.state!=='playing'||Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)>COTTAGE_STAIRS.radius)return false;
- room.floor=1-cottageFloor(room);room.exitElapsed=0;room.restResult='';room.notice=room.floor?'二楼陈列室，可摆放武器架。':'回到一楼生活区。';Object.assign(game.player,COTTAGE_STAIRS.landing,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
+ const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||room.restOpen||game.player.hp<=0||room.stairsLatch||room.stairsElapsed==null||room.stairsElapsed+1e-9<COTTAGE_STAIRS.wait||game.state!=='playing'||Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)>COTTAGE_STAIRS.radius)return false;
+ room.floor=1-cottageFloor(room);room.stairsElapsed=null;room.stairsLatch=true;room.storageNotice='';room.exitElapsed=0;room.restResult='';room.notice=room.floor?'二楼陈列室，可摆放武器架。':'回到一楼生活区。';Object.assign(game.player,COTTAGE_STAIRS.landing,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
 }
