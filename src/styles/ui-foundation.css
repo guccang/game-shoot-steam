@@ -441,3 +441,8 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #field-equipment-body .ammo-offer[data-ammo-fit=true] .ammo-fit-label{color:var(--ui-forest);font-weight:bold;}
 #field-equipment-body .equipment-ammo{display:flex;align-items:center;gap:10px;}
 #field-equipment-body .equipment-ammo .ammo-symbol{width:36px;height:36px;}
+
+/* 弹药批量操作固定两列，数量与价格分行，窄屏不挤成细长按钮。 */
+#field-equipment-body .ammo-offer .logistics-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+#field-equipment-body .ammo-offer .logistics-actions button{min-width:0;padding:10px 8px;}
+#field-equipment-body .ammo-offer .logistics-actions small{display:block;font-size:12px;line-height:1.5;font-weight:normal;}
