@@ -1,5 +1,5 @@
 import {updateLoadWarning} from './load-warning.js';
-import {dropGroundWood,updateWoodPickup} from './wood-pickup.js';
+import {collectAutomaticWood} from './wood-pickup.js';
 import {updateVehicleBoarding} from './vehicle-boarding.js';
 import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
@@ -196,7 +196,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.buildingEntry=null;this.buildingEntryLatch=null;
-    this.woodPickup=null;this.woodPickupNotice=0;this.woodPickupSkipped=null;this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
+    this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
     resetBattlefield(this, continuation);
@@ -656,9 +656,9 @@ export class Game {
     }
     ({coins,wood}=forestReward(target.type,coins,this.progress));
     if(share){coins=share.coins;wood=share.wood;}
-    // 金币照常入账；木材仅生成地面实物，等待玩家接近后再计入库存与收入。
+    // 金币照常入账；木材仅在整笔装得下时直接入包，满载不生成地面物品。
     coins=creditResource(this.progress,'coins',coins);
-    dropGroundWood(this,target,wood,impact);
+    collectAutomaticWood(this,target,wood,impact);
     recordEconomy(this.progress,'income','forest:'+target.type,{coins,...materials});
     if(coins)this.drops.push(createResourceDrop(target,coins,0));
     this.onEvent('reward');
@@ -806,7 +806,6 @@ export class Game {
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
     updateLoadWarning(this,dt,input);
     updateVehicleBoarding(this,dt,input);
-    updateWoodPickup(this,dt);
     maintainPlayerTow(this);
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
     if(this.cottage)updateVehicleRepair(this,dt);

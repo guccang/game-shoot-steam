@@ -1,4 +1,3 @@
-import {drawGroundWood} from './wood-pickup.js';
 import {ammoShopObjects,drawAmmoShop} from './ammo-shop.js';
 import {warehouseObjects,drawWarehouse} from './warehouse.js';
 import {catHomeObjects,drawCatHome} from './cat-home.js';
@@ -359,7 +358,6 @@ export class Renderer {
       oval(c, stump.x, stump.y, 15, 7, '#9c8254', '#67744c');
       oval(c, stump.x, stump.y - 2, 11, 5, '#d1b381', '#9c8254', 1);
     }
-    drawGroundWood(c,source,view,light.night);
     // 边界和目标在实体及攻击预警之前绘制，保证脚下提示不盖住冲锋区域。
     drawStoryGuidance(c,source,view,this.reduced.matches);
     drawFireRoute(c,source,view,this.reduced.matches);

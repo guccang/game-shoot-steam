@@ -1,5 +1,4 @@
 import {COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
-import {WOOD_GROUND} from '../config/wood-storage.js';
 import {VEHICLE_BOARDING,vehicleBoardingPoint} from '../core/vehicle-boarding.js';
 // 房间与地图共用门口徽记，固定屏幕尺寸和目标门的位置。
 import {drawActionCountdown} from './action-countdown.js';
@@ -12,7 +11,6 @@ export function playerActionCountdown(game){
  // 楼梯徽记固定在落脚点左前方，避免猫猫身体和扶手盖住数字。
  if(room?.kind==='cottage'&&!room.sleep&&!room.restOpen&&room.stairsElapsed!=null)return {elapsed:room.stairsElapsed,wait:COTTAGE_STAIRS.wait,icon:cottageFloor(room)?'stairs-down':'stairs-up',anchor:{x:COTTAGE_STAIRS.landing.x-115,y:COTTAGE_STAIRS.landing.y-12,space:'room'}};
  if(room)return !room.sleep&&!room.restOpen&&room.exitElapsed?{elapsed:room.exitElapsed,wait:interiorLayout(room).exitWait,icon:'exit'}:null;
- if(game.woodPickup&&game.woodPickup.elapsed>=0){const p=game.woodPickup;return {elapsed:p.elapsed,wait:WOOD_GROUND.wait,icon:'wood',width:78,anchor:{x:p.x+60,y:p.y+40,space:'world'}};}
  // 驾驶时也显示房门候停进度，载具自身的上车徽记仍只用于步行状态。
  if(game.vehicle.active&&!game.cottageEntry)return null;
  // 车头侧边徽记避开猫猫身体和短屏顶部HUD，仍固定于车辆而不随玩家漂移。
