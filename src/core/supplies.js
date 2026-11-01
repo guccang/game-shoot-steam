@@ -2,7 +2,7 @@
 import {AMMO_TYPES,SUPPLY_ITEMS,GUN_MASSES,ammoKind,vehicleFaults} from '../config/supplies.js';
 import {VEHICLE_ARMAMENTS,VEHICLE_WEAPONS} from '../config/vehicle-armaments.js';
 import {validateProgress} from '../progression/progress.js';
-import {vehicleLoad} from '../progression/load-weight.js';
+import {catLoad,vehicleLoad} from '../progression/load-weight.js';
 import {capturePatrol} from './patrol-session.js';
 import {personalFleet} from './vehicle-repair.js';
 import {vehicleLocations} from './vehicle-location.js';
@@ -27,7 +27,7 @@ export function supplyVehicleNearby(game,index=game.vehicle.index){const site=ve
 // 存储明确成功才替换进度，异常与失败都可以安全重试。
 function commit(game,next,message){let saved=false;try{saved=game.livingPersist?.(next)===true;}catch{}if(!saved)return {ok:false,message:'保存失败，物品、弹药和费用未改变。'};game.progress=next;return {ok:true,message};}
 // 商店价格按一包计费，制作消耗木材与零件；一次最多二十包。
-export function tradeSupply(game,{kind,id,batches=1,craft=false,target}={}){
+export function tradeSupply(game,{kind,id,batches=1,craft=false,target,loadConfirmation}={}){
  if(!supplyAvailable(game)||game.cottage?.kind!=='ammo')return {ok:false,message:'请进入弹药补给铺，与柜台售货员交谈。'};
  // 弹药必须明确所属库存，不能将缺少目的地的车载炮弹默认塞进猫猫背包。
  if(kind==='item'&&target===undefined)target='hand';
@@ -40,6 +40,15 @@ export function tradeSupply(game,{kind,id,batches=1,craft=false,target}={}){
  const coins=craft?0:rule.coins*batches,wood=craft?rule.wood*batches:0,parts=craft?rule.parts*batches:0;
  if(next.coins<coins||next.wood<wood||next.materials.parts<parts)return {ok:false,message:'金币或制作材料不足。'};
  next.coins-=coins;next.wood-=wood;next.materials.parts-=parts;stock[id]+=amount;
+ // 使用候选库存和真实弹匣计算负重；停在店旁的车辆也预留驾驶员与背包。
+ const snapshot=Object.create(game);snapshot.progress=next;
+ const before=target==='vehicle'?vehicleLoad(game,game.vehicle.index,{driver:true}):catLoad(game),after=target==='vehicle'?vehicleLoad(snapshot,game.vehicle.index,{driver:true}):catLoad(snapshot);
+ const load={target,hull:target==='vehicle'?game.vehicle.index:null,before:before.weight??before.payload,after:after.weight??after.payload,capacity:after.capacity};
+ if(load.after>=load.capacity){
+  // 确认只适用于这一商品、价格、去向及重量，库存变化后不能沿用旧确认。
+  const confirmation=JSON.stringify({kind,id,batches,craft,amount,coins,wood,parts,...load});
+  if(loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,name:rule.name,amount,unit:kind==='ammo'?'发':'个',message:'补给后载荷将满，确认后才能继续。'};
+ }
  return commit(game,next,`${rule.name} +${amount}，已放入${target==='vehicle'?'当前载具货舱':'猫猫背包'}并计入对应负重。`);
 }
 // 维修包只用于尚未完全损坏的部件；不恢复车体HP，也不能复活报废车。

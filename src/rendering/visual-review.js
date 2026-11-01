@@ -1818,3 +1818,9 @@ export async function inspectIndoorBackpack(game,root){
  const buttons=['cottage-backpack','cottage-cleanup'].map(id=>{const n=root.getElementById(id),r=n.getBoundingClientRect();return {id,hidden:n.hidden,disabled:n.disabled,width:r.width,height:r.height,inBounds:r.left>=0&&r.top>=0&&r.right<=view.innerWidth&&r.bottom<=view.innerHeight,hit:n.contains(root.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};});
  return {designCriterion:'indoor-backpack-cleanup',room:game.cottage?.kind,floor:game.cottage?.floor,overloaded:load.overloaded,weight:load.weight,buttons,notice:root.getElementById('cottage-notice').textContent};
 }
+
+// 交易确认直接检查正式模态与按钮，不用替代预览伪造负重提醒。
+export function inspectSupplyLoadConfirm(root){
+ const panel=root.getElementById('supply-load-confirm'),r=panel.getBoundingClientRect(),view=root.defaultView,body=panel.querySelector('.ui-panel__body');
+ return {designCriterion:'purchase-load-confirm',open:panel.open,title:panel.querySelector('h2').textContent,weight:panel.querySelector('[data-load-weight]').textContent,effect:panel.querySelector('#supply-load-effect').textContent,focus:root.activeElement?.id,badBounds:r.left<0||r.top<0||r.right>view.innerWidth+1||r.bottom>view.innerHeight+1,overflow:body.scrollWidth>body.clientWidth+1,smallButtons:[...panel.querySelectorAll('button')].some(b=>{const box=b.getBoundingClientRect();return box.width<44||box.height<44;})};
+}
