@@ -1,3 +1,4 @@
+import {updateWarehouseHarvest} from './warehouse-harvest.js';
 import {updateOutdoors,outdoorBusy} from './outdoors.js';
 import {updateLoadWarning} from './load-warning.js';
 import {updateWarehouseWood} from './warehouse.js';
@@ -197,7 +198,7 @@ export class Game {
     this.farmWork=null;this.farmVehicleReturn=null;this.farmSignals=[];this.farmDragging=false;this.farmCursor=null;this.farmDeliveryCheck=0;
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
-    this.buildingEntry=null;this.buildingEntryLatch=null;this.warehouseAutoWood=null;
+    this.buildingEntry=null;this.buildingEntryLatch=null;this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
     this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
@@ -805,6 +806,7 @@ export class Game {
     updateOutdoors(this,dt);
     updateFarmRain(this);
     updateWarehouseWood(this,dt);
+    updateWarehouseHarvest(this,dt);
     // 运动会使用独立移动时钟，倒计时、暂停、终点均不推进森林或战斗逻辑。
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}

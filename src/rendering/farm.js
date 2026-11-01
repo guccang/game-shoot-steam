@@ -12,6 +12,11 @@ export function loadFarmArt(){
 }
 // 控件与世界作物共用清单；显式裁切单株，横持短图标留白处也不会露出相邻图集格。
 export function farmCropMarkup(index,stage=2){const a=manifest.crops[`crop-${index}-${stage}`];if(!a)throw Error('未知作物图片');const id='farm-crop-clip-'+cropMarkupId++,[x,y,width,height]=a.rect;return `<svg viewBox="${a.rect.join(' ')}" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><defs><clipPath id="${id}" clipPathUnits="userSpaceOnUse"><rect x="${x}" y="${y}" width="${width}" height="${height}"/></clipPath></defs><image href="/assets/farm/${a.file}" width="${a.sheet[0]}" height="${a.sheet[1]}" clip-path="url(#${id})"/></svg>`;}
+// 收获物飞行直接裁切成熟作物图集，中心锚点与拾取轨迹一致，不增加位图缓存。
+export function drawHarvestIcon(c,index,x,y,size=23){
+ const a=manifest.crops[`crop-${index}-2`];if(!a)throw Error('未知收获物图片');const image=sheets.get(a.file);if(!image)return;
+ const [sx,sy,w,h]=a.rect,scale=size/Math.max(w,h);c.drawImage(image,sx,sy,w,h,x-w*scale/2,y-h*scale/2,w*scale,h*scale);
+}
 // 验收读取正式图集缓存与像素预算，昼夜不新增位图副本。
 export function farmArtBudget(){return {sheets:sheets.size,pixels:[...sheets.values()].reduce((n,i)=>n+i.naturalWidth*i.naturalHeight,0),maxSheets:manifest.runtimeFiles.length};}
 // 实景土地、作物、快递站与独立农具共享正式世界镜头。

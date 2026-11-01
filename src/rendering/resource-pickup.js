@@ -1,3 +1,4 @@
+import {drawHarvestIcon} from './farm.js';
 // 连续拾取沿用正式金币和木材轮廓，独立图标按各自发射时刻飞向角色或指定仓库。
 import {resourcePickupPoses} from '../combat/resource-pickup.js';
 import {drawResourceIcon} from './resource-icons.js';
@@ -11,7 +12,8 @@ export function drawResourcePickups(context,drops,player,reduced=false){
    context.beginPath();context.moveTo(icon.tailX,icon.tailY);context.lineTo(icon.x,icon.y);context.stroke();
   }
   context.globalAlpha=icon.alpha;
-  drawResourceIcon(context,icon.kind,icon.x,icon.y,icon.size);
+  if(icon.kind==='crop')drawHarvestIcon(context,icon.crop,icon.x,icon.y,icon.size);
+  else drawResourceIcon(context,icon.kind,icon.x,icon.y,icon.size);
  }
  context.restore();
 }

@@ -31,7 +31,7 @@ function stores(p,id,source){
  return {item,carry:p.farm.seeds,key:item.index,store:p.warehouse.seeds,storeKey:item.index,cap:FARM_STOCK_CAP};
 }
 // 列表只展示有货的条目；弹药数量不含已装填弹匣，避免复制或拆走正在使用的弹药。
-export function warehouseRows(game,source='bag'){return WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key],stored:s.store[s.storeKey]}]:[];});}
+export function warehouseRows(game,source='bag'){return [{...itemDefinition('currency:coins'),carried:0,stored:game.progress.coins,readonly:true},...WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key],stored:s.store[s.storeKey]}]:[];})];}
 // 预演与提交共用校验，并给出取出后的实际负重；满载需要玩家再次明确确认。
 export function warehouseTransferPreview(game,source,id,count,direction){
  if(!canUseWarehouse(game)||source!=='bag'&&!warehouseVehicles(game).includes(source))return {ok:false,message:'请靠近仓库打开存取页面；载具需位于仓库附近。'};

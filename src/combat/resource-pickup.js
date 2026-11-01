@@ -19,7 +19,7 @@ export function resourcePickupPoses(drops,player,reduced=false){
  for(let b=drops.length-1;b>=0;b--){
   const drop=drops[b];if(drop.life<=0)continue;
   const start=nearest({x:drop.originX??drop.x,y:drop.originY??drop.y},player);
-  const age=drop.age??0,counts=[iconCount(drop.coins,reduced),iconCount(drop.wood,reduced,true)];
+  const age=drop.age??0,counts=[iconCount(drop.coins,reduced),iconCount(drop.cropCount??drop.wood,reduced,true)];
   for(let i=0;i<Math.max(...counts);i++)for(let kind=0;kind<2;kind++){
    if(i>=counts[kind])continue;
    const timing=kind?W:C,delay=i*timing.emitSeconds/Math.max(1,counts[kind]-1)+kind*.07;
@@ -34,8 +34,8 @@ export function resourcePickupPoses(drops,player,reduced=false){
    const point=arcPoint(origin,control,goal,u),previous=Math.max(0,t-.08);
    const tail=arcPoint(origin,control,goal,reduced?u:.4*previous+.6*previous*previous);
    const tx=tail.x-point.x,ty=tail.y-point.y,limit=Math.min(1,18/Math.max(1,Math.hypot(tx,ty)));
-   result.push({kind:kind?'wood':'coins',...point,tailX:point.x+tx*limit,tailY:point.y+ty*limit,
-    alpha:Math.min(1,t/.08,(1-t)/.1),size:(kind?17:16)*(1-Math.max(0,t-.8)*.8)});
+   result.push({kind:kind?(drop.cropCount?'crop':'wood'):'coins',...(kind&&drop.cropCount?{crop:drop.crop}:{}),...point,tailX:point.x+tx*limit,tailY:point.y+ty*limit,
+    alpha:Math.min(1,t/.08,(1-t)/.1),size:(kind?(drop.cropCount?23:17):16)*(1-Math.max(0,t-.8)*.8)});
    if(result.length>=C.drawLimit)return result;
   }
  }

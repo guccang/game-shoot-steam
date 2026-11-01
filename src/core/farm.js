@@ -1,3 +1,4 @@
+import {harvestDestination,harvestLoadPreview} from './farm-harvest-load.js';
 import {isRainWeather} from '../world/season-weather.js';
 import {sellCrops} from './cargo.js';
 import {storyDeliveryReady} from './story-definition.js';
@@ -78,7 +79,7 @@ export function commitFarm(game,next,event){
  game.progress=next;game.farmSignals||=[];game.farmSignals.push(event);if(game.farmSignals.length>32)game.farmSignals.shift();game.onEvent?.('farm-change',event);return {ok:true,...event};
 }
 // 只提交真实发生的一格动作；所有操作再次核验地图、距离与成熟状态。
-export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,now=Date.now()}={}){
+export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,loadConfirmation,now=Date.now()}={}){
  if(action==='sell')return sellCrops(game);
  // 耕种、浇水及收割必须步行，收购通过独立事务办理。
  if(!canUseFarm(game))return {ok:false,message:'请结束当前活动并下车，再拿起农具。'};
@@ -88,7 +89,7 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
  const plantedInWetSoil=action==='plant'&&p?.watered===true;
  const cell=action==='dig'?(point|| (farmCell(plotId)?{...farmCell(plotId),mapId:game.mapId}:null)):p?farmPosition(p):null;
  if(['dig','plant','harvest','water','remove'].includes(action)&&(!cell||cell.mapId!==game.mapId||worldDistance(game.player,cell)>78))return {ok:false,message:'先走到这块田边再操作。'};
- let message='',coins=0,harvest=null,lesson=false,wateredPlots=[];
+ let message='',coins=0,harvest=null,lesson=false,wateredPlots=[],destination=null;
  if(action==='dig'){
   const reason=farmLandReason(game,cell);if(reason)return {ok:false,message:reason};
   if(f.plots.length>=FARM_MAX_PLOTS)return {ok:false,message:'已达到可保存的田块数量上限。'};
@@ -110,9 +111,9 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   message=wateredPlots.some(p=>p.savedSeconds>0)?`已浇灌 ${targets.length} 块田 · 本茬最多提前 ${FARM_WATER.reduction*100}%成熟`:'已再次浇水，土壤保持湿润 · 本茬加速已生效';
  }else if(action==='harvest'){
   if(!p||p.crop===null||farmGrowth(p,now)<1)return {ok:false,message:'这块田还没有成熟。'};
-  harvest=p.crop;const grown=FARM_CROPS[harvest];if(f.inventory[harvest]>=FARM_STOCK_CAP)return {ok:false,message:'作物库存已满，请先装车或出售。'};
-  f.inventory[harvest]++;f.xp=Math.min(FARM_STOCK_CAP,f.xp+grown.xp);f.harvested=Math.min(FARM_STOCK_CAP,f.harvested+1);
-  Object.assign(p,{crop:null,plantedAt:0,readyAt:0,watered:false});message=grown.name+'收获，背包作物 +1；到种子小屋或快递站出售获得金币。';
+  harvest=p.crop;destination=harvestDestination(game);const stock=destination.hull===null?f.inventory:next.logistics.builds[destination.hull].cargo;const grown=FARM_CROPS[harvest];if(stock[harvest]>=FARM_STOCK_CAP)return {ok:false,message:'作物库存已满，请先装车或出售。'};
+  stock[harvest]++;f.xp=Math.min(FARM_STOCK_CAP,f.xp+grown.xp);f.harvested=Math.min(FARM_STOCK_CAP,f.harvested+1);
+  Object.assign(p,{crop:null,plantedAt:0,readyAt:0,watered:false});message=grown.name+'收获，'+destination.name+'作物 +1；靠近小屋仓库自动兑换金币，也可到种子小屋或快递站出售。';
   if(p.wild)message+=' · 野外也能种田，点击空田即可继续播种';
  }else if(action==='remove'){
   if(!p)return {ok:false,message:'这块田已经不存在了。'};
@@ -134,7 +135,13 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   wetPlots(next,[p],now);message+=' · 土壤保持湿润，无需浇水';
  }
  if(!game.progress.farm.lessonRewarded&&next.farm.lessonRewarded&&!lesson){lesson=true;message+=' · 园艺入门完成，胡萝卜种子 +2';}
- return commitFarm(game,next,{action,plot:plotId,point:cell,coins,harvest,lesson,wateredPlots,message});
+ // 收获、经验与奖励种子同一候选进度预演，拒绝时不修改田块或任何库存。
+ if(action==='harvest'){
+  const load=harvestLoadPreview(game,next,destination),original=game.progress.farm.plots.find(p=>p.id===plotId);
+  const confirmation=JSON.stringify({plot:plotId,mapId:game.mapId,crop:harvest,plantedAt:original.plantedAt,...load});
+  if(load.overloaded&&loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,crop:harvest,message:'收获后载荷将满，请确认是否继续收获。'};
+ }
+ return commitFarm(game,next,{action,plot:plotId,point:cell,coins,harvest,destination,lesson,wateredPlots,message});
 }
 // 非空田必须确认同一茬作物，排队期间换种不能沿用旧确认。
 function farmRemovalAllowed(plot,removal){return plot.crop===null||removal?.crop===plot.crop&&removal?.plantedAt===plot.plantedAt;}
@@ -159,6 +166,12 @@ export function queueFarmWork(game,action,{plot,point,crop=0,tree,view,removal}=
  work.queue.push({key,action,id:plot,crop,removal:removal?{crop:removal.crop,plantedAt:removal.plantedAt}:undefined,treeId:tree?.id,point:{...farmPosition(target),...target,mapId:game.mapId},waterTargets:waterTargets.map(p=>({id:p.id,...farmPosition(p)})),elapsed:0,farmPoseTime:0,hit:false,travel:0});
  return {ok:true,point:target,message:action==='remove'?'已安排移除，猫猫会走近平整土地':action==='water'?`走近浇灌，最多照顾 ${waterTargets.length} 块田`:action==='dig'?'走近挥锄…':action==='plant'?'已安排播种，猫猫会依次走近撒种':action==='harvest'?'已安排收割，猫猫会依次走近挥镰':'走近树边，准备锯木…'};
 }
+// 确认只绑定仍在等待的这一份作物；取消停止队列，不改变农田和仓库。
+export function resolveHarvestLoad(game,job,accepted){
+ const work=game.farmWork;if(!work||work.job!==job||!job.loadRequest)return {ok:false,message:'收获目标已变化，请重新选择。'};
+ if(!accepted){work.job=null;work.queue=[];work.result={ok:false,message:'已停止收割，作物仍留在田里。'};return work.result;}
+ job.loadConfirmation=job.loadRequest.confirmation;job.loadRequest=null;return {ok:true,message:'已确认本次收获。'};
+}
 // 兼容旧的点击开垦入口，实际操作统一进入队列。
 export function requestFarmDig(game,id){return queueFarmWork(game,'dig',{plot:id}).ok;}
 // 迎敌冻结农活但允许走位，受伤不丢队列；普通农活中主动走位仍取消待办，切图退出模式。
@@ -169,6 +182,7 @@ export function updateFarmWork(game,dt,input){
  // 战斗后可能发生击退或闪避：未命中的动作重新走近挥动，已结算动作只完成收势，不重复扣费发奖。
  if(wasCombat&&work.job&&!work.job.hit){work.job.approach=null;work.job.elapsed=0;work.job.farmPoseTime=0;work.job.travel=0;}
  if(Math.hypot(input.x,input.y)>.05){work.job=null;work.queue=[];game.farmCursor=null;return input;}
+ if(work.job?.loadRequest)return {x:0,y:0};
  if(game.farmDragging)return {x:0,y:0};
  work.job||=work.queue.shift();const job=work.job;if(!job)return input;
  if(job.point.mapId!==game.mapId){setFarmTool(game,null);return input;}
@@ -188,7 +202,8 @@ export function updateFarmWork(game,dt,input){
   job.hit=true;
   if(job.action==='saw'){
    const tree=game.trees.find(t=>t.id===job.treeId&&t.hp>0);if(tree&&worldDistance(tree,game.player)<=85){game.hit(tree,tree.hp+1,false,{statisticsSource:'farm-saw'});work.result={ok:true,message:'树木已清理，可以用锄头开垦附近空地'};}else work.result={ok:false,message:'树木已被清理，换一棵吧。'};
-  }else work.result=farmAction(game,job.action,{plot:job.id,point:job.point,crop:job.crop,removal:job.removal});
+  }else work.result=farmAction(game,job.action,{plot:job.id,point:job.point,crop:job.crop,removal:job.removal,loadConfirmation:job.loadConfirmation});
+  if(work.result.needsLoadConfirmation){job.hit=false;job.loadRequest=work.result;return {x:0,y:0};}
   if(job.action==='water'&&work.result.ok)job.waterTargets=work.result.wateredPlots;
   if(job.action==='remove'&&work.result.ok)work.queue=work.queue.filter(next=>next.id!==job.id);
   if(!work.result.ok)work.queue=[];

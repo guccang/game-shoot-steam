@@ -1,3 +1,4 @@
+import {createFarmHarvestConfirm} from './farm-harvest-confirm.js';
 // 世界农活控件：工具栏按需展开，透明地块命中区、拖动队列与金币飞行独立于结算。
 import {createFarmRemoval} from './farm-removal.js';
 import {updateFarmCellState,farmCellView,placeFarmCell} from './farm-cell-state.js';
@@ -28,6 +29,7 @@ function farmAttribute(node,key,value){const text=String(value);if(node.getAttri
 // 场景内只提交农活意图，角色动作完成后由核心更新真正的存档。
 export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNotice,onSeedShop}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),layer=root.createElement('div'),menu=root.createElement('button');
+ const harvestConfirm=createFarmHarvestConfirm({game,root,dialogs,onChange,onNotice});
  const removalPanel=createFarmRemoval({game,root,dialogs,onChange,onNotice});
  layer.id='farm-world-layer';layer.innerHTML=`<div id="farm-tools" hidden aria-label="种地工具"><button id="farm-hoe" aria-label="锄头：点击地面开垦">${toolIcon('hoe')}<span>锄头</span></button><button id="farm-sickle" aria-label="镰刀：长按拖过成熟作物批量收割">${toolIcon('sickle')}<span>镰刀</span></button><button id="farm-water" aria-label="水壶：每次浇灌选中的一块田，每茬生长时长最多缩短${FARM_WATER.reduction*100}%">${toolIcon('water')}<span>水壶</span></button><button id="farm-combat" aria-label="拿起武器战斗"><canvas id="farm-weapon-icon" width="112" height="112" aria-hidden="true"></canvas><span>战斗</span></button><button id="farm-remove" aria-label="移除地块，点击地块后确认"><span class="farm-remove-symbol" aria-hidden="true">×</span><span>移除</span></button><button id="farm-exit" aria-label="退出种田并恢复武器"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M15 5H6v22h9M13 16h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>退出</span></button></div><span id="farm-notice" role="status" class="sr-only"></span><div id="farm-picker" hidden aria-label="选择种子"></div><div id="farm-harvest-pop" hidden><button id="farm-harvest" aria-label="挥镰收割">${toolIcon('sickle')}</button></div><div id="farm-ghost" hidden aria-hidden="true"></div><button id="farm-delivery-hit" class="scene-hit" aria-label="查看快递站" hidden></button><section id="farm-mail" hidden aria-label="快递站种子礼物"></section>`;
  menu.id='farm-menu';menu.innerHTML=toolIcon('hoe')+'<span>种地</span>';menu.setAttribute('aria-label','展开或收起种地工具');menu.setAttribute('aria-controls','farm-tools');
@@ -132,6 +134,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  // 地块节点按永久编号创建，数量和空间由存档决定，没有预制十二格限制。
  function render(){
   if(disposed)return;
+  harvestConfirm.render();
   validateFarmVehicleReturn(game);
   // 小图标画布按风格失效，帧刷新不重复绘制或增加缓存。
   const style=artStyle()+':'+canvasRecoveryRevision();for(const icon of toolCanvases){if(icon.dataset.artStyle!==style){paintFarmToolIcon(icon,icon.dataset.farmToolArt);icon.dataset.artStyle=style;}}
@@ -183,7 +186,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   const mailKey=JSON.stringify([f.delivery.parcels,f.inventory]);
   if(mailOpen&&mailKey!==mailSignature){mailSignature=mailKey;get('mail').innerHTML='<header><b>种子快递站</b><button data-farm-mail-close aria-label="关闭快递">×</button></header><p>邻居只会寄来已解锁的种子</p>'+f.delivery.parcels.map(p=>`<article>${farmCropMarkup(p.crop)}<span><b>${FARM_SENDERS[p.sender]}寄来的礼物</b><small>${FARM_CROPS[p.crop].name}种子 ×${p.count}</small></span><button data-farm-parcel="${p.id}">领取</button></article>`).join('')+(parcelCount?'':'<p>暂时没有新包裹，先去种田或巡林吧。</p>')+(f.inventory.some(Boolean)?'<button data-farm-legacy>出售背包及在场货舱作物</button>':'');}
   if(mailOpen)positionPopup(get('mail'),FARM_DELIVERY);
-  const result=game.farmWork?.result;if(result&&result!==lastResult){lastResult=result;if(!result.ok||game.farmWork?.job?.action==='saw')say(result.message);}
+  const result=game.farmWork?.result;if(result&&result!==lastResult){lastResult=result;if(!result.needsLoadConfirmation&&(!result.ok||game.farmWork?.job?.action==='saw'))say(result.message);}
   for(const event of (game.farmSignals||[]).splice(0)){if(event.action==='harvest')flyCoins(event);if(event.message)say(event.message);onChange();}
   for(const f of flights)if(game.state==='paused'&&f.animation.playState==='running')f.animation.pause();else if(game.state==='playing'&&f.animation.playState==='paused')f.animation.play();
  }
@@ -237,7 +240,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
 
  prepare();
  // 卸载释放动画与监听，停止未完成动作，不影响已保存的进度。
- function dispose(){disposed=true;setFarmTool(game,null);game.farmVehicleReturn=null;game.farmDragging=false;scope.dispose();placement.dispose();for(const f of flights){f.animation.cancel();f.node.remove();}flights.clear();removalPanel.dispose();layer.remove();menu.remove();}
+ function dispose(){disposed=true;setFarmTool(game,null);game.farmVehicleReturn=null;game.farmDragging=false;scope.dispose();placement.dispose();for(const f of flights){f.animation.cancel();f.node.remove();}flights.clear();harvestConfirm.dispose();removalPanel.dispose();layer.remove();menu.remove();}
  return {open,render,renderFrame:render,tapWorld,dispose};
 }
 // 绑定正式世界与实际动画节点，验收不创建替身场景。

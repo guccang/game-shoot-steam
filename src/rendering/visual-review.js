@@ -1851,3 +1851,9 @@ export function inspectWarehouseAutoWood(game){const batches=game.drops.filter(d
 
 // 对照正式库存合计与HUD文本，记录三处来源及完整提示。
 export async function inspectWoodHudTotal(game,root){const {woodInventory}=await import("../progression/resource-wallet.js"),node=root.querySelector("[data-wood]");return {designCriterion:"wood-hud-total",...woodInventory(game.progress),text:node?.textContent,title:node?.title};}
+
+// 农作物入库验收读取真实作物批次、钱包、经济账本与仓库金币格。
+export function inspectWarehouseHarvest(game,root){
+ const batches=game.drops.filter(d=>d.warehouseHarvest);
+ return {designCriterion:'warehouse-harvest',coins:game.progress.coins,bag:[...game.progress.farm.inventory],cargo:game.progress.logistics.builds.map(b=>[...b.cargo]),income:game.progress.economyLog.income['farm:sale:coins']||0,batches:batches.map(d=>({crop:d.crop,count:d.cropCount,origin:{x:d.originX,y:d.originY},destination:d.destination,age:d.age})),icons:resourcePickupPoses(batches,game.player).length,coinText:root.querySelector('[data-warehouse-currency] .warehouse-slot__count')?.textContent,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

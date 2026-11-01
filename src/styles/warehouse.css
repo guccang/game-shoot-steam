@@ -34,3 +34,6 @@
 #warehouse-quantity button,#warehouse-dialog .ui-close,#warehouse-dialog .warehouse-tabs button{touch-action:manipulation}
 /* 手机横屏并排展示库存，分类入口仍可使用，避免隐藏筛选后无法切换。 */
 @media(max-height:500px) and (min-width:500px){#warehouse-dialog .warehouse-tabs{display:flex}.warehouse-stores{flex-direction:row}.warehouse-store{min-width:0}.warehouse-store>header{align-items:flex-start;flex-direction:column;gap:0}.warehouse-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 金币只展示同一钱包，图标保留页面滚动手势，不暗示可以拖成另一份库存。 */
+[data-warehouse-currency] .warehouse-slot__art{touch-action:pan-y;cursor:pointer}
