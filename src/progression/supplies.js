@@ -1,7 +1,9 @@
+import {VEHICLE_LOADS} from '../config/vehicle-load.js';
+import {VEHICLE_WEAPONS} from '../config/vehicle-armaments.js';
 // 当前补给结构的校验与默认值；不迁移历史无限弹药或车辆等级。
 import {AMMO_TYPES,SUPPLY_ITEMS} from '../config/supplies.js';
 // 初始六百发覆盖首轮清剿及赶路余量；后续与车载弹药仍通过购买或制作获得。
-export function freshSupplies(){return {version:1,items:{medkit:0,gunKit:0,engineKit:0},hand:{light:600,shell:0,heavy:0,water:0},vehicles:Array.from({length:9},()=>({light:0,shell:0,heavy:0,water:0})),handMags:[],vehicleMags:[],gunFaults:Array(23).fill(0),engineFaults:Array(9).fill(0)};}
+export function freshSupplies(){return {version:1,items:{medkit:0,gunKit:0,engineKit:0},hand:{light:600,shell:0,heavy:0,water:0},vehicles:Array.from({length:VEHICLE_LOADS.length},()=>({light:0,shell:0,heavy:0,water:0})),handMags:[],vehicleMags:[],gunFaults:Array(VEHICLE_WEAPONS.length).fill(0),engineFaults:Array(VEHICLE_LOADS.length).fill(0)};}
 // 有界非负整数保护货物、损坏百分比与装填记录。
 function count(n,max=100000){return Number.isFinite(n)?Math.max(0,Math.min(max,Math.floor(n))):0;}
 // 只保留明确的实物库存与当前安装主炮的弹夹。

@@ -1,3 +1,4 @@
+import {treasurePartReason} from './treasure.js';
 // 补给购买、制作、道具使用与主炮转移均先保存候选快照，再更新实际状态。
 import {AMMO_TYPES,SUPPLY_ITEMS,GUN_MASSES,ammoKind,vehicleFaults} from '../config/supplies.js';
 import {VEHICLE_ARMAMENTS,VEHICLE_WEAPONS} from '../config/vehicle-armaments.js';
@@ -72,7 +73,11 @@ export function mountMainGun(game,hull,gun){
  if(old===gun)return {ok:false,message:'已经安装这门主炮。'};
  const changed=[...new Set([hull,...(donor>=0?[donor]:[])])];
  if(changed.some(i=>game.progress.vehicleService[i]?.phase)||game.progress.logistics.tow)return {ok:false,message:'请先完成维修或解除牵引再换炮。'};
+ if(gun!==null&&VEHICLE_WEAPONS[gun]?.treasure){const reason=treasurePartReason(game,'gun:'+gun,hull);if(reason)return {ok:false,message:reason};}
  const next=candidate(game);
+ // 探索主炮换装移动同一实物；卸下的旧炮回到工坊，不留货舱副本。
+ if(VEHICLE_WEAPONS[old]?.treasure)next.treasure.parts['gun:'+old]={place:'workshop'};
+ if(VEHICLE_WEAPONS[gun]?.treasure)next.treasure.parts['gun:'+gun]={place:'installed',hull};
  for(const i of changed){const w=VEHICLE_WEAPONS[next.vehicleLoadouts[i]],key=ammoKind(w),m=next.supplies.vehicleMags[i];if(key){if(next.supplies.vehicles[i][key]+(m?.ammo||0)>100000)return {ok:false,message:'原车备用库存已满，请先卸下部分弹药再换炮。'};next.supplies.vehicles[i][key]+=m?.ammo||0;}next.supplies.vehicleMags[i]={weapon:null,ammo:0,remaining:0};next.vehicleLoadouts[i]=null;}
  next.vehicleLoadouts[hull]=gun;
  // 计入主炮自身、备用弹药、装甲和驾驶员，不附加车型白名单。

@@ -1,3 +1,4 @@
+import {TREASURE_GUNS} from './treasure.js';
 import { i18nText } from "../i18n/index.js";
 // 车型专属主炮目录；固定编号独立于角色目录，旧 0–16 炮塔记录保留用于兼容。
 import { WEAPONS } from './weapons.js';
@@ -11,12 +12,13 @@ export const VEHICLE_ARMAMENTS = [
   {id:'wolf-256',weaponIndex:21,hullIndex:6,name:'256毫米狼牙主炮',description:'红狼专属重炮：高伤害炮弹命中后引爆120米范围，适合摧毁密集敌群。',damage:560,interval:2.8,range:640,speed:1150,pellets:1,spread:0,magazineSize:1,reloadTime:2.8,impulse:1500,impactScale:3.4,hitRadius:8,aimAssist:true,muzzle:96,blastRadius:120,blastRatio:.65,color:'#f5bd83'},
   // 金杯专属召唤器沿用独立车载供给；伙伴只能近战，不能改挂远程枪。
   {id:'cat-crew',weaponIndex:22,hullIndex:7,name:'邻里猫小队',description:'邻里猫们带着扳手、勺子、叉子、树枝和棒球棍等日常用品逐只下车，齐心驱赶靠近的地面敌人，守护共同的营地；协同升级可增加队员。',controller:'mechanical',crew:true,fixedMelee:true,manualSpawn:true,freeMelee:true,armored:false,damage:38,interval:.85,range:340,meleeReach:28,moveSpeed:210,summonCount:4,companionHp:180,spawnInterval:1,windupTime:.18,swingTime:.24,emergeSpeed:150,guardRadius:100,magazineSize:12,reloadTime:4,resourceType:'energy',impulse:35,groundedPush:true,pushLimit:80,pellets:1,spread:0,color:'#d1b06e',muzzle:0},
+ ...TREASURE_GUNS,
 ];
 // 旧炮塔0–16及专属主炮17–22保持固定编号；新手持枪不能挤占既有主炮存档。
 export const VEHICLE_WEAPONS = [...WEAPONS.slice(0,17), ...VEHICLE_ARMAMENTS];
 
 // 每种车体都有独立专属主炮，非法车型仍返回空值。
-export function nativeVehicleWeapon(index) { return VEHICLE_ARMAMENTS.find(w=>w.hullIndex===index) || null; }
+export function nativeVehicleWeapon(index) { return Number.isInteger(index)&&index>=0?VEHICLE_ARMAMENTS.find(w=>w.hullIndex===index)||null:null; }
 
 // 专属编号只从本目录识别，不能通过手持购买、套件或熟练度解锁。
 export function isVehicleArmament(index) { return VEHICLE_ARMAMENTS.some(w=>w.weaponIndex===index); }

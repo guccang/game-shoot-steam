@@ -20,7 +20,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 背包格子、物品详情和手机使用独立弹窗，逐层返回时保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo,onItems,onCleanup}){
+export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo,onItems,onCleanup,onTreasure}){
  const scope=createEventScope(),trigger=root.getElementById('backpack-button'),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -73,7 +73,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
    actions.innerHTML=button('hangup','挂断')+button('visit','去找'+call.name,true);
   }else{
    const calendar=calendarView(game.progress.living.calendar),reason=phoneUnavailable(game);
-   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>载具定位</h3><div class="keepsake-contacts">${vehicleLocations(game).map(v=>`<button type="button" class="ui-choice" data-locate-vehicle="${v.hull}"><span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span></button>`).join('')||'<p>还没有自有载具。</p>'}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
+   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>载具定位</h3><div class="keepsake-contacts">${vehicleLocations(game).map(v=>`<button type="button" class="ui-choice" data-locate-vehicle="${v.hull}"><span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span></button>`).join('')||'<p>还没有自有载具。</p>'}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
    detail.querySelector('.keepsake-apps').insertAdjacentHTML('afterbegin',button('mail',`邮件${unreadMailCount(game.progress)?' · '+unreadMailCount(game.progress)+' 未读':''}`));
    actions.innerHTML=button('close',bag.open?'返回背包':'收好手机',true);
   }
@@ -109,6 +109,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);dialogs.open(phone.id);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
+  if(action==='treasure'&&ownsKeepsake(game.progress,'patrol-phone')){onTreasure();return;}
   if(action==='mail'&&ownsKeepsake(game.progress,'patrol-phone')){mailbox.open();return;}
   if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}
   if(action==='map'&&ownsKeepsake(game.progress,'patrol-phone')){dialogs.open('map-dialog');return;}

@@ -54,6 +54,18 @@
       "baseHp": 216,
       "hpGrowth": 30,
       "speed": 1.536
+    },
+    {
+      "id": "moss-sentinel",
+      "baseHp": 620,
+      "hpGrowth": 70,
+      "speed": 1.14
+    },
+    {
+      "id": "amber-bastion",
+      "baseHp": 920,
+      "hpGrowth": 120,
+      "speed": 0.9
     }
   ]
 }

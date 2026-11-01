@@ -1,3 +1,4 @@
+import {drawTreasureRear,drawTreasureFront} from './treasure-equipment.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import {tankPaintContext,drawTankBadge} from './tank-paint.js';
 import { style } from '../art-styles/config.js';
@@ -35,6 +36,7 @@ export function drawVehicleTracks(c, player, vehicle, reduced = false, time = 0,
   c=tankPaintContext(c,progress,vehicle.index,'rear');
   c.save();
   c.translate(player.x, player.y);
+  if (vehicle.index >= 9) {drawTreasureRear(c,vehicle.index,reduced?0:vehicle.wheelPhase||player.walkPhase||0);c.restore();return;}
   if (vehicle.index === 8) {
     drawPoliceRear(c, vehicle.wheelPhase || 0, time, reduced);
     c.restore();
@@ -93,7 +95,8 @@ export function drawVehicleArmor(c, player, vehicle, progress, time, reduced = f
   c.translate(player.x, player.y);
   const hull = tankHullPose(vehicle, reduced);
   c.translate(hull.x, hull.y);
-  if (vehicle.index === 5) drawScooterFront(c,reduced?0:vehicle.wheelPhase||0);
+  if (vehicle.index >= 9) drawTreasureFront(c,vehicle.index,vehicle.flash>0);
+  else if (vehicle.index === 5) drawScooterFront(c,reduced?0:vehicle.wheelPhase||0);
   else if (vehicle.index === 8) drawPoliceFront(c);
   else if (vehicle.index === 7) drawJinbeiFront(c);
   else if (vehicle.index === 6) drawRedWolfFront(c, vehicle.flash > 0);
@@ -206,7 +209,8 @@ export function drawVehicleIcon(c, index = 0) {
     ],
     '#d7bd76',
   );
-  if (index === 8) drawPoliceFront(c);
+  if (index >= 9) drawTreasureFront(c,index);
+  else if (index === 8) drawPoliceFront(c);
   else if (index === 7) drawJinbeiFront(c);
   else if (index === 6) drawRedWolfFront(c, false);
   else if (index === 5) drawScooterFront(c, 0);

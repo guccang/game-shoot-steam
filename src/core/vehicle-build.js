@@ -1,3 +1,5 @@
+import {treasurePartReason} from './treasure.js';
+import {vehicleLoad} from '../progression/load-weight.js';
 // 车体装配仅在工坊办理，保存成功后更新同一辆车，保留损耗比例及弹药。
 import {validateProgress} from '../progression/progress.js';
 import {vehicleBuild,VEHICLE_ENGINES,LOAD_RULES} from '../config/vehicle-load.js';
@@ -25,6 +27,7 @@ export function configureVehicleBuild(game,index,action,choice=0){
  const next=validateProgress(structuredClone(game.progress)),b=vehicleBuild(next,index),v=game.vehicles[index];let label;
  if(action==='engine'){
   if(!Number.isInteger(choice)||!VEHICLE_ENGINES[choice]||choice===b.engine)return {ok:false,message:'请选择另一款发动机。'};
+  if(VEHICLE_ENGINES[choice].treasure){const missing=treasurePartReason(game,'engine:'+choice,index);if(missing)return {ok:false,message:missing};}
   label='换装'+VEHICLE_ENGINES[choice].name;
  }else if(action==='add-armor'){
   if(b.plates>=LOAD_RULES.maxPlates)return {ok:false,message:'已达到装甲层数上限。'};label='加装一层装甲';
@@ -32,7 +35,13 @@ export function configureVehicleBuild(game,index,action,choice=0){
   if(!b.plates||b.spares>=LOAD_RULES.maxPlates)return {ok:false,message:'没有可拆装甲或工坊保管位已满。'};label='拆下一层装甲';
  }else return {ok:false,message:'无效装配方案。'};
  const cost=vehicleBuildPrice(next,index,action,choice);if(next.coins<cost)return {ok:false,message:`金币不足，需要 ${cost} 金币。`};next.coins-=cost;
- if(action==='engine'){b.engine=choice;if(!b.engines.includes(choice))b.engines.push(choice);}
+ if(action==='engine'){
+  // 拆下的探索发动机回工坊，换上的实物从原货舱或原车移走，保持唯一。
+  if(VEHICLE_ENGINES[b.engine].treasure){next.treasure.parts['engine:'+b.engine]={place:'workshop'};b.engines=b.engines.filter(i=>i!==b.engine);}
+  if(VEHICLE_ENGINES[choice].treasure){const location=next.treasure.parts['engine:'+choice];if(location.place==='installed'&&location.hull!==index){const donor=next.logistics.builds[location.hull];donor.engine=0;donor.engines=donor.engines.filter(i=>i!==choice);}next.treasure.parts['engine:'+choice]={place:'installed',hull:index};}
+  b.engine=choice;if(!b.engines.includes(choice))b.engines.push(choice);
+  if(next.logistics.builds.some((build,i)=>game.progress.vehicleHulls[i]&&build.engine!==game.progress.logistics.builds[i].engine&&vehicleLoad(game,i,{progress:next,driver:true}).overloaded))return {ok:false,message:'换装后目标车或拆出发动机的原车将满载，请先卸货或减装甲。'};
+ }
  else if(action==='add-armor'){b.plates++;if(b.spares)b.spares--;}
  else{b.plates--;b.spares++;}
  const ratio=v.maxHp?v.hp/v.maxHp:0,snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);

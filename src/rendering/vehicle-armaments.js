@@ -1,3 +1,4 @@
+import {drawTreasureGun} from './treasure-equipment.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { drawCrewModule } from './cat-crew.js';
@@ -14,6 +15,7 @@ import { drawEquipmentPart } from './equipment-parts.js';
 // 与正式炮口使用同一长度和后坐位移；不拉伸整枪或车体代替动作。
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawVehicleArmament(c, weapon, { kick = 0, flash = 0, rotor = 0, reduced = false, tide = null } = {}) {
+  if(weapon.treasure){drawTreasureGun(c,weapon,kick);return;}
   if (weapon.crew) {
     drawCrewModule(c);
     return;

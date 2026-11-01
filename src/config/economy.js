@@ -1,3 +1,4 @@
+import {TREASURE_VEHICLES} from './treasure.js';
 import {legendaryUpgradeCost,equipmentLevelCap} from './legendary-workshop.js';
 import {campProgress} from '../progression/camp-level.js';
 import taskContent from './content/mainline.json' with {type:'json'};
@@ -32,6 +33,8 @@ original.taskRewards=Object.fromEntries(taskContent.tasks.map(t=>[t.id,Object.fr
 original.turrets=structuredClone(original.weapons.slice(0,17));
 Object.assign(original.turrets[0],{coins:120,wood:45,parts:4});
 Object.assign(original.turrets[14],{coins:1800,wood:600,parts:35,crystal:0,core:1});
+// 探索车不可购买，但维修与装甲仍按明确的车体估值计费。
+original.vehicles.push(...TREASURE_VEHICLES.map(v=>({coins:v.value,wood:0,parts:0,crystal:0,core:0,gate:0})));
 const recommended = structuredClone(original);
 Object.assign(recommended,{id:'recommended',name:i18nText("config.economy.1c5386d7c3"),legacy:false});
 recommended.upgrades = {exponent:1.35,woodRatio:.25,catchup:.3,
@@ -57,7 +60,7 @@ recommended.weapons.forEach((r,i)=>{
 });
 recommended.vehicles.forEach((r,i)=>{
   // 直升机按飞行机动与持续火力提高首次购买币木成本，稀有材料沿用原档位。
-  r.coins=[600,4800,20000,7800,8000,600,42000,15000,2400][i];r.wood=[160,720,2000,1120,960,240,3200,1440,320][i];
+  r.coins=[600,4800,20000,7800,8000,600,42000,15000,2400][i]??r.coins;r.wood=[160,720,2000,1120,960,240,3200,1440,320][i]??r.wood;
   if(i<4){r.parts=Math.ceil(r.parts*1.6);r.crystal=Math.ceil(r.crystal*1.6);}
 });
 recommended.turrets=structuredClone(recommended.weapons.slice(0,17));

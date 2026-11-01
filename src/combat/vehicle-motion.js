@@ -3,7 +3,7 @@ import { nearest } from '../world/coordinates.js';
 
 // 在正式移动完成后累计有界轮角；反向驾驶反转，暂停及下车保留姿态。
 export function advanceVehicleWheels(vehicle, player, previous) {
-  if (!vehicle.active || ![0,4,5,6,7,8].includes(vehicle.index)) return;
+  if (!vehicle.active || ![0,4,5,6,7,8,9,10].includes(vehicle.index)) return;
   const point = nearest(player, previous), dx = point.x - previous.x, dy = point.y - previous.y;
   const distance = Math.hypot(dx, dy);
   if (distance < 1e-8) return;

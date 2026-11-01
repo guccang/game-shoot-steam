@@ -1,0 +1,11 @@
+// 遗失装备沿用车头朝下的俯视结构；履带单独推进，不旋转或拉伸整个车体。
+import {box,oval,poly,outline} from './primitives.js';
+// 后层绘制接触影、双履带、驾驶舱与各车型独立的行李架或斜面侧裙。
+export function drawTreasureRear(c,index,phase=0){const heavy=index===10,w=heavy?53:43,color=heavy?'#b5a069':'#7fa89a';oval(c,0,25,w+8,15,'#243c3435');for(const side of [-1,1]){const x=side*w-10;box(c,x,-34,20,76,7,'#526855',outline,2.5);for(let i=0;i<9;i++)box(c,x+2,-29+((i*8+phase*2)%66),16,4,1,'#a8b396');if(heavy)poly(c,[[x-3,-20],[x+23,-20],[x+25,30],[x-5,30]],'#a89866',outline,2);}
+ poly(c,[[-w+13,-31],[w-13,-31],[w-5,5],[w-10,32],[-w+10,32],[-w+5,5]],color,outline,2.5);box(c,-25,-21,50,24,7,heavy?'#d4bd82':'#b3cdb3',outline,2);oval(c,0,-10,17,10,'#354c3d');
+ if(!heavy){box(c,-28,-36,56,12,2,'#b19f73',outline,2);for(let x=-22;x<=22;x+=11)box(c,x,-35,4,10,1,'#6b7f67');box(c,27,-24,8,32,3,'#557d70',outline,2);}else{for(const x of [-32,24]){box(c,x,-29,8,32,2,'#ddd09c',outline,1.5);oval(c,x+4,-23,2,2,outline);}}
+}
+// 前层保留驾驶员露出空间，守望使用三角护板，堡垒使用横向厚甲和双钩。
+export function drawTreasureFront(c,index,flash=false){const heavy=index===10,color=flash?'#fff0bc':heavy?'#bc9f64':'#6e9785',w=heavy?41:32;poly(c,[[-w,0],[w,0],[w+3,20],[w-8,36],[-w+8,36],[-w-3,20]],color,outline,2.5);poly(c,[[-w+3,3],[w-3,3],[w-8,14],[-w+8,14]],heavy?'#e0c892':'#c4d3ad',outline,1.5);for(const x of [-w+5,w-13])box(c,x,19,8,5,2,'#f3d58b',outline,1.5);if(heavy){for(const x of [-17,17]){oval(c,x,32,5,7,'#69765d',outline,2);oval(c,x,31,2,3,'#d9bd7c');}}else poly(c,[[0,17],[9,26],[0,32],[-9,26]],'#e9d394',outline,1.5);}
+// 炮架固定，长炮与短粗散射炮的炮管沿自身轴线独立后坐。
+export function drawTreasureGun(c,w,kick=0){const long=w.id==='longbranch';poly(c,[[-24,-17],[4,-20],[24,-10],[24,12],[0,18],[-25,12]],long?'#7fa89a':'#b7a16d',outline,2);box(c,-15,-12,26,7,2,'#d6d9ab',outline,1.5);box(c,-5,-9,24,18,5,'#536d59',outline,2);for(const y of [-12,12])box(c,5,y-2,long?44:24,4,1,'#aabc9a',outline,1.5);c.save();c.translate(-kick,0);if(long){box(c,12,-4,70,8,2,'#afc1a5',outline,2);box(c,67,-7,16,14,3,'#e3d8aa',outline,1.5);box(c,81,-3,3,6,1,outline);}else{box(c,12,-11,32,22,3,'#d2bb80',outline,2);box(c,39,-15,10,30,3,'#8c9471',outline,2);for(const y of [-9,0,9])oval(c,47,y,2,3,'#304e40');for(const x of [20,28])box(c,x,-10,3,20,1,'#786f4e');}c.restore();}

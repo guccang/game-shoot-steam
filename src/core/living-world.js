@@ -1,3 +1,4 @@
+import {taskTreasureRumor} from './treasure.js';
 import {facilityOpen,facilityReason} from '../config/town-restoration.js';
 import {CLEARING_CONTINUE_ROUND} from '../config/clearing.js';
 import {chooseClearingSite} from './clearing-site.js';
@@ -165,10 +166,10 @@ export function interactLivingRequest(game,id){
   if(target.step.battle&&(record.battleKills||0)<GAMEPLAY_VALUES.living.battleKills){
     const tracked=trackLivingRequest(game,id);return tracked.ok?startLivingBattle(game,id):tracked;
   }
-  const line=id==='neighbors-night'&&record.stage===1&&game.progress.hero===4?'你把假条改成大字。薄荷：枭爵看错了，拿去问问他，别急着换班。':target.step.line;
+  let line=id==='neighbors-night'&&record.stage===1&&game.progress.hero===4?'你把假条改成大字。薄荷：枭爵看错了，拿去问问他，别急着换班。':target.step.line;
   const before=game.progress;
   const result=commitLiving(game,p=>{
-    const q=p.living.requests[id];q.stage++;p.taskTracking={kind:'living',id};p.living.journal.push(line);
+    const q=p.living.requests[id];line+=taskTreasureRumor(p,id,q.stage);q.stage++;p.taskTracking={kind:'living',id};p.living.journal.push(line);
     if(q.stage===spec.steps.length){
       // 完成后明确恢复主线，其他已接请求保留进度，等待玩家手动追踪。
       q.completed=true;q.completedDay=p.living.calendar.day;p.taskTracking={kind:'mainline'};

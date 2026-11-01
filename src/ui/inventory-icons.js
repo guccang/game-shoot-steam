@@ -7,6 +7,12 @@ import {paintFarmToolIcon} from '../rendering/farm-tools.js';
 import {drawWorkshopEquipment} from '../rendering/workshop.js';
 import {itemDefinition} from '../config/items.js';
 const drawings={
+ detector:'<ellipse cx="40" cy="50" rx="17" ry="7" fill="#b9ceb1"/><ellipse cx="40" cy="50" rx="11" ry="3"/><path d="m39 47-17-28 4-11"/><path stroke-width="6" d="m22 20 8-7"/><rect x="15" y="20" width="20" height="15" rx="3" fill="#e5cf92"/><path stroke="#76a181" d="m20 28 4-4 4 6 3-3"/>',
+ 'gun:23':'<path fill="#86a491" d="M8 39h25v15H8z"/><path fill="#c9d5b2" d="m23 45 25-34 8 5-25 35Z"/><path d="m18 41 21-27m-4 36 19-25"/>',
+ 'gun:24':'<path fill="#bda571" d="M7 37h29v17H7z"/><path fill="#dcc18b" d="m21 38 17-23 18 12-18 23Z"/><path fill="#8a9371" d="m35 16 7-6 17 13-3 7Z"/><path d="m42 17 2 2m4 2 2 2m3 2 2 2"/>',
+ 'engine:3':'<rect x="11" y="16" width="38" height="35" rx="5" fill="#86a491"/><path d="M18 23h23m-23 7h23m-23 7h23m-23 7h23"/><path fill="#dfc78a" d="M16 9h29v9H16z"/><path d="M49 28h8v14h-8"/>',
+ 'engine:4':'<rect x="9" y="25" width="46" height="26" rx="5" fill="#bda571"/><circle cx="22" cy="24" r="11" fill="#a6bcaa"/><circle cx="44" cy="24" r="11" fill="#a6bcaa"/><circle cx="22" cy="24" r="4"/><circle cx="44" cy="24" r="4"/><path d="M19 42h26M14 51v6h9m19-6v6h9"/>',
+
  magazine:'<path fill="#aebfb6" d="M17 9h29v40l-6 8H17Z"/><path d="M24 18h15m-15 9h15m-15 9h15m-15 9h15"/>',
  medkit:'<rect x="9" y="20" width="46" height="35" rx="7" fill="#e8edcf"/><path d="M23 20v-9h18v9"/><path fill="#c98670" d="M28 27h8v7h7v8h-7v7h-8v-7h-7v-8h7Z"/>',
  gunKit:'<rect x="6" y="23" width="52" height="31" rx="6" fill="#d3b776"/><path d="M22 23v-9h20v9M6 34h52"/><path fill="#aebfb6" d="m20 45 21-22 7 7-22 22Z"/>',

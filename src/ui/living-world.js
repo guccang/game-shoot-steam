@@ -1,3 +1,4 @@
+import {hearTreasureRumor} from '../core/treasure.js';
 import {livingInteractionPosition} from '../core/living-world.js';
 import {equipmentQuestCards} from './equipment-quests.js';
 import {EQUIPMENT_QUESTS,equipmentStoryCompleted} from '../config/equipment-quests.js';
@@ -36,7 +37,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
   root.body.append(dialog);root.getElementById('field-menu-items').prepend(menu);root.getElementById('game-frame').append(action,hint);
   const chatter=createResidentChatter({game,root,renderer}),residentNodes=new Map(),frame=root.getElementById('game-frame');
   sceneHit(action,'继续现场请求');
-  let view='board',person=null,notice='',target=null,signature='',handoffKey='',taskPanel=false,focusId=null,noticeError=false;
+  let rumor='',view='board',person=null,notice='',target=null,signature='',handoffKey='',taskPanel=false,focusId=null,noticeError=false;
   // 只在语义内容改变时更新，保留焦点和窄屏滚动位置。
   function render(){
     if(!dialog.open)return;
@@ -45,6 +46,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
     root.getElementById('living-date').textContent=person?(focusId?'当前委托':'正在交谈'):calendar.label;
     let html=person?'':'<nav class="living-tabs" aria-label="邻里记录">'+[['board','帮个忙'],['equipment','装备故事'],['news','找邻居'],['replies','回信']].map(([id,label])=>`<button data-living-tab="${id}" aria-pressed="${view===id}">${label}</button>`).join('')+'</nav>';
     if(!person)html+=`<section class="living-clearing"><button id="living-patrol">${state.patrolActive?'清缴已接取 · 去告示牌管理':'Boss 清缴 · 去告示牌接取'}</button>${state.patrolActive?'<button data-living-clearing>前往清缴场</button>':''}</section>`;
+    if(person&&rumor)html+=`<p class="living-notice">${escape(rumor)}</p>`;
     if(notice&&(!focusId||noticeError))html+=`<p class="living-notice" role="status">${escape(notice)}</p>`;
     root.getElementById('living-title').textContent=person?residentFor(game,person)?.name||'邻居':'森林邻里';
     // 正在阅读现场回应时，不再接上一段无关闲聊，保留这次交谈的情绪与指向。
@@ -97,6 +99,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
   function open(id=null){
     if(!facilityOpen(game.progress,'neighbors')){game.requestFacility?.('neighbors');return;}if(!livingForest(game))return;
     person=id&&RESIDENTS.some(r=>r.id===id)?id:null;notice='';noticeError=false;view='board';signature='';
+    const speaker=person&&residentFor(game,person);rumor=speaker&&worldDistance(livingInteractionPosition(game),speaker)<110?(hearTreasureRumor(game,person)?.message||''):'';
     focusId=focusedResidentRequest(game,person)?.id||null;
     taskPanel=!!person&&(visibleResidentRequests(game,person,focusId).length>0||EQUIPMENT_QUESTS.some(q=>q.host===person));
     dialog.classList.toggle('npc-bottom-dialogue',!!person&&!taskPanel);

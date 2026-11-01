@@ -169,6 +169,9 @@ RECOIL_PROFILES.push({...RECOIL_PROFILES[18],muzzle:96,kick:38,maxKick:38,stiffn
 RECOIL_PROFILES.push({...RECOIL_PROFILES[15],muzzle:0,kick:0,maxKick:0});
 
 // 新角色、重生和换枪使用全新的瞬时状态，不把后坐写入永久存档。
+// 探索主炮使用独立后坐行程，短散射炮与长穿甲炮保持各自炮口。
+RECOIL_PROFILES[23]={...RECOIL_PROFILES[18],muzzle:82,kick:20,maxKick:24};
+RECOIL_PROFILES[24]={...RECOIL_PROFILES[21],muzzle:48,kick:16,maxKick:20};
 export function createRecoil() {
   return { kick: 0, kickVelocity: 0, rise: 0, riseVelocity: 0, flash: 0 };
 }
@@ -176,7 +179,7 @@ export function createRecoil() {
 // 开火时施加短冲量和少量即时位移，连射可以叠加但不能无限抬枪。
 export function triggerRecoil(state, weapon) {
   // 重炮后坐与悬挂共用开火事件，空仓和无目标不会触发车身动作。
-  if([18,21].includes(weapon))state.tankAge=0;
+  if([18,21,23,24].includes(weapon))state.tankAge=0;
   const profile = RECOIL_PROFILES[weapon];
   state.kick = Math.min(profile.maxKick, state.kick + profile.kick * 0.45);
   state.kickVelocity = Math.min(profile.kick * 23, state.kickVelocity + profile.kick * 18);
@@ -189,7 +192,7 @@ export function triggerRecoil(state, weapon) {
 export function updateRecoil(state, weapon, dt) {
   const profile = RECOIL_PROFILES[weapon];
   let remaining = Math.max(0, Math.min(0.1, dt));
-  if([18,21].includes(weapon)&&Number.isFinite(state.tankAge))state.tankAge=Math.min(.8,state.tankAge+remaining);
+  if([18,21,23,24].includes(weapon)&&Number.isFinite(state.tankAge))state.tankAge=Math.min(.8,state.tankAge+remaining);
   state.flash = Math.max(0, state.flash - remaining);
   while (remaining > 1e-8) {
     const step = Math.min(remaining, 1 / 240);

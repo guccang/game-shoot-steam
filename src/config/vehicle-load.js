@@ -1,3 +1,4 @@
+import {TREASURE_ENGINES} from './treasure.js';
 // 所有重量采用千克；不同底盘限制牵引级别，换发动机不会把电动车变成坦克拖车。
 export const VEHICLE_LOADS=[
  {mass:2800,payload:700,tow:3800},{mass:6800,payload:1600,tow:10000},
@@ -5,11 +6,13 @@ export const VEHICLE_LOADS=[
  {mass:4200,payload:1800,tow:7500},{mass:80,payload:110,tow:90},
  {mass:9000,payload:2200,tow:16000},{mass:1600,payload:1200,tow:3800},
  {mass:1300,payload:650,tow:2100},
+ {mass:3800,payload:1500,tow:6500},{mass:7600,payload:2400,tow:13000},
 ];
 export const VEHICLE_ENGINES=[
  {id:'standard',name:'原厂发动机',payload:1,tow:1,speed:1,mass:0,price:0},
  {id:'torque',name:'高扭矩发动机',payload:1.3,tow:1.3,speed:.95,mass:.02,price:.2},
  {id:'haul',name:'重载发动机',payload:1.75,tow:1.65,speed:.85,mass:.04,price:.35},
+ ...TREASURE_ENGINES,
 ];
 export const LOAD_RULES={catMass:[40,36,48,38,44,35,42],catCapacity:30,catOverloadSpeed:0,magazineMass:.3,roundMass:.002,plateMassRate:.04,platePriceRate:.025,maxPlates:60,towPayloadPenalty:1,hookDistance:190,ropeLength:150,selfTowRepairRate:.4};
 export const WEAPON_MASSES=[2.5,4,12,4.5,6,5,5,6,4,5,6,8,3,4,8,4,4,6,5];

@@ -187,8 +187,8 @@ export function configureVehicle(game, index, vehicleIndex = game.loadout.vehicl
 // 渲染和弹道共用炮塔的转向、抬升及后坐，避免视觉枪口与真实发射点分离。
 export function vehicleGunPose(vehicle, reduced = false) {
   return {
-    angle: vehicle.angle - (reduced || [18,21].includes(vehicle.weaponIndex) ? 0 : vehicle.recoil.rise * 0.3),
-    kick: reduced ? ([18,21].includes(vehicle.weaponIndex)?vehicle.recoil.kick*.08:0) : vehicle.recoil.kick * 0.7,
+    angle: vehicle.angle - (reduced || [18,21,23,24].includes(vehicle.weaponIndex) ? 0 : vehicle.recoil.rise * 0.3),
+    kick: reduced ? ([18,21,23,24].includes(vehicle.weaponIndex)?vehicle.recoil.kick*.08:0) : vehicle.recoil.kick * 0.7,
   };
 }
 
@@ -291,7 +291,7 @@ export function updateVehicle(game, dt, holdFire = false) {
   );
   // 潮汐炮由两根独立喷管后坐，避免整座炮架随任一喷口抖动。
   if(w.id!=='hover-tide')triggerRecoil(v.recoil, v.weaponIndex);
-  if(['tank-125','wolf-256'].includes(w.id))v.recoil.tankAngle=v.angle;
+  if(['tank-125','wolf-256','longbranch','honeycomb'].includes(w.id))v.recoil.tankAngle=v.angle;
   m.cooldown += w.interval;
   m.cycle.firing = m.magazine.remaining === 0;
   if (!m.cycle.firing) m.cycle.charge = 0;

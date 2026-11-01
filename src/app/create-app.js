@@ -1,3 +1,4 @@
+import {createTreasure} from '../ui/treasure.js';
 import {createLoadCleanup} from '../ui/load-cleanup.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
 import {requestWorldNavigation} from '../core/world-navigation.js';
@@ -260,7 +261,8 @@ export function createApplication({
   const vehicleControls = createVehicleControls({ game, root, onChange: () => refresh() });
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
-  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(),onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onCargo:()=>logistics.open('cargo',game.vehicle.index),onItems:()=>fieldEquipment.open('items')});
+  const treasure=createTreasure({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
+  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(),onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onCargo:()=>logistics.open('cargo',game.vehicle.index),onItems:()=>fieldEquipment.open('items'),onTreasure:()=>treasure.open()});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});
@@ -593,7 +595,7 @@ export function createApplication({
         profiler.start('render.panels.waveTail'); waveTailNavigation.renderFrame(); profiler.end('render.panels.waveTail');
         profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
         profiler.start('render.panels.home'); campHome.render(); profiler.end('render.panels.home');
-        profiler.start('render.panels.nearby'); nearbyControls.render(); profiler.end('render.panels.nearby');
+        profiler.start('render.panels.nearby'); nearbyControls.render();treasure.update(); profiler.end('render.panels.nearby');
         profiler.start('render.panels.workshop'); worldWorkshop.render(); profiler.end('render.panels.workshop');
         profiler.start('render.panels.vehicleWorkshop'); worldVehicleWorkshop.render(); profiler.end('render.panels.vehicleWorkshop');
         profiler.start('render.panels.guardian'); guardianBuild.render(); profiler.end('render.panels.guardian');
@@ -655,7 +657,7 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    warehouse.dispose();backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();loadCleanup.dispose();
+    warehouse.dispose();treasure.dispose();backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();loadCleanup.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();

@@ -1,3 +1,4 @@
+import {treasureCargoMass} from './treasure.js';
 import {backpackEntries} from './backpack.js';
 import {itemDefinition} from '../config/items.js';
 // 同一重量计算供背包、工坊、行驶与牵引使用，不根据界面缓存判断能否移动。
@@ -20,8 +21,8 @@ export function catLoad(game){
 }
 // 车辆自重包含底盘、发动机增重、附加装甲和车内货物；载荷含驾驶员及背包。
 export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.vehicle.index&&game.vehicle.active,progress=game.progress}={}){
- const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cat=catLoad(game),cargo=cropInventoryMass(b.cargo)+(b.wood||0)*itemDefinition('material:wood').mass,armor=b.plates*armorPlateMass(index),engineMass=spec.mass*engine.mass;
- const gun=progress.vehicleLoadouts[index],key=ammoKind(VEHICLE_WEAPONS[gun]),loaded=progress===game.progress?game.vehicles?.[index]?.module?.magazine?.ammo:0;
+ const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cat=catLoad(progress===game.progress?game:Object.assign(Object.create(game),{progress})),cargo=treasureCargoMass(progress,index)+cropInventoryMass(b.cargo)+(b.wood||0)*itemDefinition('material:wood').mass,armor=b.plates*armorPlateMass(index),engineMass=engine.fixedMass??spec.mass*engine.mass;
+ const gun=progress.vehicleLoadouts[index],key=ammoKind(VEHICLE_WEAPONS[gun]),loaded=progress===game.progress?game.vehicles?.[index]?.module?.magazine?.ammo:progress.supplies?.vehicleMags?.[index]?.ammo;
  const ammo=ammunitionMass(progress.supplies?.vehicles[index])+Math.max(0,loaded||0)*(AMMO_TYPES[key]?.mass||0),gunMass=GUN_MASSES[gun]||0;
  const payload=cargo+armor+engineMass+ammo+gunMass+(driver?cat.body+cat.weight:0),capacity=spec.payload*engine.payload;
  const towCapacity=Math.max(0,spec.tow*engine.tow-payload*LOAD_RULES.towPayloadPenalty),mass=spec.mass+payload;

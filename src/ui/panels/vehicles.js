@@ -87,7 +87,7 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
           : v.active
             ? i18nText("ui.panels.vehicles.45b443aa7e")
             : i18nText("ui.panels.vehicles.e281d9f870", { p0: (VEHICLE_COOLDOWN) });
-    if(!level&&vehicle.rewardOnly)$('vehicle-collection-hint').textContent=i18nText("ui.panels.vehicles.3e9b593498");
+    if(!level&&vehicle.rewardOnly)$('vehicle-collection-hint').textContent=vehicle.index>=9?'听邻居线索，用金属探测器探索；出土后需要修复。':i18nText("ui.panels.vehicles.3e9b593498");
     $('vehicle-material-requirements').innerHTML = game.realm?.loadout ? '' : requirementsMarkup(p, 'vehicle', viewed);
     const action = $('vehicle-board');
     action.textContent = !level
