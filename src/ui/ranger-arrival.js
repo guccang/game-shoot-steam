@@ -1,3 +1,4 @@
+import {woodTaskStatus} from '../core/wood-task-status.js';
 // 入职只在地图上显示短目标，任务工坊靠近自动修复，首枪购买从建筑页面提交。
 import {RANGER,RANGER_STAGES,RANGER_LETTER} from '../config/ranger-arrival.js';
 import {RESTORATION_SECONDS} from '../config/building-repair-timing.js';
@@ -51,11 +52,11 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
   function openWorkshop(){if(!game.arrivalPending||game.arrivalCinematic||game.state!=='playing')return;if(['craft'].includes(game.progress.arrival.phase)){onOpenWeaponWorkshop();return;}dialogs.open(dialog.id);renderWorkshop();}
   // 每个阶段只展示一件当前要办的事，费用和得到的东西放在同一页。
   function renderWorkshop(){
-    const cost=RANGER.repairWood,ready=arrivalWorkReady(game),enough=game.progress.wood>=cost;
+    const cost=RANGER.repairWood,ready=arrivalWorkReady(game),wood=woodTaskStatus(game,cost),enough=wood.stored;
     $('arrival-workshop-state').textContent='重建武器工坊';
     $('arrival-workshop-description').textContent='补齐梁架和屋顶，就能在这里购买第一把手枪。';
-    $('arrival-workshop-cost').textContent=`木材 ${game.progress.wood} / ${cost}`;
-    $('arrival-workshop-feedback').textContent=game.arrivalError?'保存失败，请关闭页面后重试。':!ready?'请靠近工坊旁标出的修复区。':!enough?`还差 ${cost-game.progress.wood} 木材，靠近树木使用电锯采集。`:'';
+    $('arrival-workshop-cost').textContent=`已采集木材 ${wood.progress} · ${wood.breakdown}`;
+    $('arrival-workshop-feedback').textContent=game.arrivalError?'保存失败，请关闭页面后重试。':!enough?wood.hint:!ready?'请靠近工坊旁标出的修复区。':'';
     $('arrival-workshop-action').textContent='修复 · 消耗 '+cost+' 木头';
     $('arrival-workshop-action').disabled=!ready||!enough||!game.progress.arrival.keys||!['gather','repair'].includes(game.progress.arrival.phase);
   }
@@ -74,6 +75,7 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     if(reading){goal.setAttribute('aria-haspopup','dialog');goal.setAttribute('aria-controls',letter.id);}else{goal.removeAttribute('aria-haspopup');goal.removeAttribute('aria-controls');}
     // 短提示保留行动、地点和资源缺口，避免与标题重复占满窄任务卡。
     body.textContent=game.arrivalError?'保存失败，请重试。':a.phase==='gather'?`靠近树木采集 · 木材 ${game.progress.wood}/${RANGER.repairWood}`:a.phase==='repairing'?`屋顶重建 · ${Math.max(1,Math.ceil(RESTORATION_SECONDS-a.elapsed))}秒`:a.phase==='repair'?'靠近工坊，材料足够后自动修复':a.phase==='craft'?(game.progress.wood<RANGER.pistolWood?`还差 ${RANGER.pistolWood-game.progress.wood} 木材，靠近树木采集`:'靠近武器工坊，点击购买'):'稍等片刻';
+    if(!game.arrivalError&&['gather','repair','craft'].includes(a.phase)){const wood=woodTaskStatus(game,a.phase==='craft'?RANGER.pistolWood:RANGER.repairWood);if(!wood.stored){title.textContent=wood.destination?(wood.destination.kind==='store'?'木材入库':'取回车载木材'):'采集木料';body.textContent='木材 '+wood.progress+' · '+wood.hint;}}
     if(reading)body.textContent='点击任务，查看来信';
     if(a.phase==='ride-guide')body.textContent='前往北停车场找到电动车';
     retry.hidden=!game.arrivalError;card.dataset.phase=a.phase;

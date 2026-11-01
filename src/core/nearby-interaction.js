@@ -66,5 +66,5 @@ export function nearbyInteraction(game){
  const entry=entries.sort((a,b)=>a.distance-b.distance)[0];if(!entry)return null;
  const id=entryFacility(entry),f=TOWN_RESTORATIONS.find(f=>f.id===id),status=f&&restorationStatus(game,id);
  return f&&!facilityOpen(game.progress,id)?{...entry,type:'restoration',key:id,label:'修复'+f.name,
-  detail:'木头 '+game.progress.wood+'/'+f.wood+(game.progress.wood>=f.wood?(status.taskRequired?'\n靠近修复区自动开工':'\n点击查看修复，确认后开工'):' · 还差'+(f.wood-game.progress.wood)+(status.taskRequired?'\n采齐后靠近自动修复':'\n采齐后在修复页确认'))}:entry;
+  detail:'木头 '+status.wood.progress+' · '+status.wood.hint}:entry;
 }

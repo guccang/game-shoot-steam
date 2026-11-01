@@ -121,7 +121,8 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
    card.querySelector('.mainline-objective').textContent=o.hint|| (visiting?o.site.name||o.label:request?o.label:o.phase==='doing'?[step?.progress,step?.hint].filter(Boolean).join(' · '):MAINLINE_SITES[o.task.site].name);
    // 缺资源时在战场直说采集地点；具体缺口保留在任务详情中。
    const shortage=!!step?.resourceHint&&o.phase==='doing'&&!request&&!visiting;card.dataset.resourceShortage=String(shortage);
-   if(shortage&&!o.task.goal?.harvestFor)card.querySelector('.mainline-objective').textContent='缺资源：种田赚金币，采树获木材';
+   // 修复采木保留实际库存与缺口，避免通用提示覆盖刚更新的采集计数。
+   if(shortage&&!o.restoration&&!o.task.goal?.harvestFor)card.querySelector('.mainline-objective').textContent='缺资源：种田赚金币，采树获木材';
    const nav=target?o:worldNavigationObjective(game),bearing=storyBearing(game.player,nav?.site||o.site,85);
    card.querySelector('.mainline-bearing').hidden=!nav||!taskNavigationEnabled(game);
    card.querySelector('path').setAttribute('transform',`rotate(${bearing.angle} 22 22)`);

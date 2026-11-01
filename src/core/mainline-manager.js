@@ -49,9 +49,11 @@ export function mainlineSteps(game){
  const task=mainlineTask(game);if(!task)return [];
  const f=pendingRestoration(game.progress);if(f){
   const s=restorationStatus(game,f.id),repair={label:'修复'+f.name,hint:f.benefit,done:false,operation:{type:'restoration',id:f.id}};
-  // 材料充足或已投料时移除采集步骤；缺料在战场与详情都指明采集地点。
-  const resourceHint='还差 '+(f.wood-game.progress.wood)+' 仓库木头 · 采集后在营地打开背包，将木材入库';
-  return s.enough?[repair]:[{label:'补齐木头',hint:resourceHint,resourceHint,done:false,progress:game.progress.wood+'/'+f.wood},repair];
+  // 采齐与入库分开展示，背包和货舱有木头时立即更新采集进度。
+  if(s.enough)return [repair];
+  const wood=s.wood,resourceHint=wood.hint+' · '+wood.breakdown;
+  return [{label:'采集木头',hint:resourceHint,resourceHint,done:wood.collected,progress:wood.progress},
+   {label:'木材存入小屋仓库',hint:wood.destination?.label||'采集后靠近小屋仓库自动入库',done:false,progress:wood.warehouse+'/'+f.wood},repair];
  }
  const conditions=task.goal.all||[task.goal];
  return task.guide.steps.map((step,index)=>{

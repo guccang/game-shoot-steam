@@ -1,7 +1,4 @@
-import {TREE_REWARD} from '../config/rewards.js';
-import {woodPickupCapacity} from './wood-pickup.js';
-import {availableWood} from './wood-storage.js';
-import {CAMP_WAREHOUSE} from '../config/wood-storage.js';
+import {woodTaskStatus} from './wood-task-status.js';
 // 修复任务靠近自动投料，自选建筑由界面确认；持久化成功才扣料和开放功能。
 import {TOWN_RESTORATIONS,pendingRestoration,facilityOpen,RESTORATION_SECONDS} from '../config/town-restoration.js';
 import {currentMainlineTask} from '../config/mainline.js';
@@ -27,23 +24,23 @@ export function restorationStatus(game,id){
  const enough=game.progress.restoration?.build?.id===id||game.progress.wood>=f.wood;
  const safe=!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial&&['playing','paused'].includes(game.state);
  const taskRequired=!arrivalPending(game.progress)&&!!currentMainlineTask(game.progress.mainline)&&pendingRestoration(game.progress)?.id===id;
- return {facility:f,area,gathered,ready,active,near,enough,taskRequired,canRepair:!ready&&!game.progress.restoration?.build&&active&&near&&enough&&safe};
+ return {facility:f,area,gathered,wood:woodTaskStatus(game,f.wood),ready,active,near,enough,taskRequired,canRepair:!ready&&!game.progress.restoration?.build&&active&&near&&enough&&safe};
 }
 // 主线、地图和修复页共用真实树木与门前落点。
 export function restorationObjective(game,task){
  const pending=pendingRestoration(game.progress);if(!pending||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense)return null;
  const s=restorationStatus(game,pending.id),f=s.facility,build=game.progress.restoration?.build,gather=!build&&!s.enough;
- if(gather&&(game.progress.wood+availableWood(game)>=f.wood||woodPickupCapacity(game)<TREE_REWARD.wood&&availableWood(game)>0))return {task,restoration:f.id,key:'store-wood-'+f.id,phase:'doing',navigation:true,site:CAMP_WAREHOUSE,label:'运回木材，存入营地仓库',hint:'靠近小屋仓库，木材自动飞入仓库'};
+ if(gather&&s.wood.destination){const d=s.wood.destination;return {task,restoration:f.id,key:(d.kind==='store'?'store-wood-':'retrieve-wood-')+f.id,phase:'doing',navigation:true,site:d.site,label:d.label,hint:'木头 '+s.wood.progress+' · '+s.wood.breakdown};}
  let tree=null,distance=Infinity;
  if(gather)for(const t of game.trees){const d=worldDistance(game.player,t);if(t.hp>0&&d<distance){tree=t;distance=d;}}
  return {task,restoration:f.id,key:'restore-'+f.id,phase:'doing',navigation:true,site:{...(tree||f.site),mapId:'forest',...(!gather&&!build?{repairArea:s.area}:{})},
  label:build?'正在修复'+f.name:gather?'采集木头，修复'+f.name:'前往修复'+f.name,
- hint:game.restorationError|| (gather?'还差 '+(f.wood-game.progress.wood)+' 仓库木头 · 已入库 '+game.progress.wood+'/'+f.wood+' · 采集后返回营地入库':'靠近修复区自动开工 · '+f.benefit)};
+ hint:game.restorationError|| (gather?'木头 '+s.wood.progress+' · '+s.wood.hint+' · '+s.wood.breakdown:'靠近修复区自动开工 · '+f.benefit)};
 }
 // 材料、账本和修复状态一次提交；失败不扣钱、不改变外观，可原地重试。
 export function repairFacility(game,id,persist=game.restorationPersist){
  const s=restorationStatus(game,id);
- if(!s?.canRepair)return {ok:false,message:s?.ready?'这里已经修好了。':!s?.active?'请等待当前过场结束，再修复这里。':!s?.enough?'木头还差 '+(s.facility.wood-game.progress.wood)+' 份，补齐后即可修复。':!s?.near?'请靠近设施的修复区，步行或骑乘到达后点击修复。':'请先结束当前活动，再点击修复。'};
+ if(!s?.canRepair)return {ok:false,message:s?.ready?'这里已经修好了。':!s?.active?'请等待当前过场结束，再修复这里。':!s?.enough?s.wood.hint:!s?.near?'请靠近设施的修复区，步行或骑乘到达后点击修复。':'请先结束当前活动，再点击修复。'};
  const next=validateProgress(structuredClone(game.progress));next.wood-=s.facility.wood;next.restoration.build={id,elapsed:0,x:game.player.x,y:game.player.y};
  recordEconomy(next,'expense','town:repair:'+id,{wood:s.facility.wood});
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
