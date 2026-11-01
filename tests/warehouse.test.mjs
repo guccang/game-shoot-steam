@@ -1,26 +1,27 @@
 // 仓库定向验证：建筑、真实库存、负重、权限和失败回滚。
+import {nearbyInteraction} from '../src/core/nearby-interaction.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {warehouseVehicles,transferWarehouse,warehouseTransferPreview} from '../src/core/warehouse.js';
+import {canUseWarehouse,warehouseVehicles,transferWarehouse,warehouseTransferPreview} from '../src/core/warehouse.js';
 import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
-import {WORKSHOP_INTERIORS,interiorShopkeeper} from '../src/config/workshop-interiors.js';
-import {updateCottage,cottageBlocked} from '../src/core/cottage.js';
+import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
+import {updateCottage,enterWorkshop} from '../src/core/cottage.js';
 import {WAREHOUSE} from '../src/config/warehouse.js';
 import {blocked} from '../src/physics/motion.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';
 import {PARKING_SPOTS} from '../src/config/parking.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
 // 使用正式游戏和存档，仅准备仓库入口及可持续保存的测试环境。
-function setup(){const g=new Game(freshProgress());g.state='playing';g.livingPersist=()=>true;g.mainlineSpeech=null;g.vehicle.active=false;g.cottage={kind:'warehouse',outside:WORKSHOP_INTERIORS.warehouse.outside};return g;}
-test('仓库墙体、门前、停车场通路与一秒进出正确',()=>{
+function setup(){const g=new Game(freshProgress());g.state='playing';g.livingPersist=()=>true;g.mainlineSpeech=null;g.vehicle.active=false;g.cottage=null;Object.assign(g.player,WORKSHOP_INTERIORS.warehouse.door);return g;}
+test('仓库保留实体墙和通路，门前直接存取且不会进入房间',()=>{
  const g=setup(),room=WORKSHOP_INTERIORS.warehouse,body={mapId:'forest',livingCollision:true};g.cottage=null;
  assert.ok(blocked(WAREHOUSE.x,WAREHOUSE.y-40,12,g.trees,body));assert.equal(blocked(room.door.x,room.door.y,12,g.trees,body),false);
  assert.ok(planQuestRoute({...body,x:600,y:700},room.door,g.trees,24000).reachable);
  for(const s of PARKING_SPOTS.filter(s=>s.building==='north'))assert.equal(blocked(s.x,s.approachY,32,g.trees,body),false,s.id);
- Object.assign(g.player,room.door,{vx:0,vy:0});for(let i=0;i<19;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage.kind,'warehouse');
- assert.equal(interiorShopkeeper(g.cottage).label,'仓库管理员');assert.ok(cottageBlocked(66,125,g));assert.equal(cottageBlocked(180,280,g),false);
+ Object.assign(g.player,room.door,{vx:0,vy:0});for(let i=0;i<19;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);assert.equal(enterWorkshop(g,'warehouse'),false);assert.ok(canUseWarehouse(g));
+ assert.equal(nearbyInteraction(g)?.type,'warehouse');
  Object.assign(g.player,room.exit);for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);
 });
 test('木材、备用弹药和种子往返守恒、减负且持久保存',()=>{
@@ -40,5 +41,8 @@ test('满载提示、上限、非法数量和保存失败均不吞货',()=>{
  assert.ok(transferWarehouse(g,'bag','ammo:heavy',1000,'withdraw',true).ok);assert.ok(catLoad(g).overloaded);assert.ok(transferWarehouse(g,'bag','ammo:heavy',1000,'deposit').ok);assert.equal(catLoad(g).overloaded,false);
  g.progress.wood=RESOURCE_CAP;g.progress.logistics.bagWood=5;assert.equal(transferWarehouse(g,'bag','material:wood',1,'deposit').ok,false);
  for(const n of [0,-1,NaN,1.2,Infinity])assert.equal(transferWarehouse(g,'bag','material:wood',n,'deposit').ok,false);
- g.progress.wood=0;const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(transferWarehouse(g,'bag','material:wood',5,'deposit').ok,false);assert.deepEqual(g.progress,before);g.cottage.kind='seed';assert.equal(transferWarehouse(g,'bag','material:wood',1,'deposit').ok,false);
+ g.progress.wood=0;const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(transferWarehouse(g,'bag','material:wood',5,'deposit').ok,false);assert.deepEqual(g.progress,before);g.cottage={kind:'seed'};assert.equal(transferWarehouse(g,'bag','material:wood',1,'deposit').ok,false);
 });
+
+// 室外许可覆盖步行、骑乘和暂停，拒绝远程、跨地图、其他房屋及事件战斗。
+test('室外打开不改坐标或驾驶，远处与其他场景不能存取',()=>{const g=setup(),position={x:g.player.x,y:g.player.y};g.vehicle.active=true;assert.ok(canUseWarehouse(g));g.state='paused';assert.ok(canUseWarehouse(g));assert.equal(g.vehicle.active,true);assert.deepEqual({x:g.player.x,y:g.player.y},position);g.player.x+=200;assert.equal(canUseWarehouse(g),false);Object.assign(g.player,position);g.mapId='jiuzhaigou';assert.equal(canUseWarehouse(g),false);g.mapId='forest';g.cottage={kind:'cottage'};assert.equal(canUseWarehouse(g),false);g.cottage=null;g.boss={};assert.equal(canUseWarehouse(g),false);g.boss=null;g.player.hp=0;assert.equal(canUseWarehouse(g),false);});

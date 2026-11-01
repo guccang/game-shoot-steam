@@ -1,4 +1,5 @@
 // 仓库事务在保存成功后才提交，存取均保留物品总数与正式负重计算。
+import {canInspectBuilding} from './building-entry.js';
 import {WAREHOUSE} from '../config/warehouse.js';
 import {AMMO_TYPES} from '../config/supplies.js';
 import {FARM_CROPS,FARM_STOCK_CAP} from '../config/farm.js';
@@ -12,9 +13,9 @@ import {vehicleLocations} from './vehicle-location.js';
 import {commitCargo} from './cargo.js';
 import {worldDistance} from '../world/coordinates.js';
 export const WAREHOUSE_ITEMS=['material:wood',...Object.keys(AMMO_TYPES).map(k=>'ammo:'+k),...FARM_CROPS.map((_,i)=>'seed:'+i)];
-// 仓库内才能存取，死亡、临时车队与其他房屋不提供远程装卸。
-export function canUseWarehouse(game){return personalFleet(game)&&game.mapId==='forest'&&game.cottage?.kind==='warehouse'&&game.player.hp>0&&['playing','paused'].includes(game.state);}
-// 入屋后使用仓库门前的世界位置核验车辆，排除远处与维修救援中的车。
+// 靠近仓库直接存取，步行和骑乘均可；其他房屋、战斗和远处不能隔空装卸。
+export function canUseWarehouse(game){return personalFleet(game)&&canInspectBuilding(game)&&!game.progress.restoration?.build&&game.player.hp>0&&['playing','paused'].includes(game.state)&&worldDistance(game.player,{x:WAREHOUSE.x,y:WAREHOUSE.y+22})<=150;}
+// 使用仓库门前的世界位置核验车辆，排除远处与维修救援中的车。
 export function warehouseVehicles(game){
  if(!canUseWarehouse(game))return [];
  return game.progress.vehicleHulls.flatMap((owned,i)=>{const p=vehicleLocations(game).find(v=>v.hull===i),service=game.progress.vehicleService?.[i];return owned&&p?.mapId==='forest'&&worldDistance(p,{x:WAREHOUSE.x,y:WAREHOUSE.y+60})<=130&&!['outbound','hooking','towing','repairing','ready'].includes(service?.phase)?[i]:[];});
@@ -31,7 +32,7 @@ function stores(p,id,source){
 export function warehouseRows(game,source='bag'){return WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key],stored:s.store[s.storeKey]}]:[];});}
 // 预演与提交共用校验，并给出取出后的实际负重；满载需要玩家再次明确确认。
 export function warehouseTransferPreview(game,source,id,count,direction){
- if(!canUseWarehouse(game)||source!=='bag'&&!warehouseVehicles(game).includes(source))return {ok:false,message:'请进入仓库；载具需停在仓库门前附近。'};
+ if(!canUseWarehouse(game)||source!=='bag'&&!warehouseVehicles(game).includes(source))return {ok:false,message:'请靠近仓库打开存取页面；载具需位于仓库附近。'};
  if(!Number.isSafeInteger(count)||count<=0||!['deposit','withdraw'].includes(direction))return {ok:false,message:'请选择有效的存取数量。'};
  const next=validateProgress(structuredClone(game.progress)),s=stores(next,id,source);if(!s)return {ok:false,message:'该物品不能存入此位置。'};
  const deposit=direction==='deposit',from=deposit?s.carry:s.store,to=deposit?s.store:s.carry,fk=deposit?s.key:s.storeKey,tk=deposit?s.storeKey:s.key;

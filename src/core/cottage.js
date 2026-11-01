@@ -29,6 +29,8 @@ export function enterParkedWorkshop(game,parkingId){
 }
 // 入室前保存世界落点，室内使用独立坐标，存档仍记录外部安全位置。
 function enterInterior(game,kind,parkingEntrance=null,mountedCountdown=false){
+ // 仓库使用室外存取页面，不再切换室内坐标或让驾驶员下车。
+ if(kind==='warehouse')return false;
  if(!facilityOpen(game.progress,kind==='vehicle'?'garage':kind))return false;
  const layout=interiorLayout({kind});
  if(kind==='legendary'&&!game.progress.vehicleHulls[6])return false;
@@ -74,7 +76,7 @@ export function updateCottage(game,dt,input){
  if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech||game.vehicleBoarding){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
  // 页面暂停不消耗等待时间，关闭后继续；步行和驾驶移动或离开门口立即取消。
  if(game.state!=='playing')return false;
- const layouts=[interiorLayout({kind:'cottage'}),...Object.values(WORKSHOP_INTERIORS)].filter(r=>r.id!=='legendary'||game.progress.vehicleHulls[6]);
+ const layouts=[interiorLayout({kind:'cottage'}),...Object.values(WORKSHOP_INTERIORS)].filter(r=>r.id!=='warehouse'&&(r.id!=='legendary'||game.progress.vehicleHulls[6]));
  const layout=layouts.reduce((best,item)=>worldDistance(game.player,item.door)<worldDistance(game.player,best.door)?item:best);
  if(game.cottageDoorLatch){
   const latched=layouts.find(r=>r.id===(game.cottageDoorLatch===true?'cottage':game.cottageDoorLatch));

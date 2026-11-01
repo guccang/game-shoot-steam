@@ -46,3 +46,17 @@
 - 实际检查 320×568、360×640、390×844、430×932、844×390 与 900×1280 既有手机容器；已查看窄屏格子、横屏格子／数量层、满载确认和昼夜正式场景。没有新增桌面专用布局。
 - 证据：`output/playwright/warehouse-drag-grid/` 下 `wood-stock.png`、`panel-320.png`、`panel-844.png`、`quantity-844.png`、`overload-warning.png`、`exterior-390-day.png`、`exterior-390-night.png`、`inside-night.png`、`result.txt` 和交互录像。对应 `designCriterion: warehouse-building`；`inspectWarehouse` 同时提供两区格子数、库存总数和数量层状态。
 - 资源预算：新增运行位图与图集为零，浮动格子仅拖动期间创建并在结束／中断时释放，无新动画时钟或世界实体；角色、武器、怪物及载具绘制保持原合同。
+
+## 8 室外直接存取改版（制作前约定）
+
+仓库不再进入室内。靠近后点击门前「打开仓库」立即显示原有双区物品格子；图标右下数量角标、总数、拖拽和数量滑条保留。关闭后回到原世界位置，不移动猫猫或载具、不自动重开；骑乘打开时默认当前载具货舱。远处、其他房间和事件场景不允许隔空存取。
+
+复用既有附近交互按钮和手机底板，建筑144×124外观、实体墙、图标和动画不变；门前按钮使用世界锚点及短屏安全区。无需新位图、图集或PNG精修。正式入口为 nearbyInteraction / createWarehouse / canUseWarehouse，仍绑定 warehouse-building 验收；实机结果在完成后补充。
+
+### 室外存取验收结果
+
+- 通过：室外点击「打开仓库」直接显示双库存格子；门前等待不会入室，关闭后保持原位置且不会自动重开。九种载具均保持骑乘，骑乘打开默认当前货舱。
+- 仓库事务5项、房屋与载具入口6项，共11项专项测试通过；浏览器36个检查点通过，无页面异常。覆盖真实触摸拖拽、滑条、数量角标、同区取消、中断、满载确认、车辆弹药去向、远处不可访问和刷新持久化。
+- 已查看正式场景昼夜、320窄屏、844短横屏、室外入口和骑乘货舱截图，图标、数量和投放区可辨，弹窗无视口越界；其余既有手机尺寸布局检查通过。建筑碰撞与通路通过专项验证，无新增图片、图集或动画资源。
+- 证据保留在 `output/playwright/warehouse-direct/`：`outside-entry.png`、`wood-stock.png`、`mounted-storage.png`、`panel-320.png`、`panel-844.png`、昼夜外景、`result.txt` 与录像。对应 `designCriterion: warehouse-building`。
+- 旧 `workshop-entry-actions.test.mjs` 的3项失败在未修改main上同样存在：仍断言三秒进入及已移除的点击入屋。此次以当前一秒规则的 `vehicle-door-entry.test.mjs` 验证其他建筑没有回归，未更改旧测试逻辑。

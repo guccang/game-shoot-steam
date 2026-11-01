@@ -1,4 +1,5 @@
 // 场景操作统一绑定目标实体，世界建筑与室内家具分别使用各自坐标，不借用玩家位置。
+import {WAREHOUSE} from '../config/warehouse.js';
 import {WORKSHOP_INTERIORS,interiorLayout} from '../config/workshop-interiors.js';
 import {COTTAGE_FURNITURE} from '../config/cottage.js';
 import {PARKING_SPOTS} from '../config/parking.js';
@@ -30,6 +31,7 @@ export function parkingInteractionAnchor(id) {
 export function nearbyInteractionAnchor(game,entry) {
  if(!entry)return null;
  switch(entry.type){
+  case 'warehouse':return at(WAREHOUSE,-35);
   case 'vehicle-repair':return building(entry,156,112);
   case 'vehicle-wreck':return at(entry,65);
   case 'seed-shop':return building(FARM_SEED_SHOP);

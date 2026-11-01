@@ -24,8 +24,8 @@ function scene(kind='cottage',hull=0,shift=0){
 // 候停由正式控制器逐帧推进，便于精确验证不足一秒及暂停边界。
 function wait(g,seconds,input={x:0,y:0}){for(let i=0;i<Math.round(seconds/.05);i++)updateCottage(g,.05,input);}
 
-test('所有房屋与九种载具在门口候停一秒后步行入屋，车辆唯一停在实际门口',()=>{
- for(const kind of ['cottage',...Object.keys(WORKSHOP_INTERIORS)])for(let hull=0;hull<9;hull++){
+test('可进入房屋与九种载具在门口候停一秒后入屋，车辆唯一停在门口',()=>{
+ for(const kind of ['cottage',...Object.keys(WORKSHOP_INTERIORS).filter(kind=>kind!=='warehouse')])for(let hull=0;hull<9;hull++){
   const {g,layout,events}=scene(kind,hull),position=canonical(g.player),hp=g.vehicle.hp,ammo=g.vehicle.module?.magazine.ammo||0;
   g.vehicle.wheelPhase=2.5;if(g.vehicle.module)g.vehicle.module.magazine.remaining=.4;
   wait(g,.95);assert.equal(g.cottage,null,kind+'/'+hull);assert.equal(g.vehicle.active,true);assert.equal(playerActionCountdown(g).icon,'home');assert.equal(g.progress.campParking.owned.length,0);
@@ -58,3 +58,6 @@ test('正式游戏帧完成入屋，保存与读档保留门口车辆位置和�
 test('特殊通行车没有安全落地点时不丢车、不进入室内',()=>{
  const {g}=scene('cottage',2);g.trees=[{x:g.player.x,y:g.player.y,radius:100000,hp:1}];wait(g,1);assert.equal(g.cottage,null);assert.equal(g.vehicle.active,true);assert.equal(g.progress.campParking.owned.length,0);
 });
+
+// 仓库作为室外服务入口，所有车型停在门前都保持骑乘且没有进屋倒计时。
+test('九种载具在仓库门前停留不会进屋或下车',()=>{for(let hull=0;hull<9;hull++){const {g}=scene('warehouse',hull),position={x:g.player.x,y:g.player.y};wait(g,1.5);assert.equal(g.cottage,null);assert.equal(g.cottageEntry,null);assert.equal(g.vehicle.active,true);assert.deepEqual({x:g.player.x,y:g.player.y},position);assert.equal(g.progress.campParking.owned.length,0);}});

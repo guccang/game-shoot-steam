@@ -42,8 +42,8 @@ export function createWarehouse({game,root,dialogs,onChange}){
  scope.on(quantity,'input',e=>{if(e.target.id==='warehouse-range'&&selection){selection.count=Number(e.target.value);preview();}});
  scope.on(quantity,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-cancel'))return dialogs.close(quantity.id);if(!selection)return;if(b.dataset.amount){selection.count=Number(b.dataset.amount);get('range').value=selection.count;preview();}else if(b.hasAttribute('data-confirm')){const r=transferWarehouse(game,selection.source,selection.id,selection.count,selection.direction,true);message=r.message;selection=null;dialogs.close(quantity.id);render();onChange();}});
  scope.on(quantity,'close',()=>{if(!quantity.open)selection=null;});
- // 仅室内管理员打开，超载时仍可打开卸货。
- function open(){if(!canUseWarehouse(game))return false;source='bag';category='all';selection=null;message='';render();dialogs.open(panel.id);return true;}
+ // 室外靠近仓库即可打开，超载仍可卸货，骑乘和世界位置保持不变。
+ function open(){if(!canUseWarehouse(game))return false;source=game.vehicle.active?game.vehicle.index:'bag';category='all';selection=null;message='';render();dialogs.open(panel.id);return true;}
  // 释放手势和两个弹窗，避免重复初始化叠加事件。
  function dispose(){drag.dispose();scope.dispose();quantity.remove();panel.remove();}
  return {open,render,dispose};

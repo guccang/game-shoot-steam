@@ -316,7 +316,8 @@ export function createApplication({
   }
   // 所有附近按钮只提交一次明确意图，沿用原页面、入室和载具控制器。
   const nearbyControls=createNearbyInteraction({game,renderer,root,input,activate:entry=>{
-    if(entry.type==='vehicle-repair')vehicleRepair.open();
+    if(entry.type==='warehouse')warehouse.open();
+    else if(entry.type==='vehicle-repair')vehicleRepair.open();
     else if(entry.type==='vehicle-wreck')toast.show('载具已损坏，需要维修。请用手机呼叫救援，或到维修中心安排拖车。');
     else if(entry.type==='restoration'){
       // 自选建筑先显示修复页，扣料统一由页面修复按钮确认。

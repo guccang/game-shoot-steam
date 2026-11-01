@@ -1,3 +1,4 @@
+import {canUseWarehouse} from './warehouse.js';
 import {personalFleet} from './vehicle-repair.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,campSignSite,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {monsterCampsAvailable} from './monster-camps.js';
@@ -39,6 +40,8 @@ export function nearbyInteraction(game){
   // 售货员使用自身唯一点击区，避免附近按钮盖住角色。
   return null;
  }
+ // 仓库在室外直接打开格子存取，驾驶时也无需下车入屋。
+ if(canUseWarehouse(game))return {id:'warehouse',type:'warehouse',label:'打开仓库',detail:'格子存取 · 拖拽物品',presentation:'task-entry'};
  if(canRequestParking(game))return {id:'parking-'+nearestParkingSpot(game).id,type:'parking',label:'停车入位'};
  const entries=[];
  if(personalFleet(game)){
