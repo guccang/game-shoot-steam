@@ -16,8 +16,8 @@ function setup(){const p=freshProgress();p.coins=10000;p.mainline.completed=[...
 // 商品交易显式模拟店内会话，随后回家继续验证原有布局和植物规则。
 function buyDecor(g,type){const room=g.cottage;if(room)g.cottage={...room,kind:'furniture'};try{return purchaseDecor(g,type);}finally{g.cottage=room;}}
 
-test('十五款目录稳定唯一，旧档免费家具保持原位且刷新不重复赠送',()=>{
- assert.equal(HOME_CATALOG.length,15);assert.equal(new Set(HOME_CATALOG.map(d=>d.id)).size,15);
+test('十六款目录稳定唯一，旧档免费家具保持原位且刷新不重复赠送',()=>{
+ assert.equal(HOME_CATALOG.length,16);assert.equal(new Set(HOME_CATALOG.map(d=>d.id)).size,16);
  const p=freshProgress();delete p.homeDecor;const old=validateProgress(p);assert.deepEqual(old.homeDecor,freshHome());assert.deepEqual(validateProgress(old).homeDecor,old.homeDecor);
 });
 test('每件商品按报价扣款，独立实例入收纳，金币不足与容量满不扣款',()=>{
@@ -39,13 +39,13 @@ test('购买、移动、收纳、播种与采收保存失败均回滚，允许�
 });
 test('家具移动影响真实脚底碰撞，拒绝床位、重叠、门口和猫脚下',()=>{
  const g=setup(),uid=buyDecor(g,'pot').uid;assert.equal(cottageBlocked(120,228,g),false);assert.ok(moveDecor(g,uid,120,228).ok);assert.equal(cottageBlocked(120,228,g),true);
- for(const [x,y] of [[62,140],[273,112],[180,324],[180,300],[NaN,200],[-20,100]])assert.equal(moveDecor(g,uid,x,y).ok,false);
+ for(const [x,y] of [[62,140],[273,112],[COTTAGE.exit.x,COTTAGE.exit.y],[COTTAGE.spawn.x,COTTAGE.spawn.y],[NaN,200],[-20,100]])assert.equal(moveDecor(g,uid,x,y).ok,false);
  assert.ok(moveDecor(g,uid,120,252).ok);assert.equal(cottageBlocked(120,228,g),false);assert.equal(cottageBlocked(120,252,g),true);
  assert.ok(storeDecor(g,uid).ok);assert.equal(cottageBlocked(120,252,g),false);assert.ok(!homeFurniture(g.progress.homeDecor).some(i=>i.uid===uid));
 });
 test('落点合法但封住床边通路时拒绝，窗帘与挂件限制墙位，地毯不阻路',()=>{
- const home={version:1,nextId:5,items:[{uid:1,type:'sofa',x:72,y:216},{uid:2,type:'sofa',x:150,y:216},{uid:3,type:'sofa',x:228,y:216},{uid:4,type:'sofa',x:null,y:null}]};
- assert.match(placementError(home,4,306,216),/通往/);
+ const home={version:1,nextId:7,items:[...Array.from({length:5},(_,i)=>({uid:i+1,type:'sofa',x:72+i*78,y:216})),{uid:6,type:'pot',x:null,y:null}]};
+ assert.match(placementError(home,6,444,216),/通往/);
  const g=setup(),curtain=buyDecor(g,'curtain').uid,painting=buyDecor(g,'painting').uid,rug=buyDecor(g,'rug').uid;
  assert.equal(moveDecor(g,curtain,180,200).ok,false);assert.ok(moveDecor(g,curtain,81,46).ok);
  assert.equal(moveDecor(g,painting,81,46).ok,false);assert.ok(moveDecor(g,painting,144,46).ok);

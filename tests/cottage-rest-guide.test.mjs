@@ -51,12 +51,13 @@ test('未建成、战斗和其他活动不触发小屋教学，满血休息也�
 });
 
 // 普通巡游等待、胜利与换装都不能替代小屋休息。
-test('普通巡游安全等待不会自动回血，换猫和升级不附送生命',()=>{
+test('普通巡游安全等待不会自动回血，换猫与拒绝手动升级不附送生命',()=>{
  const g=scene();g.progress.restoration.cottageRested=true;g.progress.coins=999999;g.progress.heroes[1]=1;g.mainlineSpeech=null;
  g.enemies=[];g.spawnTimer=999;g.fireClock=999;Object.assign(g.player,{x:900,y:800});
  for(let i=0;i<100;i++)g.update(.05,{x:0,y:0});assert.equal(g.player.hp,27);
  assert.ok(g.transact('heroes',1,'equip'));assert.equal(g.player.hp,27);
- assert.ok(g.transact('heroes',1,'upgrade'));assert.equal(g.player.hp,27);
+ // 角色现在只靠经验升级，旧购买升级入口应拒绝且不回血。
+ assert.equal(g.transact('heroes',1,'upgrade'),false);assert.equal(g.player.hp,27);
 });
 test('普通巡游击败领主不自动回满生命',()=>{
  const g=scene();g.progress.restoration.cottageRested=true;g.boss={};defeatBoss(g);assert.equal(g.player.hp,27);

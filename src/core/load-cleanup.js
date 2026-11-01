@@ -1,3 +1,4 @@
+import {carriedWeapon} from '../progression/weapon-storage.js';
 // 背包与货舱清理使用真实库存；选择数量后由界面确认，保存失败不丢物品。
 import {backpackEntries} from '../progression/backpack.js';
 import {itemDefinition} from '../config/items.js';
@@ -29,7 +30,7 @@ export function cleanupEntries(game,hull=null){
 // 扣减备用弹药后再扣弹匣，快照和运行时同时提交，防止读档恢复被清理的子弹。
 function removeAmmo(snapshot,key,count,hull){
  const stock=hull===null?snapshot.progress.supplies.hand:snapshot.progress.supplies.vehicles[hull],reserve=Math.min(stock[key],count);stock[key]-=reserve;let remaining=count-reserve;
- const mags=hull===null?snapshot.magazines.filter((_,i)=>snapshot.progress.weapons[i]&&ammoKind(WEAPONS[i])===key):[snapshot.vehicles[hull].module?.magazine].filter(Boolean);
+ const mags=hull===null?snapshot.magazines.filter((_,i)=>carriedWeapon(snapshot.progress,i)&&ammoKind(WEAPONS[i])===key):[snapshot.vehicles[hull].module?.magazine].filter(Boolean);
  for(const mag of mags){const n=Math.min(mag.ammo,remaining);mag.ammo-=n;remaining-=n;if(!remaining)break;}
  if(hull!==null){const record=snapshot.progress.campParking.owned.find(r=>r.hull===hull);if(record)record.ammo=snapshot.vehicles[hull].module?.magazine.ammo||0;}
 }

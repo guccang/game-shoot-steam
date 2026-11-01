@@ -1,3 +1,4 @@
+import {carriedWeapon} from '../progression/weapon-storage.js';
 // 蜘蛛单枪架仅接收已拥有的远程枪；空槽表示自带脉冲炮，旧档始终可用。
 import { WEAPONS, WEAPON_DISPLAY_ORDER } from './weapons.js';
 import { effectiveWeapon, weaponDamage } from './weapon-mods.js';
@@ -5,7 +6,7 @@ import { SPIDER_GUN_MULTIPLIER } from './spider.js';
 
 // 不允许控制器嵌套或近战枪，避免递归召唤与无效枪口。
 export function canMountSpider(progress,index) {
-  return index===null||Number.isInteger(index)&&!!WEAPONS[index]&&!WEAPONS[index].controller&&!['melee','defense'].includes(WEAPONS[index].attackKind)&&progress.weapons[index]>0;
+  return index===null||Number.isInteger(index)&&!!WEAPONS[index]&&!WEAPONS[index].controller&&!['melee','defense'].includes(WEAPONS[index].attackKind)&&carriedWeapon(progress,index);
 }
 // 非法值和缺失字段回到原生炮，不购买装备或复制其他配置。
 export function validateSpiderLoadout(progress,value){return canMountSpider(progress,value)?value:null;}

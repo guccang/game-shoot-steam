@@ -14,7 +14,7 @@ const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'
 const entries=[
  WOOD_ITEM,
  ...Object.entries(SUPPLY_ITEMS).map(([key,r])=>({id:'supply:'+key,category:'supply',key,name:r.name,mass:r.mass,icon:{kind:'supply',key},description:key==='medkit'?'装有绷带和急救用品的便携医疗包。':'用于野外处理载具部件故障的工具包。',use:supplyUses[key]})),
- ...WEAPONS.map((w,index)=>({id:'weapon:'+index,category:'weapon',index,name:w.name,mass:WEAPON_MASSES[index]||4,icon:{kind:'weapon',index},description:w.desc||w.description||'猫猫使用的手持装备。',use:'在武器工坊装备或改装；已拥有的武器随背包携带。'})),
+ ...WEAPONS.map((w,index)=>({id:'weapon:'+index,category:'weapon',index,name:w.name,mass:WEAPON_MASSES[index]||4,icon:{kind:'weapon',index},description:w.desc||w.description||'猫猫使用的手持装备。',use:'在武器工坊装备或改装；可存入巡林小屋武器架，取出后随身携带。'})),
  ...Object.entries(AMMO_TYPES).map(([key,r])=>({id:'ammo:'+key,category:'ammo',key,name:r.name,mass:r.mass,icon:{kind:'ammo',key},description:'弹药铺可购买或制作的实体弹药。',use:ammoUses[key]})),
  {id:'magazine',category:'ammo',name:'弹匣',mass:LOAD_RULES.magazineMass,icon:{kind:'magazine'},description:'每把使用实物弹药的随身武器配有一个弹匣。',use:'自动换弹时装填背包中的对应弹药；弹药重量单独计算。'},
  ...FARM_CROPS.flatMap((crop,index)=>[{id:'crop:'+index,category:'crop',index,name:crop.name,mass:CROP_MASSES[crop.category]||1,icon:{kind:'crop',index},description:'已经收获的'+crop.name+'。',use:'可出售、交付订单，或装入载具货舱。'},{id:'seed:'+index,category:'seed',index,name:crop.name+'种子',mass:.02,icon:{kind:'seed',index},description:'用于种植'+crop.name+'的种子。',use:'选择空田播种；收获物进入背包。'}]),

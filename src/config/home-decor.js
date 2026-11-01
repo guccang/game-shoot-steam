@@ -1,7 +1,9 @@
 // 小屋装扮数值合同：金币报价、底座、墙面分区及盆栽周期由此统一提供。
 export const HOME_LIMIT=40;
 export const HOME_GRID=12;
+export const WEAPON_RACK_CAPACITY=3;
 export const HOME_CATALOG=[
+ {id:'weapon-rack',name:'橡木武器架',price:240,width:96,height:34,layer:'floor',description:'可存放并展示3把主武器。可重复购买，回小屋摆放后点击存取。'},
  {id:'pot',name:'陶土花盆',price:80,width:28,height:24,layer:'floor',description:'种下薄荷、草莓或雏菊，把窗边养成小花园。'},
  {id:'painting',name:'林间壁画',price:120,width:44,height:36,layer:'wall',description:'把远山和小径挂在两扇窗之间。'},
  {id:'television',name:'复古电视',price:360,width:56,height:30,layer:'floor',description:'自带矮脚支架，播放一幅安静的森林画面。'},

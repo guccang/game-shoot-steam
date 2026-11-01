@@ -1,3 +1,4 @@
+import {drawWeapon} from './characters.js';
 // 小屋家具正式绘制：目录、摆放预览与室内共用独立主体，植物不烘焙进花盆。
 import {box,oval,poly} from './primitives.js';
 import {plantState} from '../progression/home-decor.js';
@@ -18,10 +19,20 @@ function drawPlant(c,state){
  }
 }
 // 家具坐标使用底座中心，主体向上展开，夜晚保持相同剪影和层级。
-export function drawHomeDecor(c,item,night=false,calendar={day:1,elapsed:0}){
+export function drawHomeDecor(c,item,night=false,calendar={day:1,elapsed:0},progress=null){
  const {type,width:w,height:h}=item;c.save();c.translate(item.x||0,item.y||0);
  if(item.layer==='floor')oval(c,3,5,w/2+2,Math.min(9,h/3),'#32493326');
- if(type==='pot'){
+ if(type==='weapon-rack'){
+  box(c,-48,-72,96,84,5,night?'#a88b63':'#c7a276',INK,2);
+  box(c,-42,-65,84,67,3,'#70836a',INK,1.5);
+  for(let slot=0;slot<3;slot++){
+   const yy=-54+slot*23;line(c,[[-37,yy+9],[37,yy+9]],'#e0c38c',2);
+   const index=item.weapons?.[slot];
+   if(Number.isInteger(index)){c.save();c.beginPath();c.rect(-40,yy-11,80,21);c.clip();drawWeapon(c,index,-20,yy,index===14?.4:index===0?1.2:.72,0,0,0,progress?.mods?.[index]||0,progress?.weaponParts?.[index]);c.restore();}
+   else{for(const xx of [-23,23])line(c,[[xx,yy-4],[xx,yy+4],[xx+5,yy+4]],'#bbcca0',1.5);}
+  }
+  for(const xx of [-43,36])box(c,xx,7,7,12,2,'#9c7953',INK,1.5);
+ }else if(type==='pot'){
   poly(c,[[-14,-10],[14,-10],[10,11],[-10,11]],'#c99378',INK,1.7);oval(c,0,-10,14,5,'#dbb18b',INK,1.5);oval(c,0,-10,10,3,'#776046');drawPlant(c,plantState(item,calendar));
  }else if(type==='painting'){
   box(c,-22,-24,44,36,3,WOOD,INK,2);box(c,-17,-19,34,26,1,'#d9dfb9',INK,1);oval(c,9,-12,4,4,'#e9c679');poly(c,[[-16,5],[-4,-12],[6,3],[11,-5],[17,6]],'#82a381',INK,1);

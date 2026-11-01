@@ -1,0 +1,46 @@
+// 两层房间和武器收纳使用真实Game、购买、摆放、存档与负重计算验证。
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Game} from '../src/core/game.js';
+import {freshProgress,validateProgress} from '../src/progression/progress.js';
+import {MAINLINE_IDS} from '../src/config/mainline.js';
+import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
+import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
+import {HOME_CATALOG} from '../src/config/home-decor.js';
+import {enterCottage,changeCottageFloor,updateCottage,cottageBlocked,leaveCottage,openCottageRest} from '../src/core/cottage.js';
+import {buyDecor,moveDecor,storeDecor} from '../src/core/home-decor.js';
+import {transferRackWeapon,accessibleWeaponRack} from '../src/core/weapon-storage.js';
+import {placementError,placedDecor} from '../src/progression/home-decor.js';
+import {carriedWeapon} from '../src/progression/weapon-storage.js';
+import {catLoad} from '../src/progression/load-weight.js';
+import {backpackEntries} from '../src/progression/backpack.js';
+import {cleanupEntries,discardLoad} from '../src/core/load-cleanup.js';
+import {canMountMechanical} from '../src/config/mechanical-loadout.js';
+import {canMountSpider} from '../src/config/spider-loadout.js';
+import {validateFunnelLoadout} from '../src/config/funnel-loadouts.js';
+import {quoteWorkshop} from '../src/progression/workshop.js';
+// 排除剧情与其他演出，保留真实室内走动、弹匣和持久化入口。
+function setup(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(i=>i.id);p.coins=10000;for(const i of [0,1,2,3,4])p.weapons[i]=2;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.livingPersist=()=>true;g.cottage={kind:'furniture',outside:{x:800,y:900},floor:0};return g;}
+// 每个架子必须真实付费并摆到当前楼层，不能直接伪造已存武器。
+function rack(g,x=180,y=288,floor=0){g.cottage.kind='furniture';const result=buyDecor(g,'weapon-rack');assert.ok(result.ok);g.cottage.kind='cottage';g.cottage.floor=floor;Object.assign(g.player,COTTAGE.spawn);assert.ok(moveDecor(g,result.uid,x,y).ok);Object.assign(g.player,{x,y:y+70});return result.uid;}
+
+test('可购买多个独立三槽架，扣费与失败回滚，楼层摆放分别保存',()=>{const g=setup(),coins=g.progress.coins,price=HOME_CATALOG.find(i=>i.id==='weapon-rack').price,first=rack(g),second=rack(g,180,288,1);assert.notEqual(first,second);assert.equal(g.progress.coins,coins-price*2);assert.equal(placedDecor(g.progress.homeDecor,0).filter(i=>i.type==='weapon-rack').length,1);assert.equal(placedDecor(g.progress.homeDecor,1).length,1);assert.ok(accessibleWeaponRack(g,second));assert.equal(accessibleWeaponRack(g,first),null);g.cottage.kind='furniture';g.livingPersist=()=>false;const before=structuredClone(g.progress);assert.equal(buyDecor(g,'weapon-rack').ok,false);assert.deepEqual(g.progress,before);const reload=validateProgress(before);assert.equal(reload.homeDecor.items.find(i=>i.uid===second).floor,1);});
+
+test('存取当前主武器保留成长、改装和弹药，负重与背包立即变化',()=>{const g=setup(),uid=rack(g);g.progress.weapon=0;g.progress.mastery[0]=100;g.progress.mods[0]=1;g.magazines[0].ammo=7;const mass=catLoad(g).weight,level=g.progress.weapons[0],reserve=structuredClone(g.progress.supplies.hand);assert.ok(transferRackWeapon(g,uid,0,'store').ok);assert.notEqual(g.progress.weapon,0);assert.equal(carriedWeapon(g.progress,0),false);assert.ok(catLoad(g).weight<mass);assert.equal(backpackEntries(g).some(i=>i.id==='weapon:0'),false);assert.equal(cleanupEntries(g).some(i=>i.id==='weapon:0'),false);assert.equal(g.magazines[0].ammo,7);assert.deepEqual(g.progress.supplies.hand,reserve);assert.ok(transferRackWeapon(g,uid,0,'take').ok);assert.equal(g.progress.weapon,0);assert.equal(g.progress.weapons[0],level);assert.equal(g.progress.mods[0],1);assert.equal(g.progress.mastery[0],100);assert.equal(g.magazines[0].ammo,7);assert.equal(catLoad(g).weight,mass);});
+
+test('架满、重复存取、远程装备与伴随装载均不能复制或借用在家武器',()=>{const g=setup(),uid=rack(g);for(const i of [1,2,3])assert.ok(transferRackWeapon(g,uid,i,'store').ok);assert.equal(transferRackWeapon(g,uid,4,'store').ok,false);assert.equal(transferRackWeapon(g,uid,1,'store').ok,false);assert.equal(g.transact('weapons',1,'equip'),false);assert.equal(canMountMechanical(g.progress,1),false);assert.equal(canMountSpider(g.progress,1),false);assert.ok(!validateFunnelLoadout(g.progress,[1,1,1]).includes(1));assert.equal(storeDecor(g,uid).ok,false);assert.ok(transferRackWeapon(g,uid,2,'take').ok);assert.equal(transferRackWeapon(g,uid,2,'take').ok,false);assert.ok(transferRackWeapon(g,uid,4,'store').ok);assert.deepEqual(g.progress.homeDecor.items.find(i=>i.uid===uid).weapons,[1,3,4]);});
+
+test('保留最后一把随身武器，伴随装置引用的武器必须先卸下',()=>{const g=setup(),uid=rack(g);g.progress.weapons.fill(0);g.progress.weapons[0]=1;assert.equal(transferRackWeapon(g,uid,0,'store').ok,false);g.progress.weapons[1]=1;for(const key of ['mechanicalLoadout','spiderLoadout']){g.progress[key]=1;assert.equal(transferRackWeapon(g,uid,1,'store').ok,false);g.progress[key]=null;}g.progress.funnelLoadout=[1,null,null];assert.equal(transferRackWeapon(g,uid,1,'store').ok,false);});
+
+test('保存失败和异常均不移动武器或修改当前装备，读档仍留在原架',()=>{const g=setup(),uid=rack(g);for(const save of [()=>false,()=>{throw Error('磁盘失败');}]){g.livingPersist=save;const before=structuredClone(g.progress),ammo=g.magazines.map(m=>m.ammo);assert.equal(transferRackWeapon(g,uid,0,'store').ok,false);assert.deepEqual(g.progress,before);assert.deepEqual(g.magazines.map(m=>m.ammo),ammo);}g.livingPersist=()=>true;assert.ok(transferRackWeapon(g,uid,1,'store').ok);const restored=validateProgress(structuredClone(g.progress));assert.deepEqual(restored.homeDecor.items.find(i=>i.uid===uid).weapons,[1]);assert.equal(carriedWeapon(restored,1),false);g.livingPersist=()=>false;const before=structuredClone(g.progress);assert.equal(transferRackWeapon(g,uid,1,'take').ok,false);assert.deepEqual(g.progress,before);});
+
+test('清理背包弹药不能扣除武器架上的弹匣，存取不能跨层或远程',()=>{const g=setup(),uid=rack(g);g.magazines.forEach(m=>m.ammo=0);g.magazines[2].ammo=5;g.progress.supplies.hand.shell=0;assert.ok(transferRackWeapon(g,uid,2,'store').ok);const ammo=cleanupEntries(g).find(i=>i.id==='ammo:shell');assert.equal(ammo,undefined);assert.equal(discardLoad(g,{id:'ammo:shell',count:1}).ok,false);assert.equal(g.magazines[2].ammo,5);g.cottage.floor=1;assert.equal(transferRackWeapon(g,uid,2,'take').ok,false);g.cottage.floor=0;g.player.x=450;assert.equal(transferRackWeapon(g,uid,2,'take').ok,false);});
+
+test('楼梯切层有距离限制，上下层碰撞分开，二楼没有虚假出口和床',()=>{const g=setup(),uid=rack(g);assert.equal(changeCottageFloor(g),false);assert.ok(cottageBlocked(180,288,g));Object.assign(g.player,COTTAGE_STAIRS.landing);assert.ok(changeCottageFloor(g));assert.equal(g.cottage.floor,1);assert.equal(cottageBlocked(180,288,g),false);assert.ok(cottageBlocked(COTTAGE_STAIRS.x,COTTAGE_STAIRS.y,g));Object.assign(g.player,COTTAGE.exit);for(let i=0;i<30;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage.floor,1);assert.equal(leaveCottage(g),false);Object.assign(g.player,COTTAGE.bed);assert.equal(openCottageRest(g),false);Object.assign(g.player,COTTAGE_STAIRS.landing);assert.ok(changeCottageFloor(g));assert.equal(g.cottage.floor,0);Object.assign(g.player,COTTAGE.exit);for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);assert.equal(g.player.x,800);});
+
+test('摆放保护楼梯和落脚点，架子可跨层移动并保留存物',()=>{const g=setup(),uid=rack(g);assert.ok(transferRackWeapon(g,uid,1,'store').ok);assert.match(placementError(g.progress.homeDecor,uid,408,420,null,0),/楼梯/);assert.ok(placementError(g.progress.homeDecor,uid,240,528,null,0));Object.assign(g.player,COTTAGE_STAIRS.landing);changeCottageFloor(g);assert.ok(moveDecor(g,uid,120,180).ok);const item=g.progress.homeDecor.items.find(i=>i.uid===uid);assert.equal(item.floor,1);assert.deepEqual(item.weapons,[1]);const restored=validateProgress(g.progress).homeDecor.items.find(i=>i.uid===uid);assert.equal(restored.floor,1);assert.equal(restored.x,120);assert.deepEqual(restored.weapons,[1]);});
+
+test('进屋默认一楼，门外返回位置不受扩建和切层影响',()=>{const g=setup();g.cottage=null;Object.assign(g.player,COTTAGE.door);assert.ok(enterCottage(g));assert.equal(g.cottage.floor,0);assert.deepEqual({x:g.player.x,y:g.player.y},COTTAGE.spawn);assert.equal(cottageBlocked(g.player.x,g.player.y,g),false);const outside={...g.cottage.outside};Object.assign(g.player,COTTAGE_STAIRS.landing);changeCottageFloor(g);changeCottageFloor(g);assert.deepEqual(g.cottage.outside,outside);});
+
+// 原生伴随核心不等于占用一把背包武器，控制器本体也能正常收纳。
+test('原生控制器可存放，工坊提示先回家取出，加载后弹匣保持不变',()=>{const g=setup(),uid=rack(g);g.progress.weapons[12]=1;assert.ok(transferRackWeapon(g,uid,12,'store').ok);const result=quoteWorkshop(g.progress,{kind:'weapons',index:12,action:'equip'});assert.equal(result.ok,false);assert.match(result.reason,/武器架取出/);g.magazines[1].ammo=9;assert.ok(transferRackWeapon(g,uid,1,'store').ok);const restored=new Game(structuredClone(g.progress),()=>.5);assert.equal(carriedWeapon(restored.progress,1),false);assert.equal(restored.magazines[1].ammo,9);assert.ok(transferRackWeapon(g,uid,12,'take').ok);assert.equal(g.progress.weapon,12);});

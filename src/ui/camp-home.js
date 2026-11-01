@@ -1,3 +1,4 @@
+import {createCottageStorage} from './cottage-storage.js';
 import {createCatHome} from './cat-home.js';
 // 小屋操作层只处理室内服务；停驻载具由正式移动时钟自动上车。
 import {createWorkshopRoomControls} from './workshop-room.js';
@@ -21,6 +22,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  const workshopRoom=createWorkshopRoomControls({game,renderer,root,panel,input,openWorkshop:(kind,index)=>kind==='cat-home'?catHome.open():['cottage','furniture'].includes(kind)?homeDecor.open():openWorkshop(kind,index),onChange});
  const roomExit=createRoomExit({game,renderer,root,panel,input,onChange});
  const catHome=createCatHome({game,root,dialogs,input,onChange:onDecorChange});
+ const storage=createCottageStorage({game,renderer,root,panel,dialogs,input,onChange:onDecorChange});
  const homeDecor=createHomeDecor({game,root,panel,dialogs,input,onChange:onDecorChange});
  // 取消按钮与Esc使用同一闩锁，防止关闭后下一帧立即再次打开。
  function dismissRest(){input.reset();cancelCottageRest(game);render();}
@@ -30,10 +32,10 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  scope.on(restDialog,'close',()=>{cancelCottageRest(game);});
  for(const mode of ['phase','morning'])scope.on(panel.querySelector('#cottage-sleep-'+mode),'click',()=>{input.reset();sleepInCottage(game,mode);render();});
  // 室外点击不再上车，室内保留售货员与家具点击。
- function tap(e){if(game.cottage){workshopRoom.tap(e);return true;}return false;}
+ function tap(e){if(game.cottage){if(!storage.tap(e))workshopRoom.tap(e);return true;}return false;}
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。
  function render(){
-  const room=game.cottage;frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;workshopRoom.render();roomExit.render();homeDecor.render();catHome.render();
+  const room=game.cottage;frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;workshopRoom.render();storage.render();roomExit.render();homeDecor.render();catHome.render();
   panel.dataset.room=room?.kind||'cottage';panel.querySelector('header b').textContent=interiorLayout(room).name;
   if(!room?.restOpen&&restDialog.open)restDialog.close();
   if(room?.restOpen&&!restDialog.open&&game.state==='playing'&&!root.querySelector('dialog[open]')){
@@ -48,16 +50,16 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
    }
    panel.querySelector('#cottage-date').textContent=calendarView(game.progress.living.calendar).label;
    const home=!room.kind||room.kind==='cottage';
-   const near=home&&Math.hypot(game.player.x-COTTAGE.bed.x,game.player.y-COTTAGE.bed.y)<=COTTAGE.bedRadius;
+   const near=home&&!room.floor&&Math.hypot(game.player.x-COTTAGE.bed.x,game.player.y-COTTAGE.bed.y)<=COTTAGE.bedRadius;
    const notice=panel.querySelector('#cottage-notice');
    // 睡醒结果保留在屋内底部，独立纸色底板让回血和保存失败信息都清楚可读。
    notice.dataset.result=String(home&&!!room.restResult&&!room.sleep&&!room.exitElapsed);
-   notice.textContent=room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':'床边可以休息，点击「装扮小屋」布置家具；门口站定 1 秒出门。';
+   notice.textContent=room.storageNotice|| (room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':room.floor?'二楼可布置武器架。靠近并点击架子存取，点击楼梯下楼。':'床边可休息。装扮小屋摆放家具；右侧楼梯通往二楼。');
    for(const mode of ['phase','morning'])panel.querySelector('#cottage-sleep-'+mode).disabled=!near||!!room.sleep||game.state!=='playing';
   }
 
  }
  // 卸载清理动态热点，返回首页不能遗留室内样式。
- function dispose(){catHome.dispose();homeDecor.dispose();roomExit.dispose();workshopRoom.dispose();scope.dispose();if(restDialog.open)restDialog.close();cancelCottageRest(game);panel.remove();frame.classList.remove('inside-cottage');}
+ function dispose(){storage.dispose();catHome.dispose();homeDecor.dispose();roomExit.dispose();workshopRoom.dispose();scope.dispose();if(restDialog.open)restDialog.close();cancelCottageRest(game);panel.remove();frame.classList.remove('inside-cottage');}
  return {tap,render,dispose,openHomeDecor:homeDecor.open};
 }

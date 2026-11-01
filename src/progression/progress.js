@@ -1,3 +1,4 @@
+import {normalizeWeaponStorage} from './weapon-storage.js';
 import {freshSupplies,normalizeSupplies} from './supplies.js';
 import {isVehicleArmament} from '../config/vehicle-armaments.js';
 import {freshMailbox,normalizeMailbox} from './mailbox.js';
@@ -272,6 +273,8 @@ export function validateProgress(raw) {
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
   p.logistics=normalizeLogistics(raw.logistics,p);
+  normalizeWeaponStorage(p);
+  p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
   return p;
 }
 // 根据当前等级计算升级费用。

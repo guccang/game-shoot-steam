@@ -1,3 +1,4 @@
+import {carriedWeapon} from '../progression/weapon-storage.js';
 import { vehicleCapacity } from './vehicle-capacity.js';
 // 浮游炮挂载目录：原生核心与已拥有的手持武器，禁止嵌套自动阵列。
 import { WEAPONS, WEAPON_DISPLAY_ORDER } from './weapons.js';
@@ -10,7 +11,7 @@ export function canMountWeapon(progress, index) {
   return (
     Number.isInteger(index) &&
     (index === FUNNEL_CORE ||
-      (!!WEAPONS[index] && !WEAPONS[index].controller && WEAPONS[index].attackKind!=='defense' && progress.weapons[index] > 0))
+      (!!WEAPONS[index] && !WEAPONS[index].controller && WEAPONS[index].attackKind!=='defense' && carriedWeapon(progress,index)))
   );
 }
 

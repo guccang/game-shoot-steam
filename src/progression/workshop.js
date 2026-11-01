@@ -1,3 +1,4 @@
+import {storedWeaponRack} from './weapon-storage.js';
 import {equipmentLevelCap} from '../config/legendary-workshop.js';
 import {equipmentQuestReason} from './equipment-quests.js';
 import {facilityOpen,facilityReason,workshopFacility} from '../config/town-restoration.js';
@@ -41,6 +42,7 @@ export function workshopDraft(progress, kind, index, choice) {
 
 // 返回完整需求及失败原因；引用正式交易函数验证，不复制扣费规则。
 export function quoteWorkshop(progress, plan, realm = false) {
+  if(plan.kind==='weapons'&&plan.action==='equip'&&storedWeaponRack(progress,plan.index))return {ok:false,reason:'这把武器存放在巡林小屋，请先到武器架取出。',rows:[],next:null};
   if(plan.action==='mount')return {ok:false,reason:'请使用载具装配中的主炮换装。',rows:[],next:null};
   if(plan.kind==='vehicle'&&['part','upgrade'].includes(plan.action))return {ok:false,reason:'车体改用发动机换装与装甲叠加，请打开载具装配。',rows:[],next:null};
   if(!facilityOpen(progress,workshopFacility(plan.kind)))return {ok:false,reason:facilityReason(progress,workshopFacility(plan.kind)),rows:[],next:null};

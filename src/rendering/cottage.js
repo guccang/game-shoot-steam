@@ -1,5 +1,6 @@
+import {workshopInteriorView} from './workshop-interior.js';
 // 小屋正式绘制器：家具、窗景和角色共用局部坐标与脚底排序，无独立预览替身。
-import {COTTAGE,COTTAGE_FURNITURE} from '../config/cottage.js';
+import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
 import {box,oval,poly} from './primitives.js';
 import {placedDecor} from '../progression/home-decor.js';
 import {drawHomeDecor} from './home-decor.js';
@@ -49,26 +50,36 @@ export function drawFurniture(c,f,night){
 export function drawCottage(renderer,g=renderer.game){
  const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night';
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#344c46':'#506958';c.fillRect(0,0,w,h);
- const zoom=Math.min((w-20)/360,(h-190)/360,1.5),x=(w-360*zoom)/2,y=Math.max(50,(h-360*zoom)/2-24);
- renderer.cottageView={x,y,zoom};renderer.view={x:0,y:0,w:360,h:360,width:w,height:h,zoom};
- c.save();c.translate(x,y);c.scale(zoom,zoom);
+ const view=workshopInteriorView(COTTAGE,g.player,w,h),{x,y,zoom,clip}=view;
+ renderer.cottageView=view;renderer.view={x:0,y:view.top,w:COTTAGE.width,h:view.bottom-view.top,width:w,height:h,zoom};
+ c.save();c.beginPath();c.rect(clip.x,clip.y,clip.width,clip.height);c.clip();c.translate(x,y);c.scale(zoom,zoom);
  drawCottageRoom(c,g,{night,reduced:renderer.reduced.matches});c.restore();
 }
 // 装扮预览与实际小屋调用同一房间绘制器，预览只替换候选布局。
 export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calendar).id==='night',reduced=false}={}){
- const items=g.progress.homeDecor?placedDecor(g.progress.homeDecor):COTTAGE_FURNITURE.slice(1);
- box(c,6,18,354,345,13,'#203d353f');box(c,0,0,360,350,8,night?'#c2b38c':'#e2d1a4','#536c51',3);
- box(c,9,82,342,259,3,night?'#af926f':'#c8a77c','#7f7352',2);
- for(let row=0;row<8;row++){const yy=86+row*32;c.strokeStyle='#a487615a';c.lineWidth=1;c.beginPath();c.moveTo(11,yy);c.lineTo(349,yy);c.stroke();for(let xx=30+(row%2)*48;xx<348;xx+=96){c.beginPath();c.moveTo(xx,yy);c.lineTo(xx,yy+30);c.stroke();}}
- box(c,8,76,344,9,2,'#b0956a','#7d7453',1.5);drawWindow(c,81,night,items.some(i=>i.type==='curtain'&&i.x===81));drawWindow(c,271,night,items.some(i=>i.type==='curtain'&&i.x===271));
- for(const item of items.filter(i=>['wall','curtain','rug'].includes(i.layer)))drawHomeDecor(c,item,night,g.progress.living.calendar);
+ const floor=cottageFloor(g.cottage),{width:w,height:h}=COTTAGE,items=g.progress.homeDecor?placedDecor(g.progress.homeDecor,floor):COTTAGE_FURNITURE.slice(1);
+ box(c,6,18,w-6,h-15,13,'#203d353f');box(c,0,0,w,h-10,8,night?'#c2b38c':'#e2d1a4','#536c51',3);
+ box(c,9,82,w-18,h-101,3,night?'#af926f':'#c8a77c','#7f7352',2);
+ for(let row=0;row<Math.ceil((h-90)/32);row++){const yy=86+row*32;c.strokeStyle='#a487615a';c.lineWidth=1;c.beginPath();c.moveTo(11,yy);c.lineTo(w-11,yy);c.stroke();for(let xx=30+(row%2)*48;xx<w-12;xx+=96){c.beginPath();c.moveTo(xx,yy);c.lineTo(xx,yy+30);c.stroke();}}
+ box(c,8,76,w-16,9,2,'#b0956a','#7d7453',1.5);drawWindow(c,81,night,items.some(i=>i.type==='curtain'&&i.x===81));drawWindow(c,271,night,items.some(i=>i.type==='curtain'&&i.x===271));
+ for(const item of items.filter(i=>['wall','curtain','rug'].includes(i.layer)))drawHomeDecor(c,item,night,g.progress.living.calendar,g.progress);
  // 门槛留空，出口地垫与下方出门按钮共同提示路线。
- box(c,143,320,74,22,4,'#8d9c77','#667d5b',1.5);c.fillStyle='#e5dfb6';c.font='12px sans-serif';c.textAlign='center';c.fillText('出门',180,336);
- for(const item of [COTTAGE_FURNITURE[0],...items.filter(i=>!i.layer||i.layer==='floor'),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){
+ if(!floor){box(c,COTTAGE.exit.x-37,COTTAGE.exit.y-18,74,22,4,'#8d9c77','#667d5b',1.5);c.fillStyle='#e5dfb6';c.font='12px sans-serif';c.textAlign='center';c.fillText('出门',COTTAGE.exit.x,COTTAGE.exit.y-2);}
+ drawCottageStairs(c,floor,night);
+ for(const item of [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),...items.filter(i=>!i.layer||i.layer==='floor'),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){
   if(item.id==='player')drawCat(c,item.x,item.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,reduced?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
 
   else if(!item.type||['desk','chair','cabinet','plant'].includes(item.type))drawFurniture(c,{...item,id:item.type||item.id},night);
-  else drawHomeDecor(c,item,night,g.progress.living.calendar);
+  else drawHomeDecor(c,item,night,g.progress.living.calendar,g.progress);
  }
- if(g.cottage.sleep){c.fillStyle=`rgba(34,52,51,${Math.sin(Math.min(1,g.cottage.sleep.elapsed/1.2)*Math.PI)*.65})`;c.fillRect(0,0,360,350);c.fillStyle='#fff0c9';c.font='bold 19px sans-serif';c.fillText('好梦',180,183);}
+ if(g.cottage.sleep){c.fillStyle=`rgba(34,52,51,${Math.sin(Math.min(1,g.cottage.sleep.elapsed/1.2)*Math.PI)*.65})`;c.fillRect(0,0,w,h-10);c.fillStyle='#fff0c9';c.font='bold 19px sans-serif';c.fillText('好梦',w/2,h/2);}
+}
+
+// 双层共用斜踏步与扶手，楼层牌明确提示上楼或下楼，前方留出落脚空间。
+function drawCottageStairs(c,floor,night){
+ const s=COTTAGE_STAIRS;c.save();c.translate(s.x,s.y);
+ box(c,-40,-60,80,121,5,night?'#8e795f':'#a98962','#536c51',2);
+ for(let i=0;i<7;i++){const yy=-53+i*15;box(c,-31,yy,62,14,2,i%2?'#ccae7e':'#dcc493','#79674a',1.5);}
+ for(const x of [-39,33]){box(c,x,-67,6,129,2,'#e0c596','#536c51',1.5);for(const y of [-58,-8,50])box(c,x-1,y,8,12,2,'#b99262','#536c51',1);}
+ box(c,-42,68,84,24,5,'#e7dfb4','#536c51',1.5);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#315c43';c.fillText(floor?'↓ 一楼生活区':'↑ 二楼陈列室',0,84);c.restore();
 }

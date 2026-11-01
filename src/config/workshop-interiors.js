@@ -9,7 +9,7 @@ import {TOWN_LAYOUT} from './town-layout.js';
 import {LIVING_PLACES} from './living-world.js';
 // 工坊室内的入口、家具、展示热点和碰撞共用坐标，玩家只在局部空间步行。
 import {WORKSHOP,VEHICLE_WORKSHOP} from '../world/workshop.js';
-import {COTTAGE,COTTAGE_FURNITURE} from './cottage.js';
+import {COTTAGE,COTTAGE_FURNITURE,cottageFloor} from './cottage.js';
 import {homeFurniture} from '../progression/home-decor.js';
 import {WEAPONS} from './weapons.js';
 import {COLLECTED_VEHICLES,VEHICLE_DISPLAY_ORDER} from './vehicles.js';
@@ -48,7 +48,7 @@ export const GARAGE_FURNITURE=[
  {id:'tool-cart',type:'cart',x:395,y:330,width:38,height:36},
 ].map(item=>({...item,y:item.y+VEHICLE_GALLERY.depth}));
 // 小屋仍使用原配置；旧会话没有kind字段时按小屋处理。
-export function interiorLayout(room){return WORKSHOP_INTERIORS[room?.kind]||{...COTTAGE,id:'cottage',name:'巡林小屋'};}
+export function interiorLayout(room){return WORKSHOP_INTERIORS[room?.kind]||{...COTTAGE,id:'cottage',name:'巡林小屋 · '+(cottageFloor(room)?'二楼陈列室':'一楼生活区')};}
 // 每件武器在室内有唯一固定展位；不再按页面复用柜子。
 export function interiorWeaponDisplays(){return WEAPON_DISPLAYS.map(s=>({...s}));}
 // 展车有独立稳定位置，不占用玩家停车记录。
@@ -59,7 +59,7 @@ export function interiorFurniture(game){
  if(interiorLayout(game.cottage).service)return [counter,...(game.cottage.kind==='cat-home'?[{id:'cat-bed-left',type:'cat-bed',x:65,y:280,width:65,height:38},{id:'cat-bed-right',type:'cat-bed',x:295,y:280,width:65,height:38}]:[]),...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
  if(game.cottage?.kind==='weapons')return [...interiorWeaponDisplays(),counter];
  if(game.cottage?.kind==='vehicle')return [...GARAGE_FURNITURE,...VEHICLE_DISPLAYS,...(garageVehicleRecord(game)?[VEHICLE_BAY]:[]),counter];
- return game.progress.homeDecor?homeFurniture(game.progress.homeDecor):COTTAGE_FURNITURE;
+ return game.progress.homeDecor?homeFurniture(game.progress.homeDecor,cottageFloor(game.cottage)):COTTAGE_FURNITURE;
 }
 // 维修泊位只展示 garage 真实记录；上方展车另走原厂样车，不复制玩家车辆。
 export function garageVehicleRecord(game){return game.progress.campParking?.owned.find(r=>r.spot==='garage')||null;}

@@ -1787,3 +1787,9 @@ export async function inspectLoadCleanup(game,root){
  const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
  return {designCriterion:'load-capacity-cleanup',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),open:!!root.getElementById('load-cleanup-dialog')?.open,confirmation:!!root.querySelector('[data-cleanup-confirm]'),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 两层小屋检查直接采样正式房间、家具存档和碰撞对象，不用独立示意场景。
+export async function inspectCottageWeaponRacks(game,renderer,root){
+ const {placedDecor}=await import('../progression/home-decor.js'),{cottageFloor}=await import('../config/cottage.js'),{catLoad}=await import('../progression/load-weight.js'),floor=cottageFloor(game.cottage);
+ return {designCriterion:'cottage-weapon-racks',floor,room:game.cottage?.kind,player:{x:game.player.x,y:game.player.y},view:renderer.cottageView,racks:placedDecor(game.progress.homeDecor,floor).filter(i=>i.type==='weapon-rack').map(i=>({uid:i.uid,x:i.x,y:i.y,weapons:i.weapons})),load:catLoad(game).weight,current:game.progress.weapon,dialog:root.getElementById('weapon-rack-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

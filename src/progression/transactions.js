@@ -1,3 +1,4 @@
+import {carriedWeapon} from './weapon-storage.js';
 import {equipmentLevelCap} from '../config/legendary-workshop.js';
 import {facilityOpen} from '../config/town-restoration.js';
 import {campPurchasePrice} from './camp-level.js';
@@ -21,6 +22,7 @@ export function transactProgress(progress, kind, index, action, context={}) {
     index >= (kind === 'heroes' ? HEROES : WEAPONS).length
   )
     return false;
+  if(kind==='weapons'&&action==='equip'&&!carriedWeapon(progress,index))return false;
   const list = kind === 'heroes' ? HEROES : WEAPONS,
     level = progress[kind][index];
   const selected = kind === 'heroes' ? 'hero' : 'weapon';

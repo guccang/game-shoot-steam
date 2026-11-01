@@ -35,7 +35,7 @@ export function nearbyInteraction(game){
   if(room.sleep||room.restOpen)return null;
   const layout=interiorLayout(room),p=game.player;
   if(Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius)return null;
-  if((!room.kind||room.kind==='cottage')&&Math.hypot(p.x-COTTAGE.bed.x,p.y-COTTAGE.bed.y)<=COTTAGE.bedRadius)return {id:'rest',type:'rest',label:'休息一下'};
+  if(!room.floor&&(!room.kind||room.kind==='cottage')&&Math.hypot(p.x-COTTAGE.bed.x,p.y-COTTAGE.bed.y)<=COTTAGE.bedRadius)return {id:'rest',type:'rest',label:'休息一下'};
   // 售货员使用自身唯一点击区，避免附近按钮盖住角色。
   return null;
  }

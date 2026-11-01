@@ -1,40 +1,41 @@
 // 小屋家具存档与摆放几何共用规则；非法位置转入收纳，不丢失已购家具。
 import {HOME_STARTERS,HOME_LIMIT,HOME_PLANTS,decorDefinition} from '../config/home-decor.js';
-import {COTTAGE_FURNITURE} from '../config/cottage.js';
+import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS} from '../config/cottage.js';
 import {LIVING_DAY_MS} from '../config/living-world.js';
 
 // 旧存档首次开启时保持原来的四件家具和布局。
-export function freshHome(){return {version:1,nextId:5,items:HOME_STARTERS.map((d,i)=>({uid:i+1,type:d.id,x:d.x,y:d.y,plant:null}))};}
+export function freshHome(){return {version:1,nextId:5,items:HOME_STARTERS.map((d,i)=>({uid:i+1,type:d.id,x:d.x,y:d.y,plant:null,floor:0,weapons:[]}))};}
 // 只把有合法落点的家具送入场景，宽高始终来自正式配置。
-export function placedDecor(home){return (home?.items||[]).filter(i=>Number.isFinite(i.x)&&Number.isFinite(i.y)&&decorDefinition(i.type)).map(i=>({...decorDefinition(i.type),...i}));}
+export function placedDecor(home,floor=0){return (home?.items||[]).filter(i=>(i.floor||0)===floor&&Number.isFinite(i.x)&&Number.isFinite(i.y)&&decorDefinition(i.type)).map(i=>({...decorDefinition(i.type),...i}));}
 // 原床固定保留；挂件与地毯不阻挡脚底。
-export function homeFurniture(home){return [COTTAGE_FURNITURE[0],...placedDecor(home).filter(i=>i.layer==='floor')];}
+export function homeFurniture(home,floor=0){return [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),COTTAGE_STAIRS,...placedDecor(home,floor).filter(i=>i.layer==='floor')];}
 // 家具碰撞与正式室内行走一致，给猫身体预留十个逻辑单位。
-function blocked(x,y,furniture){return x<22||x>338||y<76||y>340||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
+function blocked(x,y,furniture){return x<22||x>COTTAGE.width-22||y<76||y>COTTAGE.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
 // 从门内落点寻路到床边和出口，拒绝把小屋隔成无法通行的区域。
-function hasPath(furniture,player){
- const queue=[[180,300]],seen=new Set(['180,300']);let bed=false,exit=false,reachable=!player;
- if(blocked(180,300,furniture))return false;
+function hasPath(furniture,player,floor){
+ const start=COTTAGE.spawn,queue=[[start.x,start.y]],seen=new Set([start.x+','+start.y]);let bed=floor===1,exit=floor===1,stairs=false,reachable=!player;
+ if(blocked(start.x,start.y,furniture))return false;
  for(let n=0;n<queue.length;n++){
-  const [x,y]=queue[n];if(Math.hypot(x-119,y-158)<16)bed=true;if(Math.hypot(x-180,y-326)<16)exit=true;if(player&&Math.hypot(x-player.x,y-player.y)<13)reachable=true;if(bed&&exit&&reachable)return true;
+  const [x,y]=queue[n];if(Math.hypot(x-119,y-158)<18)bed=true;if(Math.hypot(x-COTTAGE.exit.x,y-COTTAGE.exit.y)<18)exit=true;if(Math.hypot(x-COTTAGE_STAIRS.landing.x,y-COTTAGE_STAIRS.landing.y)<18)stairs=true;if(player&&Math.hypot(x-player.x,y-player.y)<18)reachable=true;if(bed&&exit&&stairs&&reachable)return true;
   for(const [dx,dy] of [[12,0],[-12,0],[0,12],[0,-12]]){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(!seen.has(key)&&!blocked(xx,yy,furniture)){seen.add(key);queue.push([xx,yy]);}}
  }
  return false;
 }
 // 返回中文失败原因，供预览、提交及存档修复共同使用。
-export function placementError(home,uid,x,y,player){
+export function placementError(home,uid,x,y,player,floor=0){
  const item=home.items.find(i=>i.uid===uid),d=decorDefinition(item?.type);
  if(!d||!Number.isFinite(x)||!Number.isFinite(y))return '请选择家具和位置。';
  if(d.layer==='curtain'){if(y!==46||![81,271].includes(x))return '窗帘只能挂在左右两扇窗上。';}
  else if(d.layer==='wall'){if(y!==46||x-d.width/2<119||x+d.width/2>233)return '壁画和挂钟请放在两扇窗之间。';}
- else if(x-d.width/2<18||x+d.width/2>342||y-d.height/2<86||y+d.height/2>310)return '请放在木地板内，并留出门口。';
- const other=placedDecor(home).filter(i=>i.uid!==uid),same=other.filter(i=>i.layer===d.layer);
+ else if(x-d.width/2<18||x+d.width/2>COTTAGE.width-18||y-d.height/2<86||y+d.height/2>COTTAGE.height-80)return '请放在木地板内，并留出门口。';
+ const other=placedDecor(home,floor).filter(i=>i.uid!==uid),same=other.filter(i=>i.layer===d.layer);
  if(same.some(i=>Math.abs(x-i.x)<(d.width+i.width)/2+2&&Math.abs(y-i.y)<(d.height+i.height)/2+2))return '这里已有家具，请换个位置。';
  if(d.layer==='floor'){
-  const f={...d,x,y},bed=COTTAGE_FURNITURE[0];
-  if(Math.abs(x-bed.x)<(d.width+bed.width)/2+2&&Math.abs(y-bed.y)<(d.height+bed.height)/2+2)return '请留出床的位置。';
+  const f={...d,x,y},bed=COTTAGE_FURNITURE[0],stairs=COTTAGE_STAIRS;
+  if(floor===0&&Math.abs(x-bed.x)<(d.width+bed.width)/2+2&&Math.abs(y-bed.y)<(d.height+bed.height)/2+2)return '请留出床的位置。';
   if(player&&blocked(player.x,player.y,[f]))return '这里是猫猫站的位置，请先挪开家具。';
-  if(!hasPath([bed,...other.filter(i=>i.layer==='floor'),f],player))return '请留出通往床边和门口的路。';
+  if(Math.abs(x-stairs.x)<(d.width+stairs.width)/2+8&&Math.abs(y-stairs.y)<(d.height+stairs.height)/2+28)return '请留出楼梯和楼梯前的通道。';
+  if(!hasPath([...(floor===0?[bed]:[]),stairs,...other.filter(i=>i.layer==='floor'),f],player,floor))return '请留出通往床边、楼梯和门口的路。';
  }
  return '';
 }
@@ -54,10 +55,10 @@ export function normalizeHome(raw,calendar){
  const home={version:1,nextId:1,items:[]},seen=new Set(),now=homeTime(calendar);
  for(const source of raw.items.slice(0,HOME_LIMIT)){
   if(!source||!decorDefinition(source.type)||!Number.isSafeInteger(source.uid)||source.uid<1||source.uid>1000000000||seen.has(source.uid))continue;
-  seen.add(source.uid);const item={uid:source.uid,type:source.type,x:null,y:null,plant:null};
+  seen.add(source.uid);const item={uid:source.uid,type:source.type,x:null,y:null,plant:null,floor:source.floor===1?1:0,weapons:source.type==='weapon-rack'&&Array.isArray(source.weapons)?source.weapons.slice(0,3).filter(Number.isInteger):[]};
   if(source.type==='pot'&&HOME_PLANTS.some(p=>p.id===source.plant?.id)&&Number.isFinite(source.plant.started)&&source.plant.started>=0)item.plant={id:source.plant.id,started:Math.min(now,source.plant.started)};
   home.items.push(item);
-  if(source.x!==null&&source.y!==null&&!placementError(home,item.uid,source.x,source.y)){item.x=source.x;item.y=source.y;}
+  if(source.x!==null&&source.y!==null&&!placementError(home,item.uid,source.x,source.y,null,item.floor)){item.x=source.x;item.y=source.y;}
  }
  home.nextId=Math.max(1,...home.items.map(i=>i.uid+1));return home;
 }
