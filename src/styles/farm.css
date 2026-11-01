@@ -101,3 +101,14 @@
 #farm-picker>.farm-seed-pages{grid-template-columns:1fr 44px 1fr;align-items:center;gap:4px;margin-top:6px;text-align:center;font-size:12px;}
 #farm-picker>.farm-seed-pages button{min-height:44px;justify-content:center;}
 #farm-picker>[data-farm-shop]{width:100%;height:44px;min-height:44px;margin-top:6px;font-size:12px;}
+
+/* 种地作为右下一级入口，与菜单并排；农具展开时共用菜单抬升和安全区。 */
+.game-frame .field-menu:has(#farm-menu:not([hidden])){width:106px;height:54px;gap:8px;align-items:center;flex-direction:row;}
+#farm-menu{display:flex;align-items:center;justify-content:center;flex-direction:column;width:54px;height:54px;min-width:54px;min-height:44px;padding:3px;border:2px solid var(--ui-line);border-radius:12px;background:var(--ui-paper);color:var(--ui-forest);font-size:11px;gap:1px;touch-action:manipulation;}
+#farm-menu canvas{width:28px;height:28px;pointer-events:none;}#farm-menu[aria-pressed=true]{background:var(--ui-sage);outline:2px solid var(--ui-forest);outline-offset:-3px;}
+#farm-menu[hidden]{display:none!important;}
+.game-frame[data-page=title] #farm-menu{display:none;}
+
+/* 展开菜单避开同排的种地按钮，横屏向左展开时让出两个常驻按钮的宽度。 */
+.game-frame .field-menu:has(#farm-menu:not([hidden])) .field-menu-items{bottom:64px;}
+@media(max-height:500px){.game-frame .field-menu:has(#farm-menu:not([hidden])) .field-menu-items{right:116px;bottom:0;}}

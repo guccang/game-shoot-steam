@@ -54,6 +54,8 @@ export function createMobileHud(root, getRealm = () => false) {
     expanded = false;
     renderMenu();
   });
+  // 一级种地入口也收起展开菜单，避免菜单继续遮住农具和土地。
+  scope.on(menu,'click',event=>{if(event.target.closest('#farm-menu')){expanded=false;renderMenu();}});
   // 原触发按钮已经折叠，关闭养成面板后把键盘焦点交还给可见的菜单入口。
   // 猫窝定位等导航按钮没有弹窗，不为不存在的节点绑定关闭事件。
   for (const id of new Set([...items.querySelectorAll('button')].map(button => button.getAttribute('aria-controls')).filter(id=>id&&root.getElementById(id))))

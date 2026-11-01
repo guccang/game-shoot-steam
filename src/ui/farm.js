@@ -30,8 +30,9 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  const scope=createEventScope(),frame=root.getElementById('game-frame'),layer=root.createElement('div'),menu=root.createElement('button');
  const removalPanel=createFarmRemoval({game,root,dialogs,onChange,onNotice});
  layer.id='farm-world-layer';layer.innerHTML=`<div id="farm-tools" hidden aria-label="种地工具"><button id="farm-hoe" aria-label="锄头：点击地面开垦">${toolIcon('hoe')}<span>锄头</span></button><button id="farm-sickle" aria-label="镰刀：长按拖过成熟作物批量收割">${toolIcon('sickle')}<span>镰刀</span></button><button id="farm-water" aria-label="水壶：每次浇灌选中的一块田，每茬生长时长最多缩短${FARM_WATER.reduction*100}%">${toolIcon('water')}<span>水壶</span></button><button id="farm-combat" aria-label="拿起武器战斗"><canvas id="farm-weapon-icon" width="112" height="112" aria-hidden="true"></canvas><span>战斗</span></button><button id="farm-remove" aria-label="移除地块，点击地块后确认"><span class="farm-remove-symbol" aria-hidden="true">×</span><span>移除</span></button><button id="farm-exit" aria-label="退出种田并恢复武器"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M15 5H6v22h9M13 16h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>退出</span></button></div><span id="farm-notice" role="status" class="sr-only"></span><div id="farm-picker" hidden aria-label="选择种子"></div><div id="farm-harvest-pop" hidden><button id="farm-harvest" aria-label="挥镰收割">${toolIcon('sickle')}</button></div><div id="farm-ghost" hidden aria-hidden="true"></div><button id="farm-delivery-hit" class="scene-hit" aria-label="查看快递站" hidden></button><section id="farm-mail" hidden aria-label="快递站种子礼物"></section>`;
- menu.id='farm-menu';menu.innerHTML=toolIcon('hoe')+'<span>种地</span>';menu.setAttribute('aria-label','展开或收起种地工具');
- frame.append(layer);root.getElementById('field-menu-items').prepend(menu);
+ menu.id='farm-menu';menu.innerHTML=toolIcon('hoe')+'<span>种地</span>';menu.setAttribute('aria-label','展开或收起种地工具');menu.setAttribute('aria-controls','farm-tools');
+ // 种地常驻右下角，直接复用既有开合与驾驶下车流程。
+ frame.append(layer);root.querySelector('.field-menu').prepend(menu);
  const placement=createFarmPlacement({game,root,renderer,frame,layer});
  const get=id=>root.getElementById('farm-'+id),coin=root.querySelector('[data-coins]')?.closest('.resource-pill'),cells=new Map(),flights=new Set();
  sceneHit(get('delivery-hit'),'查看快递站');
@@ -148,7 +149,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   // 清场后明确显示持枪警戒，避免玩家误以为仍有怪物或农活卡住。
   farmProperty(get('combat').querySelector('span'),'textContent',recovering?'警戒':defending?'迎敌':'战斗');
   farmAttribute(get('combat'),'aria-label',recovering?'持枪警戒，确认安全后继续农活；点击可改为手动战斗':defending?'自动迎敌，结束后继续农活；点击可改为手动战斗':'拿起武器战斗');
-  farmProperty(menu,'hidden',!!game.realm||!storyFarmAllowed(game));farmAttribute(menu,'aria-pressed',opened);farmProperty(get('tools'),'hidden',!opened||!active);
+  farmProperty(menu,'hidden',!!game.realm||!storyFarmAllowed(game));farmAttribute(menu,'aria-pressed',opened);farmAttribute(menu,'aria-expanded',opened);farmProperty(get('tools'),'hidden',!opened||!active);
   if(!active||blocked){releaseGesture();popup=null;}
   // 当前动作算第一步，后续队列按真实执行顺序编号，完成后同步前移。
   const steps=new Map([game.farmWork?.job,...(game.farmWork?.queue||[])].filter(Boolean).map((job,index)=>[job.id,index+1]));

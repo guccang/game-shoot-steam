@@ -1785,7 +1785,7 @@ export function inspectCatWoodStorage(game,root){return {designCriterion:'cat-de
 // 满载清理验收读取真实重量和正式确认页，不生成替代画面。
 export async function inspectLoadCleanup(game,root){
  const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
- return {designCriterion:'load-capacity-cleanup',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),open:!!root.getElementById('load-cleanup-dialog')?.open,confirmation:!!root.querySelector('[data-cleanup-confirm]'),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+ return {designCriterion:'load-capacity-cleanup',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),open:!!root.getElementById('load-cleanup-dialog')?.open,confirmation:!!root.getElementById('load-cleanup-quantity')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
 // 两层小屋检查直接采样正式房间、家具存档和碰撞对象，不用独立示意场景。
@@ -1796,3 +1796,6 @@ export async function inspectCottageWeaponRacks(game,renderer,root){
 
 // 木材候停检查读取正式掉落、负重与屏幕徽记，确保没有预先发放库存。
 export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');return {designCriterion:'wood-pickup-countdown',piles:game.progress.woodDrops.piles.map(p=>({id:p.id,x:p.x,y:p.y,count:p.count,mapId:p.mapId})),pickup:game.woodPickup,countdown:renderer.actionCountdownView,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds[game.vehicle.index].wood,load:game.vehicle.active?vehicleLoad(game):catLoad(game),speed:movementLoadFactor(game)};}
+
+// 快捷清理与一级种地入口读取正式DOM，记录真实数量、来源及拖拽浮标。
+export async function inspectCleanupDrag(game,root){return {...await inspectLoadCleanup(game,root),designCriterion:'load-cleanup-drag',source:root.querySelector('[data-cleanup-source][aria-pressed=true]')?.dataset.cleanupSource,range:root.getElementById('cleanup-quantity-range')?.value,ghosts:root.querySelectorAll('.cleanup-ghost').length,farmPrimary:root.getElementById('farm-menu')?.parentElement?.classList.contains('field-menu'),farmOpen:!root.getElementById('farm-tools')?.hidden};}
