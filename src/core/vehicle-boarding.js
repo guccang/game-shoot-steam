@@ -35,7 +35,9 @@ export function updateVehicleBoarding(game,dt){
  if(!target||!['playing','paused'].includes(game.state)||game.vehicleBoardingBlocked?.hull===target.hull){game.vehicleBoarding=null;return;}
  const same=old?.hull===target.hull&&old.mapId===target.mapId&&worldDistance(old.site,target)<.01;
  if(game.state!=='playing'){if(!same)game.vehicleBoarding=null;return;}
- const state=game.vehicleBoarding={hull:target.hull,mapId:target.mapId,site:target,elapsed:(same?old.elapsed:0)+Math.max(0,dt)};
+ // 首次靠近只显示零进度，不能把靠近之前的帧时间算进等待；长帧也不能瞬间完成。
+ const tick=Number.isFinite(dt)?Math.min(.05,Math.max(0,dt)):0;
+ const state=game.vehicleBoarding={hull:target.hull,mapId:target.mapId,site:target,elapsed:same?old.elapsed+tick:0};
  if(state.elapsed+1e-9<VEHICLE_BOARDING.wait)return;
  game.vehicleBoarding=null;
  if(target.fireGarage){if(game.vehicle.index!==4&&!game.selectVehicle(4))return;boardFireGarage(game);}
