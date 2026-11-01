@@ -718,35 +718,19 @@
       "goal": {
         "all": [
           {
-            "any": [
-              {
-                "path": "progress.weapons.3",
-                "min": 1
-              },
-              {
-                "path": "progress.weapons.1",
-                "min": 1
-              }
-            ]
+            "path": "progress.weapons.3",
+            "min": 1
           },
           {
-            "any": [
-              {
-                "path": "progress.weapon",
-                "equals": 3
-              },
-              {
-                "path": "progress.weapon",
-                "equals": 1
-              }
-            ]
+            "path": "progress.weapon",
+            "equals": 3
           }
         ]
       },
-      "text": "任选橡果散弹枪或萤火激光步枪，购买并装备；已有的枪可直接使用。",
+      "text": "购买并装备橡果散弹枪；已经拥有就直接装备，无需重复购买。",
       "lines": [
         "雪团给我看了画册：花画了一半，剩下全是空白。她说路口的芽团太多，自己一靠近就只顾着跑。",
-        "橡果散弹枪能近处扫开一片，萤火激光步枪能穿透一列。到工坊演练比较，任选一把购买并装备；已经拥有就不用重买。",
+        "橡果散弹枪能近处扫开一片。到武器工坊购买并装备橡果散弹枪；已经拥有就直接装备，不用重买。",
         "先备好工具，再接下一份清缴委托。她想带着小夜一起去看那片花，不想再让朋友跟着受惊。"
       ],
       "finish": "新枪备好了。雪团把空白页留着等你回来；下一趟请带这把枪去清缴，让她能安心出门。",
@@ -755,38 +739,33 @@
         "wood": 80
       },
       "guide": {
-        "cue": "雪团想画林边的花，芽团却挤满了路口。替她挑一把散弹或激光，买好装备上，再去清路吧。",
+        "cue": "雪团想画林边的花，芽团却挤满了路口。买好橡果散弹枪并装备，再去清路吧。",
         "thanks": "新枪备好了。雪团把空白页留着等你回来；下一趟请带这把枪去清缴，让她能安心出门。",
         "steps": [
           {
-            "label": "任选一把清群武器",
-            "hint": "先演练，再决定购买",
+            "label": "购买橡果散弹枪",
+            "hint": "到武器工坊购买，已有则无需重买",
             "highlight": "#ws-purchase",
             "operation": {
               "type": "buy",
               "kind": "weapons",
-              "indices": [
-                3,
-                1
-              ]
+              "index": 3
             },
             "navigation": "weaponsEntry"
           },
           {
-            "label": "装备所选新枪",
-            "hint": "散弹或激光均可",
+            "label": "装备橡果散弹枪",
+            "hint": "在武器工坊装备橡果散弹枪",
             "action": {
-              "type": "menu",
-              "id": "weapons-button",
-              "label": "装备所选新枪"
+              "type": "workshop",
+              "kind": "weapons",
+              "index": 3,
+              "label": "装备橡果散弹枪"
             },
             "operation": {
               "type": "equip",
               "kind": "weapons",
-              "indices": [
-                3,
-                1
-              ]
+              "index": 3
             },
             "navigation": "weaponsEntry"
           }
@@ -796,7 +775,7 @@
         "type": "workshop",
         "kind": "weapons",
         "index": 3,
-        "label": "挑选清群武器"
+        "label": "购买橡果散弹枪"
       }
     },
     {

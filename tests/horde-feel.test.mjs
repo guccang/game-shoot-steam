@@ -30,13 +30,19 @@ test('版本6活跃与死亡存档扩容保留领奖比例和真实累计击杀�
   }
  }
 });
-test('散弹或激光均可完成购买目标，装备入口沿用玩家所选武器',()=>{
- for(const index of [1,3]){const g=scene();g.progress.weapons[index]=1;g.progress.weapon=index;
-  assert.ok(mainlineCondition(g,currentMainlineTask(g.progress.mainline).goal));
-  g.progress.weapon=0;assert.equal(mainlineCondition(g,currentMainlineTask(g.progress.mainline).goal),false);
-  assert.equal(mainlineOperation(g).index,index);
- }
+// 任务明确要求散弹枪；激光不能代做，已有散弹枪只需装备。
+test('购买任务只接受散弹枪，购买与装备引导均指向同一武器',()=>{
+ const g=scene(),task=currentMainlineTask(g.progress.mainline),goal=task.goal;
+ // 此处专查购枪指引，已完成小屋休息教学，避免休息入口接管当前操作。
+ g.progress.restoration.cottageRested=true;
+ g.progress.weapons[1]=1;g.progress.weapon=1;g.progress.weapons[3]=0;
+ assert.equal(mainlineCondition(g,goal),false);assert.equal(mainlineOperation(g).type,'buy');assert.equal(mainlineOperation(g).index,3);
+ g.progress.weapons[3]=1;assert.equal(mainlineCondition(g,goal),false);assert.equal(mainlineOperation(g).type,'equip');assert.equal(mainlineOperation(g).index,3);
+ g.progress.weapon=3;assert.equal(mainlineCondition(g,goal),true);
+ assert.equal(task.action.index,3);assert.equal(task.guide.steps[1].action.type,'workshop');assert.equal(task.guide.steps[1].action.index,3);
+ assert.ok(task.guide.steps.every(step=>step.label.includes('橡果散弹枪')));assert.doesNotMatch(JSON.stringify(task),/激光|清群武器|任选/);
 });
+
 test('清缴紧接购买，但胜利不限制武器，未接取与失败不能代做',()=>{
  assert.equal(MAINLINE_IDS.indexOf('weapon-field'),MAINLINE_IDS.indexOf('buy-shotgun')+1);
  const g=scene('weapon-field'),p=g.progress;
