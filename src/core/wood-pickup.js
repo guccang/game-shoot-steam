@@ -25,5 +25,6 @@ export function collectAutomaticWood(game,target,amount,impact){
  if(target.type==='tree'){recordArrivalWood(snapshot,collected.count,impact);recordRestorationWood(snapshot,collected.count);}
  next.patrol=capturePatrol(snapshot);
  try{if((game.livingPersist?.(next)??true)!==true)return false;}catch{return false;}
- game.progress=next;game.drops.push(createResourceDrop(target,0,collected.count));game.float(target.x,target.y-40,`木头 +${collected.count} → ${collected.destination}`,'#e2f3ce');return true;
+ // 采集结果通过木材飞行和库存数字反馈，不再弹出入库文字。
+ game.progress=next;game.drops.push(createResourceDrop(target,0,collected.count));return true;
 }
