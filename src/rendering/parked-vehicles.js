@@ -40,9 +40,9 @@ export function drawParkedVehicle(c,item,game){
   drawParkedHull(c,item,game,item.hull??item.model.hull,item.record,!item.owner);
  }
  c.restore();
- // 只有走近的玩家看到短标签，远景不堆文字。
- if(Math.hypot(game.player.x-item.x,game.player.y-item.y)<155){
-  const text=item.owner?(game.vehicle.active?'下车后靠近换乘':'靠近1秒上车'):item.model.sciFi?item.model.name+' · 非卖品':item.model.name+' · 访客';
+ // 仅访客车辆显示身份标签，自有车辆用自动上车圆环反馈，不叠提示词。
+ if(!item.owner&&Math.hypot(game.player.x-item.x,game.player.y-item.y)<155){
+  const text=item.model.sciFi?item.model.name+' · 非卖品':item.model.name+' · 访客';
   c.save();c.font='bold 11px sans-serif';c.textAlign='center';box(c,item.x-55,item.y+20,110,20,8,'#fff1c9','#6c8869',1);c.fillStyle='#41664b';c.fillText(text,item.x,item.y+34);c.restore();
  }
 }

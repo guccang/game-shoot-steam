@@ -11,13 +11,13 @@ export function vehicleTransferState(game,index){
  const parked=game.progress.campParking.owned.some(s=>s.hull===index)||index===4&&game.fireGarageParked;
  const site=vehicleParkingSite(game,index),remote=parkingFleetApplies(game)&&(parked||!current)&&!canSelectParkingVehicle(game,index);
  return {site,remote,label:!owned?'购买后到停车位取车':current&&game.vehicle.active?'下车':remote?(site.name==='北门停车场'||site.name==='北停车场'?'去北停车场换乘':'前往停车位换乘'):current?'定位载具':'靠近载具换乘',
-  description:!owned?'新车送到营地空闲车位，每次只带一辆出发。':parked?'停在'+site.name+' · 靠近载具停留1秒自动上车，旧车留在下车处。':'本次随行 · 更换载具请回北停车场。'};
+  description:!owned?'新车送到营地空闲车位，每次只带一辆出发。':parked?'停在'+site.name+' · 旧车留在下车处。':'本次随行 · 更换载具请回北停车场。'};
 }
 // 自有停驻车按钮只导航，靠近上车由正式游戏时钟完成。
 export function activateVehicleTransfer(game,index){
  const state=vehicleTransferState(game,index);
  if(parkingFleetApplies(game)&&game.progress.vehicleHulls[index]&&(vehicleService(game,index)?.phase||game.vehicles[index].hp<=0)){requestWorldNavigation(game,state.site,'前往维修中心',{direct:true});game.onEvent('story-hint',{text:state.description});return true;}
- if(parkingFleetApplies(game)&&game.progress.vehicleHulls[index]&&!(game.vehicle.active&&game.vehicle.index===index)){const site=state.site,front=vehicleService(game,index)?.phase?site:vehicleBoardingPoint(site);requestWorldNavigation(game,front,'靠近载具停留1秒自动上车',{direct:true});game.onEvent('story-hint',{text:'靠近载具停留1秒，即可自动上车。'});return true;}
+ if(parkingFleetApplies(game)&&game.progress.vehicleHulls[index]&&!(game.vehicle.active&&game.vehicle.index===index)){const site=state.site,front=vehicleService(game,index)?.phase?site:vehicleBoardingPoint(site);requestWorldNavigation(game,front,'前往载具位置',{direct:true});return true;}
  if(state.remote){requestWorldNavigation(game,{...state.site,y:state.site.approachY??state.site.y},'前往'+state.site.name+'换乘',{direct:true});return true;}
  if(game.vehicle.index!==index&&!game.selectVehicle(index))return false;
  return game.vehicle.active?game.dismountVehicle():game.summonVehicle();

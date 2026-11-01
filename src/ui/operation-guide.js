@@ -129,7 +129,7 @@ export function createOperationGuide({game,root,workshop}){
    const seconds=Math.max(1,Math.ceil((growing.readyAt-Date.now())/1000));
    return !growing.watered?game.farmWork?.tool==='water'?cue('farm-water-target',`[data-farm-cell="${growing.id}"]`,'点击田块浇水，加快本茬成长'):cue('farm-water','#farm-water',operation.id==='water'?'本次委托需要给这块田浇水':'可选：浇水提前成熟，也可先去巡林'):cue('farm-wait','#mainline-hud',`约${seconds}秒后成熟，可先去巡林`);
   }
-  if(operation?.type==='dismount'||operation?.type==='drive'&&game.progress.vehicleIndex===operation.index&&!game.vehicle.active&&!root.getElementById('vehicle-button').disabled)return cue('vehicle','#vehicle-button',operation.type==='dismount'?'点击下车':'靠近载具停留1秒自动上车');
+  if(operation?.type==='dismount'||operation?.type==='drive'&&game.progress.vehicleIndex===operation.index&&!game.vehicle.active&&!root.getElementById('vehicle-button').disabled)return cue('vehicle','#vehicle-button',operation.type==='dismount'?'点击下车':'定位载具');
   if(operation?.type==='drive'&&game.vehicle.active)return null;
   if(!action)return null;
   if(action.type==='menu'){

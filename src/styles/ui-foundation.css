@@ -410,3 +410,12 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #nearby-interaction[data-presentation="camp-sign"]:focus-visible { outline:2px dashed var(--ui-forest); outline-offset:3px; }
 /* 房屋本体热点不绘制文字或猫爪，尺寸由共用场景投影控制。 */
 #nearby-interaction.scene-hit > * { display:none; }
+
+/* HP卡片载具用轮廓填色表示负荷；数字单独显示弹药，保持44px点击面积。 */
+#vehicle-button .vehicle-load-picture{position:absolute;left:7px;top:0;width:30px;height:30px;pointer-events:none;}
+#vehicle-button .vehicle-load-art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+#vehicle-button .vehicle-load-empty{filter:grayscale(1);opacity:.32;}
+#vehicle-button .vehicle-ammo-count{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:10px;line-height:12px;font-weight:bold;color:var(--ui-forest);font-variant-numeric:tabular-nums;pointer-events:none;}
+#vehicle-button .vehicle-hud-state{position:absolute;right:0;top:0;min-width:10px;font-size:11px;line-height:12px;border-radius:4px;color:var(--ui-danger);background:var(--ui-paper);font-weight:bold;pointer-events:none;}
+#vehicle-button[data-load-tone=full] .vehicle-ammo-count{color:var(--ui-danger);}
+#vehicle-button .vehicle-hud-state:empty{display:none;}

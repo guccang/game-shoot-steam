@@ -9,8 +9,7 @@ import { createEventScope } from '../platform/events.js';
 import { realmWeapon } from '../config/realms.js';
 import { drawVehicleIcon } from '../rendering/vehicle.js';
 import { vehicleWeapon, vehicleModel } from '../config/vehicles.js';
-import { VEHICLE_COOLDOWN } from '../config/vehicles.js';
-import { updateRing } from './status-rings.js';
+import {updateVehicleLoadHud} from './vehicle-load-hud.js';
 import {parkedOwned,arrivalParkingAllowed} from '../core/camp-parking.js';
 // 自有车快捷键只定位或下车；活动借车沿用场景原有召唤规则。
 export function createVehicleControls({ game, root, onChange }) {
@@ -23,7 +22,7 @@ export function createVehicleControls({ game, root, onChange }) {
   });
   return { dispose: scope.dispose };
 }
-// 外圈表示耐久/修复，内圈表示炮塔供给，停驻车提示靠近自动上车。
+// 载具轮廓填充表示负荷，独立数字显示弹药；HP继续使用生命条。
 export function updateVehicleHud(root, game) {
   const node = root.getElementById('vehicle-button'),
     v = game.vehicle,
@@ -36,7 +35,7 @@ export function updateVehicleHud(root, game) {
     canvas.dataset.vehicle = String(v.index);
     canvas.dataset.recovery=String(canvasRecoveryRevision());
   }
-  const parked = v.index===4&&game.fireGarageParked, repairing = v.cooldown > 0,
+  const repairing = v.cooldown > 0,
     reloading = m?.remaining > 0;
   const supply = w?.independentSupply ? v.module.companions.nodes : null;
   const ammo = supply ? supply.reduce((sum,n)=>sum+n.magazine.ammo,0) : m?.ammo;
@@ -46,22 +45,12 @@ export function updateVehicleHud(root, game) {
     : repairing
       ? i18nText("ui.vehicle-controls.c7e1c2df7f", { p0: (Math.ceil(v.cooldown)) })
       : i18nText("ui.vehicle-controls.006ef8b30e", { p0: (model.shortName) });
-  updateRing(node, {
-    icon: model.flying ? 'helicopter' : model.amphibious ? 'hovercraft' : 'vehicle',
-    state: repairing ? 'reloading' : v.active ? 'mounted' : 'ready',
-    fill: repairing ? 1 - v.cooldown / VEHICLE_COOLDOWN : v.hp / v.maxHp,
-    inner:
-      v.active && w ? (reloading ? 1 - m.remaining / w.reloadTime : ammo / capacity) : null,
-    count: repairing ? Math.ceil(v.cooldown) : v.active && w ? ammo : '',
-    mark: repairing || (v.active && reloading) ? 'reload' : '',
-    label: parked ? i18nText("ui.vehicle-controls.134ebb01a8") : `${v.active ? i18nText("ui.vehicle-controls.ac0ad40e42") : i18nText("ui.vehicle-controls.9fd671b1a1", { p0: (model.shortName) })} · ${detail}${game.state === 'paused' ? i18nText("ui.funnel-supply.4ea1173d1f") : ''}`,
-  });
   node.disabled = !!game.cottage || game.arrivalCinematic || !game.loadout.vehicleHulls[v.index] || game.fireTransit || game.realm?.mode==='football' || !['playing', 'paused'].includes(game.state) || repairing;
   node.hidden = game.realm?.mode==='football';
-  // 停驻状态明确引导回到车辆，快捷入口同样不能把车从远处召走。
   const campParked=!game.realm&&!game.story&&parkedOwned(game).find(s=>s.record.hull===v.index);
-  if(campParked&&!v.active){node.setAttribute('aria-label','已停在'+campParked.name+'，靠近载具停留1秒自动上车');node.title='已停在'+campParked.name;node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;}
-  if(parkingFleetApplies(game)&&!v.active){node.title='定位载具 · 靠近载具停留1秒自动上车';node.setAttribute('aria-label',node.title);}
-  if(vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase)){node.title=v.hp<=0?'已报废 · 需要维修':'维修中心待取车';node.setAttribute('aria-label',node.title);node.querySelector('.ring-count').textContent=v.hp<=0?'损坏':'维修';}
+  if(campParked&&!v.active)node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;
+  const service=vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase),status=service?(v.hp<=0?'已报废，需要维修':'维修中心待取车'):repairing?'维修中':reloading?'装填中':'';
+  const action=v.active?'点击下车':parkingFleetApplies(game)?'定位载具':'调用载具',count=w?Math.max(0,Math.ceil(ammo||0)):'—';
+  updateVehicleLoadHud(node,game,{ammo:count,label:`${model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}`,mark:service?'!':repairing||reloading?'↻':''});
   node.setAttribute('aria-pressed', String(v.active));
 }
