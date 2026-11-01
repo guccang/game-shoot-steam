@@ -143,7 +143,7 @@ export function recordMainlineEvent(game,type){
 // 当前教学人物复用正式故事猫绘制器，不保存碰撞或战斗实体。
 export function mainlineActors(game){
  const o=mainlineObjective(game);if(!o||o.restoration||o.cottageRest||game.mapId!==MAINLINE_SITES[o.task.site].mapId)return [];
- return [{...MAINLINE_SITES[o.task.site],type:'story-prop',kind:'mainline-npc',actorHero:MAINLINE_NPCS[o.task.npc].hero}];
+ return [{...MAINLINE_SITES[o.task.site],type:'story-prop',kind:'mainline-npc',sceneNpcId:'mainline:'+o.task.npc,actorHero:MAINLINE_NPCS[o.task.npc].hero}];
 }
 // 在安全的指定地点触发，远程点击任务卡不能隔空完成剧情或领资源。
 export function canTalkMainline(game){

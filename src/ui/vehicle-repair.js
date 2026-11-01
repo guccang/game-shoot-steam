@@ -15,7 +15,7 @@ export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
  root.body.append(panel);
  // 页面打开时刷新一次；游戏暂停时不伪造进度或反复重建焦点。
  function render(){
-  const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=reason||'关闭页面后继续维修，修好自动停入北门停车场；可用手机定位。';
+  const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=reason||'关闭页面后继续维修，修好留在维修工坊原车位；可用手机定位。';
   panel.querySelector('[data-repair-balance]').textContent=`持有金币：${game.progress.coins}`;
   panel.querySelector('[data-repair-list]').innerHTML=game.vehicles.filter(v=>game.progress.vehicleHulls[v.index]).map(v=>{
    const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index),status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:r.repairSpot?'车位维修中':'等待维修车位',ready:'已修好 · 等待停车场空位'})[phase]||(v.hp<=0?'已报废':vehicleFaults(game.progress,v.index).engine>=100?'发动机停驶':cost?'需要维修':'完好');

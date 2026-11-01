@@ -49,6 +49,8 @@ export function storyCast(game) {
         return {
           ...storyPosition(a, game),
           kind: actor.kind,
+          sceneNpcId:actor.residentId?'resident:'+actor.residentId:'story:'+def.id+':'+a.actor,
+          residentId:actor.residentId,
           actorHero: actor.hero,
           ...(actor.appearance ? { appearance: actor.appearance } : {}),
         };

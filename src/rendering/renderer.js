@@ -1,3 +1,4 @@
+import {createSceneNpcContinuity,sceneNpcObjects} from './scene-npc-continuity.js';
 import {ammoShopObjects,drawAmmoShop} from './ammo-shop.js';
 import {warehouseObjects,drawWarehouse} from './warehouse.js';
 import {catHomeObjects,drawCatHome} from './cat-home.js';
@@ -197,7 +198,7 @@ export class Renderer {
       w = this.width,
       h = this.height,
       time = source.previewTime;
-    if(source.cottage){this.stormStrike=null;if(source.cottage.kind&&source.cottage.kind!=='cottage')drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
+    if(source.cottage){this.sceneNpcContinuity?.actors.clear();this.stormStrike=null;if(source.cottage.kind&&source.cottage.kind!=='cottage')drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     const valley = source.mapId === 'jiuzhaigou';
     this.ground.setMap(source.mapId);this.ground.setSceneryMask(null);
     const seasonNow = performance.now();
@@ -370,7 +371,8 @@ export class Renderer {
     const mechanicalCats=mechanicalSources.filter(g=>g.weapon().controller==='mechanical')
       .flatMap(g=>visibleBodies(g.mechanical.nodes.filter(n=>n.active&&n.ready),view).map(n=>({...n,type:'mechanical-cat',weapon:g.weapon()})));
     const spiders=collectMechanicalSources(source,'spider').flatMap(g=>visibleBodies([g.spider.mother,...g.spider.nodes].filter(n=>n.active&&n.ready),view).map(n=>({...n,type:'mechanical-spider',weapon:g.weapon(),hatch:n.mother?g.spider.hatch:0,hatchSide:g.spider.hatchSide})));
-    const activeStoryResidents=storyResidentIds(source);
+    const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source)],view);
+    const activeStoryResidents=new Set([...storyResidentIds(source),...scenePeople.map(a=>a.residentId).filter(Boolean)]);
     const objects = [
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
       ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
@@ -381,7 +383,7 @@ export class Renderer {
       ...visibleBodies(arrivalObjects(camp),view,120),
       ...(!valley&&!source.realm&&!source.story?visibleBodies(source.fireWaters||[],view,150).map(s=>({...s,type:'fire-water'})):[]),
       ...visibleBodies(parkedVehicleObjects(camp),view,150),
-      ...visibleBodies(storyObjects(source),view,100),...visibleBodies(mainlineActors(source),view,100),...storyPosts,
+      ...visibleBodies(scenePeople,view,100),...storyPosts,
       ...visibleBodies(livingObjects(camp).filter(o=>o.type!=='living-resident'||!activeStoryResidents.has(o.id)),view,150),
       ...visibleBodies(campRenderObjects(source),view,150),
       ...visibleBodies(settlementObjects(source),view,120),

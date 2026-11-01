@@ -1,6 +1,6 @@
 import {assignRepairParking} from './repair-parking.js';
 import {vehicleFaults} from '../config/supplies.js';
-import {northParkingSpot} from '../progression/camp-parking.js';
+import {repairParkingSpot} from '../config/repair-parking.js';
 import {parkingRecordSite} from '../progression/roadside-parking.js';
 // 自有车辆报废、救援和维修的唯一业务入口；临时活动装备继续由各自会话管理。
 import {blocked} from '../physics/motion.js';
@@ -95,17 +95,18 @@ export function requestVehicleRepair(game,index,remote=false){
  v.active=false;v.cooldown=0;game.onEvent('vehicle-service',{text:wrecked?'拖车已出发，收好手机可继续救援。':'已交车维修，离开页面后开始作业。'});
  return {ok:true,message:`已支付 ${cost} 金币。${wrecked?'拖车正在赶往损毁地点。':'维修已开始。'}`};
 }
-// 修好的车辆直接交到北停车场；无空位时保管并等待，不丢车、不占维修门口。
+// 修好的车辆在原维修泊位交付，维修订单转为普通停车记录，不改变世界坐标。
 export function collectRepairedVehicle(game,index){
  if(!personalFleet(game)||!['playing','paused'].includes(game.state))return {ok:false,message:'请在自由巡林时安排交车。'};
  const r=vehicleService(game,index);if(r?.phase!=='ready')return {ok:false,message:'车辆尚未修好或已交付停车场。'};
- const spot=northParkingSpot(game.progress,index,s=>!(game.mapId==='forest'&&game.vehicle.active&&worldDistance(game.player,s)<85));if(!spot)return {ok:false,message:'北门停车场已满，车辆已保管，空出车位后自动交付。'};
+ if(!assignRepairParking(game,index))return {ok:false,message:'维修工坊车位已满，车辆已保管，空出车位后自动交付。'};
+ const spot=repairParkingSpot(r);
  const v=game.vehicles[index];game.progress.supplies.engineFaults[index]=0;if(v.weaponIndex!==null)game.progress.supplies.gunFaults[v.weaponIndex]=0;v.hp=v.maxHp;v.active=false;r.phase=null;r.repairSpot=null;r.hp=1;r.mapId='forest';r.position=canonical(spot);
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  game.progress.campParking.owned.push({hull:index,spot:spot.id,hp:1,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:v.wheelPhase||0,track:0});
  game.parkingVisitors=(game.parkingVisitors||[]).filter(p=>p.spot!==spot.id);
- game.onEvent('vehicle-service',{text:vehicleModel(index).name+'已修好并停入北门停车场，可用手机定位。'});
- return {ok:true,message:'已停入北门停车场，请到车旁上车。'};
+ game.onEvent('vehicle-service',{text:vehicleModel(index).name+'已修好，留在维修工坊原车位，可用手机定位。'});
+ return {ok:true,message:'已在维修工坊原车位交付，请到车旁上车。'};
 }
 // 新围栏可能覆盖旧拖车落点；按加长拖车的车道余量找最近接应点，避免反复规划失败。
 function serviceRouteAccess(point,mapId,trees){
