@@ -1,48 +1,50 @@
-// 小屋仓库手机页面：先选物品，再用滑条选择数量，所有变更交给仓库事务。
+// 小屋仓库双库存格子，拖拽提出存取请求，滑条确认后交给正式仓库事务。
 import {canUseWarehouse,warehouseVehicles,warehouseRows,warehouseTransferPreview,transferWarehouse} from '../core/warehouse.js';
 import {catLoad,vehicleLoad} from '../progression/load-weight.js';
 import {COLLECTED_VEHICLES} from '../config/vehicles.js';
 import {inventoryIcon} from './inventory-icons.js';
 import {createEventScope} from '../platform/events.js';
-// 创建统一底板与数量面板，关闭页面不离开仓库。
+import {createWarehouseDrag} from './warehouse-drag.js';
+// 创建统一手机底板及独立数量确认层，两个库存区始终保留可投放空间。
 export function createWarehouse({game,root,dialogs,onChange}){
- const scope=createEventScope(),panel=root.createElement('dialog');let source='bag',category='material',selection=null,message='';
+ const scope=createEventScope(),panel=root.createElement('dialog'),quantity=root.createElement('dialog');let source='bag',category='all',selection=null,message='';
  panel.id='warehouse-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','warehouse-title');
- panel.innerHTML='<header class="ui-panel__header"><h2 id="warehouse-title">小屋仓库</h2><button class="ui-close" data-close aria-label="关闭仓库">×</button></header><div class="ui-panel__body"><label for="warehouse-source">存取位置</label><select id="warehouse-source"></select><p id="warehouse-load"></p><p>入库物品不占负重。木材可用于建设和制作；只存取备用弹药，已装填弹匣保留。种子存取使用猫猫背包。</p><nav class="warehouse-tabs" aria-label="物品分类"></nav><p id="warehouse-message" role="status"></p><section id="warehouse-quantity" class="ui-section" hidden></section><div id="warehouse-list"></div></div>';
- root.body.append(panel);dialogs.register(panel.id,{focusId:'warehouse-source'});
- const get=id=>root.getElementById('warehouse-'+id);
- // 每次打开与事务后重新核验附近车队，不远程展示可操作车辆。
+ panel.innerHTML='<header class="ui-panel__header"><h2 id="warehouse-title">小屋仓库</h2><button class="ui-close" data-close aria-label="关闭仓库">×</button></header><div class="ui-panel__body"><select id="warehouse-source" aria-label="存取位置"></select><p id="warehouse-load"></p><nav class="warehouse-tabs" aria-label="物品分类"></nav><p class="warehouse-hint">拖动图标到另一侧存取，也可点选</p><div class="warehouse-stores"><section class="warehouse-store" data-warehouse-zone="deposit" aria-label="随行物品"><header><h3 id="warehouse-carried-title">猫猫背包</h3><span id="warehouse-carried-total"></span></header><div id="warehouse-carried" class="warehouse-grid"></div></section><section class="warehouse-store" data-warehouse-zone="withdraw" aria-label="仓库物品"><header><h3>仓库</h3><span id="warehouse-stored-total"></span></header><div id="warehouse-stored" class="warehouse-grid"></div></section></div><p id="warehouse-message" role="status"></p><p class="warehouse-note">入库不占负重 · 木材可供建设 · 仅存备用弹药</p></div>';
+ quantity.id='warehouse-quantity';quantity.className='ui-panel ui-panel--compact';quantity.setAttribute('aria-labelledby','warehouse-quantity-title');
+ quantity.innerHTML='<header class="ui-panel__header"><h2 id="warehouse-quantity-title"></h2><button class="ui-close" data-cancel aria-label="取消存取">×</button></header><div class="ui-panel__body" id="warehouse-quantity-body"></div><footer class="ui-panel__footer"><button class="ui-button" data-cancel>取消</button><button class="ui-button ui-button--primary" data-confirm>确认</button></footer>';
+ root.body.append(panel,quantity);
+ // 父页先转交暂停归属，避免外部关闭父页后数量层阻止游戏恢复。
+ scope.on(panel,'close',()=>{if(!panel.open&&quantity.open){dialogs.transferResume(panel.id,quantity.id);dialogs.close(quantity.id);}selection=null;});
+ dialogs.register(panel.id,{focusId:'warehouse-source'});dialogs.register(quantity.id,{focusId:'warehouse-range'});
+ const get=id=>root.getElementById('warehouse-'+id),drag=createWarehouseDrag({panel,onTransfer:choose});
+ // 正数库存按物品目录生成格子，数量不缩写，标题显示此库存的全部物品总数。
+ function renderStore(rows,direction){const field=direction==='deposit'?'carried':'stored',items=rows.filter(r=>r[field]>0),visible=items.filter(r=>category==='all'||r.category===category);
+  get(field+'-total').textContent=`${items.length} 类 · ${items.reduce((sum,r)=>sum+r[field],0)} 件`;
+  get(field).innerHTML=visible.map(r=>`<button class="warehouse-slot" data-item="${r.id}" data-direction="${direction}" aria-label="${direction==='deposit'?'存入':'取出'}${r.name}，${r[field]}份，每份${r.mass}千克" ${source!=='bag'&&r.category==='seed'?'disabled title="请切换到猫猫背包存取种子"':''}><span class="warehouse-slot__art" data-warehouse-grip>${inventoryIcon(r)}<strong class="warehouse-slot__count">${r[field]}</strong></span><span class="warehouse-slot__name">${r.name}</span></button>`).join('')||`<p class="warehouse-empty">${items.length?'此分类暂无物品':'暂无物品'}<br>${direction==='deposit'?'从仓库拖到这里取出':'从随行区拖到这里存入'}</p>`;
+ }
+ // 仅在打开或事务变更时更新格子，车辆权限重新核验，仓库种子不会因选择货舱而消失。
  function render(){
-  const cars=warehouseVehicles(game);if(source!=='bag'&&!cars.includes(source))source='bag';
+  drag.cancel();const cars=warehouseVehicles(game);if(source!=='bag'&&!cars.includes(source))source='bag';
   get('source').innerHTML='<option value="bag">猫猫背包</option>'+cars.map(i=>`<option value="${i}">${COLLECTED_VEHICLES[i].name}货舱</option>`).join('');get('source').value=String(source);
   const load=source==='bag'?catLoad(game):vehicleLoad(game,source,{driver:true});get('load').textContent=`${source==='bag'?'背包负重':'载具负重（含驾驶员）'} ${(load.weight??load.payload).toFixed(2)} / ${load.capacity.toFixed(2)} 千克`;
-  panel.querySelector('nav').innerHTML=[['material','木材'],['ammo','弹药'],['seed','种子']].map(([key,name])=>`<button class="ui-button" data-category="${key}" aria-pressed="${category===key}">${name}</button>`).join('');
-  get('message').textContent=message;const rows=warehouseRows(game,source).filter(r=>r.category===category&&(r.category!=='seed'||r.carried||r.stored));
-  get('list').innerHTML=rows.map(r=>`<article class="ui-section warehouse-row"><span class="warehouse-row__icon">${inventoryIcon(r)}</span><div><h3>${r.name}</h3><p>随行 ${r.carried} · 仓库 ${r.stored}</p><p>每份 ${r.mass} 千克</p></div><div class="warehouse-row__actions"><button class="ui-button" data-item="${r.id}" data-direction="deposit" ${r.carried?'':'disabled'}>存入</button><button class="ui-button" data-item="${r.id}" data-direction="withdraw" ${r.stored?'':'disabled'}>取出</button></div></article>`).join('')||`<p>${category==='seed'&&source!=='bag'?'请切换到猫猫背包存取种子。':'背包和仓库中还没有这类物品。'}</p>`;
-  renderQuantity();
+  panel.querySelector('nav').innerHTML=[['all','全部'],['material','木材'],['ammo','弹药'],['seed','种子']].map(([key,name])=>`<button class="ui-button" data-category="${key}" aria-pressed="${category===key}">${name}</button>`).join('');
+  get('carried-title').textContent=source==='bag'?'猫猫背包':'载具货舱';get('message').textContent=message||(source!=='bag'?'种子请切换到猫猫背包存取。':'');
+  renderStore(warehouseRows(game,source),'deposit');renderStore(warehouseRows(game,'bag'),'withdraw');
  }
- // 数量面板只含滑条和快捷数量，不使用文本输入；负重预览跟随滑条更新。
- function renderQuantity(){
-  const box=get('quantity');box.hidden=!selection;if(!selection){box.innerHTML='';return;}
-  const r=warehouseRows(game,source).find(r=>r.id===selection.id),max=selection.direction==='deposit'?r.carried:r.stored;selection.count=Math.min(selection.count,max);
-  box.innerHTML=`<h3>${selection.direction==='deposit'?'存入':'取出'}${r.name}</h3><label for="warehouse-range">数量 <output id="warehouse-count">${selection.count}</output> / ${max}</label><input id="warehouse-range" type="range" min="1" max="${max}" value="${selection.count}" step="1"><div class="warehouse-tabs"><button class="ui-button" data-amount="1">1 份</button><button class="ui-button" data-amount="${max}">全部</button></div><p id="warehouse-preview"></p><div class="warehouse-row__actions"><button class="ui-button" data-confirm>确认${selection.direction==='deposit'?'存入':'取出'}</button><button class="ui-button" data-cancel>取消</button></div>`;preview();
+ // 拖放和键盘点选共用同一确认流程，先选择数量，取消不扣物品。
+ function choose(id,direction){const r=warehouseRows(game,source).find(r=>r.id===id),max=direction==='deposit'?r?.carried:r?.stored;if(!max)return;selection={id,direction,source,count:1,max};get('quantity-title').textContent=`${direction==='deposit'?'存入':'取出'}${r.name}`;
+  get('quantity-body').innerHTML=`<p>${direction==='deposit'?'随行物品 → 仓库':'仓库 → '+(source==='bag'?'猫猫背包':'载具货舱')} · 每份 ${r.mass} 千克</p><label for="warehouse-range">数量 <output id="warehouse-count">1</output> / ${max}</label><input id="warehouse-range" type="range" min="1" max="${max}" value="1" step="1"><div class="warehouse-tabs"><button class="ui-button" data-amount="1">1 份</button><button class="ui-button" data-amount="${max}">全部</button></div><p id="warehouse-preview" role="status"></p>`;preview();dialogs.open(quantity.id);
  }
- // 满载风险写在确认按钮旁，用户改变数量后重新计算。
- function preview(){const p=warehouseTransferPreview(game,source,selection.id,selection.count,selection.direction);get('count').textContent=selection.count;get('preview').textContent=p.ok?`操作后负重 ${p.weight.toFixed(2)} / ${p.capacity.toFixed(2)} 千克。${p.needsConfirmation?'载荷已满，将无法移动；确认即继续取出。':''}`:p.message;panel.querySelector('[data-confirm]').disabled=!p.ok;}
- scope.on(get('source'),'change',()=>{source=get('source').value==='bag'?'bag':Number(get('source').value);selection=null;message='';render();});
- scope.on(panel,'input',e=>{if(e.target.id==='warehouse-range'){selection.count=Number(e.target.value);preview();}});
- scope.on(panel,'click',e=>{
-  const b=e.target.closest('button');if(!b||b.disabled)return;
-  if(b.hasAttribute('data-close'))return dialogs.close(panel.id);
-  if(b.dataset.category){category=b.dataset.category;selection=null;render();}
-  else if(b.dataset.item){selection={id:b.dataset.item,direction:b.dataset.direction,count:1};renderQuantity();get('quantity').scrollIntoView({block:'nearest'});}
-  else if(b.dataset.amount){selection.count=Number(b.dataset.amount);renderQuantity();}
-  else if(b.hasAttribute('data-cancel')){selection=null;renderQuantity();}
-  else if(b.hasAttribute('data-confirm')&&selection){const r=transferWarehouse(game,source,selection.id,selection.count,selection.direction,true);message=r.message;selection=null;render();onChange();}
- });
- // 仅室内管理员打开，超载时仍可点击柜台卸货。
- function open(){if(!canUseWarehouse(game))return false;source='bag';selection=null;message='';dialogs.open(panel.id);render();return true;}
- // 释放全部 DOM 和事件，重复启动不叠加操作。
- function dispose(){scope.dispose();panel.remove();}
+ // 实时预览满载风险，确认按钮的明确文案表示玩家选择继续取出。
+ function preview(){if(!selection)return;const p=warehouseTransferPreview(game,selection.source,selection.id,selection.count,selection.direction);get('count').textContent=selection.count;get('preview').textContent=p.ok?`操作后负重 ${p.weight.toFixed(2)} / ${p.capacity.toFixed(2)} 千克。${p.needsConfirmation?'载荷已满，将无法移动。可减少数量，或确认继续取出。':''}`:p.message;const confirm=quantity.querySelector('[data-confirm]');confirm.disabled=!p.ok;confirm.textContent=p.needsConfirmation?'仍要取出':selection.direction==='deposit'?'确认存入':'确认取出';}
+ scope.on(get('source'),'change',()=>{source=get('source').value==='bag'?'bag':Number(get('source').value);message='';render();});
+ scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-close'))return dialogs.close(panel.id);if(b.dataset.category){category=b.dataset.category;render();}else if(b.dataset.item)choose(b.dataset.item,b.dataset.direction);});
+ scope.on(quantity,'input',e=>{if(e.target.id==='warehouse-range'&&selection){selection.count=Number(e.target.value);preview();}});
+ scope.on(quantity,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-cancel'))return dialogs.close(quantity.id);if(!selection)return;if(b.dataset.amount){selection.count=Number(b.dataset.amount);get('range').value=selection.count;preview();}else if(b.hasAttribute('data-confirm')){const r=transferWarehouse(game,selection.source,selection.id,selection.count,selection.direction,true);message=r.message;selection=null;dialogs.close(quantity.id);render();onChange();}});
+ scope.on(quantity,'close',()=>{if(!quantity.open)selection=null;});
+ // 仅室内管理员打开，超载时仍可打开卸货。
+ function open(){if(!canUseWarehouse(game))return false;source='bag';category='all';selection=null;message='';render();dialogs.open(panel.id);return true;}
+ // 释放手势和两个弹窗，避免重复初始化叠加事件。
+ function dispose(){drag.dispose();scope.dispose();quantity.remove();panel.remove();}
  return {open,render,dispose};
 }
