@@ -27,17 +27,20 @@ export function supplyVehicleNearby(game,index=game.vehicle.index){const site=ve
 // 存储明确成功才替换进度，异常与失败都可以安全重试。
 function commit(game,next,message){let saved=false;try{saved=game.livingPersist?.(next)===true;}catch{}if(!saved)return {ok:false,message:'保存失败，物品、弹药和费用未改变。'};game.progress=next;return {ok:true,message};}
 // 商店价格按一包计费，制作消耗木材与零件；一次最多二十包。
-export function tradeSupply(game,{kind,id,batches=1,craft=false,target='hand'}={}){
+export function tradeSupply(game,{kind,id,batches=1,craft=false,target}={}){
  if(!supplyAvailable(game)||game.cottage?.kind!=='ammo')return {ok:false,message:'请进入弹药补给铺，与柜台售货员交谈。'};
+ // 弹药必须明确所属库存，不能将缺少目的地的车载炮弹默认塞进猫猫背包。
+ if(kind==='item'&&target===undefined)target='hand';
  if(!Number.isInteger(batches)||batches<1||batches>20||!['ammo','item'].includes(kind)||!['hand','vehicle'].includes(target))return {ok:false,message:'无效补给数量。'};
  const rule=(kind==='ammo'?AMMO_TYPES:SUPPLY_ITEMS)[id];if(!rule||kind==='item'&&craft)return {ok:false,message:'该补给不能制作。'};
+ if(kind==='ammo'&&!rule.targets.includes(target))return {ok:false,message:'这是载具弹药，请在载具弹药页补给到货舱。'};
  if(target==='vehicle'&&(kind!=='ammo'||!supplyVehicleNearby(game)))return {ok:false,message:'请把当前载具停到弹药铺门前再装载。'};
  const next=candidate(game),stock=kind==='item'?next.supplies.items:target==='hand'?next.supplies.hand:next.supplies.vehicles[game.vehicle.index],amount=(rule.pack||1)*batches;
  if(stock[id]+amount>(kind==='item'?999:100000))return {ok:false,message:'库存已满。'};
  const coins=craft?0:rule.coins*batches,wood=craft?rule.wood*batches:0,parts=craft?rule.parts*batches:0;
  if(next.coins<coins||next.wood<wood||next.materials.parts<parts)return {ok:false,message:'金币或制作材料不足。'};
  next.coins-=coins;next.wood-=wood;next.materials.parts-=parts;stock[id]+=amount;
- return commit(game,next,`${rule.name} +${amount}，已计入负重。`);
+ return commit(game,next,`${rule.name} +${amount}，已放入${target==='vehicle'?'当前载具货舱':'猫猫背包'}并计入对应负重。`);
 }
 // 维修包只用于尚未完全损坏的部件；不恢复车体HP，也不能复活报废车。
 export function useSupplyItem(game,id){

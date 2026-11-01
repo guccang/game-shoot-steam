@@ -1,0 +1,31 @@
+// 默认4175；CLI传入隔离工作树地址，使用独立手机上下文，不触碰玩家存档。
+async original=>{
+ const out='output/playwright/ammo-purchase-storage/',ctx=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await ctx.newPage(),checks=[],errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(15000);
+ // 读取正式UI和重量公式，截图保留真实弹药铺背景。
+ async function shot(name){const r=await page.evaluate(async()=>await(await import('/src/rendering/visual-review.js')).inspectAmmoPurchaseStorage(a.game,document));if(r.overflow||r.bodyOverflow||r.badDialog||r.smallButtons||r.products.some(p=>p.target!==r.target))throw Error(name+JSON.stringify(r));checks.push({name,...r});await page.screenshot({path:out+name+'.png'});return r;}
+ // 使用实际售货员，打开交易页后检查按钮与库存，不直接调用购买事务。
+ async function counter(){await page.locator('[data-room-item=shopkeeper]').tap();await page.locator('#field-equipment-dialog[open]').waitFor();}
+ try{
+  await page.goto(original.url());await page.locator('#start').tap();await page.locator('#game-frame[data-page=game]').waitFor({timeout:60000});
+  await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.coins=p.wood=100000;p.materials.parts=100;p.vehicleHulls[1]=1;(await import('/src/config/vehicle-armaments.js')).grantVehicleArmament(p,1);p.vehicleIndex=1;p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=g.fireClock=999;g.enemies=[];g.progress.living.patrolActive=false;const r=(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.ammo;g.progress.campParking.owned=[{hull:1,spot:null,mapId:'forest',x:r.door.x+105,y:r.door.y+20,hp:1,ammo:0,reload:0,wheel:0,track:0}];Object.assign(g.player,r.door,{vx:0,vy:0});g.cottageDoorLatch=false;a.renderer.camera.time=null;a.refresh();});
+  await page.waitForFunction(()=>a.game.cottage?.kind==='ammo');
+  if(!new URL(original.url()).searchParams.has('persist-only')){
+  await counter();const before=await shot('vehicle-default');if(before.target!=='vehicle')throw Error('店旁有车时未进入载具补给');
+  await page.locator('[data-ammo-buy=shell]').tap();await page.locator('[data-ammo-craft=heavy]').tap();await page.locator('[data-ammo-buy=light]').tap();const car=await shot('vehicle-purchased');if(car.ammo.shell!==5||car.ammo.heavy!==3||car.ammo.light!==30||car.catWeight!==before.catWeight||car.hand.shell||car.hand.heavy)throw Error('车载购买污染背包');
+  await page.locator('[data-supply-target=hand]').tap();if(await page.locator('[data-ammo-buy=shell], [data-ammo-buy=heavy], [data-ammo-buy=water]').count())throw Error('猫猫页出现车用弹药');await page.locator('[data-ammo-buy=light]').tap();await page.locator('[data-ammo-craft=light]').tap();const hand=await shot('hand-purchased');if(hand.hand.light!==before.hand.light+60||JSON.stringify(hand.ammo)!==JSON.stringify(car.ammo)||Math.abs(hand.catWeight-before.catWeight-1.2)>1e-6)throw Error('猫猫弹药归属错误');
+  for(const [width,height] of [[320,568],[390,844],[844,390]])for(const time of ['day','night']){
+   await page.setViewportSize({width,height});await page.evaluate(async time=>{Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.game.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time).start;a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,performance.now()-22000);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,performance.now()-22000);a.refresh();},time);
+   for(const target of ['hand','vehicle']){await page.locator('[data-supply-target='+target+']').tap();await shot(width+'-'+time+'-'+target);}
+  }
+  await page.setViewportSize({width:390,height:844});await page.locator('#field-equipment-close').tap();await page.evaluate(()=>{a.game.progress.campParking.owned.find(r=>r.hull===1).x+=1000;});await counter();if(await page.locator('[data-supply-target=hand]').getAttribute('aria-pressed')!=='true')throw Error('车辆离店未默认猫猫页');await page.locator('[data-supply-target=vehicle]').tap();const far=await shot('vehicle-unavailable');if(far.products.some(p=>!p.disabled)||await page.locator('[data-ammo-craft]:not(:disabled)').count())throw Error('远程车仍能补给');
+  await page.locator('#field-equipment-close').tap();
+  }else{
+   // 续验只准备已经确认的购买结果，单独核对离店装填后的总量与存档。
+   await page.evaluate(()=>{a.game.progress.supplies.hand.light+=60;Object.assign(a.game.progress.supplies.vehicles[1],{light:30,shell:5,heavy:3});});
+  }
+  const handTotal=await page.evaluate(()=>a.game.progress.supplies.hand.light+a.game.magazines.reduce((sum,m)=>sum+(m.ammo||0),0));
+  await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/workshop-interiors.js')).interiorLayout(a.game.cottage).exit,{vx:0,vy:0});});await page.waitForFunction(()=>!a.game.cottage);await page.evaluate(()=>a.save());
+  await page.reload();await page.locator('#start').tap();await page.locator('#game-frame[data-page=game]').waitFor({timeout:60000});const restored=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;await a.ready;const p=a.game.progress;return {hand:p.supplies.hand,handTotal:p.supplies.hand.light+a.game.magazines.reduce((sum,m)=>sum+(m.ammo||0),0),car:p.supplies.vehicles[1],speed:(await import('/src/progression/load-weight.js')).movementLoadFactor(a.game)};});if(restored.car.shell!==5||restored.car.heavy!==3||restored.hand.shell||restored.hand.heavy||restored.handTotal!==handTotal||restored.speed<=0)throw Error('存档或猫猫移动异常'+JSON.stringify(restored));
+  if(errors.length)throw Error(errors.join('；'));return {ok:true,checks,restored,errors};
+ }catch(e){await page.screenshot({path:out+'failure.png'});throw e;}finally{await ctx.close();}
+}

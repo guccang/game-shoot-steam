@@ -1805,3 +1805,9 @@ export function inspectCottageStairs(game,renderer,root){return {designCriterion
 
 // 载具HUD验收读取正式按钮填充、弹药与当前载荷，不使用独立示意图。
 export async function inspectVehicleLoadHud(game,root){const {vehicleLoadHudState}=await import('../ui/vehicle-load-hud.js'),n=root.getElementById('vehicle-button');return {designCriterion:'vehicle-hud-load',hull:game.vehicle.index,...vehicleLoadHudState(game),ammo:n.querySelector('.vehicle-ammo-count')?.textContent,clip:n.querySelector('.vehicle-load-filled')?.style.clipPath,label:n.getAttribute('aria-label'),mark:n.querySelector('.vehicle-hud-state')?.textContent,art:n.dataset.vehicleArt};}
+
+// 分类购弹验收读取正式库存、负重和按钮目标，避免界面分类与实际收货位置脱节。
+export async function inspectAmmoPurchaseStorage(game,root){
+ const {catLoad,vehicleLoad}=await import('../progression/load-weight.js'),base=await inspectVehicleSupplies(game,root),panel=root.getElementById('field-equipment-dialog'),body=root.getElementById('field-equipment-body');
+ return {...base,designCriterion:'ammo-purchase-storage',target:panel.querySelector('[data-supply-target][aria-pressed="true"]')?.dataset.supplyTarget,hand:{...game.progress.supplies.hand},catWeight:catLoad(game).weight,vehicleWeight:vehicleLoad(game).payload,bodyOverflow:body.scrollWidth>body.clientWidth+1,products:[...panel.querySelectorAll('[data-ammo-buy]')].map(b=>({id:b.dataset.ammoBuy,target:b.dataset.ammoTarget,disabled:b.disabled}))};
+}
