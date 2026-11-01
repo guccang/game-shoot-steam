@@ -1,3 +1,4 @@
+import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 import {treasurePartReason} from './treasure.js';
 // 补给购买、制作、道具使用与主炮转移均先保存候选快照，再更新实际状态。
 import {AMMO_TYPES,SUPPLY_ITEMS,GUN_MASSES,ammoKind,vehicleFaults} from '../config/supplies.js';
@@ -50,6 +51,7 @@ export function tradeSupply(game,{kind,id,batches=1,craft=false,target,loadConfi
   const confirmation=JSON.stringify({kind,id,batches,craft,amount,coins,wood,parts,...load});
   if(loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,name:rule.name,amount,unit:kind==='ammo'?'发':'个',message:'补给后载荷将满，确认后才能继续。'};
  }
+ if(kind==='ammo'&&!craft&&id==='light'&&target==='hand')recordLogisticsLesson(next,'ammoPurchased');
  return commit(game,next,`${rule.name} +${amount}，已放入${target==='vehicle'?'当前载具货舱':'猫猫背包'}并计入对应负重。`);
 }
 // 维修包只用于尚未完全损坏的部件；不恢复车体HP，也不能复活报废车。

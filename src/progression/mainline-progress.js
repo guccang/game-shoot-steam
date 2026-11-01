@@ -1,8 +1,9 @@
 // 主线保存已完成任务集合和旧档正在进行的任务，重排不重领奖也不丢进度。
+import {LOGISTICS_LESSONS} from './mainline-logistics.js';
 import {validateGardeningLesson} from './mainline-gardening.js';
 import {MAINLINE_IDS,MAINLINE_TASKS} from '../config/mainline.js';
 import {MAINLINE_V3_IDS,MAINLINE_V7_IDS,MAINLINE_V8_IDS} from '../config/mainline-legacy.js';
-export const MAINLINE_SEEN=['map','navigation','wave','trial','drive','dismount','blessing','defense','valley','track','config','companions','pineKills','pineWaves','westHorde','pistolField','weaponField','vehicleField','hoverHorde','aircraftField','controllerHorde','hoverTrial','aircraftTrial','controllerTrial'];
+export const MAINLINE_SEEN=[...Object.keys(LOGISTICS_LESSONS),'map','navigation','wave','trial','drive','dismount','blessing','defense','valley','track','config','companions','pineKills','pineWaves','westHorde','pistolField','weaponField','vehicleField','hoverHorde','aircraftField','controllerHorde','hoverTrial','aircraftTrial','controllerTrial'];
 // 三版以前先恢复合法旧前缀，四版以后按稳定 ID 保留完成集合与当前任务。
 export function validateMainline(raw){
  const version=Number(raw?.version||1),ids=Array.isArray(raw?.completed)?[...raw.completed]:[];
@@ -46,5 +47,5 @@ export function validateMainline(raw){
  const phase=completed.length===MAINLINE_IDS.length?'complete':harvestInserted?'doing':inserted||version<4&&!currentId?'meet':['meet','doing','report'].includes(raw?.phase)?raw.phase:'meet';
  const seedRewards=MAINLINE_TASKS.filter(t=>t.seedReward&&Array.isArray(raw?.seedRewards)&&raw.seedRewards.includes(t.id)).map(t=>t.id);
  const combatPractice=MAINLINE_TASKS.some(t=>t.id===raw?.combatPractice&&t.guide.steps.some(s=>s.operation?.kind==='vehicle'&&s.operation.record))?raw.combatPractice:null;
- return {version:10,seedRewards,combatPractice,gardening:validateGardeningLesson(harvestInserted?{taskId:'upgrade-harvest'}:raw?.gardening),rewardVersion:5,completed,currentId,navigationEnabled:raw?.navigationEnabled!==false,phase,seen,distance:Number.isFinite(raw?.distance)?Math.max(0,Math.min(1e7,raw.distance)):0};
+ return {version:11,seedRewards,combatPractice,gardening:validateGardeningLesson(harvestInserted?{taskId:'upgrade-harvest'}:raw?.gardening),rewardVersion:5,completed,currentId,navigationEnabled:raw?.navigationEnabled!==false,phase,seen,distance:Number.isFinite(raw?.distance)?Math.max(0,Math.min(1e7,raw.distance)):0};
 }

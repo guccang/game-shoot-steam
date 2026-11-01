@@ -14,7 +14,7 @@ import {HEROES} from './heroes.js';
 // 固定机制身份属于程序合同，配置不能凭空声明不存在的行为或美术。
 const RANGED_IDS=['spore-spitter','acorn-slinger','reed-archer','bramble-buggy','stump-bombard'];
 const OPERATIONS=['click','upgrade','hero-experience','trial','patrol-boss','buy','equip','modify','story','drive','clearing','dismount','track','controller','menu','camp-defense','farm'];
-const ACTIONS=['seed-shop','menu','workshop','clearing','fire','realm','camp-defense','farm'];
+const ACTIONS=['warehouse','logistics','cleanup-bag','cleanup-vehicle','vehicle-repair','seed-shop','menu','workshop','clearing','fire','realm','camp-defense','farm'];
 const SEEN=MAINLINE_SEEN;
 // 校验错误始终包含可定位的内容路径。
 function fail(path,message){throw Error(`内容配置 ${path}：${message}`);}

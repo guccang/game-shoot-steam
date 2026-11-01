@@ -49,6 +49,26 @@ export function createOperationGuide({game,root,workshop}){
   if(o.phase==='meet')return !dialog&&visible(root.getElementById('mainline-npc'))?cue('talk','#mainline-npc','与营地伙伴交谈'):null;
   if(o.phase==='report'||!step)return dialog?closeCue(dialog,'操作完成，返回领取奖励'):null;
   if(dialog?.id==='mainline-dialog')return cue('mainline-action','#mainline-action','从这里开始当前操作');
+  // 后勤面板复用原控件高亮；数量确认期间不能把关闭按钮误标成操作目标。
+  if(['warehouse','cleanup-bag','cleanup-vehicle','logistics','vehicle-repair'].includes(action?.type)){
+   if(dialog?.id==='warehouse-quantity')return cue('warehouse-confirm','#warehouse-quantity [data-confirm]','核对数量，再确认存取');
+   if(dialog?.id==='warehouse-dialog'){
+    const vehicle=['vehicle-weight','cargo-cleanup'].includes(o.task.id),source=root.getElementById('warehouse-source');
+    if(source.value!==(vehicle?String(game.vehicle.index):'bag'))return cue('warehouse-source','#warehouse-source',vehicle?'选择当前载具；需把车停在仓库旁':'选择猫猫背包');
+    const deposit=o.task.id==='warehouse-lesson'&&game.progress.mainline.seen.warehouseWithdrawn,selector=`#warehouse-dialog [data-direction="${deposit?'deposit':'withdraw'}"][data-item="material:wood"]`;
+    return visible(root.querySelector(selector))?cue('warehouse-item',selector,deposit?'选一份木头存回仓库':'选一份木头取出练习'):null;
+   }
+   if(dialog?.id==='load-cleanup-quantity')return cue('cleanup-confirm','[data-quantity-confirm]','核对物品与数量，确认后无法找回');
+   if(dialog?.id==='load-cleanup-dialog'){
+    const wood='[data-cleanup-item="material:wood"]',selector=visible(root.querySelector(wood))?wood:'[data-cleanup-item]';
+    return visible(root.querySelector(selector))?cue('cleanup-item',selector,'选择不需要的物品，仅清理一份即可'):null;
+   }
+   if(dialog?.id==='vehicle-repair-dialog'){
+    const confirm=dialog.querySelector('[data-repair-confirm]'),row=dialog.querySelector('[data-repair-hull]:not(:disabled)');
+    if(!confirm.disabled)return cue('repair-confirm','[data-repair-confirm]','核对维修费用后确认');
+    return row?{id:'repair-vehicle',node:row,text:'选择需要维修的车辆'}:closeCue(dialog,'关闭页面，等待维修或返回交付');
+   }
+  }
   if(['clearing','patrol-boss'].includes(operation?.type)){
    // 禁用时操作栏已经显示真实原因，不再叠加通用气泡遮住说明。
    if(dialog?.id==='clearing-dialog')return root.getElementById('clearing-accept').disabled?null:cue('clearing-accept','#clearing-accept',game.progress.living.patrolActive?'继续前往清缴场':'点击接取，沿光点出发');
@@ -100,6 +120,8 @@ export function createOperationGuide({game,root,workshop}){
   if(dialog&&operation?.type==='click'&&dialog.id===operation.dialog){
    if(dialog.id==='fire-dialog'&&game.fireRescue?.phase!=='offered')return closeCue(dialog,'返回森林，沿指引出动');
    const node=dialog.querySelector(operation.selector);
+   // 有车停在店旁时商店默认车载分类，购弹教学先指引切到猫猫弹药。
+   if(!visible(node)&&dialog.id==='field-equipment-dialog'&&o.task.id==='supply-ammo')return cue('ammo-target','[data-supply-target="hand"]','选择猫猫弹药');
    if(!visible(node)&&dialog.id==='living-dialog')return cue('board','[data-living-tab="board"]','打开邻里委托');
    // 购种任务的商品位于分类中，切到其他类后先指回真实分类按钮。
    if(!visible(node)&&dialog.id==='seed-shop-dialog'){const crop=FARM_CROPS[mainlineTask(game)?.gardening?.crop];if(crop)return cue('seed-category',`[data-seed-shop-category="${crop.category}"]`,'选择'+FARM_CATEGORIES.find(c=>c.id===crop.category).name);}

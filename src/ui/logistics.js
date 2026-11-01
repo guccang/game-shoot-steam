@@ -1,3 +1,4 @@
+import {inspectLogisticsLesson} from '../progression/mainline-logistics.js';
 import {TREASURE_PARTS} from '../config/treasure.js';
 import {treasurePartReason,transferTreasurePart,treasureWorkshopCargo} from '../core/treasure.js';
 import {inventoryIcon} from './inventory-icons.js';
@@ -49,7 +50,7 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup}){
  function render(){get('title').textContent=mode==='fit'?'载具装配':'载具仓库';get('subtitle').textContent=mode==='fit'?'发动机决定运力，装甲增加耐久和重量':'木材运回营地入库，作物携带到收购点出售';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();if(mode!=='fit')get('content').insertAdjacentHTML('beforeend',treasureCargoMarkup());}
  dialogs.register(panel.id,{focusId:'logistics-close',onOpen:render});
  // 从载具页面进入时将货舱放到文档末尾，使嵌套弹窗的触控层级与打开顺序一致。
- function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
+ function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';if(!panel.open)root.body.append(panel);dialogs.open(panel.id);if(mode==='cargo'&&hull!==null&&inspectLogisticsLesson(game,'vehicleLoadViewed'))onChange();}
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
 
  scope.on(panel,'click',event=>{

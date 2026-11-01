@@ -1,3 +1,6 @@
+import {WAREHOUSE} from './warehouse.js';
+import {AMMO_SHOP} from './supplies.js';
+import {REPAIR_CENTER} from './vehicle-repair.js';
 import {FIRE_STATION} from './fire-station-layout.js';
 // 巡林成长主线：地点、人物、对白、操作条件、资源奖励与章节顺序均为可序列化内容表。
 import {FARM_SEED_DOOR} from './farm.js';
@@ -15,6 +18,9 @@ const post=STORY_POSTS.find(p=>p.id==='sunleaf-post');
 // 找种任务直接进入产出雏菊的真实营地，任务卡、地面路线和终点共用坐标。
 const seedCamp=MONSTER_CAMPS.find(c=>c.id==='ember-pot');
 export const MAINLINE_SITES={
+ warehouseEntry:{...WAREHOUSE,y:WAREHOUSE.y+60},
+ ammoEntry:{...AMMO_SHOP,y:AMMO_SHOP.y+22},
+ repairEntry:{...REPAIR_CENTER,y:REPAIR_CENTER.y+65},
  // 球赛接取、进行与交付共用球场站前落点，不再借用守护祭坛入口。
  footballEntry:{name:'林间球场站',mapId:'forest',x:TOWN_LAYOUT.football.x,y:TOWN_LAYOUT.football.y+30},
  seedCamp:{id:seedCamp.id,name:seedCamp.name,mapId:seedCamp.mapId,x:seedCamp.x,y:seedCamp.y+110},

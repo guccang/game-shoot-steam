@@ -1,3 +1,5 @@
+import {cleanupEntries} from './load-cleanup.js';
+import {vehicleLocations} from './vehicle-location.js';
 import {cottageRestGuideActive,cottageRestObjective} from './cottage-guide.js';
 import {beginGardeningLesson} from '../progression/mainline-gardening.js';
 import {FARM_SEED_DOOR} from '../config/farm.js';
@@ -80,6 +82,9 @@ export function mainlineAction(game){
  const f=pendingRestoration(game.progress);if(f)return {type:'restoration',id:f.id,label:'查看修复任务'};
  if(!task||!step||['clearing','patrol-boss'].includes(step.operation?.type)&&task.targetWhen&&mainlineCondition(game,task.targetWhen))return null;
  const operation=mainlineOperation(game);
+ // 清理对象为空时先去仓库取一份木头，避免空清单把教学锁死。
+ const cleanup=cleanupLessonTarget(game);
+ if(cleanup?.empty)return {type:'warehouse',label:'打开仓库准备一份木头'};
  if(operation?.type==='drive')return game.progress.vehicleIndex===operation.index&&!parkedOwned(game).some(s=>s.record.hull===operation.index)?null:{type:'workshop',kind:'vehicle',index:operation.index,label:'查看车辆停放位置'};
  if(operation?.type==='camp-defense')return {type:'camp-defense',gate:operation.gate,label:step.label};
  if(['clearing','patrol-boss'].includes(operation?.type))return {type:'clearing',label:'前往清缴告示牌'};
@@ -88,6 +93,17 @@ export function mainlineAction(game){
 }
 // 故事、秘境、消防和入职优先；切换到这些活动时不出场NPC、不开始对白。
 export function mainlineVisible(game){return !!mainlineTask(game)&&!game.campDefense&&!game.workshopTrial&&!arrivalPending(game.progress)&&!game.story&&!game.realm&&!game.fireActive;}
+// 只在两个清理教学中检查真实库存；车辆目标跟随永久车队位置，不绑定旧停车位。
+function cleanupLessonTarget(game){
+ const task=mainlineTask(game);
+ if(game.progress.mainline?.phase!=='doing'||!['bag-cleanup','cargo-cleanup'].includes(task?.id))return null;
+ const hull=task.id==='cargo-cleanup'?game.vehicle.index:null;
+ // 暂停面板中操作成功后，交付阶段可能要等下一帧；此时不再生成清理目标。
+ if(game.progress.mainline.seen[hull===null?'bagCleaned':'cargoCleaned'])return null;
+ const build=hull===null?null:game.progress.logistics.builds[hull];
+ const empty=hull===null?cleanupEntries(game).length===0:!(build.wood||build.cargo.some(Boolean)||Object.values(game.progress.supplies.vehicles[hull]).some(Boolean)||game.vehicles[hull].module?.magazine.ammo);
+ return {empty,hull,site:hull===null?null:vehicleLocations(game).find(v=>v.hull===hull)};
+}
 // 一份目标同时驱动任务卡、地面导航和地图标记，不创建第二份坐标。
 export function mainlineObjective(game,{ignoreTracking=false}={}){
  if(game.cottage&&cottageRestGuideActive(game))return null;
@@ -96,6 +112,9 @@ export function mainlineObjective(game,{ignoreTracking=false}={}){
  const task=mainlineTask(game);if(!task||!mainlineVisible(game))return null;
  const restore=restorationObjective(game,task);if(restore)return restore;
  const phase=game.progress.mainline.phase,step=mainlineStep(game);
+ const cleanup=cleanupLessonTarget(game);
+ if(cleanup?.empty)return {task,phase,key:'warehouseEntry',site:MAINLINE_SITES.warehouseEntry,navigation:true,label:'到仓库取一份木头用于清理',hint:cleanup.hull===null?'选择猫猫背包，取一份木头':'把当前车开到仓库旁，选择该车取一份木头'};
+ if(cleanup?.site)return {task,phase,key:cleanup.site.id,site:{...cleanup.site,y:cleanup.site.y+55},navigation:true,label:step.label,hint:step.hint};
  // 收获赚金币直接导航现有田块，采空后重新选择，不要求返回 NPC 交付。
  if(phase==='doing'&&task.goal.harvestFor){
   if(game.progress.farm.inventory.some(Boolean))return {task,phase,key:'harvest-sale',site:{...FARM_SEED_DOOR,name:'种子小屋收购柜台'},navigation:true,label:'到种子小屋出售作物',hint:harvestGuideHint(game,task)};

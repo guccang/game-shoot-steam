@@ -1,3 +1,4 @@
+import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 import {catLoad,vehicleLoad} from '../progression/load-weight.js';
 import {carriedWeapon} from '../progression/weapon-storage.js';
 // 背包与货舱清理使用真实库存；选择数量后由界面确认，保存失败不丢物品。
@@ -68,7 +69,7 @@ function commitCleanup(game,snapshot,message){
 // 丢弃枪械会同时移走其空弹匣，子弹仍保留，因此预览要包含空弹匣重量。
 export function cleanupUnitMass(item){return item.mass+(item.category==='weapon'&&ammoKind(WEAPONS[item.index])?itemDefinition('magazine').mass:0);}
 // 手动滑条丢弃仍保留原有保护、弹药退回和持久化语义。
-export function discardLoad(game,change={}){const snapshot=cleanupSnapshot(game),result=removeEntry(snapshot,change);return result.ok?commitCleanup(game,snapshot,`已丢弃${result.item.name} ×${change.count}，载荷已更新。`):result;}
+export function discardLoad(game,change={}){const snapshot=cleanupSnapshot(game),result=removeEntry(snapshot,change);if(result.ok)recordLogisticsLesson(snapshot.progress,change.hull==null?'bagCleaned':'cargoCleaned');return result.ok?commitCleanup(game,snapshot,`已丢弃${result.item.name} ×${change.count}，载荷已更新。`):result;}
 // 先木头、作物，再种子、弹药和补给；自动清理不选择武器及固定装备。
 export function planLoadCleanup(game,hull=null){
  const targetHull=hull??(game.vehicle.active?game.vehicle.index:null),load=cleanupLoad(game,targetHull),base={targetHull,...load,changes:[]};
@@ -87,5 +88,6 @@ export function discardForMobility(game,plan){
  const snapshot=cleanupSnapshot(game);
  for(const change of plan.changes){if(change.hull!==null&&change.hull!==plan.targetHull)return {ok:false,message:'清理来源已变化，请重新预览。'};const r=removeEntry(snapshot,change);if(!r.ok)return r;}
  const load=cleanupLoad(snapshot,plan.targetHull);if(load.weight>=load.capacity)return {ok:false,message:'载荷已变化，原方案无法恢复移动，请重新预览。'};
+ for(const change of plan.changes)recordLogisticsLesson(snapshot.progress,change.hull==null?'bagCleaned':'cargoCleaned');
  return commitCleanup(game,snapshot,'已清理至限重内，载荷不再阻止移动。');
 }

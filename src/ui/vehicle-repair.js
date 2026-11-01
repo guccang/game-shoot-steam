@@ -1,3 +1,5 @@
+import {inspectLogisticsLesson} from '../progression/mainline-logistics.js';
+import {supplyVehicleNearby} from '../core/supplies.js';
 import {vehicleFaults} from '../config/supplies.js';
 // 手机与现场共用正式维修页，价格、权限和订单状态全部来自业务层。
 import {hookTow,unhookTow,towReason,selfTowRepairQuote,deliverTowedVehicle} from '../core/player-towing.js';
@@ -18,7 +20,7 @@ export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
   const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=reason||'关闭页面后继续维修，修好留在维修工坊原车位；可用手机定位。';
   panel.querySelector('[data-repair-balance]').textContent=`持有金币：${game.progress.coins}`;
   panel.querySelector('[data-repair-list]').innerHTML=game.vehicles.filter(v=>game.progress.vehicleHulls[v.index]).map(v=>{
-   const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index),status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:r.repairSpot?'车位维修中':'等待维修车位',ready:'已修好 · 等待停车场空位'})[phase]||(v.hp<=0?'已报废':vehicleFaults(game.progress,v.index).engine>=100?'发动机停驶':cost?'需要维修':'完好');
+   const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index),status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:r?.repairSpot?'车位维修中':'等待维修车位',ready:'已修好 · 等待停车场空位'})[phase]||(v.hp<=0?'已报废':vehicleFaults(game.progress,v.index).engine>=100?'发动机停驶':cost?'需要维修':'完好');
    const available=!reason&&(phase==='ready'?true:(!phase||phase==='wrecked')&&cost>0&&(!remote||v.hp<=0||vehicleFaults(game.progress,v.index).engine>=100));
    return `<button type="button" class="ui-choice" style="width:100%;margin-bottom:8px;min-height:72px;display:block;text-align:left" data-repair-hull="${v.index}" aria-pressed="${selection===v.index}" ${available?'':'disabled'}><b>${vehicleModel(v.index).name}</b><br><span>${status} · 耐久 ${Math.ceil(v.hp)} / ${v.maxHp} · 主炮损坏 ${vehicleFaults(game.progress,v.index).gun}% / 发动机损坏 ${vehicleFaults(game.progress,v.index).engine}%</span><br><small>${phase==='ready'?'空出车位后自动交付':phase&&phase!=='wrecked'?'已付费，无需重复支付':cost?`费用 ${cost} 金币${game.progress.coins<cost?' · 金币不足':''}`:'无需维修'}</small></button>`;
   }).join('')||'<p>还没有自有载具。</p>';
@@ -39,7 +41,10 @@ export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
  });
  dialogs.register(panel.id,{focusId:'vehicle-repair-close',onOpen:render});
  // 现场入口与手机入口仅改变服务方式，不改变人物位置。
- function open(fromPhone=false){remote=fromPhone;selection=null;if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
+ function open(fromPhone=false){remote=fromPhone;selection=null;if(!panel.open)root.body.append(panel);dialogs.open(panel.id);
+  // 现场看过报价才算到访；完好且确实停在店旁的当前车辆可直接通过检查。
+  if(!remote&&!repairUnavailable(game)){inspectLogisticsLesson(game,'repairVisited');const i=game.vehicle.index;if(game.progress.vehicleHulls[i]&&!vehicleService(game,i)?.phase&&supplyVehicleNearby(game,i)&&vehicleRepairQuote(game,i)===0)inspectLogisticsLesson(game,'repairChecked');onChange();}
+ }
  // 退出应用释放节点与监听，重新装配不会出现重复窗口。
  function dispose(){scope.dispose();panel.remove();}
  return {open,dispose};

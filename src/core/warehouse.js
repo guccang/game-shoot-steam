@@ -1,3 +1,4 @@
+import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 // 仓库事务在保存成功后才提交，存取均保留物品总数与正式负重计算。
 import {createResourceDrop} from '../combat/resource-pickup.js';
 import {canInspectBuilding} from './building-entry.js';
@@ -44,7 +45,7 @@ export function warehouseTransferPreview(game,source,id,count,direction){
  return {ok:true,next,weight,capacity:load.capacity,needsConfirmation:!deposit&&load.overloaded,message:`${s.item.name} ×${count} 已${deposit?'存入仓库':source==='bag'?'取回背包':'装入载具'}。`};
 }
 // 确认后重新读取实时库存，保存失败或拒绝超载均不改变任何存量。
-export function transferWarehouse(game,source,id,count,direction,confirmOverload=false){const result=warehouseTransferPreview(game,source,id,count,direction);if(!result.ok)return result;if(result.needsConfirmation&&!confirmOverload)return {...result,ok:false,message:'取出后载荷已满，将无法移动。请减少数量或确认继续取出。'};const saved=commitCargo(game,result.next,result.message);if(saved.ok&&id==='material:wood'&&direction==='withdraw'){const state=game.warehouseAutoWood??={held:[],retry:0,notice:''};if(!state.held.includes(source))state.held.push(source);}return saved;}
+export function transferWarehouse(game,source,id,count,direction,confirmOverload=false){const result=warehouseTransferPreview(game,source,id,count,direction);if(!result.ok)return result;if(result.needsConfirmation&&!confirmOverload)return {...result,ok:false,message:'取出后载荷已满，将无法移动。请减少数量或确认继续取出。'};recordLogisticsLesson(result.next,direction==='deposit'?'warehouseDeposited':'warehouseWithdrawn');if(direction==='withdraw'&&source!=='bag')recordLogisticsLesson(result.next,'cargoLoaded');const saved=commitCargo(game,result.next,result.message);if(saved.ok&&id==='material:wood'&&direction==='withdraw'){const state=game.warehouseAutoWood??={held:[],retry:0,notice:''};if(!state.held.includes(source))state.held.push(source);}return saved;}
 
 // 每次靠近仅处理附近的木材；手动取出的来源直到离开范围才重新自动收取。
 export function updateWarehouseWood(game,dt){

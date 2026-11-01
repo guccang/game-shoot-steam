@@ -1,3 +1,4 @@
+import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 import {assignRepairParking} from './repair-parking.js';
 import {vehicleFaults} from '../config/supplies.js';
 import {repairParkingSpot} from '../config/repair-parking.js';
@@ -105,6 +106,7 @@ export function collectRepairedVehicle(game,index){
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==index);
  game.progress.campParking.owned.push({hull:index,spot:spot.id,hp:1,ammo:v.module?.magazine.ammo||0,reload:v.module?.magazine.remaining||0,wheel:v.wheelPhase||0,track:0});
  game.parkingVisitors=(game.parkingVisitors||[]).filter(p=>p.spot!==spot.id);
+ recordLogisticsLesson(game.progress,'repairChecked');
  game.onEvent('vehicle-service',{text:vehicleModel(index).name+'已修好，留在维修工坊原车位，可用手机定位。'});
  return {ok:true,message:'已在维修工坊原车位交付，请到车旁上车。'};
 }
