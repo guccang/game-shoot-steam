@@ -66,7 +66,7 @@ test('进入、失败和退出秘境不改变森林现场、波次、弹药、�
   assert.equal(g.player, player); assert.equal(g.trees, trees); assert.equal(g.vehicles, vehicles);
   assert.equal(g.wave, 9); assert.equal(g.kills, 53); assert.equal(g.chopped, 17);
   assert.equal(g.player.x, 550); assert.equal(g.player.hp, 73); assert.equal(g.magazines[0].ammo, 4);
-  assert.equal(g.damage(), damage); assert.equal(g.state, 'paused');
+  assert.equal(g.damage(), damage); assert.equal(g.state, 'playing');
 });
 
 for (const mode of Object.keys(REALMS).filter(mode=>!['football','fire','race'].includes(mode))) test(`${mode}：跨越旧终点仍可推进，奖励只发一次且不会增长森林击杀与材料保底`, () => {

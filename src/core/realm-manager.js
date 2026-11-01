@@ -80,7 +80,14 @@ export function enterRealm(game, mode, checkpoint = null) {
   if (r.loadout) {
     prepareExpeditionEquipment(game);
     if (saved?.vehicles) restoreRealmVehicles(game, saved.vehicles);
-  } else if(!['football','fire','race'].includes(mode)) restoreRealmVehicles(game, saved?.vehicles || forestVehicles);
+  } else if(!['football','fire','race'].includes(mode)) {
+    const vehicles = structuredClone(saved?.vehicles || forestVehicles);
+    // 新挑战带上当前可用车辆；接待厅的强制下车不应让秘境缺车，也不改动门外停车记录。
+    // 读档保留局内上下车选择，报废、维修中和冷却中的车辆不能借入场复活。
+    const hull = vehicles.hulls[vehicles.index];
+    if (!saved && hull.hp > 0 && hull.cooldown === 0 && !game.progress.vehicleService?.[vehicles.index]?.phase) hull.active = true;
+    restoreRealmVehicles(game, vehicles);
+  }
   r.goddess = { type: 'goddess', x: r.arena.x, y: r.arena.y, hp: r.goddessHp, maxHp: GAMEPLAY_VALUES.realm.goddessHealth, radius: GAMEPLAY_VALUES.realm.goddessRadius };
   if (r.mode === 'guardian') {
     r.defenses = r.defenses.filter(t => guardianCanDeploy(game.progress, t.kind, t.index, t.weaponIndex));
@@ -229,7 +236,7 @@ export function syncRealm(game) {
   if (r) r.vehicles = captureRealmVehicles(game);
   game.progress.realms.run = r ? validateRealms({ run: r }).run : null;
 }
-// 球赛结算后直接恢复巡游；其他挑战仍按原规则暂停返回。
+// 所有秘境退出后恢复自由活动，接待厅内不依赖被室内界面隐藏的暂停按钮。
 export function leaveRealm(game) {
   if (!game.realm) return false;
   // 新手引导返回后优先追踪主线，和离开远征的存档事件一并保存。
@@ -242,7 +249,7 @@ export function leaveRealm(game) {
   game.realm = null;
   Object.assign(game, state);
   restoreForestVehicleSelection(game);
-  game.state = football ? 'playing' : state.state === 'ready' ? 'ready' : 'paused';
+  game.state = state.state === 'ready' ? 'ready' : 'playing';
   game.forestState = null; game.forestPatrol = null;
   game.player.hp = Math.min(game.player.hp, game.maxHp());
   game.progress.realms.run = null;
