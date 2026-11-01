@@ -87,7 +87,8 @@ export function spawnStoryBoss(game,id=storyNode(game).task.boss) {
 export function updateStoryBoss(game,dt) {
   const r=game.story,s=r.support,spec=storyDefinition(game).encounters.bosses[storyNode(game).task.boss],cfg=spec.support;
   if(!s)return false;
-  if(game.boss&&game.boss.hp<=game.boss.maxHp*cfg.threshold)s.triggered=true;
+  // 决战援军即使统领被爆发击败也要清完，不能跳过最后的包围战。
+  if(game.boss?game.boss.hp<=game.boss.maxHp*cfg.threshold:cfg.onDefeat)s.triggered=true;
   if(s.triggered&&s.spawned<cfg.total){s.timer-=dt;if(s.timer<=0){
     const e=spawnStoryEnemy(game,storyDefinition(game).world.sites[spec.site],s.spawned+cfg.ordinal);
     if(e){s.spawned++;s.timer=s.spawned%cfg.batch===0?cfg.gap:cfg.interval;}else s.timer=cfg.retry;

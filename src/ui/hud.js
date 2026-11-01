@@ -204,7 +204,9 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     $('boss-hud').classList.toggle('incoming', supportWarning > 0);
     if (game.boss) {
       const profile = bossProfile(game.boss);
-      $('boss-name').textContent = `♛ ${profile.name}${game.boss.livingChallenge?' · 巡护训练投影':''}${supportWarning > 0 ? i18nText("ui.hud.02ac4f1593", { p0: (Math.ceil(supportWarning)) }) : ''}`;
+      // 剧情命名领主显示本章身份，普通巡游仍读取物种名称。
+      const bossName=game.boss.story&&game.boss.name||profile.name;
+      $('boss-name').textContent = `♛ ${bossName}${game.boss.livingChallenge?' · 巡护训练投影':''}${supportWarning > 0 ? i18nText("ui.hud.02ac4f1593", { p0: (Math.ceil(supportWarning)) }) : ''}`;
       $('boss-fill').style.background = profile.color;
       $('boss-hp').textContent = `${Math.max(0, game.boss.hp)} / ${game.boss.maxHp}`;
       $('boss-fill').style.width = `${(game.boss.hp / game.boss.maxHp) * 100}%`;

@@ -23,15 +23,7 @@ export const STORY_ROUTES = {
 };
 export const STORY_DEFENSE = [{total:10,heavy:0,cap:6},{total:13,heavy:1,cap:8},{total:16,heavy:2,cap:10}];
 export const STORY_TITLES = {Q10:i18nText("config.story.60a4982bd9"),Q20:i18nText("config.story.957f121240"),Q30:i18nText("config.story.e39319b4ad"),Q40:i18nText("config.story.c818457e94"),Q50:i18nText("config.story.61530f3087"),Q60:i18nText("config.story.4f617a30c1"),Q70:i18nText("config.story.889b4b9847"),Q80:i18nText("config.story.855b08da93")};
-export const STORY_LINES = {
-  // 种子小屋牵起邻里日常，巡护仍从原有回信故障出发。
-  intro:[['snow','小夜从种子小屋回来，说想在花盆里种雏菊。我答应花开时去画，可他寄来的信一直没到。'],['player','他在等你的回信？'],['snow','嗯，旧中继站又没声音了。先去查看巡护标记，再找薄荷。我想亲口告诉小夜：画歪的第一朵，我也会留着。']],
-  sign:[["player",i18nText("config.story.403f50abd9")],["recording",i18nText("config.story.aa461fc808")],["player",i18nText("config.story.cb6aeb0210")]],
-  mint:[["mint",i18nText("config.story.931fc95614")],["player",i18nText("config.story.c4ade3ce5a")],["mint",i18nText("config.story.1ff02d1d39")],["player",i18nText("config.story.b3adb0db05")],["mint",i18nText("config.story.50cc3a9870")]],
-  boss:[["mint",i18nText("config.story.c60ddf7621")],["player",i18nText("config.story.9196e2d9b9")],["mint",i18nText("config.story.9ed602d6bb")]],
-  silence:[["player",i18nText("config.story.c84e96bca2")],["mint",i18nText("config.story.e34f241aec")],["radioSnow",i18nText("config.story.afea78addd")],["mint",i18nText("config.story.fed389f84f")],["mint",i18nText("config.story.78c13b19cd")],["player",i18nText("config.story.77e6a4e6db")]],
-  ending:[['snow','回信终于到了。小夜问，第一回种花没发好芽，是不是自己不适合照顾花草。'],['player','巡路时我也走错过。慢一点，再试一次。'],['snow','我画的第一张叶子也像勺子。我会把那张画带去，陪他到种子小屋看看，再一起学。'],['mint','等你回田里看看自己的收成，也去和他们聊聊。营地里值得照看的，可不只有灯线。']],
-};
+export const STORY_LINES = {"intro":[["snow","北线三座哨站同时失联，电台却还在重复“道路安全”。最后一队巡林员正往那边走。"],["player","有人在用我们的频道设伏。"],["snow","带上武器去找薄荷，夺回中继站！从今天起，我们要查出谁在驱赶兽潮，把晴叶林夺回来。"]],"sign":[["player","路标被故意调转了。这里不是事故，是伏击。"],["recording","北线急报：铁棘统领夺走了号令核心。兽潮正在向各个哨站集结……不要相信安全广播！"],["player","薄荷还在前面。我去打通这条路。"]],"mint":[["mint","你真的穿过来了！我截住了假广播，可他们的前锋已经包围中继站。"],["player","先把真消息发出去，让后面的队伍停止前进。"],["mint","我接线路，你守住三轮进攻。站一旦被打毁，北线就彻底失去联络。"],["player","你把信号接上。怪物交给我。"]],"boss":[["mint","这是铁棘的先锋。它守着干扰器，信号刚恢复就又被压住了。"],["player","那就连先锋一起打掉。"],["mint","它冲锋前会压低身体，别硬接。半血时还有援军，给自己留出退路！"]],"silence":[["player","先锋倒下，干扰停了。北线听得到吗？"],["radioSnow","听到了！队伍已经停止前进，你们救下了整条巡逻线。"],["mint","但铁棘的主力根本没到这里。它在试探我们的火力。"],["player","它能下一道命令，我们就拆掉一个阵地。下一处在哪？"],["mint","东岸。一名侦察员带着号令核心的情报，被封锁在那里。"]],"ending":[["snow","北线重新连上了。可东岸传来最后一条求援：药快用完，桥也被截断了。"],["player","准备药箱和水路装备。我们过去把情报带出来。"],["mint","今天是守住一座站。下一战，我们要从铁棘手里抢一条路。"]]};
 
 // 内容表仅含可序列化数据；条件、动作和任务类型由通用执行器解释，不嵌入回调。
 export const STORY_SITES = {
@@ -68,11 +60,7 @@ export const STORY_DIALOGUES = {
   mint:{lines:STORY_LINES.mint,variants:[{id:'experienced',when:{path:'lastExperienceLoadout'},append:[["mint",i18nText("config.story.a7687f8719")]]},{id:'try',when:true,append:[["mint",i18nText("config.story.95d514d942")]]}],after:[{type:'flag',key:'mint'},{type:'phase',value:'prepare'}]},
   boss:{lines:STORY_LINES.boss,after:[{type:'phase',value:'prepare'}]},
   silence:{lines:STORY_LINES.silence,after:[{type:'flag',key:'silenced'},{type:'stage',id:'Q80'}]},
-  ending:{lines:STORY_LINES.ending,variants:[
-    {id:'line',when:{path:'lastExperienceLoadout',equals:'line-patrol'},replace:1,line:["player",i18nText("config.story.a271cdda3b")]},
-    {id:'tide',when:{path:'lastExperienceLoadout',equals:'tide-arc'},replace:1,line:["player",i18nText("config.story.39f6fbd40e")]},
-    {id:'frost',when:{path:'lastExperienceLoadout',equals:'frost-guard'},replace:1,line:["player",i18nText("config.story.cc6223a151")]},
-  ],after:[{type:'phase',value:'prepare'}]},
+  ending:{lines:STORY_LINES.ending,after:[{type:'phase',value:'prepare'}]},
 };
 // 每个阶段声明目标、准备权限、恢复状态、启动动作、任务处理器和人物出场。
 export const STORY_NODES = {
@@ -125,7 +113,7 @@ export const STORY_NODES = {
     interactionTarget:{actor:'snow'},
     objective:{site:'CAMP',label:i18nText("config.story.20d9e92142"),action:'ending'},task:{type:'idle'},
     claimWhen:{all:[{flag:'silenced'},{read:'ending'}]},
-    panel:{type:'claim',title:i18nText("config.story.e6e2ae991c"),text:i18nText("config.story.fa97cfa77c"),
+    panel:{type:'claim',title:"北线战报",text:"北线重新连通，立刻筹备东岸突围。",
       reward:i18nText("config.story.b66f2fc839"),button:i18nText("config.story-campaign.1f83860094")},
     actors:structuredClone(STORY_CAMP_RETURN_ACTORS)},
 };
@@ -179,7 +167,7 @@ export const STORY_TRIAL = {site:'CAMP',duration:60,total:6,hp:2000,radius:17,di
 // 章节入口、存档白名单、恢复初始化和完成提交策略集中配置；保持版本1兼容旧检查点。
 export const STORY_CHAPTER = {
   catalogType:'story',
-  id:STORY_ID,version:STORY_VERSION,mapId:'forest',title:i18nText("config.story.d7ac2ad573"),subtitle:i18nText("config.story.1d267e2a01"),hero:0,hp:120,
+  id:STORY_ID,version:STORY_VERSION,mapId:'forest',title:"烽火断线",subtitle:i18nText("config.story.1d267e2a01"),hero:0,hp:120,
   entry:{site:'CAMP',radius:70,stage:'Q10',dialogue:'intro',label:i18nText("config.story.62eb9d26c0"),completedLabel:i18nText("config.story-campaign.eaba718c83")},
   // 路点到达距离保持原值；点击允许站在人物和设施前方，避免角色贴身重叠。
   interaction:{radius:48,clickRadius:96,seconds:2},flags:['sign','mint','relay','boss','silenced','supply'],
@@ -187,9 +175,9 @@ export const STORY_CHAPTER = {
   restoreTargets:['relay'],completionFlags:{sunleafRestored:true},reward:STORY_REWARD,
   journey:STORY_JOURNEY,nodes:STORY_NODES,dialogues:STORY_DIALOGUES,actors:STORY_ACTORS,props:STORY_PROPS,cleanup:STORY_CLEANUP,
   routes:STORY_ROUTES,loadouts:STORY_LOADOUTS,world:STORY_WORLD,encounters:STORY_ENCOUNTERS,trial:STORY_TRIAL,
-  ui:{lead:i18nText("config.story.5570df792e"),
-    completedLead:i18nText("config.story.49679ce504"),
+  ui:{lead:"铁棘统领用假广播把巡林队引向伏击。夺回中继站、击败先锋，查明兽潮号令核心的下落。",
+    completedLead:"北线联络恢复，东岸的侦察员仍被封锁。带着药箱强渡河道，抢回反攻所需的情报。",
     role:i18nText("config.story.bf7f6cd02f"),away:i18nText("config.story.a9020cc734"),
-    quote:i18nText("config.story.ad64bd8443"),author:i18nText("config.heroes.ae506736a6"),start:i18nText("config.story.cc5786abba"),interaction:i18nText("config.story.8cf2fc42f0"),wave:i18nText("config.story.65485a6c06"),
+    quote:"我们要夺回晴叶林。先从这座中继站开始。",author:i18nText("config.heroes.ae506736a6"),start:i18nText("config.story.cc5786abba"),interaction:i18nText("config.story.8cf2fc42f0"),wave:i18nText("config.story.65485a6c06"),
     failureHint:i18nText("config.story.a14cad7bb6")},
 };

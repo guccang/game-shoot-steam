@@ -1,8 +1,7 @@
 import {EQUIPMENT_STORY_CHAPTERS} from './equipment-story-chapters.js';
-import {extendEquipmentDialogue} from './equipment-story-details.js';
 import {TOWN_LAYOUT} from './town-layout.js';
 import { i18nText } from "../i18n/index.js";
-// 森林回信章节内容：组合辅助函数只生成纯数据，任务执行器不识别具体章节编号。
+// 晴叶林反攻战役：组合辅助函数只生成纯数据，任务执行器不识别具体章节编号。
 import {STORY_CHAPTER as base,STORY_LOADOUTS,STORY_CAMP_RETURN_ACTORS} from './story.js';
 import {MONSTER_STORIES} from './monster-stories.js';
 import {RIVER_DELIVERY_SITES,RIVER_BRIDGE_BARRIERS} from './river-crossing.js';
@@ -66,9 +65,9 @@ const heli={id:'canopy-light',name:i18nText("config.story-campaign.b84caa896b"),
 const ferryWorld=world(copy(RIVER_DELIVERY_SITES),[{sites:['CAMP','SUPPLY','DOCK']},{sites:['DOCK','WATER','CHANNEL','LANDING'],travel:'water',dash:[5,4],color:'#547c64'},{sites:['LANDING','FAR']}]);
 ferryWorld.barriers=copy(RIVER_BRIDGE_BARRIERS);
 ferryWorld.legend='营地 → 西岸取药 → 西岸渡口 → 水上航线 → 东岸渡口 → 巡护员';
-const ferry=chapter('sunleaf-02',i18nText("config.story-campaign.f7431c73e4"),i18nText("config.story-campaign.7cf54ebe54"),['sunleaf-01'],[STORY_LOADOUTS[1]],ferryWorld,
+const ferry=chapter('sunleaf-02',"强渡封锁线",i18nText("config.story-campaign.7cf54ebe54"),['sunleaf-01'],[STORY_LOADOUTS[1]],ferryWorld,
   i18nText("config.story-campaign.f12557fd0f"));
-ferry.ui.lead='木桥维修，东岸的药箱还没送到。小夜惦记着生病的巡护员；借气垫船送药，让下一次看花的约定有回音。';
+ferry.ui.lead="强渡封锁线，向负伤侦察员送药并夺回部署图。找到号令核心，反攻才有方向。";
 ferry.nodes={BEGIN:prepare('CAMP','借用气垫船，去西岸取药','PICKUP'),
   PICKUP:interaction('SUPPLY','在西岸取走药箱','pickup'),
   DOCK:interaction('DOCK','把药箱带到西岸渡口','dock'),
@@ -83,33 +82,26 @@ ferry.actors.mint.aside=-72;ferry.actors.mint.avoidTerrain=true;
 ferry.actors.riverRanger={name:'东岸巡护员',source:'actor',kind:'river-ranger',hero:0,head:43,aside:72};
 ferry.nodes.SHORE.actors.push({actor:'riverRanger',site:'FAR',dx:70});
 ferry.nodes.DOCK.actors=[{actor:'mint',site:'DOCK',dx:-20,dy:65},{actor:'boatman',site:'DOCK',dx:-30,dy:-60}];
-ferry.dialogues={intro:talk([['snow','木桥正在维修，东岸巡护员的药还没送到。药箱在营地南边的西岸补给点。'],['mint','先把药取上，再去西岸渡口。借来的气垫船能从陆地直接开上水面。']], [{type:'phase',value:'prepare'}]),
-  pickup:talk([['mint','药箱装好了。去河边的木渡口，苔轮在那里等我们。']],[{type:'flag',key:'supply'},...next('DOCK')]),
-  dock:talk([['boatman','桥头已经围上维修栏了。把船头朝向河面，像在陆地上一样开过去。'],['mint','沿河往南，看到东岸的木平台就靠岸。药箱可别打湿啦。']],next('SAIL')),
-  delivery:talk([['riverRanger','药收到啦，谢谢！这下夜班的伙伴不用等到桥修好了。'],['player','原来没有桥，气垫船也能把两岸连起来。'],['mint','回营报个平安。等这趟委托交付，桥上的维修也该结束了。']],home)};
+ferry.dialogues={"intro":{"lines":[["snow","东岸侦察员负伤，手里有铁棘军团的部署图。桥头已被封锁，药品只能走水路。"],["mint","先取药，再从渡口强渡。拿到情报，我们才能找到号令核心。"]],"after":[{"type":"phase","value":"prepare"}]},"pickup":{"lines":[["mint","药箱装好了。侦察员还在坚持，我们走渡口。"]],"after":[{"type":"flag","key":"supply"},{"type":"stage","id":"DOCK","phase":"active"}]},"dock":{"lines":[["boatman","桥头过不去了。气垫船能从这里下水，沿河绕过封锁！"],["player","你守住渡口。我们在东岸打出一条通道。"]],"after":[{"type":"stage","id":"SAIL","phase":"active"}]},"delivery":{"lines":[["riverRanger","来得正好……部署图在这里。铁棘的号令核心藏在树冠后的高地，它正在集结第二波主力。"],["mint","要打进去，得先把装甲维修材料运上前线。运输队正在北边遭拦截。"],["player","我去接应。它想把我们一段段切断，我们就一段段打通。"]],"after":[{"type":"stage","id":"HOME","phase":"active"}]}};
 ferry.props=[{kind:'medicine',site:'SUPPLY',when:{not:{flag:'supply'}}},{kind:'medicine',site:'FAR',when:{read:'delivery'}}];
-ending(ferry,[["snow",i18nText("config.story-campaign.9eb7e80a47")],["mint",i18nText("config.story-campaign.c48c33ab5a")],["player",i18nText("config.story-campaign.6e3011eeaa")]]);
+ending(ferry,[["snow","药已经送到，侦察员保住了。部署图上被划掉的地方，都是铁棘准备吞掉的哨站。"],["player","先把运木队打通，修好装甲。我们不能一直跟着它的进攻跑。"]]);
 ferry.nodes.HOME.task.points=['LANDING','CHANNEL','WATER','DOCK','CAMP'];
 ferry.nodes.HOME.title=ferry.nodes.HOME.objective.label='沿渡口水路返回营地';
-ferry.dialogues.ending.lines=[['snow','药送到了，桥也修好了。小夜说要等巡护员好些，再约他来看花。'],['mint','他还托我问，你那本花草画册画到哪儿了？'],['snow','今天只画了一片歪叶子。以前总想画好才给人看，现在想把等人回家的这一天也留下来。']];
 
 // 第三章：搬运队在三个停靠点逐段推进，清场后才出现下一段人员与货箱。
-const timber=chapter('sunleaf-03',i18nText("config.story-campaign.27ca9fe0b6"),i18nText("config.story-campaign.d48b124b51"),['sunleaf-02'],[STORY_LOADOUTS[2],STORY_LOADOUTS[0]],land,
+const timber=chapter('sunleaf-03',"抢下反攻补给",i18nText("config.story-campaign.d48b124b51"),['sunleaf-02'],[STORY_LOADOUTS[2],STORY_LOADOUTS[0]],land,
   i18nText("config.story-campaign.6c1b5f07c3"));
 timber.nodes={BEGIN:prepare('CAMP',i18nText("config.story-campaign.808a837c8f"),'STOP1'),
   STOP1:encounter('FIRST',i18nText("config.story-campaign.3a98f77a86"),'first',6,{props:[{kind:'crate',site:'FIRST'}]}),
   STOP2:encounter('SECOND',i18nText("config.story-campaign.fcce59deca"),'second',9,{props:[{kind:'crate',site:'SECOND'}]}),
   STOP3:encounter('THIRD',i18nText("config.story-campaign.56b02a3263"),'third',12,{props:[{kind:'crate',site:'THIRD'}]})};
-timber.dialogues={intro:talk([["mint",i18nText("config.story-campaign.1bb296d01a")],["player",i18nText("config.story-campaign.a9d1c5f779")],["mint",i18nText("config.story-campaign.436a9ad496")]],[{type:'phase',value:'prepare'}]),
-  first:talk([["mint",i18nText("config.story-campaign.61c41686ab")],["player",i18nText("config.story-campaign.dda56599a4")]],next('STOP2')),
-  second:talk([["mint",i18nText("config.story-campaign.1b4449af01")],["player",i18nText("config.story-campaign.20ff5e6b5c")]],next('STOP3')),
-  third:talk([["player",i18nText("config.story-campaign.b81cf78702")],["mint",i18nText("config.story-campaign.9062ee5a1b")],["player",i18nText("config.story-campaign.dfbb247d64")]],home)};
-ending(timber,[['snow','木料平安回来了。铁牙想用边角料给小夜的花盆垫个架子，雨天不用一直搁在湿地上。'],['mint','小夜怕自己养不好，不敢收。他说花架那么认真，配他的花可惜了。'],['snow','那我把画歪的雏菊也带上。不是等什么都做好了，才可以请朋友来看。']]);
+timber.dialogues={"intro":{"lines":[["mint","铁棘截住了最后一批维修木料。车队过不来，反攻车辆就只能趴在修理棚。"],["player","从第一处路口打到最后一辆车，补给线不能断。"]],"after":[{"type":"phase","value":"prepare"}]},"first":{"lines":[["mint","第一处路障清掉了，但后方又有怪物绕上来！"],["player","让车队继续走，我们去前面截住它们。"]],"after":[{"type":"stage","id":"STOP2","phase":"active"}]},"second":{"lines":[["mint","这批厚甲兵是专门冲着货车来的。铁棘已经知道我们要反攻。"],["player","知道又怎样？最后一个路口，也得让出来。"]],"after":[{"type":"stage","id":"STOP3","phase":"active"}]},"third":{"lines":[["mint","最后一车通过！修理棚能开工了。可机械小队发来警报，侦察模块被打散了。"],["player","刚抢回来的这批材料，先给它们用。我们需要能找出核心的眼睛。"]],"after":[{"type":"stage","id":"HOME","phase":"active"}]}};
+ending(timber,[["mint","维修补给全部入库，反攻车辆开始整备。"],["snow","机械小队还没齐。没有它们，部署图上的核心位置只是一片山地。"],["player","下一次出发，把每个模块找回来。"]]);
 
-timber.ui.lead='接应最后一班运木车。回营的木料里，也藏着铁牙想替小夜做花架的心意。';
+timber.ui.lead="抢下三处截击点，把维修补给送上前线。没有这批材料，反攻车辆就无法出发。";
 
-// 第四章兼作独立机械核心体验，不要求其他章节；命名只写入剧情记录。
-const team=chapter('sunleaf-04',i18nText("config.story-campaign.30bb1580ed"),i18nText("config.story-campaign.7dc38b6f3e"),[],[core],land,
+// 第四章承接补给突围，机械小队负责识破假信号并定位核心。
+const team=chapter('sunleaf-04',"无人退队",i18nText("config.story-campaign.7dc38b6f3e"),['sunleaf-03'],[core],land,
   i18nText("config.story-campaign.5c1eef35aa"));
 team.journey.experiences['team-strike']={loadout:core.id,event:'impact',match:{weaponIndex:15},speaker:'mint',goal:i18nText("config.story-campaign.0f8ad9f4b8"),success:i18nText("config.story-campaign.98ee12ebae"),feedback:i18nText("config.story-campaign.fd20e2e353"),advice:i18nText("config.story-campaign.f7849076b9")};
 team.nodes={BEGIN:prepare('CAMP',i18nText("config.story-campaign.db5a174e6e"),'SHED'),SHED:interaction('FIRST',i18nText("config.story-campaign.54b5fa67cc"),'shed'),
@@ -118,19 +110,14 @@ team.nodes={BEGIN:prepare('CAMP',i18nText("config.story-campaign.db5a174e6e"),'S
   NAME:{title:i18nText("config.story-campaign.029771cc39"),requiresLoadout:true,prepareWhen:true,objective:{site:'THIRD',label:i18nText("config.story-campaign.b581adfde9")},task:{type:'idle'},
     panel:{type:'choice',title:i18nText("config.story-campaign.a356212c8f"),text:i18nText("config.story-campaign.921e2e73da")},choice:'companion',after:[{type:'dialogue',id:'named'}],actors:actor('THIRD')}};
 team.choices.companion=[{id:'acorn',label:i18nText("config.story-campaign.8d5da74d03")},{id:'lamp',label:i18nText("config.story-campaign.667d3800d8")},{id:'echo',label:i18nText("config.story-campaign.72b977ec2e")}];
-team.dialogues={intro:talk([["mint",i18nText("config.story-campaign.f9972c75d4")],["player",i18nText("config.story-campaign.95de3c7391")],["mint",i18nText("config.story-campaign.2355d12f28")]],[{type:'phase',value:'prepare'}]),
-  shed:talk([["player",i18nText("config.story-campaign.6f8b6f57b9")],["mint",i18nText("config.story-campaign.fb847d77e9")]],next('RECOVER')),
-  recover:talk([["mint",i18nText("config.story-campaign.63de829791")],["player",i18nText("config.story-campaign.e4435a25aa")]],next('REPAIR')),
-  repair:talk([["mint",i18nText("config.story-campaign.8736c04da4")],["player",i18nText("config.story-campaign.0a3da87909")]],next('NAME','prepare')),
-  named:talk([["mint",i18nText("config.story-campaign.20e65e3be2")],["player",i18nText("config.story-campaign.40ea09ab88")]],home)};
+team.dialogues={"intro":{"lines":[["mint","侦察模块收到一个召回指令，整支机械小队差点被引进伏击。铁棘在伪造我们的信号。"],["player","把失散模块找回来，修好识别器。以后只认自己人的呼号。"]],"after":[{"type":"phase","value":"prepare"}]},"shed":{"lines":[["player","运输盒是空的，地上还有拖拽痕迹。"],["mint","模块最后的信号在前面。先清掉追兵，别让它们落进铁棘手里。"]],"after":[{"type":"stage","id":"RECOVER","phase":"active"}]},"recover":{"lines":[["mint","模块都找到了，但识别器还没接好。它们正朝维修点包围过来。"],["player","我挡住追兵。让小队重新站起来！"]],"after":[{"type":"stage","id":"REPAIR","phase":"active"}]},"repair":{"lines":[["mint","识别器接通！现在它们能从假信号中认出号令核心。"],["player","给小队一个呼号。下一战，我们一起出击。"]],"after":[{"type":"stage","id":"NAME","phase":"prepare"}]},"named":{"lines":[["mint","呼号确认，全员响应。捕获到核心方位：树冠后的高地！"],["player","把坐标交给飞行组。地面封锁不了我们所有的路。"]],"after":[{"type":"stage","id":"HOME","phase":"active"}]}};
 team.props=[{kind:'crate',site:'FIRST'},{kind:'relay',site:'THIRD'}];
-ending(team,[['snow','小队有名字了，今后交接时，就知道该谢谢谁。'],['mint','小夜也给花盆写了小牌。昨天叶子垂着，他急得想再浇水，后来先蹲下来看看土。'],['snow','我答应替他画每次新叶子的样子。长得慢也没关系，翻回前一页，就知道它有在长。']]);
+ending(team,[["snow","机械小队识别出了真正的核心信号，假广播骗不了我们了。"],["mint","阿栎也开放了机械核心购买。前线缺的不是新玩具，是能并肩作战的伙伴。"],["player","把坐标交给苔轮，我们从空中撕开封锁。"]]);
 
-team.dialogues.ending.lines.push(['mint','机械核心的购买资格已经交给阿栎师傅。回到武器工坊，按原配方就能买下自己的伙伴。']);
-team.ui.lead='找回零件，为机械小队起个名字。有人记住每位队员，也有人认真记下花盆里的每片新叶。';
+team.ui.lead="夺回侦察模块，击退追兵，重建能识破假信号的机械小队。下一战需要它们锁定核心。";
 
-// 第五章兼作独立直升机体验；仍须飞越水面、实际下机并确认航标。
-const flight=chapter('sunleaf-05',i18nText("config.story-campaign.6e444b838e"),i18nText("config.story-campaign.41639077c8"),[],[heli],
+// 第五章承接机械侦察，飞越封锁并实际夺取航标。
+const flight=chapter('sunleaf-05',"穿云夺标",i18nText("config.story-campaign.41639077c8"),['sunleaf-04'],[heli],
   world({...copy(coast.sites),WATER:{x:1220,y:2100},FAR:{x:2700,y:400},LIGHT:{x:2600,y:1500}},[{sites:['CAMP','WATER','FAR'],travel:'air',dash:[5,4]},{sites:['FAR','LIGHT']}]),
   i18nText("config.story-campaign.1ba13c9397"));
 flight.journey.experiences['rotor-fire']={loadout:heli.id,event:'impact',match:{weaponIndex:19},speaker:'player',goal:i18nText("config.story-campaign.05043ca395"),success:i18nText("config.story-campaign.36d6e89166"),feedback:i18nText("config.story-campaign.0968f13c4b"),advice:i18nText("config.story-campaign.5ea4ee5bf5")};
@@ -139,17 +126,14 @@ flight.nodes={BEGIN:prepare('CAMP',i18nText("config.story-campaign.da5916a344"),
   LAND:{title:i18nText("config.story-campaign.a3276d034c"),requiresLoadout:true,objective:{site:'FAR',label:i18nText("config.story-campaign.86ebbe4060")},task:{type:'landing',site:'FAR',radius:65,after:next('REPORT')}},
   REPORT:interaction('FAR',i18nText("config.story-campaign.ff81e2f2f0"),'landed'),
   LIGHT:encounter('LIGHT',i18nText("config.story-campaign.6b606180bd"),'light',10)};
-flight.dialogues={intro:talk([["mint",i18nText("config.story-campaign.352e85f5d8")],["player",i18nText("config.story-campaign.e2b4239c52")],["mint",i18nText("config.story-campaign.231acd1880")]],[{type:'phase',value:'prepare'}]),
-  landed:talk([["mint",i18nText("config.story-campaign.28c76a01ec")],["player",i18nText("config.story-campaign.806a016564")]],next('LIGHT')),
-  light:talk([["player",i18nText("config.story-campaign.1b93165063")],["mint",i18nText("config.story-campaign.65f84f002b")],["player",i18nText("config.story-campaign.9adb1b428a")]],home)};
+flight.dialogues={"intro":{"lines":[["mint","机械小队锁定了信号，可地面道路被铁棘堵死了。只有飞过树冠，才能看清最后的阵地。"],["player","借我直升机。我要把反攻航标点在它眼前。"]],"after":[{"type":"phase","value":"prepare"}]},"landed":{"lines":[["mint","已越过封锁线！下机确认落点，航标就在前方。"],["player","先拿下它。让地面队伍知道，我们已经到了。"]],"after":[{"type":"stage","id":"LIGHT","phase":"active"}]},"light":{"lines":[["mint","航标点亮，核心位置确认！但铁棘的主力开始转向总转发站。"],["player","它想趁我们离开时切断所有联络。"],["mint","还有机会。守住转发站，就能把反攻指令送到各条战线。"]],"after":[{"type":"stage","id":"HOME","phase":"active"}]}};
 flight.props=[{kind:'relay',site:'LIGHT',bind:{restored:true}},{kind:'sign',site:'FAR'}];
-ending(flight,[['snow','我今天带着画册在外面等光，等到草尖都暗了，还舍不得收笔。'],['player','树冠上的灯能认出回家的方向了。天晚了，沿安全的路回来。'],['mint','小夜说花开时想叫上枭爵和铁牙。他一直记着替班的人，也记着那只有洞的花盆。'],['snow','那我留一页画大家。花可以画好几回，大家坐在一起的晚上，我不想错过。']]);
+ending(flight,[["snow","航标传回坐标，铁棘的藏身处终于露出来了。"],["mint","可它的反扑也到了。总转发站正在求援，守军撑不了下一轮。"],["player","叫上所有人。这次守住以后，我们直接反攻。"]]);
 
-flight.dialogues.ending.lines.push(['mint','起飞、落地和航标都确认过了。交付后苔轮会开放直升机购买，金币与材料仍按工坊配方准备。']);
-flight.ui.lead='飞过树冠，确认落点与航标。让送夜信的小夜、在外画花草的雪团，都认得回家的灯。';
+flight.ui.lead="飞越地面封锁，击退航标守军，锁定号令核心。铁棘的反扑正扑向总转发站。";
 
 // 第六章：三个阶段允许重新整备，借用五种已有搭配，不设永久拥有门槛。
-const finale=chapter('sunleaf-06',i18nText("config.story-campaign.1b3c46629e"),i18nText("config.story-campaign.4a7dc56280"),['sunleaf-05'],[...STORY_LOADOUTS,core,heli],
+const finale=chapter('sunleaf-06',"破晓反攻",i18nText("config.story-campaign.4a7dc56280"),['sunleaf-01','sunleaf-02','sunleaf-03','sunleaf-04','sunleaf-05'],[...STORY_LOADOUTS,core,heli],
   world({...copy(coast.sites),STATION:{x:2500,y:1400},CALIBRATE:{x:2700,y:400}},
     [...copy(coast.paths),{sites:['FAR','STATION','CALIBRATE']}]),
   i18nText("config.story-campaign.4393d7c6e7"));
@@ -175,14 +159,48 @@ finale.nodes.TO_STATION.task.after=next('GUARD','prepare');
 finale.nodes.BEGIN.start=next('ROUTE');
 finale.nodes.DEFEND.start=copy(finale.nodes.GUARD.start);
 finale.targets={relay:{site:'STATION',type:'story-target',radius:30,attackRadius:30,hp:300,maxHp:300,failure:i18nText("config.story-campaign.e6997d2a9f")}};finale.restoreTargets=['relay'];
-finale.dialogues={intro:talk([["snow",i18nText("config.story-campaign.8cc0f887f6")],["mint",i18nText("config.story-campaign.1916a53a55")],["player",i18nText("config.story-campaign.fc327bb5ea")]],[{type:'phase',value:'prepare'}]),
-  receipts:talk([["player",i18nText("config.story-campaign.cadbc16d79")],["mint",i18nText("config.story-campaign.2c3e23a786")]],next('TO_STATION')),
-  uploaded:talk([["mint",i18nText("config.story-campaign.4075978378")],["player",i18nText("config.story-campaign.65bb3233eb")]],next('CALIBRATION','prepare')),
-  now:talk([["mint",i18nText("config.story-campaign.89a88d57fd")],["mint",i18nText("config.story-campaign.f5a1381390")],["player",i18nText("config.story-campaign.d1520b849d")]],home)};
+finale.dialogues={"intro":{"lines":[["snow","敌人的主力已向总转发站集结。站一倒，各条战线都会被分割。"],["mint","药和情报、维修补给、识别器、空中坐标，全都齐了。现在只差最后一步。"],["player","守住转发站，打到核心前。今天把晴叶林夺回来。"]],"after":[{"type":"phase","value":"prepare"}]},"receipts":{"lines":[["mint","前线已经收到信号，正在各自的位置牵制敌人。我们负责总转发站。"],["player","别让任何一条战线独自作战。出发！"]],"after":[{"type":"stage","id":"TO_STATION","phase":"active"}]},"uploaded":{"lines":[["mint","三轮进攻全部击退！反攻指令送出去了，各线正在合围。"],["player","现在轮到我们进攻。打穿核心外的最后一道阵地。"]],"after":[{"type":"stage","id":"CALIBRATION","phase":"prepare"}]},"now":{"lines":[["mint","外围清空。铁棘统领亲自守着号令核心，它不会再让先锋替它挡枪了。"],["player","从第一座哨站到这里，每个人争来的机会，我都带来了。"],["mint","避开正面冲锋，优先清援军。打倒它，才能切断核心！"]],"after":[{"type":"stage","id":"COMMAND","phase":"prepare"}]}};
 finale.props=[{kind:'relay',site:'STATION',bind:{hp:{path:'relay.hp'}}},{kind:'mail',site:'CALIBRATE'}];
-ending(finale,[['snow','今天的回信，先念小夜这一封：花还没有开，但新叶子长出来了，谢谢陪我等的人。'],['mint','再念你的吧。画册封面都被你攥皱了。'],['snow','我总说去外面画花草，其实是不太敢画人，怕画不像。可现在，每片叶子旁边都有想起的人。'],['player','那就画我们一起等花开的样子。忙完巡林，回田里看看，种子小屋旁再见。']]);
+ending(finale,[["mint","号令核心已断，铁棘统领败退！各线报告：有组织的兽潮正在瓦解。"],["snow","东岸、北线、运输队，所有频道都在回应。我们真的把它们重新连起来了。"],["player","把今天记进巡林簿：晴叶林守住了。以后谁想再把我们赶走，就让它来试。"]]);
 
-finale.ui.lead='送齐回执，守住转发站，录下今天的平安。森林的回信里，也该有新叶、画册和等花开的朋友。';
+finale.ui.lead="守住总转发站，攻破外围阵地，击败铁棘统领并切断号令核心。夺回晴叶林！";
+
+// 铁棘军团逐章增加混编与包围压力，普通敌人仍沿用既有生命和技能。
+for(const [c,id,total,heavy] of [[ferry,'SHORE',12,2],[timber,'STOP1',8,0],[timber,'STOP2',12,2],[timber,'STOP3',16,3],[team,'RECOVER',12,2],[team,'REPAIR',16,3],[flight,'LIGHT',16,3],[finale,'LAST',18,4]]){
+ Object.assign(c.nodes[id].task.wave,{total,heavy,cap:Math.min(total,8)});
+}
+// 号令核心直接使用已有中继装置表现，战斗、拆除与交付各有独立状态门槛。
+// 终章任务图新增决战门槛；旧检查点按现有版本校验重新接取，不添加迁移分支。
+finale.version=2;
+finale.flags.push('commander','coreBroken');
+finale.nodes.COMMAND={title:'击败铁棘统领',requiresLoadout:true,prepareWhen:true,loadout:true,
+ objective:{site:'CALIBRATE',label:'击败铁棘统领，清除全部援军'},
+ panel:{type:'loadout',title:'铁棘统领就在前方',button:'迎战铁棘统领'},
+ start:[{type:'move',site:'CALIBRATE',dy:95},...next('COMMAND'),{type:'boss',id:'commander'}],
+ task:{type:'boss',boss:'commander',warning:{phase:'windup',hint:'避开正面冲锋，从侧面还击'},after:[{type:'flag',key:'commander'},...next('CORE')]},
+ actors:actor('CALIBRATE'),cues:[{id:'commander-charge',event:'boss-start',speaker:'mint',text:'它亲自下场了！留出横向闪避空间，援军来了先清援军。',priority:2}]};
+finale.encounters.bosses.commander={...copy(base.encounters.bosses.boar),site:'CALIBRATE',missing:'铁棘统领没有可用出生位置',
+ stats:{...copy(base.encounters.bosses.boar.stats),name:'铁棘统领',hp:2200,maxHp:2200},
+ support:{...copy(base.encounters.bosses.boar.support),threshold:.6,total:8,batch:2,gap:3,onDefeat:true}};
+finale.world.clearances.CALIBRATE=460;
+finale.nodes.CORE=interaction('CALIBRATE','切断兽潮号令核心','core',{interactionTarget:{prop:'relay'},
+ objective:{site:'CALIBRATE',label:'切断兽潮号令核心',action:'core',actionWhen:{flag:'commander'}},
+ props:[{kind:'relay',site:'CALIBRATE',bind:{restored:{flag:'coreBroken'}}}]});
+finale.dialogues.core=talk([['mint','统领和援军都倒了，核心防线已经清空。'],['player','号令到此为止。晴叶林，不归你管。'],['mint','核心已断！把胜利信号发给所有战线。']],[{type:'flag',key:'coreBroken'},...home]);
+finale.nodes.END.claimWhen={all:[{flag:'coreBroken'},{read:'ending'}]};
+finale.nodes.END.panel={...finale.nodes.END.panel,title:'晴叶林反攻胜利',text:'击败铁棘统领，切断号令核心，各条战线重新连通。',button:'提交胜利战报'};
+finale.nodes.LAST.title=finale.nodes.LAST.objective.label='攻破核心外围阵地';
+finale.nodes.CALIBRATION.title=finale.nodes.CALIBRATION.panel.title='整备，向核心阵地进攻';
+finale.nodes.DEFEND.title=finale.nodes.DEFEND.objective.label='守住总转发站，击退三轮反扑';
+finale.nodes.ROUTE.title=finale.nodes.ROUTE.objective.label='前往反攻集结点';
+finale.nodes.HOME.title=finale.nodes.HOME.objective.label='带着胜利战报返回营地';
+
+// 战果摘要与主线目标同源，交付页不再把反攻写成送信体验。
+for(const c of [ferry,timber,team,flight,finale]){
+ c.ui.completedLead=c.dialogues.ending.lines.map(([,line])=>line).join('');
+ c.ui.quote='每一条重新打通的路，都是下一战的起点。';
+ if(c!==finale){c.nodes.HOME.title=c.nodes.HOME.objective.label='返回营地，提交前线战报';c.nodes.END.panel.title='提交本章战果';c.nodes.END.panel.text=c.dialogues.ending.lines[0][1];}
+}
 
 // 两条短故事把章节交谈接到正式秘境；进入即可回营交付，不要求挑战成果。
 function side(id,title,mode,lead,intro,outro){const c=chapter(id,title,i18nText("config.story-campaign.71a4b40faa"),['sunleaf-01'],[STORY_LOADOUTS[0]],copy(base.world),lead);
@@ -216,6 +234,5 @@ ferry.nodes.DOCK.interactionTarget={actor:'boatman'};
 ferry.nodes.SHORE.interactionTarget={actor:'riverRanger'};
 timber.nodes.STOP3.interactionTarget={prop:'crate'};
 team.nodes.SHED.interactionTarget={prop:'crate'};
-// 两篇兼作装备前置的旧故事保留原关卡，只扩充伙伴与回航的叙事。
-for(const story of [team,flight])extendEquipmentDialogue(story);
+
 export const STORY_CAMPAIGN=Object.fromEntries([base,ferry,timber,team,flight,finale,expedition,guardian,...MONSTER_STORIES,...EQUIPMENT_STORY_CHAPTERS].map(c=>[c.id,c]));
