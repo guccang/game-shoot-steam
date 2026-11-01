@@ -33,7 +33,7 @@ export function restorationStatus(game,id){
 export function restorationObjective(game,task){
  const pending=pendingRestoration(game.progress);if(!pending||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense)return null;
  const s=restorationStatus(game,pending.id),f=s.facility,build=game.progress.restoration?.build,gather=!build&&!s.enough;
- if(gather&&(game.progress.wood+availableWood(game)>=f.wood||woodPickupCapacity(game)<TREE_REWARD.wood&&availableWood(game)>0))return {task,restoration:f.id,key:'store-wood-'+f.id,phase:'doing',navigation:true,site:CAMP_WAREHOUSE,label:'运回木材，存入营地仓库',hint:'打开背包 → 货舱与仓库 → 存入全部在场木材'};
+ if(gather&&(game.progress.wood+availableWood(game)>=f.wood||woodPickupCapacity(game)<TREE_REWARD.wood&&availableWood(game)>0))return {task,restoration:f.id,key:'store-wood-'+f.id,phase:'doing',navigation:true,site:CAMP_WAREHOUSE,label:'运回木材，存入营地仓库',hint:'靠近小屋仓库，木材自动飞入仓库'};
  let tree=null,distance=Infinity;
  if(gather)for(const t of game.trees){const d=worldDistance(game.player,t);if(t.hp>0&&d<distance){tree=t;distance=d;}}
  return {task,restoration:f.id,key:'restore-'+f.id,phase:'doing',navigation:true,site:{...(tree||f.site),mapId:'forest',...(!gather&&!build?{repairArea:s.area}:{})},

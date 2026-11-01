@@ -213,7 +213,7 @@ export function arrivalWorkshopObjective(game) {
   if(!a||!arrivalGuidanceVisible(game)||!['ride-guide','gather','repair','craft'].includes(a.phase))return null;
   if(a.phase==='ride-guide')return {task:{id:'arrival-scooter',title:'坐上电动车'},key:'arrival-ride-guide',phase:'travel',site:{...arrivalTarget(game),mapId:'forest'},label:'前往北广场找到电动车'};
   const needed=a.phase==='craft'?RANGER.pistolWood:RANGER.repairWood;
-  if(game.progress.wood<needed&&(game.progress.wood+availableWood(game)>=needed||woodPickupCapacity(game)<TREE_REWARD.wood&&availableWood(game)>0))return {task:{id:'arrival-wood-store',title:'木材存入仓库'},key:'arrival-wood-store',phase:'travel',site:CAMP_WAREHOUSE,label:'返回营地，打开背包的货舱与仓库，存入木材'};
+  if(game.progress.wood<needed&&(game.progress.wood+availableWood(game)>=needed||woodPickupCapacity(game)<TREE_REWARD.wood&&availableWood(game)>0))return {task:{id:'arrival-wood-store',title:'木材存入仓库'},key:'arrival-wood-store',phase:'travel',site:CAMP_WAREHOUSE,label:'靠近小屋仓库，随身和附近载具的木材会自动入库'};
   // 木材已直接入包，继续采集或在余量不足时导航仓库。
   if(a.phase==='gather'||game.progress.wood<(a.phase==='repair'?RANGER.repairWood:RANGER.pistolWood)){
     const tree=arrivalTarget(game);if(!tree)return null;

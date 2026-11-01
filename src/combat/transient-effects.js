@@ -12,9 +12,9 @@ export function updateCombatTraces(game, dt) {
   for (const s of game.shots) s.life -= dt;
   for (const d of game.drops) {
     d.age=(d.age||0)+dt;
-    const goal = nearest(game.player, d);
+    const goal = nearest(d.destination||{x:game.player.x,y:game.player.y-20}, d);
     d.x += (goal.x - d.x) * dt * 5;
-    d.y += (goal.y - 20 - d.y) * dt * 5;
+    d.y += (goal.y - d.y) * dt * 5;
     d.life -= dt;
   }
   for (const p of game.particles) {

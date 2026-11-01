@@ -1,4 +1,5 @@
 // 仓库事务在保存成功后才提交，存取均保留物品总数与正式负重计算。
+import {createResourceDrop} from '../combat/resource-pickup.js';
 import {canInspectBuilding} from './building-entry.js';
 import {WAREHOUSE} from '../config/warehouse.js';
 import {AMMO_TYPES} from '../config/supplies.js';
@@ -43,4 +44,33 @@ export function warehouseTransferPreview(game,source,id,count,direction){
  return {ok:true,next,weight,capacity:load.capacity,needsConfirmation:!deposit&&load.overloaded,message:`${s.item.name} ×${count} 已${deposit?'存入仓库':source==='bag'?'取回背包':'装入载具'}。`};
 }
 // 确认后重新读取实时库存，保存失败或拒绝超载均不改变任何存量。
-export function transferWarehouse(game,source,id,count,direction,confirmOverload=false){const result=warehouseTransferPreview(game,source,id,count,direction);if(!result.ok)return result;if(result.needsConfirmation&&!confirmOverload)return {...result,ok:false,message:'取出后载荷已满，将无法移动。请减少数量或确认继续取出。'};return commitCargo(game,result.next,result.message);}
+export function transferWarehouse(game,source,id,count,direction,confirmOverload=false){const result=warehouseTransferPreview(game,source,id,count,direction);if(!result.ok)return result;if(result.needsConfirmation&&!confirmOverload)return {...result,ok:false,message:'取出后载荷已满，将无法移动。请减少数量或确认继续取出。'};const saved=commitCargo(game,result.next,result.message);if(saved.ok&&id==='material:wood'&&direction==='withdraw'){const state=game.warehouseAutoWood??={held:[],retry:0,notice:''};if(!state.held.includes(source))state.held.push(source);}return saved;}
+
+// 每次靠近仅处理附近的木材；手动取出的来源直到离开范围才重新自动收取。
+export function updateWarehouseWood(game,dt){
+ if(game.state!=='playing'||dt<=0)return;
+ const door={x:WAREHOUSE.x,y:WAREHOUSE.y+22};
+ if(game.mapId!=='forest'||game.cottage||worldDistance(game.player,door)>150){game.warehouseAutoWood=null;return;}
+ if(!canUseWarehouse(game))return;
+ const state=game.warehouseAutoWood??={held:[],retry:0,notice:''};
+ state.retry=Math.max(0,state.retry-dt);if(state.retry>0)return;
+ const sources=['bag',...warehouseVehicles(game)].filter(source=>!state.held.includes(source));
+ const carrying=sources.filter(source=>(source==='bag'?game.progress.logistics.bagWood:game.progress.logistics.builds[source].wood)>0);
+ if(!carrying.length){state.notice='';return;}
+ if(game.progress.wood>=RESOURCE_CAP){warehouseWoodNotice(game,state,'仓库木材已满，剩余木头留在原处。');return;}
+ const next=validateProgress(structuredClone(game.progress)),receipts=[],locations=vehicleLocations(game);
+ for(const source of carrying){
+  const stock=source==='bag'?next.logistics:next.logistics.builds[source],key=source==='bag'?'bagWood':'wood',count=Math.min(stock[key],RESOURCE_CAP-next.wood);
+  if(count<=0)continue;
+  stock[key]-=count;next.wood+=count;receipts.push({count,origin:source==='bag'?{...game.player}:locations.find(v=>v.hull===source)});
+ }
+ if(next.arrival?.phase==='gather'&&next.wood>=RANGER.repairWood)next.arrival.phase='repair';
+ const count=receipts.reduce((sum,r)=>sum+r.count,0),result=commitCargo(game,next,`木头 ${count} 份自动入库`);
+ if(!result.ok){state.retry=2;warehouseWoodNotice(game,state,result.message);return;}
+ // 事务一次落盘后才创建飞行批次，终点固定在仓库门，不在到达时重复加库存。
+ for(const receipt of receipts)game.drops.push({...createResourceDrop(receipt.origin,0,receipt.count),destination:{x:WAREHOUSE.x,y:WAREHOUSE.y-16},warehouseWood:true});
+ state.notice='';game.float(WAREHOUSE.x,WAREHOUSE.y-24,`木头 +${count} 已入库`,'#e2f3ce');
+}
+
+// 相同失败或满仓原因只提示一次，避免站在门口时刷屏。
+function warehouseWoodNotice(game,state,message){if(state.notice===message)return;state.notice=message;game.float(game.player.x,game.player.y-45,message,'#f5d9a0');}

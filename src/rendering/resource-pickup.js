@@ -1,4 +1,4 @@
-// 连续拾取沿用正式金币和木材轮廓，独立图标按各自发射时刻飞向角色。
+// 连续拾取沿用正式金币和木材轮廓，独立图标按各自发射时刻飞向角色或指定仓库。
 import {resourcePickupPoses} from '../combat/resource-pickup.js';
 import {drawResourceIcon} from './resource-icons.js';
 // 图标透明度只影响当前绘制，不泄漏到后续伤害数字与场景。

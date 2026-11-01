@@ -20,6 +20,7 @@ async original=>{
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(async()=>{const s=(await import('/src/config/warehouse.js')).WAREHOUSE;Object.assign(a.game.player,{x:s.x,y:s.y+60,vx:0,vy:0});a.game.cottageDoorLatch=false;a.renderer.camera.time=null;a.refresh();});await page.waitForTimeout(1300);if(!await page.evaluate(()=>!a.game.cottage&&!a.game.cottageEntry))throw Error('仓库仍触发入室');await shot('outside-entry');
   const location=await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y}));await page.locator('#nearby-interaction[data-interaction=warehouse]').tap();await page.locator('#warehouse-dialog[open]').waitFor();if(!await page.evaluate(p=>!a.game.cottage&&a.game.player.x===p.x&&a.game.player.y===p.y,location))throw Error('打开仓库改变世界位置');checks.push('direct-outdoor-entry');
+  await page.locator('[data-item="material:wood"][data-direction=withdraw]').tap();await page.locator('#warehouse-range').fill('16');await page.locator('[data-confirm]').tap();
   await shot('wood-stock');
   await drag('material:wood','deposit','deposit');if(await page.locator('#warehouse-quantity').isVisible())throw Error('同区拖动误打开数量层');checks.push('same-zone-cancel');
   await drag('material:wood','deposit','withdraw',true);if(await page.locator('#warehouse-quantity').isVisible()||await page.locator('.warehouse-ghost').count())throw Error('中断拖动未清理');checks.push('touch-cancel');

@@ -1839,3 +1839,6 @@ export function inspectTreasure(game,root=document){return {designCriterion:'met
 
 // 检查正式角色物品和当前载具仓库入口，记录手机边界及旧入口残留。
 export function inspectCharacterVehicleStorage(game,root){const cat=root.getElementById("current-cat-dialog"),cargo=root.getElementById("logistics-dialog");return {designCriterion:"character-vehicle-storage",oldEntry:!!root.querySelector("#backpack-button,#backpack-dialog"),catOpen:!!cat?.open,items:cat?.querySelectorAll("[data-keepsake]").length||0,catTab:cat?.querySelector("[data-cat-tab][aria-pressed=true]")?.dataset.catTab,cargoOpen:!!cargo?.open,cargoTitle:root.getElementById("logistics-title")?.textContent,cleanupTitle:root.getElementById("load-cleanup-title")?.textContent,indoorEntry:!!root.getElementById("cottage-character"),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 读取正式自动入库批次、飞行姿态与真实存量，验收固定仓库终点。
+export function inspectWarehouseAutoWood(game){const batches=game.drops.filter(d=>d.warehouseWood);return {designCriterion:"warehouse-auto-wood",stored:game.progress.wood,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds.map(b=>b.wood),batches:batches.map(d=>({origin:{x:d.originX,y:d.originY},destination:d.destination,count:d.wood,age:d.age})),icons:resourcePickupPoses(batches,game.player).length,held:game.warehouseAutoWood?.held||[]};}
