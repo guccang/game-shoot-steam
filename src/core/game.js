@@ -1,3 +1,4 @@
+import {updateOutdoors,outdoorBusy} from './outdoors.js';
 import {updateLoadWarning} from './load-warning.js';
 import {updateWarehouseWood} from './warehouse.js';
 import {collectAutomaticWood} from './wood-pickup.js';
@@ -197,7 +198,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.buildingEntry=null;this.buildingEntryLatch=null;this.warehouseAutoWood=null;
-    this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
+    this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
     resetBattlefield(this, continuation);
@@ -706,7 +707,7 @@ export class Game {
   }
   // 有效普通攻击启动榴弹计时，自动瞄准与其他武器共用目标选择。
   attack() {
-    if(this.arrivalCinematic||this.parking?.idle||farmWorking(this))return false;
+    if(this.arrivalCinematic||this.parking?.idle||farmWorking(this)||outdoorBusy(this))return false;
     const weapon = this.weapon();
     // 浮游炮仅由独立调度器开火，手持射击入口不能额外发射或绕过冷却。
     if (weapon.controller || weapon.attackKind==='defense') return false;
@@ -801,13 +802,15 @@ export class Game {
   update(dt, input = { x: 0, y: 0 }) {
     dt = clamp(dt, 0, 0.05);
     this.previewTime += dt;
+    updateOutdoors(this,dt);
     updateFarmRain(this);
     updateWarehouseWood(this,dt);
     // 运动会使用独立移动时钟，倒计时、暂停、终点均不推进森林或战斗逻辑。
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
     updateLoadWarning(this,dt,input);
-    updateVehicleBoarding(this,dt,input);
+    if(outdoorBusy(this))input={x:0,y:0};
+    if(!outdoorBusy(this))updateVehicleBoarding(this,dt,input);
     maintainPlayerTow(this);
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
     if(this.cottage)updateVehicleRepair(this,dt);
@@ -816,7 +819,7 @@ export class Game {
     updateParkingVisitors(this,dt);
     // 驾驶者先停稳入位，避免靠近工坊时主线对白抢走倒车控制。
     if(updateParking(this,dt,input))return;
-    if(!this.campDefense&&this.parking?.phase!=='waiting'&&updateMainline(this,dt))return;
+    if(!outdoorBusy(this)&&!this.campDefense&&this.parking?.phase!=='waiting'&&updateMainline(this,dt))return;
     // 在下一帧边界归还场景，避免致命伤害遍历中替换敌人、载具和森林对象。
     if(this.realm?.phase==='lost'&&readyStoryExcursion(this)){this.leaveRealm();return;}
     if (this.realm?.phase === 'rest') {
@@ -855,7 +858,7 @@ export class Game {
     this.fx.update(dt);
     profiler?.end('logic.effects');
     profiler?.start('logic.movement');
-    input=updateFarmWork(this,dt,input);
+    input=outdoorBusy(this)?{x:0,y:0}:updateFarmWork(this,dt,input);
     updateRecoil(p.recoil, this.loadout.weapon, dt);
     p.aimHold = Math.max(0, p.aimHold - dt);
     const length = Math.hypot(input.x, input.y),
@@ -898,19 +901,19 @@ export class Game {
     updateCombatPerception(this);
     updateAimLock(this, dt);
     const aimTarget=this.findAttackTarget();
-    if(aimTarget&&!farmWorking(this)){const desired=shotSolution(riderPosition(p, this.vehicle),aimTarget,this.loadout.weapon,this.aimLock).angle;turnWeapon(p,desired,dt,weaponTurnRate(this.weapon()));}
+    if(aimTarget&&!farmWorking(this)&&!outdoorBusy(this)){const desired=shotSolution(riderPosition(p, this.vehicle),aimTarget,this.loadout.weapon,this.aimLock).angle;turnWeapon(p,desired,dt,weaponTurnRate(this.weapon()));}
     profiler?.end('logic.targeting');
     profiler?.start('logic.weapons');
     const weapon = this.weapon();
     const magazine = this.magazines[this.loadout.weapon];
     const wasReloading = magazine.remaining > 0;
     const fireTime = advanceReload(magazine, weapon, dt, this.onEvent,n=>takeSupplyAmmo(this,weapon,n),supplyAmmoCount(this,weapon));
-    if (!this.parking?.idle&&!farmWorking(this)&&['funnel', 'drone'].includes(weapon.controller)) updateFunnel(this, dt);
-    if (!this.parking?.idle&&!farmWorking(this)&&weapon.controller === 'mechanical') updateMechanical(this, dt);
-    if (!this.parking?.idle&&!farmWorking(this)&&weapon.controller === 'spider') updateSpider(this, dt);
+    if (!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&['funnel', 'drone'].includes(weapon.controller)) updateFunnel(this, dt);
+    if (!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&weapon.controller === 'mechanical') updateMechanical(this, dt);
+    if (!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&weapon.controller === 'spider') updateSpider(this, dt);
     // 装填完成即可恢复攻击；装填期间仍继续走位、模拟在途弹丸和怪物。
     if (wasReloading && magazine.remaining === 0) this.attackTimer = 0;
-    if(!this.parking?.idle&&!farmWorking(this))this.updateWeaponAbility(fireTime);
+    if(!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this))this.updateWeaponAbility(fireTime);
     this.attackTimer -= fireTime;
     if (
       magazine.remaining === 0 &&

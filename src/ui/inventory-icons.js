@@ -7,6 +7,10 @@ import {paintFarmToolIcon} from '../rendering/farm-tools.js';
 import {drawWorkshopEquipment} from '../rendering/workshop.js';
 import {itemDefinition} from '../config/items.js';
 const drawings={
+ tent:'<path fill="#c8d39b" d="M4 53 30 10 59 53Z"/><path fill="#f6e6b6" d="m18 53 12-27 14 27Z"/>',
+ rod:'<path d="M10 55 42 8q15 19 12 35"/><circle cx="22" cy="42" r="6" fill="#c6aa76"/><path stroke="#d58d68" d="M54 40v12"/>',
+ bait:'<rect x="11" y="24" width="42" height="32" rx="8" fill="#e1ca91"/><path d="M16 24v-7h32v7m-27 16q7-13 13 0t10 0"/>',
+ fish:'<ellipse cx="29" cy="32" rx="20" ry="11" fill="#c0cbb3"/><path fill="#c0cbb3" d="m47 32 12-12v24Z"/><circle cx="18" cy="30" r="2" fill="#315c43"/><path d="m29 22 8-9 5 13"/>',
  detector:'<ellipse cx="40" cy="50" rx="17" ry="7" fill="#b9ceb1"/><ellipse cx="40" cy="50" rx="11" ry="3"/><path d="m39 47-17-28 4-11"/><path stroke-width="6" d="m22 20 8-7"/><rect x="15" y="20" width="20" height="15" rx="3" fill="#e5cf92"/><path stroke="#76a181" d="m20 28 4-4 4 6 3-3"/>',
  'gun:23':'<path fill="#86a491" d="M8 39h25v15H8z"/><path fill="#c9d5b2" d="m23 45 25-34 8 5-25 35Z"/><path d="m18 41 21-27m-4 36 19-25"/>',
  'gun:24':'<path fill="#bda571" d="M7 37h29v17H7z"/><path fill="#dcc18b" d="m21 38 17-23 18 12-18 23Z"/><path fill="#8a9371" d="m35 16 7-6 17 13-3 7Z"/><path d="m42 17 2 2m4 2 2 2m3 2 2 2"/>',

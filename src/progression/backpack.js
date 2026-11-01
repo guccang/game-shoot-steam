@@ -1,3 +1,4 @@
+import {outdoorInventory} from './outdoors.js';
 import {carriedWeapon} from './weapon-storage.js';
 // 背包按真实持有数量聚合；载具货舱、工坊主炮和已入库建材不混入随身库存。
 import {ITEM_TABLE,FARM_ITEMS} from '../config/items.js';
@@ -24,5 +25,6 @@ export function backpackEntries(game){
  for(const key of Object.keys(FARM_ITEMS))add('tool:'+key,1,'常备农具');
  for(const item of KEEPSAKES)if(ownsKeepsake(p,item.id))add(item.id,1);
  for(const item of CAMP_CHARACTERS)if(p.monsterCamps?.items.includes(item.id))add('camp-relic-'+item.id,1);
+ entries.push(...outdoorInventory(p));
  return entries;
 }

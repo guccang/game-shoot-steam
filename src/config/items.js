@@ -7,7 +7,7 @@ import {KEEPSAKES} from './keepsakes.js';
 import {CAMP_CHARACTERS,MONSTER_CAMPS} from './monster-camps.js';
 import {AMMO_TYPES,SUPPLY_ITEMS} from './supplies.js';
 import {WEAPON_MASSES,CROP_MASSES,LOAD_RULES} from './vehicle-load.js';
-export const ITEM_CATEGORIES={supply:'道具',weapon:'武器',ammo:'弹药与弹匣',crop:'农作物',seed:'种子',tool:'农具',keepsake:'重要物品',relic:'奇物',material:'采集材料',equipment:'载具部件',exploration:'探索工具'};
+export const ITEM_CATEGORIES={outdoor:'野外装备与鱼获',supply:'道具',weapon:'武器',ammo:'弹药与弹匣',crop:'农作物',seed:'种子',tool:'农具',keepsake:'重要物品',relic:'奇物',material:'采集材料',equipment:'载具部件',exploration:'探索工具'};
 export const FARM_ITEMS={hoe:{name:'锄头',mass:1.5,description:'结实的木柄锄头。',use:'打开种地工具，点击空地开垦。'},sickle:{name:'镰刀',mass:.6,description:'用于收割的弧刃镰刀。',use:'打开种地工具，长按拖过成熟作物收割。'},water:{name:'水壶',mass:1.2,description:'随身浇灌工具。',use:'打开种地工具，选择水壶并点击成长中的田块。'}};
 const supplyUses={medkit:`使用后回复猫猫${SUPPLY_ITEMS.medkit.heal} HP。`,gunKit:`降低当前主炮${SUPPLY_ITEMS.gunKit.repair}%损坏；100%损坏必须回厂。`,engineKit:`降低当前发动机${SUPPLY_ITEMS.engineKit.repair}%损坏；100%损坏必须回厂。`};
 const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'供标准坦克主炮装填。',heavy:'供红狼重炮装填。',water:'供潮汐主炮装填。'};

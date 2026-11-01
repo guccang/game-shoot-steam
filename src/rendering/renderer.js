@@ -1,3 +1,5 @@
+import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
+import {outdoorBusy} from '../core/outdoors.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from './scene-npc-continuity.js';
 import {ammoShopObjects,drawAmmoShop} from './ammo-shop.js';
 import {warehouseObjects,drawWarehouse} from './warehouse.js';
@@ -183,7 +185,7 @@ export class Renderer {
     const guide = speech?null:['funnel', 'drone'].includes(g.weapon().controller) ? { kind: 'funnel' } : sniperGuide(g);
     const normal = camera.update(g.player, this.width, this.height, guide, g.time, this.reduced.matches,
       { arena: g.realm?.arena, mode: g.realm?.mode, session: g.realm, horde: g.campDefense });
-    const view=Object.assign(new StoryCamera(),this.storyCamera).update(normal,speech,now/1000,this.reduced.matches,g.story||null);
+    const view=outdoorFishingView(g,Object.assign(new StoryCamera(),this.storyCamera).update(normal,speech,now/1000,this.reduced.matches,g.story||null),this.width,this.height);
     this.ground.update(this.environment,view,now); return view;
   }
   // 合成场景继续同步消费已完成的纹理，缺块时仍走完整原精度绘制。
@@ -245,7 +247,7 @@ export class Renderer {
       { arena: source.realm?.arena, mode: source.realm?.mode, session: source.realm, horde: source.campDefense },
     );
     if(source.realm)this.storyCamera.reset();
-    const view=this.storyCamera.update(normal,speech,performance.now()/1000,this.reduced.matches,source.story||null);
+    const view=outdoorFishingView(source,this.storyCamera.update(normal,speech,performance.now()/1000,this.reduced.matches,source.story||null),w,h);
     // 建筑提示只调整DOM布局，不再叠加镜头平移或缩放。
     // 地块准备好后才推进统一外观时钟，树木与地面使用同一组季节权重。
     const seasonVisual=this.seasonVisual=this.ground.update(this.environment,view,seasonNow,light.night);
@@ -316,6 +318,7 @@ export class Renderer {
     drawMonsterCampGround(c,source,light.night,view);
     drawFarmGround(c,camp,view);
     drawParkingGround(c,camp,view,light.night);
+    drawOutdoorGround(c,source,view,light.night);
     drawCampDefenseGround(c,camp);
     if (source.realm) drawRealmGround(c, view, source.realm, g.time, this.reduced.matches);
     if(source.realm?.mode==='race')drawRaceTrackEffects(c,source.realm,g.player,this.reduced.matches);
@@ -377,6 +380,7 @@ export class Renderer {
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
       ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
       ...visibleBodies(farmObjects(camp),view,90),
+      ...visibleBodies(outdoorObjects(source),view,200),
       ...visibleBodies(restorationObjects(camp),view,150),
       ...visibleBodies(campDefenseObjects(camp),view,160),
       ...riverCrossings,
@@ -431,7 +435,8 @@ export class Renderer {
       if(item.type==='fire-station-back'&&!restorationBuildingVisible(camp,'fire'))continue;
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);continue;}
-      if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches);
+      if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
+      else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches);
       else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
       else if(item.type==='river-dock'||item.type==='river-barrier')drawRiverCrossing(c,item,light.night,g.player);
       else if(item.type==='fire-water')drawWaterPump(c,item,g.time,source.fireActive&&source.fireRescue.filling&&Math.hypot(item.x-g.player.x,item.y-g.player.y)<48,this.reduced.matches);
@@ -519,9 +524,10 @@ export class Renderer {
           source.weapon().modChoice,
           source.weapon().parts,
           this.reduced.matches?0:source.magazines[(source.loadout||source.progress).weapon]?.rotor||0,
-          farmWorking(source)||source.realm?.mode==='race'||source.arrivalCinematic||g.vehicle.active&&g.vehicle.index===5,
+          outdoorBusy(source)||farmWorking(source)||source.realm?.mode==='race'||source.arrivalCinematic||g.vehicle.active&&g.vehicle.index===5,
         );
         drawFarmTool(c,source,g.player);
+        drawOutdoorFishing(c,source,g.player,light.night);
         if(source.fireActive||g.vehicle.active&&g.vehicle.index===4)drawFireHelmet(c,g.player);
         if (g.vehicle.active)
           drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, this.reduced.matches);

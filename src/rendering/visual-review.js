@@ -1,3 +1,9 @@
+import {outdoorObjects} from './outdoors.js';
+// 野外验收只读取正式营地、动作条与钓鱼状态，不提供另一套预览绘制。
+export function inspectOutdoors(renderer,root){
+ const g=renderer.game,f=g.fishing,hud=root.getElementById('fishing-hud');
+ return {designCriterion:'camping-fishing',time:renderer.environment.time,map:g.mapId,camp:g.progress.outdoors.camp,parts:outdoorObjects(g).map(o=>o.part),phase:f?.phase,tension:f?.tension,progress:f?.progress,charge:f?.charge,water:f?.water,bait:g.progress.outdoors.bait,fish:g.progress.outdoors.fish,hud:!!hud&&!hud.hidden,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}
 import {campRenderObjects} from './monster-camps.js';
 // 故事扩写验收读取正式档案弹窗和护盾容量，不另造展示数据。
 export function inspectEquipmentStoryExpansion(renderer,root){

@@ -1,3 +1,4 @@
+import {normalizeOutdoors} from './outdoors.js';
 import {freshTreasure,normalizeTreasure} from './treasure.js';
 import {normalizeWarehouse} from './warehouse.js';
 import {normalizeWeaponStorage} from './weapon-storage.js';
@@ -63,6 +64,7 @@ export function freshProgress() {
     logistics:freshLogistics(),
     supplies:freshSupplies(),
     warehouse:normalizeWarehouse(null),
+    outdoors:normalizeOutdoors(null),
     treasure:freshTreasure(),
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
@@ -155,6 +157,7 @@ export function validateProgress(raw) {
   p.legendaryWorkshop=normalizeLegendaryWorkshop(raw.legendaryWorkshop);
   p.restoration=validateRestoration(raw.restoration);
   p.farm=validateFarm(raw.farm);
+  p.outdoors=normalizeOutdoors(raw.outdoors);
   p.mailbox=normalizeMailbox(raw.mailbox);
   p.campLevel=validateCampLevel(raw.campLevel);
   p.mainline=validateMainline(raw.mainline);
