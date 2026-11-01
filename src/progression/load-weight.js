@@ -16,7 +16,7 @@ export function catLoad(game){
  // 保留货舱面板所需的分类汇总，弹药含备用与全部已装填弹匣。
  const total=category=>entries.filter(r=>r.category===category).reduce((n,r)=>n+r.weight,0);
  const weapon=total('weapon'),ammo=total('ammo'),crops=total('crop'),reserve=ammunitionMass(p.supplies?.hand),weight=Math.round(entries.reduce((n,r)=>n+r.weight,0)*1e6)/1e6,items=weight-weapon-ammo-crops;
- return {body:LOAD_RULES.catMass[p.hero]||40,weapon,ammo,crops,reserve,items,weight,capacity:LOAD_RULES.catCapacity,overloaded:weight>LOAD_RULES.catCapacity};
+ return {body:LOAD_RULES.catMass[p.hero]||40,weapon,ammo,crops,reserve,items,weight,capacity:LOAD_RULES.catCapacity,overloaded:weight>=LOAD_RULES.catCapacity};
 }
 // 车辆自重包含底盘、发动机增重、附加装甲和车内货物；载荷含驾驶员及背包。
 export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.vehicle.index&&game.vehicle.active,progress=game.progress}={}){
@@ -25,7 +25,7 @@ export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.v
  const ammo=ammunitionMass(progress.supplies?.vehicles[index])+Math.max(0,loaded||0)*(AMMO_TYPES[key]?.mass||0),gunMass=GUN_MASSES[gun]||0;
  const payload=cargo+armor+engineMass+ammo+gunMass+(driver?cat.body+cat.weight:0),capacity=spec.payload*engine.payload;
  const towCapacity=Math.max(0,spec.tow*engine.tow-payload*LOAD_RULES.towPayloadPenalty),mass=spec.mass+payload;
- return {mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driver?cat.body+cat.weight:0,overloaded:payload>capacity};
+ return {mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driver?cat.body+cat.weight:0,overloaded:payload>=capacity};
 }
 // 临时玩法不把永久货舱搬进借用车；普通探索超载停驶，牵引按实际重量减速。
 export function movementLoadFactor(game){

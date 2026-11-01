@@ -1781,3 +1781,9 @@ export function inspectInventoryCatalog(game,root){const bag=root.getElementById
 
 // 当前猫详情与木材仓库读取正式弹窗，不建立另一个展示状态。
 export function inspectCatWoodStorage(game,root){return {designCriterion:'cat-details-wood-storage',hero:game.loadout.hero,catDetails:root.getElementById('current-cat-dialog')?.open,warehouse:game.progress.wood,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds.map(b=>b.wood),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 满载清理验收读取真实重量和正式确认页，不生成替代画面。
+export async function inspectLoadCleanup(game,root){
+ const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
+ return {designCriterion:'load-capacity-cleanup',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),open:!!root.getElementById('load-cleanup-dialog')?.open,confirmation:!!root.querySelector('[data-cleanup-confirm]'),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

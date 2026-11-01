@@ -20,7 +20,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 背包格子、物品详情和手机使用独立弹窗，逐层返回时保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo,onItems}){
+export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo,onItems,onCleanup}){
  const scope=createEventScope(),trigger=root.getElementById('backpack-button'),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -42,8 +42,8 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  // 实际库存按分类自然扩展，不限制格子，也不显示空物品。
  function renderBag(){
   const items=backpackEntries(game),load=catLoad(game);
-  bag.querySelector('.keepsake-content').innerHTML=`<section class="ui-inset inventory-load"><b>背包 ${load.weight.toFixed(2)} / ${load.capacity} kg</b><p>${load.overloaded?'已超重，猫猫移动减慢。':'随身物品均计入负重。'}载具货舱另计。</p></section>`+Object.entries(ITEM_CATEGORIES).map(([category,name])=>{const group=items.filter(r=>r.category===category);return group.length?`<section class="inventory-group"><h3>${name} <small>${group.length} 种</small></h3><div class="keepsake-pockets" aria-label="${name}">`+group.map(item=>`<button type="button" class="keepsake-pocket" data-keepsake="${item.id}" aria-haspopup="dialog" aria-controls="keepsake-dialog" aria-label="${escape(item.name)}，数量${item.count}，查看信息与重量">${inventoryIcon(item)}<span>${escape(item.name)}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')+'</div></section>':'';}).join('');
-  bag.querySelector('.ui-panel__footer').innerHTML=button('cargo','货舱与仓库')+button('close','收好背包',true);paintInventoryIcons(bag,game.progress);
+  bag.querySelector('.keepsake-content').innerHTML=`<section class="ui-inset inventory-load"><b>背包 ${load.weight.toFixed(2)} / ${load.capacity} kg</b><p>${load.overloaded?'载荷已满，无法移动，请清理背包。':'随身物品均计入负重。'}载具货舱另计。</p></section>`+Object.entries(ITEM_CATEGORIES).map(([category,name])=>{const group=items.filter(r=>r.category===category);return group.length?`<section class="inventory-group"><h3>${name} <small>${group.length} 种</small></h3><div class="keepsake-pockets" aria-label="${name}">`+group.map(item=>`<button type="button" class="keepsake-pocket" data-keepsake="${item.id}" aria-haspopup="dialog" aria-controls="keepsake-dialog" aria-label="${escape(item.name)}，数量${item.count}，查看信息与重量">${inventoryIcon(item)}<span>${escape(item.name)}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')+'</div></section>':'';}).join('');
+  bag.querySelector('.ui-panel__footer').innerHTML=button('cleanup','清理背包')+button('cargo','货舱与仓库')+button('close','收好背包',true);paintInventoryIcons(bag,game.progress);
  }
  // 每个物品都先展示目录说明、用途和重量；重要物品原有功能保留为详情操作。
  function renderInventoryItem(){
@@ -92,6 +92,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   const item=event.target.closest('[data-keepsake]');if(item){selected=item.dataset.keepsake;call=null;inventoryView=true;dialogs.open(itemPanel.id);return;}
   if(event.target.closest('[data-pack-action="close"]'))dialogs.close(bag.id);
   if(event.target.closest('[data-pack-action="cargo"]'))onCargo();
+  if(event.target.closest('[data-pack-action="cleanup"]'))onCleanup();
   if(event.target.closest('[data-pack-action="items"]'))onItems();
  });
  // 详情与手机共享已存在的业务动作，地图仍是手机中的子页面。
@@ -101,6 +102,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   if(vehicle){const result=locateVehicle(game,Number(vehicle.dataset.locateVehicle));if(result.ok){for(const p of [phone,itemPanel,bag])if(p.open)dialogs.close(p.id);onNotice(result.message);onChange();}else{message.textContent=result.message;message.hidden=false;}return;}
   const contact=event.target.closest('[data-call]');if(contact){const result=callNeighbor(game,contact.dataset.call);if(result.ok){call=result;resetView();}else{message.textContent=result.message;message.hidden=false;}return;}
   const action=event.target.closest('[data-pack-action]')?.dataset.packAction;if(!action)return;
+  if(action==='cleanup'){onCleanup();return;}
   if(action==='cargo'){dialogs.close(itemPanel.id);onCargo();return;}
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);dialogs.open(phone.id);return;}
@@ -114,7 +116,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   dialogs.close(node.id);onChange();
  }
  // 装卸货舱后返回背包，立即同步真实库存与负重。
- scope.on(root,'close',event=>{if(bag.open&&['logistics-dialog','field-equipment-dialog'].includes(event.target.id)){renderBag();if(itemPanel.open&&inventoryView)render();}},true);
+ scope.on(root,'close',event=>{if(bag.open&&['logistics-dialog','field-equipment-dialog','load-cleanup-dialog'].includes(event.target.id)){renderBag();if(itemPanel.open&&inventoryView)render();}},true);
  scope.on(itemPanel,'click',act);scope.on(phone,'click',act);
  // 应用销毁清除本实例节点与监听，重载存档不会沿用旧通话。
  function dispose(){scope.dispose();environmentStatus.hidden=true;root.getElementById('game-frame').append(environmentStatus);for(const panel of [bag,itemPanel,phone])panel.remove();trigger.querySelector('.backpack-symbol').replaceChildren();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}

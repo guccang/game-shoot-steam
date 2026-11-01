@@ -1,3 +1,4 @@
+import {updateLoadWarning} from './load-warning.js';
 import {collectWood} from './wood-storage.js';
 import {updateVehicleBoarding} from './vehicle-boarding.js';
 import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
@@ -195,7 +196,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.buildingEntry=null;this.buildingEntryLatch=null;
-    this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
+    this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
     resetBattlefield(this, continuation);
@@ -805,6 +806,7 @@ export class Game {
     // 运动会使用独立移动时钟，倒计时、暂停、终点均不推进森林或战斗逻辑。
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
+    updateLoadWarning(this,dt,input);
     updateVehicleBoarding(this,dt,input);
     maintainPlayerTow(this);
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。

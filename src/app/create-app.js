@@ -1,3 +1,4 @@
+import {createLoadCleanup} from '../ui/load-cleanup.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
 import {requestWorldNavigation} from '../core/world-navigation.js';
 import {createVehicleRepairPanel} from '../ui/vehicle-repair.js';
@@ -242,8 +243,9 @@ export function createApplication({
    else realmPanel.enter(id);
   }});
   game.requestFacility=id=>restorationPanel.open(id);
-  const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh});
-  const logistics=createLogistics({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
+  const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:refresh});
+  const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(game.vehicle.index)});
+  const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),
     commit: plan => { const result = commitWorkshop(game, plan, store.saveProgress); diagnostics.gameplay.event('workshop-commit',{plan:{kind:plan.kind,index:plan.index,action:plan.action,part:plan.part,choice:plan.choice},ok:result.ok,reason:result.reason,cost:result.cost});renderSaveStatus(); return result; },
     createTrial: createWorkshopTrial });
@@ -256,7 +258,7 @@ export function createApplication({
   const vehicleControls = createVehicleControls({ game, root, onChange: () => refresh() });
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
-  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onCargo:()=>logistics.open('cargo',game.vehicle.index),onItems:()=>fieldEquipment.open('items')});
+  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(),onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onCargo:()=>logistics.open('cargo',game.vehicle.index),onItems:()=>fieldEquipment.open('items')});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});
@@ -649,7 +651,7 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();
+    backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();loadCleanup.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();
