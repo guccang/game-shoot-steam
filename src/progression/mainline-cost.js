@@ -1,3 +1,4 @@
+import {taskResourceStock,taskCropStock} from './task-resources.js';
 // 主线整备预算与缺口共用正式报价，只估算目标所需资源，不替玩家购买或升级。
 import {economyUpgradeCost,bindEconomy,economyFor} from '../config/economy.js';
 import {equipmentRecipe} from './equipment-goals.js';
@@ -52,9 +53,15 @@ export function cachedMainlineConditionCost(progress,condition){
 // 资源不足时明确指出缺什么和去哪获取，余额足够即自动恢复原操作提示。
 export function mainlineResourceHint(progress,condition){
  const cost=cachedMainlineConditionCost(progress,condition),names={coins:'金币',wood:'木头',parts:'机械零件',crystal:'能源晶体',core:'首领核心'};
- const missing=KEYS.filter(k=>cost[k]>(['coins','wood'].includes(k)?progress[k]:progress.materials?.[k]||0));
- if(!missing.length)return '';
- const gaps=missing.map(k=>`${names[k]}${Math.ceil(cost[k]-(['coins','wood'].includes(k)?progress[k]:progress.materials?.[k]||0))}`);
- const routes=[];if(missing.includes('wood'))routes.push('木头：装备电锯，营地周围采树，返回营地从背包存入仓库');if(missing.includes('coins'))routes.push('金币：种田收获后出售是主要来源，使用掉落种子播种；任务和玩法奖励照常，怪物不掉金币');if(missing.some(k=>!['coins','wood'].includes(k)))routes.push('材料：清缴怪潮与领主，或完成娱乐挑战');
- return `还差${gaps.join('、')}。${routes.join('；')}。`;
+ const missing=KEYS.filter(k=>cost[k]>taskResourceStock(progress,k).total),crops=taskCropStock(progress);
+ const gaps=missing.map(k=>({key:k,count:Math.ceil(Math.max(0,cost[k]-taskResourceStock(progress,k).total-(k==='coins'?crops.value:0)))})).filter(g=>g.count>0).map(g=>names[g.key]+g.count);
+ const messages=[];
+ if(gaps.length)messages.push('还差'+gaps.join('、')+'。');
+ if(cost.wood>progress.wood){const wood=taskResourceStock(progress,'wood');messages.push(`木材 ${Math.min(cost.wood,wood.total)}/${cost.wood}（仓库 ${wood.warehouse} · 背包 ${wood.bag} · 载具 ${wood.vehicles}），`+(wood.total>=cost.wood?'已采齐，请将背包和载具木材运回小屋仓库入库。':'装备电锯采树，靠近小屋仓库自动入库。'));}
+ if(cost.coins>progress.coins){
+  if(crops.total)messages.push(`作物 ${crops.total} 份（背包 ${crops.bag} · 载具 ${crops.vehicles}），可结算 ${crops.value} 金币，`+(progress.coins+crops.value>=cost.coins?'收成已够，请运回小屋仓库结算。':'先运回小屋仓库结算，再补齐收成。'));
+  else messages.push('金币：种田收获后出售是主要来源，使用掉落种子播种；任务和玩法奖励照常，怪物不掉金币。');
+ }
+ if(missing.some(k=>!['coins','wood'].includes(k)))messages.push('材料：清缴怪潮与领主，或完成娱乐挑战。');
+ return messages.join('');
 }

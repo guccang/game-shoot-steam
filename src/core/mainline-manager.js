@@ -1,11 +1,12 @@
+import {taskResourcePath,taskResourceStock,taskCropStock} from '../progression/task-resources.js';
+import {woodTaskStatus} from './wood-task-status.js';
 import {cleanupEntries} from './load-cleanup.js';
 import {vehicleLocations} from './vehicle-location.js';
 import {cottageRestGuideActive,cottageRestObjective} from './cottage-guide.js';
 import {beginGardeningLesson} from '../progression/mainline-gardening.js';
-import {FARM_SEED_DOOR} from '../config/farm.js';
-import {harvestBudget,harvestGuidePlot,harvestGuideHint} from './harvest-guide.js';
+import {harvestBudget,harvestGuidePlot,harvestGuideHint,harvestDeliveryTarget} from './harvest-guide.js';
 import {restoredTaskToStart,startRestoredTask} from '../progression/restoration-task.js';
-import {mainlineResourceHint} from '../progression/mainline-cost.js';
+import {mainlineResourceHint,cachedMainlineConditionCost} from '../progression/mainline-cost.js';
 import {pendingRestoration} from '../config/town-restoration.js';
 import {restorationObjective,restorationStatus} from './town-restoration.js';
 import {rewardReceipt} from '../progression/reward-receipt.js';
@@ -37,7 +38,7 @@ export function mainlineCondition(game,condition){
  if(condition.harvestFor)return harvestBudget(game.progress,mainlineTask(game)).ready;
  if(condition.all)return condition.all.every(c=>mainlineCondition(game,c));
  if(condition.any)return condition.any.some(c=>mainlineCondition(game,c));
- if(condition.path){const value=read(game,condition.path);return 'equals' in condition?value===condition.equals:Number(value)>=condition.min;}
+ if(condition.path){const value=taskResourcePath(game.progress,condition.path)?.total??read(game,condition.path);return 'equals' in condition?value===condition.equals:Number(value)>=condition.min;}
  if('nativeLevel' in condition)return (game.progress.vehicleWeapons[nativeVehicleWeapon(condition.nativeLevel)?.weaponIndex]||0)>=condition.min;
  if(condition.controllerReady)return [12,15,16].includes(game.progress.weapon)&&game.progress.weapons[game.progress.weapon]>0&&game.progress.mainline.seen.config>0;
  if(condition.controllerLevel)return [12,15,16].some(i=>game.progress.weapons[i]>=condition.controllerLevel);
@@ -56,16 +57,26 @@ export function mainlineSteps(game){
    {label:'木材存入小屋仓库',hint:wood.destination?.label||'采集后靠近小屋仓库自动入库',done:false,progress:wood.warehouse+'/'+f.wood},repair];
  }
  const conditions=task.goal.all||[task.goal];
- return task.guide.steps.map((step,index)=>{
-  const condition=conditions[index],done=mainlineCondition(game,condition),value=condition.path?Number(read(game,condition.path)):NaN;
-  const progress=condition.min>1&&Number.isFinite(value)?`${Math.min(condition.min,Math.max(0,Math.floor(value)))}/${condition.min}`:'';
+ const steps=task.guide.steps.map((step,index)=>{
+  const condition=conditions[index],done=mainlineCondition(game,condition),value=condition.path?Number(taskResourcePath(game.progress,condition.path)?.total??read(game,condition.path)):NaN;
+  const progress=(condition.min>1||taskResourcePath(game.progress,condition.path))&&Number.isFinite(value)?`${Math.min(condition.min,Math.max(0,Math.floor(value)))}/${condition.min}`:'';
   const resourceHint=!done?(condition.harvestFor?harvestGuideHint(game,task):mainlineResourceHint(game.progress,condition)):'';
-  if(condition.harvestFor&&!done&&game.progress.farm.inventory.some(Boolean))return {...step,done,progress,resourceHint,hint:resourceHint,operation:{type:'sell-crops'}};
+  // 先处理已收集的实物，再继续购买升级；运回步骤不直接扣库存或发放金币。
+  const cost=condition.harvestFor?{coins:harvestBudget(game.progress,task).cost}:cachedMainlineConditionCost(game.progress,condition);
+  const delivery=!done&&cost.wood>game.progress.wood&&taskResourceStock(game.progress,'wood').total>=cost.wood?'wood':!done&&cost.coins>game.progress.coins&&taskCropStock(game.progress).total?'crops':null;
+  if(delivery)return {...step,label:delivery==='wood'?'木材已采齐，运回仓库':'运回收成结算金币',done:false,progress,resourceHint,hint:resourceHint,resourceDelivery:delivery,requiredWood:cost.wood,navigation:'warehouseEntry',action:{type:'warehouse',label:'查看小屋仓库'},operation:{type:'warehouse'}};
   // 极端旧档没有作物时沿用开田、选种教学，补种成熟后仍通过同一收割事务完成。
   if(condition.harvestFor&&!done&&!harvestGuidePlot(game))return {...step,done,progress,resourceHint,hint:resourceHint,operation:{type:'farm',id:game.progress.farm.plots.some(p=>p.mapId===game.mapId&&p.crop===null)?'plant':'dig'}};
-  return {...step,done,progress,resourceHint,hint:resourceHint||step.hint};
+  const stock=taskResourcePath(game.progress,condition.path);
+  return {...step,done,progress,resourceHint,hint:resourceHint||(stock?`已持有 ${stock.total} · 背包 ${stock.bag} · 载具 ${stock.vehicles} · 仓库 ${stock.warehouse}`:step.hint)};
  });
+ // 收集条件已满足但交付种子仍在仓库时，明确新增取货动作，不要求重复找种或购买。
+ if(task.seedDelivery&&steps.every(s=>s.done)&&!seedDeliveryCarried(game,task))steps.push({label:'从小屋仓库取出交付种子',hint:'种子已收集齐，请取回背包后交给青芽',done:false,navigation:'warehouseEntry',action:{type:'warehouse',label:'取出交付种子'},operation:{type:'warehouse'}});
+ return steps;
 }
+// 资源完成度合计全部容器，实际交付仍只扣背包里带到 NPC 身边的种子。
+function seedDeliveryCarried(game,task){return !task.seedDelivery||game.progress.farm.seeds[task.seedDelivery.crop]>=task.seedDelivery.count;}
+
 // 只推荐尚未完成的动作；拥有多个目标时逐个呈现，不让玩家重复已完成项。
 export function mainlineStep(game){const steps=mainlineSteps(game);return steps.find(s=>!s.done)||null;}
 // 选择组允许沿用玩家正在看的合法装备；需要拥有时只选择永久库中的控制器。
@@ -118,8 +129,11 @@ export function mainlineObjective(game,{ignoreTracking=false}={}){
  if(cleanup?.empty)return {task,phase,key:'warehouseEntry',site:MAINLINE_SITES.warehouseEntry,navigation:true,label:'到仓库取一份木头用于清理',hint:cleanup.hull===null?'选择猫猫背包，取一份木头':'把当前车开到仓库旁，选择该车取一份木头'};
  if(cleanup?.site)return {task,phase,key:cleanup.site.id,site:{...cleanup.site,y:cleanup.site.y+55},navigation:true,label:step.label,hint:step.hint};
  // 收获赚金币直接导航现有田块，采空后重新选择，不要求返回 NPC 交付。
+ if(phase==='doing'&&step?.resourceDelivery){
+  const d=step.resourceDelivery==='crops'?harvestDeliveryTarget(game):woodTaskStatus(game,step.requiredWood).destination;
+  if(d)return {task,phase,key:'resource-'+d.kind,site:d.site,navigation:true,label:d.label,hint:step.resourceHint};
+ }
  if(phase==='doing'&&task.goal.harvestFor){
-  if(game.progress.farm.inventory.some(Boolean))return {task,phase,key:'harvest-sale',site:{...FARM_SEED_DOOR,name:'种子小屋收购柜台'},navigation:true,label:'到种子小屋出售作物',hint:harvestGuideHint(game,task)};
   const plot=harvestGuidePlot(game);
   return {task,phase,key:plot?'harvest-plot-'+plot.id:'harvest-plant',site:plot?{...plot,name:plot.wild?'营地外成熟野田':'先前种下的田'}:{...game.player,mapId:game.mapId,name:'就近种田'},navigation:!!plot,label:step?.label||task.text,hint:harvestGuideHint(game,task,plot)};
  }
@@ -178,7 +192,7 @@ export function completeMainline(game){
  if(!task||run.phase!=='report'||(task.goal.harvestFor?!localHarvest:!canTalkMainline(game)))return false;
  // 种子必须仍在背包中，交付与奖励在同一候选存档提交，失败不吞种子。
  const delivery=task.seedDelivery;
- if(delivery&&(!mainlineCondition(game,task.goal)||game.progress.farm.seeds[delivery.crop]<delivery.count)){game.mainlineError='交付的种子不足，请到种子小屋补齐后再来。';run.phase='doing';return false;}
+ if(delivery&&(!mainlineCondition(game,task.goal)||!seedDeliveryCarried(game,task))){game.mainlineError=taskResourceStock(game.progress,'seed:'+delivery.crop).total>=delivery.count?'种子已收集，请从小屋仓库取回背包后交付。':'交付的种子不足，请到种子小屋补齐后再来。';run.phase='doing';return false;}
  const before=game.progress,next=validateProgress(bindEconomy(structuredClone(game.progress),economyFor(game.progress)));
  if(delivery)next.farm.seeds[delivery.crop]-=delivery.count;
  // 巡游快照会更新生活位置，必须写入候选进度，保存失败时不污染正式对象。
@@ -236,8 +250,8 @@ export function updateMainline(game,dt){
    controller==='spider'&&game.spider.nodes.some(n=>n.active&&n.ready&&n.hp>0))markMainline(game,'companions');
  }else positions.delete(game);
  // 待交付期间种子被播种消耗时恢复寻找目标，不能空手领报酬。
- if(run.phase==='report'&&task.seedDelivery&&!mainlineCondition(game,task.goal))run.phase='doing';
- if(run.phase==='doing'&&mainlineCondition(game,task.goal))run.phase='report';
+ if(run.phase==='report'&&task.seedDelivery&&(!mainlineCondition(game,task.goal)||!seedDeliveryCarried(game,task)))run.phase='doing';
+ if(run.phase==='doing'&&mainlineCondition(game,task.goal)&&seedDeliveryCarried(game,task))run.phase='report';
  if(!mainlineVisible(game)){game.mainlineSpeech=null;return false;}
  if(game.state!=='playing')return false;
  game.mainlineTalkDelay=Math.max(0,(game.mainlineTalkDelay||0)-dt);

@@ -40,7 +40,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  // 手册明确当前为什么行动、如何操作和交付所得；未来章节折叠，避免任务墙。
  function renderBook(){
   const lesson=farmLesson(game.progress.farm),done=lesson.every(s=>s.done);
-  $('farm-lesson').innerHTML='<summary>种田备忘'+(done?' · 已完成':'')+'</summary><p>种田是主要金币来源，任务和玩法奖励照常。收获后金币会从田块飞入金币栏。</p><ol>'+lesson.map(s=>'<li class="'+(s.done?'done':'')+'">'+(s.done?'✓ ':'')+s.label+(!s.done?'<small> · '+s.hint+'</small>':'')+'</li>').join('')+'</ol><p>水壶每次浇灌选中的一块田，每茬一次，生长时长最多缩短25%。首次播种并浇水：胡萝卜种子 ×2，之后可继续其他委托，成熟后再收。快递站只会补充已经解锁的种子。</p><button id="farm-lesson-go">'+(done?'继续种田':'去种田')+'</button>';
+  $('farm-lesson').innerHTML='<summary>种田备忘'+(done?' · 已完成':'')+'</summary><p>种田是主要金币来源，任务和玩法奖励照常。收成放入附近载具货舱或背包，运回小屋仓库后自动结算金币。</p><ol>'+lesson.map(s=>'<li class="'+(s.done?'done':'')+'">'+(s.done?'✓ ':'')+s.label+(!s.done?'<small> · '+s.hint+'</small>':'')+'</li>').join('')+'</ol><p>水壶每次浇灌选中的一块田，每茬一次，生长时长最多缩短25%。首次播种并浇水：胡萝卜种子 ×2，之后可继续其他委托，成熟后再收。快递站只会补充已经解锁的种子。</p><button id="farm-lesson-go">'+(done?'继续种田':'去种田')+'</button>';
 
   const task=mainlineTask(game),run=game.progress.mainline,o=mainlineObjective(game,{ignoreTracking:true});
   $('farm-lesson').hidden=task?.id==='first-farm';
@@ -121,8 +121,8 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
    card.querySelector('.mainline-objective').textContent=o.hint|| (visiting?o.site.name||o.label:request?o.label:o.phase==='doing'?[step?.progress,step?.hint].filter(Boolean).join(' · '):MAINLINE_SITES[o.task.site].name);
    // 缺资源时在战场直说采集地点；具体缺口保留在任务详情中。
    const shortage=!!step?.resourceHint&&o.phase==='doing'&&!request&&!visiting;card.dataset.resourceShortage=String(shortage);
-   // 修复采木保留实际库存与缺口，避免通用提示覆盖刚更新的采集计数。
-   if(shortage&&!o.restoration&&!o.task.goal?.harvestFor)card.querySelector('.mainline-objective').textContent='缺资源：种田赚金币，采树获木材';
+   // 资源提示保留真实缺口或待运回状态，完整说明在任务详情中展示。
+   if(shortage&&!o.restoration)card.querySelector('.mainline-objective').textContent=step.resourceHint.split('。')[0];
    const nav=target?o:worldNavigationObjective(game),bearing=storyBearing(game.player,nav?.site||o.site,85);
    card.querySelector('.mainline-bearing').hidden=!nav||!taskNavigationEnabled(game);
    card.querySelector('path').setAttribute('transform',`rotate(${bearing.angle} 22 22)`);
