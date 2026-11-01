@@ -39,7 +39,7 @@ export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
  });
  dialogs.register(panel.id,{focusId:'vehicle-repair-close',onOpen:render});
  // 现场入口与手机入口仅改变服务方式，不改变人物位置。
- function open(fromPhone=false){remote=fromPhone;selection=null;dialogs.open(panel.id);}
+ function open(fromPhone=false){remote=fromPhone;selection=null;if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
  // 退出应用释放节点与监听，重新装配不会出现重复窗口。
  function dispose(){scope.dispose();panel.remove();}
  return {open,dispose};

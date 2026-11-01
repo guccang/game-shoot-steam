@@ -19,20 +19,20 @@ import {phoneContacts,phoneUnavailable,callNeighbor,navigatePhone} from '../core
 import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// 背包格子、物品详情和手机使用独立弹窗，逐层返回时保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onCargo,onItems,onCleanup,onTreasure}){
- const scope=createEventScope(),trigger=root.getElementById('backpack-button'),phoneTrigger=root.getElementById('phone-button');
+// 随身格子嵌入角色页，物品详情和手机使用子弹窗，逐层返回保留暂停归属。
+export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onTreasure}){
+ const scope=createEventScope(),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
   const node=root.createElement('dialog');node.id=id+'-dialog';node.className='ui-panel ui-page keepsake-backpack';node.setAttribute('aria-labelledby',id+'-title');
   node.innerHTML=`<header class="ui-panel__header"><div><h2 id="${id}-title">${title}</h2><p>${subtitle}</p></div><button type="button" class="ui-close" id="${id}-close" aria-label="关闭${title}">×</button></header><div class="ui-panel__body"><div class="keepsake-content"></div><p class="keepsake-message" role="status" hidden></p></div><footer class="ui-panel__footer"></footer>`;
   root.body.append(node);scope.on(node.querySelector('.ui-close'),'click',()=>dialogs.close(node.id));return node;
  }
- const bag=panel('backpack','小背包','点击物品，查看用途和重量。'),itemPanel=panel('keepsake','物品详情','重要的东西，随身带好。'),phone=panel('phone','巡林手机','查看季节、时间、天气，或联系邻居。');
+ const bag=root.getElementById('current-cat-dialog'),itemPanel=panel('keepsake','物品详情','重要的东西，随身带好。'),phone=panel('phone','巡林手机','查看季节、时间、天气，或联系邻居。');
  // 搬移原环境节点，保留圆环、实时状态及已有监听；通讯录重绘不会重建图标。
  const environmentStatus=root.getElementById('phone-environment');
  phone.querySelector('.ui-panel__body').prepend(environmentStatus);
- trigger.querySelector('.backpack-symbol').innerHTML=keepsakeIcon('bag');phoneTrigger.querySelector('.phone-symbol').innerHTML=keepsakeIcon('patrol-phone');
+ phoneTrigger.querySelector('.phone-symbol').innerHTML=keepsakeIcon('patrol-phone');
  let selected='elder-letter',call=null,node=itemPanel,detail,actions,message,inventoryView=false;
  const mailbox=createMailbox({game,root,dialogs,onChange,onClose:()=>{if(phone.open&&!call)render();}});
  // 切换渲染目标仅发生在打开详情时，不干扰底层背包格子。
@@ -43,20 +43,20 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  function renderBag(){
   const items=backpackEntries(game),load=catLoad(game);
   bag.querySelector('.keepsake-content').innerHTML=`<section class="ui-inset inventory-load"><b>背包 ${load.weight.toFixed(2)} / ${load.capacity} kg</b><p>${load.overloaded?'载荷已满，无法移动，请清理背包。':'随身物品均计入负重。'}载具货舱另计。</p></section>`+Object.entries(ITEM_CATEGORIES).map(([category,name])=>{const group=items.filter(r=>r.category===category);return group.length?`<section class="inventory-group"><h3>${name} <small>${group.length} 种</small></h3><div class="keepsake-pockets" aria-label="${name}">`+group.map(item=>`<button type="button" class="keepsake-pocket" data-keepsake="${item.id}" aria-haspopup="dialog" aria-controls="keepsake-dialog" aria-label="${escape(item.name)}，数量${item.count}，查看信息与重量">${inventoryIcon(item)}<span>${escape(item.name)}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')+'</div></section>':'';}).join('');
-  bag.querySelector('.ui-panel__footer').innerHTML=button('cleanup','清理背包')+button('cargo','货舱与仓库')+button('close','收好背包',true);paintInventoryIcons(bag,game.progress);
+  paintInventoryIcons(bag,game.progress);
  }
  // 每个物品都先展示目录说明、用途和重量；重要物品原有功能保留为详情操作。
  function renderInventoryItem(){
   const item=backpackEntries(game).find(r=>r.id===selected);if(!item)return false;
   detail.innerHTML=`<section class="ui-section inventory-detail"><div class="inventory-detail-icon">${inventoryIcon(item)}</div><small>${ITEM_CATEGORIES[item.category]}</small><h3>${escape(item.name)}</h3><p>${escape(item.description)}</p><div class="ui-inset"><p>数量 ${item.count} · 单件 ${item.mass.toFixed(2)} kg</p><b>总重 ${item.weight.toFixed(2)} kg</b>${item.note?`<p>${escape(item.note)}</p>`:''}</div><h3>用途</h3><p>${escape(item.use)}</p></section>`;
-  actions.innerHTML=(item.id==='material:wood'?button('cargo','货舱与仓库',true):item.category==='supply'?button('use-item','使用'+item.name,true):selected==='patrol-phone'?button('open-phone','打开手机',true):selected==='elder-letter'?button('read-letter','阅读来信',true):selected==='house-key'?button('home','标出回家的路',true):'')+button('close','返回背包');paintInventoryIcons(detail,game.progress);return true;
+  actions.innerHTML=(item.category==='supply'?button('use-item','使用'+item.name,true):selected==='patrol-phone'?button('open-phone','打开手机',true):selected==='elder-letter'?button('read-letter','阅读来信',true):selected==='house-key'?button('home','标出回家的路',true):'')+button('close','返回随身物品');paintInventoryIcons(detail,game.progress);return true;
  }
  // 物品详情与手机按用户操作更新，正文不再常驻背包页。
  function render(){
   selectPanel();
   environmentStatus.hidden=inventoryView||selected!=='patrol-phone'||!!call||!ownsKeepsake(game.progress,'patrol-phone');
   message.hidden=true;message.textContent='';
-  if(inventoryView){if(!renderInventoryItem()){detail.innerHTML='<p>这件物品已用完。</p>';actions.innerHTML=button('close','返回背包',true);}return;}
+  if(inventoryView){if(!renderInventoryItem()){detail.innerHTML='<p>这件物品已用完。</p>';actions.innerHTML=button('close','返回随身物品',true);}return;}
   // 奇物以营地账本判断持有，不依靠松伯交接状态补发。
   const relic=CAMP_CHARACTERS.find(n=>'camp-relic-'+n.id===selected&&game.progress.monsterCamps.items.includes(n.id));
   if(relic){const camp=MONSTER_CAMPS.find(c=>c.id===relic.camp);detail.innerHTML='<section class="ui-section"><h3>'+escape(relic.item)+'</h3><p>'+escape(relic.reply)+'</p><p>永久效果：清空'+escape(camp.name)+'时，已开放的'+FARM_CROPS[relic.seed].name+'种子额外获得一粒。</p><p>来自'+escape(relic.name)+'的怪线索。物品不会消耗。</p></section>';actions.innerHTML=button('close','收好奇物',true);return;}
@@ -75,27 +75,23 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
    const calendar=calendarView(game.progress.living.calendar),reason=phoneUnavailable(game);
    detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>载具定位</h3><div class="keepsake-contacts">${vehicleLocations(game).map(v=>`<button type="button" class="ui-choice" data-locate-vehicle="${v.hull}"><span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span></button>`).join('')||'<p>还没有自有载具。</p>'}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
    detail.querySelector('.keepsake-apps').insertAdjacentHTML('afterbegin',button('mail',`邮件${unreadMailCount(game.progress)?' · '+unreadMailCount(game.progress)+' 未读':''}`));
-   actions.innerHTML=button('close',bag.open?'返回背包':'收好手机',true);
+   actions.innerHTML=button('close',bag.open?'返回随身物品':'收好手机',true);
   }
  }
  // 同一物品切换重置正文位置；不会每帧重建通讯录或打断阅读。
  function resetView(){render();node.querySelector('.ui-panel__body').scrollTop=0;}
  // 导航成功后收起背包，失败保留页面并给出可读原因。
  function navigate(id){const result=navigatePhone(game,id);if(!result.ok){message.textContent=result.message;message.hidden=false;message.scrollIntoView({block:'nearest'});return;}for(const panel of [phone,itemPanel,bag])if(panel.open)dialogs.close(panel.id);onNotice(result.message);onChange();}
- dialogs.register(bag.id,{focusId:'backpack-close',onOpen:renderBag});
+
  dialogs.register(itemPanel.id,{focusId:'keepsake-close',onOpen:resetView});
  dialogs.register(phone.id,{focusId:'phone-close',onOpen:()=>{selected='patrol-phone';call=null;inventoryView=false;resetView();}});
- // 室内外共用正式背包入口，保持同一模态暂停和关闭流程。
- function open(){if(!game.arrivalCinematic)dialogs.open(bag.id);}
- scope.on(trigger,'click',open);
- scope.on(phoneTrigger,'click',()=>{if(!game.arrivalCinematic)dialogs.open(phone.id);});
+ // 子页移到父页之后，触控焦点与暂停层级按打开顺序管理。
+ function show(panel){if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
+ scope.on(phoneTrigger,'click',()=>{if(!game.arrivalCinematic)show(phone);});
  // 格子打开真实弹窗；返回后原背包的滚动与焦点由原生dialog保留。
  scope.on(bag,'click',event=>{
-  const item=event.target.closest('[data-keepsake]');if(item){selected=item.dataset.keepsake;call=null;inventoryView=true;dialogs.open(itemPanel.id);return;}
-  if(event.target.closest('[data-pack-action="close"]'))dialogs.close(bag.id);
-  if(event.target.closest('[data-pack-action="cargo"]'))onCargo();
-  if(event.target.closest('[data-pack-action="cleanup"]'))onCleanup();
-  if(event.target.closest('[data-pack-action="items"]'))onItems();
+  const item=event.target.closest('[data-keepsake]');if(item){selected=item.dataset.keepsake;call=null;inventoryView=true;show(itemPanel);return;}
+
  });
  // 详情与手机共享已存在的业务动作，地图仍是手机中的子页面。
  function act(event){
@@ -104,24 +100,23 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   if(vehicle){const result=locateVehicle(game,Number(vehicle.dataset.locateVehicle));if(result.ok){for(const p of [phone,itemPanel,bag])if(p.open)dialogs.close(p.id);onNotice(result.message);onChange();}else{message.textContent=result.message;message.hidden=false;}return;}
   const contact=event.target.closest('[data-call]');if(contact){const result=callNeighbor(game,contact.dataset.call);if(result.ok){call=result;resetView();}else{message.textContent=result.message;message.hidden=false;}return;}
   const action=event.target.closest('[data-pack-action]')?.dataset.packAction;if(!action)return;
-  if(action==='cleanup'){onCleanup();return;}
-  if(action==='cargo'){dialogs.close(itemPanel.id);onCargo();return;}
+
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
-  if(action==='open-phone'){dialogs.close(itemPanel.id);dialogs.open(phone.id);return;}
+  if(action==='open-phone'){dialogs.close(itemPanel.id);show(phone);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
   if(action==='treasure'&&ownsKeepsake(game.progress,'patrol-phone')){onTreasure();return;}
   if(action==='mail'&&ownsKeepsake(game.progress,'patrol-phone')){mailbox.open();return;}
   if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}
-  if(action==='map'&&ownsKeepsake(game.progress,'patrol-phone')){dialogs.open('map-dialog');return;}
+  if(action==='map'&&ownsKeepsake(game.progress,'patrol-phone')){show(root.getElementById('map-dialog'));return;}
   if(action==='home'||action==='visit'){navigate(action==='home'?'home':call.id);return;}
   if(action==='hangup'){call=null;resetView();return;}
   if(action==='letter'&&game.progress.arrival?.phase==='letter'&&!completeArrivalLetter(game)){message.textContent='阅读进度保存失败，请重试。';message.hidden=false;message.scrollIntoView({block:'nearest'});return;}
   dialogs.close(node.id);onChange();
  }
- // 装卸货舱后返回背包，立即同步真实库存与负重。
+ // 装卸货舱后返回随身物品，立即同步真实库存与负重。
  scope.on(root,'close',event=>{if(bag.open&&['logistics-dialog','field-equipment-dialog','load-cleanup-dialog'].includes(event.target.id)){renderBag();if(itemPanel.open&&inventoryView)render();}},true);
  scope.on(itemPanel,'click',act);scope.on(phone,'click',act);
  // 应用销毁清除本实例节点与监听，重载存档不会沿用旧通话。
- function dispose(){scope.dispose();environmentStatus.hidden=true;root.getElementById('game-frame').append(environmentStatus);for(const panel of [bag,itemPanel,phone])panel.remove();trigger.querySelector('.backpack-symbol').replaceChildren();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}
- return {open,dispose:()=>{mailbox.dispose();dispose();}};
+ function dispose(){scope.dispose();environmentStatus.hidden=true;root.getElementById('game-frame').append(environmentStatus);for(const panel of [itemPanel,phone])panel.remove();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}
+ return {render:renderBag,dispose:()=>{mailbox.dispose();dispose();}};
 }

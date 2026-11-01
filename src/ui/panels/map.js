@@ -135,7 +135,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     $('map-done').focus({ preventScroll: true });
   });
   // 选中营地只设置圈外导航，关闭地图后由玩家实际行走。
-  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-monster-camp]'),c=MONSTER_CAMPS.find(c=>c.id===b?.dataset.monsterCamp);if(c&&c.mapId===game.mapId){requestWorldNavigation(game,campVisitorSite(c),'前往'+c.name+'圈外',{direct:true});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','backpack-dialog'])if($(id)?.open)dialogs.close(id);onChange();}});
+  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-monster-camp]'),c=MONSTER_CAMPS.find(c=>c.id===b?.dataset.monsterCamp);if(c&&c.mapId===game.mapId){requestWorldNavigation(game,campVisitorSite(c),'前往'+c.name+'圈外',{direct:true});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();}});
   for (const id of ['close-map', 'map-done'])
     scope.on($(id), 'click', () => dialogs.close('map-dialog'));
   // 异步预取当前地图，完成后刷新打开的面板；不会逐帧绘制底图。

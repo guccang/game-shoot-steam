@@ -8,6 +8,7 @@ import {cleanupEntries,discardLoad,planLoadCleanup,discardForMobility,cleanupLoa
 import {updateLoadWarning} from '../src/core/load-warning.js';
 import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/load-weight.js';
 import {LOAD_RULES} from '../src/config/vehicle-load.js';
+import {AMMO_TYPES} from '../src/config/supplies.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 
 // 只准备普通巡林及保存函数，移动、弹匣和清理继续使用正式状态。
@@ -62,7 +63,7 @@ test('快捷清理拒绝过期方案、远处车辆和不足以移动的方案',
 
 // 历史背包中的车用炮弹仍可在房内减重，无需先走到出口或载具旁。
 test('室内超载背包支持暂停清理炮弹，失败保留物品，确认后恢复移动',()=>{
- const {g}=scene();g.cottage={kind:'ammo',outside:{x:900,y:800}};g.state='paused';g.progress.supplies.hand.heavy=3;
- assert.equal(movementLoadFactor(g),0);assert.equal(cleanupEntries(g).find(r=>r.id==='ammo:heavy').count,3);const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(discardLoad(g,{id:'ammo:heavy',count:3}).ok,false);assert.deepEqual(g.progress,before);let saved;g.livingPersist=p=>{saved=structuredClone(p);return true;};assert.ok(discardLoad(g,{id:'ammo:heavy',count:3}).ok);assert.ok(movementLoadFactor(g)>0);assert.equal(g.cottage.kind,'ammo');assert.equal(new Game(saved).progress.supplies.hand.heavy,0);
- g.progress.supplies.hand.shell=5;const plan=planLoadCleanup(g);assert.ok(plan.ok);assert.ok(discardForMobility(g,plan).ok);assert.ok(movementLoadFactor(g)>0);assert.ok(catLoad(g).weight<catLoad(g).capacity);
+ const {g}=scene();g.cottage={kind:'ammo',outside:{x:900,y:800}};g.state='paused';const count=Math.ceil(catLoad(g).capacity/AMMO_TYPES.heavy.mass);g.progress.supplies.hand.heavy=count;
+ assert.equal(movementLoadFactor(g),0);assert.equal(cleanupEntries(g).find(r=>r.id==='ammo:heavy').count,count);const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(discardLoad(g,{id:'ammo:heavy',count}).ok,false);assert.deepEqual(g.progress,before);let saved;g.livingPersist=p=>{saved=structuredClone(p);return true;};assert.ok(discardLoad(g,{id:'ammo:heavy',count}).ok);assert.ok(movementLoadFactor(g)>0);assert.equal(g.cottage.kind,'ammo');assert.equal(new Game(saved).progress.supplies.hand.heavy,0);
+ g.progress.supplies.hand.shell=Math.ceil(catLoad(g).capacity/AMMO_TYPES.shell.mass);const plan=planLoadCleanup(g);assert.ok(plan.ok);assert.ok(discardForMobility(g,plan).ok);assert.ok(movementLoadFactor(g)>0);assert.ok(catLoad(g).weight<catLoad(g).capacity);
 });

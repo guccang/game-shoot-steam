@@ -42,7 +42,7 @@ function weaponProgressMarkup(progress, index) {
   return `<section class="weapon-mastery" aria-label="${i18nHtml("ui.inventory.0cfc65ed8b", { p0: (WEAPONS[index].name) })}"><div class="mastery-heading"><b>${i18nHtml("ui.inventory.0988e2d0b3", { p0: (mastery.level) })}</b><span>${i18nHtml("ui.inventory.1c68e40c91", { p0: (mastery.next ? `${mastery.xp} / ${mastery.next}` : i18nText("ui.inventory.7bd3752e09")), p1: ((mastery.level - 1) * 2) })}</span></div><div class="mastery-track" role="progressbar" aria-label="${i18nHtml("ui.inventory.89410cfe4a")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(fill * 100)}"><i style="width:${fill * 100}%"></i></div><small>${i18nHtml("ui.inventory.8700e07e97")}</small><div class="mod-heading"><b>${i18nHtml("ui.inventory.22e3c80bbf")}</b>${selected ? `<button data-mod="0" data-index="${index}">${i18nHtml("ui.inventory.a633ee3abb")}</button>` : `<span>${i18nHtml("config.weapon-mods.e49deec22c")}</span>`}</div><div class="mod-choices">${branches}</div><small>${mastery.level < 2 ? i18nText("ui.inventory.9fc34de344") : i18nText("ui.inventory.cacb066cad", { p0: (MOD_COST.coins), p1: (MOD_COST.wood) })}</small></section>`;
 }
 // 注入游戏、页面和弹窗服务，同一控制器可以完整销毁并重新绑定。
-export function createInventory({ game, root, dialogs, onChange }) {
+export function createInventory({ game, root, dialogs, onChange, onInventoryRender, onCleanup }) {
   const $ = (id) => root.getElementById(id),
     scope = createEventScope();
   const expandedWeapons = new Set();
@@ -218,7 +218,7 @@ export function createInventory({ game, root, dialogs, onChange }) {
       dialogs.open('camp-dialog');
     });
   // 主菜单先查看当前猫猫，猫窝管理入口保持在建筑内。
-  const currentCat=createCurrentCat({game,root,dialogs});
+  const currentCat=createCurrentCat({game,root,dialogs,onInventoryRender,onCleanup});
   for (const id of ['close-camp', 'camp-done'])
     scope.on($(id), 'click', () => dialogs.close('camp-dialog'));
   root.querySelectorAll('[data-tab]').forEach((button) => {
@@ -259,6 +259,7 @@ export function createInventory({ game, root, dialogs, onChange }) {
     }
   });
   return {
+    openCurrentCat: currentCat.open,
     render: renderInventory,
     renderFieldIcons,
     renderIntro,

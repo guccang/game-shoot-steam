@@ -1617,7 +1617,7 @@ export function inspectTaskNavigation(game,root){
 
 // 小背包读取正式DOM和物品状态，检查手机滚动、触控与嵌套地图，不另造预览。
 export function inspectKeepsakeBackpack(game,root){
- const dialog=[...root.querySelectorAll('#backpack-dialog[open],#keepsake-dialog[open],#phone-dialog[open]')].at(-1)||root.getElementById('backpack-dialog'),body=dialog.querySelector('.ui-panel__body'),box=dialog.getBoundingClientRect();
+ const dialog=[...root.querySelectorAll('#current-cat-dialog[open],#keepsake-dialog[open],#phone-dialog[open]')].at(-1)||root.getElementById('current-cat-dialog'),body=dialog.querySelector('.ui-panel__body'),box=dialog.getBoundingClientRect();
  return {designCriterion:'keepsake-backpack',open:dialog.open,state:game.state,items:game.progress.keepsakes?.items,
   panel:dialog.id,gridSlots:root.querySelectorAll('.keepsake-pockets > *').length,hasStandaloneMap:!!root.getElementById('map-button'),box:box.toJSON(),overflow:body.scrollWidth>body.clientWidth+1,
   text:dialog.textContent,controls:[...dialog.querySelectorAll('button')].filter(b=>!b.hidden&&b.getBoundingClientRect().height).map(b=>({label:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height,disabled:b.disabled}))};
@@ -1777,7 +1777,7 @@ export async function inspectRepairParkingDisplay(game){
 export function inspectVehicleAutoBoard(game,renderer){return {designCriterion:'nearby-vehicle-boarding',active:game.vehicle.active,hull:game.vehicle.index,boarding:game.vehicleBoarding?{hull:game.vehicleBoarding.hull,elapsed:game.vehicleBoarding.elapsed,site:game.vehicleBoarding.site.id}:null,countdown:renderer.actionCountdownView,parked:game.progress.campParking.owned.map(s=>s.hull)};}
 
 // 正式背包与当前装备面板的只读验收入口，不建立替代预览。
-export function inspectInventoryCatalog(game,root){const bag=root.getElementById('backpack-dialog'),detail=root.getElementById('keepsake-dialog'),field=root.getElementById('field-equipment-dialog');return {designCriterion:'inventory-item-catalog',items:bag?.querySelectorAll('[data-keepsake]').length||0,emptySlots:bag?.querySelectorAll('.keepsake-empty').length||0,weight:bag?.querySelector('.inventory-load')?.textContent||'',detail:detail?.open?detail.textContent:'',field:field?.open?field.textContent:'',hpWeight:!!root.getElementById('load-weight-hud'),vehicleEntry:!root.getElementById('vehicles-button')?.hidden,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+export function inspectInventoryCatalog(game,root){const bag=root.getElementById('current-cat-dialog'),detail=root.getElementById('keepsake-dialog'),field=root.getElementById('field-equipment-dialog');return {designCriterion:'inventory-item-catalog',items:bag?.querySelectorAll('[data-keepsake]').length||0,emptySlots:bag?.querySelectorAll('.keepsake-empty').length||0,weight:bag?.querySelector('.inventory-load')?.textContent||'',detail:detail?.open?detail.textContent:'',field:field?.open?field.textContent:'',hpWeight:!!root.getElementById('load-weight-hud'),vehicleEntry:!root.getElementById('vehicles-button')?.hidden,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 
 // 当前猫详情与木材仓库读取正式弹窗，不建立另一个展示状态。
 export function inspectCatWoodStorage(game,root){return {designCriterion:'cat-details-wood-storage',hero:game.loadout.hero,catDetails:root.getElementById('current-cat-dialog')?.open,warehouse:game.progress.wood,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds.map(b=>b.wood),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
@@ -1798,7 +1798,7 @@ export async function inspectCottageWeaponRacks(game,renderer,root){
 export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');const {resourcePickupPoses}=await import('../combat/resource-pickup.js');return {designCriterion:'wood-direct-pickup',flying:resourcePickupPoses(game.drops,game.player).filter(p=>p.kind==='wood').length,countdown:renderer.actionCountdownView,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds[game.vehicle.index].wood,load:game.vehicle.active?vehicleLoad(game):catLoad(game),speed:movementLoadFactor(game)};}
 
 // 快捷清理与一级种地入口读取正式DOM，记录真实数量、来源及拖拽浮标。
-export async function inspectCleanupDrag(game,root){return {...await inspectLoadCleanup(game,root),designCriterion:'load-cleanup-drag',source:root.querySelector('[data-cleanup-source][aria-pressed=true]')?.dataset.cleanupSource,range:root.getElementById('cleanup-quantity-range')?.value,ghosts:root.querySelectorAll('.cleanup-ghost').length,farmPrimary:root.getElementById('farm-menu')?.parentElement?.classList.contains('field-menu'),farmOpen:!root.getElementById('farm-tools')?.hidden};}
+export async function inspectCleanupDrag(game,root){return {...await inspectLoadCleanup(game,root),designCriterion:'load-cleanup-drag',source:root.getElementById('load-cleanup-dialog')?.dataset.source,range:root.getElementById('cleanup-quantity-range')?.value,ghosts:root.querySelectorAll('.cleanup-ghost').length,farmPrimary:root.getElementById('farm-menu')?.parentElement?.classList.contains('field-menu'),farmOpen:!root.getElementById('farm-tools')?.hidden};}
 
 // 自动楼梯验收直接读取室内计时、楼层与正式屏幕徽记，确认不存在点击热点。
 export function inspectCottageStairs(game,renderer,root){return {designCriterion:'stairs-auto-transition',floor:game.cottage?.floor,elapsed:game.cottage?.stairsElapsed,latch:game.cottage?.stairsLatch,countdown:renderer.actionCountdownView,clickTargets:root.querySelectorAll('[data-cottage-target="stairs"]').length};}
@@ -1815,7 +1815,7 @@ export async function inspectAmmoPurchaseStorage(game,root){
 // 室内自救入口必须原地可点，直接读取真实房间、按钮命中与背包负重。
 export async function inspectIndoorBackpack(game,root){
  const {catLoad}=await import('../progression/load-weight.js'),load=catLoad(game),view=root.defaultView;
- const buttons=['cottage-backpack','cottage-cleanup'].map(id=>{const n=root.getElementById(id),r=n.getBoundingClientRect();return {id,hidden:n.hidden,disabled:n.disabled,width:r.width,height:r.height,inBounds:r.left>=0&&r.top>=0&&r.right<=view.innerWidth&&r.bottom<=view.innerHeight,hit:n.contains(root.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};});
+ const buttons=['cottage-character'].map(id=>{const n=root.getElementById(id),r=n.getBoundingClientRect();return {id,hidden:n.hidden,disabled:n.disabled,width:r.width,height:r.height,inBounds:r.left>=0&&r.top>=0&&r.right<=view.innerWidth&&r.bottom<=view.innerHeight,hit:n.contains(root.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};});
  return {designCriterion:'indoor-backpack-cleanup',room:game.cottage?.kind,floor:game.cottage?.floor,overloaded:load.overloaded,weight:load.weight,buttons,notice:root.getElementById('cottage-notice').textContent};
 }
 
@@ -1836,3 +1836,6 @@ export async function inspectWarehouse(game,root=document){const {WAREHOUSE}=awa
 
 // 寻宝验收直接读取正式世界与手机状态，避免独立预览伪造库存。
 export function inspectTreasure(game,root=document){return {designCriterion:'metal-detector-treasure',state:structuredClone(game.progress.treasure),active:!!game.detectorActive,dialog:!!root.getElementById('treasure-dialog')?.open,signal:root.getElementById('detector-hud')?.textContent,vehicles:game.vehicles.filter(v=>v.index>=9).map(v=>({index:v.index,hp:v.hp,active:v.active}))};}
+
+// 检查正式角色物品和当前载具仓库入口，记录手机边界及旧入口残留。
+export function inspectCharacterVehicleStorage(game,root){const cat=root.getElementById("current-cat-dialog"),cargo=root.getElementById("logistics-dialog");return {designCriterion:"character-vehicle-storage",oldEntry:!!root.querySelector("#backpack-button,#backpack-dialog"),catOpen:!!cat?.open,items:cat?.querySelectorAll("[data-keepsake]").length||0,catTab:cat?.querySelector("[data-cat-tab][aria-pressed=true]")?.dataset.catTab,cargoOpen:!!cargo?.open,cargoTitle:root.getElementById("logistics-title")?.textContent,cleanupTitle:root.getElementById("load-cleanup-title")?.textContent,indoorEntry:!!root.getElementById("cottage-character"),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}

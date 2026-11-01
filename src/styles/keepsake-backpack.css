@@ -1,5 +1,5 @@
 /* 小背包沿用公共底板；布袋格与手机通讯录只定义内容布局。 */
-.backpack-symbol svg,.phone-symbol svg{display:block;width:36px;height:36px}
+.phone-symbol svg{display:block;width:36px;height:36px}
 .keepsake-pockets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:18px}
 .keepsake-pockets .keepsake-pocket,.keepsake-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;aspect-ratio:1;min-height:80px;padding:7px 2px;font-size:12px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);background:var(--ui-sage);color:var(--ui-text);box-shadow:none}
 .keepsake-empty{background:var(--ui-paper);border-style:dashed}
@@ -24,3 +24,8 @@
 .inventory-group .keepsake-pocket{height:auto;min-height:116px;aspect-ratio:auto;padding:8px 3px;gap:4px;overflow-wrap:anywhere}
 .inventory-group .keepsake-pocket small{font-size:11px;line-height:1.4;color:#536c50}.keepsake-pocket canvas,.inventory-crop{width:48px;height:48px;display:inline-block;flex-shrink:0}.inventory-crop{position:relative}.inventory-crop svg{width:100%;height:100%}.inventory-crop small{position:absolute;right:0;bottom:0;background:#fff6dc;border-radius:4px;padding:0 3px}
 .inventory-detail-icon{width:80px;height:80px;margin:4px auto 12px}.inventory-detail-icon>svg,.inventory-detail-icon>canvas,.inventory-detail-icon>.inventory-crop{width:100%;height:100%}.inventory-detail p,.inventory-load p{line-height:1.6}.inventory-detail h3{overflow-wrap:anywhere}
+
+/* 角色详情页签固定在标题下，底部整理入口始终可用。 */
+#current-cat-dialog > .logistics-actions{flex:none;margin:0;padding:8px var(--ui-space);background:var(--ui-sage)}
+#current-cat-dialog > .ui-panel__footer{flex-wrap:wrap}
+#current-cat-dialog > .ui-panel__footer button{flex:1;min-width:72px}

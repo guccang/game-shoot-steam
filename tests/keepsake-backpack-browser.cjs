@@ -17,15 +17,15 @@ async original=>{
   await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;});
   // 正式交接获得三件物品；格子点击后的首次读信仍保留失败重试。
   await page.evaluate(async()=>{const g=a.game;g.progress=(await import('/src/progression/progress.js')).freshRangerProgress();g.reset();g.state='playing';if(!(await import('/src/core/ranger-arrival.js')).skipArrivalJourney(g))throw Error('跳过接送失败');a.refresh();});
-  await open('backpack-button');
-  if(await page.locator('#backpack-dialog .keepsake-letter').count())throw Error('背包不应直接展示来信');
+  await open('heroes-button');await page.locator('[data-cat-tab=items]').tap();
+  if(await page.locator('#current-cat-dialog .keepsake-letter').count())throw Error('背包不应直接展示来信');
   await page.locator('[data-keepsake=elder-letter]').tap();await page.locator('#keepsake-dialog').waitFor({state:'visible'});
   await page.evaluate(()=>{window.originalArrivalPersist=a.game.arrivalPersist;a.game.arrivalPersist=()=>false;});
   await page.locator('[data-pack-action=letter]').tap();if(!(await page.locator('#keepsake-dialog .keepsake-message').textContent()).includes('保存失败'))throw Error('缺少读信保存失败反馈');
   await page.evaluate(()=>{a.game.arrivalPersist=window.originalArrivalPersist;});await page.locator('[data-pack-action=letter]').tap();
   await page.waitForFunction(()=>!document.getElementById('keepsake-dialog').open);
-  if(await page.evaluate(()=>a.game.state!=='paused'||!document.getElementById('backpack-dialog').open))throw Error('详情关闭应返回背包并暂停');
-  await page.locator('#backpack-close').tap();await page.waitForFunction(()=>a.game.state==='playing'&&a.game.progress.arrival.phase==='ride-guide');
+  if(await page.evaluate(()=>a.game.state!=='paused'||!document.getElementById('current-cat-dialog').open))throw Error('详情关闭应返回背包并暂停');
+  await page.locator('#current-cat-close').tap();await page.waitForFunction(()=>a.game.state==='playing'&&a.game.progress.arrival.phase==='ride-guide');
   // 第一项任务通过正式任务卡打开手机；只有实际查看地图才记录进度。
   await page.evaluate(async()=>{const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.phase='doing';p.mainline.currentId='first-map';p.restoration.repaired=['cottage','neighbors','travel'];g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.vehicle.active=false;a.refresh();});
   await page.locator('#mainline-hud').tap();await page.locator('#phone-dialog').waitFor({state:'visible'});
@@ -49,19 +49,19 @@ async original=>{
   const nav=await page.evaluate(async()=>({target:(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game)?.site.id,requests:JSON.stringify(a.game.progress.living.requests)}));
   if(nav.target!=='cook'||nav.requests!==before)throw Error('导航错误或远程更改委托');
   // 背包中的手机打开地图再逐层退出；Escape和按钮均不可提前恢复战场。
-  await open('backpack-button');await page.locator('[data-keepsake=patrol-phone]').tap();await page.locator('[data-pack-action=map]').tap();
+  await open('heroes-button');await page.locator('[data-cat-tab=items]').tap();await page.locator('[data-keepsake=patrol-phone]').tap();await page.locator('[data-pack-action=map]').tap();
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.getElementById('map-dialog').open);await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.getElementById('phone-dialog').open);
-  if(await page.evaluate(()=>a.game.state!=='paused'||!document.getElementById('backpack-dialog').open||document.activeElement?.dataset.keepsake!=='patrol-phone'))throw Error('嵌套退出暂停或焦点错误');
-  await page.locator('#backpack-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
+  if(await page.evaluate(()=>a.game.state!=='paused'||!document.getElementById('current-cat-dialog').open||document.activeElement?.dataset.keepsake!=='patrol-phone'))throw Error('嵌套退出暂停或焦点错误');
+  await page.locator('#current-cat-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
   // 各尺寸共用手机布局，昼夜检查格子、物品详情和独立手机页面。
   for(const [width,height] of [[320,568],[360,640],[390,844],[430,932],[844,390],[1280,900]]){
    await page.setViewportSize({width,height});
    for(const phase of ['day','night']){
     await page.evaluate(async phase=>{const g=a.game;g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===phase).start+1000;(await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);a.renderer.light.set(a.environment,performance.now()-20000);a.renderer.draw();a.refresh();},phase);
-    await open('backpack-button');await inspect('grid-'+width+'-'+phase,width,height);
+    await open('heroes-button');await page.locator('[data-cat-tab=items]').tap();await inspect('grid-'+width+'-'+phase,width,height);
     if(await page.locator('.keepsake-pockets > *').count()!==9)throw Error('格子数量错误');
     await page.locator('[data-keepsake=elder-letter]').tap();await inspect('letter-'+width+'-'+phase,width,height);await page.locator('#keepsake-close').tap();
-    await page.locator('[data-keepsake=house-key]').tap();await inspect('key-'+width+'-'+phase,width,height);await page.locator('#keepsake-close').tap();await page.locator('#backpack-close').tap();
+    await page.locator('[data-keepsake=house-key]').tap();await inspect('key-'+width+'-'+phase,width,height);await page.locator('#keepsake-close').tap();await page.locator('#current-cat-close').tap();
     await open('phone-button');await inspect('phone-'+width+'-'+phase,width,height);
     if(width===390){await page.locator('[data-call=cook]').tap();if(phase==='night'&&!(await page.locator('.keepsake-call').textContent()).includes('语音留言'))throw Error('作息未保留');await page.screenshot({path:output+'call-'+phase+'.png'});await page.locator('[data-pack-action=hangup]').tap();}
     await page.locator('#phone-close').tap();await page.waitForFunction(()=>a.game.state==='playing');

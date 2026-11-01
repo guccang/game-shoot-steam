@@ -29,7 +29,7 @@ export function createMailbox({game,root,dialogs,onChange,onClose}){
   }
  }
  // 每次从手机进入列表，详情返回保留列表页码。
- function open(){if(mailboxAvailable(game))dialogs.open(dialog.id);}
+ function open(){if(mailboxAvailable(game)){if(!dialog.open)root.body.append(dialog);dialogs.open(dialog.id);}}
  dialogs.register(dialog.id,{focusId:'mailbox-close',onOpen:()=>{selected=null;page=0;notice='';render();}});
  scope.on(get('close'),'click',()=>dialogs.close(dialog.id));scope.on(dialog,'close',()=>onClose?.());
  scope.on(dialog,'click',event=>{

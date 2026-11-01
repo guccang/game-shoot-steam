@@ -148,7 +148,7 @@ export function createApplication({
   const input = createInput({ game, root, host, enabled:()=>shell.page==='game', onChange: () => refresh(),
     onTap: event => { if(farmPanel?.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
   const dialogs = createDialogs({ game, root, isGameplayActive:()=>shell.page==='game', resetInput: input.reset, onChange: () => { refresh(); syncAudio(); },onEvent:(type,data)=>diagnostics.gameplay.event(type,data) });
-  const inventory = createInventory({ game, root, dialogs, onChange: () => refresh() });
+  const inventory = createInventory({ game, root, dialogs, onChange: () => refresh(), onInventoryRender:()=>backpack.render(), onCleanup:()=>loadCleanup.open(null) });
   const updateHud = createHud({ game, root, inventory, dialogs, getView: () => renderer.view });
   let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, seedShop, monsterCampPanel;
   refresh = () => {
@@ -246,7 +246,7 @@ export function createApplication({
   }});
   game.requestFacility=id=>restorationPanel.open(id);
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:refresh});
-  const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(game.vehicle.index)});
+  const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onCargo:()=>logistics.open('cargo',game.vehicle.index),onCleanup:()=>loadCleanup.open(game.vehicle.index)});
   const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
   const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),
@@ -254,7 +254,7 @@ export function createApplication({
     createTrial: createWorkshopTrial });
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});
   game.openLegendaryWorkshop=()=>legendaryWorkshop.open();
-  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:openRoomService,onBackpack:()=>backpack.open(),onCleanup:()=>loadCleanup.open(),onChange:()=>{save();refresh();}});
+  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:openRoomService,onCharacter:()=>inventory.openCurrentCat('items'),onChange:()=>{save();refresh();}});
   // 工坊外部不建立点击入口，门前站定后由室内售货员提供服务。
   worldWorkshop = createWorldWorkshop({ game, renderer, root, onEnter: () => !facilityOpen(game.progress,'weapons')?rangerArrival.openWorkshop():workshop.open('weapons') });
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onEnter:()=>workshop.open('vehicle')});
@@ -262,7 +262,7 @@ export function createApplication({
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
   const treasure=createTreasure({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
-  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(),onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onCargo:()=>logistics.open('cargo',game.vehicle.index),onItems:()=>fieldEquipment.open('items'),onTreasure:()=>treasure.open()});
+  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open()});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});

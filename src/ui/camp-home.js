@@ -14,9 +14,9 @@ import {cottageRestTimeView} from './cottage-rest-time.js';
 import {prepareMobilePanel} from './mobile-panels.js';
 
 // 热点只有靠近车辆时出现，不遮住建筑，也不让远处点击传送上车。
-export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onBackpack,onCleanup}){
+export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onCharacter}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),panel=root.createElement('section');
- panel.id='cottage-controls';panel.hidden=true;panel.innerHTML='<header><b>巡林小屋</b><small id="cottage-date"></small></header><footer><p id="cottage-notice" role="status"></p><div><button id="cottage-backpack" class="ui-button">背包</button><button id="cottage-cleanup" class="ui-button" hidden>整理背包</button></div></footer><dialog id="cottage-rest-dialog" aria-labelledby="cottage-rest-title" aria-describedby="cottage-rest-description"><small>巡林小屋</small><h2 id="cottage-rest-title">休息一下</h2><p id="cottage-rest-description">当前游戏时间</p><div class="cottage-rest-options"><button id="cottage-sleep-phase"><span>睡到下一时段</span><small id="cottage-phase-time"></small></button><button id="cottage-sleep-morning"><span>睡到明早</span><small id="cottage-morning-time"></small></button><button id="cottage-rest-cancel">暂不休息</button></div></dialog>';
+ panel.id='cottage-controls';panel.hidden=true;panel.innerHTML='<header><b>巡林小屋</b><small id="cottage-date"></small></header><footer><p id="cottage-notice" role="status"></p><div><button id="cottage-character" class="ui-button">当前猫猫</button></div></footer><dialog id="cottage-rest-dialog" aria-labelledby="cottage-rest-title" aria-describedby="cottage-rest-description"><small>巡林小屋</small><h2 id="cottage-rest-title">休息一下</h2><p id="cottage-rest-description">当前游戏时间</p><div class="cottage-rest-options"><button id="cottage-sleep-phase"><span>睡到下一时段</span><small id="cottage-phase-time"></small></button><button id="cottage-sleep-morning"><span>睡到明早</span><small id="cottage-morning-time"></small></button><button id="cottage-rest-cancel">暂不休息</button></div></dialog>';
  const restDialog=panel.querySelector('#cottage-rest-dialog');
  frame.append(panel);
  prepareMobilePanel(restDialog);
@@ -26,8 +26,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  const storage=createCottageStorage({game,renderer,root,panel,dialogs,input,onChange:onDecorChange});
  const homeDecor=createHomeDecor({game,root,panel,dialogs,input,onChange:onDecorChange});
  // 室内入口不依赖移动或接近售货员，超载时也能整理随身物品。
- scope.on(panel.querySelector('#cottage-backpack'),'click',()=>{input.reset();onBackpack();});
- scope.on(panel.querySelector('#cottage-cleanup'),'click',()=>{input.reset();onCleanup();});
+ scope.on(panel.querySelector('#cottage-character'),'click',()=>{input.reset();onCharacter();});
  // 取消按钮与Esc使用同一闩锁，防止关闭后下一帧立即再次打开。
  function dismissRest(){input.reset();cancelCottageRest(game);render();}
  scope.on(panel.querySelector('#cottage-rest-cancel'),'click',dismissRest);
@@ -47,8 +46,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
   }
   if(room){
    const overloaded=catLoad(game).overloaded,unavailable=!!room.sleep||!!room.restOpen||!['playing','paused'].includes(game.state);
-   panel.querySelector('#cottage-backpack').disabled=unavailable;
-   const cleanup=panel.querySelector('#cottage-cleanup');cleanup.hidden=!overloaded;cleanup.disabled=unavailable;
+   panel.querySelector('#cottage-character').disabled=unavailable;
    // 随历法刷新当前钟点与两个休息目标，保持按钮节点和键盘焦点稳定。
    if(room.restOpen){
     const times=cottageRestTimeView(game.progress.living.calendar);
@@ -62,7 +60,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
    // 睡醒结果保留在屋内底部，独立纸色底板让回血和保存失败信息都清楚可读。
    notice.dataset.result=String(home&&!!room.restResult&&!room.sleep&&!room.exitElapsed);
    notice.textContent=(room.stairsElapsed!=null?'楼梯前站定 1 秒'+(room.floor?'下楼':'上楼')+' · 移开可取消':room.stairsLatch?'已到'+(room.floor?'二楼':'一楼')+'，移开楼梯后可再次上下楼。':room.storageNotice)|| (room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击屋内售货员打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'点击「休息一下」，睡醒恢复全部生命。':room.floor?'二楼可布置武器架。靠近并点击架子存取，楼梯前站定 1 秒下楼。':'床边可休息。装扮小屋摆放家具；右侧楼梯前站定 1 秒上楼。');
-   if(overloaded&&!room.sleep){notice.dataset.result='true';notice.textContent='背包载荷已满，无法移动。点击「整理背包」清理后即可继续行走。';}
+   if(overloaded&&!room.sleep){notice.dataset.result='true';notice.textContent='背包载荷已满，无法移动。打开「当前猫猫」→「整理背包」，清理后即可继续行走。';}
    for(const mode of ['phase','morning'])panel.querySelector('#cottage-sleep-'+mode).disabled=!near||!!room.sleep||game.state!=='playing';
   }
 
