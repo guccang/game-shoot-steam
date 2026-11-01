@@ -85,7 +85,9 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  dialogs.register(bag.id,{focusId:'backpack-close',onOpen:renderBag});
  dialogs.register(itemPanel.id,{focusId:'keepsake-close',onOpen:resetView});
  dialogs.register(phone.id,{focusId:'phone-close',onOpen:()=>{selected='patrol-phone';call=null;inventoryView=false;resetView();}});
- scope.on(trigger,'click',()=>{if(!game.arrivalCinematic)dialogs.open(bag.id);});
+ // 室内外共用正式背包入口，保持同一模态暂停和关闭流程。
+ function open(){if(!game.arrivalCinematic)dialogs.open(bag.id);}
+ scope.on(trigger,'click',open);
  scope.on(phoneTrigger,'click',()=>{if(!game.arrivalCinematic)dialogs.open(phone.id);});
  // 格子打开真实弹窗；返回后原背包的滚动与焦点由原生dialog保留。
  scope.on(bag,'click',event=>{
@@ -120,5 +122,5 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  scope.on(itemPanel,'click',act);scope.on(phone,'click',act);
  // 应用销毁清除本实例节点与监听，重载存档不会沿用旧通话。
  function dispose(){scope.dispose();environmentStatus.hidden=true;root.getElementById('game-frame').append(environmentStatus);for(const panel of [bag,itemPanel,phone])panel.remove();trigger.querySelector('.backpack-symbol').replaceChildren();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}
- return {dispose:()=>{mailbox.dispose();dispose();}};
+ return {open,dispose:()=>{mailbox.dispose();dispose();}};
 }

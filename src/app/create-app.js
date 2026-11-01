@@ -251,7 +251,7 @@ export function createApplication({
     createTrial: createWorkshopTrial });
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});
   game.openLegendaryWorkshop=()=>legendaryWorkshop.open();
-  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:openRoomService,onChange:()=>{save();refresh();}});
+  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:openRoomService,onBackpack:()=>backpack.open(),onCleanup:()=>loadCleanup.open(),onChange:()=>{save();refresh();}});
   // 工坊外部不建立点击入口，门前站定后由室内售货员提供服务。
   worldWorkshop = createWorldWorkshop({ game, renderer, root, onEnter: () => !facilityOpen(game.progress,'weapons')?rangerArrival.openWorkshop():workshop.open('weapons') });
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onEnter:()=>workshop.open('vehicle')});

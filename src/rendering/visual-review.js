@@ -1811,3 +1811,10 @@ export async function inspectAmmoPurchaseStorage(game,root){
  const {catLoad,vehicleLoad}=await import('../progression/load-weight.js'),base=await inspectVehicleSupplies(game,root),panel=root.getElementById('field-equipment-dialog'),body=root.getElementById('field-equipment-body');
  return {...base,designCriterion:'ammo-purchase-storage',target:panel.querySelector('[data-supply-target][aria-pressed="true"]')?.dataset.supplyTarget,hand:{...game.progress.supplies.hand},catWeight:catLoad(game).weight,vehicleWeight:vehicleLoad(game).payload,bodyOverflow:body.scrollWidth>body.clientWidth+1,products:[...panel.querySelectorAll('[data-ammo-buy]')].map(b=>({id:b.dataset.ammoBuy,target:b.dataset.ammoTarget,disabled:b.disabled}))};
 }
+
+// 室内自救入口必须原地可点，直接读取真实房间、按钮命中与背包负重。
+export async function inspectIndoorBackpack(game,root){
+ const {catLoad}=await import('../progression/load-weight.js'),load=catLoad(game),view=root.defaultView;
+ const buttons=['cottage-backpack','cottage-cleanup'].map(id=>{const n=root.getElementById(id),r=n.getBoundingClientRect();return {id,hidden:n.hidden,disabled:n.disabled,width:r.width,height:r.height,inBounds:r.left>=0&&r.top>=0&&r.right<=view.innerWidth&&r.bottom<=view.innerHeight,hit:n.contains(root.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};});
+ return {designCriterion:'indoor-backpack-cleanup',room:game.cottage?.kind,floor:game.cottage?.floor,overloaded:load.overloaded,weight:load.weight,buttons,notice:root.getElementById('cottage-notice').textContent};
+}

@@ -59,3 +59,10 @@ test('快捷清理拒绝过期方案、远处车辆和不足以移动的方案',
  const {g}=scene();assert.equal(planLoadCleanup(g).ok,false);g.progress.logistics.bagWood=100;const plan=planLoadCleanup(g);g.progress.logistics.bagWood=1;const before=structuredClone(g.progress);assert.equal(discardForMobility(g,plan).ok,false);assert.deepEqual(g.progress,before);g.progress.logistics.bagWood=100;const next=planLoadCleanup(g);g.progress.farm.inventory[0]=1000;const changed=structuredClone(g.progress);assert.equal(discardForMobility(g,next).ok,false);assert.deepEqual(g.progress,changed);assert.equal(planLoadCleanup(g,1).ok,false);
  const capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=.01;const blocked=planLoadCleanup(g);assert.equal(blocked.ok,false);assert.equal(blocked.changes.length,0);assert.equal(g.progress.weapons[0],1);assert.equal(g.progress.weapons[1],1);}finally{LOAD_RULES.catCapacity=capacity;}
 });
+
+// 历史背包中的车用炮弹仍可在房内减重，无需先走到出口或载具旁。
+test('室内超载背包支持暂停清理炮弹，失败保留物品，确认后恢复移动',()=>{
+ const {g}=scene();g.cottage={kind:'ammo',outside:{x:900,y:800}};g.state='paused';g.progress.supplies.hand.heavy=3;
+ assert.equal(movementLoadFactor(g),0);assert.equal(cleanupEntries(g).find(r=>r.id==='ammo:heavy').count,3);const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(discardLoad(g,{id:'ammo:heavy',count:3}).ok,false);assert.deepEqual(g.progress,before);let saved;g.livingPersist=p=>{saved=structuredClone(p);return true;};assert.ok(discardLoad(g,{id:'ammo:heavy',count:3}).ok);assert.ok(movementLoadFactor(g)>0);assert.equal(g.cottage.kind,'ammo');assert.equal(new Game(saved).progress.supplies.hand.heavy,0);
+ g.progress.supplies.hand.shell=5;const plan=planLoadCleanup(g);assert.ok(plan.ok);assert.ok(discardForMobility(g,plan).ok);assert.ok(movementLoadFactor(g)>0);assert.ok(catLoad(g).weight<catLoad(g).capacity);
+});
