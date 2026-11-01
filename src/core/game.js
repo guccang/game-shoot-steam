@@ -1,5 +1,5 @@
 import {updateLoadWarning} from './load-warning.js';
-import {collectWood} from './wood-storage.js';
+import {dropGroundWood,updateWoodPickup} from './wood-pickup.js';
 import {updateVehicleBoarding} from './vehicle-boarding.js';
 import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
@@ -16,7 +16,7 @@ import {awardFarmSeedDrop} from './farm-seeds.js';
 import {ensureWildFarms,expireWildFarms} from './wild-farm.js';
 import {farmWorking,updateFarmWork,updateFarmRain} from './farm.js';
 import {createResourceDrop} from '../combat/resource-pickup.js';
-import {recordRestorationWood,updateRestoration} from './town-restoration.js';
+import {updateRestoration} from './town-restoration.js';
 import {updateGravityFields} from '../combat/gravity-field.js';
 import {countCampActivity} from '../progression/camp-level.js';
 import { creditResource } from '../progression/resource-wallet.js';
@@ -36,7 +36,7 @@ import { livingProtected, retreatLivingEnemy } from './living-safety.js';
 import { riderPosition } from '../config/vehicle-rider.js';
 import {updateMainline,resetMainlineScene} from './mainline-manager.js';
 import {arrivalPending,arrivalCinematic} from '../config/ranger-arrival.js';
-import {restoreArrival,updateArrival,advanceArrival,recordArrivalWood} from './ranger-arrival.js';
+import {restoreArrival,updateArrival,advanceArrival} from './ranger-arrival.js';
 import { i18nText } from "../i18n/index.js";
 import {readyStoryExcursion} from './story-excursion.js';
 import {recordStoryEvent} from './story-journey.js';
@@ -196,7 +196,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.buildingEntry=null;this.buildingEntryLatch=null;
-    this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
+    this.woodPickup=null;this.woodPickupNotice=0;this.woodPickupSkipped=null;this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
     resetBattlefield(this, continuation);
@@ -656,13 +656,11 @@ export class Game {
     }
     ({coins,wood}=forestReward(target.type,coins,this.progress));
     if(share){coins=share.coins;wood=share.wood;}
-    // 金币入账，木材进入实物库存；账本与飞行图标只记录实际获得的数量。
+    // 金币照常入账；木材仅生成地面实物，等待玩家接近后再计入库存与收入。
     coins=creditResource(this.progress,'coins',coins);
-    const collectedWood=collectWood(this,wood);wood=collectedWood.count;
-    if(wood)this.float(target.x,target.y-80,`木头 +${wood} → ${collectedWood.destination}`,'#e2f3ce');
-    recordEconomy(this.progress,'income','forest:'+target.type,{coins,wood,...materials});
-    if(target.type==='tree'){recordArrivalWood(this,wood,impact);recordRestorationWood(this,wood);}
-    this.drops.push(createResourceDrop(target,coins,wood));
+    dropGroundWood(this,target,wood,impact);
+    recordEconomy(this.progress,'income','forest:'+target.type,{coins,...materials});
+    if(coins)this.drops.push(createResourceDrop(target,coins,0));
     this.onEvent('reward');
   }
   // 玩家采集与领主毁树共用树桩和再生规则，资源奖励由各自调用方决定。
@@ -808,6 +806,7 @@ export class Game {
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
     updateLoadWarning(this,dt,input);
     updateVehicleBoarding(this,dt,input);
+    updateWoodPickup(this,dt);
     maintainPlayerTow(this);
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
     if(this.cottage)updateVehicleRepair(this,dt);

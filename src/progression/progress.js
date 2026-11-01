@@ -1,3 +1,4 @@
+import {freshWoodDrops,normalizeWoodDrops} from './wood-drops.js';
 import {normalizeWeaponStorage} from './weapon-storage.js';
 import {freshSupplies,normalizeSupplies} from './supplies.js';
 import {isVehicleArmament} from '../config/vehicle-armaments.js';
@@ -59,6 +60,7 @@ export function freshProgress() {
     farm:freshFarm(),
     mailbox:freshMailbox(),
     logistics:freshLogistics(),
+    woodDrops:freshWoodDrops(),
     supplies:freshSupplies(),
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
@@ -273,6 +275,7 @@ export function validateProgress(raw) {
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
   p.logistics=normalizeLogistics(raw.logistics,p);
+  p.woodDrops=normalizeWoodDrops(raw.woodDrops);
   normalizeWeaponStorage(p);
   p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
   return p;

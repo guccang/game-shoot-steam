@@ -1793,3 +1793,6 @@ export async function inspectCottageWeaponRacks(game,renderer,root){
  const {placedDecor}=await import('../progression/home-decor.js'),{cottageFloor}=await import('../config/cottage.js'),{catLoad}=await import('../progression/load-weight.js'),floor=cottageFloor(game.cottage);
  return {designCriterion:'cottage-weapon-racks',floor,room:game.cottage?.kind,player:{x:game.player.x,y:game.player.y},view:renderer.cottageView,racks:placedDecor(game.progress.homeDecor,floor).filter(i=>i.type==='weapon-rack').map(i=>({uid:i.uid,x:i.x,y:i.y,weapons:i.weapons})),load:catLoad(game).weight,current:game.progress.weapon,dialog:root.getElementById('weapon-rack-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 木材候停检查读取正式掉落、负重与屏幕徽记，确保没有预先发放库存。
+export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');return {designCriterion:'wood-pickup-countdown',piles:game.progress.woodDrops.piles.map(p=>({id:p.id,x:p.x,y:p.y,count:p.count,mapId:p.mapId})),pickup:game.woodPickup,countdown:renderer.actionCountdownView,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds[game.vehicle.index].wood,load:game.vehicle.active?vehicleLoad(game):catLoad(game),speed:movementLoadFactor(game)};}

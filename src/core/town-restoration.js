@@ -1,3 +1,4 @@
+import {nearestGroundWood,woodPickupCapacity} from './wood-pickup.js';
 import {availableWood} from './wood-storage.js';
 import {CAMP_WAREHOUSE} from '../config/wood-storage.js';
 // 修复任务靠近自动投料，自选建筑由界面确认；持久化成功才扣料和开放功能。
@@ -31,7 +32,9 @@ export function restorationStatus(game,id){
 export function restorationObjective(game,task){
  const pending=pendingRestoration(game.progress);if(!pending||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense)return null;
  const s=restorationStatus(game,pending.id),f=s.facility,build=game.progress.restoration?.build,gather=!build&&!s.enough;
- if(gather&&game.progress.wood+availableWood(game)>=f.wood)return {task,restoration:f.id,key:'store-wood-'+f.id,phase:'doing',navigation:true,site:CAMP_WAREHOUSE,label:'运回木材，存入营地仓库',hint:'打开背包 → 货舱与仓库 → 存入全部在场木材'};
+ if(gather&&(game.progress.wood+availableWood(game)>=f.wood||(woodPickupCapacity(game)===0||nearestGroundWood(game)&&!nearestGroundWood(game,true))&&availableWood(game)>0))return {task,restoration:f.id,key:'store-wood-'+f.id,phase:'doing',navigation:true,site:CAMP_WAREHOUSE,label:'运回木材，存入营地仓库',hint:'打开背包 → 货舱与仓库 → 存入全部在场木材'};
+ const ground=gather&&nearestGroundWood(game,true);
+ if(ground&&woodPickupCapacity(game)>0)return {task,restoration:f.id,key:'pickup-wood-'+f.id,phase:'doing',navigation:true,site:ground,label:'靠近木材0.5秒拾取',hint:'装不下的木材保留在地面；拾取后运回营地入库'};
  let tree=null,distance=Infinity;
  if(gather)for(const t of game.trees){const d=worldDistance(game.player,t);if(t.hp>0&&d<distance){tree=t;distance=d;}}
  return {task,restoration:f.id,key:'restore-'+f.id,phase:'doing',navigation:true,site:{...(tree||f.site),mapId:'forest',...(!gather&&!build?{repairArea:s.area}:{})},

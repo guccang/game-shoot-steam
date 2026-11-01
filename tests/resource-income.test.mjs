@@ -1,3 +1,4 @@
+import {updateWoodPickup} from '../src/core/wood-pickup.js';
 import {prepareBossNode} from './helpers/boss-node.mjs';
 import {clearingSite} from '../src/progression/clearing-site.js';
 import {waveDifficulty,clearingWaveBudget} from '../src/config/waves.js';
@@ -16,12 +17,13 @@ function arena() {
   return g;
 }
 
-test('已有库存加载及重新开始不变，伐木向背包新增8木材、不直接入库或产金币', () => {
+test('已有库存加载及重新开始不变，伐木落地拾取后向背包新增8木材、不直接入库或产金币', () => {
   const g = arena();
   assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 857);
   g.addTree(950, 760);
   const tree = g.trees[0];
   g.hit(tree, 10000);
+  g.mainlineSpeech=null;g.vehicle.active=false;Object.assign(g.player,{x:tree.x,y:tree.y});updateWoodPickup(g,0);for(let i=0;i<10;i++)updateWoodPickup(g,.05);
   assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 857);assert.equal(g.progress.logistics.bagWood,8);
   g.hit(tree, 10000);
   assert.equal(g.progress.coins, 57299); assert.equal(g.progress.wood, 857);assert.equal(g.progress.logistics.bagWood,8);

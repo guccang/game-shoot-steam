@@ -1,3 +1,4 @@
+import {drawResourceIcon} from './resource-icons.js';
 // 场景交互与界面自动关闭共用停车徽记，绘制器只读进度、不推进计时。
 import {box,oval,poly} from './primitives.js';
 
@@ -6,6 +7,8 @@ function drawIcon(c,icon){
  if(icon==='parking'||icon==='vehicle'){
   box(c,-6,-4,12,9,3,'#82a376','#41664b',1.3);box(c,-4,-7,8,5,2,'#dce5b9','#41664b',1);
   for(const x of [-5,4])oval(c,x,5,1.5,2,'#41664b');
+ }else if(icon==='wood'){
+  drawResourceIcon(c,'wood',0,0,18);
  }else if(icon==='weapon'){
   // 枪托、枪管与握把独立勾出小型枪械，与停车和候门图标区分。
   box(c,-7,-4,11,6,2,'#82a376','#41664b',1.3);box(c,3,-3,6,3,1,'#dce5b9','#41664b',1);poly(c,[[-4,2],[0,2],[-1,8],[-5,8]],'#dce5b9','#41664b',1.2);

@@ -1,3 +1,4 @@
+import {WOOD_GROUND} from '../config/wood-storage.js';
 import {VEHICLE_BOARDING,vehicleBoardingPoint} from '../core/vehicle-boarding.js';
 // 房间与地图共用门口徽记，固定屏幕尺寸和目标门的位置。
 import {drawActionCountdown} from './action-countdown.js';
@@ -8,6 +9,7 @@ import {doorwayInteractionAnchor,projectInteractionAnchor} from '../world/intera
 export function playerActionCountdown(game){
  const room=game.cottage;
  if(room)return !room.sleep&&!room.restOpen&&room.exitElapsed?{elapsed:room.exitElapsed,wait:interiorLayout(room).exitWait,icon:'exit'}:null;
+ if(game.woodPickup&&game.woodPickup.elapsed>=0){const p=game.woodPickup;return {elapsed:p.elapsed,wait:WOOD_GROUND.wait,icon:'wood',width:78,anchor:{x:p.x+60,y:p.y+40,space:'world'}};}
  // 驾驶时也显示房门候停进度，载具自身的上车徽记仍只用于步行状态。
  if(game.vehicle.active&&!game.cottageEntry)return null;
  // 车头侧边徽记避开猫猫身体和短屏顶部HUD，仍固定于车辆而不随玩家漂移。
@@ -22,6 +24,6 @@ export function drawPlayerActionCountdown(renderer){
  const game=renderer.game,action=playerActionCountdown(game);renderer.actionCountdownView=null;
  if(!action||!['playing','paused'].includes(game.state))return;
  const point=projectInteractionAnchor(action.anchor||doorwayInteractionAnchor(game),renderer.view,renderer.cottageView),c=renderer.c;if(!point)return;
- const seconds=Math.max(1,Math.ceil(action.wait-action.elapsed)),label=action.icon==='vehicle'?seconds+'s':seconds;renderer.actionCountdownView={...point,width:68,height:34,icon:action.icon,label,progress:action.elapsed/action.wait};
+ const seconds=Math.max(1,Math.ceil(action.wait-action.elapsed)),label=action.icon==='wood'?Math.max(.1,Math.ceil((action.wait-action.elapsed)*10-1e-9)/10).toFixed(1)+'s':action.icon==='vehicle'?seconds+'s':seconds;renderer.actionCountdownView={...point,width:action.width||68,height:34,icon:action.icon,label,progress:action.elapsed/action.wait};
  c.save();c.setTransform(renderer.dpr,0,0,renderer.dpr,0,0);c.translate(point.x,point.y);drawActionCountdown(c,{...action,progress:action.elapsed/action.wait,label});c.restore();
 }
