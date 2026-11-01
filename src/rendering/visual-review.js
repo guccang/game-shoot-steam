@@ -1842,3 +1842,6 @@ export function inspectCharacterVehicleStorage(game,root){const cat=root.getElem
 
 // 读取正式自动入库批次、飞行姿态与真实存量，验收固定仓库终点。
 export function inspectWarehouseAutoWood(game){const batches=game.drops.filter(d=>d.warehouseWood);return {designCriterion:"warehouse-auto-wood",stored:game.progress.wood,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds.map(b=>b.wood),batches:batches.map(d=>({origin:{x:d.originX,y:d.originY},destination:d.destination,count:d.wood,age:d.age})),icons:resourcePickupPoses(batches,game.player).length,held:game.warehouseAutoWood?.held||[]};}
+
+// 对照正式库存合计与HUD文本，记录三处来源及完整提示。
+export async function inspectWoodHudTotal(game,root){const {woodInventory}=await import("../progression/resource-wallet.js"),node=root.querySelector("[data-wood]");return {designCriterion:"wood-hud-total",...woodInventory(game.progress),text:node?.textContent,title:node?.title};}

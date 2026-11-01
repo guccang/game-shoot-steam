@@ -12,3 +12,6 @@ export function creditResource(progress,key,amount) {
   wallet[key]=before+received;
   return received;
 }
+
+// 木头总览只读真实存量，不把车体、借用装备或可消费仓库额度重复计算。
+export function woodInventory(progress){const warehouse=progress.wood,bag=progress.logistics.bagWood,vehicles=progress.logistics.builds.reduce((sum,build,index)=>sum+(progress.vehicleHulls[index]?build.wood:0),0);return {warehouse,bag,vehicles,total:warehouse+bag+vehicles};}

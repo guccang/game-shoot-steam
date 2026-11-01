@@ -6,7 +6,8 @@ import {deathCoinLoss} from '../core/death-penalty.js';
 import {livingWaveAllowed,livingProtected,clearingCombatActive} from '../core/living-safety.js';
 // 战场 HUD 只读游戏状态，不执行购买、存储或战斗更新。
 import { updateFunnelSupply } from './funnel-supply.js';
-import { compactWalletResource } from './resource-number.js';
+import {woodInventory} from '../progression/resource-wallet.js';
+import { compactWalletResource,compactTotalResource } from './resource-number.js';
 import { updateVehicleHud } from './vehicle-controls.js';
 import { ammoRingState, updateRing, statusIcon } from './status-rings.js';
 import { bossProfile, nextBoss } from '../config/bosses.js';
@@ -45,11 +46,14 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const wallet=game.story?game.progress:p;
     $('coins').textContent = wallet.coins.toLocaleString();
     $('wood').textContent = wallet.wood.toLocaleString();
-    for(const [key,name] of [['coins',i18nText("balance.app.bbece6f829")],['wood','营地仓库木头']]) {
-      const node=root.querySelector(`[data-${key}]`),exact=wallet[key].toLocaleString();
-      node.textContent=compactWalletResource(wallet[key]);node.title=exact;
-      node.parentElement.setAttribute('aria-label',`${name} ${exact}`);
-    }
+    const coinsNode=root.querySelector('[data-coins]'),coinsExact=wallet.coins.toLocaleString();
+    coinsNode.textContent=compactWalletResource(wallet.coins);coinsNode.title=coinsExact;
+    coinsNode.parentElement.setAttribute('aria-label',`${i18nText("balance.app.bbece6f829")} ${coinsExact}`);
+    // 主界面统计全部自有木头，交易页仍显示能直接消费的仓库存量。
+    const wood=woodInventory(game.progress),woodNode=root.querySelector('[data-wood]');
+    const woodLabel=`木头总计 ${wood.total.toLocaleString()} · 背包 ${wood.bag.toLocaleString()} · 载具 ${wood.vehicles.toLocaleString()} · 仓库 ${wood.warehouse.toLocaleString()}`;
+    woodNode.textContent=compactTotalResource(wood.total);woodNode.title=woodLabel;woodNode.parentElement.setAttribute('aria-label',woodLabel);
+    const woodButton=woodNode.parentElement.querySelector('[data-resource-info]');if(woodButton){woodButton.title=woodLabel;woodButton.setAttribute('aria-label',woodLabel+'，查看获取说明');}
     $('kills').textContent = game.kills;
     $('trees').textContent = game.chopped;
     $('bosses').textContent = game.roundBosses;
