@@ -1,0 +1,11 @@
+/* 仓库存取沿用手机底板；图标、数量和操作在窄屏内自然换行。 */
+.warehouse-tabs,.warehouse-row__actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.warehouse-row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;align-items:center}
+.warehouse-row__icon{width:48px;height:48px;display:grid;place-items:center}
+.warehouse-row__icon svg{width:48px;height:48px}
+.warehouse-row h3,.warehouse-row p{margin:4px 0}
+.warehouse-row__actions{grid-column:1/-1;margin:0}
+.warehouse-row__actions button{flex:1}
+#warehouse-quantity input{width:100%;min-height:44px;accent-color:var(--ui-forest)}
+#warehouse-source{width:100%;min-height:44px}
+#warehouse-dialog .ui-panel__body{overflow-y:auto}

@@ -1,3 +1,4 @@
+import {WAREHOUSE} from './warehouse.js';
 import {AMMO_SHOP} from './supplies.js';
 import {CAT_HOME} from './cat-home.js';
 import {FURNITURE_SHOP,FURNITURE_SHOP_DISPLAYS} from './furniture-shop.js';
@@ -25,6 +26,7 @@ export const VEHICLE_DISPLAYS=purchasableVehicles.map((index,slot)=>({id:'showro
 // 小型营业房使用同一门槛和通道，服务名称决定室内柜台文案。
 function serviceRoom(id,name,site,door={x:site.x,y:site.y+22}){return {...WORKSHOP_ROOM,id,name,site,door,outside:{x:door.x,y:door.y+52},service:true};}
 export const WORKSHOP_INTERIORS={
+ warehouse:serviceRoom('warehouse','小屋仓库',WAREHOUSE),
  ammo:serviceRoom('ammo','弹药补给铺',AMMO_SHOP),
  'cat-home':serviceRoom('cat-home','猫窝',CAT_HOME),
  furniture:serviceRoom('furniture','家具小铺',FURNITURE_SHOP),
@@ -56,7 +58,7 @@ export function interiorVehicleDisplays(){return VEHICLE_DISPLAYS.map(item=>({..
 // 武器柜与车库工具台使用同一碰撞来源；泊位只有停着车才阻挡角色。
 export function interiorFurniture(game){
  const counter=interiorCounter(game.cottage);
- if(interiorLayout(game.cottage).service)return [counter,...(game.cottage.kind==='cat-home'?[{id:'cat-bed-left',type:'cat-bed',x:65,y:280,width:65,height:38},{id:'cat-bed-right',type:'cat-bed',x:295,y:280,width:65,height:38}]:[]),...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
+ if(interiorLayout(game.cottage).service)return [counter,...(game.cottage.kind==='warehouse'?[{id:'wood-store',type:'warehouse-crate',label:'木材',x:66,y:125,width:65,height:42},{id:'ammo-store',type:'warehouse-crate',label:'弹药',x:294,y:125,width:65,height:42},{id:'seed-store',type:'warehouse-crate',label:'种子',x:66,y:280,width:65,height:42}]:[]),...(game.cottage.kind==='cat-home'?[{id:'cat-bed-left',type:'cat-bed',x:65,y:280,width:65,height:38},{id:'cat-bed-right',type:'cat-bed',x:295,y:280,width:65,height:38}]:[]),...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
  if(game.cottage?.kind==='weapons')return [...interiorWeaponDisplays(),counter];
  if(game.cottage?.kind==='vehicle')return [...GARAGE_FURNITURE,...VEHICLE_DISPLAYS,...(garageVehicleRecord(game)?[VEHICLE_BAY]:[]),counter];
  return game.progress.homeDecor?homeFurniture(game.progress.homeDecor,cottageFloor(game.cottage)):COTTAGE_FURNITURE;
@@ -70,7 +72,7 @@ export const WORKSHOP_DISPLAY_ENTRY={wait:3,radius:32,releaseRadius:50,stopSpeed
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;
  if(!kind||kind==='cottage')return null;
- return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
+ return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
 }
 // 柜台跟随售货员底座，绘制和碰撞共用同一位置；私人小屋没有柜台。
 export function interiorCounter(room){const seller=interiorShopkeeper(room);return seller?{id:'counter',type:'counter',x:seller.x,y:seller.y+30,width:130,height:36}:null;}

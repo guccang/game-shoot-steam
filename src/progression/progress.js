@@ -1,3 +1,4 @@
+import {normalizeWarehouse} from './warehouse.js';
 import {freshWoodDrops,normalizeWoodDrops} from './wood-drops.js';
 import {normalizeWeaponStorage} from './weapon-storage.js';
 import {freshSupplies,normalizeSupplies} from './supplies.js';
@@ -62,6 +63,7 @@ export function freshProgress() {
     logistics:freshLogistics(),
     woodDrops:freshWoodDrops(),
     supplies:freshSupplies(),
+    warehouse:normalizeWarehouse(null),
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
     keepsakes:normalizeKeepsakes(null,null),
@@ -272,6 +274,7 @@ export function validateProgress(raw) {
   const mountedGuns=new Set();
   p.vehicleLoadouts=p.vehicleHulls.map((owned,i)=>{const gun=raw.vehicleLoadouts?.[i];if(!owned||!isVehicleArmament(gun)||!p.vehicleWeapons[gun]||mountedGuns.has(gun))return null;mountedGuns.add(gun);return gun;});
   p.supplies=normalizeSupplies(raw.supplies,p);
+  p.warehouse=normalizeWarehouse(raw.warehouse);
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
   p.logistics=normalizeLogistics(raw.logistics,p);

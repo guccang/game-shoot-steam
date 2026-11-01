@@ -9,6 +9,7 @@ import {LIVING_PLACES} from './living-world.js';
 export const WORLD_BUILDINGS=[
  {id:'ammo',...TOWN_LAYOUT.ammo,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {id:'cat-home',...TOWN_LAYOUT.catHome,rects:[[-67,-93,69,5]]},
+ {id:'warehouse',...TOWN_LAYOUT.warehouse,rects:[[-67,-88,69,5]]},
  {id:'furniture',...TOWN_LAYOUT.furniture,rects:[[-63,-84,65,5]]},
  {id:'cottage',...TOWN_LAYOUT.cottage,rects:[[-60,-98,70,0]]},
  {id:'weapons',...TOWN_LAYOUT.weapons,rects:[[-68,-98,70,6]]},

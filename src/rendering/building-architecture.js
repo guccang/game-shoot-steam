@@ -3,6 +3,7 @@ import {box,poly,oval} from './primitives.js';
 import {drawWorldSign} from './world-signs.js';
 const EDGE='#365a48';
 const DESIGNS={
+ warehouse:{w:144,h:124,roof:'#8a9572',name:'小屋仓库'},
  ammo:{w:144,h:128,roof:'#77928b',name:'弹药补给铺'},
  'cat-home':{w:144,h:132,roof:'#9b9474',name:'猫窝'},
  furniture:{w:136,h:120,roof:'#98a276',name:'家具小铺'},
@@ -63,6 +64,11 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
   // 猫耳轮廓与软垫窗区别于普通住宅，爪印不覆盖中央入口。
   for(const side of [-1,1]){poly(c,[[side*43-13,-h+27],[side*43,-h-7],[side*43+13,-h+27]],d.roof,EDGE,2);windowFrame(c,side<0?left+13:25,-55,25,28,night);oval(c,side*40,-25,13,5,'#e2c39a',EDGE,1);}
   oval(c,0,-h+27,9,6,'#e8d3a8');for(const dx of [-9,-3,4,10])oval(c,dx,-h+15,3,4,'#e8d3a8');
+ }else if(kind==='warehouse'){
+  // 宽木仓门、交叉加固货箱和侧边原木形成仓储剪影，中央门前不摆货。
+  windowFrame(c,31,-57,24,23,night);
+  for(const [x,y] of [[-48,-13],[-32,-13],[-40,-27]]){box(c,x-8,y-7,16,14,4,'#b49a70',EDGE,1.4);oval(c,x,y,5,5,'#e0c794',EDGE,1);}
+  box(c,27,-25,34,27,2,'#b49a70',EDGE,1.5);c.strokeStyle=EDGE;c.beginPath();c.moveTo(30,-22);c.lineTo(58,-1);c.moveTo(58,-22);c.lineTo(30,-1);c.stroke();
  }else if(kind==='furniture'){
   // 软垫橱窗与小木凳标识家具店，保持中央门槛可进入。
   for(const x of [left+12,24]){windowFrame(c,x,-55,26,30,night);box(c,x+2,-34,22,10,3,'#95ac78',EDGE,1);box(c,x,-29,26,7,2,'#b2c28c',EDGE,1);}

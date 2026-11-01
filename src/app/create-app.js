@@ -5,6 +5,7 @@ import {createVehicleRepairPanel} from '../ui/vehicle-repair.js';
 import {facilityOpen} from '../config/town-restoration.js';
 
 import {createMonsterCampPanel} from '../ui/monster-camps.js';
+import {createWarehouse} from '../ui/warehouse.js';
 import {createSeedShop} from '../ui/seed-shop.js';
 import { createFixedStep } from '../platform/fixed-step.js';
 import { bindMobileFullscreen } from '../platform/mobile-fullscreen.js';
@@ -245,6 +246,7 @@ export function createApplication({
   game.requestFacility=id=>restorationPanel.open(id);
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:refresh});
   const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onCleanup:()=>loadCleanup.open(game.vehicle.index)});
+  const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
   const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),
     commit: plan => { const result = commitWorkshop(game, plan, store.saveProgress); diagnostics.gameplay.event('workshop-commit',{plan:{kind:plan.kind,index:plan.index,action:plan.action,part:plan.part,choice:plan.choice},ok:result.ok,reason:result.reason,cost:result.cost});renderSaveStatus(); return result; },
@@ -302,6 +304,7 @@ export function createApplication({
   }});
   // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
   function openRoomService(kind,index){
+    if(kind==='warehouse')return warehouse.open();
     if(kind==='ammo')return fieldEquipment.open('ammo');
     if(kind==='seed')return seedShop.open();
     if(kind==='repair')return vehicleRepair.open();
@@ -651,7 +654,7 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();loadCleanup.dispose();
+    warehouse.dispose();backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();loadCleanup.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();

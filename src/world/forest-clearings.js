@@ -1,3 +1,4 @@
+import {WAREHOUSE} from '../config/warehouse.js';
 import {AMMO_SHOP} from '../config/supplies.js';
 import {CAT_HOME} from '../config/cat-home.js';
 import {FURNITURE_SHOP} from '../config/furniture-shop.js';
@@ -15,7 +16,7 @@ import {STORY_POSTS} from '../config/story-posts.js';
 import { canonical, worldDistance, nearest } from './coordinates.js';
 import { COTTAGES, WHEAT_FIELDS, SCENERY } from './scenery.js';
 // 快递站与小屋共用树冠净空，列表只创建一次，避免逐棵树分配。
-const CLEARING_BUILDINGS=[AMMO_SHOP,CAT_HOME,FURNITURE_SHOP,REPAIR_CENTER,...COTTAGES,FARM_DELIVERY,FARM_SEED_SHOP];
+const CLEARING_BUILDINGS=[AMMO_SHOP,CAT_HOME,FURNITURE_SHOP,WAREHOUSE,REPAIR_CENTER,...COTTAGES,FARM_DELIVERY,FARM_SEED_SHOP];
 import { riverBeachWidth, excludesNaturalScenery } from './natural-terrain.js';
 import { riverXAt, riverHalfWidth } from './river-geometry.js';
 import { coversRealmEntrance } from './realm-entrances.js';
@@ -23,7 +24,7 @@ import { coversLandscape } from './landscape-compositions.js';
 
 // 树群退到生活区边缘、工坊侧后和东岸；任务广场与南侧门前不布树。
 export const CAMP_EDGE_TREES = [
-  {x:580+TOWN_SHIFT_X,y:300,size:.82},{x:580+TOWN_SHIFT_X,y:1180,size:.72},
+  {x:580+TOWN_SHIFT_X,y:1180,size:.72},
   {x:1460,y:860,size:.94},{x:1420,y:960,size:.76},
 ];
 // 固定采集树与随机树采用相同的车位树冠净空，避免布局迁移后树梢压住车位。

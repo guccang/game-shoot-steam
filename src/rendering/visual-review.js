@@ -1830,3 +1830,6 @@ export async function inspectAmmoFit(game,root){
  const base=await inspectAmmoPurchaseStorage(game,root),body=root.getElementById('field-equipment-body');
  return {...base,designCriterion:'ammo-fit-icons',equipped:body.querySelector('[data-equipped-ammo]')?.dataset.equippedAmmo,summary:body.querySelector('.ammo-equipped')?.textContent,offers:[...body.querySelectorAll('[data-ammo-offer]')].map(row=>({key:row.dataset.ammoOffer,fit:row.dataset.ammoFit==='true',icon:row.querySelector('[data-ammo-icon]')?.dataset.ammoIcon,label:row.querySelector('.ammo-fit-label')?.textContent}))};
 }
+
+// 仓库验收读取真实世界位置、柜台和存档，不生成替代画面。
+export async function inspectWarehouse(game,root=document){const {WAREHOUSE}=await import('../config/warehouse.js');return {designCriterion:'warehouse-building',site:WAREHOUSE,room:game.cottage?.kind,stock:game.progress.warehouse,wood:game.progress.wood,dialog:!!root.getElementById('warehouse-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
