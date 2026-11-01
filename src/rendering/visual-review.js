@@ -1824,3 +1824,9 @@ export function inspectSupplyLoadConfirm(root){
  const panel=root.getElementById('supply-load-confirm'),r=panel.getBoundingClientRect(),view=root.defaultView,body=panel.querySelector('.ui-panel__body');
  return {designCriterion:'purchase-load-confirm',open:panel.open,title:panel.querySelector('h2').textContent,weight:panel.querySelector('[data-load-weight]').textContent,effect:panel.querySelector('#supply-load-effect').textContent,focus:root.activeElement?.id,badBounds:r.left<0||r.top<0||r.right>view.innerWidth+1||r.bottom>view.innerHeight+1,overflow:body.scrollWidth>body.clientWidth+1,smallButtons:[...panel.querySelectorAll('button')].some(b=>{const box=b.getBoundingClientRect();return box.width<44||box.height<44;})};
 }
+
+// 弹药适配验收绑定正式货架和装备，文字匹配不能只依赖图标颜色。
+export async function inspectAmmoFit(game,root){
+ const base=await inspectAmmoPurchaseStorage(game,root),body=root.getElementById('field-equipment-body');
+ return {...base,designCriterion:'ammo-fit-icons',equipped:body.querySelector('[data-equipped-ammo]')?.dataset.equippedAmmo,summary:body.querySelector('.ammo-equipped')?.textContent,offers:[...body.querySelectorAll('[data-ammo-offer]')].map(row=>({key:row.dataset.ammoOffer,fit:row.dataset.ammoFit==='true',icon:row.querySelector('[data-ammo-icon]')?.dataset.ammoIcon,label:row.querySelector('.ammo-fit-label')?.textContent}))};
+}

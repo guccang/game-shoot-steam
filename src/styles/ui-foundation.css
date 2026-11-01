@@ -423,3 +423,21 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #vehicle-button .vehicle-hud-state{position:absolute;right:0;top:0;min-width:10px;font-size:11px;line-height:12px;border-radius:4px;color:var(--ui-danger);background:var(--ui-paper);font-weight:bold;pointer-events:none;}
 #vehicle-button[data-load-tone=full] .vehicle-ammo-count{color:var(--ui-danger);}
 #vehicle-button .vehicle-hud-state:empty{display:none;}
+
+/* 弹药以剪影区分，适配文字与当前装备对应；窄屏货架保持单列。 */
+.ammo-symbol{display:inline-flex;flex:none;width:48px;height:48px;align-items:center;justify-content:center;}
+.ammo-symbol svg{width:100%;height:100%;display:block;}
+#field-equipment-body .ammo-equipped{display:flex;gap:10px;align-items:center;margin-top:12px;}
+#field-equipment-body .ammo-equipped>.ammo-symbol{width:40px;height:40px;}
+#field-equipment-body .ammo-equipped>div,#field-equipment-body .ammo-offer-heading>div{min-width:0;}
+#field-equipment-body .ammo-equipped b{display:block;overflow-wrap:anywhere;}
+#field-equipment-body .ammo-equipped small{color:var(--ui-muted);font-size:11px;}
+#field-equipment-body .ammo-equipped p{margin:4px 0 0;font-size:12px;line-height:1.45;}
+#field-equipment-body .ammo-destination{font-size:12px;line-height:1.5;margin:10px 0;}
+#field-equipment-body .ammo-offer-heading{display:flex;align-items:center;gap:12px;}
+#field-equipment-body .ammo-offer p{font-size:12px;line-height:1.5;margin:8px 0;}
+#field-equipment-body .ammo-fit-label{display:block;margin-top:4px;color:var(--ui-muted);font-size:12px;}
+#field-equipment-body .ammo-offer[data-ammo-fit=true]{border-color:var(--ui-forest);}
+#field-equipment-body .ammo-offer[data-ammo-fit=true] .ammo-fit-label{color:var(--ui-forest);font-weight:bold;}
+#field-equipment-body .equipment-ammo{display:flex;align-items:center;gap:10px;}
+#field-equipment-body .equipment-ammo .ammo-symbol{width:36px;height:36px;}
