@@ -14,6 +14,9 @@ export function realmSites() {
   if (sites) return sites;
   sites = [];
   const radius = REALM_RADIUS;
+  // 重叠战斗圈共用 24 单位采样格，首次检查后复用地形结果；建完候选点即释放。
+  // 半径包含平方根，格索引取整消除加减半径产生的浮点尾差。
+  const columns=Math.ceil(WORLD.width/24),terrain=new Uint8Array(columns*Math.ceil(WORLD.height/24));
   for (let y = radius + 24; y < WORLD.height - radius - 24; y += 24)
     for (let x = radius + 24; x < WORLD.width - radius - 24; x += 24) {
       // 密采样保留营地外狭窄的合法落点，爬塔仍有不同选区可轮换；结果只建立一次。
@@ -21,7 +24,11 @@ export function realmSites() {
       let dry = true;
       for (let dy = -radius; dy <= radius && dry; dy += 24)
         for (let dx = -radius; dx <= radius; dx += 24)
-          if (dx * dx + dy * dy <= radius * radius && terrainBlocked(x + dx, y + dy, 24)) { dry = false; break; }
+          if (dx * dx + dy * dy <= radius * radius) {
+            const index=Math.round((y+dy)/24)*columns+Math.round((x+dx)/24);
+            if(!terrain[index])terrain[index]=terrainBlocked(x+dx,y+dy,24)?2:1;
+            if(terrain[index]===2){dry=false;break;}
+          }
       if (dry) sites.push(Object.freeze({ x, y, radius, terrain: 'forest' }));
     }
   if (!sites.length) throw Error(i18nText("core.realm-region.54a778aa48"));

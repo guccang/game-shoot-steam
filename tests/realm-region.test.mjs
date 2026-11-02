@@ -2,17 +2,38 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
-import { freshProgress } from '../src/progression/progress.js';
+import { freshProgress as freshBaseProgress } from '../src/progression/progress.js';
+import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
+import {MAINLINE_IDS} from '../src/config/mainline.js';
 import { REALM_ARENA, REALM_RADIUS } from '../src/config/realms.js';
 import { realmSites, validRealmArena, chooseRealmArena } from '../src/core/realm-region.js';
 import { SETTLEMENTS } from '../src/config/settlements.js';
 import { settlementAt } from '../src/world/settlements.js';
-import { WORLD } from '../src/world/coordinates.js';
+import { WORLD, ORIGINAL_WORLD } from '../src/world/coordinates.js';
 import { guardianPads } from '../src/config/guardian.js';
 import { terrainBlocked } from '../src/physics/terrain-navigation.js';
 import { blocked, moveBody } from '../src/physics/motion.js';
 import { landingPoint } from '../src/combat/vehicle-landing.js';
 import { updateRealm } from '../src/core/realm-manager.js';
+
+// 选区测试使用已修复秘境的存档，避免被新手设施权限提前拦截。
+function freshProgress(){const p=freshBaseProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';return p;}
+
+// 对照原始逐点判定，确保格点复用不改变候选顺序、存档落点或随机选择概率。
+test('复用重叠采样后候选点与逐圈地形检查完全一致',()=>{
+  const expected=[],radius=REALM_RADIUS;
+  for(let y=radius+24;y<ORIGINAL_WORLD.height-radius-24;y+=24)
+    for(let x=radius+24;x<ORIGINAL_WORLD.width-radius-24;x+=24){
+      if(settlementAt({x,y},radius+24))continue;
+      let dry=true;
+      for(let dy=-radius;dy<=radius&&dry;dy+=24)
+        for(let dx=-radius;dx<=radius;dx+=24)
+          if(dx*dx+dy*dy<=radius*radius&&terrainBlocked(x+dx,y+dy,24)){dry=false;break;}
+      if(dry)expected.push({x,y,radius,terrain:'forest'});
+    }
+  assert.deepEqual(realmSites(),expected);
+  assert.equal(realmSites(),realmSites());
+});
 
 test('随机选区来自原世界干地，面积恰为旧秘境三倍且存档不能篡改半径', () => {
   assert.ok(Math.abs(REALM_RADIUS ** 2 / REALM_ARENA.radius ** 2 - 3) < 1e-10);
@@ -46,7 +67,7 @@ test('三种秘境刷新保留选区，退出恢复森林树木与原位置', ()
 });
 
 test('砍树不推进关卡或增加秘境币，原森林树木不受局内伤害影响', () => {
-  const g = new Game();const before=JSON.stringify(g.progress);g.enterRealm('guardian');g.continueRealm();
+  const g = new Game(freshProgress());const before=JSON.stringify(g.progress);g.enterRealm('guardian');g.continueRealm();
   const tree=g.trees.find(t=>t.hp>0), forestTree=g.forestState.trees.find(t=>t.id===tree.id);
   const hp=forestTree.hp,coins=g.realm.realmCoins;g.hit(tree,9999);
   assert.equal(g.realm.kills,0);assert.equal(g.realm.realmCoins,coins);
@@ -55,7 +76,7 @@ test('砍树不推进关卡或增加秘境币，原森林树木不受局内伤�
 });
 
 test('守护准备可走动布防但不刷怪、不消耗弹药或推进修复，暂停仍冻结移动', () => {
-  const g=new Game();g.enterRealm('guardian');const x=g.player.x,time=g.time,ammo=g.magazines[0].ammo;
+  const g=new Game(freshProgress());g.enterRealm('guardian');const x=g.player.x,time=g.time,ammo=g.magazines[0].ammo;
   g.vehicle.cooldown=20;
   for(let i=0;i<10;i++)g.update(.05,{x:1,y:0});
   assert.ok(g.player.x>x+10);assert.equal(g.time,time);assert.equal(g.enemies.length,0);
