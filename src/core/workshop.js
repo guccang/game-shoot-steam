@@ -7,10 +7,12 @@ import { quoteWorkshop } from '../progression/workshop.js';
 import {weaponPurchaseQuote} from './weapon-purchase-load.js';
 import { capturePatrol } from './patrol-session.js';
 import { createVehicle, configureVehicle } from '../combat/vehicle.js';
+import {canLegendaryForge} from './legendary-workshop.js';
 
 // 单次方案原子提交，保存函数由应用注入；失败仍可继续编辑原草稿。
 export function commitWorkshop(game, plan, persist) {
-  if(['upgrade','part','modify','mount'].includes(plan.action)&&game.cottage?.kind!==(plan.kind==='weapons'?'weapons':'vehicle'))return {ok:false,reason:'请到对应工坊，与售货员交谈后整备。'};
+  // 已解锁的传奇工坊提供正式枪械锻造；车体整备仍需回载具工坊。
+  if(['upgrade','part','modify','mount'].includes(plan.action)&&game.cottage?.kind!==(plan.kind==='weapons'?'weapons':'vehicle')&&!canLegendaryForge(game,plan.kind))return {ok:false,reason:'请到对应工坊，与售货员交谈后整备。'};
   if(game.fireActive)return {ok:false,reason:i18nText("core.map-travel.c5d64346b5")};
   if (game.story) return {ok:false,reason:i18nText("core.workshop.f30c3779f7")};
   const firstPistol=arrivalPistolPurchase(game.progress,plan.kind,plan.index,plan.action);

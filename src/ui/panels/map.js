@@ -3,6 +3,7 @@ import {MONSTER_CAMPS,campVisitorSite} from '../../config/monster-camps.js';
 import {FARM_CROPS} from '../../config/farm.js';
 import {monsterCampsAvailable,monsterCampLevel} from '../../core/monster-camps.js';
 import {requestWorldNavigation} from '../../core/world-navigation.js';
+import {legendaryVisible,travelLegendary} from '../../core/legendary-workshop.js';
 import {FOREST_LEVEL_BANDS} from '../../world/forest-levels.js';
 import {forestRuleLines} from '../../config/forest-rules.js';
 import {facilityOpen} from '../../config/town-restoration.js';
@@ -120,6 +121,8 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       Object.values(LIVING_PLACES).forEach((p,i)=>{const row=root.createElement('div');row.textContent=`${i+1}. ${p.name}`;$('region-legend').append(row);});
     }
     if(monsterCampsAvailable(game))for(const camp of MONSTER_CAMPS.filter(c=>c.mapId===game.mapId)){const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small'),button=root.createElement('button');title.textContent='火 · '+camp.name+' · '+monsterCampLevel(camp)+'级';note.textContent='已清空 '+game.progress.monsterCamps.camps[camp.id].clears+' 次 · 种子：'+camp.seeds.map(i=>FARM_CROPS[i].name).join('、');button.className='ui-button';button.dataset.monsterCamp=camp.id;button.textContent='前往圈外';row.append(title,note,button);$('region-legend').append(row);}
+    // 红狼所有者在地图目录也能找到真实工坊门口，复用现有按钮与路线显示。
+    if(legendaryVisible(game)){const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small'),button=root.createElement('button');title.textContent='传奇工坊';note.textContent='红狼铭牌已识别 · 门口站定1秒进入，找匠人接受传承';button.type='button';button.className='ui-button';button.dataset.legendaryRoute='';button.textContent='标记工坊路线';row.append(title,note,button);$('region-legend').append(row);}
     if(game.story)$('region-legend').innerHTML=`<div style="grid-column:1 / -1"><b>${i18nHtml("ui.panels.map.7562f827d6")}</b><small>${STORY_WORLD.legend}</small></div>`;
     if (game.mapId === 'jiuzhaigou') $('region-legend').innerHTML += JIUZHAIGOU_SIGNPOSTS.map((sign, i) =>
       `<div style="--zone-color:${sign.zone.accent}"><b>${i + 1}. ${sign.zone.name}</b><small>${i18nHtml("ui.panels.map.27d417b328", { p0: (sign.subtitle) })}</small></div>`).join('');
@@ -135,6 +138,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     $('map-done').focus({ preventScroll: true });
   });
   // 选中营地只设置圈外导航，关闭地图后由玩家实际行走。
+  scope.on($('region-legend'),'click',event=>{if(!event.target.closest('[data-legendary-route]'))return;if(!travelLegendary(game).ok)return;for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
   scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-monster-camp]'),c=MONSTER_CAMPS.find(c=>c.id===b?.dataset.monsterCamp);if(c&&c.mapId===game.mapId){requestWorldNavigation(game,campVisitorSite(c),'前往'+c.name+'圈外',{direct:true});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();}});
   for (const id of ['close-map', 'map-done'])
     scope.on($(id), 'click', () => dialogs.close('map-dialog'));
