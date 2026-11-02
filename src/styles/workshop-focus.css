@@ -69,6 +69,9 @@
 #workshop-dialog.ui-migrated[data-workshop-kind] .ws-checkout { margin:0; gap:4px; flex-wrap:nowrap; }
 #workshop-dialog.ui-migrated[data-workshop-kind] .ws-checkout > div { flex-wrap:nowrap; gap:4px; }
 #workshop-dialog.ui-migrated[data-workshop-kind] #ws-feedback { width:auto; min-height:0; max-height:none; overflow:visible; font-size:11px; }
+/* 购枪超载提示独占一行，窄屏不被整理和购买按钮挤成竖排文字。 */
+#workshop-dialog.ui-migrated[data-workshop-kind][data-load-blocked="true"] .ws-checkout { flex-direction:column; align-items:stretch; }
+#workshop-dialog.ui-migrated[data-workshop-kind][data-load-blocked="true"] #ws-feedback { width:100%; }
 #workshop-dialog.ui-migrated[data-workshop-kind][data-checkout="false"] .ws-footer { display:none; }
 #workshop-dialog.ui-migrated[data-workshop-kind][data-function="unlock"] .ws-footer { display:none; }
 /* 单个费用格保留44px来源按钮，五种资源仍在一行完整展示。 */

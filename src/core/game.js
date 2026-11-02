@@ -7,6 +7,7 @@ import {updateVehicleBoarding} from './vehicle-boarding.js';
 import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
+import {weaponPurchaseQuote} from './weapon-purchase-load.js';
 import {maintainPlayerTow,advancePlayerTow} from './player-towing.js';
 import {awardHeroXp} from '../progression/hero-experience.js';
 import {legendaryVisible} from './legendary-workshop.js';
@@ -413,6 +414,12 @@ export class Game {
   transact(kind, index, action) {
     if(action==='upgrade'&&this.cottage?.kind!==(kind==='weapons'?'weapons':'vehicle'))return false;
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
+    // 非工坊入口同样先校验购枪后的负重，拒绝时不扣资源、不改变装备。
+    if(kind==='weapons'&&action==='buy'&&Number.isInteger(index)&&WEAPONS[index]&&!this.progress.weapons[index]){
+      const next={...this.progress,weapons:this.progress.weapons.slice(),weapon:index};
+      next.weapons[index]=1;
+      if(!weaponPurchaseQuote(this,{kind,index,action},{ok:true,next}).ok)return false;
+    }
     const oldWeapon = this.progress.weapon;
     if (!transactProgress(this.progress, kind, index, action)) return false;
     if (oldWeapon !== this.progress.weapon) {

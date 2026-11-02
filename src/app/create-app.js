@@ -244,12 +244,12 @@ export function createApplication({
    else realmPanel.enter(id);
   }});
   game.requestFacility=id=>restorationPanel.open(id);
-  const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:refresh});
+  const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const outdoors=createOutdoors({game,root,dialogs,onChange:refresh});
   const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onOutdoor:()=>outdoors.open(),onCargo:()=>logistics.open('cargo',game.vehicle.index),onCleanup:()=>loadCleanup.open(game.vehicle.index)});
   const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
   const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
-  const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),
+  const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),onCleanup:()=>loadCleanup.open(null),
     commit: plan => { const result = commitWorkshop(game, plan, store.saveProgress); diagnostics.gameplay.event('workshop-commit',{plan:{kind:plan.kind,index:plan.index,action:plan.action,part:plan.part,choice:plan.choice},ok:result.ok,reason:result.reason,cost:result.cost});renderSaveStatus(); return result; },
     createTrial: createWorkshopTrial });
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});

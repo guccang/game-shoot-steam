@@ -4,6 +4,7 @@ import { i18nText } from "../i18n/index.js";
 import { vehicleMaxHp } from '../config/vehicles.js';
 // 工坊提交先持久化候选成长，再同步战斗状态；存储失败时无任何正式副作用。
 import { quoteWorkshop } from '../progression/workshop.js';
+import {weaponPurchaseQuote} from './weapon-purchase-load.js';
 import { capturePatrol } from './patrol-session.js';
 import { createVehicle, configureVehicle } from '../combat/vehicle.js';
 
@@ -13,7 +14,7 @@ export function commitWorkshop(game, plan, persist) {
   if(game.fireActive)return {ok:false,reason:i18nText("core.map-travel.c5d64346b5")};
   if (game.story) return {ok:false,reason:i18nText("core.workshop.f30c3779f7")};
   const firstPistol=arrivalPistolPurchase(game.progress,plan.kind,plan.index,plan.action);
-  const quote = quoteWorkshop(game.progress, plan, !!game.realm);
+  const quote = weaponPurchaseQuote(game,plan,quoteWorkshop(game.progress, plan, !!game.realm));
   if (!quote.ok) return quote;
   // 快照也在副本上同步位置和耐久，保存失败不能提前改动正式进度。
   const snapshot=Object.create(game);snapshot.progress=structuredClone(game.progress);
