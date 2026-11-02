@@ -10,22 +10,37 @@ import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
 import {farmApproach} from '../src/world/farm-land.js';
 import {itemDefinition} from '../src/config/items.js';
 import {WORLD} from '../src/world/coordinates.js';
+import {cargoAccessible} from '../src/core/cargo.js';
 
 // 设置两块成熟田和固定停车点，场景无临时活动或自动售货范围。
 function scene(car=true){
  const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.farm.wildMaps=['forest','jiuzhaigou'];p.vehicleHulls.fill(0);if(car)p.vehicleHulls[0]=1;
  p.farm.plots=[0,1].map(id=>({id,mapId:'forest',x:893+id*56,y:2752,crop:0,plantedAt:1,readyAt:2,watered:false}));p.farm.nextId=2;
- const g=new Game(p,()=>.4);g.state='playing';g.vehicle.active=false;g.enemies=[];g.trees=[];g.boss=null;g.mainlineSpeech=null;g.livingPersist=()=>true;Object.assign(g.player,{x:893,y:2814});g.progress.campParking.owned=car?[{hull:0,spot:null,mapId:'forest',x:900,y:2840,hp:1,ammo:0}]:[];return g;
+ const g=new Game(p,()=>.4);g.state='playing';g.vehicle.active=false;g.enemies=[];g.trees=[];g.boss=null;g.mainlineSpeech=null;g.livingPersist=()=>true;g.setViewport(390,844);g.arrivalView={width:390,height:844,left:-250,right:250,top:-450,bottom:450};Object.assign(g.player,{x:893,y:2814});g.progress.campParking.owned=car?[{hull:0,spot:null,mapId:'forest',x:900,y:2840,hp:1,ammo:0}]:[];return g;
 }
 // 每一步仍使用正式农活更新，只把测试角色放到合法动作位以免等待寻路。
 function advance(g,until){for(let i=0;i<150;i++){const job=g.farmWork?.job||g.farmWork?.queue[0];if(job&&!job.hit&&!job.loadRequest)Object.assign(g.player,farmApproach(g,job.point,job.action));updateFarmWork(g,.04,{x:0,y:0});if(until())return;}throw Error('农活没有到达预期状态');}
 // 用实际负重算出临界点，避免测试依赖初始弹药或装备重量常量。
 function nearLimit(g,hull){const load=hull===null?catLoad(g):vehicleLoad(g,hull,{driver:true}),remaining=load.capacity-(load.weight??load.payload)-.25;if(hull!==null){const mass=itemDefinition('material:wood').mass,n=Math.max(0,Math.floor(remaining/mass));g.progress.logistics.builds[hull].wood+=n;const rest=remaining-n*mass;g.progress.supplies.vehicles[hull].light+=Math.max(0,Math.ceil(rest/.002));}else g.progress.supplies.hand.light+=Math.max(0,Math.ceil(remaining/.002));}
 
-test('收获优先进入附近载具，无车或车不在附近时进入背包',()=>{
+test('收获优先进入视野内载具，无车或车在视野外时进入背包',()=>{
  const g=scene();assert.equal(farmAction(g,'harvest',{plot:0}).ok,true);assert.equal(g.progress.logistics.builds[0].cargo[0],1);assert.equal(g.progress.farm.inventory[0],0);
  g.progress.campParking.owned[0].x+=500;g.player.x+=56;assert.equal(farmAction(g,'harvest',{plot:1}).ok,true);assert.equal(g.progress.farm.inventory[0],1);
  const foot=scene(false);assert.equal(farmAction(foot,'harvest',{plot:0}).ok,true);assert.equal(foot.progress.farm.inventory[0],1);
+});
+// 自动收获使用视野范围，人工装卸仍要求靠近；远端货舱照常触发超载确认。
+test('视野内超过130距离的载具接收作物，满载仍先确认',()=>{
+ const g=scene(),car=g.progress.campParking.owned[0];Object.assign(car,{x:g.player.x+240,y:g.player.y+350});
+ assert.equal(cargoAccessible(g,0),false);assert.equal(harvestDestination(g).hull,0);nearLimit(g,0);
+ const result=farmAction(g,'harvest',{plot:0});assert.equal(result.needsLoadConfirmation,true);assert.equal(result.load.hull,0);
+ assert.equal(farmAction(g,'harvest',{plot:0,loadConfirmation:result.confirmation}).ok,true);assert.equal(g.progress.logistics.builds[0].cargo[0],1);assert.equal(g.progress.farm.inventory[0],0);
+});
+// 矩形视野跟随真实镜头，不用固定半径误收画外车辆或漏掉四角。
+test('视野四边及四角可接收，画外一步排除，缩放与偏移立即生效',()=>{
+ const g=scene(),car=g.progress.campParking.owned[0];g.arrivalView={width:390,height:844,left:-180,right:320,top:-500,bottom:280};
+ for(const [x,y,want] of [[-180,-500,0],[320,280,0],[-181,0,null],[321,0,null],[0,-501,null],[0,281,null]]){Object.assign(car,{x:g.player.x+x,y:g.player.y+y});assert.equal(harvestDestination(g).hull,want);}
+ Object.assign(car,{x:g.player.x+400,y:g.player.y});assert.equal(harvestDestination(g).hull,null);g.arrivalView.right=450;assert.equal(harvestDestination(g).hull,0);
+ g.progress.logistics.tow={target:0};assert.equal(harvestDestination(g).hull,null);g.progress.logistics.tow=null;g.realm={};assert.equal(harvestDestination(g).hull,null);
 });
 test('多车选择最近可用车，跨图、维修及报废车不作为收获目标',()=>{
  const g=scene();g.progress.vehicleHulls[1]=1;g.progress.campParking.owned.push({hull:1,spot:null,mapId:'forest',x:g.player.x,y:g.player.y+5,hp:1,ammo:0});assert.equal(harvestDestination(g).hull,1);
