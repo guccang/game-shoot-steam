@@ -14,6 +14,7 @@ import {vehicleTransferState,activateVehicleTransfer} from './vehicle-transfer.j
 import {challengeRankIcon} from '../rendering/challenge-rank.js';
 import {createWorkshopMastery} from './workshop/mastery.js';
 import {createWorkshopEquipmentInfo} from './workshop/equipment-info.js';
+import {canLegendaryForge} from '../core/legendary-workshop.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 import { VEHICLE_WEAPONS, nativeVehicleWeapon } from '../config/vehicle-armaments.js';
 import { renderWorkshopStats } from './workshop/stats.js';
@@ -221,8 +222,12 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     $('ws-trait-list').replaceChildren();
     if(showCurrent){
       const traits=vehicleTraits(index);
-      for(const text of traits.length?traits:['暂无特殊特性']){
-        const item=root.createElement('li');item.textContent=text;$('ws-trait-list').append(item);
+      for(const [slot,text] of (traits.length?traits:['暂无特殊特性']).entries()){
+        const item=root.createElement('li');
+        // 红狼的钥匙特性直接打开传承页，不要求玩家先找到隐藏在档案里的入口。
+        if(index===6&&slot===0){const button=root.createElement('button');button.type='button';button.className='ui-button';button.dataset.legendaryTrait='';button.textContent=text+' · 查看';button.onclick=()=>game.openLegendaryWorkshop?.();item.append(button);}
+        else item.textContent=text;
+        $('ws-trait-list').append(item);
       }
     }
   }
@@ -447,7 +452,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   }
   // 外部入口可指定装备及炮塔目标；旧弹窗的暂停归属转交给综合工坊。
   function open(nextKind = 'weapons', nextIndex, turret) {
-    if(game.cottage?.kind!==nextKind){const site=nextKind==='vehicle'?VEHICLE_WORKSHOP:WORKSHOP;requestWorldNavigation(game,{...site,y:site.y+22},'前往工坊，与售货员交谈',{direct:true});return;}
+    if(game.cottage?.kind!==nextKind&&!canLegendaryForge(game,nextKind)){const site=nextKind==='vehicle'?VEHICLE_WORKSHOP:WORKSHOP;requestWorldNavigation(game,{...site,y:site.y+22},'前往工坊，与售货员交谈',{direct:true});return;}
     if(!facilityOpen(game.progress,workshopFacility(nextKind))){game.requestFacility?.(workshopFacility(nextKind));return;}
     if (game.realm) return;
     // 修复后自由选择装备，过场期间仍由剧情接管操作。
