@@ -6,7 +6,8 @@ export const AMMO_SHOP={...TOWN_LAYOUT.ammo,id:'ammo-shop',name:'弹药补给铺
 // 每包数量增加十倍、包价及制作材料不变；重量采用游戏负重尺度，不使用现实炮弹质量。
 // 交易分类由同一配置约束；通用子弹可分别补给，炮弹与弹罐只在载具页出售。
 export const AMMO_TYPES={
- light:{name:'通用子弹',mass:.002,pack:300,coins:30,wood:2,parts:0,targets:['hand','vehicle']},
+ // 普通子弹单发4克，备用库存、弹匣和载具货舱统一按此计重。
+ light:{name:'通用子弹',mass:.004,pack:300,coins:30,wood:2,parts:0,targets:['hand','vehicle']},
  shell:{name:'标准炮弹',mass:.5,pack:50,coins:100,wood:3,parts:1,targets:['vehicle']},
  heavy:{name:'重型炮弹',mass:1,pack:30,coins:180,wood:5,parts:2,targets:['vehicle']},
  water:{name:'潮汐弹罐',mass:.1,pack:200,coins:20,wood:1,parts:0,targets:['vehicle']},

@@ -14,7 +14,7 @@ async original=>{
    g.progress.campParking.owned=[{hull:1,spot:null,mapId:'forest',x:room.door.x+1000,y:room.door.y+1000,hp:1,ammo:0,reload:0,wheel:0,track:0}];Object.assign(g.player,room.door,{vx:0,vy:0});g.cottageDoorLatch=false;a.renderer.camera.time=null;a.refresh();
   });
   await page.waitForFunction(()=>a.game.cottage?.kind==='ammo');await page.locator('[data-room-item=shopkeeper]').tap();await page.locator('#field-equipment-dialog[open]').waitFor();
-  await page.evaluate(async()=>{const g=a.game,{catLoad}=await import('/src/progression/load-weight.js'),load=catLoad(g);g.progress.supplies.hand.light+=Math.floor((load.capacity-load.weight-.1)/.002);});
+  await page.evaluate(async()=>{const g=a.game,{catLoad}=await import('/src/progression/load-weight.js'),load=catLoad(g);g.progress.supplies.hand.light+=Math.floor((load.capacity-load.weight-.1)/(await import('/src/config/supplies.js')).AMMO_TYPES.light.mass);});
   await page.locator('[data-supply-target=hand]').tap();const before=await stock();
   await page.locator('[data-ammo-buy=light]').tap();const bought=await stock();
   if(bought.hand<=before.hand||bought.hand>=before.hand+300||bought.hand+bought.car!==before.hand+before.car+300||bought.coins!==before.coins-30||bought.load.overloaded||await page.locator('#supply-load-confirm').isVisible())throw Error('购买未正确分流 '+JSON.stringify({before,bought}));

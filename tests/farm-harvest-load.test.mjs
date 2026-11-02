@@ -11,6 +11,7 @@ import {farmApproach} from '../src/world/farm-land.js';
 import {itemDefinition} from '../src/config/items.js';
 import {WORLD} from '../src/world/coordinates.js';
 import {cargoAccessible} from '../src/core/cargo.js';
+import {LOAD_RULES} from '../src/config/vehicle-load.js';
 
 // 设置两块成熟田和固定停车点，场景无临时活动或自动售货范围。
 function scene(car=true){
@@ -21,7 +22,7 @@ function scene(car=true){
 // 每一步仍使用正式农活更新，只把测试角色放到合法动作位以免等待寻路。
 function advance(g,until){for(let i=0;i<150;i++){const job=g.farmWork?.job||g.farmWork?.queue[0];if(job&&!job.hit&&!job.loadRequest)Object.assign(g.player,farmApproach(g,job.point,job.action));updateFarmWork(g,.04,{x:0,y:0});if(until())return;}throw Error('农活没有到达预期状态');}
 // 用实际负重算出临界点，避免测试依赖初始弹药或装备重量常量。
-function nearLimit(g,hull){const load=hull===null?catLoad(g):vehicleLoad(g,hull,{driver:true}),remaining=load.capacity-(load.weight??load.payload)-.25;if(hull!==null){const mass=itemDefinition('material:wood').mass,n=Math.max(0,Math.floor(remaining/mass));g.progress.logistics.builds[hull].wood+=n;const rest=remaining-n*mass;g.progress.supplies.vehicles[hull].light+=Math.max(0,Math.ceil(rest/.002));}else g.progress.supplies.hand.light+=Math.max(0,Math.ceil(remaining/.002));}
+function nearLimit(g,hull){const load=hull===null?catLoad(g):vehicleLoad(g,hull,{driver:true}),remaining=load.capacity-(load.weight??load.payload)-.25;if(hull!==null){const mass=itemDefinition('material:wood').mass,n=Math.max(0,Math.floor(remaining/mass));g.progress.logistics.builds[hull].wood+=n;const rest=remaining-n*mass;g.progress.supplies.vehicles[hull].light+=Math.max(0,Math.ceil(rest/itemDefinition('ammo:light').mass));}else g.progress.supplies.hand.light+=Math.max(0,Math.ceil(remaining/itemDefinition('ammo:light').mass));}
 
 test('收获优先进入视野内载具，无车或车在视野外时进入背包',()=>{
  const g=scene();assert.equal(farmAction(g,'harvest',{plot:0}).ok,true);assert.equal(g.progress.logistics.builds[0].cargo[0],1);assert.equal(g.progress.farm.inventory[0],0);
@@ -56,7 +57,12 @@ test('负重或收获目标变化使旧确认失效，不把满载货舱悄悄�
  g.player.x+=56;const other=farmAction(g,'harvest',{plot:1,loadConfirmation:second.confirmation});assert.equal(other.needsLoadConfirmation,true);assert.equal(g.progress.farm.plots[1].crop,0);
 });
 test('刚好达到上限也要确认，改换收货来源不沿用旧授权',()=>{
- const g=scene(false);g.progress.farm.lessonRewarded=true;nearLimit(g,null);g.progress.supplies.hand.light-=125;const exact=farmAction(g,'harvest',{plot:0});assert.equal(exact.load.after,exact.load.capacity);assert.equal(exact.needsLoadConfirmation,true);
+ const g=scene(false);g.progress.farm.lessonRewarded=true;nearLimit(g,null);
+ // 四克整发不一定能凑出精确容量，用临时容量构造恰好满载，结束即恢复正式配置。
+ const capacity=LOAD_RULES.catCapacity;
+ try{LOAD_RULES.catCapacity=catLoad(g).weight+itemDefinition('crop:0').mass;
+  const exact=farmAction(g,'harvest',{plot:0});assert.equal(exact.load.after,exact.load.capacity);assert.equal(exact.needsLoadConfirmation,true);
+ }finally{LOAD_RULES.catCapacity=capacity;}
  const car=scene();nearLimit(car,0);const old=farmAction(car,'harvest',{plot:0});car.progress.campParking.owned[0].x+=500;nearLimit(car,null);const changed=farmAction(car,'harvest',{plot:0,loadConfirmation:old.confirmation});assert.equal(changed.load.hull,null);assert.equal(changed.needsLoadConfirmation,true);assert.equal(car.progress.farm.plots[0].crop,0);
 });
 test('批量收割在临界一份暂停，取消保留当前和后续田块；确认仅放行一份',()=>{

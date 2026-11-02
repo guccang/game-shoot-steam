@@ -1,3 +1,4 @@
+import {AMMO_TYPES} from '../src/config/supplies.js';
 // Debug 批量发放与小屋仓库回归：位置唯一、真实负重、存档往返和事务回滚。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,7 +27,7 @@ test('只缺一把轻武器且未满载时正常放入背包，达到容量边�
  const g=setup();g.progress.weapons.fill(1);g.progress.warehouse.weapons=g.progress.weapons.map((_,i)=>i).filter(i=>i!==0&&i!==1);g.progress.weapons[1]=0;
  const next=unlockedWeaponProgress(g.progress,g);assert.ok(carriedWeapon(next,1));
  const full=Object.assign(Object.create(g),{progress:next}),extra=30-catLoad(full).weight;
- g.progress.supplies.hand.light+=Math.round(extra/.002);
+ g.progress.supplies.hand.light+=Math.round(extra/AMMO_TYPES.light.mass);
  const stored=unlockedWeaponProgress(g.progress,g);assert.ok(stored.warehouse.weapons.includes(1));assert.equal(catLoad(Object.assign(Object.create(g),{progress:stored})).overloaded,false);
 });
 test('曾经全部塞入背包的武器可再次整理，保留当前武器和实际挂载',()=>{
