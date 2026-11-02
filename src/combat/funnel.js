@@ -154,7 +154,7 @@ function fireNode(game, node, target, weapon, state) {
   return true;
 }
 
-// 守护准备与休整仅续接飞行、归队和后坐；不寻敌、开火、补弹或推进技能冷却。
+// 种地及守护准备、休整仅续接飞行、归队和后坐；不寻敌、开火、补弹或推进技能冷却。
 export function updateFunnelIdle(game, dt) {
   const weapon = game.weapon(), state = game[weapon.controller];
   if (!['funnel', 'drone'].includes(weapon.controller) || !state) return;
