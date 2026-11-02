@@ -531,6 +531,8 @@ export class Game {
   // 结算攻击与死亡，体验事件不改变伤害结果。
   hit(target, amount, critical = false, impact = null) {
     if (target.hp <= 0) return;
+    // 暂停清缴后流弹和范围伤害不能击杀保留中的领主，避免误结算或跳过本轮。
+    if(target===this.boss&&target.livingChallenge&&!this.progress.living.patrolActive&&!bossCombatActive(this))return;
     // 邻里运木的障碍树必须由履带碾压，流弹不能替代驾驶目标。
     if(target.equipmentObstacle)return;
     // 具名居民永不受伤；追兵在圈外仍参与战斗，返营与预警居民不被流弹击中。

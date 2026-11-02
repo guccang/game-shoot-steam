@@ -1,4 +1,5 @@
-import {bossCombatActive} from './boss-engagement.js';
+import {capturePatrol} from './patrol-session.js';
+import {bossCombatActive,pauseClearingBoss} from './boss-engagement.js';
 import {taskTreasureRumor} from './treasure.js';
 import {facilityOpen,facilityReason} from '../config/town-restoration.js';
 import {CLEARING_CONTINUE_ROUND} from '../config/clearing.js';
@@ -192,25 +193,36 @@ export function restLivingWorld(game){
 // 连续怪潮由当地入口显式开启；回到安全地带可结束，已有波次资格保留。
 export function setLivingPatrol(game,active){
  if(active&&!facilityOpen(game.progress,'clearing'))return {ok:false,message:facilityReason(game.progress,'clearing')};
-  if(game.livingPreview||!livingForest(game)||game.state==='dead'||game.boss||game.livingBattle||!livingSafePoint(game.player))return {ok:false,message:'请回到有木栏保护的聚落接取或结束清缴。'};
+  if(game.livingPreview||!livingForest(game)||!['playing','paused'].includes(game.state)||game.player.hp<=0||game.livingBattle||game.mainlineSpeech)return {ok:false,message:'请先离开当前活动或对话，再操作清缴任务。'};
+  const unfinishedBoss=!!game.boss?.livingChallenge;
+  if(game.boss&&(!unfinishedBoss||bossCombatActive(game)))return {ok:false,message:'请先远离领主脱战，或返回营地，再暂停或继续清缴。'};
+  if(!livingSafePoint(game.cottage?.outside||game.player)&&(active||!unfinishedBoss))return {ok:false,message:'请回到有木栏保护的聚落接取或暂停清缴。'};
   if(active&&game.progress.living.patrolActive)return {ok:true};
-  if(active)return beginClearingPatrol(game);
-  const result=commitLiving(game,p=>{p.living.patrolActive=false;});
-  if(result.ok){for(const e of game.enemies)if(e.wave===game.wave&&e.hp>0)game.waveSpawned=Math.max(game.waveKills,game.waveSpawned-1);game.enemies=game.enemies.filter(e=>e.wave!==game.wave);}
-  return {...result,message:result.ok?'本次清缴已暂停，波次进度保留。':result.message};
+  if(active)return beginClearingPatrol(game,unfinishedBoss?clearingSite(game.progress):null,unfinishedBoss);
+  const result=commitLiving(game,p=>{
+   p.living.patrolActive=false;
+   // 连同当前 Boss 血量与位置一次写盘，避免立即刷新回退到上次自动保存。
+   const snapshot=Object.assign(Object.create(game),{progress:p,boss:unfinishedBoss?{...game.boss,disengaged:true}:game.boss});
+   p.patrol=capturePatrol(snapshot);
+  },()=>{
+   pauseClearingBoss(game);
+   for(const e of game.enemies)if(e.wave===game.wave&&e.hp>0)game.waveSpawned=Math.max(game.waveKills,game.waveSpawned-1);
+   game.enemies=game.enemies.filter(e=>e.wave!==game.wave);
+  });
+  return {...result,message:result.ok?'清缴已暂停，可回营补给；波次与领主进度保留，重新接取后继续。':result.message};
 }
 // 告示牌与结算续接共享选点、存档事务，成功后消费当前结算资格。
-function beginClearingPatrol(game,site=null){
-  const notice=site?'continue':'arrival';
+function beginClearingPatrol(game,site=null,resuming=false){
+  const notice=site&&!resuming?'continue':'arrival';
   let prepared=null;
   if(!site)site=chooseClearingSite(game,(route,index)=>{prepared={route,index};});
   if(!site)return {ok:false,message:'暂时没有找到可达的清缴地点，请稍后重试。'};
-  const result=commitLiving(game,p=>{recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.living.clearingNotice=notice;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};},()=>{
+  const result=commitLiving(game,p=>{if(!resuming)recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.living.clearingNotice=notice;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};p.patrol=capturePatrol(Object.assign(Object.create(game),{progress:p}));},()=>{
    // 存档成功且界面刷新前移交路线，保存失败不能污染当前导航。
    game.pendingClearingRound=0;
    if(prepared)rememberPreparedNavigation(game,clearingNavigationTarget(site),prepared.route,prepared.index,{...game.player,mapId:game.mapId,livingCollision:true});
   });
-  return {...result,message:result.ok?'已接取清缴任务。前往本次清缴地点，清完五波后领主自动登场。':result.message};
+  return {...result,message:result.ok?(resuming?'已继续本轮清缴，返回原地点挑战领主，血量与波次进度保留。':'已接取清缴任务。前往本次清缴地点，清完五波后领主自动登场。'):result.message};
 }
 // 首轮起只接受当前胜利收据，不能借旧收据重复领奖。
 export function canAcceptNextClearing(game,round){
