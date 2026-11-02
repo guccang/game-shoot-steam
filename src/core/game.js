@@ -78,7 +78,7 @@ import { piercingLane, updateAimLock } from '../combat/targeting.js';
 import {attackTargetDistance,attackTargetVisible,attackTargetKnown,rememberCombatTarget,updateCombatPerception} from '../combat/perception.js';
 import { createPulseState, advancePulse, kickHolder, updateHolderKick } from '../combat/pulse.js';
 import { consumeRound, advanceReload } from '../combat/magazine.js';
-import { resetFunnelFormation, updateFunnel } from '../combat/funnel.js';
+import { resetFunnelFormation, updateFunnel, updateFunnelIdle } from '../combat/funnel.js';
 import { constrainFunnelViewport } from '../combat/funnel-movement.js';
 import { updateEncounters } from './encounter-manager.js';
 import { updateWaves,waveKillEligible } from './wave-manager.js';
@@ -931,7 +931,11 @@ export class Game {
     const magazine = this.magazines[this.loadout.weapon];
     const wasReloading = magazine.remaining > 0;
     const fireTime = advanceReload(magazine, weapon, dt, this.onEvent,n=>takeSupplyAmmo(this,weapon,n),supplyAmmoCount(this,weapon));
-    if (!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&['funnel', 'drone'].includes(weapon.controller)) updateFunnel(this, dt);
+    if (!this.parking?.idle&&!outdoorBusy(this)&&['funnel', 'drone'].includes(weapon.controller)) {
+      // 农活只停火，不冻结伙伴飞行；自动迎敌时恢复原有战斗调度。
+      if(farmWorking(this))updateFunnelIdle(this,dt);
+      else updateFunnel(this,dt);
+    }
     if (!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&weapon.controller === 'mechanical') updateMechanical(this, dt);
     if (!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&weapon.controller === 'spider') updateSpider(this, dt);
     // 装填完成即可恢复攻击；装填期间仍继续走位、模拟在途弹丸和怪物。
