@@ -9,7 +9,7 @@ import { createEventScope } from '../platform/events.js';
 import { realmWeapon } from '../config/realms.js';
 import { drawVehicleIcon } from '../rendering/vehicle.js';
 import { vehicleWeapon, vehicleModel } from '../config/vehicles.js';
-import {updateVehicleLoadHud} from './vehicle-load-hud.js';
+import {updateVehicleLoadHud,vehicleReloadHudState} from './vehicle-load-hud.js';
 import {parkedOwned,arrivalParkingAllowed} from '../core/camp-parking.js';
 // 自有车快捷键只定位或下车；活动借车沿用场景原有召唤规则。
 export function createVehicleControls({ game, root, onChange }) {
@@ -22,7 +22,7 @@ export function createVehicleControls({ game, root, onChange }) {
   });
   return { dispose: scope.dispose };
 }
-// 载具轮廓填充表示负荷，独立数字显示弹药；HP继续使用生命条。
+// 圆内蓝色显示仓库负荷、外圈显示换弹，独立数字显示弹药；HP继续使用生命条。
 export function updateVehicleHud(root, game) {
   const node = root.getElementById('vehicle-button'),
     v = game.vehicle,
@@ -51,6 +51,6 @@ export function updateVehicleHud(root, game) {
   if(campParked&&!v.active)node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;
   const service=vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase),status=service?(v.hp<=0?'已报废，需要维修':'维修中心待取车'):repairing?'维修中':reloading?'装填中':'';
   const action=v.active?'点击下车':parkingFleetApplies(game)?'定位载具':'调用载具',count=w?Math.max(0,Math.ceil(ammo||0)):'—';
-  updateVehicleLoadHud(node,game,{ammo:count,label:`${model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}`,mark:service?'!':repairing||reloading?'↻':''});
+  updateVehicleLoadHud(node,game,{ammo:count,label:`${model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}`,mark:service?'!':repairing||reloading?'↻':'',reload:vehicleReloadHudState(m,w)});
   node.setAttribute('aria-pressed', String(v.active));
 }

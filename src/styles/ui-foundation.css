@@ -411,15 +411,17 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 /* 房屋本体热点不绘制文字或猫爪，尺寸由共用场景投影控制。 */
 #nearby-interaction.scene-hit > * { display:none; }
 
-/* HP卡片复用原简洁图标填色表示负荷；数字单独显示弹药，保持44px点击面积。 */
-#vehicle-button .vehicle-load-picture{position:absolute;left:10px;top:3px;width:24px;height:24px;pointer-events:none;}
-#vehicle-button .vehicle-load-art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+/* HP卡片外环读取换弹计时，内圆蓝色水位表示仓库负荷，保持44px点击面积。 */
+#vehicle-button .vehicle-load-picture{position:absolute;left:6px;top:0;width:32px;height:32px;pointer-events:none;}
+#vehicle-button .vehicle-load-water{position:absolute;inset:4px;border-radius:50%;overflow:hidden;background:var(--ui-paper);}
+#vehicle-button .vehicle-load-filled{position:absolute;inset:0;background:#82bed4;}
+#vehicle-button .vehicle-load-art{position:absolute;inset:6px;color:var(--ui-forest);pointer-events:none;}
 #vehicle-button .vehicle-load-art svg{display:block;width:100%;height:100%;}
-#vehicle-button .vehicle-load-empty{color:var(--ui-forest);opacity:.32;}
-#vehicle-button .vehicle-load-filled{color:var(--ui-forest);}
-#vehicle-button[data-load-tone=heavy] .vehicle-load-filled{color:#a57c32;}
-#vehicle-button[data-load-tone=full] .vehicle-load-filled{color:var(--ui-danger);}
-#vehicle-button .vehicle-ammo-count{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:10px;line-height:12px;font-weight:bold;color:var(--ui-forest);font-variant-numeric:tabular-nums;pointer-events:none;}
+#vehicle-button .vehicle-reload-meter{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-width:2.5;transform:rotate(-90deg);}
+#vehicle-button .vehicle-reload-track{stroke:#d2dbc4;}
+#vehicle-button .vehicle-reload-value{stroke:var(--ui-forest);stroke-linecap:round;}
+#vehicle-button[data-reload-state=reloading] .vehicle-reload-value{stroke:#b38a39;}
+#vehicle-button .vehicle-ammo-count{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:10px;line-height:12px;font-weight:bold;color:var(--ui-forest);font-variant-numeric:tabular-nums;pointer-events:none;}
 #vehicle-button .vehicle-hud-state{position:absolute;right:0;top:0;min-width:10px;font-size:11px;line-height:12px;border-radius:4px;color:var(--ui-danger);background:var(--ui-paper);font-weight:bold;pointer-events:none;}
 #vehicle-button[data-load-tone=full] .vehicle-ammo-count{color:var(--ui-danger);}
 #vehicle-button .vehicle-hud-state:empty{display:none;}
