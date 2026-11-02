@@ -120,7 +120,7 @@ function lamp(c, x, y, lit) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawLivingObject(c, item, game, night, reduced) {
-  if (item.type === 'living-resident') {
+  if (item.type === 'living-resident' || item.type === 'camp-resident') {
     drawResident(c, item, game, night, reduced);
     return;
   }
@@ -313,7 +313,10 @@ function drawResident(c, r, game, night, reduced) {
     } else drawSlime(c, entity, time, reduced);
     c.restore();
   }
-  if (!r.moving && !['rest', 'walk', 'flowers', 'shelter'].includes(r.action)) {
+  if (!r.moving && !['rest', 'walk', 'flowers', 'shelter', 'chat'].includes(r.action)) {
+    // 营地伙伴的手持物按身体比例缩小并放低，保留脸部和脚步的完整轮廓。
+    c.save();
+    if(r.type==='camp-resident'){c.translate(0,6);c.scale(.65,.65);}
     const phase = reduced ? 0 : Math.sin(time * 3.8),
       x = 19 + phase * 4,
       y = -13 + Math.cos(time * 3.8) * 3;
@@ -348,6 +351,7 @@ function drawResident(c, r, game, night, reduced) {
       c.lineTo(12, -17);
       c.stroke();
     }
+    c.restore();
   }
   if (worldDistance(r, game.player) < 100) {
     c.font = canvasFont(11);

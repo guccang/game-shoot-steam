@@ -27,7 +27,7 @@ import { blocked } from '../physics/motion.js';
 import { worldDistance } from '../world/coordinates.js';
 import { moveBody } from '../physics/motion.js';
 import {syncStoryWorld} from './story-world.js';
-const SHARED=new Set(['livingActors','livingBattle','livingPersist','livingWeather','livingPhase','livingPreview','progress','random','onEvent','profiler','viewport','story','storyForest','storyPersist']);
+const SHARED=new Set(['campActors','campRoutine','livingActors','livingBattle','livingPersist','livingWeather','livingPhase','livingPreview','progress','random','onEvent','profiler','viewport','story','storyForest','storyPersist']);
 
 // 运行时快照与可序列化进度分离，装备和冻结对象不会进入JSON。
 export function syncStory(game) {
