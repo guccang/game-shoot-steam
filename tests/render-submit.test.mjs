@@ -31,12 +31,13 @@ function hudFixture(){
     node.style={get top(){return top;},set top(value){operations.push('write');top=value;},removeProperty(){operations.push('write');top='';}};
   }
   nodes['game-frame'].classList.contains=()=>realm;
-  const root={getElementById:id=>nodes[id],querySelector:()=>({getBoundingClientRect:()=>({top:10,bottom:50})})};
+  // 夹具只模拟资源条；生命卡等未提供的真实DOM查询必须返回空值。
+  const root={getElementById:id=>nodes[id],querySelector:selector=>selector==='.hud-resources'?{getBoundingClientRect:()=>({top:10,bottom:50,height:40})}:null};
   return {root,nodes,operations,setRealm:value=>realm=value};
 }
 test('普通 HUD 先测量再写位置，重复排列不写样式，秘境不继承任务偏移',()=>{
   const {root,nodes,operations,setRealm}=hudFixture();layoutTaskCombatHud(root);
-  assert.equal(nodes.quest.style.top,'104px');assert.equal(nodes['boss-hud'].style.top,'132px');
+  assert.equal(nodes.quest.style.top,'102px');assert.equal(nodes['boss-hud'].style.top,'130px');
   assert.ok(!operations.slice(operations.indexOf('write')).includes('read'));
   operations.length=0;layoutTaskCombatHud(root);assert.ok(!operations.includes('write'));
   nodes['mainline-hud'].hidden=true;setRealm(true);layoutTaskCombatHud(root);

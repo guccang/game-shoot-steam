@@ -17,3 +17,25 @@
 #game-frame.task-combat-active .boss-hud.clearing-focused.task-route-anchor{padding-top:52px;padding-right:8px}
 .task-combat-active .boss-hud.clearing-focused.task-route-anchor .clearing-objective{top:6px;right:58px;line-height:44px;overflow:hidden;text-overflow:ellipsis}
 /* 详情入口在奶油底板上使用森林绿，保持问号与触控边界清晰。 */
+/* 清缴范围只保留生命卡与一枚问号猫猫，右侧给设置留出独立触控空间。 */
+#game-frame.clearing-compact-active > .bottom-info{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:4px;width:min(calc(var(--hud-card-width) + 48px),calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)) - 52px))}
+.clearing-compact-active .player-hud{min-width:0;width:auto}
+.clearing-compact-active #hero-experience-hud{display:none}
+.clearing-compact-active .bottom-info>#wave-help{display:grid;color:var(--ui-forest);grid-column:2;grid-row:1}
+/* 三路弹药在窄屏占满一行，避免仪表挤到HP数字；所有原操作仍留在生命卡内。 */
+@media(max-width:380px){
+ #game-frame.clearing-compact-active[data-supply="independent"] .player-hud{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 44px}
+ #game-frame.clearing-compact-active[data-supply="independent"] .combat-instruments{grid-column:1;grid-row:3;padding-left:0;border-left:0;justify-content:flex-end}
+}
+#game-frame.clearing-compact-active #quest{display:none}
+#game-frame.clearing-compact-active #equipment-goal{display:none}
+#game-frame.clearing-compact-active #boss-hud{padding-top:8px;padding-right:10px}
+.clearing-compact-active .clearing-objective{display:none}
+/* 自动提示复用统一纸页材质，贴生命卡下沿；全程点击穿透，不挤动人物或镜头。 */
+#clearing-arrival-notice{position:absolute;top:calc(100% + 8px);left:0;margin:0;width:min(292px,calc(100vw - 28px));box-sizing:border-box;pointer-events:none;z-index:17}
+#clearing-arrival-notice[hidden]{display:none}
+#clearing-arrival-notice>.ui-panel__header{padding:8px 12px;font-size:13px;min-height:0}
+#clearing-arrival-notice>.ui-panel__body{padding:10px 12px}
+#clearing-notice-progress{margin:0 0 6px;font-size:12px;color:var(--ui-forest)}
+#clearing-notice-bar{display:block;width:100%;height:8px;accent-color:var(--ui-forest)}
+#clearing-detail-navigation{width:100%;margin-top:12px}

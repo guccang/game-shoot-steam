@@ -36,7 +36,9 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const unread=unreadMailCount(game.progress),badge=$('phone-mail-badge');if(badge){badge.hidden=!unread;badge.textContent=unread>99?'99+':String(unread);$('phone-button').setAttribute('aria-label',unread?`打开巡林手机，${unread}封未读邮件`:'打开巡林手机');}
     if(canvasRevision!==canvasRecoveryRevision()){canvasRevision=canvasRecoveryRevision();portraitKind=null;inventory.invalidateArt();}
     // 只按正式战斗状态精简顶栏；暂停不闪回资源栏，结算、退出和离开清缴区自动恢复。
-    $('game-frame').classList.toggle('task-combat-active',!!game.campDefense&&game.campDefense.phase!=='result'||clearingCombatActive(game));
+    const clearing=clearingCombatActive(game);
+    $('game-frame').classList.toggle('task-combat-active',!!game.campDefense&&game.campDefense.phase!=='result'||clearing);
+    $('game-frame').classList.toggle('clearing-compact-active',clearing);
     const round=clearingRound(game);
     const p = game.loadout,
       started = game.state !== 'ready';
@@ -148,8 +150,8 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     }
     const remaining = game.bossReady?0:Math.max(1,game.bossWave-game.wave+(game.waveRest>0?0:1));
     const canChallenge = game.state === 'playing'&&livingWaveAllowed(game);
-    // 先恢复头像的布局再测量终点，避免领主战结束时读取隐藏节点得到零坐标。
-    $('quest').hidden = !!game.boss||!(livingWaveAllowed(game)||clearingCombatActive(game));
+    // 清缴轨道收进详情；其他玩法仍保留原波次面板及领主头像操作。
+    $('quest').hidden = clearing||!!game.boss||!livingWaveAllowed(game);
     $('boss-button').disabled = !!game.boss || remaining > 0 || !canChallenge;
     const showPaw = bossHint.update({
       available: !game.realm && !game.boss && remaining === 0 && livingWaveAllowed(game),
@@ -218,6 +220,8 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     inventory.render();
     inventory.renderFieldIcons();
   }
+  // 进场提示按真实帧时钟关闭，不受低频HUD刷新或战斗计时暂停影响。
+  updateUI.renderFrame=waveHelp.renderFrame;
   // 应用卸载时释放合成动画，重新挂载不会继承上一局的猫爪状态。
   updateUI.dispose = () => {
     waveHelp.dispose();

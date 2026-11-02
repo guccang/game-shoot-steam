@@ -19,6 +19,8 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
     if(type==='fire-change'){save();if(data?.sound)audio.play(data.sound);if(data?.text)toast.show(data.text);return;}
     if(type==='story-change'){input.reset();save();return;}
     if(type==='living-change'){input.reset();return;}
+    // 自动清缴提示只保存展示记录，不能清空玩家正在按住的移动输入。
+    if(type==='clearing-notice-shown'){save();return;}
     if(type==='living-kill'){save();return;}
     if(type==='hero-experience'){save();return;}
     if(type==='vehicle-durability'){save();return;}

@@ -585,6 +585,7 @@ export function createApplication({
           combat:seasonPrewarmCombat(game),hidden:root.hidden}),seasonPrewarm.reason);
         try { renderer.draw(renderGame); } finally { renderer.commands.end(); profiler.end('render.canvas'); }
         profiler.start('render.panels');
+        updateHud.renderFrame();
         profiler.start('render.panels.fire'); firePanel.renderFrame(); profiler.end('render.panels.fire');
         profiler.start('render.panels.story'); storyPanel.renderFrame(dt); profiler.end('render.panels.story');
         profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
