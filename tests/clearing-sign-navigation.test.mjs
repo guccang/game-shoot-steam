@@ -6,12 +6,13 @@ import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {clearingSite,clearingNavigationSite} from '../src/progression/clearing-site.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
 import {storyRouteState} from '../src/core/story-route.js';
 import {storyGuidanceState} from '../src/rendering/story-guidance.js';
 import {livingWaveAllowed,clearingCombatActive} from '../src/core/living-safety.js';
 import {settlementObjects} from '../src/rendering/settlements.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
+import {CLEARING_APPROACH} from '../src/config/clearing.js';
 // 使用正式游戏实例，保留真实树木用于站牌终点可达性验证。
 function scene(){const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=MAINLINE_IDS.slice();p.mainline.phase='complete';p.living.patrolActive=true;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;return g;}
 
@@ -26,3 +27,27 @@ test('显示范围和战斗范围内仍有路线，沿可通行路径到站牌�
 });
 test('随机地点、读档与循环地图边界都从同一站牌推导目标',()=>{const g=scene();g.progress.living.clearingSite={id:'patrol-clearing',mapId:'forest',name:'本次清缴地点',x:2200,y:WORLD.height-20,radius:300};const before=structuredClone(g.progress.living.clearingSite),target=clearingNavigationSite(g.progress);assert.equal(target.y,35);assert.deepEqual(g.progress.living.clearingSite,before);Object.assign(g.player,{x:2200,y:WORLD.height-1});assert.equal(worldNavigationObjective(g),null);Object.assign(g.player,{x:2400,y:WORLD.height-1});assert.deepEqual(worldNavigationObjective(g).site,target);});
 test('手动关闭、完成任务与离开森林不会遗留场内站牌指引',()=>{const g=scene(),site=clearingSite(g.progress);Object.assign(g.player,{x:site.x+200,y:site.y});g.progress.mainline.navigationEnabled=false;assert.equal(worldNavigationObjective(g),null);g.progress.mainline.navigationEnabled=true;assert.ok(worldNavigationObjective(g));g.progress.living.patrolActive=false;assert.equal(worldNavigationObjective(g),null);g.progress.living.patrolActive=true;g.mapId='jiuzhaigou';assert.equal(worldNavigationObjective(g),null);});
+
+// 抵达再离开同一场地时，实际路线和落点一起恢复，不被战斗前旧访问意图接管。
+test('离开清缴区域恢复站牌导航，旧访问路线不能替换返场目标',()=>{
+ const g=scene(),site=clearingSite(g.progress),target=clearingNavigationSite(g.progress);
+ requestWorldNavigation(g,{id:'old-visit',mapId:'forest',x:900,y:900},'旧访问目标');
+ Object.assign(g.player,target);assert.equal(worldNavigationObjective(g),null);assert.equal(storyRouteState(g),null);
+ for(const distance of [site.radius+1,site.radius*1.5+1,site.radius*2]){
+  Object.assign(g.player,{x:site.x+distance,y:site.y});g.time+=1;
+  assert.deepEqual(worldNavigationObjective(g).site,target);assert.deepEqual(storyGuidanceState(g).target,target);
+  assert.ok(storyRouteState(g));
+ }
+ Object.assign(g.player,target);assert.equal(worldNavigationObjective(g),null);
+ assert.equal(g.progress.living.patrolActive,true);
+});
+
+// 显式改变目的地和寻路开关仍尊重玩家操作，不把返场提示变成强制移动。
+test('返场保留主动访问、告示牌管理与手动关闭',()=>{
+ const g=scene(),site=clearingSite(g.progress),visit={id:'manual-visit',mapId:'forest',x:900,y:900};
+ Object.assign(g.player,{x:site.x+site.radius*2,y:site.y});
+ requestWorldNavigation(g,visit,'主动访问',{direct:true});assert.equal(worldNavigationObjective(g).site.id,visit.id);
+ requestWorldNavigation(g,CLEARING_APPROACH,'回告示牌');assert.equal(worldNavigationObjective(g).site.id,CLEARING_APPROACH.id);
+ requestWorldNavigation(g,visit,'旧访问');g.progress.mainline.navigationEnabled=false;
+ assert.equal(worldNavigationObjective(g),null);assert.equal(storyGuidanceState(g).target,null);
+});

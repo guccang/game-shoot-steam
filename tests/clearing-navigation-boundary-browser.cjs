@@ -19,6 +19,20 @@ async original=>{
    }
    await page.evaluate(()=>{Object.assign(a.game.player,{x:target.x+60,y:target.y});a.game.time+=1;a.refresh();});
    const arrived=await page.evaluate(async()=>({o:(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game),target:(await import('/src/rendering/story-guidance.js')).storyGuidanceState(a.game).target,route:(await import('/src/core/story-route.js')).storyRouteState(a.game)}));if(arrived.o||arrived.target||arrived.route)throw Error('抵达站牌后未收起');
+   // 抵达后再离开，模拟战斗前残留的普通访问目标，返场光点必须重新出现。
+   await page.evaluate(async()=>{(await import('/src/core/world-navigation.js')).requestWorldNavigation(a.game,{id:'old-visit',mapId:'forest',x:900,y:900},'旧访问目标');});
+   for(const distance of [301,451,600]){
+    const state=await page.evaluate(async distance=>{
+     const g=a.game;Object.assign(g.player,{x:site.x-distance,y:site.y});a.renderer.camera.time=null;
+     const {worldNavigationObjective}=await import('/src/core/world-navigation.js'),{storyRouteState,visibleRouteDots}=await import('/src/core/story-route.js');
+     let route;for(let i=0;i<500;i++){g.time+=.04;route=storyRouteState(g);if(!route?.planning)break;}
+     a.refresh();a.renderer.draw();return {objective:worldNavigationObjective(g)?.site,expected:target.id,route:!!route,reachable:route?.reachable,points:route?.points?.length,dots:visibleRouteDots(route,a.renderer.view).length,target:!!(await import('/src/rendering/story-guidance.js')).storyGuidanceState(g).target};
+    },distance);
+    if(state.objective?.id!==state.expected||!state.route||!state.reachable||!state.dots||!state.target)throw Error('离开后返场导航缺失'+JSON.stringify(state));
+    results.push({width,time,departure:distance,...state});
+    if(distance===451)await page.screenshot({path:`output/playwright/clearing-sign-navigation/${width}-${time}-return.png`});
+   }
+   await page.evaluate(()=>{Object.assign(a.game.player,{x:target.x,y:target.y});a.game.time+=1;a.refresh();});
    await page.locator('#task-navigation-toggle').tap();await page.evaluate(()=>{Object.assign(a.game.player,{x:site.x+375,y:site.y});a.refresh();});
    if(await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game)!==null))throw Error('手动关闭被覆盖');
   }finally{await context.close();}
