@@ -828,7 +828,15 @@ export class Game {
     maintainPlayerTow(this);
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
     if(this.cottage)updateVehicleRepair(this,dt);
-    if(updateCottage(this,dt,input))return;
+    if(updateCottage(this,dt,input)){
+      // 阳台观景继续推进同一批居民的日常；玩家使用室外观察代理，任务和战斗不在屋内推进。
+      if(this.cottage?.balcony){
+        const scene=Object.create(this);scene.cottage=null;scene.player={...this.player,...this.cottage.outside};
+        updateCampRoutines(scene,dt);updateLivingWorld(scene,dt);
+        this.campActors=scene.campActors;this.campRoutine=scene.campRoutine;this.livingActors=scene.livingActors;
+      }
+      return;
+    }
     updateRestoration(this,dt);
     updateParkingVisitors(this,dt);
     // 驾驶者先停稳入位，避免靠近工坊时主线对白抢走倒车控制。

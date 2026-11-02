@@ -1,0 +1,44 @@
+// 加盖事务先保存再扣款，通行只访问已建楼层和已装设施。
+import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeFloors,floorBalconies} from '../config/home-construction.js';
+import {COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
+import {bindEconomy,economyFor} from '../config/economy.js';
+import {capturePatrol} from './patrol-session.js';
+
+// 公司柜台提供施工服务，重复装配、越界层号和保存失败都不产生扣费。
+export function buildHome(game,kind,{floor=0,side='south'}={}){
+ if(game.cottage?.kind!=='construction'||!['playing','paused'].includes(game.state))return {ok:false,message:'请到建筑公司办理。'};
+ const price=Object.hasOwn(HOME_BUILD_PRICES,kind)?HOME_BUILD_PRICES[kind]:null,home=game.progress.homeDecor;
+ if(!price||!home)return {ok:false,message:'请选择有效的施工项目。'};
+ if(kind==='floor'&&!Number.isSafeInteger(homeFloors(home)+1))return {ok:false,message:'当前楼层编号超出数字表示范围。'};
+ if(kind==='elevator'&&home.elevator)return {ok:false,message:'小屋已经安装电梯。'};
+ if(kind==='balcony'&&(!Number.isSafeInteger(floor)||floor<0||floor>=homeFloors(home)||!Object.hasOwn(HOME_DIRECTIONS,side)))return {ok:false,message:'请选择已建楼层和阳台朝向。'};
+ if(kind==='balcony'&&floorBalconies(home,floor).includes(side))return {ok:false,message:'这一侧已经有大阳台。'};
+ if(game.progress.coins<price.coins||game.progress.wood<price.wood)return {ok:false,message:'金币或仓库木材不足。'};
+ const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress)),h=next.homeDecor;
+ next.coins-=price.coins;next.wood-=price.wood;
+ if(kind==='floor')h.floors=homeFloors(h)+1;
+ if(kind==='elevator')h.elevator=true;
+ if(kind==='balcony'){h.balconies??={};h.balconies[floor]=[...floorBalconies(h,floor),side];}
+ const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
+ try{if(game.livingPersist&&game.livingPersist(next)!==true)return {ok:false,message:'保存失败，未扣除施工费用。'};}catch{return {ok:false,message:'保存失败，未扣除施工费用。'};}
+ game.progress=next;game.onEvent?.('home-construction');return {ok:true,message:kind==='floor'?`已加盖第 ${h.floors} 楼，楼梯已接通。`:kind==='elevator'?'电梯已安装，可直达所有已建楼层。':`第 ${floor+1} 楼${HOME_DIRECTIONS[side].name}侧大阳台已建好。`};
+}
+// 楼梯和电梯均要求到达设施前；只改变局部落点，绝不把室内坐标写回营地。
+export function travelHomeFloor(game,target,mode='stairs'){
+ const room=game.cottage,home=game.progress.homeDecor,from=cottageFloor(room),lift=mode==='elevator',site=lift?HOME_ELEVATOR:COTTAGE_STAIRS;
+ if(room?.kind!=='cottage'||room.balcony||room.sleep||!['playing','paused'].includes(game.state)||game.player.hp<=0||!Number.isSafeInteger(target)||target<0||target>=homeFloors(home)||target===from)return false;
+ if(!['stairs','elevator'].includes(mode)||lift&&!home.elevator||!lift&&Math.abs(target-from)!==1||Math.hypot(game.player.x-site.landing.x,game.player.y-site.landing.y)>site.radius)return false;
+ room.floor=target;room.stairsElapsed=null;room.stairsLatch=true;room.exitElapsed=0;room.restElapsed=null;room.restResult='';room.storageNotice='';room.notice=`已到第 ${target+1} 楼。`;
+ Object.assign(game.player,site.landing,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
+}
+// 从真实门口走入阳台；保留方向和返回点，使四向景色与营地方位一致。
+export function enterHomeBalcony(game,side){
+ const room=game.cottage,door=HOME_DIRECTIONS[side]?.door;
+ if(room?.kind!=='cottage'||room.balcony||room.sleep||game.state!=='playing'||!door||!floorBalconies(game.progress.homeDecor,cottageFloor(room)).includes(side)||Math.hypot(game.player.x-door.x,game.player.y-door.y)>38)return false;
+ room.balcony=side;room.balconyExitElapsed=0;room.balconyLatch=true;room.exitElapsed=0;Object.assign(game.player,HOME_BALCONY.spawn,{vx:0,vy:0});game.onEvent?.('cottage-change');return true;
+}
+// 阳台门槛返回当前楼层，退出闩锁防止在原门口反复进出。
+export function leaveHomeBalcony(game){
+ const room=game.cottage;if(!room?.balcony||game.state!=='playing'||Math.hypot(game.player.x-HOME_BALCONY.exit.x,game.player.y-HOME_BALCONY.exit.y)>HOME_BALCONY.radius)return false;
+ const door=HOME_DIRECTIONS[room.balcony].door;room.balcony=null;room.balconyLatch=true;room.balconyExitElapsed=0;room.exitElapsed=0;Object.assign(game.player,door,{vx:0,vy:0});game.onEvent?.('cottage-change');return true;
+}

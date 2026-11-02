@@ -1,3 +1,4 @@
+import {CONSTRUCTION_COMPANY} from './home-construction.js';
 import {WAREHOUSE} from './warehouse.js';
 import {AMMO_SHOP} from './supplies.js';
 import {CAT_HOME} from './cat-home.js';
@@ -30,6 +31,7 @@ export const WORKSHOP_INTERIORS={
  ammo:serviceRoom('ammo','弹药补给铺',AMMO_SHOP),
  'cat-home':serviceRoom('cat-home','猫窝',CAT_HOME),
  furniture:serviceRoom('furniture','家具小铺',FURNITURE_SHOP),
+ construction:serviceRoom('construction','森筑建筑公司',CONSTRUCTION_COMPANY),
  seed:serviceRoom('seed','种子小屋',FARM_SEED_SHOP,FARM_SEED_DOOR),
  repair:serviceRoom('repair','载具维修中心',REPAIR_CENTER),
  fire:serviceRoom('fire','森林消防站',FIRE_STATION),
@@ -50,7 +52,7 @@ export const GARAGE_FURNITURE=[
  {id:'tool-cart',type:'cart',x:395,y:330,width:38,height:36},
 ].map(item=>({...item,y:item.y+VEHICLE_GALLERY.depth}));
 // 小屋仍使用原配置；旧会话没有kind字段时按小屋处理。
-export function interiorLayout(room){return WORKSHOP_INTERIORS[room?.kind]||{...COTTAGE,id:'cottage',name:'巡林小屋 · '+(cottageFloor(room)?'二楼陈列室':'一楼生活区')};}
+export function interiorLayout(room){return WORKSHOP_INTERIORS[room?.kind]||{...COTTAGE,id:'cottage',name:'巡林小屋 · '+(room?.balcony?`第 ${cottageFloor(room)+1} 楼 · 阳台`:cottageFloor(room)?`第 ${cottageFloor(room)+1} 楼`:'一楼生活区')};}
 // 每件武器在室内有唯一固定展位；不再按页面复用柜子。
 export function interiorWeaponDisplays(){return WEAPON_DISPLAYS.map(s=>({...s}));}
 // 展车有独立稳定位置，不占用玩家停车记录。
@@ -72,7 +74,7 @@ export const SHOPKEEPER_ENTRY={wait:1,depth:20,releaseRadius:16,clickRadius:170,
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;
  if(!kind||kind==='cottage')return null;
- return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
+ return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='construction'?'建筑师·森工':kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
 }
 // 柜台跟随售货员底座，绘制和碰撞共用同一位置；私人小屋没有柜台。
 export function interiorCounter(room){const seller=interiorShopkeeper(room);return seller?{id:'counter',type:'counter',x:seller.x,y:seller.y+30,width:130,height:36}:null;}

@@ -17,3 +17,15 @@
 #cottage-controls #cottage-exit{position:absolute;padding:0;border:0;background:transparent;box-shadow:none;transform:none;}
 #cottage-controls #cottage-exit:focus-visible{outline:3px solid #f7e5a6;outline-offset:2px;}
 #game-frame .parked-vehicle-hit{z-index:6}
+/* 楼层服务沿用统一底板变量，数字和朝向输入也保留完整手指触控尺寸。 */
+#home-construction-dialog label{display:flex;align-items:center;gap:12px;margin:10px 0;font-weight:700}
+#home-construction-dialog :is(input,select){box-sizing:border-box;min-height:44px;min-width:0;flex:1;width:100%;padding:8px 12px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-button);background:var(--ui-paper);color:var(--ui-text);font:inherit;font-size:16px}
+#home-construction-dialog .ui-section > .ui-button{width:100%;margin-top:8px}
+#cottage-controls > footer{display:flex;flex-wrap:wrap;justify-content:center;gap:7px}
+#cottage-controls > footer p{flex-basis:100%;margin-bottom:0}
+#cottage-controls > footer > div{display:contents}
+/* 真实远景有明暗道路，阳台说明使用纸色底板避免浅字淹没；不挡中央触摸行走。 */
+#cottage-controls[data-balcony="true"] > header{top:12px;padding:10px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-button);background:var(--ui-paper);color:var(--ui-text)}
+#cottage-controls[data-balcony="true"] > header b{font-size:16px;letter-spacing:0;overflow-wrap:anywhere}
+#cottage-controls[data-balcony="true"] > header small{color:var(--ui-forest)}
+#cottage-controls[data-balcony="true"] #cottage-notice{padding:8px 10px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-button);background:var(--ui-paper);color:var(--ui-text);line-height:1.5}

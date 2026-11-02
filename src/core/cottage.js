@@ -1,3 +1,5 @@
+import {travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from './home-construction.js';
+import {HOME_BALCONY,HOME_DIRECTIONS,floorBalconies,homeFloors} from '../config/home-construction.js';
 import {bossCombatActive} from './boss-engagement.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {dismountVehicle} from '../combat/vehicle.js';
@@ -54,7 +56,7 @@ function parkDoorVehicle(game){
  return false;
 }
 // 家具按脚底底座碰撞；屋内一条中间通道连接床边与门口。
-export function cottageBlocked(x,y,game){const layout=interiorLayout(game?.cottage),furniture=game?interiorFurniture(game):COTTAGE_FURNITURE;return x<22||x>layout.width-22||y<76||y>layout.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
+export function cottageBlocked(x,y,game){if(game?.cottage?.balcony)return x<24||x>HOME_BALCONY.width-24||y<42||y>HOME_BALCONY.height-18;const layout=interiorLayout(game?.cottage),furniture=game?interiorFurniture(game):COTTAGE_FURNITURE;return x<22||x>layout.width-22||y<76||y>layout.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
 // 门口、床边判定与室内行走共用正式输入，暂停不累积倒计时或睡眠过渡。
 export function updateCottage(game,dt,input){
  if(game.cottage){
@@ -65,13 +67,23 @@ export function updateCottage(game,dt,input){
   if(!cottageBlocked(p.x+dx,p.y,game))p.x+=dx;if(!cottageBlocked(p.x,p.y+dy,game))p.y+=dy;
   p.vx=(p.x-before.x)/Math.max(dt,.001);p.vy=(p.y-before.y)/Math.max(dt,.001);
   updateCatMotion(p.bodyAnimation,dt,Math.hypot(p.vx,p.vy),true);game.time+=dt;
+  if(room.balcony){
+   const near=Math.hypot(p.x-HOME_BALCONY.exit.x,p.y-HOME_BALCONY.exit.y)<=HOME_BALCONY.radius;
+   if(!near)room.balconyLatch=false;
+   room.balconyExitElapsed=near&&!room.balconyLatch&&Math.hypot(input.x,input.y)<.01?(room.balconyExitElapsed||0)+dt:0;
+   if(room.balconyExitElapsed>=1)leaveHomeBalcony(game);return true;
+  }
+  const doors=room.kind==='cottage'?floorBalconies(game.progress.homeDecor,cottageFloor(room)):[],nearDoor=doors.find(side=>Math.hypot(p.x-HOME_DIRECTIONS[side].door.x,p.y-HOME_DIRECTIONS[side].door.y)<=32);
+  if(!nearDoor)room.balconyLatch=false;
+  room.balconyElapsed=nearDoor&&!room.balconyLatch&&Math.hypot(input.x,input.y)<.01?(room.balconyElapsed||0)+dt:0;
+  if(room.balconyElapsed>=1&&enterHomeBalcony(game,nearDoor))return true;
   if(updateCottageStairs(game,dt,input))return true;
   // 床前站定一秒直接入睡，移动取消，醒来须先离开床边才能再次触发。
   const nearBed=(!room.kind||room.kind==='cottage')&&!cottageFloor(room)&&Math.hypot(p.x-C.bed.x,p.y-C.bed.y)<=C.bedRadius;
   if(!nearBed)room.bedLatch=false;
   if(!nearBed||room.bedLatch||p.hp<=0||Math.hypot(input.x,input.y)>.01)room.restElapsed=null;
   else {const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.restElapsed=room.restElapsed==null?0:room.restElapsed+tick;if(room.restElapsed+1e-9>=C.bedWait){sleepInCottage(game);return true;}}
-  room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)===1)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
+  room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)>0)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
   if(room.exitElapsed+1e-9>=layout.exitWait)leaveCottage(game);
   return true;
  }
@@ -92,7 +104,7 @@ export function updateCottage(game,dt,input){
 }
 // 出门恢复世界坐标；离开门口后才重新允许站立倒计时。
 export function leaveCottage(game){
- if(!game.cottage||game.cottage.sleep||game.state!=='playing'||game.cottage.kind==='cottage'&&cottageFloor(game.cottage)===1)return false;
+ if(!game.cottage||game.cottage.balcony||game.cottage.sleep||game.state!=='playing'||game.cottage.kind==='cottage'&&cottageFloor(game.cottage)>0)return false;
  const kind=game.cottage.kind||'cottage';Object.assign(game.player,game.cottage.outside,{vx:0,vy:0});game.cottage=null;game.cottageDoorLatch=kind==='cottage'?true:kind;game.onEvent('cottage-change');return true;
 }
 // 预告和实际休息共用同一目标日期，不修改传入的正式历法。
@@ -104,7 +116,7 @@ export function cottageSleepTarget(calendar,mode){
 // 只有床前完整候停后才入睡，自动睡到明早，结算仍由原保存事务完成。
 export function sleepInCottage(game){
  const mode='morning';
- if(!game.cottage||cottageFloor(game.cottage)!==0||game.cottage.kind&&game.cottage.kind!=='cottage'||game.cottage.sleep||game.state!=='playing'||game.player.hp<=0||game.cottage.bedLatch||game.cottage.restElapsed==null||game.cottage.restElapsed+1e-9<C.bedWait||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
+ if(!game.cottage||game.cottage.balcony||cottageFloor(game.cottage)!==0||game.cottage.kind&&game.cottage.kind!=='cottage'||game.cottage.sleep||game.state!=='playing'||game.player.hp<=0||game.cottage.bedLatch||game.cottage.restElapsed==null||game.cottage.restElapsed+1e-9<C.bedWait||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
  game.cottage.exitElapsed=0;game.cottage.restElapsed=null;game.cottage.bedLatch=true;game.player.vx=game.player.vy=0;
  game.cottage.sleep={mode,elapsed:0,target:cottageSleepTarget(game.progress.living.calendar,mode)};game.cottage.restResult='';game.cottage.notice='好好睡一觉……';return true;
 }
@@ -133,5 +145,5 @@ function updateCottageStairs(game,dt,input){
 // 切层只能由已完成的候停提交，点击或直接调用不能跳过一秒；室外返回位置不变。
 export function changeCottageFloor(game){
  const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||game.player.hp<=0||room.stairsLatch||room.stairsElapsed==null||room.stairsElapsed+1e-9<COTTAGE_STAIRS.wait||game.state!=='playing'||Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)>COTTAGE_STAIRS.radius)return false;
- room.floor=1-cottageFloor(room);room.stairsElapsed=null;room.stairsLatch=true;room.storageNotice='';room.exitElapsed=0;room.restResult='';room.notice=room.floor?'二楼陈列室，可摆放武器架。':'回到一楼生活区。';Object.assign(game.player,COTTAGE_STAIRS.landing,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
+ const floor=cottageFloor(room);return travelHomeFloor(game,floor+(floor<homeFloors(game.progress.homeDecor)-1?1:-1));
 }

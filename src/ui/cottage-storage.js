@@ -18,7 +18,7 @@ export function createCottageStorage({game,renderer,root,panel,dialogs,input,onC
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="weapon-rack-title">武器收纳架</h2><p id="weapon-rack-summary"></p></div><button id="weapon-rack-close" class="ui-close" aria-label="关闭武器架">×</button></header><div class="ui-panel__body" id="weapon-rack-content"></div><footer class="ui-panel__footer" style="display:block"><p id="weapon-rack-message" role="status"></p><button class="ui-button" data-rack-close>回到小屋</button></footer>';root.body.append(dialog);
  let uid=null,message='',signature='';const get=id=>root.getElementById('weapon-rack-'+id);
  // 当前楼层的真实武器架是唯一点击热点来源，未摆放家具不产生幽灵按钮。
- function targets(){return game.cottage?.kind==='cottage'?placedDecor(game.progress.homeDecor,cottageFloor(game.cottage)).filter(i=>i.type==='weapon-rack').map(i=>({...i,id:'rack-'+i.uid,height:90,label:'打开武器架 '+i.uid})):[];}
+ function targets(){return game.cottage?.kind==='cottage'&&!game.cottage.balcony?placedDecor(game.progress.homeDecor,cottageFloor(game.cottage)).filter(i=>i.type==='weapon-rack').map(i=>({...i,id:'rack-'+i.uid,height:90,label:'打开武器架 '+i.uid})):[];}
  // 每次提交后重读存档，重复点击不会复制武器，也不会使用上次页面的数量。
  function renderContent(){
   const rack=accessibleWeaponRack(game,uid),p=game.progress,load=catLoad(game);

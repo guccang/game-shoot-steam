@@ -1,3 +1,4 @@
+import {HOME_DIRECTIONS,HOME_ELEVATOR,homeFloors,floorBalconies} from '../config/home-construction.js';
 import {workshopInteriorView} from './workshop-interior.js';
 // 小屋正式绘制器：家具、窗景和角色共用局部坐标与脚底排序，无独立预览替身。
 import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
@@ -65,7 +66,8 @@ export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calend
  for(const item of items.filter(i=>['wall','curtain','rug'].includes(i.layer)))drawHomeDecor(c,item,night,g.progress.living.calendar,g.progress);
  // 门槛留空，出口地垫与下方出门按钮共同提示路线。
  if(!floor){box(c,COTTAGE.exit.x-37,COTTAGE.exit.y-18,74,22,4,'#8d9c77','#667d5b',1.5);c.fillStyle='#e5dfb6';c.font='12px sans-serif';c.textAlign='center';c.fillText('出门',COTTAGE.exit.x,COTTAGE.exit.y-2);}
- drawCottageStairs(c,floor,night);
+ drawCottageStairs(c,floor,night,homeFloors(g.progress.homeDecor));
+ drawHomeFacilities(c,g,night);
  for(const item of [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),...items.filter(i=>!i.layer||i.layer==='floor'),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){
   if(item.id==='player')drawCat(c,item.x,item.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,reduced?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
 
@@ -76,10 +78,27 @@ export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calend
 }
 
 // 双层共用斜踏步与扶手，楼层牌明确提示上楼或下楼，前方留出落脚空间。
-function drawCottageStairs(c,floor,night){
+function drawCottageStairs(c,floor,night,floors){
  const s=COTTAGE_STAIRS;c.save();c.translate(s.x,s.y);
  box(c,-40,-60,80,121,5,night?'#8e795f':'#a98962','#536c51',2);
  for(let i=0;i<7;i++){const yy=-53+i*15;box(c,-31,yy,62,14,2,i%2?'#ccae7e':'#dcc493','#79674a',1.5);}
  for(const x of [-39,33]){box(c,x,-67,6,129,2,'#e0c596','#536c51',1.5);for(const y of [-58,-8,50])box(c,x-1,y,8,12,2,'#b99262','#536c51',1);}
- box(c,-42,68,84,24,5,'#e7dfb4','#536c51',1.5);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#315c43';c.fillText(floor?'↓ 一楼生活区':'↑ 二楼陈列室',0,84);c.restore();
+ box(c,-42,68,84,24,5,'#e7dfb4','#536c51',1.5);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#315c43';c.fillText(floor+1<floors?`↑ 第 ${floor+2} 楼`:`↓ 第 ${floor} 楼`,0,84);c.restore();
+}
+
+// 电梯预留在左侧，四向门用实际通行坐标标记，不画无法进入的装饰阳台。
+function drawHomeFacilities(c,g,night){
+ const home=g.progress.homeDecor;
+ if(home.elevator){const {x,y}=HOME_ELEVATOR;
+  box(c,x-35,y-53,70,99,6,'#739486','#3f6451',2);
+  box(c,x-28,y-44,56,84,3,night?'#a8af9a':'#d4dbc2','#47694e',1.5);
+  box(c,x-1,y-43,2,82,0,'#6a8270');
+  box(c,x-37,y+63,74,25,5,'#eee3bb','#526d50',1.5);
+  c.fillStyle='#315c43';c.textAlign='center';c.font='bold 12px sans-serif';c.fillText('电梯 · 选楼层',x,y+80);
+ }
+ for(const side of floorBalconies(home,cottageFloor(g.cottage))){const {door,name}=HOME_DIRECTIONS[side];
+  box(c,door.x-27,door.y-24,54,43,5,night?'#82988a':'#b8cfb1','#48694e',2);
+  box(c,door.x-22,door.y-19,44,19,3,night?'#385a5c':'#e7e5b9','#64836a',1);
+  c.fillStyle=night?'#f6e7c0':'#315c43';c.textAlign='center';c.font='bold 11px sans-serif';c.fillText(name+'阳台',door.x,door.y+13);
+ }
 }
