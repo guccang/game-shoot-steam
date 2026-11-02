@@ -1,5 +1,5 @@
 import {vehicleMaxHp} from '../config/vehicles.js';
-import {configureVehicle} from '../combat/vehicle.js';
+import {createVehicle} from '../combat/vehicle.js';
 import {syncCampDefense} from '../core/camp-defense.js';
 import { i18nText } from "../i18n/index.js";
 // 存档应用控制器统一处理成长、巡游检查点、清档和体验解锁事务。
@@ -65,8 +65,8 @@ export function createProgressController({
   // 解锁与当前巡游一起保存，保留所有战场对象和冷却，不覆盖最新波次。
   function unlockWeapons() {
     if(game.story)return false;
-    const next = unlockedWeaponProgress(game.progress);
-    next.patrol = capturePatrol(game);
+    const next = unlockedWeaponProgress(game.progress,game);
+    next.patrol = capturePatrol(Object.assign(Object.create(game),{progress:next}));
     if (!store.saveProgress(next)) {
       renderSaveStatus();
       return false;
@@ -79,7 +79,7 @@ export function createProgressController({
   // 调试与解锁一样先保存再提交，写入失败不发放部分资源或覆盖最新巡游。
   function debugGrant(kind) {
     if(game.story)return false;
-    const next=debugGrantProgress(game.progress,kind);
+    const next=debugGrantProgress(game.progress,kind,game);
     // 采集巡游位置也写入候选进度，保存失败时原存档对象完全不变。
     next.patrol=capturePatrol(Object.assign(Object.create(game),{progress:next}));
     if(!store.saveProgress(next)){renderSaveStatus();return false;}
@@ -91,7 +91,9 @@ export function createProgressController({
       const ratio=vehicle.maxHp>0?vehicle.hp/vehicle.maxHp:0;
       vehicle.maxHp=vehicleMaxHp({...next,vehicleIndex:vehicle.index},game.maxHp());
       vehicle.hp=vehicle.maxHp*ratio;
-      const weapon=next.vehicleLoadouts[vehicle.index];if(weapon!==null)configureVehicle(game,weapon,vehicle.index);
+      const weapon=next.vehicleLoadouts[vehicle.index];
+      // 永久车队的旧换炮入口已停用；只接入新主炮模块，保留原车运动与战斗状态。
+      if(weapon!==vehicle.weaponIndex){const fresh=createVehicle(next,vehicle.index);vehicle.weaponIndex=fresh.weaponIndex;vehicle.module=fresh.module;vehicle.modules=fresh.modules;vehicle.targetId=null;vehicle.recoil=fresh.recoil;}
     }
     renderSaveStatus();refresh();return true;
   }
