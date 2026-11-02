@@ -43,7 +43,8 @@ export const MAINLINE_SITES={
  guardian:{name:'守护祭坛前',mapId:'forest',x:TOWN_LAYOUT.guardian.x-45,y:TOWN_LAYOUT.guardian.y+85},
  fire:{name:'消防站门前',mapId:'forest',x:FIRE_STATION.x-100,y:FIRE_STATION.y+90},
 };
-export const MAINLINE_NPCS={mint:{name:'青芽',hero:1},oak:{name:'阿栎师傅',hero:0},wheel:{name:'苔轮',hero:2},lumi:{name:'小灯',hero:3}};
+// 伙伴的常驻位置独立于任务追踪；有当前委托时仍沿用该任务的正式交谈地点。
+export const MAINLINE_NPCS={mint:{name:'青芽',hero:1,home:'camp'},oak:{name:'阿栎师傅',hero:0,home:'weapons'},wheel:{name:'苔轮',hero:2,home:'garage'},lumi:{name:'小灯',hero:3,home:'tower'}};
 // 任务解释器直接消费内容表，增加现有机制任务无需改解释器。
 export const MAINLINE_TASKS=content.tasks;
 export const MAINLINE_IDS=MAINLINE_TASKS.map(t=>t.id);
