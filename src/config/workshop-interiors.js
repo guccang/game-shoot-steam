@@ -67,7 +67,7 @@ export function interiorFurniture(game){
 export function garageVehicleRecord(game){return game.progress.campParking?.owned.find(r=>r.spot==='garage')||null;}
 
 // 只在售货员柜台前候停，展品和中央过道不会打开服务。
-export const SHOPKEEPER_ENTRY={wait:1,radius:28,releaseRadius:44,stopSpeed:3};
+export const SHOPKEEPER_ENTRY={wait:1,depth:20,releaseRadius:16,clickRadius:170,stopSpeed:3};
 // 所有营业房提供同一售货员身份，陈列柜继续保留展示与碰撞。
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;

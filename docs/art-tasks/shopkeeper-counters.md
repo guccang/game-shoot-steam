@@ -1,5 +1,11 @@
 # 所有售货员柜台任务单
 
+## 2026-11-02 点击与正面候停修复
+
+目标：售货员本体和名牌恢复点击交互；候停区域从右侧单点改为柜台完整前沿的可站区域，正面松手站稳一秒打开服务。保留原柜台、角色、地板、光照、碰撞与手机布局，不新增图像资源。点击与倒计时共用提交和关闭防重弹状态，主动再次点击可以重开；透明热点随室内镜头裁切，拖动仍用于行走。正式入口 `src/ui/shopkeeper-interaction.js`、`src/core/workshop-display-entry.js`，`designCriterion` 沿用 `shopkeeper-counters`。
+
+验收通过：18 项专项测试覆盖 12 类营业房的真实直行碰撞、正面与两侧候停、柜后排除、暂停、点击与防重弹。弹药铺、种子店、武器工坊和载具工坊通过 320×568 夜间及 390×844 白天实机触控、正面步行计时、关闭防重弹、点击重开与恢复移动检查；页面异常为 0。截图位于 `output/playwright/shopkeeper-click-front/*-countdown.png`，脚本为 `tests/shopkeeper-click-front-browser.cjs`。角色、售货员、柜台和倒计时同屏可读，热点不增加可见浮层或图像缓存；PNG 制作不适用，未运行全量测试。
+
 依据：[美术标准](../art-generation-standard.md)与[仓库合同](../../AGENTS.md)。
 
 ## 1 目标与范围

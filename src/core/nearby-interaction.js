@@ -31,7 +31,7 @@ export function nearbyInteraction(game){
  if(canRequestFireParking(game))return {id:'fire-parking',type:'fire-parking',label:'消防车入库'};
  const room=game.cottage;
  if(room){
-  // 床边和售货员使用一秒候停，不再叠加点击按钮。
+  // 床边使用一秒候停；售货员点击由室内人物热点处理，不叠加附近按钮。
   return null;
  }
  // 仓库在室外直接打开格子存取，驾驶时也无需下车入屋。
