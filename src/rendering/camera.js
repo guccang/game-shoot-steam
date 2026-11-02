@@ -1,7 +1,7 @@
 // 普通场景与守护默认使用同一基础倍率；守护保留手动全景与缩放。
 import { cameraOffsetLimits } from './view-safety.js';
 import { clamp } from '../core/math.js';
-import { CAMERA_VIEW, HORDE_CAMERA } from '../config/camera.js';
+import { CAMERA_VIEW, HORDE_CAMERA, DEFAULT_CAMERA_Y, defaultCombatZoom } from '../config/camera.js';
 
 // 沿稳定观察方向分配前后空间，不追随自动瞄准的瞬时枪口角度。
 function hordeOffset(angle, width, height, zoom) {
@@ -93,6 +93,8 @@ export class CombatCamera {
   }
   // 守护女神单独取景；普通场景及独立预览共用原版武器镜头与稳定射线校验。
   update(player, width, height, guide = null, time = 0, reduced = false, framing = null) {
+    // 浮游炮恢复普通跟随；自动炮体选敌不改变视野与观察中心。
+    if(guide?.kind==='funnel')guide=null;
     // 跑步与肉鸽远征使用默认战斗镜头，不随携带或抽取的武器切换广角与注视点。
     if(framing?.mode==='race'||framing?.mode==='rogue')guide=null;
     // 球场始终同屏，上方目标区与下方走位区不随自动瞄准来回晃动。
@@ -120,9 +122,9 @@ export class CombatCamera {
     this.zoomStep = 0;
     this.guardianDefault = true;
     this.guardianSession = null;
-    const sniper = guide?.kind === 'sniper' || guide?.kind === 'funnel';
+    const sniper = guide?.kind === 'sniper' || guide?.kind === 'drone';
     // 狙击保持约四成广角，脉冲以原始倍率换算为宽高增加两成，均不随目标变化。
-    const baseZoom = width < 500 ? 0.85 : 1.05;
+    const baseZoom = defaultCombatZoom(width);
     const zoom = sniper
       ? width < 500
         ? 0.6
@@ -145,7 +147,7 @@ export class CombatCamera {
     const offset = horde ? hordeOffset(this.updateHordeHeading(player, framing.horde, dt, hordeChanged), width, height, zoom) : null;
     const x = clamp(offset ? offset.x : focus ? (focus.x - player.x) / 2 : 0, limits.minX, limits.maxX);
     const y = clamp(
-      offset ? offset.y : focus ? (focus.y - player.y) / 2 : guide?.kind === 'funnel' ? 0 : 30,
+      offset ? offset.y : focus ? (focus.y - player.y) / 2 : guide?.kind === 'drone' ? 0 : DEFAULT_CAMERA_Y,
       limits.minY,
       limits.maxY,
     );

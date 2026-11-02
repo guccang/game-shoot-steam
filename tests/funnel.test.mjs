@@ -1,6 +1,6 @@
 import { equipmentRecipe } from '../src/progression/equipment-goals.js';
 import { WORLD } from '../src/world/coordinates.js';
-// 星环浮游炮验收：真实调度、目标优先级、资源守恒、来源归属与固定广角。
+// 星环浮游炮验收：真实调度、目标优先级、资源守恒、来源归属与默认视野。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, freshProgress, validateProgress, WEAPONS } from '../src/game.js';
@@ -370,7 +370,7 @@ test('密集直线怪群仍由脉冲贯穿占优，星环只有首个实体伤�
   assert.ok(damage[1] > damage[0] * 6);
 });
 
-test('固定广角居中，阵列始终有界；减少动态锚点静止，渲染只读且无聚能粒子', () => {
+test('默认视野跟随，阵列始终有界；减少动态锚点静止，渲染只读且无聚能粒子', () => {
   const { g } = arena();
   g.enemies = [target(1)];
   const camera = new CombatCamera();
@@ -382,9 +382,9 @@ test('固定广角居中，阵列始终有界；减少动态锚点静止，渲�
       { kind: 'funnel', focus: { x: 3000, y: 3000 } },
       10,
     );
-    assert.equal(v.zoom, width < 500 ? 0.6 : 0.75);
+    assert.equal(v.zoom, width < 500 ? 0.85 : 1.05);
     assert.ok(Math.abs((g.player.x - v.x) * v.zoom - width / 2) < 1e-7);
-    assert.ok(Math.abs((g.player.y - v.y) * v.zoom - 422) < 1e-7);
+    assert.ok(Math.abs((g.player.y - v.y) * v.zoom - (422-30*v.zoom)) < 1e-7);
   }
   g.reducedMotion = true;
   tick(g, 0.7);

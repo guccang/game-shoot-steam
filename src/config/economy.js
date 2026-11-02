@@ -50,7 +50,8 @@ recommended.tree.coins=0;recommended.enemy.woodRatio=0;recommended.boss.wood=0;
 // 清缴保留扩容前每份28金币的预算基数；实际怪群分摊整波预算，材料次数不放大。
 recommended.clearing={perKill:true,coins:[28,28,28,28,28],woodRatio:0,attempts:[4,4,5,5,6],groupGrowth:0,maxGrowth:1};
 // 以八块田的净收入规划新玩法购买档位；木材独立定价，不随长周期作物金币同比抬高。
-const prices = [0,1800,4800,1200,3600,1500,6500,4200,8000,15000,5500,5200,24000,18000,120,22000,28000,10000,4200];
+// 万元以上的高级武器金币价统一翻倍，维持脉冲、无人机、核心、浮游炮和蜘蛛的价格梯度。
+const prices = [0,1800,4800,1200,3600,1500,6500,4200,8000,30000,5500,5200,48000,36000,120,44000,56000,20000,4200];
 const farmWoodPrices=[0,240,600,160,440,200,800,520,960,1600,680,640,2400,1920,40,2240,2800,1200,520];
 recommended.weapons.forEach((r,i)=>{
   r.coins=prices[i];r.wood=farmWoodPrices[i];

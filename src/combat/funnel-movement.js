@@ -4,6 +4,7 @@ import { turnWeapon } from './weapon-turn.js';
 import { nearest } from '../world/coordinates.js';
 import { hitCenter } from './collision.js';
 import { FUNNEL_ORBIT } from '../config/funnel-flight.js';
+import {DEFAULT_CAMERA_Y,defaultCombatZoom} from '../config/camera.js';
 
 // 三炮共用连续相位，离队与补给不重排槽位；窄屏整体缩小轨道，避免逐点裁切形成停顿。
 function orbitPosition(state, node, bounds) {
@@ -18,12 +19,14 @@ function orbitPosition(state, node, bounds) {
 export function funnelFlightBounds(viewport = {}, extraMargin = 0) {
   const width = viewport.width || 390,
     height = viewport.height || 844;
-  const zoom = width < 500 ? 0.6 : 0.75;
+  const zoom = defaultCombatZoom(width);
+  // 默认镜头中心在猫猫前方，纵向安全边界须换算到同一个角色相对坐标。
   return {
-    minX: -Math.min(250, Math.max(80, (width / 2 - 40 - extraMargin) / zoom)),
-    maxX: Math.min(250, Math.max(80, (width / 2 - 94 - extraMargin) / zoom)),
-    minY: -Math.min(260, Math.max(90, (height / 2 - 190) / zoom)),
-    maxY: Math.min(240, Math.max(80, (height / 2 - 225) / zoom)),
+    minX: -Math.min(250, Math.max(0, (width / 2 - 40 - extraMargin) / zoom)),
+    maxX: Math.min(250, Math.max(0, (width / 2 - 94 - extraMargin) / zoom)),
+    // 顶部按当前紧凑生命条与任务条留出150像素，短屏仍能保留环绕猫猫的空间。
+    minY: DEFAULT_CAMERA_Y-Math.min(260, Math.max(0, (height / 2 - 150) / zoom)),
+    maxY: DEFAULT_CAMERA_Y+Math.min(240, Math.max(0, (height / 2 - 225) / zoom)),
   };
 }
 
