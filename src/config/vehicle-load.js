@@ -14,7 +14,7 @@ export const VEHICLE_ENGINES=[
  {id:'haul',name:'重载发动机',payload:1.75,tow:1.65,speed:.85,mass:.04,price:.35},
  ...TREASURE_ENGINES,
 ];
-export const LOAD_RULES={catMass:[40,36,48,38,44,35,42],catCapacity:30,catOverloadSpeed:0,magazineMass:.3,roundMass:.002,plateMassRate:.04,platePriceRate:.025,maxPlates:60,towPayloadPenalty:1,hookDistance:190,ropeLength:150,selfTowRepairRate:.4};
+export const LOAD_RULES={catMass:[40,36,48,38,44,35,42],catCapacity:30,catOverloadSpeed:0,magazineMass:.3,roundMass:.004,plateMassRate:.04,platePriceRate:.025,maxPlates:60,towPayloadPenalty:1,hookDistance:190,ropeLength:150,selfTowRepairRate:.4};
 export const WEAPON_MASSES=[2.5,4,12,4.5,6,5,5,6,4,5,6,8,3,4,8,4,4,6,5];
 export const CROP_MASSES={grain:1.5,vegetable:2,fruit:3,ornamental:.5};
 // 读取当前装配；未拥有车体只作为货架原厂展示，不创造所有权。
