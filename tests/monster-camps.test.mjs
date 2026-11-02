@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,MONSTER_CAMP_RULES as RULES,campVisitorSite,campSignSite,campCharacterSite,campCacheSite} from '../src/config/monster-camps.js';
-import {monsterCampObjects,updateMonsterCamps,monsterCampLevel,monsterCampChatter,talkCampCharacter,inspectCampCache} from '../src/core/monster-camps.js';
+import {monsterCampObjects,updateMonsterCamps,insideMonsterCamp,monsterCampLevel,monsterCampChatter,talkCampCharacter,inspectCampCache} from '../src/core/monster-camps.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {blocked} from '../src/physics/motion.js';
 import {forestLayout} from '../src/world/biomes.js';
@@ -25,14 +25,26 @@ import {updateEnemies} from '../src/core/enemy-manager.js';
 import {nearbyInteraction} from '../src/core/nearby-interaction.js';
 import {nearbyInteractionAnchor} from '../src/world/interaction-anchors.js';
 // 固定随机数、使用隔离内存保存；不替换正式伤害和死亡结算。
-function scene(index=0){const p=freshProgress(),c=MONSTER_CAMPS[index];p.mapId=c.mapId;const g=new Game(p,()=>.5);g.start();g.livingPersist=()=>true;g.enemies=[];g.attackTimer=999;Object.assign(g.player,campVisitorSite(c));updateMonsterCamps(g,.04);return g;}
+function scene(index=0){const p=freshProgress(),c=MONSTER_CAMPS[index];p.mapId=c.mapId;const g=new Game(p,()=>.5);g.start();g.livingPersist=()=>true;g.enemies=[];g.attackTimer=999;Object.assign(g.player,campVisitorSite(c),{y:c.y-RULES.warningRadius-20});updateMonsterCamps(g,.04);return g;}
 // 进入正式警戒圈再通过Game.hit清场，检查完整轮次而非直接写完成旗标。
 function clear(g,c){Object.assign(g.player,{x:c.x,y:c.y+110});updateMonsterCamps(g,.04);for(const e of [...g.enemies].filter(e=>e.monsterCamp===c.id))g.hit(e,99999);}
 
-test('所有营地木牌完整位于预警带外，观察点可安全够到且不落水堵树',()=>{
+// 对照旧半径外的新增区域，森林与湖谷均从正式战斗入口激活五个原名额。
+test('全部营地交战距离增加30%，新边界外只预警，新增范围内即可交战',()=>{
+ const previous=150*Math.sqrt(1.3);assert.equal(RULES.radius,previous*1.3);assert.equal(RULES.scale,Math.sqrt(1.3));assert.equal(RULES.warningRadius,RULES.radius+35);
+ for(const [index,camp] of MONSTER_CAMPS.entries()){
+  const g=scene(index);Object.assign(g.player,{x:camp.x,y:camp.y-RULES.radius-1});assert.equal(insideMonsterCamp(g,camp),false);updateMonsterCamps(g,.04);assert.equal(g.enemies.length,0);
+  assert.equal(monsterCampObjects(g).filter(e=>e.monsterCamp===camp.id&&e.campState==='alert').length,5);
+  Object.assign(g.player,{x:camp.x,y:camp.y-(previous+RULES.radius)/2});assert.ok(worldDistance(g.player,camp)>previous);assert.equal(insideMonsterCamp(g,camp),true);
+  updateMonsterCamps(g,.04);assert.equal(g.enemies.length,5,camp.id);assert.ok(g.enemies.every(e=>e.campState==='chasing'));
+  const enemy=g.enemies[0],hp=enemy.hp;g.hit(enemy,1);assert.equal(enemy.hp,hp-1);
+ }
+});
+
+test('所有营地木牌完整位于交战范围外，观察点可安全够到且不落水堵树',()=>{
  const trees={forest:forestLayout(),jiuzhaigou:jiuzhaigouTrees()};
- for(const c of MONSTER_CAMPS){const sign=campSignSite(c);assert.ok(worldDistance(c,sign)>RULES.warningRadius);assert.ok(worldDistance(campVisitorSite(c),sign)<=RULES.interact);
-  for(const [dx,dy] of [[0,0],[-54,-56],[54,-56],[-54,-20],[54,-20]]){const p={...sign,x:sign.x+dx,y:sign.y+dy};assert.ok(worldDistance(c,p)>RULES.warningRadius);assert.equal(blocked(p.x,p.y,8,trees[c.mapId],p),false,c.id);}
+ for(const c of MONSTER_CAMPS){const sign=campSignSite(c);assert.ok(worldDistance(c,sign)>RULES.radius);assert.ok(worldDistance(campVisitorSite(c),sign)<=RULES.interact);
+  for(const [dx,dy] of [[0,0],[-54,-56],[54,-56],[-54,-20],[54,-20]]){const p={...sign,x:sign.x+dx,y:sign.y+dy};assert.ok(worldDistance(c,p)>RULES.radius);assert.equal(blocked(p.x,p.y,8,trees[c.mapId],p),false,c.id);}
  }
 });
 
@@ -99,7 +111,7 @@ test('可见追兵远离出生营地仍保留，脱离视野后实际返营而�
 });
 test('边缘预警只注视，进入攻击、越界继续追、单只离开视野才返营',()=>{
  const g=scene(),c=MONSTER_CAMPS[0];assert.equal(g.enemies.length,0);assert.equal(monsterCampObjects(g).filter(o=>o.type==='monster-camp-resident').length,5);assert.ok(monsterCampChatter(g));
- assert.ok(Math.abs(RULES.radius**2/150**2-1.3)<1e-9);g.viewport={width:390,height:844};g.arrivalView={...g.viewport,left:-195,right:195,top:-422,bottom:422};
+ assert.ok(Math.abs(RULES.radius/(150*Math.sqrt(1.3))-1.3)<1e-9);g.viewport={width:390,height:844};g.arrivalView={...g.viewport,left:-195,right:195,top:-422,bottom:422};
  Object.assign(g.player,{x:c.x,y:c.y-RULES.radius-10});updateMonsterCamps(g,.04);const alerts=monsterCampObjects(g).filter(o=>o.campState==='alert');assert.equal(alerts.length,5);assert.equal(g.enemies.length,0);assert.ok(alerts.every(e=>e.campLookY<0));updateMonsterCamps(g,.5);assert.deepEqual(monsterCampObjects(g).filter(o=>o.campState==='alert').map(e=>[e.x,e.y]),alerts.map(e=>[e.x,e.y]));
  Object.assign(g.player,{x:c.x,y:c.y+RULES.radius-1});updateMonsterCamps(g,.04);assert.equal(g.enemies.length,5);assert.ok(g.enemies.every(e=>e.level===2));
  const e=g.enemies[0],hp=e.hp;Object.assign(g.player,{x:c.x,y:c.y+RULES.radius+20});updateMonsterCamps(g,.04);g.hit(e,1);assert.ok(e.hp<hp);assert.equal(g.enemies.length,5);
@@ -119,7 +131,7 @@ test('保存失败不发奖励，稍后重试恰好提交一次；远处回收�
 });
 test('冷却不在暂停推进，原地不重刷，离场后下一轮有新名额并记忆闲聊',()=>{
  const g=scene(),c=MONSTER_CAMPS[0];clear(g,c);const cool=g.progress.monsterCamps.camps[c.id].cooldown;g.state='paused';updateMonsterCamps(g,100);assert.equal(g.progress.monsterCamps.camps[c.id].cooldown,cool);
- g.state='playing';updateMonsterCamps(g,100);assert.equal(g.progress.monsterCamps.camps[c.id].mask,31);Object.assign(g.player,{x:c.x+400,y:c.y});updateMonsterCamps(g,.1);Object.assign(g.player,campVisitorSite(c));updateMonsterCamps(g,.1);assert.equal(monsterCampObjects(g).filter(o=>o.type==='monster-camp-resident').length,5);g.time=0;assert.match(monsterCampChatter(g).text,/1回/);
+ g.state='playing';updateMonsterCamps(g,100);assert.equal(g.progress.monsterCamps.camps[c.id].mask,31);Object.assign(g.player,{x:c.x+400,y:c.y});updateMonsterCamps(g,.1);Object.assign(g.player,campVisitorSite(c),{y:c.y-RULES.warningRadius-20});updateMonsterCamps(g,.1);assert.equal(monsterCampObjects(g).filter(o=>o.type==='monster-camp-resident').length,5);g.time=0;assert.match(monsterCampChatter(g).text,/1回/);
 });
 test('品种门槛保留，具名人物安全交谈、夜间线索、永久特殊物品及加种奖励',()=>{
  const locked=scene(1),c1=MONSTER_CAMPS[1];clear(locked,c1);for(const i of c1.seeds)assert.equal(locked.progress.farm.seeds[i],0);

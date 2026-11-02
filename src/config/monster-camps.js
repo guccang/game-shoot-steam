@@ -1,10 +1,11 @@
 import {worldDistance} from '../world/coordinates.js';
 // 野外营地目录：坐标、种子、性格和线索共用稳定标识，不依赖显示文案。
-// 半径按面积增加30%换算；营地外沿另留35单位的驻足预警带。
+// 摆设与居民间距保持原比例；交战距离在原半径上增加30%，外围仍留35单位预警带。
 const CAMP_SCALE=Math.sqrt(1.3);
+const CAMP_COMBAT_RADIUS=150*CAMP_SCALE*1.3;
 // 周边650单位共用营地等级；这是出生属性范围，不扩大警戒或攻击范围。
 // 返营休息每秒恢复最大生命的3%，保留小数积累，低等级怪同样平滑回血。
-export const MONSTER_CAMP_RULES=Object.freeze({scale:CAMP_SCALE,radius:150*CAMP_SCALE,warningRadius:150*CAMP_SCALE+35,territoryRadius:650,unseenDelay:.8,observe:340,respawn:90,count:5,interact:90,healPerSecond:.03,damageGrowthAfterLevel:5,damageGrowthPerLevel:.1});
+export const MONSTER_CAMP_RULES=Object.freeze({scale:CAMP_SCALE,radius:CAMP_COMBAT_RADIUS,warningRadius:CAMP_COMBAT_RADIUS+35,territoryRadius:650,unseenDelay:.8,observe:340,respawn:90,count:5,interact:90,healPerSecond:.03,damageGrowthAfterLevel:5,damageGrowthPerLevel:.1});
 // 营地及周边野怪从六级起逐步增加攻击，二十级为原曲线的2.5倍；不读取玩家装备。
 export function monsterCampDamageScale(level){return 1+Math.max(0,level-MONSTER_CAMP_RULES.damageGrowthAfterLevel)*MONSTER_CAMP_RULES.damageGrowthPerLevel;}
 export const MONSTER_CAMPS=Object.freeze([
@@ -38,7 +39,7 @@ export function monsterCampClearing(x,y,mapId='forest'){
 }
 // 目录导航保留外围观察点，人物另在营地内，避免远程交谈。
 export function campVisitorSite(camp){return {id:camp.id+'-visitor',mapId:camp.mapId,x:camp.x-70,y:camp.y-240};}
-// 木牌位于外围观察点旁，牌面与牌脚均在预警带外，点击位置与绘制共用。
+// 木牌位于外围观察点旁，牌面与牌脚均在交战范围外，点击位置与绘制共用。
 export function campSignSite(camp){return {id:camp.id+'-sign',mapId:camp.mapId,x:camp.x+10,y:camp.y-235};}
 // 具名居民住在棚旁，独立于战斗名额，不加入敌人目标表。
 export function campCharacterSite(camp){return {id:camp.id+'-character',mapId:camp.mapId,x:camp.x-68,y:camp.y-88};}

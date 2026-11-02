@@ -70,7 +70,7 @@ test('营地等级范围使用循环世界距离，范围外恢复原地区等�
  const edge={x:camp.x-RULES.territoryRadius,y:camp.y};assert.equal(enemyIdentity(edge.x,edge.y,0).level,20);
  const outside={x:edge.x-1,y:edge.y};assert.equal(monsterCampTerritoryAt(outside.x,outside.y),null);
  assert.equal(enemyIdentity(outside.x,outside.y,0).level,forestThreatAt(outside.x,outside.y).level);
- assert.equal(RULES.radius,150*Math.sqrt(1.3));assert.equal(RULES.warningRadius,RULES.radius+35);
+ assert.equal(RULES.radius,150*Math.sqrt(1.3)*1.3);assert.equal(RULES.warningRadius,RULES.radius+35);
 });
 
 // 对照真实地图出生入口，确保攻击加成不会串入指定等级活动或低级营地。
