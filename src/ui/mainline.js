@@ -27,7 +27,7 @@ const resourceNames={coins:'金币',wood:'木材',parts:'机械零件',crystal:'
 // 任务正文来自固定中文表；仍转义后插入HTML，防止未来内容表引入标签。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 一张紧凑任务卡、一名可交谈NPC和一本按章节展开的手册共享当前目标。
-export function createMainline({game,root,renderer,dialogs,onChange,openAction,workshop,onFarm}){
+export function createMainline({game,root,renderer,dialogs,onChange,openAction,workshop,onFarm,onTalk}){
  const scope=createEventScope(),frame=root.getElementById('game-frame');
  const navigationToggle=createTaskNavigation({game,root,onChange});
  const operationGuide=createOperationGuide({game,root,workshop});
@@ -81,7 +81,9 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  scope.on($('farm-lesson'),'click',e=>{if(e.target.closest('#farm-lesson-go')){farmAfterClose=true;dialogs.close('mainline-dialog');}});
  scope.on(book,'close',()=>{if(farmAfterClose){farmAfterClose=false;onFarm?.();}});
  scope.on($('mainline-close'),'click',()=>dialogs.close('mainline-dialog'));
- scope.on(npc,'click',event=>{if(event.detail!==0)return;if(canTalkMainline(game)){game.mainlineTalkDelay=0;updateMainline(game,0);}else dialogs.open('mainline-dialog');onChange();});
+ // 正事保留原任务入口，闲聊不会自动接取或交付。
+ function talk(){if(game.progress.mainline.phase!=='doing'&&canTalkMainline(game)){game.mainlineTalkDelay=0;updateMainline(game,0);}else dialogs.open('mainline-dialog');onChange();}
+ scope.on(npc,'click',event=>{if(event.detail!==0)return;const task=mainlineTask(game);if(onTalk&&task)onTalk('camp:'+task.npc,talk);else talk();});
  // 到教学地点后直接进入当前动作面板；不代付、不越过任务条件。
  function openCurrentAction({inspect=false}={}){
   const task=mainlineTask(game),action=mainlineAction(game),objective=mainlineObjective(game);
@@ -187,5 +189,5 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  }
  // 应用重建时释放所有节点和监听，不保留旧存档的目标。
  function dispose(){navigationToggle.dispose();scope.dispose();operationGuide.dispose();root.getElementById('toast').style.removeProperty('top');card.remove();npc.remove();speechUI.dispose();book.remove();}
- return {render,renderFrame,dispose};
+ return {render,renderFrame,dispose,talk};
 }

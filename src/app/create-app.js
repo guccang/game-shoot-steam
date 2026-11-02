@@ -6,6 +6,7 @@ import {requestWorldNavigation} from '../core/world-navigation.js';
 import {createVehicleRepairPanel} from '../ui/vehicle-repair.js';
 import {facilityOpen} from '../config/town-restoration.js';
 
+import {createNpcConversations} from '../ui/npc-conversations.js';
 import {createMonsterCampPanel} from '../ui/monster-camps.js';
 import {createWarehouse} from '../ui/warehouse.js';
 import {createSeedShop} from '../ui/seed-shop.js';
@@ -142,7 +143,9 @@ export function createApplication({
   profiler.end('init.renderer');
   diagnostics.attach({ game, renderer });
   const storm = new StormCycle();
-  let campDefensePanel,campHome;
+  let campDefensePanel,campHome,npcConversations;
+  // 各交互控制器共享主动闲聊入口，初始化完成后才接收场景点击。
+  const onTalk=(id,service)=>npcConversations.open(id,service);
   let worldRealms, worldWorkshop, worldVehicleWorkshop, guardianBuild, cameraControls;
   const input = createInput({ game, root, host, enabled:()=>shell.page==='game', onChange: () => refresh(),
     onTap: event => { if(farmPanel?.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
@@ -254,7 +257,7 @@ export function createApplication({
     createTrial: createWorkshopTrial });
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});
   game.openLegendaryWorkshop=()=>legendaryWorkshop.open();
-  campHome=createCampHome({game,renderer,root,input,dialogs,onDecorChange:refresh,openWorkshop:openRoomService,onCharacter:()=>inventory.openCurrentCat('items'),onChange:()=>{save();refresh();}});
+  campHome=createCampHome({game,renderer,root,input,dialogs,onTalk,onDecorChange:refresh,openWorkshop:openRoomService,onCharacter:()=>inventory.openCurrentCat('items'),onChange:()=>{save();refresh();}});
   // 工坊外部不建立点击入口，门前站定后由室内售货员提供服务。
   worldWorkshop = createWorldWorkshop({ game, renderer, root, onEnter: () => !facilityOpen(game.progress,'weapons')?rangerArrival.openWorkshop():workshop.open('weapons') });
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onEnter:()=>workshop.open('vehicle')});
@@ -286,15 +289,15 @@ export function createApplication({
   game.storyPersist = store.saveProgress;
   game.livingPersist=store.saveProgress;
   clearingPanel=createClearingPanel({game,root,renderer,dialogs,onChange:refresh});
-  livingPanel=createLivingPanel({game,root,renderer,dialogs,onEquipmentStory:id=>storyPanel.openEquipment(id),onClearing:()=>clearingPanel.visit(),onChange:refresh,environment,onRest:()=>{projectLivingCalendar(environment,game.progress.living.calendar);environmentPanel.render();}});
+  livingPanel=createLivingPanel({game,root,renderer,dialogs,onTalk,onEquipmentStory:id=>storyPanel.openEquipment(id),onClearing:()=>clearingPanel.visit(),onChange:refresh,environment,onRest:()=>{projectLivingCalendar(environment,game.progress.living.calendar);environmentPanel.render();}});
   storyPanel = createStoryPanel({game,root,dialogs,renderer,onLiving:()=>livingPanel.open(),onChange:()=>refresh(),openWorkshop:(kind,index)=>workshop.open(kind,index)});
-  monsterCampPanel=createMonsterCampPanel({game,root,renderer,dialogs,onChange:refresh});
+  monsterCampPanel=createMonsterCampPanel({game,root,renderer,dialogs,onTalk,onChange:refresh});
   seedShop=createSeedShop({game,root,renderer,dialogs,onChange:refresh});
   farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onSeedShop:()=>seedShop.open()});
   game.mainlinePersist=store.saveProgress;
   game.campDefensePersist=store.saveProgress;
   campDefensePanel=createCampDefensePanel({game,root,renderer,dialogs,onChange:refresh});
-  mainline=createMainline({game,root,renderer,dialogs,workshop,onFarm:()=>farmPanel.open(),onChange:refresh,openAction:action=>{
+  mainline=createMainline({game,root,renderer,dialogs,onTalk,workshop,onFarm:()=>farmPanel.open(),onChange:refresh,openAction:action=>{
     if(action.type==='warehouse')return warehouse.open()?'warehouse-dialog':null;
     if(action.type==='logistics'){logistics.open('cargo',game.vehicle.index);return 'logistics-dialog';}
     if(action.type==='cleanup-bag'){loadCleanup.open();return 'load-cleanup-dialog';}
@@ -309,6 +312,7 @@ export function createApplication({
     if(action.type==='fire'){firePanel.open();return 'fire-dialog';}
     $(action.id)?.click();return root.querySelector('dialog[open]:not(#mainline-dialog)')?.id;
   }});
+  npcConversations=createNpcConversations({game,root,renderer,dialogs,onChange:refresh,onCampService:()=>mainline.talk()});
   // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
   function openRoomService(kind,index){
     if(kind==='warehouse')return warehouse.open();
@@ -597,6 +601,7 @@ export function createApplication({
         profiler.start('render.panels.living'); livingPanel.renderFrame(); profiler.end('render.panels.living');
         profiler.start('render.panels.arrival'); rangerArrival.renderFrame(); profiler.end('render.panels.arrival');
         profiler.start('render.panels.mainline'); mainline.renderFrame(dt); profiler.end('render.panels.mainline');
+        npcConversations.renderFrame();
         profiler.start('render.panels.campDefense'); campDefensePanel.renderFrame(); profiler.end('render.panels.campDefense');
         profiler.start('render.panels.waveTail'); waveTailNavigation.renderFrame(); profiler.end('render.panels.waveTail');
         profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
@@ -674,7 +679,7 @@ export function createApplication({
     farmPanel.dispose();
     clearingPanel.dispose();
     rangerArrival.dispose();
-    mainline.dispose();
+    mainline.dispose();npcConversations.dispose();
     campDefensePanel.dispose();
     waveTailNavigation.dispose();
     realmPanel.dispose();firePanel.dispose();

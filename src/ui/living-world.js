@@ -1,4 +1,3 @@
-import {hearTreasureRumor} from '../core/treasure.js';
 import {livingInteractionPosition} from '../core/living-world.js';
 import {equipmentQuestCards} from './equipment-quests.js';
 import {EQUIPMENT_QUESTS,equipmentStoryCompleted} from '../config/equipment-quests.js';
@@ -27,7 +26,7 @@ import {mainlineTask} from '../core/mainline-manager.js';
 // 文本既包括存档日志也包括配置内容，统一转义后插入。
 function escape(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 // 创建可卸载的生活面板，日常世界不另开章节会话。
-export function createLivingPanel({game,root,dialogs,onChange,environment,onRest,onClearing,renderer,onEquipmentStory}){
+export function createLivingPanel({game,root,dialogs,onChange,environment,onRest,onClearing,renderer,onEquipmentStory,onTalk}){
   const scope=createEventScope(),dialog=root.createElement('dialog'),menu=root.createElement('button'),action=root.createElement('button'),hint=root.createElement('div');
   dialog.id='living-dialog';dialog.className='living-dialog';dialog.setAttribute('aria-labelledby','living-title');
   dialog.innerHTML='<header><div><small id="living-date"></small><h2 id="living-title">森林邻里</h2></div><button id="living-close" class="ui-close" aria-label="关闭邻里面板">×</button></header><div id="living-content"></div>';
@@ -37,7 +36,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
   root.body.append(dialog);root.getElementById('field-menu-items').prepend(menu);root.getElementById('game-frame').append(action,hint);
   const chatter=createResidentChatter({game,root,renderer}),residentNodes=new Map(),frame=root.getElementById('game-frame');
   sceneHit(action,'继续现场请求');
-  let rumor='',view='board',person=null,notice='',target=null,signature='',handoffKey='',taskPanel=false,focusId=null,noticeError=false;
+  let view='board',person=null,notice='',target=null,signature='',handoffKey='',taskPanel=false,focusId=null,noticeError=false;
   // 只在语义内容改变时更新，保留焦点和窄屏滚动位置。
   function render(){
     if(!dialog.open)return;
@@ -46,7 +45,6 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
     root.getElementById('living-date').textContent=person?(focusId?'当前委托':'正在交谈'):calendar.label;
     let html=person?'':'<nav class="living-tabs" aria-label="邻里记录">'+[['board','帮个忙'],['equipment','装备故事'],['news','找邻居'],['replies','回信']].map(([id,label])=>`<button data-living-tab="${id}" aria-pressed="${view===id}">${label}</button>`).join('')+'</nav>';
     if(!person)html+=`<section class="living-clearing"><button id="living-patrol">${state.patrolActive?'清缴已接取 · 去告示牌管理':'Boss 清缴 · 去告示牌接取'}</button>${state.patrolActive?'<button data-living-clearing>前往清缴场</button>':''}</section>`;
-    if(person&&rumor)html+=`<p class="living-notice">${escape(rumor)}</p>`;
     if(notice&&(!focusId||noticeError))html+=`<p class="living-notice" role="status">${escape(notice)}</p>`;
     root.getElementById('living-title').textContent=person?residentFor(game,person)?.name||'邻居':'森林邻里';
     // 正在阅读现场回应时，不再接上一段无关闲聊，保留这次交谈的情绪与指向。
@@ -99,7 +97,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
   function open(id=null){
     if(!facilityOpen(game.progress,'neighbors')){game.requestFacility?.('neighbors');return;}if(!livingForest(game))return;
     person=id&&RESIDENTS.some(r=>r.id===id)?id:null;notice='';noticeError=false;view='board';signature='';
-    const speaker=person&&residentFor(game,person);rumor=speaker&&worldDistance(livingInteractionPosition(game),speaker)<110?(hearTreasureRumor(game,person)?.message||''):'';
+    // 通讯录和事务页只读；秘密由主动分层闲聊或正式委托结算记录。
     focusId=focusedResidentRequest(game,person)?.id||null;
     taskPanel=!!person&&(visibleResidentRequests(game,person,focusId).length>0||EQUIPMENT_QUESTS.some(q=>q.host===person));
     dialog.classList.toggle('npc-bottom-dialogue',!!person&&!taskPanel);
@@ -128,7 +126,7 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
     else if(button.id==='living-patrol'){dialogs.close('living-dialog');onClearing();}
   });
   // E键作为现场点击的键盘替代，仍匹配对应居民或当前任务道具。
-  function interact(){if(!target)return;const owner=target.resident||residentFor(game,target.step?.resident||LIVING_REQUESTS.find(q=>q.id===target.id)?.host)?.id;open(owner);if(target.step)result(interactLivingRequest(game,target.id));}
+  function interact(){if(!target)return;const owner=target.resident||residentFor(game,target.step?.resident||LIVING_REQUESTS.find(q=>q.id===target.id)?.host)?.id;if(onTalk&&target.resident){onTalk('resident:'+owner,()=>open(owner));return;}open(owner);if(target.step)result(interactLivingRequest(game,target.id));}
   scope.on(action,'click',event=>{if(event.detail===0)interact();});
   scope.on(root,'keydown',event=>{if(event.code==='KeyE'&&!event.repeat&&!event.defaultPrevented&&target&&!game.mainlineSpeech&&!root.querySelector('dialog[open]')){event.preventDefault();interact();}});
   // 顶部图片在正式历法下打开日程，调试预览仍交给环境面板。
@@ -164,7 +162,8 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
           scope.on(node,'click',event=>{if(event.detail!==0||game.state!=='playing'||game.mainlineSpeech||root.querySelector('dialog[open]'))return;
             const selected=residentInteraction(game,resident.id);
             if(!selected){const current=livingResidents(game).find(r=>r.id===resident.id);if(current){requestWorldNavigation(game,current,'去找'+current.name,{direct:true});onChange();}return;}
-            open(resident.id);if(selected.step)result(interactLivingRequest(game,selected.id));
+            if(onTalk)onTalk('resident:'+resident.id,()=>open(resident.id));
+            else {open(resident.id);if(selected.step)result(interactLivingRequest(game,selected.id));}
           });}
         placeSceneHit(node,resident,renderer,frame,{width:resident.hero===undefined?76:50,height:resident.hero===undefined?78:64});
       }

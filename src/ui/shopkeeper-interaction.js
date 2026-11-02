@@ -5,7 +5,7 @@ import {interiorShopkeeper} from '../config/workshop-interiors.js';
 import {requestShopkeeperService} from '../core/workshop-display-entry.js';
 
 // 热点只存在于当前营业房，面板关闭与倒计时共用防重开状态。
-export function createShopkeeperInteraction({game,renderer,root,panel,input,openService}){
+export function createShopkeeperInteraction({game,renderer,root,panel,input,openService,onTalk}){
  const scope=createEventScope(),button=root.createElement('button');
  sceneHit(button,'与售货员交互');button.dataset.roomItem='shopkeeper';button.hidden=true;panel.append(button);
  // 屏幕命中和热点布局共用同一矩形，包含人物头顶的正式名牌。
@@ -22,7 +22,7 @@ export function createShopkeeperInteraction({game,renderer,root,panel,input,open
   if(root.hidden||root.querySelector('dialog[open]')||!game.cottage||game.state!=='playing')return;
   const service=requestShopkeeperService(game);
   if(!service){game.cottage.storageNotice='请靠近售货员，再点击交互。';return;}
-  input.reset();openService(service.kind,service.index);
+  input.reset();if(onTalk)onTalk('shop:'+service.kind,()=>openService(service.kind,service.index));else openService(service.kind,service.index);
  }
  scope.on(button,'click',event=>{if(event.detail===0)activate();});
  // 普通触摸只接收输入系统确认的短按，避免从售货员身上拖动时误开页面。

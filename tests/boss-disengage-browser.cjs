@@ -22,7 +22,7 @@ async original=>{
    await page.waitForTimeout(100);if(await page.locator('#boss-hud').isVisible())throw Error('回营仍显示交战Boss条');await page.screenshot({path:out+width+'-'+time+'-camp.png'});checks.push({width,height,time});
   }
   await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.ammo.door,{vx:0,vy:0});a.game.cottageDoorLatch=false;a.renderer.camera.time=null;});
-  await page.waitForFunction(()=>a.game.cottage?.kind==='ammo');await page.locator('[data-room-item=shopkeeper]').tap();await page.locator('#field-equipment-dialog[open]').waitFor();await page.locator('[data-supply-target=hand]').tap();
+  await page.waitForFunction(()=>a.game.cottage?.kind==='ammo');await page.locator('[data-room-item=shopkeeper]').tap();await page.locator('[data-npc-service]').tap();await page.locator('#field-equipment-dialog[open]').waitFor();await page.locator('[data-supply-target=hand]').tap();
   const before=await page.evaluate(()=>({coins:a.game.progress.coins,ammo:a.game.progress.supplies.hand.light}));await page.locator('[data-ammo-buy=light]').tap();
   const after=await page.evaluate(()=>({coins:a.game.progress.coins,ammo:a.game.progress.supplies.hand.light,hp:a.game.boss.hp,x:a.game.boss.x,y:a.game.boss.y,disengaged:a.game.boss.disengaged}));
   if(after.coins!==before.coins-30||after.ammo!==before.ammo+300||after.hp!==321||!after.disengaged)throw Error('回营购弹失败 '+JSON.stringify(after));await page.screenshot({path:out+'shop-purchase.png'});
