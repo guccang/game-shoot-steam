@@ -1,3 +1,4 @@
+import {bossCombatActive} from './boss-engagement.js';
 import {canUseWarehouse} from './warehouse.js';
 import {personalFleet} from './vehicle-repair.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,campSignSite,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
@@ -53,7 +54,7 @@ export function nearbyInteraction(game){
   if(gate?worldDistance(game.player,gate)<=160:distance<=(e.radius??BUILDING_ENTRY.radius))entries.push({...e,label:e.type==='realm'?'查看入口':gate?'怪潮站牌':e.type==='clearing'?'查看清缴委托':'查看告示',detail:gate?'打开怪潮页面':'',presentation:gate?'task-entry':null,distance});
  }
  // 修复提示覆盖真实修复区及门前预告范围，骑乘时同样可查看资源；自选建筑需在修复页确认。
- if(!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial)for(const f of TOWN_RESTORATIONS){
+ if(!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!bossCombatActive(game)&&!game.livingBattle&&!game.workshopTrial)for(const f of TOWN_RESTORATIONS){
   const s=restorationStatus(game,f.id),distance=worldDistance(game.player,s.facility.site);
   if((f.extra||!s.ready)&&(s.near||distance<=155))entries.push({id:'restore-'+f.id,type:'restoration',key:f.id,label:s.ready?'查看'+f.name:'修复'+f.name,distance});
  }

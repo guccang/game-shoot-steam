@@ -1,4 +1,5 @@
 import {traceEnergyShield,energyShieldMeleeTarget} from './energy-shield-surface.js';
+import {bossCombatActive,updateBossEngagement} from '../core/boss-engagement.js';
 import {advanceDumplingMotion} from './dumpling-motion.js';
 import {hurtCampBarricade} from '../core/camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -116,8 +117,9 @@ function beginAttack(game, b, profile) {
 }
 // 追击、前摇、施法和硬直四阶段，冲锋阶段才允许野猪造成身体撞击伤害。
 export function updateBoss(game, dt, previousPlayer = game.player) {
+  updateBossEngagement(game);
   const b = game.boss;
-  if (!b || b.hp <= 0 || game.state !== 'playing') return;
+  if (!b || b.hp <= 0 || game.state !== 'playing'||!bossCombatActive(game)) return;
   const motionFrom={x:b.x,y:b.y};
   try {
   const profile = bossProfile(b),
@@ -217,6 +219,7 @@ export function updateBoss(game, dt, previousPlayer = game.player) {
 // 预警期不造成伤害；羽刃与震波每次施法只命中一次，孢子按固定间隔灼伤。
 export function updateBossHazards(game, dt, previousPlayer = game.player) {
   if (game.state !== 'playing') return;
+  updateBossEngagement(game);
   // 回到生活区立即结束追击技能；普通章节和秘境保持原技能生命周期。
   if(livingForest(game)&&livingSafePoint(game.player)){game.hazards=[];return;}
   const target = attackTarget(game), targetRadius = target.type === 'goddess' ? target.radius : PLAYER_RADIUS;

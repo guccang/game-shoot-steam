@@ -10,6 +10,7 @@ import {RANGER_STAGES} from '../src/config/ranger-arrival.js';
 import {phoneContacts,callNeighbor,navigatePhone} from '../src/core/patrol-phone.js';
 import {worldNavigationObjective} from '../src/core/world-navigation.js';
 import {LIVING_PHASES} from '../src/config/living-world.js';
+import {clearingSite} from '../src/progression/clearing-site.js';
 const ids=KEEPSAKES.map(item=>item.id);
 // 仅初始化正式场景；电话和导航仍调用生产入口，不替换业务函数。
 function scene(progress=freshProgress()){const g=new Game(progress,()=>.5);g.start();g.mainlineSpeech=null;return g;}
@@ -46,7 +47,9 @@ test('手机导航跟随邻居移动，不传送，战斗和特殊场景有明�
  assert.ok(navigatePhone(g,'cook').ok);let target=worldNavigationObjective(g);assert.equal(target.site.id,'cook');
  const resident=phoneContacts(g).find(r=>r.id==='cook');resident.x+=60;target=worldNavigationObjective(g);assert.equal(target.site.x,resident.x);
  assert.deepEqual({x:g.player.x,y:g.player.y},before);assert.ok(navigatePhone(g,'home').ok);assert.equal(worldNavigationObjective(g).site.id,'cottage');
- g.progress.living.patrolActive=true;assert.match(navigatePhone(g,'home').message,/结束当前战斗/);
+ // 已接清缴但人在营地仍可导航，进入实际战区后才阻止改道。
+ g.progress.living.patrolActive=true;assert.ok(navigatePhone(g,'home').ok);
+ Object.assign(g.player,clearingSite(g.progress));assert.match(navigatePhone(g,'home').message,/离开当前战斗范围/);
  g.mapId='jiuzhaigou';assert.equal(callNeighbor(g,'cook').ok,false);
  assert.equal(callNeighbor(scene(freshRangerProgress()),'cook').ok,false);
 });

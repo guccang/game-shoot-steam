@@ -38,6 +38,7 @@ import { updateLivingWorld, acceptLivingRequest } from './living-world.js';
 import {syncStoryWorld} from './story-world.js';
 import {storyDeliveryReady} from './story-definition.js';
 import { livingProtected, retreatLivingEnemy } from './living-safety.js';
+import {bossCombatActive,updateBossEngagement} from './boss-engagement.js';
 import { riderPosition } from '../config/vehicle-rider.js';
 import {updateMainline,resetMainlineScene} from './mainline-manager.js';
 import {arrivalPending,arrivalCinematic} from '../config/ranger-arrival.js';
@@ -811,6 +812,7 @@ export class Game {
   update(dt, input = { x: 0, y: 0 }) {
     dt = clamp(dt, 0, 0.05);
     this.previewTime += dt;
+    updateBossEngagement(this);
     updateOutdoors(this,dt);
     updateFarmRain(this);
     updateWarehouseWood(this,dt);
@@ -966,7 +968,8 @@ export class Game {
     }
     profiler?.end('logic.enemies');
     profiler?.start('logic.boss');
-    if(!this.boss||!retreatLivingEnemy(this,this.boss,dt))updateBoss(this, dt, previousPlayer);
+    updateBossEngagement(this);
+    if(bossCombatActive(this)&&!retreatLivingEnemy(this,this.boss,dt))updateBoss(this, dt, previousPlayer);
     updateBossHazards(this, dt, previousPlayer);
     updateGravityFields(this,dt);
     updateStory(this, dt);

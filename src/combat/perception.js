@@ -1,3 +1,4 @@
+import {bossCombatActive} from '../core/boss-engagement.js';
 // 首次发现与持续交战分开：画面发现敌人，武器射程决定能否继续攻击。
 import {AUTO_AIM_VIEW} from '../config/combat-perception.js';
 import {nearest, worldDistance, WORLD} from '../world/coordinates.js';
@@ -28,6 +29,8 @@ export function attackTargetVisible(game,target){
 }
 // 查询保持只读；已发现或已命中的敌人出屏仍可交战，射程和存活由各武器校验。
 export function attackTargetKnown(game,target){
+ // 已脱战领主不再被远程自动锁定，接战距离由战斗规则统一控制。
+ if(target===game.boss&&!bossCombatActive(game))return false;
  return attackTargetVisible(game,target)||target.type!=='tree'&&game.combatSight?.has(target)&&game.combatSight.get(target)===target.id;
 }
 // 只在正式更新和命中时记忆实体及其编号，避免复用实体或同编号新怪继承旧目标资格。

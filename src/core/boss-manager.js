@@ -46,7 +46,7 @@ export function summonBoss(game) {
 }
 
 // 恢复已存在的挑战，不重新扣资格、不生成新难度，也不重复触发召唤事件。
-export function restoreBoss(game, health) {
+export function restoreBoss(game, health, position=null, disengaged=false) {
   const stats = game.progress.bossChallenge;
   if (!stats || stats.bosses !== game.progress.bosses) return false;
   const profile = nextBoss(game.progress);
@@ -57,11 +57,12 @@ export function restoreBoss(game, health) {
     kind: profile.id,
     // 常驻世界的巡护对练采用训练投影，与正在生活的同名居民身份分开。
     livingChallenge:livingForest(game),
+    disengaged,
     support: createBossSupport(),
     ai: { phase: 'chase', elapsed: 0 },
     // 从左下方入场，窄屏仍能看到完整剪影，避开顶部信息与右侧按钮。
-    x: game.player.x - GAMEPLAY_VALUES.boss.spawnLeft,
-    y: game.player.y + GAMEPLAY_VALUES.boss.spawnDown,
+    x: position?.x??game.player.x - GAMEPLAY_VALUES.boss.spawnLeft,
+    y: position?.y??game.player.y + GAMEPLAY_VALUES.boss.spawnDown,
     hp: Math.max(1, Math.min(stats.maxHp, health)),
     maxHp: stats.maxHp,
     radius: GAMEPLAY_VALUES.boss.radius,

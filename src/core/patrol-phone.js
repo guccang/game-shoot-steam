@@ -1,4 +1,6 @@
 import {hearTreasureRumor} from './treasure.js';
+import {bossCombatActive} from './boss-engagement.js';
+import {clearingCombatActive} from './living-safety.js';
 // 手机只提供联系与去向，不远程接单、交付、发奖或传送角色。
 import {ownsKeepsake} from '../progression/keepsakes.js';
 import {livingResidents,residentSchedule,residentLine} from './living-world.js';
@@ -32,7 +34,7 @@ export function callNeighbor(game,id,{hear=true}={}){
 // 使用正式导航跟随居民最新位置；战斗中保留通话，但禁止覆盖战斗路线。
 export function navigatePhone(game,id){
  const reason=phoneUnavailable(game);if(reason)return {ok:false,message:reason};
- if(game.boss||game.livingBattle||game.progress.living.patrolActive)return {ok:false,message:'先结束当前战斗，再去拜访或回家。'};
+ if(bossCombatActive(game)||game.livingBattle||clearingCombatActive(game))return {ok:false,message:'先离开当前战斗范围，再去拜访或回家。'};
  const call=id==='home'?null:callNeighbor(game,id,{hear:false});if(call&&!call.ok)return call;
  const site=call?.site||{...COTTAGE.door,id:'cottage',name:'巡林小屋',mapId:'forest'};
  requestWorldNavigation(game,site,call?'去找'+call.name:'回巡林小屋',{direct:true});
