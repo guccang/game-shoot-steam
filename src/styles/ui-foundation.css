@@ -285,7 +285,7 @@ dialog.ui-panel.ui-page {
 .hud-resources { top: max(12px,env(safe-area-inset-top)); left: max(10px,env(safe-area-inset-left)); right: max(10px,env(safe-area-inset-right)); display: grid; grid-template-columns: 80px 80px minmax(0,1fr); gap: 4px; }
 .hud-resources .utility-buttons { display: flex; justify-self: end; gap: 3px; margin-left: 0; }
 .hud-resources .utility-buttons button { width: 44px; height: 44px; flex: 0 0 44px; padding: 1px; }
-/* 帧率位于设置按钮下方；生命卡按钱包底边排列，实际重叠时才避让帧率。 */
+/* 帧率位于设置按钮下方，与左侧生命卡各自占用安全区。 */
 .hud-resources, .hud-resources .utility-buttons { align-items: start; }
 .settings-hud-control { display: flex; flex-direction: column; width: 44px; flex: 0 0 44px; }
 #fps-display { width: 44px; margin-top: 3px; line-height: 18px; border-radius: 5px; background: var(--ui-paper); color: var(--ui-text); text-align: center; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
@@ -301,6 +301,9 @@ dialog.ui-panel.ui-page {
   .hud-resources .resource-pill .resource-info-button { align-items: flex-start; justify-content: center; padding-top: 3px; }
   .hud-resources .resource-pill .resource-art { width: 20px; height: 20px; }
 }
+/* 金币与木材已移入手机，主界面工具栏只为设置和帧率保留右侧一列。 */
+#game-frame .hud-resources{left:auto;width:44px;grid-template-columns:44px;gap:0}
+#game-frame .hud-resources .utility-buttons{grid-column:1}
 /* 名称和生命值相邻排列，压缩留白；右侧仪表仍保留44px触控区。 */
 .player-hud { padding:3px 6px; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:1fr 1fr; column-gap:4px; row-gap:2px; }
 .player-hud > .player-heading:first-child { grid-column:1; grid-row:1; margin:0; min-width:0; align-self:end; justify-content:flex-start; gap:3px; }
@@ -308,7 +311,13 @@ dialog.ui-panel.ui-page {
 .player-hud > .bar { grid-column:1; grid-row:2; margin:0; align-self:start; }
 /* 生命与弹药面板归入左上信息区，避开底部摇杆和农具。 */
 #game-frame { --hud-card-width:248px; }
-#game-frame > .bottom-info { position:absolute; z-index:16; left:max(10px,env(safe-area-inset-left)); top:calc(max(12px,env(safe-area-inset-top)) + 48px); width:min(var(--hud-card-width),calc(100% - 20px)); pointer-events:auto; }
+#game-frame > .bottom-info { position:absolute; z-index:16; left:max(10px,env(safe-area-inset-left)); top:max(12px,env(safe-area-inset-top)); width:min(var(--hud-card-width),calc(100% - 20px)); pointer-events:auto; }
+/* 顶部HP与设置互不覆盖，秘境继续使用原有布局。 */
+#game-frame:not(.realm-active) > .bottom-info{max-width:calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)) - 52px)}
+@media(max-width:380px){
+ #game-frame:not(.realm-active)[data-supply="independent"] .player-hud{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 44px}
+ #game-frame:not(.realm-active)[data-supply="independent"] .combat-instruments{grid-column:1;grid-row:3;padding-left:0;border-left:0;justify-content:flex-end}
+}
 /* 三路独立弹药也保持横排，窄屏只压缩左侧可省略的名称区域。 */
 #game-frame[data-supply="independent"] { --hud-card-width:340px; }
 /* 新手和主线任务共用生命卡宽度与左边距，文字为右侧44px寻路按钮留白。 */

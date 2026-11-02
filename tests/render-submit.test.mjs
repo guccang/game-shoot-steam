@@ -37,7 +37,7 @@ function hudFixture(){
 }
 test('普通 HUD 先测量再写位置，重复排列不写样式，秘境不继承任务偏移',()=>{
   const {root,nodes,operations,setRealm}=hudFixture();layoutTaskCombatHud(root);
-  assert.equal(nodes.quest.style.top,'102px');assert.equal(nodes['boss-hud'].style.top,'130px');
+  assert.equal(nodes.quest.style.top,'58px');assert.equal(nodes['boss-hud'].style.top,'86px');
   assert.ok(!operations.slice(operations.indexOf('write')).includes('read'));
   operations.length=0;layoutTaskCombatHud(root);assert.ok(!operations.includes('write'));
   nodes['mainline-hud'].hidden=true;setRealm(true);layoutTaskCombatHud(root);

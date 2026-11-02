@@ -114,15 +114,17 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
    }
    active.animation.cancel();active.node.remove();flights.delete(active);
   }
-  const f=frame.getBoundingClientRect(),c=renderer.canvas.getBoundingClientRect(),v=renderer.view,p=nearest(event.point,game.player),r=coin.getBoundingClientRect(),x=(p.x-v.x)*v.zoom+c.left-f.left,y=(p.y-v.y)*v.zoom+c.top-f.top,dx=r.x+r.width/2-f.left-x,dy=r.y+r.height/2-f.top-y;
+  const f=frame.getBoundingClientRect(),c=renderer.canvas.getBoundingClientRect(),v=renderer.view,p=nearest(event.point,game.player),r=coin.getBoundingClientRect(),x=(p.x-v.x)*v.zoom+c.left-f.left,y=(p.y-v.y)*v.zoom+c.top-f.top;
+  // 手机钱包关闭时没有屏幕落点，收获金币回到角色，不飞向隐藏节点的零坐标。
+  const walletVisible=r.width>0&&r.height>0,dx=walletVisible?r.x+r.width/2-f.left-x:(game.player.x-p.x)*v.zoom,dy=walletVisible?r.y+r.height/2-f.top-y:(game.player.y-p.y)*v.zoom;
   const reduced=root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const node=root.createElement('span');node.className='farm-coin-flight';node.setAttribute('aria-hidden','true');node.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f5cf63" stroke="#6d7043" stroke-width="2"/><circle cx="12" cy="12" r="7" fill="none" stroke="#ae8335"/><path d="M12 6v12m-3-9h5l-4 6h5" fill="none" stroke="#8b7137" stroke-width="1.5"/></svg><b>+'+event.coins+'</b>';node.style.left=x+'px';node.style.top=y+'px';layer.append(node);
-  // 普通模式快速飞入真实金币栏；减少动态时仅在田边短暂淡出，不做跨屏移动。
+  // 普通模式快速飞向可见钱包或角色；减少动态时仅在田边短暂淡出。
   const start='translate(-50%,-50%) translate(0px,-8px)',end=`translate(-50%,-50%) translate(${dx}px,${dy}px)`;
   const frames=reduced?[{transform:start,opacity:1},{transform:start,opacity:0}]:[{transform:start+' scale(.95)',opacity:1},{transform:end+' scale(.7)',opacity:.9,offset:.85},{transform:end+' scale(.55)',opacity:0}];
   const animation=node.animate(frames,{duration:reduced?120:360,easing:'cubic-bezier(.2,.65,.35,1)',fill:'both'}),flight={node,animation,coins:event.coins,mapId:game.mapId};flights.add(flight);
   // 收益已由正式收割事务入账；动画结束仅清理节点并轻亮一次金币栏。
-  animation.onfinish=()=>{node.remove();flights.delete(flight);if(!reduced)coin.animate([{filter:'brightness(1.2)'},{filter:'none'}],{duration:100});};
+  animation.onfinish=()=>{node.remove();flights.delete(flight);if(!reduced&&walletVisible)coin.animate([{filter:'brightness(1.2)'},{filter:'none'}],{duration:100});};
  }
  // 快递入口在远处只导航，靠近柜台才展开真正可领取的包裹。
  function openMail(){
