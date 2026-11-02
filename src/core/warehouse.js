@@ -1,3 +1,6 @@
+import {WEAPONS} from '../config/weapons.js';
+import {carriedWeapon,storedWarehouseWeapon} from '../progression/weapon-storage.js';
+import {weaponStorageReason} from './weapon-storage.js';
 import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 // 仓库事务在保存成功后才提交，存取均保留物品总数与正式负重计算。
 import {createResourceDrop} from '../combat/resource-pickup.js';
@@ -31,11 +34,12 @@ function stores(p,id,source){
  return {item,carry:p.farm.seeds,key:item.index,store:p.warehouse.seeds,storeKey:item.index,cap:FARM_STOCK_CAP};
 }
 // 列表只展示有货的条目；弹药数量不含已装填弹匣，避免复制或拆走正在使用的弹药。
-export function warehouseRows(game,source='bag'){return [{...itemDefinition('currency:coins'),carried:0,stored:game.progress.coins,readonly:true},...WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key],stored:s.store[s.storeKey]}]:[];})];}
+export function warehouseRows(game,source='bag'){return [{...itemDefinition('currency:coins'),carried:0,stored:game.progress.coins,readonly:true},...WEAPONS.flatMap((_,i)=>source==='bag'?[{...itemDefinition('weapon:'+i),carried:carriedWeapon(game.progress,i)?1:0,stored:storedWarehouseWeapon(game.progress,i)?1:0}]:[]),...WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key],stored:s.store[s.storeKey]}]:[];})];}
 // 预演与提交共用校验，并给出取出后的实际负重；满载需要玩家再次明确确认。
 export function warehouseTransferPreview(game,source,id,count,direction){
  if(!canUseWarehouse(game)||source!=='bag'&&!warehouseVehicles(game).includes(source))return {ok:false,message:'请靠近仓库打开存取页面；载具需位于仓库附近。'};
  if(!Number.isSafeInteger(count)||count<=0||!['deposit','withdraw'].includes(direction))return {ok:false,message:'请选择有效的存取数量。'};
+ if(itemDefinition(id)?.category==='weapon')return warehouseWeaponPreview(game,source,id,count,direction);
  const next=validateProgress(structuredClone(game.progress)),s=stores(next,id,source);if(!s)return {ok:false,message:'该物品不能存入此位置。'};
  const deposit=direction==='deposit',from=deposit?s.carry:s.store,to=deposit?s.store:s.carry,fk=deposit?s.key:s.storeKey,tk=deposit?s.storeKey:s.key;
  if(from[fk]<count||to[tk]+count>s.cap)return {ok:false,message:'物品不足或目标库存已满，请减少数量。'};
@@ -75,3 +79,17 @@ export function updateWarehouseWood(game,dt){
 
 // 相同失败或满仓原因只提示一次，避免站在门口时刷屏。
 function warehouseWoodNotice(game,state,message){if(state.notice===message)return;state.notice=message;game.float(game.player.x,game.player.y-45,message,'#f5d9a0');}
+
+// 武器连同原弹匣移动位置；保留当前装备及挂载，取出后由玩家选择装备。
+function warehouseWeaponPreview(game,source,id,count,direction){
+ const item=itemDefinition(id),i=item.index,p=game.progress,deposit=direction==='deposit';
+ if(source!=='bag'||count!==1)return {ok:false,message:'武器只在猫猫背包与小屋仓库之间逐把存取。'};
+ if(deposit){
+  if(i===p.weapon)return {ok:false,message:'请先换上另一把武器，再存放当前装备。'};
+  const reason=weaponStorageReason(p,i);if(reason)return {ok:false,message:reason};
+ }else if(!storedWarehouseWeapon(p,i))return {ok:false,message:'这把武器不在小屋仓库中。'};
+ const next=validateProgress(structuredClone(p));
+ if(deposit)next.warehouse.weapons.push(i);else next.warehouse.weapons=next.warehouse.weapons.filter(n=>n!==i);
+ const load=catLoad(Object.assign(Object.create(game),{progress:next}));
+ return {ok:true,next,weight:load.weight,capacity:load.capacity,needsConfirmation:!deposit&&load.overloaded,message:`${item.name}已${deposit?'存入小屋仓库':'取回背包'}，等级、改装与弹匣保留。`};
+}

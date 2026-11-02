@@ -6,7 +6,9 @@
 #warehouse-load,#warehouse-message,.warehouse-hint,.warehouse-note{margin:0;font-size:12px;line-height:1.4}
 #warehouse-message:empty{display:none}
 .warehouse-tabs{display:flex;gap:6px;margin:0;flex:none}
-#warehouse-dialog .warehouse-tabs button{flex:1;min-width:0;padding:5px;min-height:44px}
+/* 新增武器分类后，小屏横向滚动，保持每个分类至少 44 像素触控宽度。 */
+#warehouse-dialog .warehouse-tabs{overflow-x:auto}
+#warehouse-dialog .warehouse-tabs button{flex:1;min-width:44px;padding:5px;min-height:44px}
 #warehouse-dialog .warehouse-tabs button[aria-pressed=true]{background:var(--ui-forest);color:var(--ui-paper)}
 .warehouse-stores{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
 .warehouse-store{display:flex;flex-direction:column;flex:1;min-height:0;border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);background:var(--ui-sage);overflow:hidden}
@@ -16,7 +18,7 @@
 .warehouse-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:6px;padding:8px;overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain}
 #warehouse-dialog .warehouse-slot{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;min-height:84px;padding:4px;border:1px solid var(--ui-line);border-radius:8px;background:var(--ui-paper);color:var(--ui-text);box-shadow:none;font-size:12px;touch-action:pan-y;user-select:none}
 .warehouse-slot__art{display:grid;place-items:center;position:relative;width:100%;min-height:48px;touch-action:none;cursor:grab}
-.warehouse-slot__art svg,.warehouse-slot__art .inventory-crop{width:44px;height:44px;display:block}
+.warehouse-slot__art svg,.warehouse-slot__art canvas,.warehouse-slot__art .inventory-crop{width:44px;height:44px;display:block}
 .warehouse-slot__count{position:absolute;bottom:-2px;right:0;padding:1px 4px;border-radius:5px;background:var(--ui-forest);color:var(--ui-paper);font-size:12px;line-height:16px;font-variant-numeric:tabular-nums}
 .warehouse-slot__name{line-height:1.35;overflow-wrap:anywhere}
 .warehouse-empty{grid-column:1/-1;text-align:center;align-self:center;font-size:12px;line-height:1.8;margin:10px 0;color:var(--ui-muted)}

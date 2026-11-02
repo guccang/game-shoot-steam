@@ -1,3 +1,4 @@
+import {COLLECTED_VEHICLES} from '../config/vehicles.js';
 import {parkingRecordOccupies} from './roadside-parking.js';
 // 停驻存档只接受已拥有车体和真实泊位；访客不写入玩家装备。
 import {PARKING_SPOTS} from '../config/parking.js';
@@ -25,7 +26,7 @@ export function normalizeCampParking(raw,progress){
  const owned=[],hulls=new Set(),spots=new Set();
  for(const value of Array.isArray(raw?.owned)?raw.owned:[]){
   const roadside=value?.spot==null&&['forest','jiuzhaigou'].includes(value?.mapId)&&Number.isFinite(value.x)&&Number.isFinite(value.y);
-  if(progress.vehicleService?.[value?.hull]?.phase||![0,1,2,3,4,5,6,7,8].includes(value?.hull)||!progress.vehicleHulls[value.hull]||value.hull===4&&progress.fireDispatch?.garage?.parked||(!roadside&&!PARKING_SPOTS.some(s=>s.id===value.spot))||hulls.has(value.hull)||(!roadside&&spots.has(value.spot)))continue;
+  if(progress.vehicleService?.[value?.hull]?.phase||!(Number.isInteger(value?.hull)&&COLLECTED_VEHICLES[value.hull])||!progress.vehicleHulls[value.hull]||value.hull===4&&progress.fireDispatch?.garage?.parked||(!roadside&&!PARKING_SPOTS.some(s=>s.id===value.spot))||hulls.has(value.hull)||(!roadside&&spots.has(value.spot)))continue;
   const finite=(n,lo,hi,fallback)=>Number.isFinite(n)?Math.max(lo,Math.min(hi,n)):fallback;
   owned.push({hull:value.hull,spot:roadside?null:value.spot,...(roadside?{mapId:value.mapId,x:value.x,y:value.y}:{}),hp:finite(value.hp,0,1,1),ammo:finite(value.ammo,0,100000,0),reload:finite(value.reload,0,120,0),wheel:finite(value.wheel,-1e6,1e6,0),track:finite(value.track,0,1000,0)});
   hulls.add(value.hull);if(!roadside)spots.add(value.spot);

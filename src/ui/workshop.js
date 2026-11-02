@@ -1,4 +1,4 @@
-import {storedWeaponRack} from '../progression/weapon-storage.js';
+import {storedWeaponRack,storedWarehouseWeapon} from '../progression/weapon-storage.js';
 import {catLoad} from '../progression/load-weight.js';
 import {weaponPurchaseQuote} from '../core/weapon-purchase-load.js';
 import {requestWorldNavigation} from '../core/world-navigation.js';
@@ -367,8 +367,8 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     $('ws-reset').hidden = kind !== 'weapons' || (!p.mods[index] && draft?.action !== 'modify');
     $('ws-funnel').hidden = !(kind==='weapons' && index===12 && p.weapons[12] || kind==='vehicle' && (editingTurret??p.vehicleLoadouts[index])===12 && p.vehicleWeapons[12]);
     $('ws-equip').textContent = kind === 'weapons' ? p.weapon === index ? i18nText("app.game-events.a68821c619") : i18nText("ui.inventory.36ab55267a") : p.vehicleIndex === index ? game.vehicle.active ? i18nText("ui.workshop.ed4d6094fa") : i18nText("ui.workshop.5001cd2d43") : i18nText("ui.workshop.c24ce3704f");
-    const stored=kind==='weapons'&&storedWeaponRack(p,index);
-    if(stored)$('ws-equip').textContent='先回小屋取出';
+    const stored=kind==='weapons'&&(storedWeaponRack(p,index)||storedWarehouseWeapon(p,index));
+    if(stored)$('ws-equip').textContent=storedWarehouseWeapon(p,index)?'先到仓库取出':'先回小屋取出';
     $('ws-equip').disabled = !!draft || !levels[index] || !!stored || (kind === 'weapons' && p.weapon === index);
     if(kind==='vehicle'&&index===4&&game.fireGarageParked){$('ws-equip').textContent=p.vehicleIndex===4?i18nText("ui.panels.vehicles.051b37c3fa"):i18nText("ui.panels.vehicles.a1a48bf3e2");$('ws-equip').disabled=!!draft||p.vehicleIndex===4;}
     $('ws-vehicle-parking').hidden=kind!=='vehicle';

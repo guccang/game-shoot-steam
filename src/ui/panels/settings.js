@@ -1,4 +1,4 @@
-import {debugEquipmentMaxed,debugBuildingsUnlocked,debugSeedsUnlocked} from '../../progression/debug-grants.js';
+import {debugEquipmentMaxed,debugVehiclesUnlocked,debugBuildingsUnlocked,debugSeedsUnlocked} from '../../progression/debug-grants.js';
 import { i18nText } from "../../i18n/index.js";
 // 设置与清空确认面板，确认仅调用应用事务，不自行操作存档或战场。
 import { createEventScope } from '../../platform/events.js';
@@ -39,16 +39,16 @@ export function createSettingsPanel({ root, dialogs, game, onReset, onUnlock, on
     $('reset-error').textContent = '';
     if (restoreFocus) $(confirming ? 'cancel-reset' : 'reset-progress').focus({ preventScroll: true });
   }
-  // 已全部拥有时禁用重复解锁，重新开局后恢复入口。
+  // 武器领取可重复检查超重并整理入库，其余一次性解锁保持完成状态。
   function renderUnlock() {
     const complete = game.progress.weapons.every((level) => level > 0);
-    $('unlock-weapons').disabled = complete;
-    $('unlock-weapons').textContent = complete ? i18nText("ui.panels.settings.660770865b") : i18nText("ui.panels.settings.05d199c8e9");
+    $('unlock-weapons').disabled = false;
+    $('unlock-weapons').textContent = complete ? '全部已获取 · 检查负重并入库' : '一键获取所有武器';
     $('unlock-buildings').disabled=debugBuildingsUnlocked(game.progress);
     $('unlock-buildings').textContent=$('unlock-buildings').disabled?'建筑已全部解锁':'一键解锁所有建筑';
     $('unlock-seeds').disabled=debugSeedsUnlocked(game.progress);
     $('unlock-seeds').textContent=$('unlock-seeds').disabled?'所有种子购买已解锁':'解锁所有种子购买';
-    $('unlock-vehicles').disabled = game.progress.vehicleHulls.every(level=>level>0);
+    $('unlock-vehicles').disabled = debugVehiclesUnlocked(game.progress);
     for(const [id,label] of [['max-weapons','武器'],['max-vehicles','载具']]){const complete=debugEquipmentMaxed(game.progress,id);$(id).disabled=complete;$(id).textContent=complete?`${label}已全部满级`:`一键${label}满级`;}
   }
   // 持久化失败时保留确认页和旧进度，成功才关闭设置。
@@ -86,7 +86,7 @@ export function createSettingsPanel({ root, dialogs, game, onReset, onUnlock, on
   scope.on($('unlock-weapons'), 'click', () => {
     const success = onUnlock();
     $('unlock-feedback').textContent = success
-      ? i18nText("ui.panels.settings.84292d10e8")
+      ? '全部武器已获取；背包装不下的武器已存入小屋仓库，可到仓库取回。'
       : i18nText("ui.panels.settings.cfef1b0aa3");
     renderUnlock();
   });
@@ -95,7 +95,7 @@ export function createSettingsPanel({ root, dialogs, game, onReset, onUnlock, on
     const open=$('debug-content').hidden;$('debug-content').hidden=!open;
     $('debug-toggle').setAttribute('aria-expanded',String(open));
   });
-  for(const [id,kind,message] of [['unlock-seeds','seed-purchases','所有种子购买已解锁，可到种子小屋花费金币购买，进度已保存。'],['unlock-buildings','buildings','所有建筑已修复解锁，入职修复引导已结束，进度已保存。'],['unlock-vehicles','vehicles',i18nText("ui.panels.settings.22b40ae8a8")],['grant-resources','resources',i18nText("ui.panels.settings.83651e84f3")],['max-weapons','max-weapons','全部武器及可升级部件已满级，进度已保存。'],['max-vehicles','max-vehicles','全部载具、炮塔及可升级部件已满级，进度已保存。']])
+  for(const [id,kind,message] of [['unlock-seeds','seed-purchases','所有种子购买已解锁，可到种子小屋花费金币购买，进度已保存。'],['unlock-buildings','buildings','所有建筑已修复解锁，入职修复引导已结束，进度已保存。'],['unlock-vehicles','vehicles','所有载具及配套主炮已获取，新车已停入营地车位。'],['grant-resources','resources',i18nText("ui.panels.settings.83651e84f3")],['max-weapons','max-weapons','全部武器及可升级部件已满级；背包装不下的武器已存入小屋仓库。'],['max-vehicles','max-vehicles','全部载具、炮塔及可升级部件已满级，进度已保存。']])
     scope.on($(id),'click',()=>{
       $('unlock-feedback').textContent=onDebugGrant(kind)?message:i18nText("ui.panels.settings.1262d9ba91");renderUnlock();
     });

@@ -41,12 +41,15 @@ test('解锁授予一级所有权，保留资源、成长、当前装备和模�
   p.mastery[9] = 120;
   p.mods[9] = 2;
   p.funnelLoadout = [9, 0, 12];
+  const normalized=validateProgress(p);
   const before = structuredClone(p),
     next = unlockedWeaponProgress(p);
   assert.deepEqual(p, before);
   assert.ok(next.weapons.every((n) => n > 0));
   assert.equal(next.weapons[9], 7);
-  for (const k of Object.keys(p).filter((k) => k !== 'weapons')) assert.deepEqual(next[k], p[k]);
+  for (const k of Object.keys(p).filter((k) => !['weapons','warehouse'].includes(k))) assert.deepEqual(next[k], normalized[k],k);
+  assert.ok(next.warehouse.weapons.length>0);
+  assert.ok(!next.warehouse.weapons.includes(next.weapon));
   assert.deepEqual(unlockedWeaponProgress(next), next);
   assert.deepEqual(validateProgress(JSON.parse(JSON.stringify(next))), next);
 });
