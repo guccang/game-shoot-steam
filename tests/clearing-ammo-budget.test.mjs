@@ -24,14 +24,18 @@ test('首轮完整五波及领主在有限初始库存内完成，失准仍留�
  assert.equal(hp.length,52);assert.ok(initial-fired>=initial*.5,'至少保留半数初始弹量供赶路、援军和走位损耗');assert.equal(g.progress.supplies.hand.light+m.ammo,initial-fired);assert.equal(catLoad(g).overloaded,false);
  console.log(JSON.stringify({firstRoundTargets:hp.length,initial,fired,remaining:initial-fired}));
 });
-test('第1至31轮抽样：五种车炮与手枪携带整轮弹药后仍保留至少15%载重',()=>{
+test('第1至31轮抽样：按成长整备与车内备弹，携带整轮弹药后仍保留至少15%载重',()=>{
  const rows=[];
  for(const round of [0,2,7,12,20,30])for(const hull of [null,0,1,2,3,6]){
   const g=setup(round,hull);let roll=0;g.random=()=>((roll++*.61803398875)%1);const w=hull===null?g.weapon():vehicleWeapon(g.progress,g.vehicle.weaponIndex),damage=hull===null?g.damage():vehicleDamage(g.progress,g.vehicle.weaponIndex);
   // 65%命中、额外25%援军与耗损余量，按单目标命中估算；整包向上购买。
   const shots=Math.ceil(targets(g).reduce((n,h)=>n+Math.ceil(h/(damage*w.pellets)),0)*1.25/.65),key=ammoKind(w),rule=AMMO_TYPES[key],stock=hull===null?g.progress.supplies.hand:g.progress.supplies.vehicles[hull];stock[key]=Math.ceil(shots/rule.pack)*rule.pack;
+  // 后期炮弹携重随实际发动机升级，不假定原厂底盘可以无限装满高轮次所需弹药。
+  if([1,6].includes(hull)&&round>=12){g.progress.logistics.builds[hull].engine=2;g.progress.logistics.builds[hull].engines=[0,2];}
+  // 猫猫留出战利品空间，多出的通用子弹放入随行载具，沿用已实现的车内备用弹规则。
+  const carried=stock[key];if(hull===null){stock[key]=0;const base=catLoad(g);stock[key]=Math.min(carried,Math.max(0,Math.floor((base.capacity*.85-base.weight-1e-6)/rule.mass)));g.progress.supplies.vehicles[g.vehicle.index][key]=carried-stock[key];const vehicle=vehicleLoad(g,g.vehicle.index,{driver:true});assert.ok(vehicle.payload<vehicle.capacity*.85,'猫猫车内备弹也必须计重');}
   const load=hull===null?catLoad(g):vehicleLoad(g,hull,{driver:true}),weight=load.weight??load.payload;
-  assert.ok(weight<load.capacity*.85,`${round+1}轮 ${w.id}: ${weight}/${load.capacity}`);rows.push({round:round+1,weapon:w.id,rounds:stock[key],weight:Number(weight.toFixed(2)),capacity:load.capacity});
+  assert.ok(weight<load.capacity*.85,`${round+1}轮 ${w.id}: ${weight}/${load.capacity}`);rows.push({round:round+1,weapon:w.id,rounds:carried,weight:Number(weight.toFixed(2)),capacity:load.capacity});
  }
  console.log(JSON.stringify({budgetCases:rows.length,lateRound:rows.filter(r=>r.round===31)}));
 });
@@ -39,7 +43,11 @@ test('批量购买按整包计价、车辆弹药不进背包，超载确认与�
  const g=setup(0,1);g.state='playing';g.vehicle.active=false;g.livingPersist=()=>true;g.progress.coins=100000;g.cottage={kind:'ammo',outside:{x:AMMO_SHOP.x,y:AMMO_SHOP.y+80}};g.progress.campParking.owned=[{hull:1,spot:null,mapId:'forest',...g.cottage.outside,hp:1,ammo:0}];
  const hand=g.progress.supplies.hand.light,coins=g.progress.coins;assert.ok(tradeSupply(g,{kind:'ammo',id:'shell',target:'vehicle',batches:20}).ok);assert.equal(g.progress.supplies.vehicles[1].shell,1000);assert.equal(g.progress.coins,coins-2000);assert.equal(g.progress.supplies.hand.light,hand);assert.equal(vehicleLoad(g,1,{driver:true}).overloaded,false);
  assert.ok(tradeSupply(g,{kind:'ammo',id:'light',target:'hand',batches:5}).ok);assert.equal(g.progress.supplies.hand.light,hand+1500);
- g.progress.logistics.bagWood=45;const before=structuredClone(g.progress),request={kind:'ammo',id:'light',target:'hand',batches:20},r=tradeSupply(g,request);assert.ok(r.needsLoadConfirmation);assert.equal(r.amount,6000);assert.deepEqual(g.progress,before);g.livingPersist=()=>false;assert.equal(tradeSupply(g,{...request,loadConfirmation:r.confirmation}).ok,false);assert.deepEqual(g.progress,before);assert.equal(tradeSupply(g,{...request,batches:21}).ok,false);
+ g.progress.logistics.bagWood=45;
+ // 背包已满后弹药转入货舱，将车辆剩余载重压到半批弹药，验证真实的超载确认。
+ const load=vehicleLoad(g,1,{driver:true}),mass=AMMO_TYPES.light.mass*AMMO_TYPES.light.pack*20;
+ g.progress.logistics.builds[1].wood=Math.floor((load.capacity-load.payload-mass/2)/.5);
+ const before=structuredClone(g.progress),request={kind:'ammo',id:'light',target:'hand',batches:20},r=tradeSupply(g,request);assert.ok(r.needsLoadConfirmation);assert.equal(r.amount,6000);assert.equal(r.load.target,'vehicle');assert.equal(r.storage.hand,0);assert.equal(r.storage.vehicle,6000);assert.deepEqual(g.progress,before);g.livingPersist=()=>false;assert.equal(tradeSupply(g,{...request,loadConfirmation:r.confirmation}).ok,false);assert.deepEqual(g.progress,before);assert.equal(tradeSupply(g,{...request,batches:21}).ok,false);
 });
 
 // 固定站位隔离走位损耗，五波、索敌、弹道、命中、换弹和领主结算走正式帧循环。

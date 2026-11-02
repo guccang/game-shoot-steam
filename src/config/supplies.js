@@ -8,8 +8,9 @@ export const AMMO_SHOP={...TOWN_LAYOUT.ammo,id:'ammo-shop',name:'弹药补给铺
 export const AMMO_TYPES={
  // 普通子弹单发4克，备用库存、弹匣和载具货舱统一按此计重。
  light:{name:'通用子弹',mass:.004,pack:300,coins:30,wood:2,parts:0,targets:['hand','vehicle']},
- shell:{name:'标准炮弹',mass:.5,pack:50,coins:100,wood:3,parts:1,targets:['vehicle']},
- heavy:{name:'重型炮弹',mass:1,pack:30,coins:180,wood:5,parts:2,targets:['vehicle']},
+ // 标准弹一包50千克、重型弹一包60千克；保留整轮补给量，让大量囤弹占用实际货舱。
+ shell:{name:'标准炮弹',mass:1,pack:50,coins:100,wood:3,parts:1,targets:['vehicle']},
+ heavy:{name:'重型炮弹',mass:2,pack:30,coins:180,wood:5,parts:2,targets:['vehicle']},
  water:{name:'潮汐弹罐',mass:.1,pack:200,coins:20,wood:1,parts:0,targets:['vehicle']},
 };
 export const SUPPLY_ITEMS={medkit:{name:'急救包',mass:1,coins:60,heal:60},gunKit:{name:'主炮维修包',mass:3,coins:90,repair:35},engineKit:{name:'发动机维修包',mass:4,coins:100,repair:35}};
