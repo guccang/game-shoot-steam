@@ -20,7 +20,6 @@
 /* 清缴范围只保留生命卡与一枚问号猫猫，右侧给设置留出独立触控空间。 */
 #game-frame.clearing-compact-active > .bottom-info{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:4px;width:min(calc(var(--hud-card-width) + 48px),calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)) - 52px))}
 .clearing-compact-active .player-hud{min-width:0;width:auto}
-.clearing-compact-active #hero-experience-hud{display:none}
 .clearing-compact-active .bottom-info>#wave-help{display:grid;color:var(--ui-forest);grid-column:2;grid-row:1}
 /* 三路弹药在窄屏占满一行，避免仪表挤到HP数字；所有原操作仍留在生命卡内。 */
 @media(max-width:380px){

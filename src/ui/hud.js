@@ -70,7 +70,10 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
         : i18nText("common.namedLevel", { p0: HEROES[game.progress.hero].name, p1: p.heroes[p.hero] }),
       healthLabel = mounted ? i18nText("ui.hud.20496aae49") : i18nText("ui.hud.6fb8ecc2a5");
     $('player-name').textContent = name;
-    const heroXp=heroExperience(game.progress);$('hero-experience-hud').textContent=heroXp.next?`经验 ${heroXp.xp} / ${heroXp.next}`:'角色已满级';
+    // 经验只用HP下方的细条表示；详细数值保留给读屏，满级显示满条。
+    const heroXp=heroExperience(game.progress),xpBar=$('hero-experience-hud');
+    xpBar.max=heroXp.next||1;xpBar.value=heroXp.next?heroXp.xp:1;
+    xpBar.setAttribute('aria-valuetext',heroXp.next?`经验 ${heroXp.xp} / ${heroXp.next}`:'角色已满级');
     $('player-name').title = mounted ? COLLECTED_VEHICLES[p.vehicleIndex].name : name;
     $('player-health').textContent = `${Math.ceil(hp)} / ${maxHp}`;
     $('player-health').setAttribute('aria-label', `${healthLabel} ${Math.ceil(hp)} / ${maxHp}`);
