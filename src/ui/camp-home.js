@@ -11,7 +11,7 @@ import {COTTAGE} from '../config/cottage.js';
 import {calendarView} from '../world/living-calendar.js';
 
 // 热点只有靠近车辆时出现，不遮住建筑，也不让远处点击传送上车。
-export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onCharacter}){
+export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onCharacter,onTalk}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),panel=root.createElement('section');
  panel.id='cottage-controls';panel.hidden=true;panel.innerHTML='<header><b>巡林小屋</b><small id="cottage-date"></small></header><footer><p id="cottage-notice" role="status"></p><div><button id="cottage-character" class="ui-button">当前猫猫</button></div></footer>';
  frame.append(panel);
@@ -19,7 +19,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  const catHome=createCatHome({game,root,dialogs,input,onChange:onDecorChange});
  const storage=createCottageStorage({game,renderer,root,panel,dialogs,input,onChange:onDecorChange});
  const homeDecor=createHomeDecor({game,root,panel,dialogs,input,onChange:onDecorChange});
- const shopkeeper=createShopkeeperInteraction({game,renderer,root,panel,input,openService});
+ const shopkeeper=createShopkeeperInteraction({game,renderer,root,panel,input,openService,onTalk});
  // 室内入口不依赖移动或接近售货员，超载时也能整理随身物品。
  scope.on(panel.querySelector('#cottage-character'),'click',()=>{input.reset();onCharacter();});
  // 售货员与家具都保留短按，柜台前固定步长候停继续自动打开服务。

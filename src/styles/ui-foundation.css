@@ -375,16 +375,18 @@ dialog.ui-panel.ui-page {
 .ui-dialogue .story-speech-actions .ui-button[aria-pressed="true"] { background: var(--ui-sage); }
 .ui-dialogue #arrival-skip { flex: 1 1 100%; min-height: 44px; font-size: 12px; }
 /* 营地故事沿用底部对白，仅保留姓名、短正文和一次接话操作。 */
-#monster-camps-dialog:not([open]) { display:none; }
-#monster-camps-dialog .camp-story-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; flex:none; }
-#monster-camps-dialog .camp-story-heading small { font-size:12px; color:var(--ui-muted); }
-#monster-camps-dialog h2 { margin:3px 0 0; font-size:18px; color:var(--ui-forest); }
+:is(#monster-camps-dialog,#npc-conversation-dialog):not([open]) { display:none; }
+:is(#monster-camps-dialog,#npc-conversation-dialog) .camp-story-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; flex:none; }
+:is(#monster-camps-dialog,#npc-conversation-dialog) .camp-story-heading small { font-size:12px; color:var(--ui-muted); }
+:is(#monster-camps-dialog,#npc-conversation-dialog) h2 { margin:3px 0 0; font-size:18px; color:var(--ui-forest); }
 /* 横持时压缩留白，给短故事保留两行以上的可滚动阅读区。 */
 @media(max-height:500px) {
-  #monster-camps-dialog { gap:6px; padding-block:8px; }
-  #monster-camps-dialog .camp-story-heading > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px; }
-  #monster-camps-dialog h2 { margin:0; font-size:16px; }
-  #monster-camps-dialog .story-speech-actions { padding-top:6px; }
+  /* 横屏闲聊给正文留出多行，避免只看得到交情标签；按钮与场景仍保持可见。 */
+  #npc-conversation-dialog { max-height:65dvh!important; }
+  :is(#monster-camps-dialog,#npc-conversation-dialog) { gap:6px; padding-block:8px; }
+  :is(#monster-camps-dialog,#npc-conversation-dialog) .camp-story-heading > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px; }
+  :is(#monster-camps-dialog,#npc-conversation-dialog) h2 { margin:0; font-size:16px; }
+  :is(#monster-camps-dialog,#npc-conversation-dialog) .story-speech-actions { padding-top:6px; }
 }
 .npc-bottom-dialogue.compact-speech b { display: block; font-size: 13px; color: var(--ui-forest); margin-bottom: 6px; }
 .npc-bottom-dialogue.compact-speech span { font-size: 14px; line-height: 1.65; }

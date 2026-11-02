@@ -1,3 +1,4 @@
+import {normalizeNpcDialogue} from './npc-dialogue.js';
 import {normalizeOutdoors} from './outdoors.js';
 import {freshTreasure,normalizeTreasure} from './treasure.js';
 import {normalizeWarehouse} from './warehouse.js';
@@ -61,6 +62,7 @@ export function freshProgress() {
     warehouse:normalizeWarehouse(null),
     outdoors:normalizeOutdoors(null),
     treasure:freshTreasure(),
+    npcDialogue:{},
     homeDecor:freshHome(),
     monsterCamps:normalizeMonsterCamps(null),
     keepsakes:freshKeepsakes(true),
@@ -227,6 +229,7 @@ export function validateProgress(raw) {
   p.campParking=normalizeCampParking(raw.campParking,p);
   p.logistics=normalizeLogistics(raw.logistics,p);
   p.treasure=normalizeTreasure(raw.treasure,p);
+  p.npcDialogue=normalizeNpcDialogue(raw.npcDialogue);
   normalizeWeaponStorage(p);
   p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
   return p;

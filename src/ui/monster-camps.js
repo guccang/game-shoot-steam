@@ -8,7 +8,7 @@ import {dockNpcDialogue} from './npc-dialogue-layout.js';
 import {worldDistance} from '../world/coordinates.js';
 import {campResidentHead} from '../config/camp-residents.js';
 // 所有正文使用textContent，一次只展示一段；节点不随战斗帧重建。
-export function createMonsterCampPanel({game,root,renderer,dialogs,onChange}){
+export function createMonsterCampPanel({game,root,renderer,dialogs,onChange,onTalk}){
  const scope=createEventScope(),dialog=root.createElement('dialog'),bubble=createCompactSpeech(root,'monster-camp-chatter');
  let camp=null,person=null,cache=null,story=null,step=0,result=null;
  dialog.id='monster-camps-dialog';dialog.className='ui-dialogue';dialog.setAttribute('aria-labelledby','monster-camps-title');
@@ -25,12 +25,13 @@ export function createMonsterCampPanel({game,root,renderer,dialogs,onChange}){
   next.textContent=result?(result.ok?'记住了，回头见':'再试一次'):cache?'轻轻拨开灰烬':step<story.pages.length-1?'然后呢？':person?'你还听说什么？':'下回再聊';
  }
  // 附近入口传入实际锚点；未指定营地时读取当前地图最近营地的故事。
- function open(id=null,siteId=null){
+ function open(id=null,siteId=null,storyOnly=false){
   if(!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state))return;
   camp=MONSTER_CAMPS.find(c=>c.id===id&&c.mapId===game.mapId)||MONSTER_CAMPS.filter(c=>c.mapId===game.mapId).sort((a,b)=>worldDistance(game.player,a)-worldDistance(game.player,b))[0];if(!camp)return;
   person=CAMP_CHARACTERS.find(n=>n.camp===camp.id&&nearby(campCharacterSite(camp)))||null;
   cache=siteId===camp.id+'-cache'?CAMP_CHARACTERS.find(n=>n.destination===camp.id&&game.progress.monsterCamps.clues.includes(n.id)&&nearby(campCacheSite(camp))):null;
-  story=campStory(camp,game.progress.monsterCamps.camps[camp.id].clears,person);step=0;result=null;
+  if(onTalk&&!cache&&!storyOnly){const campId=camp.id;onTalk(person?'wild:'+person.id:'camp-story:'+campId,()=>open(campId,siteId,true));return;}
+  story=campStory(camp,game.progress.monsterCamps.camps[camp.id].clears,person);if(person&&!game.progress.monsterCamps.clues.includes(person.id))person=null;step=0;result=null;
   dockNpcDialogue(root,dialog);dialogs.open(dialog.id,{modal:false});render();
  }
  // 阅读期间保持原有暂停归属；关闭或Esc统一交还战场。
