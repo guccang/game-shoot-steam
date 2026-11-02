@@ -51,6 +51,8 @@ export function createEquipmentGoals({ game, root, dialogs, onChange }) {
     $('resource-help-art').innerHTML = resourceIcon(key);
     $('resource-help-title').textContent = resourceName(key);
     $('resource-help-source').textContent = MATERIALS[key]?.source || RESOURCE_SOURCES[key];
+    // 资源说明作为手机或工坊的最上层子页，DOM顺序与实际弹窗层级保持一致。
+    const panel=$('resource-help-dialog');if(!panel.open)root.body.append(panel);
     dialogs.open('resource-help-dialog');
   });
   let signature = '';

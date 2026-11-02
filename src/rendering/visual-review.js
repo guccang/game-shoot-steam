@@ -1612,7 +1612,7 @@ export async function inspectWeaponTrialSceneReview(root){const {inspectWeaponTr
 // 读取正式HUD的寻路状态与矩形，工作台不另画图标副本。
 export function inspectTaskNavigation(game,root){
  const button=root.getElementById('task-navigation-toggle'),anchor=root.querySelector('.task-route-anchor');
- const b=button?.getBoundingClientRect(),a=anchor?.getBoundingClientRect(),resource=root.querySelector('.hud-resources .resource-pill'),resources=root.querySelector('.hud-resources').getBoundingClientRect();
+ const b=button?.getBoundingClientRect(),a=anchor?.getBoundingClientRect(),resource=root.querySelector('.player-hud'),resources=root.querySelector('.hud-resources').getBoundingClientRect();
  // 清缴详情入口与寻路按钮同排，读取真实矩形验证顺序与独立触控区。
  const help=anchor?.querySelector('#wave-help')?.getBoundingClientRect();
  const style=anchor&&root.defaultView.getComputedStyle(anchor),reference=root.defaultView.getComputedStyle(resource);

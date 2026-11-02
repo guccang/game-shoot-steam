@@ -31,7 +31,9 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  const bag=root.getElementById('current-cat-dialog'),itemPanel=panel('keepsake','物品详情','重要的东西，随身带好。'),phone=panel('phone','巡林手机','查看季节、时间、天气，或联系邻居。');
  // 搬移原环境节点，保留圆环、实时状态及已有监听；通讯录重绘不会重建图标。
  const environmentStatus=root.getElementById('phone-environment');
- phone.querySelector('.ui-panel__body').prepend(environmentStatus);
+ // 手机接管原钱包节点，金额刷新和资源说明沿用既有入口，不创建第二份余额。
+ const wallet=root.getElementById('phone-wallet');wallet.hidden=false;
+ phone.querySelector('.ui-panel__body').prepend(wallet,environmentStatus);
  phoneTrigger.querySelector('.phone-symbol').innerHTML=keepsakeIcon('patrol-phone');
  let selected='elder-letter',call=null,node=itemPanel,detail,actions,message,inventoryView=false;
  const mailbox=createMailbox({game,root,dialogs,onChange,onClose:()=>{if(phone.open&&!call)render();}});
@@ -117,6 +119,6 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  scope.on(root,'close',event=>{if(bag.open&&['logistics-dialog','field-equipment-dialog','load-cleanup-dialog'].includes(event.target.id)){renderBag();if(itemPanel.open&&inventoryView)render();}},true);
  scope.on(itemPanel,'click',act);scope.on(phone,'click',act);
  // 应用销毁清除本实例节点与监听，重载存档不会沿用旧通话。
- function dispose(){scope.dispose();environmentStatus.hidden=true;root.getElementById('game-frame').append(environmentStatus);for(const panel of [itemPanel,phone])panel.remove();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}
+ function dispose(){scope.dispose();environmentStatus.hidden=true;wallet.hidden=true;root.getElementById('game-frame').append(wallet,environmentStatus);for(const panel of [itemPanel,phone])panel.remove();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}
  return {render:renderBag,dispose:()=>{mailbox.dispose();dispose();}};
 }

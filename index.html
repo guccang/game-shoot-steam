@@ -77,10 +77,13 @@
         <div class="location-chip" id="location-info"><span aria-hidden="true">♧</span><div><b id="zone-name"><!--i18n:world.biomes.7a12609293--></b><small id="wave-label"><!--i18n:index.87591e6af7--></small></div></div>
       </header>
       <div class="hud-resources">
-        <div class="resource-pill" data-i18n-aria-label="balance.app.bbece6f829"><span data-resource-icon="coins"></span><b data-coins>60</b></div>
-        <div class="resource-pill" data-i18n-aria-label="balance.app.30a9333b4f"><span data-resource-icon="wood"></span><b data-wood>30</b></div>
         <div class="utility-buttons"><span class="settings-hud-control"><button id="settings-button" class="icon-button" data-i18n-title="ui.title-menu.57444f5c18" data-i18n-aria-label="ui.title-menu.57444f5c18" aria-haspopup="dialog" aria-controls="settings-dialog">⚙</button><span id="fps-display" aria-live="off" hidden>— FPS</span></span></div>
       </div>
+      <!-- 原资源节点由手机接管，初始化与卸载期间隐藏，不在主场景闪现。 -->
+      <section id="phone-wallet" aria-label="金币和木材" hidden>
+        <div class="resource-pill" data-i18n-aria-label="balance.app.bbece6f829"><span data-resource-icon="coins"></span><span class="phone-wallet-label">金币</span><b data-coins>60</b></div>
+        <div class="resource-pill" data-i18n-aria-label="balance.app.30a9333b4f"><span data-resource-icon="wood"></span><span class="phone-wallet-label">木材总量</span><b data-wood>30</b></div>
+      </section>
       <div class="boss-hud" id="boss-hud" hidden><div><b id="boss-name"><!--i18n:index.d362c69d4e--></b><span id="boss-hp"></span></div><div class="bar"><i id="boss-fill"></i></div></div>
       <div class="quest" id="quest"><div><b id="quest-title"><!--i18n:index.6f703ab915--></b><small id="quest-detail"><!--i18n:index.978d5e4f5a--></small></div><span id="quest-count">0 / 12</span><div id="wave-track" hidden data-i18n-aria-label="index.8ab6b96e27"><div id="wave-track-bar" role="progressbar" data-i18n-aria-label="index.feedbdfad2" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="wave-track-fill"></i></div><div id="wave-nodes"></div><button id="boss-button" disabled data-i18n-aria-label="index.311fe4ad36"><canvas id="boss-button-icon" width="112" height="112" aria-hidden="true"></canvas><span id="boss-button-badge" aria-hidden="true">12</span><!-- 共用引导猫爪：闭合圆掌与四颗趾垫，不带手腕，轻点由外层控制。 -->
 <svg class="boss-paw" viewBox="0 0 52 52" aria-hidden="true">

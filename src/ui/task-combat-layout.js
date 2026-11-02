@@ -2,17 +2,16 @@
 export function combatHudVisible(root){
  return ['quest','boss-hud','camp-defense-hud'].some(id=>{const node=root.getElementById(id);return node&&!node.hidden&&node.offsetHeight>0;});
 }
-// 各类任务共用安全区顶边；生命卡贴近钱包，仅对实际重叠的帧率标签避让。
+// 钱包归入手机后，生命卡与右侧设置共用安全区顶边，不保留原资源行空白。
 export function taskCombatHudTop(root){
  const frame=root.getElementById('game-frame'),r=frame.getBoundingClientRect(),resources=root.querySelector('.hud-resources').getBoundingClientRect();
  const compact=frame.matches('.story-active,.task-combat-active'),health=root.querySelector('.bottom-info'),panel=health?.querySelector('.player-hud');
- const wallet=root.querySelector('.hud-resources > .resource-pill')?.getBoundingClientRect();
- let top=resources.height?(compact?resources.top-r.top:(wallet?.height?wallet.bottom:resources.bottom)-r.top+4):12;
+ let top=resources.height?resources.top-r.top:12;
  // 帧率只占右侧设置按钮下方，不再无条件推低整条左侧生命卡。
  const fps=root.getElementById('fps-display'),fpsBox=fps?.getBoundingClientRect(),healthBox=health?.getBoundingClientRect();
  if(!compact&&fpsBox?.height&&healthBox&&fpsBox.left<healthBox.right&&fpsBox.right>healthBox.left)
   top=Math.max(top,fpsBox.bottom-r.top+4);
- // 生命卡固定在钱包下方；任务按真实高度继续排列，隐藏生命卡的模式自动回收留白。
+ // 任务按生命卡真实高度继续排列，隐藏生命卡的模式自动回收留白。
  if(health)setTop(health,top);
  const visible=panel?.getBoundingClientRect().height>0&&getComputedStyle(panel).visibility!=='hidden';
  // 高塔、守护和远征使用 CSS 安全区定位，以真实生命卡底边接续进度，兼容刘海与独立弹药高度。
