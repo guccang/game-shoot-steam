@@ -39,6 +39,12 @@ export function worldNavigationObjective(game){
  // 自选提前修复的导航优先于主线修复，普通任务追踪仍保留原顺序。
  if((o?.restoration||o?.cottageRest)&&!intent?.direct)return o;
  if(o?.clearingStage&&o.phase==='doing'&&!intent?.direct&&!(intent?.site?.id===CLEARING_POST.id&&game.progress.living.patrolActive))return o.navigation?o:null;
+ // 离开清缴区域后继续指向本轮站牌，不能恢复战斗前残留的普通访问路线。
+ // 主动点选的目的地、回告示牌管理和正在追踪的邻里委托仍保留各自优先级。
+ if(game.progress?.living?.patrolActive&&!intent?.direct&&intent?.site?.id!==CLEARING_POST.id&&!trackedLivingRequest(game)){
+  const clearing=clearingObjective(game);
+  return clearing.navigation?{task:{id:'boss-clearing',title:'Boss 清缴任务'},phase:'travel',...clearing}:null;
+ }
  if(intent?.site){
   const resident=game.livingActors?.get(intent.site.id);if(resident)Object.assign(intent.site,{x:resident.x,y:resident.y});
   if(game.mapId!==intent.site.mapId||worldDistance(game.player,intent.site)>GAMEPLAY_VALUES.mainline.visitRadius)return {task:{id:'visit',title:intent.label},key:'visit',phase:'travel',site:intent.site,label:intent.label,action:intent.action};
