@@ -14,7 +14,7 @@ export function createTaskNavigation({game,root,onChange}){
  // 开关在任务卡右侧留白内居中，保持独立按钮，避免在可点击任务卡中嵌套按钮。
  function render(){
   const candidates=['mainline-hud','ranger-arrival','boss-hud','quest'].map(id=>root.getElementById(id));
-  const blocked=game.state!=='playing'||game.arrivalCinematic||game.realm||game.fireActive||game.campDefense||root.querySelector('dialog[open]');
+  const blocked=frame.classList.contains('clearing-compact-active')||game.state!=='playing'||game.arrivalCinematic||game.realm||game.fireActive||game.campDefense||root.querySelector('dialog[open]');
   const anchor=!blocked&&candidates.find(n=>n&&!n.hidden&&n.offsetHeight&&getComputedStyle(n).visibility!=='hidden');
   const hidden=!anchor;if(button.hidden!==hidden)button.hidden=hidden;
   for(const n of candidates)if(n){const selected=!hidden&&n===anchor;if(n.classList.contains('task-route-anchor')!==selected)n.classList.toggle('task-route-anchor',selected);}

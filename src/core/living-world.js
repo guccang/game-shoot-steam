@@ -200,10 +200,11 @@ export function setLivingPatrol(game,active){
 }
 // 告示牌与结算续接共享选点、存档事务，成功后消费当前结算资格。
 function beginClearingPatrol(game,site=null){
+  const notice=site?'continue':'arrival';
   let prepared=null;
   if(!site)site=chooseClearingSite(game,(route,index)=>{prepared={route,index};});
   if(!site)return {ok:false,message:'暂时没有找到可达的清缴地点，请稍后重试。'};
-  const result=commitLiving(game,p=>{recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};},()=>{
+  const result=commitLiving(game,p=>{recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.living.clearingNotice=notice;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};},()=>{
    // 存档成功且界面刷新前移交路线，保存失败不能污染当前导航。
    game.pendingClearingRound=0;
    if(prepared)rememberPreparedNavigation(game,clearingNavigationTarget(site),prepared.route,prepared.index,{...game.player,mapId:game.mapId,livingCollision:true});

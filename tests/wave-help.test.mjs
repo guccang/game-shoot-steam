@@ -2,22 +2,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {waveHelpState} from '../src/ui/wave-help.js';
+import {waveDifficulty} from '../src/config/waves.js';
 // 独立战场快照避免界面文本测试启动无关地图模拟。
 function state(patch={}){return {wave:2,waveGroupStart:1,bossWave:5,waveKills:3,waveRest:0,waveWarning:0,...patch};}
-test('战斗详情准确显示第1轮内第2批和3/8，重新读取后同步击杀',()=>{
+test('战斗详情准确显示第1轮内第2批的正式配额，重新读取后同步击杀',()=>{
  const g=state(),s=waveHelpState(g);
- assert.equal(s.wave,2);assert.equal(s.round,1);assert.equal(s.kills,3);assert.equal(s.total,8);assert.equal(s.status,'战斗中');
+ assert.equal(s.wave,2);assert.equal(s.round,1);assert.equal(s.kills,3);assert.equal(s.total,waveDifficulty(2).total);assert.equal(s.status,'战斗中');
  assert.equal(s.completed,1);assert.equal(s.count,5);
  g.waveKills=7;assert.equal(waveHelpState(g).kills,7);assert.equal(g.wave,2);
 });
 test('准备与休整不把下一波数量错配给已完成计数',()=>{
  let s=waveHelpState(state({waveWarning:2}));assert.equal(s.status,'准备中');assert.match(s.note,/本批/);
- s=waveHelpState(state({waveKills:8,waveRest:2}));assert.equal(s.wave,2);assert.equal(s.kills,8);assert.equal(s.total,8);
+ const total=waveDifficulty(2).total;s=waveHelpState(state({waveKills:total,waveRest:2}));assert.equal(s.wave,2);assert.equal(s.kills,total);assert.equal(s.total,total);
  assert.equal(s.status,'短暂休整');assert.match(s.note,/第 3 批/);assert.equal(s.completed,2);
 });
-test('第五波详情使用新配额显示23/24',()=>{
- const s=waveHelpState(state({wave:5,waveKills:23}));
- assert.equal(s.kills,23);assert.equal(s.total,24);assert.equal(s.status,'战斗中');
+test('第五波详情采用正式配额，超额击杀显示不得超过总数',()=>{
+ const total=waveDifficulty(5).total,s=waveHelpState(state({wave:5,waveKills:total-1}));
+ assert.equal(s.kills,total-1);assert.equal(s.total,total);assert.equal(s.status,'战斗中');
+ assert.equal(waveHelpState(state({wave:5,waveKills:total+9})).kills,total);
 });
 test('Boss待挑战说明自动登场，新组休整进度从零开始',()=>{
  let s=waveHelpState(state({waveKills:8,bossWave:2,bossReady:true}));
