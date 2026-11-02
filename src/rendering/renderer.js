@@ -182,7 +182,7 @@ export class Renderer {
     this.ground.setMap(g.mapId);this.ground.setSceneryMask(null);
     const camera = Object.assign(new CombatCamera(), this.camera);
     const speech=storySpeechInfo(g);
-    const guide = speech?null:['funnel', 'drone'].includes(g.weapon().controller) ? { kind: 'funnel' } : sniperGuide(g);
+    const guide = speech?null:['funnel', 'drone'].includes(g.weapon().controller) ? { kind: g.weapon().controller } : sniperGuide(g);
     const normal = camera.update(g.player, this.width, this.height, guide, g.time, this.reduced.matches,
       { arena: g.realm?.arena, mode: g.realm?.mode, session: g.realm, horde: g.campDefense });
     const view=outdoorFishingView(g,Object.assign(new StoryCamera(),this.storyCamera).update(normal,speech,now/1000,this.reduced.matches,g.story||null),this.width,this.height);
@@ -241,7 +241,7 @@ export class Renderer {
       g.player,
       w,
       h,
-      funnel ? { kind: 'funnel' } : guide,
+      funnel ? { kind: source.weapon().controller } : guide,
       g.time,
       this.reduced.matches,
       { arena: source.realm?.arena, mode: source.realm?.mode, session: source.realm, horde: source.campDefense },

@@ -1,4 +1,7 @@
 // 镜头倍率与全景留白统一配置，缩放仅改变画布投影，不拉伸角色素材。
+export const DEFAULT_CAMERA_Y=30;
+// 普通战斗镜头和浮游炮飞行边界共用倍率，避免换枪后炮体仍按旧广角出屏。
+export function defaultCombatZoom(width){return width<500?.85:1.05;}
 // 七档覆盖窄横屏从全景到普通倍率的跨度，默认转双指缩放时不撞到旧六档上限。
 export const CAMERA_VIEW = Object.freeze({ steps: 7, ratio: 1.35, forestRadius: 620,
   side: 24, top: 140, bottom: 200, maxZoom: 1.25, guardianScale: 1.3, guardianDefaultSpan: 1 });
