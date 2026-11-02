@@ -236,7 +236,7 @@ export function syncRealm(game) {
 export function leaveRealm(game) {
   if (!game.realm) return false;
   // 新手引导返回后优先追踪主线，和离开远征的存档事件一并保存。
-  if (game.realm.mode === 'rogue' && game.realm.phase === 'guide') game.progress.taskTracking = { kind: 'mainline' };
+  if (!game.progress.mainline.trackingPaused && game.realm.mode === 'rogue' && game.realm.phase === 'guide') game.progress.taskTracking = { kind: 'mainline' };
   // 返回时补记旧档中的已进入体验，失败或提前退出也可回营交付。
   recordStoryExcursion(game);
   const football=game.realm.mode==='football';

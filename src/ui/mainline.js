@@ -1,3 +1,5 @@
+import {isCampaignTask} from '../config/mainline-pacing.js';
+import {selectMainlineTask} from '../core/mainline-selection.js';
 import {displayMeters} from '../world/distance-units.js';
 import {farmLesson} from '../progression/farm.js';
 import {FARM_CROPS} from '../config/farm.js';
@@ -16,7 +18,7 @@ import {createEventScope} from '../platform/events.js';
 import {worldDistance,nearest} from '../world/coordinates.js';
 import {storyBearing} from './story-navigation.js';
 import {trackedLivingRequest} from '../core/task-tracking.js';
-import {livingRequestTarget,trackLivingRequest} from '../core/living-world.js';
+import {livingRequestTarget} from '../core/living-world.js';
 import {createOperationGuide} from './operation-guide.js';
 import {createSpeechBubble} from './speech-bubble.js';
 import {requestMainlineNavigation,worldNavigationObjective} from '../core/world-navigation.js';
@@ -34,7 +36,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  const speechUI=createSpeechBubble(root,'mainline-speech','巡林主线对白',{onAdvance:finishSpeech,onSkip:finishSpeech}),bubble=speechUI.node;
  bubble.classList.add('mainline-speech');speechUI.next.classList.add('mainline-begin');frame.append(bubble);
  const book=root.createElement('dialog');book.id='mainline-dialog';book.className='mainline-book';book.setAttribute('aria-labelledby','mainline-title');
- book.innerHTML='<header><div><small>晴叶营地</small><h2 id="mainline-title">巡林簿</h2></div><button id="mainline-close" aria-label="关闭巡林簿">×</button></header><details id="farm-lesson" class="mainline-more"></details><section id="mainline-current"></section><div class="mainline-book-actions"><button id="mainline-action" class="primary"></button><button id="mainline-map">手机地图</button></div><details class="mainline-more"><summary>旅程与装备规则</summary><p class="mainline-rule">主线奖励资源与营地经验。可提前采木修复设施，再攒资源购买装备；营地等级提供购买折扣。任务右侧的路线箭头可开关寻路；带斜杠表示关闭，再点恢复，任务进度不会丢失。</p><div id="mainline-chapters"></div></details>';root.body.append(book);
+ book.innerHTML='<header><div><small>晴叶营地</small><h2 id="mainline-title">巡林簿</h2></div><button id="mainline-close" aria-label="关闭巡林簿">×</button></header><details id="farm-lesson" class="mainline-more"></details><section id="mainline-current"></section><div class="mainline-book-actions"><button id="mainline-action" class="primary"></button><button id="mainline-pause" class="ui-button">自由探索</button><button id="mainline-map">手机地图</button></div><section id="mainline-choices" class="ui-section"></section><details class="mainline-more"><summary>旅程与装备规则</summary><p class="mainline-rule">每段旅程结束后可以自由探索，准备好再主动继续。操作教学、整备与休闲玩法均可自选，不阻挡故事推进。可提前修复设施，获得的资源和装备一直保留。任务右侧的路线箭头可开关寻路；带斜杠表示关闭，再点恢复，任务进度不会丢失。</p><div id="mainline-chapters"></div></details>';root.body.append(book);
  let farmAfterClose=false;
  const $=id=>root.getElementById(id);
  // 手册明确当前为什么行动、如何操作和交付所得；未来章节折叠，避免任务墙。
@@ -45,13 +47,17 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   const task=mainlineTask(game),run=game.progress.mainline,o=mainlineObjective(game,{ignoreTracking:true});
   $('farm-lesson').hidden=task?.id==='first-farm';
   const steps=mainlineSteps(game),current=steps.findIndex(s=>!s.done);
-  $('mainline-current').innerHTML=task?`<small>${escape(task.chapter)} · ${run.completed.length+1}/${MAINLINE_TASKS.length}</small><h3>${escape(task.title)}</h3>${run.phase!=='doing'?`<p class="mainline-location">${escape(o?.label||'活动结束后继续')} · ${escape(MAINLINE_SITES[task.site].name)}</p>`:''}<ol class="mainline-checklist">${steps.map((s,i)=>`<li class="${s.done?'done':i===current?'current':''}"><span class="mainline-check" aria-label="${s.done?'已完成':i===current?'当前动作':'待完成'}">${s.done?'✓':i+1}</span><span><b>${escape(s.label)}</b>${i===current&&s.hint?`<small>${escape(s.hint)}</small>`:''}</span>${s.progress?`<small>${s.progress}</small>`:''}</li>`).join('')}</ol><div class="mainline-reward"><b>奖励</b>${Object.entries(mainlineReward(task,game.progress)).filter(([,n])=>n>0).map(([k,n])=>'<span>'+resourceNames[k]+' +'+n+'</span>').join('')}${task.seedReward?'<span>'+escape(FARM_CROPS[task.seedReward.crop].name)+'种子 ×'+task.seedReward.count+' · 直接解锁购买</span>':''}</div><details class="mainline-more"><summary>需要操作帮助？</summary>${task.lines.map(t=>'<p>'+escape(t)+'</p>').join('')}</details>${game.mainlineError?'<p role="alert">'+escape(game.mainlineError)+'</p>':''}`:'<h3>巡林簿，由你续写</h3>';
+  $('mainline-current').innerHTML=task?`<small>${isCampaignTask(task)?'主线':'自选体验'} · ${escape(task.chapter)}</small><h3>${escape(task.title)}</h3>${run.trackingPaused?'<p class="ui-inset">正在自由探索。任务进度已保留，准备好后再继续。</p>':''}${run.phase!=='doing'?`<p class="mainline-location">${escape(o?.label||'活动结束后继续')} · ${escape(MAINLINE_SITES[task.site].name)}</p>`:''}<ol class="mainline-checklist">${steps.map((s,i)=>`<li class="${s.done?'done':i===current?'current':''}"><span class="mainline-check" aria-label="${s.done?'已完成':i===current?'当前动作':'待完成'}">${s.done?'✓':i+1}</span><span><b>${escape(s.label)}</b>${i===current&&s.hint?`<small>${escape(s.hint)}</small>`:''}</span>${s.progress?`<small>${s.progress}</small>`:''}</li>`).join('')}</ol><div class="mainline-reward"><b>奖励</b>${Object.entries(mainlineReward(task,game.progress)).filter(([,n])=>n>0).map(([k,n])=>'<span>'+resourceNames[k]+' +'+n+'</span>').join('')}${task.seedReward?'<span>'+escape(FARM_CROPS[task.seedReward.crop].name)+'种子 ×'+task.seedReward.count+' · 直接解锁购买</span>':''}</div><details class="mainline-more"><summary>需要操作帮助？</summary>${task.lines.map(t=>'<p>'+escape(t)+'</p>').join('')}</details>${game.mainlineError?'<p role="alert">'+escape(game.mainlineError)+'</p>':''}`:'<h3>巡林簿，由你续写</h3>';
 
-  const chapters=[...new Set(MAINLINE_TASKS.map(t=>t.chapter))];
-  $('mainline-chapters').innerHTML=chapters.map(ch=>`<details><summary>${escape(ch)}</summary><ol>${MAINLINE_TASKS.filter(t=>t.chapter===ch).map(t=>`<li class="${run.completed.includes(t.id)?'done':t===task?'current':''}"><b>${run.completed.includes(t.id)?'✓ ':t===task?'现在 · ':''}${escape(t.title)}</b></li>`).join('')}</ol></details>`).join('');
+  const campaign=MAINLINE_TASKS.filter(isCampaignTask),next=campaign.find(t=>!run.completed.includes(t.id));
+  // 自选列表默认折叠，只有主动点选才追踪；已完成项目保留记录但不能重复领奖。
+  $('mainline-choices').innerHTML=(next&&next.id!==task?.id?`<button class="ui-button" data-mainline-select="${next.id}">继续主线 · ${escape(next.title)}</button>`:'')+'<details><summary>自选体验 · 教学、整备与休闲</summary><p>按兴趣选择，不影响主线。切换后当前步骤会保留。</p>'+MAINLINE_TASKS.filter(t=>!isCampaignTask(t)).map(t=>`<p><button class="ui-button" data-mainline-select="${t.id}" ${run.completed.includes(t.id)?'disabled':''}>${run.completed.includes(t.id)?'已完成 · ':t.id===task?.id?'当前 · ':run.suspended[t.id]?'继续 · ':''}${escape(t.title)}</button></p>`).join('')+'</details>';
+  $('mainline-pause').hidden=run.trackingPaused;
+  const chapters=[...new Set(campaign.map(t=>t.chapter))];
+  $('mainline-chapters').innerHTML=chapters.map(ch=>`<details><summary>${escape(ch)}</summary><ol>${campaign.filter(t=>t.chapter===ch).map(t=>`<li class="${run.completed.includes(t.id)?'done':t===task?'current':''}"><b>${run.completed.includes(t.id)?'✓ ':t===task?'现在 · ':''}${escape(t.title)}</b></li>`).join('')}</ol></details>`).join('');
   const near=o&&(o.navigation===false||worldDistance(game.player,o.site)<=150&&game.mapId===o.site.mapId);
   const action=mainlineAction(game);
-  $('mainline-action').textContent=trackedLivingRequest(game)?'追踪巡林主线':task&&run.phase==='doing'&&near&&action?action.label:task?'返回指引':'继续巡林';
+  $('mainline-action').textContent=run.trackingPaused&&task?'继续当前任务':trackedLivingRequest(game)?'追踪巡林主线':task&&run.phase==='doing'&&near&&action?action.label:task?'返回指引':'继续巡林';
  }
  dialogs.register('mainline-dialog',{onOpen:renderBook,focusId:'mainline-close'});
  // 正文打开当前任务的数据或操作页，保持玩家在右侧按钮选择的寻路状态。
@@ -90,12 +96,13 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  }
  // 读完或跳过后直接打开可用操作；领取仍经过原一次性保存事务。
  function finishSpeech(){const phase=game.mainlineSpeech?.phase;if(advanceMainlineSpeech(game)&&phase==='meet')openCurrentAction();onChange();}
+ // 恢复任务先保存主动选择，再执行已有地点与操作校验。
+ scope.on($('mainline-pause'),'click',()=>{if(selectMainlineTask(game)){dialogs.close('mainline-dialog');onChange();}else{game.mainlineError||='请先结束当前战斗或活动。';renderBook();}});
+ scope.on($('mainline-choices'),'click',e=>{const button=e.target.closest('[data-mainline-select]');if(!button)return;if(selectMainlineTask(game,button.dataset.mainlineSelect)){renderBook();onChange();}else{game.mainlineError||='请先结束当前战斗或活动。';renderBook();}});
  scope.on($('mainline-action'),'click',()=>{
-  requestMainlineNavigation(game);
-  if(trackedLivingRequest(game)){
-   const result=trackLivingRequest(game);if(!result.ok){game.mainlineError=result.message;renderBook();return;}
-   dialogs.close('mainline-dialog');onChange();return;
-  }
+  if(game.progress.mainline.trackingPaused||trackedLivingRequest(game)){
+   if(!selectMainlineTask(game,mainlineTask(game)?.id)){game.mainlineError||='请先结束当前战斗或活动。';renderBook();return;}
+  }else requestMainlineNavigation(game);
   if(!openCurrentAction())dialogs.close('mainline-dialog');
  });
  scope.on($('mainline-map'),'click',()=>{root.getElementById('phone-button').click();dialogs.transferResume('mainline-dialog','phone-dialog');dialogs.close('mainline-dialog');});
@@ -114,7 +121,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   card.hidden=combatHudVisible(root)||clearingCombatActive(game)||!o||!!game.mainlineSpeech||dialogOpen||game.state!=='playing';
   if(!card.hidden){
    card.dataset.taskKind=['visit','boss-clearing'].includes(o.key)?'navigation':request?'living':'mainline';card.dataset.taskId=o.task.id;
-   card.querySelector('.mainline-kicker').textContent=o.key==='visit'?'正在前往':o.key==='boss-clearing'?'野外任务':request?'森林邻里':'主线';
+   card.querySelector('.mainline-kicker').textContent=o.key==='visit'?'正在前往':o.key==='boss-clearing'?'野外任务':request?'森林邻里':isCampaignTask(o.task)?'主线':'自选体验';
    const visiting=o.key==='visit'||o.key==='boss-clearing',step=!request&&mainlineStep(game);
    card.dataset.navigationTutorial=String(step?.operation?.id==='task-navigation-toggle'&&!step.done);
    card.querySelector('b').textContent=request?o.task.title:o.label;

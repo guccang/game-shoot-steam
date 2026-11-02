@@ -17,7 +17,7 @@ export function worldNavigationDiagnostics(game){const intent=intents.get(gameSo
 // 活动结束时撤销旧的临时目的地，保留玩家手动关闭寻路的偏好。
 export function clearWorldNavigation(game){intents.delete(gameSource(game));}
 // 在任务详情中主动出发时恢复寻路并清除临时访问路线，正文阅读不调用此入口。
-export function requestMainlineNavigation(game){setTaskNavigationEnabled(game,true);intents.delete(game);}
+export function requestMainlineNavigation(game){game.progress.mainline.trackingPaused=false;game.progress.taskTracking={kind:'mainline'};setTaskNavigationEnabled(game,true);intents.delete(gameSource(game));}
 // 场景主动点击可临时覆盖教学导航；旧菜单意图保持原优先级，抵达后让位给任务提示。
 export function requestWorldNavigation(game,site,label,{direct=false,action=null}={}){setTaskNavigationEnabled(game,true);if(isClearingSite(site)){intents.delete(game);return;}intents.set(game,{site:{...site,mapId:site.mapId||'forest'},label,direct,action});}
 // 可赶路的任务默认显示；随身操作不铺路，剧情仍由独立的故事导航负责。

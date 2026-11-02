@@ -119,6 +119,7 @@ function cleanupLessonTarget(game){
 }
 // 一份目标同时驱动任务卡、地面导航和地图标记，不创建第二份坐标。
 export function mainlineObjective(game,{ignoreTracking=false}={}){
+ if(!ignoreTracking&&(game.progress?.mainline?.trackingPaused||game.progress?.taskTracking?.kind==='none'))return null;
  if(game.cottage&&cottageRestGuideActive(game))return null;
  const rest=cottageRestObjective(game,mainlineTask(game));if(rest)return rest;
  if(!ignoreTracking&&!pendingRestoration(game.progress)&&trackedLivingRequest(game))return null;
@@ -216,6 +217,8 @@ export function advanceMainlineSpeech(game){
 export function updateMainline(game,dt){
  const task=mainlineTask(game),run=game.progress?.mainline;
  if(!task||game.workshopTrial||arrivalPending(game.progress))return false;
+ // 自由探索期间不自动接取、交付或弹出对白，存档中的当前任务仍可主动恢复。
+ if(run.trackingPaused){game.mainlineSpeech=null;positions.delete(game);return false;}
  if(!run.currentId)run.currentId=task.id;
  if(pendingRestoration(game.progress)||cottageRestGuideActive(game)){game.mainlineSpeech=null;return false;}
  // 收获任务就地接续并沿用正式存档事务，失败可重试，不能只凭旧收获次数跳过。

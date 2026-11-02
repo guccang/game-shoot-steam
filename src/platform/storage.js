@@ -11,8 +11,8 @@ export const STORAGE_KEYS = {
   gameplay: 'forest-patrol-gameplay-v1',
   chronicle: 'forest-patrol-chronicle-v1',
 };
-// 本次大地图版本按确认清空旧进度；后续刷新保留此版本的新档。
-export const WORLD_SAVE_REVISION = 'forest-threefold-2026-10';
+// 本轮按用户要求使用全新节奏存档，不迁移旧进度；同版本刷新正常恢复。
+export const WORLD_SAVE_REVISION = 'forest-exploration-pacing-2026-11';
 // 延迟获取存储，读取 localStorage 属性本身被浏览器拒绝时也能安全回退。
 export function createSaveStore(getStorage = () => globalThis.localStorage) {
   let available = true, worldReady = false;

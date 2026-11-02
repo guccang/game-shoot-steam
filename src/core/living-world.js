@@ -124,7 +124,7 @@ function commitLiving(game,change,onCommit=null){
 export function trackLivingRequest(game,id=null){
   const spec=LIVING_REQUESTS.find(q=>q.id===id),record=spec&&game.progress.living.requests[id];
   if(!livingForest(game)||game.livingBattle&&game.livingBattle!==id||id&&(!record||record.completed||record.stage<0||record.stage>=spec.steps.length))return {ok:false,message:'这项任务现在不能切换追踪。'};
-  return commitLiving(game,p=>{p.taskTracking=id?{kind:'living',id}:{kind:'mainline'};});
+  return commitLiving(game,p=>{p.taskTracking=id?{kind:'living',id}:{kind:'mainline'};if(!id)p.mainline.trackingPaused=false;});
 }
 // 屋内邻里服务沿用房门外的实际地点，其他房间不获得远程交付权限。
 export function livingInteractionPosition(game){return ['relay','kitchen'].includes(game.cottage?.kind)?game.cottage.outside:game.player;}
@@ -171,8 +171,8 @@ export function interactLivingRequest(game,id){
   const result=commitLiving(game,p=>{
     const q=p.living.requests[id];line+=taskTreasureRumor(p,id,q.stage);q.stage++;p.taskTracking={kind:'living',id};p.living.journal.push(line);
     if(q.stage===spec.steps.length){
-      // 完成后明确恢复主线，其他已接请求保留进度，等待玩家手动追踪。
-      q.completed=true;q.completedDay=p.living.calendar.day;p.taskTracking={kind:'mainline'};
+      // 完成后保留玩家原先的自由探索选择，其他已接请求等待手动追踪。
+      q.completed=true;q.completedDay=p.living.calendar.day;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};
       const chapter=p.story.chapters[id];
       if(!chapter.rewardClaimed)awardCampXp(p,'living',null,spec.title);
       if(!chapter.rewardClaimed)for(const [key,amount] of Object.entries(STORY_CAMPAIGN[id].reward))creditResource(p,key,amount);
@@ -203,7 +203,7 @@ function beginClearingPatrol(game,site=null){
   let prepared=null;
   if(!site)site=chooseClearingSite(game,(route,index)=>{prepared={route,index};});
   if(!site)return {ok:false,message:'暂时没有找到可达的清缴地点，请稍后重试。'};
-  const result=commitLiving(game,p=>{recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.taskTracking={kind:'mainline'};},()=>{
+  const result=commitLiving(game,p=>{recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};},()=>{
    // 存档成功且界面刷新前移交路线，保存失败不能污染当前导航。
    game.pendingClearingRound=0;
    if(prepared)rememberPreparedNavigation(game,site,prepared.route,prepared.index,{...game.player,mapId:game.mapId,livingCollision:true});
