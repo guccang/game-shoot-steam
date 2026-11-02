@@ -15,6 +15,8 @@ import { resourceIcon } from '../../rendering/resource-icons.js';
 import { blessingIcon } from '../../rendering/blessing-icons.js';
 import {raceCard,raceMarkup,paintRacePanel,createRaceControls} from '../race-panel.js';
 import { footballCard, footballMarkup, paintFootballPanel } from '../football-panel.js';
+// 插画地址相对正式模块解析，部署前缀与页面位置变化时仍读取同一套原图。
+const REALM_ART=Object.freeze(Object.fromEntries(['rogue','tower','guardian'].map(mode=>[mode,new URL(`../../../assets/realms/${mode}.webp`,import.meta.url).href])));
 // 奖励只展示固定白名单数值，避免将外部存档字符串注入页面。
 function rewards(values) {
   const names = { coins: i18nText("balance.app.bbece6f829"), wood: i18nText("balance.app.30a9333b4f"), parts: i18nText("balance.help.b6be82f97f"), crystal: i18nText("balance.help.c16229837e"), core: i18nText("balance.app.a8a88ddbea") };
@@ -26,9 +28,23 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
   const $ = id => root.getElementById(id), scope = createEventScope();
   const raceControls=createRaceControls({game,root});
   let lastMarkup = '', lastLocked = '', opening = false, catalogMode = null;
+  // 失败重试更换请求标识，避开浏览器保留的失败响应；不重绘卡片或切换成占位图。
+  function retryArtwork(image){
+    const url=new URL(REALM_ART[image.dataset.realmArt]);
+    const request=Number(image.dataset.artRequest||0)+1;image.dataset.artRequest=String(request);
+    url.searchParams.set('retry',String(request));image.src=url.href;
+  }
+  // 每次打开最多自动重试一次，持续缺失时保留原图说明，避免逐帧发起请求。
+  scope.on($('realm-content'),'error',event=>{
+    const image=event.target;
+    if(!image.matches?.('img[data-realm-art]')||image.dataset.artRetried)return;
+    image.dataset.artRetried='true';retryArtwork(image);
+  },true);
   // 查看单项玩法只展示原目录卡片，不创建挑战；玩家点击卡片进入后才开始。
   function open(mode=null){
-    catalogMode=REALMS[mode]?mode:null;render();dialogs.open('realm-dialog');return true;
+    catalogMode=REALMS[mode]?mode:null;render();dialogs.open('realm-dialog');
+    for(const image of $('realm-content').querySelectorAll('img[data-realm-art]'))if(image.complete&&!image.naturalWidth){delete image.dataset.artRetried;retryArtwork(image);}
+    return true;
   }
   // 建筑和现有卡片共用进入事务，保留必选祝福、存档及暂停归属规则。
   function enter(mode) {
@@ -105,7 +121,7 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
           const labels = { rogue: i18nText("ui.panels.realms.1f97dba2f6"), tower: i18nText("ui.panels.realms.e48cae7c2e"), guardian: i18nText("ui.panels.realms.cf4e1a4357") };
           const alts = { rogue: i18nText("ui.panels.realms.a5e4b79573"), tower: i18nText("ui.panels.realms.bdb0d5e0a5"), guardian: i18nText("ui.panels.realms.0314496f73") };
           const material = mode === 'rogue' ? 'crystal' : 'parts';
-          return `<article class="realm-card realm-${mode}"><div class="realm-art"><img src="/assets/realms/${mode}.webp" width="768" height="512" alt="${alts[mode]}" loading="lazy" decoding="async"><span class="realm-badge">${labels[mode]}</span></div><div class="realm-card-body"><div class="realm-card-heading"><div><h3>${spec.name}</h3><div class="realm-record">${i18nHtml("ui.panels.realms.b23cce01dd", { p0: (record.best), p1: (spec.unit), p2: (record.bosses) })}</div></div><button class="primary" data-enter-realm="${mode}" aria-label="${i18nHtml("ui.panels.realms.778ac3a7c0", { p0: (spec.name) })}" ${game.state === 'dead' ? 'disabled' : ''}>${i18nHtml("ui.football-panel.55716bd0d1")}</button></div><div class="realm-card-loot"><span>${i18nHtml("ui.panels.realms.f4f5e443ed", { p0: (resourceIcon(material)), p1: (mode === 'tower' ? resourceIcon('crystal') : '') })}</span><span>${i18nHtml("ui.panels.realms.59e7d6bbc1", { p0: (spec.unit), p1: (mode === 'tower' ? i18nText("ui.panels.realms.84605e228c") : i18nText("ui.panels.realms.e4f684ed28")), p2: (resourceIcon('core')) })}</span></div></div></article>`;
+          return `<article class="realm-card realm-${mode}"><div class="realm-art"><img data-realm-art="${mode}" src="${REALM_ART[mode]}" width="768" height="512" alt="${alts[mode]}" loading="eager" decoding="async"><span class="realm-badge">${labels[mode]}</span></div><div class="realm-card-body"><div class="realm-card-heading"><div><h3>${spec.name}</h3><div class="realm-record">${i18nHtml("ui.panels.realms.b23cce01dd", { p0: (record.best), p1: (spec.unit), p2: (record.bosses) })}</div></div><button class="primary" data-enter-realm="${mode}" aria-label="${i18nHtml("ui.panels.realms.778ac3a7c0", { p0: (spec.name) })}" ${game.state === 'dead' ? 'disabled' : ''}>${i18nHtml("ui.football-panel.55716bd0d1")}</button></div><div class="realm-card-loot"><span>${i18nHtml("ui.panels.realms.f4f5e443ed", { p0: (resourceIcon(material)), p1: (mode === 'tower' ? resourceIcon('crystal') : '') })}</span><span>${i18nHtml("ui.panels.realms.59e7d6bbc1", { p0: (spec.unit), p1: (mode === 'tower' ? i18nText("ui.panels.realms.84605e228c") : i18nText("ui.panels.realms.e4f684ed28")), p2: (resourceIcon('core')) })}</span></div></div></article>`;
         }).join('') + '</div>' +
         (game.state === 'dead' ? `<p>${i18nHtml("ui.panels.realms.d6a949ef10")}</p>` : '');
 
