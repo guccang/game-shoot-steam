@@ -20,10 +20,15 @@ export function clearWorldNavigation(game){intents.delete(gameSource(game));}
 export function requestMainlineNavigation(game){game.progress.mainline.trackingPaused=false;game.progress.taskTracking={kind:'mainline'};setTaskNavigationEnabled(game,true);intents.delete(gameSource(game));}
 // 场景主动点击可临时覆盖教学导航；旧菜单意图保持原优先级，抵达后让位给任务提示。
 export function requestWorldNavigation(game,site,label,{direct=false,action=null}={}){setTaskNavigationEnabled(game,true);if(isClearingSite(site)){intents.delete(game);return;}intents.set(game,{site:{...site,mapId:site.mapId||'forest'},label,direct,action});}
-// 可赶路的任务默认显示；随身操作不铺路，剧情仍由独立的故事导航负责。
+// 地面光点与终点遵守显示开关；关闭寻路不能丢失任务卡正在展示的目标。
 export function worldNavigationObjective(game){
  game=gameSource(game);
  if(!taskNavigationEnabled(game))return null;
+ return worldTaskObjective(game);
+}
+// 任务卡与点击操作共用目标优先级，独立于路点显隐；抵达后仍正常清理临时访问。
+export function worldTaskObjective(game){
+ game=gameSource(game);
  // 投料后已到达门前，隐藏终点徽记，让木料飞行与局部施工保持清晰。
  if(game.progress?.restoration?.build||game.progress?.arrival?.phase==='repairing')return null;
  // 入职尚未进入生活模式，但修复和制枪已是可自由赶路的正式任务。
