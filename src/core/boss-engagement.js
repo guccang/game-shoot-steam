@@ -8,6 +8,8 @@ import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
 export function bossCombatActive(game){
  const boss=game.boss;if(!boss||boss.hp<=0)return false;
  if(!livingForest(game))return true;
+ // 主动暂停的清缴挑战不因玩家再次靠近而开战，须先在告示牌恢复。
+ if(boss.livingChallenge&&!game.progress.living.patrolActive)return false;
  if(!game.player||!Number.isFinite(boss.x)||!Number.isFinite(boss.y))return true;
  if(game.cottage||livingSafePoint(game.player))return false;
  return worldDistance(game.player,boss)<(boss.disengaged?BOSS_ENGAGEMENT.returnDistance:BOSS_ENGAGEMENT.leaveDistance);
@@ -17,7 +19,15 @@ export function bossCombatActive(game){
 export function updateBossEngagement(game){
  const boss=game.boss;if(!boss||boss.hp<=0||!livingForest(game)||game.state!=='playing')return;
  const disengaged=!bossCombatActive(game);if(!!boss.disengaged===disengaged)return;
- boss.disengaged=disengaged;
+ changeBossEngagement(game,disengaged);
+}
+// 清缴暂停事务提交后可在弹窗暂停状态立即清除攻击；保存失败不得调用。
+export function pauseClearingBoss(game){
+ if(game.boss?.livingChallenge&&livingForest(game)&&!game.progress.living.patrolActive)changeBossEngagement(game,true);
+}
+// 脱战与主动暂停共用清理，保留 Boss 实体、血量、位置及挑战资格。
+function changeBossEngagement(game,disengaged){
+ const boss=game.boss;boss.disengaged=disengaged;
  boss.ai={phase:'chase',elapsed:0};boss.attack=GAMEPLAY_VALUES.boss.firstAttackDelay;
  boss.pushX=boss.pushY=boss.knockTime=0;
  game.hazards=game.hazards.filter(h=>h.owner!==boss.id);

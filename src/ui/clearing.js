@@ -33,7 +33,7 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
  // 等级区插在滚动正文的任务步骤之后，底部领取操作独立保留。
  const challenge=root.createElement('div');challenge.id='clearing-challenge-level';dialog.querySelector('.clearing-steps').after(challenge);
  // 节点状态来自实际接取与地点，失败时保持原界面可重试。
- function render(){if(!dialog.open)return;const active=game.progress.living.patrolActive;
+ function render(){if(!dialog.open)return;const active=game.progress.living.patrolActive,resuming=!active&&!!game.boss?.livingChallenge;
   challenge.innerHTML=challengeLevelMarkup(game.progress);
   [...dialog.querySelectorAll('li')].forEach((n,i)=>n.dataset.current=String(i===(active?1:0)));
   dialog.querySelector('.clearing-loot').textContent=game.progress.bosses<3?'入门清缴 · 团怪成群，特殊怪穿插':'进阶清缴 · 成群团怪与特殊强敌';
@@ -41,9 +41,11 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
   dialog.querySelector('.clearing-loot').textContent+=' · 完成后营地经验 +180';
   const rules=game.progress.bosses===0?CLEARING_STARTER_RULES:CLEARING_SITE_RULES;
   $('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴 · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`${game.progress.bosses===0?'营地草甸':'随机地点'} ${displayMeters(rules.minDistance)}–${displayMeters(rules.maxDistance)} 米 · 清理 5 批怪物及领主`}`;
+  if(resuming)$('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴已暂停 · 领主 ${Math.ceil(game.boss.hp)} / ${game.boss.maxHp} HP · 继续后返回原地点。`;
+  dialog.querySelector('.clearing-loot').textContent+=' · 远离领主脱战或回营后可暂停并购买弹药，无需先击败领主';
   const reason=clearingPostReason(game),accept=$('clearing-accept');
   blockedReason.textContent=reason;blockedReason.hidden=!reason;accept.dataset.disabledReason=reason;accept.title=reason;
-  accept.textContent=active?'继续前往':'接取并出发';accept.disabled=!!reason;$('clearing-stop').hidden=!active;
+  accept.textContent=active?'继续前往':resuming?'继续本轮清缴':'接取并出发';accept.disabled=!!reason;$('clearing-stop').hidden=!active;
  }
  // 从菜单远程查看时先引向实体；不能隔空接取，也不会打开无关居民页面。
  function visit(){if(!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return;}if(canUseClearingPost(game))open();else{requestWorldNavigation(game,CLEARING_APPROACH,'去清缴告示牌接取');onChange();}}

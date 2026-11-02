@@ -4,6 +4,7 @@ import {clearingSite,clearingNavigationSite} from '../progression/clearing-site.
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
 import {facilityOpen,facilityReason} from '../config/town-restoration.js';
 import {worldDistance} from '../world/coordinates.js';
+import {bossCombatActive} from './boss-engagement.js';
 import {setLivingPatrol} from './living-world.js';
 
 // 接取、赶路、普通波次与Boss共用同一阶段判断；回营后自然恢复赶路提示。
@@ -30,7 +31,7 @@ export function clearingPostReason(game){
  // 已接取的继续按钮只恢复导航；新接取还须满足正式巡护事务的安全要求。
  if(!game.progress.living.patrolActive){
   if(game.livingPreview)return '请先退出预览，再接取清缴任务。';
-  if(game.boss)return '请先结束当前领主战斗，再接取清缴任务。';
+  if(game.boss&&(!game.boss.livingChallenge||bossCombatActive(game)))return '请先脱离当前领主战斗，再继续清缴任务。';
   if(game.livingBattle)return '请先结束当前遭遇战，再接取清缴任务。';
   if(!livingSafePoint(game.player))return '请回到木栏保护的营地内，再接取清缴任务。';
  }
