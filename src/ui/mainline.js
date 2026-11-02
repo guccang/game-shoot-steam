@@ -12,6 +12,7 @@ import {layoutTaskCombatHud,combatHudVisible} from './task-combat-layout.js';
 import {clearingCombatActive} from '../core/living-safety.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 // 巡林簿界面只展示任务表和提交操作意图；不直接改等级、赠装备或判定通关。
+import {campTalkSite} from '../core/camp-routines.js';
 import {MAINLINE_TASKS,MAINLINE_SITES,MAINLINE_NPCS} from '../config/mainline.js';
 import {mainlineTask,mainlineObjective,canTalkMainline,updateMainline,markMainline,mainlineSteps,mainlineStep,mainlineAction,advanceMainlineSpeech} from '../core/mainline-manager.js';
 import {createEventScope} from '../platform/events.js';
@@ -161,7 +162,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   const speech=game.mainlineSpeech;if(!speech)speechUI.reset();
   if(clearingCombatActive(game)||!o||!v||dialogOpen||game.state!=='playing'||root.hidden||game.mapId!==MAINLINE_SITES[o.task.site].mapId||(!speech&&o.phase==='doing')){if(!bubble.hidden)bubble.hidden=true;if(!npc.hidden)npc.hidden=true;return;}
   if(bubble.hidden!==!speech)bubble.hidden=!speech;
-  const actor=nearest(MAINLINE_SITES[o.task.site],game.player),{frame:r,canvas:c}=sceneLayout(renderer,frame);
+  const actor=nearest(campTalkSite(game,o.task),game.player),{frame:r,canvas:c}=sceneLayout(renderer,frame);
   const x=(actor.x-v.x)*v.zoom+c.left-r.left,y=(actor.y-65-v.y)*v.zoom+c.top-r.top;
   if(!speech&&(x<12||x>r.width-12||y<80||y>r.height-50)){if(!npc.hidden)npc.hidden=true;return;}
   if(speech){

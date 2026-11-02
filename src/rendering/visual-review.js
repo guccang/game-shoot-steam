@@ -1857,3 +1857,9 @@ export function inspectWarehouseHarvest(game,root){
  const batches=game.drops.filter(d=>d.warehouseHarvest);
  return {designCriterion:'warehouse-harvest',coins:game.progress.coins,bag:[...game.progress.farm.inventory],cargo:game.progress.logistics.builds.map(b=>[...b.cargo]),income:game.progress.economyLog.income['farm:sale:coins']||0,batches:batches.map(d=>({crop:d.crop,count:d.cropCount,origin:{x:d.originX,y:d.originY},destination:d.destination,age:d.age})),icons:resourcePickupPoses(batches,game.player).length,coinText:root.querySelector('[data-warehouse-currency] .warehouse-slot__count')?.textContent,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 日常验收读取正式插值人物与真实闲聊节点，不创建替代演员或推进任务。
+export function inspectCampDailyLife(game,renderer,root){
+ const speech=root.getElementById('resident-chatter'),rendered=renderer.renderGame?.campActors;
+ return {designCriterion:'camp-daily-life',actors:[...(game.campActors?.values()||[])].map(actor=>({id:actor.id,x:actor.x,y:actor.y,action:actor.action,moving:actor.moving,clock:actor.clock,moveTime:actor.motion.moveTime,renderedX:rendered?.get(actor.id)?.x})),speech:{visible:!!speech&&!speech.hidden,text:speech?.textContent,pointerEvents:speech?root.defaultView.getComputedStyle(speech).pointerEvents:null},trackingPaused:game.progress.mainline.trackingPaused,modal:!!root.querySelector('dialog[open]')};
+}

@@ -374,7 +374,7 @@ export class Renderer {
     const mechanicalCats=mechanicalSources.filter(g=>g.weapon().controller==='mechanical')
       .flatMap(g=>visibleBodies(g.mechanical.nodes.filter(n=>n.active&&n.ready),view).map(n=>({...n,type:'mechanical-cat',weapon:g.weapon()})));
     const spiders=collectMechanicalSources(source,'spider').flatMap(g=>visibleBodies([g.spider.mother,...g.spider.nodes].filter(n=>n.active&&n.ready),view).map(n=>({...n,type:'mechanical-spider',weapon:g.weapon(),hatch:n.mother?g.spider.hatch:0,hatchSide:g.spider.hatchSide})));
-    const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source)],view);
+    const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source).map(actor=>g.campActors?.get(actor.id)||actor)],view);
     const activeStoryResidents=new Set([...storyResidentIds(source),...scenePeople.map(a=>a.residentId).filter(Boolean)]);
     const objects = [
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
@@ -447,7 +447,7 @@ export class Renderer {
       else if(item.type.startsWith('arrival-'))drawArrivalObject(c,item,camp,this.reduced.matches,winter);
       else if(item.type==='story-post')(item.clearing?drawClearingPost:drawStoryPost)(c,item,light.night,g.player);
       else if(item.type.startsWith('monster-camp-'))drawMonsterCampObject(c,item,source,light.night,this.reduced.matches,true);
-      else if(item.type==='living-resident'||item.type==='living-facility')drawLivingObject(c,item,camp,light.night,this.reduced.matches);
+      else if(item.type==='camp-resident'||item.type==='living-resident'||item.type==='living-facility')drawLivingObject(c,item,camp,light.night,this.reduced.matches);
       else if(item.type==='settlement-fence'||item.type==='settlement-gate')drawSettlement(c,item,source,light.night);
       else if(item.type==='story-prop')drawStoryProp(c,item,source.time,light.night,this.reduced.matches,g.player);
       else if (item.type === 'mechanical-cat') drawMechanicalCat(c,item,item.weapon,this.reduced.matches);

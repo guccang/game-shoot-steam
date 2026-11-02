@@ -4,12 +4,12 @@ import {bindGameSource} from '../core/game-source.js';
 
 const ROOTS = ['player', 'vehicle', 'enemies', 'boss', 'enemyBolts', 'hazards', 'projectiles',
   'shots', 'particles', 'numbers', 'drops', 'remnants', 'fx', 'realm', 'funnel', 'drone',
-  'mechanical', 'spider', 'magazines', 'arrivalScene', 'farmWork', 'livingActors', 'story', 'fireRescue'];
-const CHILDREN = ['bodyAnimation', 'recoil', 'assault', 'trail', 'nodes', 'mother', 'gun',
+  'mechanical', 'spider', 'magazines', 'arrivalScene', 'farmWork', 'livingActors', 'campActors', 'story', 'fireRescue'];
+const CHILDREN = ['motion', 'bodyAnimation', 'recoil', 'assault', 'trail', 'nodes', 'mother', 'gun',
   'module', 'companions', 'items', 'rivals', 'defenses', 'runtime', 'player', 'vehicle',
   'mechanical', 'spider', 'funnel', 'drone', 'elder', 'bus', 'scooter', 'actors', 'goddess', 'magazine', 'flight', 'stream', 'job'];
 // 悬停居民的离地高度与水平位置一起插值，头顶气泡不沿25Hz台阶升降。
-const VALUES = ['x', 'y', 'z', 'elevation', 'angle', 'heading', 'time', 'previewTime', 'idleTime', 'moveTime',
+const VALUES = ['x', 'y', 'z', 'elevation', 'angle', 'heading', 'time', 'clock', 'previewTime', 'idleTime', 'moveTime',
   'moveWeight', 'walkPhase', 'wheelPhase', 'rotor', 'age', 'life', 'reactionTime', 'kick', 'rise',
   'farmPoseTime', 'flash', 'swing', 'wingPhase', 'tankAge'];
 const ANGLES = new Set(['angle', 'heading', 'rotor']);

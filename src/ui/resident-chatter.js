@@ -1,4 +1,5 @@
 // 生活短句仅来自镜头中的居民，以头顶小气泡展示口头禅，不移动镜头或阻挡操作。
+import {campConversation,campResidentsVisible} from '../core/camp-routines.js';
 import {createCompactSpeech} from './compact-speech.js';
 import {sceneLayout} from './scene-layout.js';
 import {sceneResident} from './scene-resident.js';
@@ -16,6 +17,8 @@ export function createResidentChatter({game,root,renderer,random=Math.random}){
   const v=renderer.view;
   // 候门期间给猫头顶徽记留白，闲聊延后，不遮住当前交互与角色。
   if(!v||!livingForest(game)||game.state!=='playing'||game.arrivalPending||game.campDefense||game.mainlineSpeech||game.cottageEntry||mainlineObjective(game)?.clearingStage==='accept'||root.querySelector('dialog[open]')){current=null;next=game.time+5;speech.hide();return;}
+  const conversation=campResidentsVisible(game)?campConversation(game):null;
+  if(conversation){current=null;next=game.time+16;speech.show(conversation.actor,conversation.text,renderer,{minTop:180,bottom:150});return;}
   if(current&&game.time>=until)current=null;
   // 闲聊间隔内无需读取布局或遍历候选居民；到时仍按当前镜头重新选人。
   if(!current&&game.time<next){speech.hide();return;}

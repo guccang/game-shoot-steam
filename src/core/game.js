@@ -33,6 +33,7 @@ import {updateParking} from './parking.js';
 import {showDamageNumber} from '../combat/damage-numbers.js';
 import {startCampDefense,updateCampDefense,campDefenseKill,rescueCampDefense} from './camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
+import {updateCampRoutines} from './camp-routines.js';
 import { updateLivingWorld, acceptLivingRequest } from './living-world.js';
 import {syncStoryWorld} from './story-world.js';
 import {storyDeliveryReady} from './story-definition.js';
@@ -211,7 +212,7 @@ export class Game {
   switchMap(id) { return !this.arrivalCinematic && travelMap(this, id); }
   // 清空永久成长并重建战场，回到首次开始界面，不沿用死亡后的保留进度规则。
   resetProgress() {
-    this.livingActors=null;this.livingBattle=null;
+    this.livingActors=null;this.livingBattle=null;this.campActors=null;this.campRoutine=null;
     this.story = null;
     this.storyForest = null;
     this.realm = null;
@@ -828,6 +829,7 @@ export class Game {
     updateParkingVisitors(this,dt);
     // 驾驶者先停稳入位，避免靠近工坊时主线对白抢走倒车控制。
     if(updateParking(this,dt,input))return;
+    updateCampRoutines(this,dt);
     if(!outdoorBusy(this)&&!this.campDefense&&this.parking?.phase!=='waiting'&&updateMainline(this,dt))return;
     // 在下一帧边界归还场景，避免致命伤害遍历中替换敌人、载具和森林对象。
     if(this.realm?.phase==='lost'&&readyStoryExcursion(this)){this.leaveRealm();return;}

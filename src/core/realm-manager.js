@@ -33,7 +33,7 @@ import { capturePatrol } from './patrol-session.js';
 import { validateRealms } from '../progression/realm-progress.js';
 import { captureRealmVehicles, restoreRealmVehicles, restoreForestVehicleSelection } from './realm-vehicles.js';
 
-const SHARED = new Set(['livingActors','livingBattle','livingPersist','livingWeather','livingPhase','livingPreview','progress', 'random', 'onEvent', 'profiler', 'viewport', 'arrivalView', 'realm', 'forestState', 'forestPatrol']);
+const SHARED = new Set(['campActors','campRoutine','livingActors','livingBattle','livingPersist','livingWeather','livingPhase','livingPreview','progress', 'random', 'onEvent', 'profiler', 'viewport', 'arrivalView', 'realm', 'forestState', 'forestPatrol']);
 // 随机洗牌后取三个不同祝福，避免固定顺序造成每局相同构筑。
 function offers(game) {
   const pool = [...ROGUE_BLESSINGS];

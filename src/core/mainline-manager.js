@@ -1,3 +1,4 @@
+import {campResidentsVisible,campResidents,campTalkSite} from './camp-routines.js';
 import {taskResourcePath,taskResourceStock,taskCropStock} from '../progression/task-resources.js';
 import {woodTaskStatus} from './wood-task-status.js';
 import {cleanupEntries} from './load-cleanup.js';
@@ -149,7 +150,7 @@ export function mainlineObjective(game,{ignoreTracking=false}={}){
  }
  // 清缴前置只影响清缴步骤，不能遮住新增升级步骤的工坊和角色入口。
  const canTarget=!['clearing','patrol-boss'].includes(step?.operation?.type)||!task.targetWhen||mainlineCondition(game,task.targetWhen);
- const key=phase==='doing'&&canTarget?(step?.navigation||task.target||task.site):task.site,site=MAINLINE_SITES[key];
+ const key=phase==='doing'&&canTarget?(step?.navigation||task.target||task.site):task.site,site=phase==='doing'?MAINLINE_SITES[key]:campTalkSite(game,task);
  if(phase==='doing'&&['clearing','patrol-boss'].includes(step?.operation?.type))return {task,phase,...clearingObjective(game)};
  return {task,phase,key,site,navigation:phase!=='doing'||step?.navigation!==false,label:phase==='meet'?'去找'+MAINLINE_NPCS[task.npc].name:phase==='report'?(task.seedDelivery?'交付种子 · ':'领取奖励 · ')+MAINLINE_NPCS[task.npc].name:!canTarget?'接取 Boss 清缴任务':step?.label||task.text};
 }
@@ -178,18 +179,16 @@ export function recordMainlineEvent(game,type){
 }
 // 营地伙伴常驻并沿用真实待机帧；关闭任务、修复前置和通关都不会让人物消失。
 export function mainlineActors(game){
- if(!game.progress?.mainline||game.mapId!=='forest'||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense||game.workshopTrial)return [];
- const task=mainlineTask(game);
- return Object.entries(MAINLINE_NPCS).map(([id,npc])=>{
-  // 当前委托保留原交谈锚点，其他伙伴在各自岗位；追踪开关只控制指引和对白。
-  const site=MAINLINE_SITES[task?.npc===id?task.site:npc.home];
+ if(!campResidentsVisible(game))return [];
+ return game.campActors?campResidents(game):Object.entries(MAINLINE_NPCS).map(([id,npc])=>{
+  const task=mainlineTask(game),site=MAINLINE_SITES[task?.npc===id?task.site:npc.home];
   return {...site,type:'story-prop',kind:'mainline-npc',sceneNpcId:'mainline:'+id,actorHero:npc.hero,campResident:true};
  });
 }
 // 在安全的指定地点触发，远程点击任务卡不能隔空完成剧情或领资源。
 export function canTalkMainline(game){
  const o=mainlineObjective(game);return !!o&&!o.restoration&&!o.cottageRest&&game.mapId===MAINLINE_SITES[o.task.site].mapId&&game.state==='playing'&&
-  worldDistance(game.player,MAINLINE_SITES[o.task.site])<=GAMEPLAY_VALUES.mainline.interactionRadius&&!game.boss&&!game.player.arena&&!game.enemies.some(e=>e.hp>0&&worldDistance(game.player,e)<GAMEPLAY_VALUES.mainline.safeEnemyDistance);
+  worldDistance(game.player,campTalkSite(game,o.task))<=GAMEPLAY_VALUES.mainline.interactionRadius&&!game.boss&&!game.player.arena&&!game.enemies.some(e=>e.hp>0&&worldDistance(game.player,e)<GAMEPLAY_VALUES.mainline.safeEnemyDistance);
 }
 // 资源和完成记录写入同一候选存档，失败保持钱包与任务原样，可在原地重试。
 export function completeMainline(game){
