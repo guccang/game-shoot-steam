@@ -36,3 +36,9 @@ src/ui/vehicle-load-hud.js、src/ui/vehicle-controls.js、src/rendering/parked-v
 - 人工同屏复核：320-day-0.5.png、390-night-1.1.png、model-5.png、empty-reloading.png。车型角度与正式绘制器一致，填充沿实际轮廓上升，夜间红棕满载警示与独立数字可读。生命条、人物、场景和种地入口保留；未修改世界碰撞、车辆动作或建筑通行。
 - 证据：output/playwright/vehicle-hud-load/下的截图、states-result.txt及video/录制；运行时验证无页面脚本异常。原始result.txt保留初次失败记录，不作为通过依据。
 - 资源预算：只保留两张小画布，透明边界扫描只在车型、告警等级或上下文恢复变化时执行，逐帧仅更新裁剪与数字。无需新增图集／PNG、外部字体或独立动画计时器；静态HUD不涉及动作帧重制。
+
+## 2026-11-02：坦克与左侧弹药仪表对齐
+
+目标及参考：按本轮用户截图，将HP栏坦克圆环中心与左侧弹药圆环中心对齐。原载具32×32图形贴44×44按钮顶部，中心比左侧高6px；本次仅下移图形6px，保持按钮、圆内水位、SVG、弹药数和警示独立分层，沿用森林绿及奶油底色。保留44px触控、换弹进度、步行与驾驶操作，无新增图片、缓存或计时器，不涉及世界碰撞、通行和动作。正式入口为src/styles/ui-foundation.css，designCriterion为vehicle-hud-load。
+
+验收通过：320×568与390×844手机昼夜、步行和驾驶共8组真实浏览器布局检查，两个圆环中心高度差均为0；按钮保持44×44，弹药数字未越界或与坦克图形重叠，驾驶状态及数字正常，页面异常0。实际复核320-day-walking.png与390-night-driving.png；截图与本次验证脚本位于output/playwright/vehicle-icon-align/。仅CSS位置调整，无逻辑改动，未扩大运行全量测试。
