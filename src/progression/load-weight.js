@@ -19,6 +19,11 @@ export function catLoad(game){
  const weapon=total('weapon'),ammo=total('ammo'),crops=total('crop'),reserve=ammunitionMass(p.supplies?.hand),weight=Math.round(entries.reduce((n,r)=>n+r.weight,0)*1e6)/1e6,items=weight-weapon-ammo-crops;
  return {body:LOAD_RULES.catMass[p.hero]||40,weapon,ammo,crops,reserve,items,weight,capacity:LOAD_RULES.catCapacity,overloaded:weight>=LOAD_RULES.catCapacity};
 }
+// 达到容量即无法移动，自动收弹按整发预留边界，不把背包装到停步。
+export function catAmmoRoom(game,key){
+ const mass=AMMO_TYPES[key]?.mass;if(!mass)return 0;
+ const load=catLoad(game);return Math.max(0,Math.floor((load.capacity-load.weight-1e-6)/mass));
+}
 // 车辆自重包含底盘、发动机增重、附加装甲和车内货物；载荷含驾驶员及背包。
 export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.vehicle.index&&game.vehicle.active,progress=game.progress}={}){
  const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cat=catLoad(progress===game.progress?game:Object.assign(Object.create(game),{progress})),cargo=treasureCargoMass(progress,index)+cropInventoryMass(b.cargo)+(b.wood||0)*itemDefinition('material:wood').mass,armor=b.plates*armorPlateMass(index),engineMass=engine.fixedMass??spec.mass*engine.mass;

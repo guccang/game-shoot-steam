@@ -4,7 +4,8 @@ import {treasurePartReason} from './treasure.js';
 import {AMMO_TYPES,SUPPLY_ITEMS,GUN_MASSES,ammoKind,vehicleFaults} from '../config/supplies.js';
 import {VEHICLE_ARMAMENTS,VEHICLE_WEAPONS} from '../config/vehicle-armaments.js';
 import {validateProgress} from '../progression/progress.js';
-import {catLoad,vehicleLoad} from '../progression/load-weight.js';
+import {catLoad,catAmmoRoom,vehicleLoad} from '../progression/load-weight.js';
+import {catAmmoWarehouse} from '../combat/supply-ammo.js';
 import {capturePatrol} from './patrol-session.js';
 import {personalFleet} from './vehicle-repair.js';
 import {vehicleLocations} from './vehicle-location.js';
@@ -38,21 +39,27 @@ export function tradeSupply(game,{kind,id,batches=1,craft=false,target,loadConfi
  if(kind==='ammo'&&!rule.targets.includes(target))return {ok:false,message:'这是载具弹药，请在载具弹药页补给到货舱。'};
  if(target==='vehicle'&&(kind!=='ammo'||!supplyVehicleNearby(game)))return {ok:false,message:'请把当前载具停到弹药铺门前再装载。'};
  const next=candidate(game),stock=kind==='item'?next.supplies.items:target==='hand'?next.supplies.hand:next.supplies.vehicles[game.vehicle.index],amount=(rule.pack||1)*batches;
- if(stock[id]+amount>(kind==='item'?999:100000))return {ok:false,message:'库存已满。'};
+ // 猫猫弹药按背包可用负荷拆分，多出的部分直接存入当前自有载具，制作同样遵守此规则。
+ const storage=kind==='ammo'&&target==='hand'&&catAmmoWarehouse(game)?{hand:Math.min(amount,catAmmoRoom(game,id),100000-stock[id]),vehicle:0,hull:game.vehicle.index}:null;
+ if(storage)storage.vehicle=amount-storage.hand;
+ if(stock[id]+(storage?storage.hand:amount)>(kind==='item'?999:100000)||storage&&next.supplies.vehicles[storage.hull][id]+storage.vehicle>100000)return {ok:false,message:'库存已满。'};
  const coins=craft?0:rule.coins*batches,wood=craft?rule.wood*batches:0,parts=craft?rule.parts*batches:0;
  if(next.coins<coins||next.wood<wood||next.materials.parts<parts)return {ok:false,message:'金币或制作材料不足。'};
- next.coins-=coins;next.wood-=wood;next.materials.parts-=parts;stock[id]+=amount;
+ next.coins-=coins;next.wood-=wood;next.materials.parts-=parts;stock[id]+=storage?storage.hand:amount;
+ if(storage)next.supplies.vehicles[storage.hull][id]+=storage.vehicle;
  // 使用候选库存和真实弹匣计算负重；停在店旁的车辆也预留驾驶员与背包。
  const snapshot=Object.create(game);snapshot.progress=next;
- const before=target==='vehicle'?vehicleLoad(game,game.vehicle.index,{driver:true}):catLoad(game),after=target==='vehicle'?vehicleLoad(snapshot,game.vehicle.index,{driver:true}):catLoad(snapshot);
- const load={target,hull:target==='vehicle'?game.vehicle.index:null,before:before.weight??before.payload,after:after.weight??after.payload,capacity:after.capacity};
+ const loadTarget=storage?.vehicle>0?'vehicle':target;
+ const before=loadTarget==='vehicle'?vehicleLoad(game,game.vehicle.index,{driver:true}):catLoad(game),after=loadTarget==='vehicle'?vehicleLoad(snapshot,game.vehicle.index,{driver:true}):catLoad(snapshot);
+ const load={target:loadTarget,hull:loadTarget==='vehicle'?game.vehicle.index:null,before:before.weight??before.payload,after:after.weight??after.payload,capacity:after.capacity};
  if(load.after>=load.capacity){
   // 确认只适用于这一商品、价格、去向及重量，库存变化后不能沿用旧确认。
-  const confirmation=JSON.stringify({kind,id,batches,craft,amount,coins,wood,parts,...load});
-  if(loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,name:rule.name,amount,unit:kind==='ammo'?'发':'个',message:'补给后载荷将满，确认后才能继续。'};
+  const confirmation=JSON.stringify({kind,id,batches,craft,amount,coins,wood,parts,storage,...load});
+  if(loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,storage,name:rule.name,amount,unit:kind==='ammo'?'发':'个',message:'补给后载荷将满，确认后才能继续。'};
  }
  if(kind==='ammo'&&!craft&&id==='light'&&target==='hand')recordLogisticsLesson(next,'ammoPurchased');
- return commit(game,next,`${rule.name} +${amount}，已放入${target==='vehicle'?'当前载具货舱':'猫猫背包'}并计入对应负重。`);
+ const destination=storage?.vehicle>0?`猫猫背包 ${storage.hand} 发、当前载具仓库 ${storage.vehicle} 发`:(target==='vehicle'?'当前载具货舱':'猫猫背包');
+ return commit(game,next,`${rule.name} +${amount}，已放入${destination}并计入对应负重。`);
 }
 // 维修包只用于尚未完全损坏的部件；不恢复车体HP，也不能复活报废车。
 export function useSupplyItem(game,id){
