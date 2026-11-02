@@ -26,3 +26,25 @@
 证据为 `output/playwright/story-scene-continuity/` 中 `chapter-after-{day,night}.png`、`ending-after-{day,night}.png`、`mainline-after-{day,night}.png`、`result.txt`、`mainline-visible-result.txt` 及录像；维修证据在 `output/playwright/repair-parking-display/`。主线额外截图仅补拍奖励底板关闭后的可见人物，不重复运行其他已通过流程。
 
 资源预算：无新增位图、图集、视频、动画时钟或碰撞实体，缓存仅保存当前出场和仍在视野中的 NPC 绘制字段；人物沿用正式连续待机，跨场景和离开区域时释放。美术精修不适用于本轮逻辑表现修复。
+
+
+## 2026-11-02：自由探索时营地伙伴常驻
+
+问题：探索节奏调整后，`mainlineActors`仍用任务目标是否可见决定人物是否生成。主线停止追踪后，只剩镜头内的临时留驻缓存，离开再回来或刷新就不再出现。
+
+目标与保留项：青芽、阿栎师傅、苔轮、小灯分别常驻回信驿、武器工坊、载具工坊与时空塔附近；当前委托仍使用原交谈坐标。人员存在与任务箭头、自动对白、修复前置及通关状态分开。原有六位生活居民、南侧作息与邻里委托保持原逻辑，不新增强制任务。
+
+造型与交付：只修复正式人物目录和缓存生命周期，不新增美术资源。继续使用原角色身份、俯视比例、脚底锚点、连续待机帧与正式深度排序。四个常驻岗位复用现有任务坐标；没有新增碰撞、通行边界、纹理、视频或动作。位图精修和新步行动作不适用。主线专属人物在室内、剧情及其他活动中隐藏，回森林重新从正式目录供给；临时剧情人物仍按原连续性规则留驻。
+
+入口：`src/config/mainline.js#MAINLINE_NPCS`、`src/core/mainline-manager.js#mainlineActors`、`src/rendering/scene-npc-continuity.js#sceneNpcObjects`；对应 `designCriterion: scene-npc-continuity`。
+
+验收结果：通过。
+
+- `tests/camp-npc-presence.test.mjs` 4项、原连续性3项、探索节奏10项，共17项针对性测试通过。
+- `tests/camp-npc-presence-browser.cjs` 通过正式对白按钮交付、关闭奖励，再检查4位伙伴×320/390手机宽度×昼夜共16组正式场景。
+- 人工查看青芽白天、苔轮夜晚、小灯短屏截图：人物可见，原比例、脚底及层级保持；人物没有恢复已关闭的主线卡、对白或操作高亮。
+- 离开营地再返回及保存刷新后仍有4位伙伴，`trackingPaused`仍为true；实时模拟继续运行、6位生活居民保留，人物帧缓存从2增至33且未超过既有40帧上限。浏览器pageerror为0。
+- 资源预算新增位图/视频/画布类型为0。没有新增需要单独验证的角色动作或世界障碍物。
+- 证据：`output/playwright/camp-npc-presence/{mint,oak,wheel,lumi}-{320,390}-{day,night}.png`与`live-after-reload.png`。默认4175端口被其他服务使用，本轮以4176隔离服务验证工作树。手机检查为浏览器模拟，未宣称物理设备验证。
+
+无需新存档版本，不重置本轮修复前的游戏进度。此结论仅覆盖NPC消失回归和营地常驻，不代表新增日常作息系统。

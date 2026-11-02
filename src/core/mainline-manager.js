@@ -176,10 +176,15 @@ export function recordMainlineEvent(game,type){
  if(!game.story&&!game.realm&&['wave-clear','boss-ready'].includes(type))markMainline(game,'wave');
  if(['funnel-config','mechanical-config','spider-config'].includes(type))markMainline(game,'config');
 }
-// 当前教学人物复用正式故事猫绘制器，不保存碰撞或战斗实体。
+// 营地伙伴常驻并沿用真实待机帧；关闭任务、修复前置和通关都不会让人物消失。
 export function mainlineActors(game){
- const o=mainlineObjective(game);if(!o||o.restoration||o.cottageRest||game.mapId!==MAINLINE_SITES[o.task.site].mapId)return [];
- return [{...MAINLINE_SITES[o.task.site],type:'story-prop',kind:'mainline-npc',sceneNpcId:'mainline:'+o.task.npc,actorHero:MAINLINE_NPCS[o.task.npc].hero}];
+ if(!game.progress?.mainline||game.mapId!=='forest'||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense||game.workshopTrial)return [];
+ const task=mainlineTask(game);
+ return Object.entries(MAINLINE_NPCS).map(([id,npc])=>{
+  // 当前委托保留原交谈锚点，其他伙伴在各自岗位；追踪开关只控制指引和对白。
+  const site=MAINLINE_SITES[task?.npc===id?task.site:npc.home];
+  return {...site,type:'story-prop',kind:'mainline-npc',sceneNpcId:'mainline:'+id,actorHero:npc.hero,campResident:true};
+ });
 }
 // 在安全的指定地点触发，远程点击任务卡不能隔空完成剧情或领资源。
 export function canTalkMainline(game){

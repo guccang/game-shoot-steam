@@ -11,7 +11,8 @@ export function sceneNpcObjects(state,game,objects,view){
  state.mapId=game.mapId;state.epoch=epoch;state.storyId=storyId;
  if(hidden)return objects;
  const props=objects.filter(o=>!o.sceneNpcId),active=new Map(objects.filter(o=>o.sceneNpcId).map(o=>[o.sceneNpcId,o]));
- for(const [id,actor] of state.actors){if(!active.has(id)&&visibleBodies([actor],view,140).length===0)state.actors.delete(id);}
+ // 常驻营地人物由正式世界目录供给；切入剧情时撤下，不把岗位人物缓存进另一场景。
+ for(const [id,actor] of state.actors){if(!active.has(id)&&(actor.campResident||visibleBodies([actor],view,140).length===0))state.actors.delete(id);}
  for(const [id,actor] of active)state.actors.set(id,{...actor});
  return [...props,...state.actors.values()];
 }
