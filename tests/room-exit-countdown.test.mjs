@@ -16,9 +16,9 @@ for(const kind of ['cottage','weapons','vehicle']){
   Object.assign(g.player,layout.exit);step(g,.95);assert.ok(g.cottage);assert.equal(playerActionCountdown(g).wait,1);assert.equal(playerActionCountdown(g).icon,'exit');assert.equal(nearbyInteraction(g),null);
   step(g,.05);assert.equal(g.cottage,null);assert.deepEqual({x:g.player.x,y:g.player.y},outside);step(g,2);assert.equal(g.cottage,null);
  });
- test(kind+'：移开重置，暂停与休息页面不推进',()=>{
+ test(kind+'：移开重置，暂停不推进',()=>{
   const g=scene(kind),layout=interiorLayout(g.cottage);Object.assign(g.player,layout.exit);step(g,.4);
-  g.state='paused';step(g,2);assert.ok(g.cottage.exitElapsed<.41);g.state='playing';g.cottage.restOpen=true;step(g,2);assert.ok(g.cottage.exitElapsed<.41);assert.equal(playerActionCountdown(g),null);g.cottage.restOpen=false;
+  g.state='paused';step(g,2);assert.ok(g.cottage.exitElapsed<.41);g.state='playing';
   step(g,.5,{x:0,y:-1});assert.equal(g.cottage.exitElapsed,0);assert.equal(playerActionCountdown(g),null);Object.assign(g.player,layout.exit);step(g,.95);assert.ok(g.cottage);step(g,.05);assert.equal(g.cottage,null);
  });
 }

@@ -9,8 +9,6 @@ import {entryFacility,restorationStatus} from './town-restoration.js';
 // 附近交互统一选取最近目标，只返回点击意图，不在帧更新中执行。
 import {BUILDING_ENTRIES,BUILDING_ENTRY} from '../config/building-entries.js';
 import {canInspectBuilding} from './building-entry.js';
-import {COTTAGE} from '../config/cottage.js';
-import {interiorLayout} from '../config/workshop-interiors.js';
 import {canRequestParking,nearestParkingSpot} from './parking.js';
 import {canRequestFireParking} from './fire-rescue.js';
 import {worldDistance} from '../world/coordinates.js';
@@ -33,11 +31,7 @@ export function nearbyInteraction(game){
  if(canRequestFireParking(game))return {id:'fire-parking',type:'fire-parking',label:'消防车入库'};
  const room=game.cottage;
  if(room){
-  if(room.sleep||room.restOpen)return null;
-  const layout=interiorLayout(room),p=game.player;
-  if(Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius)return null;
-  if(!room.floor&&(!room.kind||room.kind==='cottage')&&Math.hypot(p.x-COTTAGE.bed.x,p.y-COTTAGE.bed.y)<=COTTAGE.bedRadius)return {id:'rest',type:'rest',label:'休息一下'};
-  // 售货员使用自身唯一点击区，避免附近按钮盖住角色。
+  // 床边和售货员使用一秒候停，不再叠加点击按钮。
   return null;
  }
  // 仓库在室外直接打开格子存取，驾驶时也无需下车入屋。

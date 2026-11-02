@@ -6,7 +6,7 @@ import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
 
 // 店内只购买，家中只布置；弹窗暂停可提交，睡眠和屋外不能操作。
-function available(game,shopping=false){return game.cottage&&(shopping?game.cottage.kind==='furniture':(!game.cottage.kind||game.cottage.kind==='cottage'))&&!game.cottage.sleep&&!game.cottage.restOpen&&['playing','paused'].includes(game.state);}
+function available(game,shopping=false){return game.cottage&&(shopping?game.cottage.kind==='furniture':(!game.cottage.kind||game.cottage.kind==='cottage'))&&!game.cottage.sleep&&['playing','paused'].includes(game.state);}
 // 候选存档携带室外安全位置，避免刷新后出生在小屋局部坐标。
 function commit(game,change,shopping=false){
  if(!available(game,shopping))return {ok:false,message:shopping?'请进家具小铺，与售货员交谈购买。':'请先回到小屋，再打开装扮。'};

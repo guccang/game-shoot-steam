@@ -46,3 +46,15 @@
 - 正式入口：`src/rendering/player-action-countdown.js#drawPlayerActionCountdown`、`src/rendering/action-countdown.js#drawActionCountdown`；采样 `src/rendering/visual-review.js#inspectBuildingEntry`。
 - designCriterion：`building-entry-countdown`，绑定 `visual-contract.json#buildingEntryCriterion`。
 - 结论：通过。确认后的版本为本任务分支提交，以上正式运行截图作为本轮参考；建筑与猫资源沿用既有版本。
+
+
+## 2026-11-02：床前与售货员一秒交互
+
+- 范围：复用既有 68×34 Canvas 候停徽记、床和告示牌图标，不增加图片、角色或家具资产。床前站定 1 秒自动睡到次日清晨；售货员柜台前站定 1 秒打开原服务。
+- 空间：床前使用既有床边判定；售货员以柜台前沿外 26 单位、右侧偏移 55 单位为候停中心（避开入室出生点），半径 28，离开 44 单位解除重复触发锁，不改变碰撞和通道。
+- 层级与动作：徽记保持最终屏幕层，床前固定在床侧、售货员徽记固定在柜台侧，保留猫猫身体动画和所有原服务；正式固定步长驱动进度，移动取消，暂停冻结，醒来/关闭后不重触发。
+- 预算：无新增纹理、图片、缓存或 imagegen 请求；本轮无需 PNG 精修。
+- 验收通过，designCriterion：`camp-home-parking`。42 项针对性逻辑检查覆盖一秒门槛、移动取消、暂停冻结、床边防重睡、保存失败、楼梯/出口及 12 类营业房候停；床前 320 夜晚/390 白天真实行走、7 类商店真实行走开关服务均通过。
+- 正式绘制入口：`src/rendering/player-action-countdown.js` → `drawActionCountdown`。证据：`output/playwright/room-dwell/bed-320-night.png`、`bed-390-day.png`、`seller-seed.png`、`seller-weapons.png`、`seller-vehicle.png`、`seller-cat-home.png`、`seller-furniture.png`；不改角色动作或碰撞，实测可走到床和柜台，不用点击入睡或点击售货员。
+- 旧休息弹窗、时间选项、售货员透明点击层和相关 CSS 已移除；原服务页负责真实购买，进入/关闭保持原暂停与恢复机制。
+- 额外短屏触控验证：`seller-320-night.png` 夜间柜台徽记清晰；轻触关闭种子商店后恢复 playing，摇杆向下实际移动 73.6 单位，无卡死或重弹。

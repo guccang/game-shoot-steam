@@ -1,13 +1,20 @@
-// 室内展品点击只返回打开意图，交易、升级和暂停继续交给正式工坊页面。
+// 售货员候停使用固定逻辑步长；只返回服务意图，购买和暂停仍交给正式页面。
+import {interiorShopkeeper,interiorCounter,SHOPKEEPER_ENTRY as C} from '../config/workshop-interiors.js';
 
-// 距离从展品底座外缘计算，支持柜前及两侧靠近，不扩大实体碰撞。
-export function workshopDisplayDistance(player,item){
- return Math.hypot(Math.max(0,Math.abs(player.x-item.x)-item.width/2),Math.max(0,Math.abs(player.y-item.y)-item.height/2));
+// 柜台前沿之外保留完整角色脚底空间，避免候停点落入家具碰撞。
+export function shopkeeperApproach(room){const seller=interiorShopkeeper(room),counter=interiorCounter(room);return seller&&counter?{x:seller.x+55,y:counter.y+counter.height/2+26}:null;}
+// 首次接近只建立计时，移动清零；关闭页面后留在原处不会再次打开。
+export function updateWorkshopDisplayEntry(game,dt,input={x:0,y:0},dialogOpen=false){
+ const room=game.cottage;if(!room)return null;
+ const site=shopkeeperApproach(room);
+ if(!site){room.displayEntry=null;room.displayEntryLatch=false;return null;}
+ if(game.state!=='playing'||dialogOpen)return null;
+ const distance=Math.hypot(game.player.x-site.x,game.player.y-site.y);
+ if(distance>C.releaseRadius)room.displayEntryLatch=false;
+ if(room.sleep||game.player.hp<=0||distance>C.radius||room.displayEntryLatch||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>C.stopSpeed){room.displayEntry=null;return null;}
+ const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;
+ room.displayEntry=room.displayEntry?{...room.displayEntry,elapsed:room.displayEntry.elapsed+tick}:{elapsed:0,site};
+ if(room.displayEntry.elapsed+1e-9<C.wait)return null;
+ room.displayEntry=null;room.displayEntryLatch=true;room.exitElapsed=0;
+ return {kind:room.kind,index:undefined};
 }
-// 保留展品点击接口，清理旧版候停数据。
-export function latchWorkshopDisplayEntry(game,item){
- if(!game.cottage)return;
- game.cottage.displayEntry=null;game.cottage.displayEntryLatch={id:item.id,index:item.index};
-}
-// 清除旧版候停数据；展品只能由玩家主动点击查看。
-export function updateWorkshopDisplayEntry(game){if(game.cottage){game.cottage.displayEntry=null;game.cottage.displayEntryLatch=null;}return null;}

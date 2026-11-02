@@ -17,18 +17,3 @@
 #cottage-controls #cottage-exit{position:absolute;padding:0;border:0;background:transparent;box-shadow:none;transform:none;}
 #cottage-controls #cottage-exit:focus-visible{outline:3px solid #f7e5a6;outline-offset:2px;}
 #game-frame .parked-vehicle-hit{z-index:6}
-/* 休息选项沿用小屋的奶油色和森林绿，原生模态圈定焦点，窄屏按钮整行排列。 */
-#cottage-rest-dialog{box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:24px;pointer-events:auto;background:#f4e6bc;color:#3e614b;border:2px solid #6c805e;border-radius:18px;text-align:center}
-#cottage-rest-dialog::backdrop{background:#203c325c}
-#cottage-rest-dialog h2{margin:8px 0;font-size:23px}
-#cottage-rest-dialog small{font-size:12px;color:#687c58}
-#cottage-rest-dialog p{color:#526c4c;line-height:1.6;margin:0 0 18px}
-#cottage-rest-dialog .cottage-rest-options{display:grid;gap:10px}
-#cottage-rest-dialog button{min-height:46px;width:100%;font:inherit;border-color:#8b9b73;background:#fff7df}
-#cottage-rest-dialog #cottage-sleep-phase{background:#42674b;color:#fff5d5;border-color:#42674b}
-#cottage-rest-dialog #cottage-rest-cancel{background:transparent;border-color:transparent}
-#cottage-rest-dialog button:focus-visible{outline:3px solid #b58c45;outline-offset:2px}
-
-/* 标题和时间分两行，整块仍为同一个可点击按钮。 */
-#cottage-rest-dialog button span{display:block}
-#cottage-rest-dialog button small{display:block;margin-top:5px;font-size:13px;line-height:1.4;color:inherit;font-variant-numeric:tabular-nums}

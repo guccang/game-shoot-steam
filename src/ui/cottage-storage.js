@@ -32,7 +32,7 @@ export function createCottageStorage({game,renderer,root,panel,dialogs,input,onC
  dialogs.register(dialog.id,{focusId:'weapon-rack-close',onOpen:renderContent});
  // 先核验操作距离，再开面板或换楼层；点击远处物件只提示靠近。
  function activate(item){
-  if(game.state!=='playing'||game.cottage?.sleep||game.cottage?.restOpen||root.querySelector('dialog[open]'))return;
+  if(game.state!=='playing'||game.cottage?.sleep||root.querySelector('dialog[open]'))return;
   input.reset();game.cottage.exitElapsed=0;
   if(!accessibleWeaponRack(game,item.uid)){game.cottage.storageNotice='请靠近武器架，再点击存取。';return;}
   game.cottage.storageNotice='';uid=item.uid;message='';dialogs.open(dialog.id);

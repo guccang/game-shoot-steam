@@ -21,7 +21,7 @@ export function gameplayState(game){
   defense:pick(game.campDefense,['gateId','phase','wave','cleared','kills','waveKills','gateHp','bossHp','bossDefeated','reason','error']),
   fire:{active:!!game.fireActive,...pick(game.fireRescue,['phase','remaining','water','kills','refills','reason'])},
   farm:{work:pick(game.farmWork,['tool','job','autoCombat']),...pick(p.farm,['xp','harvested','watered','planted','dug','seeds','inventory']),plots:p.farm?.plots?.slice(0,32).map(plot=>pick(plot,['id','mapId','crop','watered','readyAt'])),plotCount:p.farm?.plots?.length},
-  living:{battle:game.livingBattle,requests:p.living?.requests,calendar:pick(p.living?.calendar,['day','elapsed']),cottage:pick(game.cottage,['kind','sleep','restOpen'])},
+  living:{battle:game.livingBattle,requests:p.living?.requests,calendar:pick(p.living?.calendar,['day','elapsed']),cottage:pick(game.cottage,['kind','sleep','restElapsed','displayEntry'])},
   restoration:pick(p.restoration,['repaired','cottageRested','build','gathered']),
   resources:{...pick(p,['coins','wood']),materials:p.materials,campLevel:p.campLevel},
  };

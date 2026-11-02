@@ -38,7 +38,7 @@ function enterInterior(game,kind,parkingEntrance=null,mountedCountdown=false){
  // 驾驶入屋只能由完整倒计时提交；先在门口留下真实车辆，再切换室内坐标。
  if(game.vehicle.active&&(!mountedCountdown||!parkDoorVehicle(game)))return false;
  const outside=nearest(layout.outside||{x:C.door.x+50,y:C.door.y+30},game.player);
- game.cottage={kind,floor:0,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'点击售货员，查看服务。',sleep:null,stairsElapsed:null,stairsLatch:false,exitElapsed:0,restElapsed:0,restOpen:false,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
+ game.cottage={kind,floor:0,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'在售货员柜台前站定1秒，查看服务。',sleep:null,stairsElapsed:null,stairsLatch:false,exitElapsed:0,restElapsed:null,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
  Object.assign(game.player,layout.spawn,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
 }
 // 门槛附近按停驻车体校验空地，向门外小幅避让墙体；失败保留驾驶状态和原位置。
@@ -60,15 +60,16 @@ export function updateCottage(game,dt,input){
   if(game.state!=='playing')return true;
   const room=game.cottage,p=game.player,layout=interiorLayout(room);
   if(room.sleep){room.stairsElapsed=null;room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
-  // 选择休息时间时不继续走动或推进出口计时，原生弹窗负责圈定操作焦点。
-  if(room.restOpen){room.stairsElapsed=null;p.vx=p.vy=0;updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
   const before={x:p.x,y:p.y},length=Math.max(1,Math.hypot(input.x,input.y)),speed=115*movementLoadFactor(game),dx=input.x/length*speed*dt,dy=input.y/length*speed*dt;
   if(!cottageBlocked(p.x+dx,p.y,game))p.x+=dx;if(!cottageBlocked(p.x,p.y+dy,game))p.y+=dy;
   p.vx=(p.x-before.x)/Math.max(dt,.001);p.vy=(p.y-before.y)/Math.max(dt,.001);
   updateCatMotion(p.bodyAnimation,dt,Math.hypot(p.vx,p.vy),true);game.time+=dt;
   if(updateCottageStairs(game,dt,input))return true;
-  // 床边仍主动点击；进入出口范围累计一秒，移开归零，入室出生点不触发。
-  room.restElapsed=0;
+  // 床前站定一秒直接入睡，移动取消，醒来须先离开床边才能再次触发。
+  const nearBed=(!room.kind||room.kind==='cottage')&&!cottageFloor(room)&&Math.hypot(p.x-C.bed.x,p.y-C.bed.y)<=C.bedRadius;
+  if(!nearBed)room.bedLatch=false;
+  if(!nearBed||room.bedLatch||p.hp<=0||Math.hypot(input.x,input.y)>.01)room.restElapsed=null;
+  else {const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.restElapsed=room.restElapsed==null?0:room.restElapsed+tick;if(room.restElapsed+1e-9>=C.bedWait){sleepInCottage(game);return true;}}
   room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)===1)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
   if(room.exitElapsed+1e-9>=layout.exitWait)leaveCottage(game);
   return true;
@@ -88,21 +89,10 @@ export function updateCottage(game,dt,input){
  game.cottageEntryKind=layout.id;game.cottageEntry=(game.cottageEntry||0)+dt;
  return game.cottageEntry+1e-9>=layout.wait?enterInterior(game,layout.id,null,true):false;
 }
-// 床边主动点击只打开休息选项，仍需选择睡眠目标。
-export function openCottageRest(game){
- const room=game.cottage;
- if(!room||cottageFloor(room)!==0||room.kind&&room.kind!=='cottage'||room.sleep||room.restOpen||game.state!=='playing'||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
- room.restOpen=true;room.restResult='';game.player.vx=game.player.vy=0;return true;
-}
 // 出门恢复世界坐标；离开门口后才重新允许站立倒计时。
 export function leaveCottage(game){
  if(!game.cottage||game.cottage.sleep||game.state!=='playing'||game.cottage.kind==='cottage'&&cottageFloor(game.cottage)===1)return false;
  const kind=game.cottage.kind||'cottage';Object.assign(game.player,game.cottage.outside,{vx:0,vy:0});game.cottage=null;game.cottageDoorLatch=kind==='cottage'?true:kind;game.onEvent('cottage-change');return true;
-}
-// 取消只结束当前选择，不推进历法；留在床边时不反复弹出同一选项。
-export function cancelCottageRest(game){
- const room=game.cottage;if(!room?.restOpen)return false;
- room.restOpen=false;room.restElapsed=0;room.bedLatch=true;room.notice='想休息时，点击床边的休息按钮。';return true;
 }
 // 预告和实际休息共用同一目标日期，不修改传入的正式历法。
 export function cottageSleepTarget(calendar,mode){
@@ -110,15 +100,16 @@ export function cottageSleepTarget(calendar,mode){
  advanceLivingCalendar(target,mode==='morning'?LIVING_DAY_MS-calendar.elapsed:calendarView(calendar).remaining);
  return target;
 }
-// 仅床边明确选择可睡眠，连点不会重复推进，打开休息选项本身不改变日期。
-export function sleepInCottage(game,mode){
- if(!game.cottage||cottageFloor(game.cottage)!==0||game.cottage.kind&&game.cottage.kind!=='cottage'||game.cottage.sleep||game.state!=='playing'||!['phase','morning'].includes(mode)||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
- game.cottage.exitElapsed=game.cottage.restElapsed=0;game.cottage.restOpen=false;game.cottage.bedLatch=true;
+// 只有床前完整候停后才入睡，自动睡到明早，结算仍由原保存事务完成。
+export function sleepInCottage(game){
+ const mode='morning';
+ if(!game.cottage||cottageFloor(game.cottage)!==0||game.cottage.kind&&game.cottage.kind!=='cottage'||game.cottage.sleep||game.state!=='playing'||game.player.hp<=0||game.cottage.bedLatch||game.cottage.restElapsed==null||game.cottage.restElapsed+1e-9<C.bedWait||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
+ game.cottage.exitElapsed=0;game.cottage.restElapsed=null;game.cottage.bedLatch=true;game.player.vx=game.player.vy=0;
  game.cottage.sleep={mode,elapsed:0,target:cottageSleepTarget(game.progress.living.calendar,mode)};game.cottage.restResult='';game.cottage.notice='好好睡一觉……';return true;
 }
 // 保存成功才兑现跳时；失败留在屋内，可再次休息，不补领任何战斗或委托奖励。
 function finishCottageSleep(game){
- // 点击时锁定预告目标，睡眠过渡中即使自然跨过时段也不会多睡一段。
+ // 入睡时锁定清晨目标，睡眠过渡中即使自然跨过时段也不会多睡一段。
  const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress)),calendar={...game.cottage.sleep.target},hp=game.maxHp();next.living.calendar=calendar;
  // 回血、首次休息和外部安全位置写入同一个候选存档，失败不兑现任何一项。
  next.restoration.cottageRested=true;
@@ -140,6 +131,6 @@ function updateCottageStairs(game,dt,input){
 }
 // 切层只能由已完成的候停提交，点击或直接调用不能跳过一秒；室外返回位置不变。
 export function changeCottageFloor(game){
- const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||room.restOpen||game.player.hp<=0||room.stairsLatch||room.stairsElapsed==null||room.stairsElapsed+1e-9<COTTAGE_STAIRS.wait||game.state!=='playing'||Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)>COTTAGE_STAIRS.radius)return false;
+ const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||game.player.hp<=0||room.stairsLatch||room.stairsElapsed==null||room.stairsElapsed+1e-9<COTTAGE_STAIRS.wait||game.state!=='playing'||Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)>COTTAGE_STAIRS.radius)return false;
  room.floor=1-cottageFloor(room);room.stairsElapsed=null;room.stairsLatch=true;room.storageNotice='';room.exitElapsed=0;room.restResult='';room.notice=room.floor?'二楼陈列室，可摆放武器架。':'回到一楼生活区。';Object.assign(game.player,COTTAGE_STAIRS.landing,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
 }

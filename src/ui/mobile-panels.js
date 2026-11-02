@@ -23,7 +23,6 @@ export const MOBILE_PANEL_CONTRACTS = {
   'legendary-dialog':{header:'header',body:'#legendary-content',close:'#legendary-close',footer:['#legendary-status','#legendary-primary']},
   'ws-equipment-dialog':{kind:'sheet',header:'header',body:'.ws-equipment-copy',close:'#ws-equipment-close',footer:['#ws-legendary','#ws-equipment-done']},
   'challenge-catalog-dialog':{kind:'sheet',header:'header',close:'#challenge-catalog-close'},
-  'cottage-rest-dialog':{kind:'confirm',footer:['#cottage-rest-cancel']},
   'workshop-dialog':{kind:'workshop',header:'.ws-header',body:'.ws-layout',close:'#ws-close',footer:['.ws-footer']},
 };
 

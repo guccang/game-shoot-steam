@@ -1,7 +1,6 @@
 // 场景操作统一绑定目标实体，世界建筑与室内家具分别使用各自坐标，不借用玩家位置。
 import {WAREHOUSE} from '../config/warehouse.js';
 import {WORKSHOP_INTERIORS,interiorLayout} from '../config/workshop-interiors.js';
-import {COTTAGE_FURNITURE} from '../config/cottage.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {TOWN_RESTORATIONS} from '../config/town-restoration.js';
 import {STORY_POSTS} from '../config/story-posts.js';
@@ -49,7 +48,6 @@ export function nearbyInteractionAnchor(game,entry) {
   case 'clearing':return building(CLEARING_POST,112,98);
   // 守备热点覆盖正式标牌。
   case 'gate':{const g=CAMP_GATES.find(s=>s.id===entry.key);return g?at({x:g.x-g.ny*108,y:g.y+g.nx*108},166):null;}
-  case 'rest':{const bed=COTTAGE_FURNITURE.find(s=>s.id==='bed');return at({...bed,x:bed.x+bed.width/4},10,'room');}
   // 木牌热点在牌面中心，居民与灰堆保持原头顶入口。
   case 'monster-camp':return at(entry,entry.presentation==='camp-sign'?38:72);
   case 'display':return at(entry,16,'room');

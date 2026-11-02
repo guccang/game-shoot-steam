@@ -66,7 +66,7 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  function point(x,y){const d=decorDefinition(selection()?.type);if(!d||!draft)return;if(d.layer==='curtain')draft={x:x<180?81:271,y:46};else if(d.layer==='wall')draft={x:Math.round(x/HOME_GRID)*HOME_GRID,y:46};else draft={x:Math.round(x/HOME_GRID)*HOME_GRID,y:Math.round(y/HOME_GRID)*HOME_GRID};message='';renderContent();}
  // 方向按钮提供不依赖细小拖拽的44像素触控入口，键盘共用同一逻辑。
  function nudge(direction){if(!draft)return;const d=decorDefinition(selection().type);if(d.layer==='curtain')point(direction==='left'?81:271,46);else point(draft.x+({left:-12,right:12}[direction]||0),draft.y+({up:-12,down:12}[direction]||0));}
- scope.on(entry,'click',()=>{if(game.cottage&&!game.cottage.sleep&&!game.cottage.restOpen&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}});
+ scope.on(entry,'click',()=>{if(game.cottage&&!game.cottage.sleep&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}});
  scope.on($('home-close'),'click',()=>dialogs.close(dialog.id));
  scope.on(dialog,'close',()=>{draft=null;selected=null;message='';});
  scope.on($('home-cancel'),'click',()=>{draft=null;message='已取消移动，原布局保留。';renderContent();});
@@ -85,10 +85,10 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  scope.on($('home-preview'),'click',e=>{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*COTTAGE.width,y=(e.clientY-r.top)/r.height*COTTAGE.height;if(draft)point(x,y);else{const item=placedDecor(game.progress.homeDecor,cottageFloor(game.cottage)).sort((a,b)=>b.y-a.y).find(i=>Math.abs(x-i.x)<Math.max(22,i.width/2)&&y>i.y-Math.max(30,i.height)&&y<i.y+i.height/2);if(item)select(item.uid);}});
  scope.on($('home-preview'),'keydown',e=>{const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];if(direction&&draft){e.preventDefault();nudge(direction);}});
  // 父级逐帧只同步可见性；存档对象或金币变化后才更新内容。
- function render(){entry.hidden=!game.cottage||!!game.cottage.kind&&game.cottage.kind!=='cottage';entry.disabled=!!game.cottage?.sleep||!!game.cottage?.restOpen||game.state!=='playing';if(dialog.open){if(!game.cottage||game.cottage.kind&&!['cottage','furniture'].includes(game.cottage.kind)){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
+ function render(){entry.hidden=!game.cottage||!!game.cottage.kind&&game.cottage.kind!=='cottage';entry.disabled=!!game.cottage?.sleep||game.state!=='playing';if(dialog.open){if(!game.cottage||game.cottage.kind&&!['cottage','furniture'].includes(game.cottage.kind)){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
  // 动态节点跟随小屋控制器卸载，避免重复事件和残留预览。
  function dispose(){scope.dispose();if(dialog.open)dialog.close();entry.remove();dialog.remove();}
  // 屋内售货员打开家具服务，保持原暂停与保存流程。
- function open(){if(game.cottage&&(!game.cottage.kind||['cottage','furniture'].includes(game.cottage.kind))&&!game.cottage.sleep&&!game.cottage.restOpen&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}}
+ function open(){if(game.cottage&&(!game.cottage.kind||['cottage','furniture'].includes(game.cottage.kind))&&!game.cottage.sleep&&game.state==='playing'){input.reset();dialogs.open(dialog.id);}}
  return {render,dispose,open};
 }

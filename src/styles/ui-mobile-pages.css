@@ -1,5 +1,5 @@
 /* 旧页只在显式接入后覆盖外框；ID优先级用于清除原页面尺寸，不影响场景控件。 */
-:is(#camp-dialog,#vehicle-collection-dialog,#map-dialog,#environment-dialog,#chronicle-dialog,#realm-dialog,#mainline-dialog,#funnel-dialog,#mechanical-dialog,#spider-dialog,#living-dialog,#camp-defense-dialog,#fire-dialog,#arrival-workshop-dialog,#equipment-goal-dialog,#help-dialog,#realm-help-dialog,#resource-help-dialog,#wave-help-dialog,#ws-mastery-dialog,#ws-equipment-dialog,#challenge-catalog-dialog,#cottage-rest-dialog,#workshop-dialog).ui-migrated {
+:is(#camp-dialog,#vehicle-collection-dialog,#map-dialog,#environment-dialog,#chronicle-dialog,#realm-dialog,#mainline-dialog,#funnel-dialog,#mechanical-dialog,#spider-dialog,#living-dialog,#camp-defense-dialog,#fire-dialog,#arrival-workshop-dialog,#equipment-goal-dialog,#help-dialog,#realm-help-dialog,#resource-help-dialog,#wave-help-dialog,#ws-mastery-dialog,#ws-equipment-dialog,#challenge-catalog-dialog,#workshop-dialog).ui-migrated {
   box-sizing: border-box; width: min(480px,calc(100vw - var(--ui-safe-left) - var(--ui-safe-right)));
   max-width: none; height: fit-content; max-height: calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom));
   inset: var(--ui-safe-top) var(--ui-safe-right) var(--ui-safe-bottom) var(--ui-safe-left);
@@ -15,7 +15,7 @@
 .ui-migrated > .ui-panel__footer { flex:none; margin:0; }
 .ui-migrated > .ui-panel__footer > :is(div,button) { min-width:0; }
 .ui-migrated > .ui-panel__footer > button { width:auto; }
-:is(#camp-dialog,#vehicle-collection-dialog,#map-dialog,#environment-dialog,#chronicle-dialog,#realm-dialog,#mainline-dialog,#funnel-dialog,#mechanical-dialog,#spider-dialog,#living-dialog,#camp-defense-dialog,#fire-dialog,#arrival-workshop-dialog,#equipment-goal-dialog,#help-dialog,#realm-help-dialog,#resource-help-dialog,#wave-help-dialog,#ws-mastery-dialog,#ws-equipment-dialog,#challenge-catalog-dialog,#cottage-rest-dialog,#workshop-dialog).ui-migrated > .ui-panel__header button.ui-close { position:static; float:none; margin:0; width:44px; height:44px; min-height:44px; min-width:44px; flex:0 0 44px; padding:0; color:var(--ui-forest); background:var(--ui-paper); border:2px solid var(--ui-forest); border-radius:12px; box-shadow:0 2px 0 var(--ui-deep); font-size:26px; }
+:is(#camp-dialog,#vehicle-collection-dialog,#map-dialog,#environment-dialog,#chronicle-dialog,#realm-dialog,#mainline-dialog,#funnel-dialog,#mechanical-dialog,#spider-dialog,#living-dialog,#camp-defense-dialog,#fire-dialog,#arrival-workshop-dialog,#equipment-goal-dialog,#help-dialog,#realm-help-dialog,#resource-help-dialog,#wave-help-dialog,#ws-mastery-dialog,#ws-equipment-dialog,#challenge-catalog-dialog,#workshop-dialog).ui-migrated > .ui-panel__header button.ui-close { position:static; float:none; margin:0; width:44px; height:44px; min-height:44px; min-width:44px; flex:0 0 44px; padding:0; color:var(--ui-forest); background:var(--ui-paper); border:2px solid var(--ui-forest); border-radius:12px; box-shadow:0 2px 0 var(--ui-deep); font-size:26px; }
 .ui-migrated :is(summary,input[type="number"]) { min-height:44px; }
 .ui-migrated summary { display:list-item; align-content:center; cursor:pointer; }
 .ui-migrated .ui-panel__body :is(h3,h4) { color:var(--ui-forest); }
@@ -30,7 +30,6 @@
 dialog.ui-migrated.ui-sheet > .ui-panel__header { background:var(--ui-paper); color:var(--ui-forest); border-bottom:1px solid #c3cea9; }
 dialog.ui-migrated.ui-sheet > .ui-panel__header :is(h2,small,p,.eyebrow) { color:var(--ui-forest); }
 dialog.ui-migrated.ui-sheet > .ui-panel__header h2 { font-size:20px; }
-#cottage-rest-dialog.ui-migrated { width:min(360px,calc(100vw - var(--ui-safe-left) - var(--ui-safe-right))); }
 #resource-help-dialog.ui-migrated { text-align:left; }
 #resource-help-dialog #resource-help-art { margin:0 auto 16px; }
 .ui-migrated :is(.mainline-book-actions,.timing-actions) { display:flex; flex-wrap:wrap; gap:10px; margin:0; width:100%; }
@@ -80,10 +79,6 @@ dialog.ui-migrated.ui-sheet > .ui-panel__header h2 { font-size:20px; }
 #workshop-dialog.ui-migrated[data-has-quote="false"] #ws-purpose { min-height:0; }
 #workshop-dialog.ui-migrated #ws-unlock-link { border:1px solid var(--ui-line); background:var(--ui-paper); box-shadow:none; padding:8px 12px; font-size:12px; text-decoration:none; }
 /* 休息选项沿用按钮变量，避免场景控件颜色与轻确认底板混用。 */
-#cottage-rest-dialog.ui-migrated button { border:2px solid var(--button-edge); background:var(--button-face); color:var(--button-ink); font-size:14px; }
-#cottage-rest-dialog.ui-migrated #cottage-sleep-phase { --button-face:var(--ui-forest); --button-ink:var(--ui-paper); --button-edge:var(--ui-deep); background:var(--button-face); color:var(--button-ink); border-color:var(--button-edge); }
-#cottage-rest-dialog.ui-migrated #cottage-rest-cancel { background:var(--ui-paper); border-color:var(--ui-forest); }
-#cottage-rest-dialog.ui-migrated > .ui-panel__header small { color:var(--ui-muted); }
 /* 奖励收据保留独立倒计时与原来的自动关闭逻辑。 */
 #task-reward-dialog .task-reward-panel { background:var(--ui-paper); border-color:var(--ui-forest); }
 #task-reward-dialog header button { min-width:44px; min-height:44px; color:var(--ui-forest); border:2px solid var(--ui-forest); border-radius:12px; background:var(--ui-paper); box-shadow:0 2px 0 var(--ui-deep); }

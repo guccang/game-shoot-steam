@@ -19,7 +19,6 @@ import {requestFireParking} from '../core/fire-rescue.js';
 import {campProgress,campDiscountText} from '../progression/camp-level.js';
 import {updateWorkshopDisplayEntry} from '../core/workshop-display-entry.js';
 import {STORY_POSTS} from '../config/story-posts.js';
-import {openCottageRest} from '../core/cottage.js';
 import {createTaskReward} from '../ui/task-reward.js';
 import {createCampHome} from '../ui/camp-home.js';
 import {createCampDefensePanel} from '../ui/camp-defense.js';
@@ -336,7 +335,6 @@ export function createApplication({
     else if(entry.type==='arrival-repair')game.advanceArrival();
     else if(entry.type==='monster-camp')monsterCampPanel.open(entry.key,entry.id);
     else if(entry.type==='seed-shop')seedShop.open();
-    else if(entry.type==='rest')openCottageRest(game);
     else if(entry.type==='display'){if(entry.kind==='cottage')campHome.openHomeDecor();else openRoomService(entry.kind,entry.index);}
     else if(entry.type==='workshop')workshop.open(entry.key);
     else if(entry.type==='parking')requestParking(game);
@@ -559,7 +557,8 @@ export function createApplication({
         renderer.frameTiming = simulation.advance(root.hidden ? 0 : frameElapsed, step => {
           interpolation.beforeStep(game);
           game.update(step, vector);
-          updateWorkshopDisplayEntry(game);
+          const service=updateWorkshopDisplayEntry(game,step,vector,!!root.querySelector('dialog[open]'));
+          if(service){input.reset();campHome.openService(service.kind,service.index);}
           diagnostics.gameplay.observe();
         });
         livingSounds.update(game,dt,!root.hidden);

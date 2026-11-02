@@ -41,7 +41,7 @@
 
 /* 兼容已有弹窗，只统一表面；尺寸、滚动和玩法专用排版由原页面负责。 */
 dialog[id]:not(:where(#task-reward-dialog)), .ui-panel, .task-reward-panel,
-#camp-dialog, #challenge-catalog-dialog, #cottage-rest-dialog {
+#camp-dialog, #challenge-catalog-dialog {
   color: var(--ui-text);
   background: var(--ui-paper);
   border: 3px solid var(--ui-forest);

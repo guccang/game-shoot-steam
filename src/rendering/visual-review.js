@@ -1397,7 +1397,7 @@ export function inspectAutomaticParking(game,root){
 // 小屋与营地验收直接读取独立停驻记录、正式房间状态和实际操作按钮。
 export function inspectCampHome(game,root){
  return {designCriterion:'camp-home-parking',mounted:game.vehicle.active,owned:game.progress.campParking.owned,visitors:game.parkingVisitors,
-  room:game.cottage?{position:{x:game.player.x,y:game.player.y},sleep:game.cottage.sleep,notice:game.cottage.notice,exitElapsed:game.cottage.exitElapsed,restElapsed:game.cottage.restElapsed,restOpen:game.cottage.restOpen}:null,
+  room:game.cottage?{position:{x:game.player.x,y:game.player.y},sleep:game.cottage.sleep,notice:game.cottage.notice,exitElapsed:game.cottage.exitElapsed,restElapsed:game.cottage.restElapsed,displayEntry:game.cottage.displayEntry}:null,
   calendar:game.progress.living.calendar,entry:game.cottageEntry,
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }

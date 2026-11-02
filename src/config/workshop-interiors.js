@@ -66,9 +66,9 @@ export function interiorFurniture(game){
 // 维修泊位只展示 garage 真实记录；上方展车另走原厂样车，不复制玩家车辆。
 export function garageVehicleRecord(game){return game.progress.campParking?.owned.find(r=>r.spot==='garage')||null;}
 
-// 展品底座之外的候停范围，中央过道不会因为整排陈列而自动打开页面。
-export const WORKSHOP_DISPLAY_ENTRY={wait:3,radius:32,releaseRadius:50,stopSpeed:3};
-// 所有营业房只提供售货员热点，陈列柜继续保留展示与碰撞。
+// 只在售货员柜台前候停，展品和中央过道不会打开服务。
+export const SHOPKEEPER_ENTRY={wait:1,radius:28,releaseRadius:44,stopSpeed:3};
+// 所有营业房提供同一售货员身份，陈列柜继续保留展示与碰撞。
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;
  if(!kind||kind==='cottage')return null;
@@ -76,5 +76,5 @@ export function interiorShopkeeper(room){
 }
 // 柜台跟随售货员底座，绘制和碰撞共用同一位置；私人小屋没有柜台。
 export function interiorCounter(room){const seller=interiorShopkeeper(room);return seller?{id:'counter',type:'counter',x:seller.x,y:seller.y+30,width:130,height:36}:null;}
-// 附近提示与画布点击共用售货员坐标。
+// 场景对象和候停控制器共用售货员坐标。
 export function interiorWorkshopTargets(game){if(!game.cottage)return [];const seller=interiorShopkeeper(game.cottage);return seller?[seller]:[];}
