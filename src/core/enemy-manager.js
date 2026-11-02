@@ -4,6 +4,7 @@ import {clearingOpeningPacing,clearingEnemyLevel,CLEARING_FODDER} from '../confi
 import {CLEARING_STARTER_RULES} from '../config/clearing.js';
 import {livingForest} from '../world/living-spaces.js';
 import {advanceDumplingMotion} from '../combat/dumpling-motion.js';
+import {releaseSettlementOverlap} from '../physics/settlement-pursuit.js';
 import {campBarricadeTarget,hurtCampBarricade} from './camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { GAMEPLAY_TABLES } from '../config/gameplay-tables.js';
@@ -121,6 +122,8 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
 
 // 更新存活怪物与死亡残块，Boss 仅参与刚体碰撞，其技能仍归 Boss 战斗模块。
 export function updateEnemies(game, dt, previousPlayer) {
+  // 刷新碰撞前修正栏杆重叠，防止击退和挤压从无效起点反复撞墙。
+  if(dt>0&&livingForest(game))for(const body of [...game.enemies,...(game.boss?[game.boss]:[])])releaseSettlementOverlap(body,game.trees);
   game.profiler?.start('logic.enemyPhysics');
   const bossOrigin = game.boss ? { x: game.boss.x, y: game.boss.y } : null;
   // 统一推进碰撞，死亡残块短暂保留动量；碰撞伤害不再额外注入能量。

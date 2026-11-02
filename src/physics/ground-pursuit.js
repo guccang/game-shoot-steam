@@ -6,6 +6,7 @@ import { isNaturalBlocked } from '../world/natural-terrain.js';
 import { nearestDryTerrain, naturalWaypoint } from './terrain-navigation.js';
 import { cautiousPursuit } from './cautious-pursuit.js';
 import { valleyBlocked } from '../world/jiuzhaigou.js';
+import {settlementPursuit} from './settlement-pursuit.js';
 
 const terrainCache = new WeakMap();
 const shoreCache = new Map();
@@ -81,6 +82,8 @@ function shoreWaypoint(body, station, side) {
 export function groundPursuit(body, target, dt, navigate = true, dangerRange = 320) {
   // 秘境平台没有森林河岸，领主与普通怪物共用直接追击与平台边界。
   if (body.arena) return { goal: target, direct: true, holding: false };
+  const fence=settlementPursuit(body,target,dt,navigate);
+  if(fence)return fence;
   // 杂兵和近战领主不能跨水攻击，保持警戒距离；远程领主仍可在岸上施法。
   if (body.type !== 'boss' || body.kind === 'boar' || body.kind === 'moss')
     return cautiousPursuit(body, target, dt, navigate, dangerRange);

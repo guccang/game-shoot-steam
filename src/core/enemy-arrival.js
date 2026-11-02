@@ -3,8 +3,8 @@ import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { nearest, worldDistance, WORLD, canonical } from '../world/coordinates.js';
 import {riverXAt,riverHalfWidth,isWaterBlocked} from '../world/river-geometry.js';
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
-import { drySpawn } from '../physics/motion.js';
-import { terrainBlocked,terrainLineClear } from '../physics/terrain-navigation.js';
+import { drySpawn,blocked } from '../physics/motion.js';
+import { terrainLineClear } from '../physics/terrain-navigation.js';
 
 // 渲染层提供相对角色的实际视口；未绘制时使用保守广角，保持逻辑可独立运行。
 export function arrivalView(game) {
@@ -30,7 +30,7 @@ export function findArrivalSpot(game, ordinal = game.waveSpawned) {
     const spot = nearest(drySpawn({ mapId: game.mapId, x: game.player.x + x, y: game.player.y + y }), game.player);
     if(livingForest(game)&&livingSafePoint(spot))continue;
     x = spot.x - game.player.x; y = spot.y - game.player.y;
-    if (Math.hypot(x, y) < GAMEPLAY_VALUES.arrival.playerDistance || terrainBlocked(spot.x, spot.y, GAMEPLAY_VALUES.arrival.collisionRadius, game.mapId)) continue;
+    if (Math.hypot(x, y) < GAMEPLAY_VALUES.arrival.playerDistance || blocked(spot.x, spot.y, GAMEPLAY_VALUES.arrival.collisionRadius, [], {mapId:game.mapId,arena:game.player.arena})) continue;
     if (x > view.left - GAMEPLAY_VALUES.arrival.viewPadding && x < view.right + GAMEPLAY_VALUES.arrival.viewPadding &&
         y > view.top - GAMEPLAY_VALUES.arrival.viewPadding && y < view.bottom + GAMEPLAY_VALUES.arrival.viewPadding) continue;
     if (game.trees.some(t => t.hp > 0 && worldDistance(t, spot) < t.radius + GAMEPLAY_VALUES.arrival.treePadding)) continue;
@@ -60,7 +60,7 @@ export function findNearbyArrivalSpot(game,ordinal,range){
    const p=canonical(spot),dx=p.x-riverXAt(p.y);
    if(Math.abs(dx)<riverHalfWidth(p.y,dx<0?-1:1)+range.riverClearance||isWaterBlocked(p.x,p.y,range.riverClearance))continue;
   }
-  if(d<range.minDistance||d>range.maxDistance||livingForest(game)&&livingSafePoint(spot)||terrainBlocked(spot.x,spot.y,GAMEPLAY_VALUES.arrival.collisionRadius,game.mapId))continue;
+  if(d<range.minDistance||d>range.maxDistance||livingForest(game)&&livingSafePoint(spot)||blocked(spot.x,spot.y,GAMEPLAY_VALUES.arrival.collisionRadius,[],{mapId:game.mapId,arena:game.player.arena}))continue;
   if(!game.player.flying&&!terrainLineClear(origin,spot,GAMEPLAY_VALUES.arrival.pathRadius))continue;
   if(game.trees.some(t=>t.hp>0&&worldDistance(t,spot)<t.radius+GAMEPLAY_VALUES.arrival.treePadding)||game.enemies.some(e=>e.hp>0&&worldDistance(e,spot)<e.radius+GAMEPLAY_VALUES.arrival.nearEnemyPadding))continue;
   return spot;
