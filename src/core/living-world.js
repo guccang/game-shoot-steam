@@ -20,7 +20,7 @@ import {validateProgress} from '../progression/progress.js';
 import {STORY_CAMPAIGN} from '../config/story-campaign.js';
 import {nearbyStoryPost} from './story-posts.js';
 import {trackedLivingRequest} from './task-tracking.js';
-import {clearingSite} from '../progression/clearing-site.js';
+import {clearingSite,clearingNavigationTarget} from '../progression/clearing-site.js';
 
 // 运行时人物按稳定身份重用，装备事务替换进度对象后无需重建人物或动作时钟。
 export function livingResidents(game){
@@ -206,7 +206,7 @@ function beginClearingPatrol(game,site=null){
   const result=commitLiving(game,p=>{recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};},()=>{
    // 存档成功且界面刷新前移交路线，保存失败不能污染当前导航。
    game.pendingClearingRound=0;
-   if(prepared)rememberPreparedNavigation(game,site,prepared.route,prepared.index,{...game.player,mapId:game.mapId,livingCollision:true});
+   if(prepared)rememberPreparedNavigation(game,clearingNavigationTarget(site),prepared.route,prepared.index,{...game.player,mapId:game.mapId,livingCollision:true});
   });
   return {...result,message:result.ok?'已接取清缴任务。前往本次清缴地点，清完五波后领主自动登场。':result.message};
 }

@@ -10,7 +10,7 @@ import {settlementAt} from '../world/settlements.js';
 import {blocked} from '../physics/motion.js';
 import {terrainLineClear} from '../physics/terrain-navigation.js';
 import {planQuestRoute} from '../physics/quest-route.js';
-import {normalizeClearingSite} from '../progression/clearing-site.js';
+import {normalizeClearingSite,clearingNavigationTarget} from '../progression/clearing-site.js';
 import {createPlayerNavigationIndex} from './prepared-navigation.js';
 // 圈心有足够落脚空间，周围至少六个方向可进入，避免贴水岸或狭窄死角。
 export function clearingSiteOpen(site,trees){
@@ -44,7 +44,7 @@ export function chooseClearingSite(game,onRoute=null){
   // 整个战场不能跨入超出任务难度的等级带，赶路另检查遭遇出生距离。
   if(!clearingAreaSafe(point,RULES.radius,safeRadius,maxLevel))continue;
   if(!site||previous&&worldDistance(site,previous)<rules.minSeparation||!clearingSiteOpen(site,trees))continue;
-  const route=planQuestRoute(body,site,trees,16000,{shortEdges:true});
+  const route=planQuestRoute(body,clearingNavigationTarget(site),trees,16000,{shortEdges:true});
   if(route.reachable&&clearingRouteSafe(route.points,safeRadius,beginner,maxLevel)){
    // 仅成功候选交付安全短边，接取事务决定是否缓存，不把路径塞进地点或存档。
    onRoute?.(route,trees);return site;
