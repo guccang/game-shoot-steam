@@ -1,4 +1,6 @@
 import {storedWeaponRack} from '../progression/weapon-storage.js';
+import {catLoad} from '../progression/load-weight.js';
+import {weaponPurchaseQuote} from '../core/weapon-purchase-load.js';
 import {requestWorldNavigation} from '../core/world-navigation.js';
 import {WORKSHOP,VEHICLE_WORKSHOP} from '../world/workshop.js';
 import {equipmentQuest,equipmentQuestReason} from '../progression/equipment-quests.js';
@@ -41,7 +43,7 @@ import {recordMainlineTrial} from '../core/mainline-manager.js';
 import {mainlinePurchaseReason} from '../config/mainline-gates.js';
 
 // 所有入口共用一个弹窗；外部注入持久化事务和隔离靶场，界面不依赖 Game 类型。
-export function createWorkshop({ game, root, dialogs, commit, createTrial, onChange, onEquipmentStory, onVehicleFit, onCurrent }) {
+export function createWorkshop({ game, root, dialogs, commit, createTrial, onChange, onEquipmentStory, onVehicleFit, onCurrent, onCleanup }) {
   const host = root.defaultView, scope = createEventScope();
   const dialog = root.createElement('dialog');
   dialog.id = 'workshop-dialog'; dialog.className = 'workshop-dialog';
@@ -149,13 +151,15 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     dialog.dataset.draft=String(!!draft);
     $('ws-change-part').hidden=!draft&&!comparison;
     $('ws-change-part').textContent=comparison?'继续升级':functionPage==='modify'?'更换方案':'更换部件';
-    const plan = quotePlan(), quote = plan.action==='inspect' ? {ok:false,rows:[],reason:''} : quoteWorkshop(game.progress, plan, !!game.realm);
+    const plan = quotePlan(), quote = plan.action==='inspect' ? {ok:false,rows:[],reason:''} : weaponPurchaseQuote(game,plan,quoteWorkshop(game.progress, plan, !!game.realm));
+    dialog.dataset.loadBlocked=String(!!quote.loadBlocked);
+    const cleanupNeeded=kind==='weapons'&&(quote.loadBlocked||catLoad(game).overloaded);
     $('ws-purpose').textContent=describePlan(plan);
     // 结算区仅显示当前操作与效果，获取途径和故事统一在名称旁的问号中查看。
     $('ws-cost-title').textContent = i18nText("ui.workshop.085eead04d", { p0: (['part','upgrade'].includes(plan.action) ? i18nText("ui.workshop.37ee956958") : ['modify','mount'].includes(plan.action) ? i18nText("ui.workshop.adba1fb4a6") : i18nText("ui.workshop.1e7f090b19")) });
     const resources=quote.rows.filter(row=>row.key!=='bosses'),challenge=quote.rows.find(row=>row.key==='bosses');
     dialog.dataset.hasQuote=String(resources.length>0);
-    dialog.dataset.checkout=String(!comparison&&(!!draft||plan.action==='buy'||resources.length>0));
+    dialog.dataset.checkout=String(cleanupNeeded||!comparison&&(!!draft||plan.action==='buy'||resources.length>0));
     $('ws-resources').style.setProperty('--ws-resource-count',String(Math.max(1,resources.length)));
     $('ws-equip').hidden=!(kind==='weapons'?game.progress.weapons:game.progress.vehicleHulls)[index];
 
@@ -175,6 +179,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     $('ws-purchase').hidden = !!owned;
     $('ws-purchase').textContent = !owned&&kind==='vehicle'&&COLLECTED_VEHICLES[index].rewardOnly?i18nText("ui.panels.vehicles.18fc7d0bec"):owned ? i18nText("balance.app.94996ca622") : kind === 'weapons' ? i18nText("ui.inventory.99be99bf93") : i18nText("ui.panels.vehicles.6a0b8701a9");
     $('ws-purchase').disabled = !!draft || !!payment || plan.action!=='buy' || !quote.ok;
+    $('ws-cleanup').hidden = !cleanupNeeded;
     const quest=equipmentQuest(kind,index),questState=quest&&equipmentQuestStatus(game.progress,quest);
     $('ws-story-condition').hidden=plan.action!=='buy'||!quest;
     $('ws-story-condition').textContent=quest?`购买前提：《${quest.title}》\n${questState.ready?'已完成':questState.text} · 点击查看`:'';
@@ -512,6 +517,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   scope.on($('ws-before'), 'click', () => { before = !before; stopTrial(); construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0; paint();renderQuote(); });
   scope.on($('ws-reset'), 'click', () => place(0));
   scope.on($('ws-purchase'), 'click', () => { if (!draft) submit(currentPlan()); });
+  scope.on($('ws-cleanup'), 'click', () => onCleanup?.());
   scope.on($('ws-components-tab'),'click',()=>{comparison=null;before=false;stopTrial();construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0;draft=null;selectedPart=null;selectedUpgrade=null;editingTurret=null;tray='components';render();});
   scope.on($('ws-kits-tab'),'click',()=>{comparison=null;before=false;stopTrial();construction.cancel();host.cancelAnimationFrame(assemblyFrame);assemblyFrame=0;draft=null;selectedPart=null;selectedUpgrade=null;editingTurret=kind==='vehicle'?(game.progress.vehicleLoadouts[index]??null):null;tray=kind==='vehicle'?'components':'kits';render();});
   // 分页只更换挂载目录，不付款或修改当前出战武器。
@@ -553,7 +559,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     const target=partTarget(),plan=part?workshopUpgrade(game.progress,target.kind,target.index,part,kind==='vehicle'?index:null):quotePlan();
     const p=game.progress,key=JSON.stringify([dialog.open,plan,p.coins,p.wood,p.materials,p.bosses,p.campLevel?.xp,p.mainline?.completed.length,p.weapons,p.vehicleHulls,p.vehicleWeapons,p.mastery,p.mods,!!game.realm]);
     if(!guideQuoteCache||guideQuoteCache.key!==key||guideQuoteCache.progress!==p)guideQuoteCache={key,progress:p,quote:plan.action==='inspect'||!dialog.open?{ok:true,reason:''}:quoteWorkshop(p,plan,!!game.realm)};
-    const quote=guideQuoteCache.quote;
+    const quote=weaponPurchaseQuote(game,plan,guideQuoteCache.quote);
     return {open:dialog.open,page:functionPage,kind,index,turret:editingTurret,tray,part:selectedUpgrade,choice:selectedPart,
       draft:draft&&{...draft},completed:!!comparison,before,busy:!!assemblyFrame,dragging:false,trial:trial.active(),
       weaponTarget:game.progress.vehicleLoadouts[index]??null,affordable:quote.ok,reason:quote.reason,tool:construction.guideState()};
