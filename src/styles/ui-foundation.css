@@ -421,7 +421,8 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #nearby-interaction.scene-hit > * { display:none; }
 
 /* HP卡片外环读取换弹计时，内圆蓝色水位表示仓库负荷，保持44px点击面积。 */
-#vehicle-button .vehicle-load-picture{position:absolute;left:6px;top:0;width:32px;height:32px;pointer-events:none;}
+/* 圆环中心与左侧弹药仪表对齐，保留44px按钮和独立数字层。 */
+#vehicle-button .vehicle-load-picture{position:absolute;left:6px;top:6px;width:32px;height:32px;pointer-events:none;}
 #vehicle-button .vehicle-load-water{position:absolute;inset:4px;border-radius:50%;overflow:hidden;background:var(--ui-paper);}
 #vehicle-button .vehicle-load-filled{position:absolute;inset:0;background:#82bed4;}
 #vehicle-button .vehicle-load-art{position:absolute;inset:6px;color:var(--ui-forest);pointer-events:none;}
