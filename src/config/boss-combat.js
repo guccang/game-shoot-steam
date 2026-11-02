@@ -13,4 +13,6 @@ export const BOSS_SUPPORT = {
   // 附近安全距离内接敌，避免援军在远处被地形挡住或迟迟进不了画面。
   minDistance: 220, maxDistance: 320,
   cap: 6, fieldCap: 12, health: 0.65, damage: 0.7,
+  // 召唤木卫在重装基础生命上再翻倍；专属玩法至少承受首领十分之一的生命预算。
+  summonHealth: 2, bossHealthRatio: 0.1,
 };

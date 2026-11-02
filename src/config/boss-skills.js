@@ -1,5 +1,5 @@
 // 每位领主保留原招式，并共享召唤与一种专属招式；数值不写入永久存档。
-export const BOSS_SUMMON_SKILL = Object.freeze({id:'summon',name:'呼唤援兵',hint:'优先清理小团子，召唤后有反击空隙',windup:2,active:1.6,recovery:1.2,interval:1.8});
+export const BOSS_SUMMON_SKILL = Object.freeze({id:'summon',name:'呼唤铁甲木卫',hint:'木卫血厚，侧移躲盾击，趁召唤后的空隙反击',windup:2,active:1.6,recovery:1.2,interval:1.8});
 export const BOSS_SPECIAL_SKILLS = Object.freeze({
  boar:{id:'tusk-sweep',name:'獠牙横扫',hint:'离开正面扇区，绕向侧后方',windup:1.15,active:.35,recovery:1.35,interval:1.7,radius:210,halfAngle:1.05,damage:.9},
  mushroom:{id:'spore-wreath',name:'孢子花环',hint:'从花环缺口离开，别停在孢子里',windup:1.4,active:2.5,recovery:1.2,interval:1.8,radius:46,orbit:125,damage:.42},

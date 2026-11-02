@@ -68,12 +68,12 @@ export function updateBossSupport(game,dt){
  s.spacing-=dt;if(s.spacing>0)return;
  s.spacing=RULES.spacing;
  const spot=supportSpot(game,boss);if(!spot)return;
- const enemy=game.spawnEnemy(0,0,spot,{bossOwner:boss.id,ordinaryDumpling:true});
+ const enemy=game.spawnEnemy(0,0,spot,{bossOwner:boss.id,bossSummon:true});
  enemy.bossSummon=true;
  if(boss.arena)enemy.arena={...boss.arena};
  // 专属活动援兵按该场首领强度缩放，不借用森林波次，也不携带额外通关配额。
  if(game.realm||game.story||game.campDefense){
-  enemy.hp=enemy.maxHp=Math.max(1,Math.round(boss.maxHp*.025));
+  enemy.hp=enemy.maxHp=Math.max(enemy.maxHp,Math.round(boss.maxHp*RULES.bossHealthRatio));
   enemy.damage=Math.max(1,Math.round((boss.blastDamage??30)*.35));enemy.reward=0;
   if(game.realm?.mode==='guardian')enemy.goddessTarget=true;
  }

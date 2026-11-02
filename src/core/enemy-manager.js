@@ -59,12 +59,12 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
     ground = enemyIdentity(
       origin.x,
       origin.y,
-      context?.ordinaryDumpling ? 0 : Math.min(context?.bossOwner ? GAMEPLAY_VALUES.enemy.supportRankCap : difficulty.rankCap, game.random() + difficulty.rankBonus),
+      context?.ordinaryDumpling||context?.bossSummon ? 0 : Math.min(context?.bossOwner ? GAMEPLAY_VALUES.enemy.supportRankCap : difficulty.rankCap, game.random() + difficulty.rankBonus),
       game.mapId,
       clearingStats ? CLEARING_STARTER_RULES.enemyLevel : null,
     ),
-    // 常规领主增援只出普通地面团子，剧情脚本仍保留自己的阵容。
-    baseIdentity = !context?.ordinaryDumpling&&!clearing&&(context?.ambient ? game.player.flying : flyingSpawn(game.wave, context?.bossOwner ? game.nextId : game.waveSpawned + 1, game.player.flying))
+    // 召唤木卫固定使用地面基础身份，剧情脚本借用 bossOwner 的普通单位不受影响。
+    baseIdentity = !context?.ordinaryDumpling&&!context?.bossSummon&&!clearing&&(context?.ambient ? game.player.flying : flyingSpawn(game.wave, context?.bossOwner ? game.nextId : game.waveSpawned + 1, game.player.flying))
       ? flyingIdentity(ground) : ground;
   // 清缴与移动遭遇共用远程配额；剧情、秘境和领主援军保持原有阵容。
   const stage = context?.rangedEncounter ? Math.max(GAMEPLAY_VALUES.ranged.unlockWave, ground.level) : game.wave;
@@ -79,6 +79,8 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
   if(clearing){
     identity=clearingIdentity(ground,game.wave,ordinal,game.enemies,game.random());
   }
+  // 六类首领及各玩法的正式召唤物共用铁甲木卫实体、碰撞和盾击动作。
+  if(context?.bossSummon)identity={...armoredIdentity(ground),name:'铁甲木卫'};
   // 正常森林清缴及领主援兵按已完成轮数成长；野外遭遇、剧情与秘境继续使用原规则。
   const baseDamage=identity.damage*(context?.bossOwner?BOSS_SUPPORT.damage:1);
   const damage=(clearing||context?.bossOwner)&&livingForest(game)
@@ -87,10 +89,10 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
   const health=(clearing||context?.bossOwner)&&livingForest(game)
     ?clearingEnemyHealth(game.progress.bosses,game.wave,game.recoveryRun):difficulty.health;
   // 新手清缴重装不承担过长的弹匣消耗；野外、剧情、秘境及试玩不套用减免。
-  const armorHealth=clearingStats&&identity.species===ARMORED.id?clearingOpeningPacing(game.progress.bosses).armoredHealth:1;
+  const armorHealth=clearingStats&&!context?.bossSummon&&identity.species===ARMORED.id?clearingOpeningPacing(game.progress.bosses).armoredHealth:1;
   // 清缴增量主要是脆皮团怪；野外遭遇、领主援军和特殊兵种不套用此减免。
   const fodder=clearingStats&&clearing&&!identity.flying&&!RANGED_ENEMIES[identity.species]&&identity.species!==ARMORED.id;
-  const hp = Math.max(1,Math.round(identity.hp * health * armorHealth * (fodder?CLEARING_FODDER.health:1) * (context?.bossOwner ? BOSS_SUPPORT.health : 1))),
+  const hp = Math.max(1,Math.round(identity.hp * health * armorHealth * (fodder?CLEARING_FODDER.health:1) * (context?.bossSummon ? BOSS_SUPPORT.summonHealth : context?.bossOwner ? BOSS_SUPPORT.health : 1))),
     enemy = {
       id: game.nextId++,
       type: 'enemy',

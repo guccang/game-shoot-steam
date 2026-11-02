@@ -34,7 +34,7 @@ test('前三波循序引入，存活限额不抢远程和飞行名额',()=>{
  const g=arena();g.wave=10;for(let i=0;i<80;i++)g.spawnEnemy(0,0,{x:1700,y:400});
  assert.equal(g.waveSpawned,80);assert.equal(g.enemies.filter(e=>e.species===ARMORED.id).length,3);assert.ok(g.enemies.some(e=>RANGED_ENEMIES[e.species]));assert.ok(g.enemies.some(e=>e.flying));
 });
-test('剧情、秘境、领主援军及居民脚本不混入重装，野外遭遇可出现',()=>{
+test('剧情、秘境和借用领主归属的普通脚本不随机混入重装，野外遭遇可出现',()=>{
  for(const mode of ['story','realm','boss','ambient']){
   const g=arena();g.wave=10;g.waveSpawned=2;if(['story','realm'].includes(mode))g[mode]={};
   const e=g.spawnEnemy(0,0,{x:2400,y:1000},mode==='boss'?{bossOwner:1}:mode==='ambient'?{ambient:true}:null);assert.notEqual(e.species,ARMORED.id);

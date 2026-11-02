@@ -9,6 +9,8 @@ import {updateBoss,updateBossHazards} from '../src/combat/bosses.js';
 import {beginBossSupport,updateBossSupport,dismissBossSummons} from '../src/core/boss-reinforcements.js';
 import {summonClearingBossAtNode} from './helpers/clearing-scene.mjs';
 import {STORY_CHAPTER} from '../src/config/story.js';
+import {ARMORED} from '../src/config/armored-enemies.js';
+import {attackProfile} from '../src/combat/enemy-attack.js';
 
 // 沿用正式接单、节点和怪物工厂；测试仅关闭自动射击及随机障碍。
 function scene(kind='boar'){
@@ -21,6 +23,22 @@ function scene(kind='boar'){
 }
 // 固定有效时间步，暂停和施法采用生产调度入口。
 function advanceSupport(g,seconds){for(let t=0;t<seconds-1e-8;t+=.05)updateBossSupport(g,.05);}
+
+test('所有首领统一召唤高血量铁甲木卫，复用重盾实体而不改变普通脚本兵',()=>{
+ for(const boss of BOSSES){
+  const g=scene(boss.id),spot={x:g.player.x+300,y:g.player.y};
+  const ordinary=g.spawnEnemy(0,0,spot,{bossOwner:g.boss.id,ordinaryDumpling:true});g.enemies=[];
+  assert.ok(beginBossSupport(g));advanceSupport(g,4);assert.equal(g.enemies.length,2);
+  for(const enemy of g.enemies){
+   assert.equal(enemy.species,ARMORED.id);assert.equal(enemy.name,'铁甲木卫');assert.equal(enemy.flying,false);
+   assert.equal(enemy.radius,ARMORED.radius);assert.equal(enemy.mass,30);assert.equal(enemy.bossSummon,true);
+   assert.ok(enemy.maxHp>ordinary.maxHp*10);assert.equal(enemy.hp,enemy.maxHp);
+   assert.deepEqual(attackProfile(enemy),{...ARMORED.attack,damage:enemy.damage});
+   const hp=enemy.hp;g.hit(enemy,10);assert.equal(enemy.hp,hp-10);
+  }
+  assert.notEqual(ordinary.species,ARMORED.id);
+ }
+});
 
 test('六种首领均按原招、召唤、专属循环，招式总数固定为三',()=>{
  for(const p of BOSSES){
@@ -102,11 +120,12 @@ test('无安全落点的召唤到期取消，不从竞技场外补兵',()=>{
 });
 
 test('剧情、秘境与守门召唤物不推进任务或领取额外奖励，首领死亡统一清理',()=>{
- for(const key of ['story','realm','campDefense']){
-  const g=scene(),b=g.boss;g[key]={phase:key==='story'?'active':key==='realm'?'combat':'boss',kills:0,mode:'rogue',stageId:Object.keys(STORY_CHAPTER.nodes)[0]};
+ for(const [key,mode] of [['story',null],['realm','rogue'],['realm','tower'],['realm','guardian'],['campDefense',null]]){
+  const g=scene(),b=g.boss;g[key]={phase:key==='story'?'active':key==='realm'?'combat':'boss',kills:0,mode,stageId:Object.keys(STORY_CHAPTER.nodes)[0]};
   assert.ok(beginBossSupport(g));advanceSupport(g,4);assert.equal(g.enemies.length,2,key);
   const [add]=g.enemies,coins=g.progress.coins,kills=g.kills;
-  assert.equal(add.maxHp,250);assert.equal(add.reward,0);g.hit(add,1e6);
+  assert.ok(add.maxHp>=1000);assert.equal(add.species,'ironwood-bulwark');assert.equal(add.reward,0);g.hit(add,1e6);
+  if(mode==='guardian')assert.equal(add.goddessTarget,true);
   assert.equal(g[key].kills,0);assert.equal(g.kills,kills);assert.equal(g.progress.coins,coins);
   const original=g.spawnEnemy(0,0,{x:b.x+400,y:b.y},{ordinaryDumpling:true});
   dismissBossSummons(g,b.id);assert.deepEqual(g.enemies,[original]);

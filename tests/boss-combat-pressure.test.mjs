@@ -103,7 +103,7 @@ test('援兵仅招式触发并预警2秒，附近逐只接敌，低血量三只�
   supportFor(g, 1.8); assert.equal(g.enemies.length, 0);
   supportFor(g, 0.2); assert.equal(g.enemies.length, 1);
   supportFor(g, 0.8); assert.equal(g.enemies.length, 2);
-  assert.ok(g.enemies.every(e => e.bossOwner === g.boss.id && e.wave === 0 && e.rank === 0 && !e.flying && !e.species));
+  assert.ok(g.enemies.every(e => e.bossOwner === g.boss.id && e.wave === 0 && e.rank === 0 && !e.flying && e.species==='ironwood-bulwark' && e.name==='铁甲木卫'));
   assert.ok(g.enemies.every(e => worldDistance(e, g.player) >= BOSS_SUPPORT.minDistance && worldDistance(e, g.player) <= BOSS_SUPPORT.maxDistance));
   supportFor(g, 8); assert.equal(g.enemies.length, 2);
   g.boss.hp *= 0.4; assert.ok(beginBossSupport(g)); supportFor(g, 4); assert.equal(g.enemies.length, 5);
@@ -152,12 +152,12 @@ test('主线怪太多时延后增援，空出位置才预警；无安全落点�
   supportFor(g, 1); g.trees = []; assert.ok(beginBossSupport(g)); supportFor(g, 4); assert.equal(g.enemies.length, 2);
 });
 
-// 后期波次及飞行载具不将增援替换成飞行、远程或重装兵种。
-test('六种领主与飞行载具均补充普通团子，特殊活动和离场不刷援兵',()=>{
+// 后期波次及飞行载具仍统一召唤木卫，不随机替换成飞行或远程兵种。
+test('六种领主与飞行载具均召唤铁甲木卫，特殊活动和离场不刷援兵',()=>{
  for(let index=0;index<BOSSES.length;index++){
   const g=arena(index,true);g.wave=50;g.random=()=>.99;g.player.flying=true;
   assert.ok(beginBossSupport(g));supportFor(g,4);assert.equal(g.enemies.length,2);
-  assert.ok(g.enemies.every(e=>e.rank===0&&!e.tough&&!e.flying&&!e.species&&e.name==='小团子'));
+  assert.ok(g.enemies.every(e=>e.rank===0&&!e.tough&&!e.flying&&e.species==='ironwood-bulwark'&&e.name==='铁甲木卫'));
  }
  for(const key of ['story','realm','campDefense','workshopTrial']){
   const g=arena(0,true);g[key]={};assert.equal(beginBossSupport(g),false);supportFor(g,20);assert.equal(g.enemies.length,0);

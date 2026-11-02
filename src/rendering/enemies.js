@@ -74,7 +74,8 @@ export function drawSlime(c, e, time, reduced = false, profiler = null, deferHea
     c.textAlign = 'center';
     c.strokeStyle = '#fff9e5';
     c.lineWidth = 3;
-    const label = armored ? `Lv.${e.level} ${ARMORED.name}` : RANGED_ENEMIES[e.species]
+    // 首领召唤使用专属木卫名称，普通重装保留原兵种名称。
+    const label = armored ? `Lv.${e.level} ${e.bossSummon?e.name:ARMORED.name}` : RANGED_ENEMIES[e.species]
       ? i18nText("rendering.enemyLevel", { p0: e.level, p1: RANGED_ENEMIES[e.species].name })
       : `Lv.${e.level} ${e.flying?'叶翼飞团':dumplingSizeName(e.rank)}`;
     c.strokeText(label, e.x, e.y + 19);
