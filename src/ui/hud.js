@@ -1,3 +1,4 @@
+import {bossCombatActive} from '../core/boss-engagement.js';
 import {heroExperience} from '../progression/hero-experience.js';
 import {unreadMailCount} from '../progression/mailbox.js';
 import { i18nText } from "../i18n/index.js";
@@ -201,7 +202,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
       game.bossReady ? i18nText("ui.hud.5f992daade") : game.waveRest > 0 ? i18nText("ui.hud.67d54f9c74", { p0: (Math.ceil(game.waveRest)) }) :
         incoming ? i18nText("ui.hud.67d54f9c74", { p0: (Math.ceil(game.waveWarning)) }) : `${game.waveKills} / ${wave.total}`;
     updateWaveProgress(root,game);
-    $('boss-hud').hidden = !game.boss||livingProtected(game);
+    $('boss-hud').hidden = !bossCombatActive(game);
     const supportWarning = game.boss?.support?.warning || 0;
     $('boss-hud').classList.toggle('incoming', supportWarning > 0);
     if (game.boss) {

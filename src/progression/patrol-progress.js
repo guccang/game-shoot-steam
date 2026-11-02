@@ -4,6 +4,7 @@ import { waveDifficulty, CLEARING_QUOTA_VERSION, WAVE_REST_SECONDS } from '../co
 import { clamp } from '../core/math.js';
 import { COLLECTED_VEHICLES } from '../config/vehicles.js';
 import {RESOURCE_CAP} from '../config/resource-limits.js';
+import {canonical} from '../world/coordinates.js';
 
 // 有界数值恢复，非法字段采用默认值，杜绝坏档造成无限波次或计时。
 function number(value, fallback, max, integer = false) {
@@ -43,6 +44,9 @@ export function validatePatrol(raw) {
     bossKillsAt: number(raw.bossKillsAt, 0, kills, true),
     recoveryRun: raw.recoveryRun === true,
     bossHp: Number.isFinite(raw.bossHp) && raw.bossHp > 0 ? number(raw.bossHp, 1, 1e12) : null,
+    // 位置只接受有限坐标并归一到循环地图，脱战状态不影响挑战奖励资格。
+    bossPosition:Number.isFinite(raw.bossPosition?.x)&&Number.isFinite(raw.bossPosition?.y)?canonical(raw.bossPosition):null,
+    bossDisengaged:raw.bossDisengaged===true,
     playerHp: raw.state === 'dead' ? 0 : number(raw.playerHp, 120, 1e9),
     // 乘坐状态只接受有效车型；死亡与未乘坐不自动上车。
     mountedVehicleIndex: raw.state !== 'dead' && Number.isInteger(raw.mountedVehicleIndex) && COLLECTED_VEHICLES[raw.mountedVehicleIndex]

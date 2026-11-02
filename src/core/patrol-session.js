@@ -58,6 +58,9 @@ export function capturePatrol(game) {
     bossKillsAt: game.bossKillsAt,
     recoveryRun: game.recoveryRun,
     bossHp: game.boss?.hp ?? null,
+    // 整备存档保留战区落点，不能刷新后把未完成领主搬到营地身边。
+    bossPosition: game.boss?canonical(game.boss):null,
+    bossDisengaged:!!game.boss?.disengaged,
     playerHp: game.player.hp,
     // 骑车投料施工保留乘坐状态，刷新后仍能完成下车教学；剧情借车不写入随行车。
     mountedVehicleIndex: !game.fireActive && (!game.arrivalCinematic || game.progress.arrival?.phase==='repairing') && game.vehicle.active && game.vehicle.hp > 0 && game.vehicle.cooldown === 0
@@ -99,7 +102,7 @@ export function restorePatrol(game, snapshot) {
   game.enemies = [];
   game.aimLock = null;
   game.waveSpawned = game.waveKills;
-  if (saved.bossReady && saved.bossHp !== null) restoreBoss(game, saved.bossHp);
+  if (saved.bossReady && saved.bossHp !== null) restoreBoss(game, saved.bossHp,saved.bossPosition,saved.bossDisengaged);
   // 只补剩余名额；休整期间不生成敌人，避免完成波次后又刷一轮。
   // 波中重建先准备三秒；波间只续接剩余休整，领主节点不增加准备时间。
   game.waveWarning = game.waveRest > 0 || game.bossReady || game.boss ? 0 : WAVE_WARNING_SECONDS;

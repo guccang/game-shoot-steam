@@ -1,5 +1,6 @@
 // 领主援兵只由统一召唤招式触发，不再通过后台自动计时叠加刷怪。
 import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
+import {bossCombatActive} from './boss-engagement.js';
 import {BOSS_SUPPORT as RULES} from '../config/boss-combat.js';
 import {findNearbyArrivalSpot} from './enemy-arrival.js';
 import {livingWaveAllowed} from './living-safety.js';
@@ -16,7 +17,7 @@ function supportAllowed(game){
  if(game.realm)return game.realm.phase==='combat';
  if(game.story)return game.story.phase==='active';
  if(game.campDefense)return game.campDefense.phase==='boss';
- return livingWaveAllowed(game);
+ return bossCombatActive(game)&&livingWaveAllowed(game);
 }
 
 // 正常两只、半血三只；满员时跳过召唤招式，不无效蓄力，也不额外追加一批。

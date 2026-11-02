@@ -1,3 +1,4 @@
+import {bossCombatActive} from './boss-engagement.js';
 import {campResidentsVisible,campResidents,campTalkSite} from './camp-routines.js';
 import {taskResourcePath,taskResourceStock,taskCropStock} from '../progression/task-resources.js';
 import {woodTaskStatus} from './wood-task-status.js';
@@ -188,7 +189,7 @@ export function mainlineActors(game){
 // 在安全的指定地点触发，远程点击任务卡不能隔空完成剧情或领资源。
 export function canTalkMainline(game){
  const o=mainlineObjective(game);return !!o&&!o.restoration&&!o.cottageRest&&game.mapId===MAINLINE_SITES[o.task.site].mapId&&game.state==='playing'&&
-  worldDistance(game.player,campTalkSite(game,o.task))<=GAMEPLAY_VALUES.mainline.interactionRadius&&!game.boss&&!game.player.arena&&!game.enemies.some(e=>e.hp>0&&worldDistance(game.player,e)<GAMEPLAY_VALUES.mainline.safeEnemyDistance);
+  worldDistance(game.player,campTalkSite(game,o.task))<=GAMEPLAY_VALUES.mainline.interactionRadius&&!bossCombatActive(game)&&!game.player.arena&&!game.enemies.some(e=>e.hp>0&&worldDistance(game.player,e)<GAMEPLAY_VALUES.mainline.safeEnemyDistance);
 }
 // 资源和完成记录写入同一候选存档，失败保持钱包与任务原样，可在原地重试。
 export function completeMainline(game){

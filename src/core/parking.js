@@ -1,3 +1,4 @@
+import {bossCombatActive} from './boss-engagement.js';
 import {enterParkedWorkshop} from './cottage.js';
 import {parkingOccupied,leaveParkedVehicle} from './camp-parking.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
@@ -12,7 +13,7 @@ import {updateCatMotion} from './cat-motion.js';
 // 普通自有车都可停驻；消防任务、剧情与战斗活动仍使用各自的出入场流程。
 export function parkingAvailable(game){
  if(movementLoadFactor(game)===0||game.progress.logistics?.tow)return false;
- return game.mapId==='forest'&&game.vehicle.active&&[0,1,2,3,4,5,6,7,8].includes(game.vehicle.index)&&!game.arrivalCinematic&&!game.realm&&!game.story&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&!game.player.arena&&!game.boss&&!game.livingBattle&&!game.cottage;
+ return game.mapId==='forest'&&game.vehicle.active&&[0,1,2,3,4,5,6,7,8].includes(game.vehicle.index)&&!game.arrivalCinematic&&!game.realm&&!game.story&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&!game.player.arena&&!bossCombatActive(game)&&!game.livingBattle&&!game.cottage;
 }
 // 只有院内泊位及紧邻过道可以候停，路面和路肩即使静止也不会触发。
 export function nearestParkingSpot(game){

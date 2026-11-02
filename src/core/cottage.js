@@ -1,3 +1,4 @@
+import {bossCombatActive} from './boss-engagement.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {dismountVehicle} from '../combat/vehicle.js';
 import {blocked} from '../physics/motion.js';
@@ -14,7 +15,7 @@ import {calendarView,advanceLivingCalendar} from '../world/living-calendar.js';
 import {LIVING_DAY_MS} from '../config/living-world.js';
 
 // 步行和驾驶都可在门前候停；过场、事件战斗和自动倒车期间不抢占控制。
-export function canEnterCottage(game){return game.mapId==='forest'&&!game.realm&&!game.story&&!game.arrivalCinematic&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial&&!['align','reverse'].includes(game.parking?.phase);}
+export function canEnterCottage(game){return game.mapId==='forest'&&!game.realm&&!game.story&&!game.arrivalCinematic&&!game.fireActive&&!game.campDefense&&!bossCombatActive(game)&&!game.livingBattle&&!game.workshopTrial&&!['align','reverse'].includes(game.parking?.phase);}
 // 兼容旧调用方的资格查询，实际入室仍核验门口范围。
 export function canClickCottage(game){return !game.cottage&&!game.vehicle.active&&canEnterCottage(game)&&game.state==='playing'&&!game.progress.restoration?.build&&!game.mainlineSpeech&&facilityOpen(game.progress,'cottage')&&worldDistance(game.player,C.door)<=C.clickRadius;}
 // 门前候停完成后交给正式房间控制器。

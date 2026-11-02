@@ -1,3 +1,4 @@
+import {bossCombatActive} from './boss-engagement.js';
 import {woodTaskStatus} from './wood-task-status.js';
 // 修复任务靠近自动投料，自选建筑由界面确认；持久化成功才扣料和开放功能。
 import {TOWN_RESTORATIONS,pendingRestoration,facilityOpen,RESTORATION_SECONDS} from '../config/town-restoration.js';
@@ -22,7 +23,7 @@ export function restorationStatus(game,id){
  const gathered=game.progress.restoration?.gathered[f.id]||0,ready=facilityOpen(game.progress,id),active=!arrivalCinematic(game.progress);
  const near=game.mapId==='forest'&&!game.cottage&&inRestorationArea(game.player,area);
  const enough=game.progress.restoration?.build?.id===id||game.progress.wood>=f.wood;
- const safe=!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!game.boss&&!game.livingBattle&&!game.workshopTrial&&['playing','paused'].includes(game.state);
+ const safe=!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!bossCombatActive(game)&&!game.livingBattle&&!game.workshopTrial&&['playing','paused'].includes(game.state);
  const taskRequired=!arrivalPending(game.progress)&&!!currentMainlineTask(game.progress.mainline)&&pendingRestoration(game.progress)?.id===id;
  return {facility:f,area,gathered,wood:woodTaskStatus(game,f.wood),ready,active,near,enough,taskRequired,canRepair:!ready&&!game.progress.restoration?.build&&active&&near&&enough&&safe};
 }

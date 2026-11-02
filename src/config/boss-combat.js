@@ -1,4 +1,6 @@
 // Boss 重击与援兵配置集中维护，普通武器继续使用原有的小幅击退参数。
+// 普通森林拉开700单位即脱战，回到500单位内再接战，边缘往返不反复切换。
+export const BOSS_ENGAGEMENT={leaveDistance:700,returnDistance:500};
 const IMPACTS = {
   normal: { scale: 0.6, limit: 55, drag: 10, flash: 0.13, pose: 0 },
   sniper: { scale: 1.1, limit: 125, drag: 8, flash: 0.26, pose: 7 },
