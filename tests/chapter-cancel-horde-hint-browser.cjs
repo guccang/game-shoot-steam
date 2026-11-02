@@ -62,6 +62,10 @@ async original=>{
   // 同一驿牌重新接取，再暂离并取消已保存检查点。
   await page.locator('[data-story-post="sunleaf-post"]').tap();await page.locator('[data-story-command="enter"]').tap();
   await page.evaluate(()=>{const g=a.game;if(g.story.stageId!=='Q10'||g.story.loadoutId)throw Error('重新接取没有重置阶段');g.advanceStoryDialogue(true);a.refresh();});
+  // 选车页已移除暂离入口，开始行动后再验证保存检查点。
+  if(await page.locator('[data-story-command="leave"]').count())throw Error('选车页仍显示暂离章节');
+  await page.locator('[data-story-loadout="tide-arc"]').tap();await page.locator('[data-story-command="start"]').tap();
+  await page.locator('#quest').tap();
   await page.locator('[data-story-command="leave"]').tap();
   await page.evaluate(()=>{if(a.game.story||!a.game.progress.story.run)throw Error('暂离丢失检查点');a.game.state='playing';a.refresh();});
   await page.locator('[data-story-post="sunleaf-post"]').tap();await page.locator('[data-story-command="cancel"]').tap();await page.locator('[data-story-command="confirm-cancel"]').tap();

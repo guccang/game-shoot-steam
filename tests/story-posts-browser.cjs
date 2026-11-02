@@ -12,7 +12,10 @@ async(page)=>{
  if(await page.locator('[data-story-chapter]').count()!==8)throw Error('当地目录丢失已有故事');
  await page.locator('[data-story-command="enter"]').click();await page.locator('#story-speech').waitFor({state:'visible'});
  if(await page.locator('[data-story-post="sunleaf-post"]').isVisible())throw Error('剧情内仍残留世界入口');
- await page.locator('#story-speech-skip').click();await page.locator('[data-story-command="leave"]').click();
+ await page.locator('#story-speech-skip').click();
+ // 选车页不提供暂离，进入行动阶段后从任务面板管理章节。
+ await page.locator('[data-story-loadout="tide-arc"]').click();await page.locator('[data-story-command="start"]').click();
+ await page.locator('#quest').click();await page.locator('[data-story-command="leave"]').click();
  if(await page.locator('#resume').isVisible())await page.locator('#resume').click();
  await page.waitForTimeout(300);await page.keyboard.press('KeyE');
  if(!(await page.locator('[data-story-command="enter"]').textContent()).includes('继续'))throw Error('暂离后不能从驿牌继续');

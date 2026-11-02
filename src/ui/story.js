@@ -97,7 +97,7 @@ export function createStoryPanel({game,root,dialogs,renderer,onChange,openWorksh
       html=`<h3>${node.title}</h3><p>${game.storyObjective().label}</p><button class="story-primary" data-story-command="resume">${i18nHtml("ui.panels.realms.25aa5ece41")}</button>`;
     }
     if(r)html+=`<div class="story-footer"><button data-story-command="log">${i18nHtml("ui.story.48268cbb55")}</button><button class="story-help-button" data-story-help="chapter" aria-label="${i18nHtml("ui.story.1c8f9513f9")}">${HELP_EMBLEM}</button></div>`;
-    if(view==='cancel-confirm')html='<h3>取消当前章节任务？</h3><p>本次未交付进度将清空，借用装备会归还。已获得的奖励和已完成章节保持不变。</p><p>之后可以回到接取驿牌重新开始；只想稍后继续，请选择“暂离章节”。</p>';
+    if(view==='cancel-confirm')html='<h3>取消当前章节任务？</h3><p>本次未交付进度将清空，借用装备会归还。已获得的奖励和已完成章节保持不变。</p><p>之后可以回到接取驿牌重新开始。</p>';
     if(r?.error||notice)html+=`<p role="status" class="story-error">${escapeText(notice||r.error)}</p>`;
     return html;
   }
@@ -110,7 +110,9 @@ export function createStoryPanel({game,root,dialogs,renderer,onChange,openWorksh
     const html=content();
     const pending=game.story||game.progress.story.run;
     taskActions.hidden=!pending;
-    const actions=!pending?'':view==='cancel-confirm'?'<button class="ui-button" data-story-command="back">继续任务</button><button class="ui-button ui-button--danger" data-story-command="confirm-cancel">确认取消任务</button>':`${game.story?'<button class="ui-button" data-story-command="leave">暂离章节</button>':''}<button class="ui-button" data-story-command="cancel">取消任务</button>`;
+    // 选车准备阶段只保留取消任务，避免整备时误触暂离章节。
+    const choosingLoadout=game.story?.phase==='prepare'&&storyNode(game)?.panel?.type==='loadout';
+    const actions=!pending?'':view==='cancel-confirm'?'<button class="ui-button" data-story-command="back">继续任务</button><button class="ui-button ui-button--danger" data-story-command="confirm-cancel">确认取消任务</button>':`${game.story&&!choosingLoadout?'<button class="ui-button" data-story-command="leave">暂离章节</button>':''}<button class="ui-button" data-story-command="cancel">取消任务</button>`;
     if(taskActions.innerHTML!==actions)taskActions.innerHTML=actions;
     root.getElementById('story-title').textContent=game.story?def.title:'任务簿';
     dialog.querySelector('.story-heading small').textContent=game.story?def.subtitle:'巡林主线 · 森林故事 · 邻里委托';

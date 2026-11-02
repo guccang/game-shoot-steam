@@ -11,6 +11,9 @@ async(page)=>{
   await page.reload();await page.locator('#start').click();
   await openWorldStory();await page.getByRole('button',{name:'开始第一章',exact:true}).click();
   await page.locator('#story-speech-skip').click();
+  // 选车页不再提供暂离按钮，开始行动后再检查章节清理。
+  await page.locator('[data-story-loadout="tide-arc"]').click();await page.locator('[data-story-command="start"]').click();
+  await page.locator('#quest').click();
   // 复核入口读取正式绘制列表，截图由实际场景绘制。
   async function inspect(label){const s=await page.evaluate(async()=>{
     const a=(await import('/src/main.js')).application;
