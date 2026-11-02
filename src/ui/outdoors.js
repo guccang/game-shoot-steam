@@ -1,5 +1,5 @@
 // 手机野外装备页与实时钓鱼操作条；弹窗只负责准备，抛竿和收线始终发生在正式湖面。
-import {OUTDOOR_GEAR,FISH_SPECIES} from '../config/outdoors.js';
+import {OUTDOOR_GEAR,FISH_SPECIES,OUTDOOR_RULES} from '../config/outdoors.js';
 import {buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,fishingControl,finishFishing,outdoorBusy} from '../core/outdoors.js';
 import {fishingShores} from '../world/outdoor-sites.js';
 import {AMMO_SHOP} from '../config/supplies.js';
@@ -25,7 +25,7 @@ export function createOutdoors({game,root,dialogs,onChange}){
   if(action==='shop'||action==='shore'||action==='camp-nav'){
    const site=action==='shop'?{...AMMO_SHOP,y:AMMO_SHOP.y+22}:action==='shore'?fishingShores(game)[0]:game.progress.outdoors.camp;
    if(!site){message='附近暂时找不到可站立的湖岸。';renderPanel();return;}
-   requestWorldNavigation(game,site,action==='shore'?'前往湖岸钓鱼':action==='shop'?'购买露营与钓鱼装备':'返回野外营地',{direct:true});dialogs.close(panel.id);onChange();return;
+   requestWorldNavigation(game,site,action==='shore'?'前往湖岸钓鱼':action==='shop'?'购买露营与钓鱼装备':'返回野外营地',{direct:true,arrivalRadius:action==='shore'?OUTDOOR_RULES.castReach:undefined});dialogs.close(panel.id);onChange();return;
   }
   if(['fish','sleep','nap','tent','vehicle','pack'].includes(action))dialogs.close(panel.id);
   if(action==='fish')result=beginFishing(game);

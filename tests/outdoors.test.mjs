@@ -11,6 +11,10 @@ import {blocked} from '../src/physics/motion.js';
 import {catLoad} from '../src/progression/load-weight.js';
 import {backpackEntries} from '../src/progression/backpack.js';
 import {outdoorFishingView} from '../src/rendering/outdoors.js';
+import {requestWorldNavigation,worldNavigationObjective} from '../src/core/world-navigation.js';
+import {OUTDOOR_RULES} from '../src/config/outdoors.js';
+import {worldDistance} from '../src/world/coordinates.js';
+import {livingSafePoint} from '../src/world/living-spaces.js';
 import {buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,fishingControl,finishFishing,updateOutdoors} from '../src/core/outdoors.js';
 
 // 只准备自由巡林档与保存回调，装备与鱼获仍通过真实业务提交。
@@ -40,6 +44,29 @@ test('柜台购买原子保存、重复拥有与背包重量一致',()=>{
 test('两张地图湖岸可站立，浮漂落在真实水域，非湖岸不能抛竿',()=>{
  const g=angler();for(const mapId of ['forest','jiuzhaigou']){g.mapId=mapId;const shores=fishingShores(g);assert.ok(shores.length);for(const s of shores){assert.equal(blocked(s.x,s.y,16,g.trees,{mapId,livingCollision:mapId==='forest'}),false);assert.equal(touchesLandform(s.lake,s.water.x,s.water.y),true);}}
  g.mapId='forest';Object.assign(g.player,scene().player);assert.equal(beginFishing(g).ok,false);
+});
+
+test('未结束的远处清缴和已脱战领主不阻止湖边钓鱼，回来接战仍中断',()=>{
+ const g=angler(),shore=fishingShores(g).find(s=>!livingSafePoint(s));assert.ok(shore,'使用营地安全区外的湖岸检查重新接战');Object.assign(g.player,{x:shore.x,y:shore.y});g.progress.living.patrolActive=true;
+ g.progress.living.clearingSite={x:shore.x+1800,y:shore.y,radius:300,origin:{x:shore.x+1800,y:shore.y+400}};
+ g.boss={id:999,x:shore.x+1500,y:shore.y,hp:321,disengaged:true};
+ assert.equal(beginFishing(g).ok,true);tick(g,.1);assert.ok(g.fishing);assert.equal(g.progress.living.patrolActive,true);assert.equal(g.boss.hp,321);
+ g.boss.x=shore.x+100;tick(g,.1);assert.equal(g.fishing,null);assert.equal(beginFishing(g).ok,false);
+ g.boss=null;g.progress.living.clearingSite={...g.progress.living.clearingSite,...shore};assert.equal(beginFishing(g).ok,false);
+ g.progress.living.clearingSite.x+=1800;g.enemies=[{hp:10,...shore}];assert.equal(beginFishing(g).ok,false);
+});
+
+test('两张地图钓鱼导航在可抛竿范围内才算抵达，不提前撤掉路点',()=>{
+ const g=angler();
+ for(const mapId of ['forest','jiuzhaigou']){
+  g.mapId=mapId;const shore=fishingShores(g)[0],dx=shore.x-shore.water.x,dy=shore.y-shore.water.y,d=Math.hypot(dx,dy);
+  Object.assign(g.player,{x:shore.x+dx/d*88,y:shore.y+dy/d*88});
+  requestWorldNavigation(g,shore,'前往湖岸钓鱼',{direct:true,arrivalRadius:OUTDOOR_RULES.castReach});
+  assert.ok(fishingShores(g)[0].distance>OUTDOOR_RULES.castReach,'测试位置仍在抛竿范围外');
+  assert.equal(worldNavigationObjective(g)?.site.id,shore.id,'尚不能钓鱼时保留终点');
+  Object.assign(g.player,{x:shore.x+dx/d*80,y:shore.y+dy/d*80});
+  assert.ok(worldDistance(g.player,shore)<=OUTDOOR_RULES.castReach);assert.equal(worldNavigationObjective(g),null);assert.equal(beginFishing(g).ok,true);fishingControl(g,'cancel');
+ }
 });
 test('营地放置、跨读档与收营保持唯一装备及重量',()=>{
  const g=angler();wilderness(g);const weight=catLoad(g).weight;assert.equal(deployCamp(g).ok,true);assert.equal(catLoad(g).weight,weight-6);assert.equal(deployCamp(g).ok,false);

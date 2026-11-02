@@ -2,6 +2,8 @@ import {vehicleModel} from '../config/vehicles.js';
 import {RESOURCE_CAP} from '../config/resource-limits.js';
 import {touchesLandform} from '../world/natural-terrain.js';
 import {farmWorking} from './farm.js';
+import {bossCombatActive} from './boss-engagement.js';
+import {clearingCombatActive} from './living-safety.js';
 // 露营和钓鱼的正式状态机；界面只提交操作，费用、鱼获和休息均先保存再兑现。
 import {OUTDOOR_GEAR,FISH_SPECIES,OUTDOOR_RULES as R} from '../config/outdoors.js';
 import {validateProgress} from '../progression/progress.js';
@@ -18,7 +20,8 @@ export function outdoorReason(game,{shop=false}={}){
  if(shop)return game.cottage?.kind==='ammo'?'':'请到弹药补给铺找售货员购买野外装备。';
  if(farmWorking(game))return '请先完成手上的农活。';
  if(game.cottage)return '请先走到屋外。';
- if(game.boss||game.livingBattle||game.progress.living.patrolActive||game.enemies.some(e=>e.hp>0&&worldDistance(e,game.player)<R.safeRadius))return '附近有危险，请先脱离战斗再露营或钓鱼。';
+ // 未完成的清缴或远处脱战领主不代表湖岸仍在交战；与其他生活交互共用现场战斗判定。
+ if(bossCombatActive(game)||game.livingBattle||clearingCombatActive(game)||game.enemies.some(e=>e.hp>0&&worldDistance(e,game.player)<R.safeRadius))return '附近有危险，请先脱离战斗再露营或钓鱼。';
  return '';
 }
 // 当前动作锁定移动与手持武器，暂停不推进动作，也不把整个世界变成无敌区。

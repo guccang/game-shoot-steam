@@ -62,3 +62,15 @@
 动态功能开发结论：通过。本轮交付野外露营与真实湖面垂钓及程序动态美术，不替代后续 PNG 精修验收。
 
 PNG 精修：后续阶段。
+
+## 2026-11-02 湖岸无法钓鱼修复
+
+本轮修正操作资格与导航抵达条件，保留原有湖岸、钓具、人物动作、取景及手机布局，没有新增美术资源。
+
+- 根因一：野外装备把“已接清缴”或“存在 Boss 对象”直接当作仍在交战，离开清缴区域、远处 Boss 已脱战也不能抛竿。现在复用现场清缴与 Boss 交战判定，附近敌人、实际交战及其他活动仍会拦截或中断钓鱼。
+- 根因二：访问导航在 90 单位内结束，抛竿却要求在 85 单位内。钓鱼导航现在显式使用抛竿距离；森林与九寨沟一致，其他访问继续使用原来的默认距离。
+- 回归：`tests/outdoors.test.mjs`、`tests/task-navigation-toggle.test.mjs`、`tests/clearing-sign-navigation.test.mjs`、`tests/keepsake-backpack.test.mjs` 共 31 项通过。新增两项测试在修复前均失败，修复后通过。
+- 实机：`tests/fishing-shore-browser.cjs` 使用真实按钮、最后几步移动与触屏收放线；初始距目标约 85.8 单位时导航保留，靠近后正常钓起 1 条鱼，鱼饵 20→19，原清缴任务仍在，页面异常 0。
+- designCriterion：沿用 `camping-fishing`。正式绘制器未改动，人工检查 `output/playwright/fishing-shore-fix/320-night.png` 与 `390-day.png`，人物、真实湖水和操作条同屏，按钮清晰；同目录保留另外两种昼夜尺寸及 `caught.png`。
+
+结论：通过。未修改存档结构或增加旧档迁移。
