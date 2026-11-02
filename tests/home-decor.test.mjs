@@ -8,7 +8,7 @@ import {COTTAGE} from '../src/config/cottage.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {freshHome,placementError,plantState,homeFurniture} from '../src/progression/home-decor.js';
 import {buyDecor as purchaseDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../src/core/home-decor.js';
-import {enterCottage,cottageBlocked,sleepInCottage,leaveCottage} from '../src/core/cottage.js';
+import {enterCottage,cottageBlocked,updateCottage,leaveCottage} from '../src/core/cottage.js';
 
 // 通过正式入口进入已修复小屋，避免用过时的未修复营地夹具。
 function setup(){const p=freshProgress();p.coins=10000;p.mainline.completed=[...MAINLINE_IDS];p.restoration.repaired=['cottage'];const g=new Game(p,()=>.7);g.start();g.vehicle.active=false;Object.assign(g.player,COTTAGE.door);assert.ok(enterCottage(g));g.livingPersist=()=>true;return g;}
@@ -25,7 +25,7 @@ test('每件商品按报价扣款，独立实例入收纳，金币不足与容�
  for(const d of HOME_CATALOG){const r=buyDecor(g,d.id);assert.ok(r.ok);total+=d.price;assert.equal(g.progress.homeDecor.items.find(i=>i.uid===r.uid).x,null);}
  assert.equal(g.progress.coins,10000-total);assert.equal(new Set(g.progress.homeDecor.items.map(i=>i.uid)).size,g.progress.homeDecor.items.length);
  g.progress.coins=0;const before=structuredClone(g.progress);assert.equal(buyDecor(g,'pot').ok,false);assert.deepEqual(g.progress,before);
- g.progress.coins=10000;while(g.progress.homeDecor.items.length<HOME_LIMIT)assert.ok(buyDecor(g,'stool').ok);
+ g.progress.coins=10000;while(g.progress.homeDecor.items.length<HOME_LIMIT*g.progress.homeDecor.floors)assert.ok(buyDecor(g,'stool').ok);
  const coins=g.progress.coins;assert.equal(buyDecor(g,'stool').ok,false);assert.equal(g.progress.coins,coins);
 });
 test('购买、移动、收纳、播种与采收保存失败均回滚，允许重试',()=>{
@@ -55,7 +55,7 @@ test('播种防连点，睡到明早兑现成熟，收纳和存档刷新保留�
  const g=setup(),uid=buyDecor(g,'pot').uid;assert.equal(sowDecor(g,uid,'mint').ok,false);assert.ok(moveDecor(g,uid,120,228).ok);
  assert.ok(sowDecor(g,uid,'mint').ok);const coins=g.progress.coins;assert.equal(sowDecor(g,uid,'berry').ok,false);assert.equal(g.progress.coins,coins);assert.equal(harvestDecor(g,uid).ok,false);
  assert.ok(storeDecor(g,uid).ok);g.progress=validateProgress(JSON.parse(JSON.stringify(g.progress)));assert.ok(g.progress.homeDecor.items.find(i=>i.uid===uid).plant);
- assert.ok(moveDecor(g,uid,120,228).ok);Object.assign(g.player,{x:119,y:158});assert.ok(sleepInCottage(g,'morning'));
+ assert.ok(moveDecor(g,uid,120,228).ok);Object.assign(g.player,{x:119,y:158});for(let i=0;i<21;i++)updateCottage(g,.05,{x:0,y:0});assert.ok(g.cottage.sleep);
  for(let i=0;i<26;i++)g.update(.05);const item=g.progress.homeDecor.items.find(i=>i.uid===uid);assert.equal(plantState(item,g.progress.living.calendar).ready,true);
  assert.ok(harvestDecor(g,uid).ok);assert.equal(g.progress.coins,coins+18);assert.equal(harvestDecor(g,uid).ok,false);
  assert.ok(leaveCottage(g));assert.equal(buyDecor(g,'pot').ok,false);

@@ -315,6 +315,7 @@ export function createApplication({
   npcConversations=createNpcConversations({game,root,renderer,dialogs,onChange:refresh,onCampService:()=>mainline.talk()});
   // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
   function openRoomService(kind,index){
+    if(kind==='construction')return campHome.openService(kind,index);
     if(kind==='warehouse')return warehouse.open();
     if(kind==='ammo')return fieldEquipment.open('ammo');
     if(kind==='seed')return seedShop.open();

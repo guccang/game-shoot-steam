@@ -16,6 +16,7 @@ export const TOWN_LAYOUT = {
   ammo: {x:-140,y:570,width:220,height:175},
   repair: {x:-140,y:930,width:220,height:175},
   cottage: {x:850,y:300},
+  construction: {x:1015,y:510},
   warehouse: {x:585,y:300,width:144,height:124},
   catHome: {x:580,y:780,width:144,height:132},
   furniture: {x:570,y:550,width:136,height:120},
@@ -32,6 +33,8 @@ export const TOWN_LAYOUT = {
 for(const [id,p] of Object.entries(TOWN_LAYOUT))TOWN_LAYOUT[id]=id==='bounds'?{...p,left:p.left+TOWN_SHIFT_X,right:p.right+TOWN_SHIFT_X}:townPoint(p);
 // 小径端点与原纵路相接；车位判断仍只使用原干道，不把院内支路误判为禁停区。
 export const TOWN_PATHS = [
+  // 建筑公司支路连接小屋院前，不占用原停车位。
+  [{x:1015,y:560},{x:1050,y:560},{x:1050,y:729}],
   [{x:585,y:365},{x:677,y:365}],
   [{x:-140,y:635},{x:-340,y:635},{x:-340,y:729}],
   [{x:580,y:840},{x:690,y:840}],
@@ -49,6 +52,7 @@ export const TOWN_PATHS = [
 ].map(path=>path.map(townPoint));
 // 铺地只覆盖各自门前，中央纵横主路与麦田仍有连续的草地间隔。
 export const TOWN_COURTS = [
+  {id:'construction-yard',x:930,y:515,w:160,h:50,material:'earth'},
   {id:'warehouse-yard',x:520,y:305,w:140,h:75,material:'earth'},
   {id:'cat-home-yard',x:505,y:785,w:150,h:65,material:'earth'},
   {id:'furniture-yard',x:495,y:555,w:150,h:65,material:'earth'},

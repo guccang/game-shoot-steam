@@ -1,3 +1,4 @@
+import {homeFloors} from '../config/home-construction.js';
 import {COTTAGE,cottageFloor} from '../config/cottage.js';
 // 小屋装扮手机页面：购买与位置确认分开，预览使用正式房间绘制器。
 import {createEventScope} from '../platform/events.js';
@@ -34,11 +35,11 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  function renderContent(){
   const home=game.progress.homeDecor,shopping=game.cottage?.kind==='furniture';lastHome=home;lastCoins=game.progress.coins;
   tab=shopping?'shop':'room';dialog.querySelector('.home-tabs').hidden=true;$('home-decor-title').textContent=shopping?'家具小铺':`布置小屋 · ${cottageFloor(game.cottage)+1}楼`;
-  $('home-wallet').textContent=`金币 ${game.progress.coins} · 家具 ${home.items.length}/${HOME_LIMIT}`;
+  $('home-wallet').textContent=`金币 ${game.progress.coins} · 家具 ${home.items.length}/${HOME_LIMIT*homeFloors(home)}`;
   for(const button of dialog.querySelectorAll('[data-tab]'))button.setAttribute('aria-pressed',String(button.dataset.tab===tab));
   $('home-shop').hidden=tab!=='shop';$('home-room').hidden=tab!=='room';
   if(tab==='shop'){
-   $('home-products').innerHTML=HOME_CATALOG.map(d=>`<article class="home-product"><canvas width="128" height="128" aria-hidden="true" data-icon="${d.id}"></canvas><div><h3>${d.name}</h3><p>${d.description}</p><button class="ui-button" data-buy="${d.id}" ${game.progress.coins<d.price||home.items.length>=HOME_LIMIT?'disabled':''}>${game.progress.coins<d.price?'金币不足 · ':''}${d.price} 金币购买</button></div></article>`).join('');
+   $('home-products').innerHTML=HOME_CATALOG.map(d=>`<article class="home-product"><canvas width="128" height="128" aria-hidden="true" data-icon="${d.id}"></canvas><div><h3>${d.name}</h3><p>${d.description}</p><button class="ui-button" data-buy="${d.id}" ${game.progress.coins<d.price||home.items.length>=HOME_LIMIT*homeFloors(home)?'disabled':''}>${game.progress.coins<d.price?'金币不足 · ':''}${d.price} 金币购买</button></div></article>`).join('');
    for(const node of dialog.querySelectorAll('[data-icon]'))icon(node,decorDefinition(node.dataset.icon));
   }else{
    $('home-owned').innerHTML=home.items.map(item=>`<button class="home-owned-item ui-button" data-select="${item.uid}" aria-pressed="${item.uid===selected}"><canvas width="128" height="128" aria-hidden="true"></canvas><b>${decorDefinition(item.type).name}</b><small>${item.x===null?'收纳中':`${(item.floor||0)+1}楼 · 已摆放`}</small></button>`).join('');
@@ -85,7 +86,7 @@ export function createHomeDecor({game,root,panel,dialogs,input,onChange}){
  scope.on($('home-preview'),'click',e=>{const r=e.currentTarget.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*COTTAGE.width,y=(e.clientY-r.top)/r.height*COTTAGE.height;if(draft)point(x,y);else{const item=placedDecor(game.progress.homeDecor,cottageFloor(game.cottage)).sort((a,b)=>b.y-a.y).find(i=>Math.abs(x-i.x)<Math.max(22,i.width/2)&&y>i.y-Math.max(30,i.height)&&y<i.y+i.height/2);if(item)select(item.uid);}});
  scope.on($('home-preview'),'keydown',e=>{const direction={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];if(direction&&draft){e.preventDefault();nudge(direction);}});
  // 父级逐帧只同步可见性；存档对象或金币变化后才更新内容。
- function render(){entry.hidden=!game.cottage||!!game.cottage.kind&&game.cottage.kind!=='cottage';entry.disabled=!!game.cottage?.sleep||game.state!=='playing';if(dialog.open){if(!game.cottage||game.cottage.kind&&!['cottage','furniture'].includes(game.cottage.kind)){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
+ function render(){entry.hidden=!game.cottage||!!game.cottage.balcony||!!game.cottage.kind&&game.cottage.kind!=='cottage';entry.disabled=!!game.cottage?.sleep||game.state!=='playing';if(dialog.open){if(!game.cottage||game.cottage.balcony||game.cottage.kind&&!['cottage','furniture'].includes(game.cottage.kind)){dialogs.close(dialog.id);return;}if(lastHome!==game.progress.homeDecor||lastCoins!==game.progress.coins)renderContent();}}
  // 动态节点跟随小屋控制器卸载，避免重复事件和残留预览。
  function dispose(){scope.dispose();if(dialog.open)dialog.close();entry.remove();dialog.remove();}
  // 屋内售货员打开家具服务，保持原暂停与保存流程。

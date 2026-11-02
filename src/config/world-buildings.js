@@ -11,6 +11,7 @@ export const WORLD_BUILDINGS=[
  {id:'cat-home',...TOWN_LAYOUT.catHome,rects:[[-67,-93,69,5]]},
  {id:'warehouse',...TOWN_LAYOUT.warehouse,rects:[[-67,-88,69,5]]},
  {id:'furniture',...TOWN_LAYOUT.furniture,rects:[[-63,-84,65,5]]},
+ {id:'construction',...TOWN_LAYOUT.construction,rects:[[-66,-92,66,6]]},
  {id:'cottage',...TOWN_LAYOUT.cottage,rects:[[-60,-98,70,0]]},
  {id:'weapons',...TOWN_LAYOUT.weapons,rects:[[-68,-98,70,6]]},
  {id:'vehicle',...TOWN_LAYOUT.garage,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},

@@ -1863,3 +1863,6 @@ export function inspectCampDailyLife(game,renderer,root){
  const speech=root.getElementById('resident-chatter'),rendered=renderer.renderGame?.campActors;
  return {designCriterion:'camp-daily-life',actors:[...(game.campActors?.values()||[])].map(actor=>({id:actor.id,x:actor.x,y:actor.y,action:actor.action,moving:actor.moving,clock:actor.clock,moveTime:actor.motion.moveTime,renderedX:rendered?.get(actor.id)?.x})),speech:{visible:!!speech&&!speech.hidden,text:speech?.textContent,pointerEvents:speech?root.defaultView.getComputedStyle(speech).pointerEvents:null},trackingPaused:game.progress.mainline.trackingPaused,modal:!!root.querySelector('dialog[open]')};
 }
+
+// 建筑验收读取真实房间、楼层、营地取景与触控尺寸，绝不为检查另造场景。
+export function inspectHomeConstruction(game,renderer,root=document){return {designCriterion:"cottage-construction",home:structuredClone(game.progress.homeDecor),room:game.cottage?{floor:game.cottage.floor,balcony:game.cottage.balcony,kind:game.cottage.kind}:null,view:renderer.balconyView,companyOpen:!!root.getElementById("home-construction-dialog")?.open,fields:[...root.querySelectorAll("#home-construction-dialog input,#home-construction-dialog select")].map(n=>({height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}

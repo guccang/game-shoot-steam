@@ -1,3 +1,5 @@
+import {drawHomeBalcony} from './home-balcony.js';
+import {constructionObjects,drawConstructionCompany,drawHomeExpansion} from './construction-company.js';
 import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
 import {outdoorBusy} from '../core/outdoors.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from './scene-npc-continuity.js';
@@ -200,6 +202,7 @@ export class Renderer {
       w = this.width,
       h = this.height,
       time = source.previewTime;
+    if(source.cottage?.balcony){drawHomeBalcony(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     if(source.cottage){this.sceneNpcContinuity?.actors.clear();this.stormStrike=null;if(source.cottage.kind&&source.cottage.kind!=='cottage')drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     const valley = source.mapId === 'jiuzhaigou';
     this.ground.setMap(source.mapId);this.ground.setSceneryMask(null);
@@ -235,8 +238,8 @@ export class Renderer {
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     c.clearRect(0, 0, w, h);
     const speech=storySpeechInfo(source);
-    const guide = speech?null:sniperGuide(source);
-    const funnel = !speech&&['funnel', 'drone'].includes(source.weapon().controller);
+    const guide = speech||source.balconyScene?null:sniperGuide(source);
+    const funnel = !source.balconyScene&&!speech&&['funnel', 'drone'].includes(source.weapon().controller);
     const normal = this.camera.update(
       g.player,
       w,
@@ -247,7 +250,7 @@ export class Renderer {
       { arena: source.realm?.arena, mode: source.realm?.mode, session: source.realm, horde: source.campDefense },
     );
     if(source.realm)this.storyCamera.reset();
-    const view=outdoorFishingView(source,this.storyCamera.update(normal,speech,performance.now()/1000,this.reduced.matches,source.story||null),w,h);
+    const view=source.balconyScene?.view||outdoorFishingView(source,this.storyCamera.update(normal,speech,performance.now()/1000,this.reduced.matches,source.story||null),w,h);
     // 建筑提示只调整DOM布局，不再叠加镜头平移或缩放。
     // 地块准备好后才推进统一外观时钟，树木与地面使用同一组季节权重。
     const seasonVisual=this.seasonVisual=this.ground.update(this.environment,view,seasonNow,light.night);
@@ -338,7 +341,7 @@ export class Renderer {
     const lamps = valley ? [] : visibleLights(view, time, light, this.reduced.matches).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
     drawLampGround(c, lamps, [...g.trees, ...g.enemies, ...(g.boss ? [g.boss] : []), g.player]);
     // 赛跑不显示自动攻击范围。
-    if(source.realm?.mode!=='race'&&!farmWorking(source)){
+    if(!source.balconyScene&&source.realm?.mode!=='race'&&!farmWorking(source)){
     // 淡淡的射程圈帮助理解自动攻击距离。
     c.beginPath();
     c.ellipse(
@@ -377,6 +380,7 @@ export class Renderer {
     const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source).map(actor=>g.campActors?.get(actor.id)||actor)],view);
     const activeStoryResidents=new Set([...storyResidentIds(source),...scenePeople.map(a=>a.residentId).filter(Boolean)]);
     const objects = [
+      ...visibleBodies(constructionObjects(camp),view,160),
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
       ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
       ...visibleBodies(farmObjects(camp),view,90),
@@ -399,7 +403,7 @@ export class Renderer {
       ...entrances.flatMap(entry=>entry.mode==='fire'?[{...entry,type:'fire-station-back',depthOffset:-150},{...entry,worldLayers:true}]:[entry]),
       ...(!valley&&!source.realm&&!source.story&&source.fireStationTruck?visibleBodies([{...FIRE_GARAGE,type:'fire-truck-rear',depthOffset:-1},{...FIRE_GARAGE,type:'fire-truck-front',depthOffset:1}],view,120):[]),
       ...(source.realm ? [] : visibleBodies(valley ? JIUZHAIGOU_SIGNPOSTS : REGION_SIGNPOSTS, view, valley ? 250 : 140)),
-      ...(valley ? [] : guardianScenery(visibleBodies(SCENERY, view, 180), source.realm)),
+      ...(valley ? [] : guardianScenery(visibleBodies(SCENERY, view, 340), source.realm)),
       ...(valley ? [] : visibleBodies(NATURAL_TERRAIN.mountains, view, 340)),
       ...(source.realm?.mode === 'guardian' ? [source.realm.goddess, ...source.realm.defenses.map(t => ({ ...guardianPads(source.realm.arena)[t.slot], type: 'defense', tower: t, flying: t.kind === 'vehicle' && t.index === 2 }))] : []),
       ...visibleBodies(legendaryObjects(source),view,220),
@@ -420,6 +424,7 @@ export class Renderer {
     profiler?.end('render.gravity');
     profiler?.start('render.entities');
     for (const item of objects) {
+      if(source.balconyScene&&item.type==='player')continue;
       // 独立运动草坪覆盖原地表，平台内部不能残留森林摆件或山体遮挡。
       if(['football','race'].includes(source.realm?.mode)&&['scenery','landform','fixture','signpost'].includes(item.type)&&Math.hypot(item.x-source.realm.arena.x,item.y-source.realm.arena.y)<source.realm.arena.radius+220)continue;
       // 宽麦田按真实冠幅裁剪，镜头经过行中心外侧时仍保留伸入画面的麦穗。
@@ -428,14 +433,15 @@ export class Renderer {
         item.x < cameraX - margin ||
         item.x > cameraX + w / zoom + margin ||
         item.y < cameraY - (item.burst?180:70) ||
-        item.y > cameraY + h / zoom + (item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
+        item.y > cameraY + h / zoom + (item.kind==='cottage'&&!item.workshop?340:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
       )
         continue;
       // 屋体前后层同步显露；库内车辆仍只在消防设施已开放时出现。
       if(item.type==='fire-station-back'&&!restorationBuildingVisible(camp,'fire'))continue;
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);continue;}
-      if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
+      if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
+      else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
       else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches);
       else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
       else if(item.type==='river-dock'||item.type==='river-barrier')drawRiverCrossing(c,item,light.night,g.player);
@@ -460,6 +466,7 @@ export class Renderer {
       else if (item.type === 'scenery') {
         // 工坊造型由已保存的入职阶段投影，不叠画旧小屋或额外封门图层。
         const build=item.workshop===true?workshopBuildView(source):null;
+        if(item.kind==='cottage'&&!item.workshop&&facilityOpen(source.progress,'cottage'))drawHomeExpansion(c,item,source.progress.homeDecor,light.night,g.player);
         drawScenery(c,build?{...item,workshopState:build.state,rebuildProgress:build.progress,reducedMotion:this.reduced.matches}:item,light.night,item.kind==='garage'&&parkingGaragePose(g.player,g.vehicle)?null:g.player,winter);
       }
       else if (item.type === 'fixture') drawLightFixture(c, item, time, light, this.reduced.matches);

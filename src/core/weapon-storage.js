@@ -7,7 +7,7 @@ import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
 // 只能在当前楼层靠近已摆放的武器架操作，睡眠与活动借用装备不参与。
 export function accessibleWeaponRack(game,uid){
- if(!game.cottage||game.cottage.kind!=='cottage'||game.cottage.sleep||!['playing','paused'].includes(game.state))return null;
+ if(!game.cottage||game.cottage.balcony||game.cottage.kind!=='cottage'||game.cottage.sleep||!['playing','paused'].includes(game.state))return null;
  const rack=game.progress.homeDecor.items.find(i=>i.uid===uid&&i.type==='weapon-rack'&&i.x!==null&&i.floor===cottageFloor(game.cottage));
  return rack&&Math.hypot(rack.x-game.player.x,rack.y-game.player.y)<=120?rack:null;
 }
