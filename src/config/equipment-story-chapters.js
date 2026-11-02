@@ -21,6 +21,9 @@ const battle=(site,title,action,actor,total=5)=>({...visit(site,title,action,act
   task:{type:'wave',site,reach:160,wave:{total,cap:4,heavy:0}},
   encounter:{enemyHp:{normal:36}},props:[{kind:'crate',site}]});
 
+// 装备任务在设施前方交接；底座中心属于实体墙或桌台，不能作为导航与作业终点。
+const workplace=id=>({...LIVING_PLACES[id],y:LIVING_PLACES[id].y+32});
+
 // 章节独立复制基础合同，借用武器步行出发，载具故事使用原装专属炮。
 function chapter(equipment,weapon,vehicle=null,turret=null){
  const q=EQUIPMENT_QUESTS.find(q=>q.equipment===equipment),c=structuredClone(BASE);
@@ -29,8 +32,8 @@ function chapter(equipment,weapon,vehicle=null,turret=null){
  const loadout={id:q.chapter+'-loan',name:'借用'+({water:'潮汐水枪',frost:'霜枝冰晶枪','gravity-gun':'引力聚束枪','mechanical-spider':'机械蜘蛛','energy-shield':'能量盾与巡林车','red-wolf':'红狼坦克','jinbei-van':'金杯面包车'}[equipment]),
   choice:'使用任务借装',weapon,vehicle:vehicle??5,turret,onFoot:vehicle===null,damage:1,turretDamage:1,hull:360,
   text:'任务期间免费借用，退出后归还并恢复原装备。',hint:'完成现场工作并交付后，工坊开放购买；金币与材料另付。'};
- const sites={CAMP:{...TOWN_LAYOUT.neighborsPost},FLOWERS:{...LIVING_PLACES.flowers},KITCHEN:{...LIVING_PLACES.kitchen},
-  RELAY:{...LIVING_PLACES.relay},POTTERY:{...LIVING_PLACES.pottery},MARKET:{...LIVING_PLACES.market},LETTERS:{...LIVING_PLACES.camp},
+ const sites={CAMP:{...TOWN_LAYOUT.neighborsPost},FLOWERS:workplace('flowers'),KITCHEN:workplace('kitchen'),
+  RELAY:workplace('relay'),POTTERY:workplace('pottery'),MARKET:workplace('market'),LETTERS:workplace('camp'),
   FIRST:{x:2600,y:1500},SECOND:{x:2800,y:2350}};
  Object.assign(c,{id:q.chapter,version:1,title:q.title,subtitle:'邻里装备故事',catalogType:'commission',requires:q.requires,reward:{},
   flags:['care','delivered','summonsStored','roadCleared'],routes:{},choices:{},targets:{},restoreTargets:[],props:[],nodes:{},dialogues:{},
