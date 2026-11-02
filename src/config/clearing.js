@@ -14,3 +14,6 @@ export const CLEARING_STARTER_RULES=Object.freeze({biome:'meadow',enemyLevel:1,m
 
 // 清缴界面比作战场地多保留一半距离，移动到边缘仍可查看波次和材料。
 export const CLEARING_HUD_RADIUS_SCALE=1.5;
+
+// 寻路抵达站牌前的落脚点，不把清缴战斗半径当作到达距离。
+export const CLEARING_NAVIGATION=Object.freeze({offsetY:55,arrivalRadius:60});

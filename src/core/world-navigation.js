@@ -1,3 +1,4 @@
+import {clearingObjective} from './clearing-guide.js';
 import {taskNavigationEnabled,setTaskNavigationEnabled} from './task-navigation.js';
 import {gameSource} from './game-source.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -8,7 +9,7 @@ import {clearingCombatActive} from './living-safety.js';
 import {livingForest} from '../world/living-spaces.js';
 import {worldDistance} from '../world/coordinates.js';
 import {CLEARING_POST} from '../config/clearing.js';
-import {clearingSite,isClearingSite} from '../progression/clearing-site.js';
+import {isClearingSite} from '../progression/clearing-site.js';
 import {arrivalWorkshopObjective} from './ranger-arrival.js';
 const intents=new WeakMap();
 // 诊断只读取临时目标，不调用会消费意图或影响优先级的正式导航入口。
@@ -29,8 +30,8 @@ export function worldNavigationObjective(game){
  const arrival=arrivalWorkshopObjective(game);if(arrival)return arrival;
  if(game.mainlineSpeech)return null;
  if(!livingForest(game)){const intent=intents.get(game);if(game.mapId==='jiuzhaigou'&&!game.realm&&!game.story&&intent?.direct&&intent.site.mapId===game.mapId&&worldDistance(game.player,intent.site)>GAMEPLAY_VALUES.mainline.visitRadius)return {task:{id:'visit',title:intent.label},key:'visit',phase:'travel',site:intent.site,label:intent.label};if(intent?.site.mapId===game.mapId&&worldDistance(game.player,intent.site)<=GAMEPLAY_VALUES.mainline.visitRadius)intents.delete(game);return null;}
- // 与清缴节点栏共用展示边界，离开扩展范围后才恢复路线与终点，保留临时目标。
- if(clearingCombatActive(game))return null;
+ // 战斗 HUD 出现后仍引向场内站牌；只压住无关路线，临时访问意图继续保留。
+ if(clearingCombatActive(game)){const clearing=clearingObjective(game);return clearing.navigation?{task:{id:'boss-clearing',title:'Boss 清缴任务'},phase:'travel',...clearing}:null;}
  const o=mainlineObjective(game),intent=intents.get(game);
  // 找种任务从出发到交付都使用自己的目标，旧清缴任务不能将路线拉回清缴场。
  const seedTask=o?.task.gardening?.kind==='drop';
@@ -45,9 +46,8 @@ export function worldNavigationObjective(game){
  }
  if(trackedLivingRequest(game))return null;
 
- // 清缴是已接取的赶路任务，进场后节点栏接替地面指引。
- if(game.progress?.living?.patrolActive&&worldDistance(game.player,clearingSite(game.progress))>clearingSite(game.progress).radius)
-  return {task:{id:'boss-clearing',title:'Boss 清缴任务'},key:'boss-clearing',phase:'travel',site:clearingSite(game.progress),label:'前往本次清缴地点'};
+ // 非主线清缴也使用同一站牌终点，进入战斗范围不视作抵达。
+ if(game.progress?.living?.patrolActive){const clearing=clearingObjective(game);if(clearing.navigation)return {task:{id:'boss-clearing',title:'Boss 清缴任务'},phase:'travel',...clearing};}
  if(o&&o.phase!=='doing')return o;
  if(o&&o.navigation!==false)return o;
  return null;

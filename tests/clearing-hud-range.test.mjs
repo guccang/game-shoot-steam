@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress} from '../src/progression/progress.js';
-import {clearingSite,normalizeClearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite,normalizeClearingSite,clearingNavigationSite} from '../src/progression/clearing-site.js';
 import {clearingCombatActive,livingWaveAllowed} from '../src/core/living-safety.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
 import {worldNavigationObjective,requestWorldNavigation,worldNavigationDiagnostics} from '../src/core/world-navigation.js';
@@ -42,20 +42,20 @@ test('未接取、其他活动及安全区域仍隐藏清缴展示',()=>{
  assert.equal(clearingCombatActive(g),false,'安全区优先于距离');
 });
 
-// 扩展显示区不提前铺路；跨界、返回及手动关闭使用同一正式导航入口。
-for(const randomSite of [false,true])test(`${randomSite?'随机':'历史'}场地的寻路与节点栏互斥，离场恢复且不改变偏好`,()=>{
+// HUD 与清缴路线可以共存，跨过两层边界后仍要走到站牌附近。
+for(const randomSite of [false,true])test(`${randomSite?'随机':'历史'}场地寻路持续到站牌，离场恢复且不改变偏好`,()=>{
  const g=scene(randomSite),site=clearingSite(g.progress);g.state='playing';g.time=0;g.trees=[];
  Object.assign(g.progress.restoration,{repaired:TOWN_RESTORATIONS.map(f=>f.id),cottageRested:true});
  g.progress.arrival=null;g.progress.mainline.completed=[...MAINLINE_IDS];g.progress.mainline.phase='complete';
  for(const distance of [299,300,301,375,449,450,451,375,451]){
   g.player.x=site.x+distance;
-  assert.equal(!!worldNavigationObjective(g),distance>450,`导航距离 ${distance}`);
-  assert.equal(!!storyGuidanceState(g).target,distance>450,`终点距离 ${distance}`);
-  assert.equal(clearingObjective(g).navigation,distance>450,`任务导航距离 ${distance}`);
-  if(distance<=450)assert.equal(storyRouteState(g),null,'节点栏显示时无路线');
+  assert.equal(!!worldNavigationObjective(g),true,`导航距离 ${distance}`);
+  assert.equal(!!storyGuidanceState(g).target,true,`终点距离 ${distance}`);
+  assert.equal(clearingObjective(g).navigation,true,`任务导航距离 ${distance}`);
+  assert.deepEqual(worldNavigationObjective(g).site,clearingNavigationSite(g.progress));
  }
  requestWorldNavigation(g,CLEARING_APPROACH,'返回告示牌',{direct:true});g.player.x=site.x+375;
- assert.equal(worldNavigationObjective(g),null);assert.ok(worldNavigationDiagnostics(g).intent,'隐藏期间保留临时访问目标');
+ assert.equal(worldNavigationObjective(g).key,'boss-clearing');assert.ok(worldNavigationDiagnostics(g).intent,'赶路期间保留临时访问目标');
  g.progress.living.requests['neighbors-lunch']={stage:0,completed:false};g.progress.taskTracking={kind:'living',id:'neighbors-lunch'};
  assert.deepEqual(livingRouteStates(g),[],'邻里旧路线不能接替显示');
  g.player.x=site.x+451;assert.equal(worldNavigationObjective(g).site.id,CLEARING_APPROACH.id,'离场恢复原目标');

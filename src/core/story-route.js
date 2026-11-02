@@ -30,7 +30,7 @@ function resolveStoryRoute(game,view,prepare=false){
  if(!taskNavigationEnabled(game)||game.state==='paused'&&!prepare||game.mainlineSpeech||game.story?.phase==='dialogue')return null;
  const run=game.story,main=!run?worldNavigationObjective(game):null;
  if(game.state!=='playing'&&!(prepare&&game.state==='paused')||run&&(run.phase!=='active'||run.trial||!storySceneActive(game))||!run&&(!main||main.site.mapId!==game.mapId)){routes.delete(game);return null;}
- const def=run?storyDefinition(game):{interaction:{radius:85}},objective=run?game.storyObjective():{site:main.key},site=run?def.world.sites[objective.site]:main.site;
+ const def=run?storyDefinition(game):{interaction:{radius:main.site.arrivalRadius??85}},objective=run?game.storyObjective():{site:main.key},site=run?def.world.sites[objective.site]:main.site;
  if(!site){routes.delete(game);return null;}
  const distance=worldDistance(game.player,site),near=site.repairArea?inRestorationArea(game.player,site.repairArea):distance<=def.interaction.radius;
  if(near){routes.delete(game);return {points:[],near:true,distance,site:objective.site,reachable:true};}

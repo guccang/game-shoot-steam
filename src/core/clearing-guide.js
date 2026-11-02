@@ -1,11 +1,10 @@
 // 清缴引导只读取真实状态，不建立另一份任务进度或改变波次完成条件。
 import {CLEARING_POST,CLEARING_APPROACH} from '../config/clearing.js';
-import {clearingSite} from '../progression/clearing-site.js';
+import {clearingSite,clearingNavigationSite} from '../progression/clearing-site.js';
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
 import {facilityOpen,facilityReason} from '../config/town-restoration.js';
 import {worldDistance} from '../world/coordinates.js';
 import {setLivingPatrol} from './living-world.js';
-import {clearingCombatActive} from './living-safety.js';
 
 // 接取、赶路、普通波次与Boss共用同一阶段判断；回营后自然恢复赶路提示。
 export function clearingStage(game){
@@ -44,11 +43,11 @@ export function acceptClearingPost(game){
  const reason=clearingPostReason(game);if(reason)return {ok:false,message:reason};
  return game.progress.living.patrolActive?{ok:true}:setLivingPatrol(game,true);
 }
-// 教学目标永远指向当前可执行操作；战斗期间不再显示去NPC或告示牌的路线。
+// 已接取后沿路线到站牌附近，HUD 和波次阶段不再提前吞掉赶路目标。
 export function clearingObjective(game){
- const stage=clearingStage(game),accept=stage==='accept';
- // 赶路阶段与刷怪边界保持原样，寻路显隐跟随更大的战斗 UI 范围。
- return {key:accept?'clearing-post':'boss-clearing',site:accept?CLEARING_APPROACH:clearingSite(game.progress),navigation:['accept','travel'].includes(stage)&&!clearingCombatActive(game),clearingStage:stage,
-  label:accept?'去清缴告示牌接取':stage==='travel'?'前往本次清缴地点':stage==='boss'?'领主即将登场':stage==='boss-fight'?'击败森林领主':'清理当前怪潮',
-  hint:accept?'靠近告示牌 → 点击接取':stage==='travel'?'沿光点出发 · 到场开始':stage==='boss'?'最后一战，自动开启':'击败怪物，节点自动推进'};
+ const stage=clearingStage(game),accept=stage==='accept',site=accept?CLEARING_APPROACH:clearingNavigationSite(game.progress);
+ const navigation=accept||worldDistance(game.player,site)>site.arrivalRadius;
+ return {key:accept?'clearing-post':'boss-clearing',site,navigation,clearingStage:stage,
+  label:accept?'去清缴告示牌接取':navigation?'前往清缴场站牌附近':stage==='boss'?'领主即将登场':stage==='boss-fight'?'击败森林领主':'清理当前怪潮',
+  hint:accept?'靠近告示牌 → 点击接取':navigation?'沿光点到清缴场站牌附近':stage==='boss'?'最后一战，自动开启':'击败怪物，节点自动推进'};
 }
