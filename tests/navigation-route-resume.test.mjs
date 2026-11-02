@@ -15,6 +15,7 @@ import {SpatialGrid} from '../src/world/spatial-grid.js';
 import {livingRouteStates} from '../src/core/living-route.js';
 import {updateLivingWorld,acceptNextClearing} from '../src/core/living-world.js';
 import {updateMainline,recordMainlineEvent} from '../src/core/mainline-manager.js';
+import {clearingNavigationSite} from '../src/progression/clearing-site.js';
 
 // 已完成教学的历史档，在真实告示牌前接取；种子6覆盖原先数秒空白的长路线。
 function scene(seed=6){
@@ -55,8 +56,8 @@ test('清缴结束或关闭结算后原地首帧显示交付路线，不等待�
 
 test('范围外续接与关闭寻路使用各自最终目标，不能显示上一份结算路线',()=>{
  const g=scene();assert.ok(acceptClearingPost(g).ok);completeClearing(g);
- const site=g.progress.living.clearingSite;Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});
- assert.ok(acceptNextClearing(g,g.pendingClearingRound).ok);safe(g,prepareStoryRoute(g));g.state='playing';const first=storyRouteState(g,view(g));safe(g,first);assert.ok(worldDistance(first.points.at(-1),site)<.001);
+ Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});
+ assert.ok(acceptNextClearing(g,g.pendingClearingRound).ok);safe(g,prepareStoryRoute(g));g.state='playing';const first=storyRouteState(g,view(g));safe(g,first);assert.ok(worldDistance(first.points.at(-1),clearingNavigationSite(g.progress))<.001);
  g.state='paused';setTaskNavigationEnabled(g,false);assert.equal(prepareStoryRoute(g),null);g.state='playing';assert.equal(storyRouteState(g,view(g)),null);
 });
 
@@ -66,7 +67,7 @@ test('清缴保存成功后的事件刷新与首帧均直接显示已验证路�
   g.onEvent=type=>{if(type==='living-change')eventRoute=storyRouteState(g,view(g));};
   assert.ok(acceptClearingPost(g).ok);safe(g,eventRoute);assert.equal(eventRoute.searchStarts,0);
   const r=storyRouteState(g,view(g));safe(g,r);assert.equal(r.planning,false);assert.equal(r.searchStarts,0);
-  assert.ok(worldDistance(r.points.at(-1),g.progress.living.clearingSite)<.001);
+  assert.ok(worldDistance(r.points.at(-1),clearingNavigationSite(g.progress))<.001);
   assert.equal('points' in g.progress.living.clearingSite,false);
  }
 });

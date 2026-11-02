@@ -20,4 +20,6 @@ export function clearingSite(progress){return progress.living?.clearingSite||BOS
 export function isClearingSite(site){return ['patrol-clearing',BOSS_CLEARING.id].includes(site?.id);}
 
 // 站牌本体位于场地中心，寻路终点放到牌前；不改写存档中的战斗中心和半径。
-export function clearingNavigationSite(progress){const site=clearingSite(progress);return {...site,name:'清缴场站牌前',y:wrap(site.y+CLEARING_NAVIGATION.offsetY,WORLD.height),arrivalRadius:CLEARING_NAVIGATION.arrivalRadius};}
+export function clearingNavigationTarget(site){return {...site,name:'清缴场站牌前',y:wrap(site.y+CLEARING_NAVIGATION.offsetY,WORLD.height),arrivalRadius:CLEARING_NAVIGATION.arrivalRadius};}
+// 已接单导航与候选地点预计算共用同一牌前终点，避免缓存因终点偏移而失效。
+export function clearingNavigationSite(progress){return clearingNavigationTarget(clearingSite(progress));}

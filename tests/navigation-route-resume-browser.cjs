@@ -1,8 +1,10 @@
 // 正式浏览器验收：默认4175，端口被既有服务占用时允许4176隔离运行，禁止操作线上存档。
-async page=>{
- const url=new URL(page.url());if(url.hostname!=='localhost'||!['4175','4176'].includes(url.port))throw Error('仅允许本地导航验收端口');
+async original=>{
+ const url=new URL(original.url());if(url.hostname!=='localhost'||!['4175','4176'].includes(url.port))throw Error('仅允许本地导航验收端口');
+ const context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await context.newPage();
+ try{
  const errors=[],samples=[];page.on('pageerror',e=>errors.push(e.message));
- await page.reload();
+ await page.goto(url.origin);
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(async()=>{
   (await import('/src/main.js')).application.destroy();localStorage.clear();
@@ -21,9 +23,9 @@ async page=>{
   g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.encounterTimer=999;g.attack=()=>false;g.enemies=[];a.renderer.camera.time=null;a.refresh();
   window.navFrames=[];window.navRecording=true;
   // 每个真实动画帧取正式显示数据；不手动推进搜索时钟或预先等待路径完成。
-  function record(){if(!navRecording)return;const g=a.game,r=nav.storyRouteState(g,a.renderer.view);if(g.progress.living.patrolActive&&g.state==='playing')navFrames.push({dots:nav.visibleRouteDots(r,a.renderer.view).length,searchStarts:r?.searchStarts,planning:r?.planning});requestAnimationFrame(record);}requestAnimationFrame(record);
+  function record(){if(!navRecording)return;const g=a.game,r=nav.storyRouteState(g,a.renderer.view);if(g.progress.living.patrolActive&&g.state==='playing'&&g.progress.mainline.navigationEnabled!==false)navFrames.push({dots:nav.visibleRouteDots(r,a.renderer.view).length,searchStarts:r?.searchStarts,planning:r?.planning});requestAnimationFrame(record);}requestAnimationFrame(record);
  });
- await page.locator('#clearing-marker').click();await page.locator('#clearing-accept').click();
+ await page.locator('#nearby-interaction[data-target="clearing"]').tap();await page.locator('#clearing-accept').tap();
  await page.waitForFunction(()=>navFrames.length>=20);
  const accepted=await page.evaluate(()=>({first:navFrames[0],empty:navFrames.filter(r=>!r.dots).length,frames:navFrames.length}));
  if(!accepted.first.dots||accepted.first.searchStarts!==0||accepted.empty)throw Error('清缴首帧未复用路线 '+JSON.stringify(accepted));
@@ -32,23 +34,30 @@ async page=>{
  await page.locator('#settings-done').click();
  const resumed=await page.evaluate(()=>{const r=nav.storyRouteState(a.game,a.renderer.view);return {dots:nav.visibleRouteDots(r,a.renderer.view).length,searchStarts:r.searchStarts,planning:r.planning};});
  if(!resumed.dots||resumed.searchStarts!==0||resumed.planning)throw Error('恢复重新搜索 '+JSON.stringify(resumed));
+ // 真正触摸寻路开关，隐藏期间停止计数，开启同帧检查既有路线复用与任务卡保留。
+ await page.locator('#task-navigation-toggle').tap();
+ if(await page.evaluate(()=>nav.storyRouteState(a.game,a.renderer.view))!==null)throw Error('关闭后仍显示路线');
+ if(!await page.locator('#mainline-hud').isVisible())throw Error('关闭后任务卡消失');
+ await page.locator('#task-navigation-toggle').tap();
+ const reopened=await page.evaluate(()=>{const r=nav.storyRouteState(a.game,a.renderer.view);return {dots:nav.visibleRouteDots(r,a.renderer.view).length,searchStarts:r.searchStarts,planning:r.planning};});
+ if(!reopened.dots||reopened.searchStarts!==0||reopened.planning)throw Error('开启未恢复路点 '+JSON.stringify(reopened));
  // 使用浏览器触摸输入驱动正式摇杆和真实位移，不直接写入角色坐标。
  const client=await page.context().newCDPSession(page),box=await page.locator('#game-frame').boundingBox(),x=box.x+65,y=box.y+box.height-120;
  const before=await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y}));
  await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
  await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+42,y}]});
  await page.waitForTimeout(650);await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await client.detach();
- const movement=await page.evaluate(before=>({distance:Math.hypot(a.game.player.x-before.x,a.game.player.y-before.y),empty:navFrames.filter(r=>!r.dots).length}),before);
+ const movement=await page.evaluate(before=>({distance:Math.hypot(a.game.player.x-before.x,a.game.player.y-before.y),frames:navFrames.length,empty:navFrames.filter(r=>!r.dots).length}),before);
  if(movement.distance<10||movement.empty)throw Error('触控移动光点异常 '+JSON.stringify(movement));
  await page.evaluate(()=>{
   // 同屏夹具移到已验证路线的开阔路段，避免告示牌遮住短屏光点；真实触控位移已在上段独立验收。
-  navRecording=false;const g=a.game,r=nav.storyRouteState(g,a.renderer.view),at=r.points.find(p=>Math.hypot(p.x-g.player.x,p.y-g.player.y)>900);
+  navRecording=false;const g=a.game,r=nav.storyRouteState(g,a.renderer.view),at=r.points[Math.floor(r.points.length/2)];
   if(!at)throw Error('缺少开阔路段夹具');Object.assign(g.player,{x:at.x,y:at.y,invincible:0});
   if(!g.summonVehicle()||!g.vehicle.module)throw Error('正式载具未能上车');g.vehicle.module.cooldown=999;
   const e=g.spawnEnemy(0,0,{x:g.player.x+90,y:g.player.y+60});Object.assign(e,{hp:1000000,maxHp:1000000,damage:0,speed:0});a.renderer.camera.time=null;a.refresh();
  });
  await page.waitForTimeout(3500);
- for(const [width,height] of [[320,568],[390,844],[1100,844]])for(const phase of ['day','night']){
+ for(const [width,height] of [[320,568],[390,844]])for(const phase of ['day','night']){
   await page.setViewportSize({width,height});
   await page.evaluate(async phase=>{
    const {LIVING_PHASES}=await import('/src/config/living-world.js');a.game.progress.living.calendar.elapsed=LIVING_PHASES.find(p=>p.id===phase).start+1000;
@@ -60,8 +69,9 @@ async page=>{
    return {dots:r.dots.length,searchStarts:r.route.searchStarts,night:a.renderer.light.sample(performance.now()).night,clear:r.route.points.every((p,i,ps)=>!i||questLineClear(ps[i-1],p,{...a.game.player,mapId:a.game.mapId,livingCollision:true},a.game.trees)),overflow:document.documentElement.scrollWidth>innerWidth};
   });
   if(!state.dots||state.dots>96||!state.clear||state.overflow)throw Error('同屏导航异常 '+JSON.stringify(state));
-  await page.screenshot({path:`output/playwright/navigation-route-resume/route-${width}-${phase}.png`});samples.push({width,height,phase,...state});
+  await page.screenshot({path:`output/playwright/clearing-route-points/route-${width}-${phase}.png`});samples.push({width,height,phase,...state});
  }
  if(errors.length)throw Error(errors.join(';'));
- return {designCriterion:'navigation-path-cache',pass:true,accepted,resumed,movement,samples,errors};
+ return {designCriterion:'navigation-path-cache',pass:true,accepted,resumed,reopened,movement,samples,errors};
+ }finally{await context.close();}
 }

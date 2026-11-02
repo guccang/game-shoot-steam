@@ -8,6 +8,7 @@ import {chooseClearingSite} from '../src/core/clearing-site.js';
 import {forestThreatAt} from '../src/world/forest-levels.js';
 import {enemyIdentity} from '../src/world/biomes.js';
 import {worldDistance} from '../src/world/coordinates.js';
+import {clearingNavigationTarget} from '../src/progression/clearing-site.js';
 
 // 同一组随机种子复现原三级委托抽到九级野外地点的问题。
 function scene(level,seed){
@@ -26,6 +27,7 @@ for(const level of [1,2,3,4,6,9,20])test(`${level}级委托地点及赶路刷怪
   const g=scene(level,seed);let route;
   for(let repeat=0;repeat<2;repeat++){
    const site=chooseClearingSite(g,r=>{route=r;});assert.ok(site,`等级${level}种子${seed}重接${repeat}`);
+   assert.ok(route.reachable);assert.ok(worldDistance(route.points.at(-1),clearingNavigationTarget(site))<.001);
    assert.ok(forestThreatAt(site.x,site.y).level<=Math.max(3,level));safe(site,site.radius,level);
    for(let i=1;i<route.points.length;i++){
     const a=route.points[i-1],b=route.points[i],steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/32));

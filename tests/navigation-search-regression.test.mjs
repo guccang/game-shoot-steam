@@ -42,7 +42,8 @@ test('真实森林长途搜索不再为每个碰撞采样等待一帧额度',t=>
 test('直升机上下车原地继续推进路线，恢复步行后所有线段仍通过正式碰撞',()=>{
  const g=scene();assert.ok(storyRouteState(g).reachable);
  for(const change of [summonVehicle,dismountVehicle]){
-  const position={x:g.player.x,y:g.player.y};assert.ok(change(g));let r;
+  // 上下车会移动到实际停车位或安全落脚点；搜索必须从该位置完成，不再依赖之后的玩家移动。
+  assert.ok(change(g));const position={x:g.player.x,y:g.player.y};let r;
   for(let i=0;i<1000;i++){g.time+=1/60;r=storyRouteState(g);if(r?.reachable)break;}
   assert.ok(r?.reachable);assert.deepEqual({x:g.player.x,y:g.player.y},position);
   const body=playerNavigationBody(g),index=new SpatialGrid(g.trees);
