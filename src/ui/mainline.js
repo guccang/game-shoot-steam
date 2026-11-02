@@ -22,7 +22,7 @@ import {trackedLivingRequest} from '../core/task-tracking.js';
 import {livingRequestTarget} from '../core/living-world.js';
 import {createOperationGuide} from './operation-guide.js';
 import {createSpeechBubble} from './speech-bubble.js';
-import {requestMainlineNavigation,worldNavigationObjective} from '../core/world-navigation.js';
+import {requestMainlineNavigation,worldNavigationObjective,worldTaskObjective} from '../core/world-navigation.js';
 const resourceNames={coins:'金币',wood:'木材',parts:'机械零件',crystal:'能源晶体',core:'首领核心'};
 // 任务正文来自固定中文表；仍转义后插入HTML，防止未来内容表引入标签。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -63,7 +63,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  dialogs.register('mainline-dialog',{onOpen:renderBook,focusId:'mainline-close'});
  // 正文打开当前任务的数据或操作页，保持玩家在右侧按钮选择的寻路状态。
  scope.on(card,'click',()=>{
-  const visit=worldNavigationObjective(game),current=mainlineObjective(game);
+  const visit=worldTaskObjective(game),current=mainlineObjective(game);
   if(visit?.key==='boss-clearing'){openAction({type:'clearing',inspect:true});return;}
   // 临时访问优先于主线；远处的守门入口先显示地图，不隐式恢复寻路。
   if(visit?.key==='visit'){
@@ -113,8 +113,8 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  },true);
  // 任务卡优先显示，波次与Boss进度依次排在下方。
  function render(){
-  const selected=worldNavigationObjective(game);
-  // 修复前置与临时访问优先级和地面导航一致；关闭寻路仍保留当前修复任务文案。
+  const selected=worldTaskObjective(game);
+  // 卡片保留清缴返场、临时访问和修复目标；关闭路点只影响指引，不撤掉正文与操作入口。
   const main=mainlineObjective(game),priority=selected?.key==='visit'||selected?.key==='boss-clearing'||main?.restoration||main?.cottageRest;
   const request=priority?null:trackedLivingRequest(game),target=request&&livingRequestTarget(game,request);
   const o=priority?(selected||main):target?{task:request,label:target.text,site:{...target,mapId:game.mapId}}:main,dialogOpen=!!root.querySelector('dialog[open]');

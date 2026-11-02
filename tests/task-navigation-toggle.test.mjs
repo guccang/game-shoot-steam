@@ -10,7 +10,7 @@ import {worldNavigationObjective,requestMainlineNavigation,requestWorldNavigatio
 import {storyRouteState} from '../src/core/story-route.js';
 import {livingRouteStates} from '../src/core/living-route.js';
 import {storyGuidanceState} from '../src/rendering/story-guidance.js';
-import {acceptLivingRequest,trackLivingRequest,updateLivingWorld} from '../src/core/living-world.js';
+import {acceptLivingRequest,trackLivingRequest,updateLivingWorld,residentFor} from '../src/core/living-world.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
@@ -43,7 +43,8 @@ test('入职修复和首枪目标关闭后不会强制恢复，也不影响当�
 
 test('邻里追踪和路线显示独立，关闭时切换委托不重开、不删除委托',()=>{
  // 完成新增的小屋休息前置，避免教学导航按优先级盖过本测试的邻里目标。
- const g=world();g.progress.restoration.cottageRested=true;updateLivingWorld(g,.05);Object.assign(g.player,{x:650,y:1840});assert.ok(acceptLivingRequest(g,'neighbors-lunch').ok);assert.ok(livingRouteStates(g).length);
+ // 居民会按作息移动，接取应站到真实委托人身边，不能依赖旧地图的固定坐标。
+ const g=world();g.progress.restoration.cottageRested=true;updateLivingWorld(g,.05);const host=residentFor(g,'cook');Object.assign(g.player,{x:host.x,y:host.y});assert.ok(acceptLivingRequest(g,'neighbors-lunch').ok);assert.ok(livingRouteStates(g).length);
  setTaskNavigationEnabled(g,false);const before=structuredClone(g.progress.living.requests);assert.deepEqual(livingRouteStates(g),[]);assert.ok(trackLivingRequest(g,'neighbors-lunch').ok);assert.deepEqual(livingRouteStates(g),[]);assert.deepEqual(g.progress.living.requests,before);
  setTaskNavigationEnabled(g,true);assert.ok(livingRouteStates(g).length);
 });
