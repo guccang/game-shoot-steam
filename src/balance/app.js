@@ -1,3 +1,4 @@
+import {CAMPAIGN_TASK_IDS} from '../config/mainline-pacing.js';
 import {MAINLINE_TASKS} from '../config/mainline.js';
 import { i18nHtml, i18nText } from "../i18n/index.js";
 // 本机数值工作台：候选配置、Worker批次、正式靶场和报告互不修改玩家存档。
@@ -116,7 +117,7 @@ function renderReport(){
   $('bottleneck').textContent=i18nText("balance.app.4c8a9e8ff7", { p0: (s.longestGap.toFixed(2)), p1: (p.deficits.length?i18nText("balance.app.576a1ba0d4", { p0: (p.deficits.map(d=>(ECONOMY_LABELS[d.key]||i18nText("balance.app.ba2b3bd76e"))+' '+d.missing).join('、')) }):i18nText("balance.app.e200fe1e3f")) });
   $('source-table').innerHTML=`<div class="table-scroll"><table><tr><th>${i18nHtml("balance.app.9e9bead814")}</th><th>${i18nHtml("balance.app.9ed933e1bd")}</th>${RESOURCE_KEYS.map(k=>`<th>${i18nHtml("balance.app.cf731fb7fc", { p0: (ECONOMY_LABELS[k]) })}</th>`).join('')}<th>${i18nHtml("balance.app.28384d7afd")}</th></tr>${Object.entries(p.activityTimes).map(([k,t])=>'<tr><td>'+names[k]+'</td><td>'+(t/60).toFixed(1)+'</td>'+RESOURCE_KEYS.map(key=>'<td>'+((p.sources[k]?.[key]||0)/Math.max(1,t/60)).toFixed(2)+'</td>').join('')+'<td>'+(p.failures[k]||0)+'</td></tr>').join('')}</table></div>`;
   if(p.waiting?.length)$('bottleneck').textContent+=i18nText("balance.app.618e1283a5", { p0: (p.waiting.map(x=>(ECONOMY_LABELS[x.key]||i18nText("balance.app.ba2b3bd76e"))+' '+(x.minutes===null?i18nText("balance.app.da0db6b78b"):i18nText("balance.app.e235256e97", { p0: (x.minutes.toFixed(1)) }))).join('、')) });
-  $('bottleneck').textContent+=' · 主线完成 '+p.mainlineCompleted+'/29 · 首次升级 '+(p.firstUpgrade?.toFixed(2)??'未发生')+' 分钟';
+  $('bottleneck').textContent+=' · 主线完成 '+p.mainlineCompleted+'/'+CAMPAIGN_TASK_IDS.length+' · 首次升级 '+(p.firstUpgrade?.toFixed(2)??'未发生')+' 分钟';
   $('assumptions').innerHTML=r.assumptions.map(a=>'<li>'+esc(a)+'</li>').join('');
   renderChart();renderComparison();
 }

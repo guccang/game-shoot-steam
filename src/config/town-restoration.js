@@ -1,3 +1,4 @@
+import {isCampaignTask} from './mainline-pacing.js';
 import {FIRE_STATION} from './fire-station-layout.js';
 // 小镇修复目录：主线前置、费用、功能和实体坐标共用配置，不以时间强制解锁。
 import content from './content/mainline.json' with {type:'json'};
@@ -52,8 +53,10 @@ export function pendingRestoration(progress){
  // 提前修复施工期间显示正在修的建筑，完工后再恢复当前主线的未修复设施。
  const building=TOWN_RESTORATIONS.find(f=>f.id===progress?.restoration?.build?.id&&!facilityOpen(progress,f.id));if(building)return building;
  const run=progress?.mainline,task=currentMainlineTask(run);
- const order=task?content.tasks.findIndex(t=>t.id===task.id):run?content.tasks.length:0;
- return TOWN_RESTORATIONS.find(f=>!facilityOpen(progress,f.id)&&(order>=f.order||run?.completed.includes(f.before)))||null;
+
+ // 仅当前主动任务需要的设施是前置，自选玩法的建筑不再串成必修链。
+ if(run?.trackingPaused)return null;
+ return TOWN_RESTORATIONS.find(f=>!facilityOpen(progress,f.id)&&f.before===task?.id&&(!f.extra||!isCampaignTask(task)))||null;
 }
 // 所有入口共用同一锁定原因。
 export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}

@@ -1,3 +1,4 @@
+import {isCampaignTask} from './mainline-pacing.js';
 import {WAREHOUSE} from './warehouse.js';
 import {AMMO_SHOP} from './supplies.js';
 import {REPAIR_CENTER} from './vehicle-repair.js';
@@ -47,8 +48,8 @@ export const MAINLINE_NPCS={mint:{name:'青芽',hero:1},oak:{name:'阿栎师傅'
 export const MAINLINE_TASKS=content.tasks;
 export const MAINLINE_IDS=MAINLINE_TASKS.map(t=>t.id);
 
-// 优先续接迁移时正在做的任务，其余按新编排寻找未完成项，完成记录不依赖前缀长度。
+// 主动选择的自选体验继续当前阶段；默认只寻找下一项战役任务。
 export function currentMainlineTask(run){
  if(!run)return null;
- return MAINLINE_TASKS.find(t=>t.id===run.currentId&&!run.completed.includes(t.id))||MAINLINE_TASKS.find(t=>!run.completed.includes(t.id))||null;
+ return MAINLINE_TASKS.find(t=>t.id===run.currentId&&!run.completed.includes(t.id))||MAINLINE_TASKS.find(t=>isCampaignTask(t)&&!run.completed.includes(t.id))||null;
 }

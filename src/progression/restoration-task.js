@@ -5,7 +5,7 @@ import {beginGardeningLesson} from './mainline-gardening.js';
 
 // 限定当前任务对应的已修设施；提前修别的建筑和待交付任务不会被推进。
 export function restoredTaskToStart(progress,facilityId) {
-  if(progress.mainline?.phase!=='meet'||pendingRestoration(progress))return null;
+  if(progress.mainline?.trackingPaused||progress.mainline?.phase!=='meet'||pendingRestoration(progress))return null;
   const task=currentMainlineTask(progress.mainline);
   const facility=TOWN_RESTORATIONS.find(f=>f.before===task?.id&&(!facilityId||f.id===facilityId));
   return facility&&facilityOpen(progress,facility.id)?task:null;

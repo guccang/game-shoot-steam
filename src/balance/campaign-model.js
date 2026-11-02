@@ -3,7 +3,8 @@ import {awardCampXp,countCampActivity} from '../progression/camp-level.js';
 import { RESOURCE_CAP } from '../config/resource-limits.js';
 import {encounterDifficulty} from '../config/encounter-difficulty.js';
 // 当前主线经济模拟：按顺序执行真实任务条件、固定五波清缴及正式交易；耗时是显式活动模型。
-import {currentMainlineTask,MAINLINE_TASKS} from '../config/mainline.js';
+import {CAMPAIGN_TASK_IDS} from '../config/mainline-pacing.js';
+import {currentMainlineTask} from '../config/mainline.js';
 import {mainlineCondition} from '../core/mainline-manager.js';
 import {awardMainline} from '../progression/mainline-reward.js';
 import {STORY_CAMPAIGN} from '../config/story-campaign.js';
@@ -101,7 +102,7 @@ export function simulateCampaign(seed,config,s){
  function levels(){return {weapon:p.weapons[p.weapon]||0,hero:p.heroes[p.hero]||0,vehicle:p.vehicleHulls[p.vehicleIndex]||0,turret:p.vehicleWeapons[p.vehicleLoadouts[p.vehicleIndex]]||0};}
  // 已完成任务与拥有目标均参与完成判定，避免只攒齐钱却跳过剧情或资格。
  function completion(){while(cursor<s.route.length&&ownsEquipment(p,...s.route[cursor]))cursor++;
-  const l=levels();if(completeAt===null&&cursor===s.route.length&&p.mainline.completed.length===MAINLINE_TASKS.length&&l.weapon>=15&&l.hero>=12&&l.vehicle>=10&&l.turret>=12){completeAt=seconds/60;completionLevels=l;}}
+  const l=levels();if(completeAt===null&&cursor===s.route.length&&CAMPAIGN_TASK_IDS.every(id=>p.mainline.completed.includes(id))&&l.weapon>=15&&l.hero>=12&&l.vehicle>=10&&l.turret>=12){completeAt=seconds/60;completionLevels=l;}}
  // 决策依据是当前任务，不复制目标数值；任一条件优先使用已拥有或当前主力。
  function unresolved(goal){if(mainlineCondition({progress:p},goal))return null;if(goal.all)return goal.all.map(unresolved).find(Boolean);
   if(goal.any){
@@ -211,7 +212,7 @@ export function simulateCampaign(seed,config,s){
   return false;
  }
  // 生活整板可选路线明确付出额外任务耗时，不能把二选一都领取或将借装当赠品。
- function collection(){if(s.collection!=='hovercraft'||!p.mainline.completed.includes('neighbors')||p.vehicleHulls[3])return false;
+ function collection(){if(s.collection!=='hovercraft'||p.vehicleHulls[3])return false;
   const post=STORY_POSTS.find(p=>p.id==='monster-neighbors');if(p.story.boardRewards?.[post.id])return false;
   const id=post.chapters.find(id=>!p.story.chapters[id].completed);if(id){story(id,true);return true;}
   p.vehicleHulls[3]=1;grantVehicleArmament(p,3);p.story.boardRewards[post.id]='hovercraft';event('buy','vehicle',3,1,'邻里谢礼：气垫船');return true;
@@ -249,6 +250,6 @@ export function simulateCampaign(seed,config,s){
  const cadence=growthCadence(timeline,end),goal=cursor<s.route.length?s.route[cursor]:null,deficits=goal?equipmentRequirements(p,...goal).filter(r=>r.missing):[];
  const totals={income:{},expense:{}};for(const group of Object.keys(totals))for(const [key,n] of Object.entries(p.economyLog[group])){const k=key.split(':').at(-1);totals[group][k]=(totals[group][k]||0)+n;}
  return {seed,completed:completeAt!==null,completionMinute:completeAt,completionLevels,levels:levels(),timeline,taskTimeline,purchases:timeline.filter(e=>e.type==='buy'),curve,outings,initial,remaining:wallet(p),totals,activityTimes,sources,failures,bought,upgrades,
-  longestGap:Math.max(0,...[...timeline.filter(e=>e.minute<=end).map(e=>e.minute),end].map((time,i,all)=>time-(i?all[i-1]:0))),cadence,deficits,waiting:[],firstUpgrade,mainlineCompleted:p.mainline.completed.length,
+  longestGap:Math.max(0,...[...timeline.filter(e=>e.minute<=end).map(e=>e.minute),end].map((time,i,all)=>time-(i?all[i-1]:0))),cadence,deficits,waiting:[],firstUpgrade,mainlineCompleted:CAMPAIGN_TASK_IDS.filter(id=>p.mainline.completed.includes(id)).length,
   milestones:{camp:{...p.campLevel},bosses:p.bosses,wave,waveKills,records:p.realms.records},ledger:p.economyLog};
 }

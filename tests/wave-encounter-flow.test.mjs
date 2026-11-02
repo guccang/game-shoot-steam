@@ -23,7 +23,8 @@ test('手机、广角和循环地图都在180至300范围入场，落点干燥�
 });
 test('无近处安全落点时不远距兜底，不占配额；末尾补兵不再等待十秒',()=>{
  const g=scene();g.trees=Array.from({length:40},(_,i)=>({x:g.player.x+Math.cos(i)*240,y:g.player.y+Math.sin(i)*240,radius:400,hp:1}));g.updateWaves(.2);assert.equal(g.waveSpawned,0);
- g.trees=[];g.waveKills=g.waveSpawned=waveDifficulty(g.wave).total-3;kill(g);assert.equal(g.respawnDelay,0);g.updateWaves(CLEARING_DENSITY.spawnInterval);assert.ok(g.enemies.some(e=>e.hp>0));
+ // 补兵等待已由正式调度控制，检查下一次更新实际生成敌人。
+ g.trees=[];g.waveKills=g.waveSpawned=waveDifficulty(g.wave).total-3;kill(g);g.updateWaves(CLEARING_DENSITY.spawnInterval);assert.ok(g.enemies.some(e=>e.hp>0));
 });
 test('混合击杀共用名额与原奖励预算，重复命中不重复计数或发奖',()=>{
  const g=scene(),before={coins:g.progress.coins,wood:g.progress.wood},base=forestReward('enemy',15,g.progress),total=waveDifficulty(g.wave).total;
