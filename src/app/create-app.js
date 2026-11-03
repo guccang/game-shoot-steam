@@ -261,7 +261,7 @@ export function createApplication({
     createTrial: createWorkshopTrial });
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});
   game.openLegendaryWorkshop=()=>legendaryWorkshop.open();
-  campHome=createCampHome({game,renderer,root,input,dialogs,onTalk,onDecorChange:refresh,openWorkshop:openRoomService,onCharacter:()=>inventory.openCurrentCat('items'),onChange:()=>{save();refresh();}});
+  campHome=createCampHome({game,renderer,root,input,dialogs,onTalk,onOutdoors:()=>outdoors.open(),onDecorChange:refresh,openWorkshop:openRoomService,onCharacter:()=>inventory.openCurrentCat('items'),onChange:()=>{save();refresh();}});
   // 全部营业建筑短按走向门口，未修复建筑继续使用原修复事务。
   worldWorkshop = createWorldWorkshop({game,renderer,root,onLocked:id=>id==='weapons'?rangerArrival.openWorkshop():restorationPanel.open(id)});
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onLocked:id=>restorationPanel.open(id)});

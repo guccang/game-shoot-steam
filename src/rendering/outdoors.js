@@ -53,10 +53,21 @@ export function drawOutdoorObject(c,item,game,night=0){
 // 已映射到同一屏幕镜像的局部距离只用于透明度，不参与业务碰撞。
 function worldDistanceLocal(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
 // 鱼尾逐节摆动而非旋转整张图片，鱼影和上岸实体使用同一形体。
-export function drawOutdoorFish(c,x,y,angle,time,color,scale=1){
+export function drawOutdoorFish(c,x,y,angle,time,color,scale=1,appearance=null){
+ const length=appearance?.bodyLength||14,height=appearance?.bodyHeight||6,fin=appearance?.fin||0,tail=Math.sin(time*9)*3;
  c.save();c.translate(x,y);c.rotate(angle);c.scale(scale,scale);c.strokeStyle=ink;c.lineWidth=1.4;
- poly(c,[[-10,0],[-21,-7+Math.sin(time*9)*3],[-19,7+Math.sin(time*9)*3]],color);c.fillStyle=color;c.beginPath();c.ellipse(0,0,14,6,0,0,Math.PI*2);c.fill();c.stroke();
- poly(c,[[0,-4],[-6,-11],[-10,-3]],color);c.fillStyle=ink;c.beginPath();c.arc(8,-1,1.5,0,7);c.fill();c.restore();
+ // 尾鳍单独摆动；躯干、背鳍和触须保持各自结构，不拉伸整张鱼图。
+ poly(c,[[-length+3,0],[-21,-7+tail],[-18,tail],[-21,7+tail]],color);
+ c.fillStyle=color;c.beginPath();c.ellipse(0,0,length,height,0,0,Math.PI*2);c.fill();c.stroke();
+ poly(c,fin===1?[[4,-height+2],[-2,-11],[-9,-height+2]]:fin===2?[[5,-height+2],[0,-10],[-4,-7],[-8,-10],[-11,-height+2]]:[[0,-height+2],[-6,-10],[-10,-height+2]],color);
+ if(appearance){c.lineWidth=.8;c.globalAlpha=.6;
+  if(appearance.pattern===0){for(let i=-6;i<5;i+=5){c.beginPath();c.arc(i,0,1.1,0,7);c.fillStyle=ink;c.fill();}}
+  else if(appearance.pattern===1){for(let i=-6;i<5;i+=5){c.beginPath();c.moveTo(i,-height*.6);c.lineTo(i+2,height*.6);c.stroke();}}
+  else{c.beginPath();c.moveTo(-length*.6,1);c.lineTo(length*.5,1);c.stroke();}c.globalAlpha=1;
+  if(appearance.whiskers){c.beginPath();c.moveTo(length-1,2);c.quadraticCurveTo(19,5,18,8);c.moveTo(length-2,3);c.quadraticCurveTo(14,8,11,9);c.stroke();}
+  if(appearance.lure){c.beginPath();c.moveTo(6,-height);c.quadraticCurveTo(12,-12,16,-9);c.stroke();c.fillStyle='#eee6ab';c.beginPath();c.arc(16,-9,1.5,0,7);c.fill();}
+ }
+ c.fillStyle=ink;c.beginPath();c.arc(length*.6,-1,1.3,0,7);c.fill();c.restore();
 }
 // 钓线连接真实手部与弯曲竿梢，浮漂试探、黑漂、溜鱼和出水均连续过渡。
 export function drawOutdoorFishing(c,game,player,night=0){
@@ -80,7 +91,7 @@ export function drawOutdoorFishing(c,game,player,night=0){
  c.strokeStyle=ink;c.lineWidth=4;c.beginPath();c.moveTo(origin.x,origin.y);c.quadraticCurveTo(origin.x+dx/len*32,origin.y-34,tip.x,tip.y);c.stroke();c.strokeStyle='#c9ad72';c.lineWidth=2;c.stroke();
  c.fillStyle='#e7b269';c.beginPath();c.arc(origin.x,origin.y,4,0,7);c.fill();c.strokeStyle=ink;c.stroke();
  c.beginPath();c.arc(origin.x+4,origin.y+7,5,0,7);c.stroke();c.beginPath();c.moveTo(origin.x+4,origin.y+7);c.lineTo(origin.x+4+Math.cos(f.clock*(f.reeling?20:0))*6,origin.y+7+Math.sin(f.clock*(f.reeling?20:0))*6);c.stroke();
- if(f.phase==='landed')drawOutdoorFish(c,bob.x,bob.y,Math.sin(f.clock*3)*.1,f.clock,FISH_SPECIES[f.species].color,1.15);
+ if(f.phase==='landed')drawOutdoorFish(c,bob.x,bob.y,Math.sin(f.clock*3)*.1,f.clock,FISH_SPECIES[f.species].color,1.15,FISH_SPECIES[f.species]);
  else{c.save();c.translate(bob.x,bob.y+nibble);c.globalAlpha=1-sink/16;c.strokeStyle=ink;c.lineWidth=1.4;box(c,-2,-14+sink,4,11,'#efb572',2);box(c,-3,-5+sink,6,8,cream,3);c.restore();}
  c.restore();
 }

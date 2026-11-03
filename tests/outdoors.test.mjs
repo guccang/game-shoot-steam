@@ -12,7 +12,7 @@ import {catLoad} from '../src/progression/load-weight.js';
 import {backpackEntries} from '../src/progression/backpack.js';
 import {outdoorFishingView} from '../src/rendering/outdoors.js';
 import {requestWorldNavigation,worldNavigationObjective} from '../src/core/world-navigation.js';
-import {OUTDOOR_RULES} from '../src/config/outdoors.js';
+import {OUTDOOR_RULES,FISH_SPECIES} from '../src/config/outdoors.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {livingSafePoint} from '../src/world/living-spaces.js';
 import {buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,fishingControl,finishFishing,updateOutdoors} from '../src/core/outdoors.js';
@@ -96,9 +96,9 @@ test('过早扬竿、错过黑漂、硬拉断线均不产生鱼获',()=>{
 test('真实收放线可钓起鱼；保存失败不重复结算，柜台出售计入钱包',()=>{
  const g=angler();cast(g);fishingControl(g,'press');
  for(let n=0;n<1800&&g.fishing?.phase==='fight';n++){const f=g.fishing;fishingControl(g,'lean',-(f.direction||1));if(f.tension>.72)fishingControl(g,'release');else if(f.tension<.38)fishingControl(g,'press');updateOutdoors(g,.04);}
- assert.equal(g.fishing.phase,'landed');g.livingPersist=()=>false;assert.equal(finishFishing(g,true).ok,false);assert.equal(g.progress.outdoors.caught,0);
+ assert.equal(g.fishing.phase,'landed');const caughtFish=FISH_SPECIES[g.fishing.species];g.livingPersist=()=>false;assert.equal(finishFishing(g,true).ok,false);assert.equal(g.progress.outdoors.caught,0);
  g.livingPersist=()=>true;assert.equal(finishFishing(g,true).ok,true);assert.equal(g.progress.outdoors.caught,1);assert.equal(finishFishing(g,true).ok,false);assert.equal(sellOutdoorFish(g).ok,false);
- g.cottage={kind:'ammo'};const coins=g.progress.coins;assert.equal(sellOutdoorFish(g).ok,true);assert.equal(g.progress.coins,coins+22);assert.equal(g.progress.outdoors.fish.perch,0);assert.equal(g.progress.outdoors.caught,1);
+ g.cottage={kind:'ammo'};const coins=g.progress.coins;assert.equal(sellOutdoorFish(g).ok,true);assert.equal(g.progress.coins,coins+caughtFish.coins);assert.equal(g.progress.outdoors.fish[caughtFish.id],0);assert.equal(g.progress.outdoors.caught,1);
 });
 test('正式游戏更新锁住移动与开火，离岸和重置会取消钓鱼',()=>{
  const g=angler();assert.equal(beginFishing(g).ok,true);const before={x:g.player.x,y:g.player.y};g.update(.04,{x:1,y:1});assert.equal(g.player.x,before.x);assert.equal(g.player.y,before.y);assert.equal(g.attack(),false);

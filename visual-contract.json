@@ -1,4 +1,5 @@
 {
+  "hundredFishTackle": {"designCriterion":"hundred-fish-tackle","entry":"src/rendering/visual-review.js#inspectHundredFishTackle","brief":"docs/art-tasks/hundred-fish-tackle.md","unitTests":["tests/hundred-fish-tackle.test.mjs"],"browserTests":["tests/hundred-fish-tackle-browser.cjs","tests/hundred-fish-mine-browser.cjs"]},
   "sprinklerBackpack": {
     "designCriterion": "sprinkler-backpack",
     "entry": "src/rendering/visual-review.js#inspectSprinklerBackpack",

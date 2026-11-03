@@ -15,11 +15,11 @@ import {createEventScope} from '../platform/events.js';
 import {calendarView} from '../world/living-calendar.js';
 
 // 室内服务和家具触点共用当前房间，点击走近不改变原保存与切层事务。
-export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onCharacter,onTalk}){
+export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onCharacter,onTalk,onOutdoors}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),panel=root.createElement('section');
  panel.id='cottage-controls';panel.hidden=true;panel.innerHTML='<header><b>巡林小屋</b><small id="cottage-date"></small></header><footer><p id="cottage-notice" role="status"></p><div><button id="cottage-character" class="ui-button">当前猫猫</button></div></footer>';
  frame.append(panel);
- const mining=createMining({game,renderer,root,panel,input,dialogs,onCharacter});
+ const mining=createMining({game,renderer,root,panel,input,dialogs,onCharacter,onOutdoors});
  const arcade=createHomeArcade({game,renderer,root,panel,input});
  const roomExit=createRoomExit({game,renderer,root,panel,input,onChange});
  const approach=createCottageApproach({game,renderer,root,panel});

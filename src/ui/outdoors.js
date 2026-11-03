@@ -1,6 +1,9 @@
+import {fishingTackleMarkup} from './fishing-tackle.js';
+import {rodOwned,baitCount} from '../config/fishing-tackle.js';
+import {fishingSetup} from '../core/fishing-tackle.js';
 // 手机野外装备页与实时钓鱼操作条；弹窗只负责准备，抛竿和收线始终发生在正式湖面。
 import {OUTDOOR_GEAR,FISH_SPECIES,OUTDOOR_RULES} from '../config/outdoors.js';
-import {buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,fishingControl,finishFishing,outdoorBusy} from '../core/outdoors.js';
+import {buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,equipFishingTackle,fishingControl,finishFishing,outdoorBusy} from '../core/outdoors.js';
 import {fishingShores} from '../world/outdoor-sites.js';
 import {AMMO_SHOP} from '../config/supplies.js';
 import {requestWorldNavigation} from '../core/world-navigation.js';
@@ -15,14 +18,17 @@ export function createOutdoors({game,root,dialogs,onChange,onFishCaught}){
  let message='',held=false,lastPhase='';const get=id=>root.getElementById(id);
  // 来源与价格实时读取正式配置，拥有的装备不会反复出售。
  function renderPanel(){
+  const expanded=[...get('outdoor-content').querySelectorAll('details')].map(d=>d.open),scroll=get('outdoor-content').scrollTop;
   const p=game.progress.outdoors,camp=p.camp,shop=game.cottage?.kind==='ammo';
-  get('outdoor-content').innerHTML=`<section class="ui-section"><h3>行囊 · ${game.progress.coins} 金币</h3>${Object.entries(OUTDOOR_GEAR).map(([id,g])=>`<article class="outdoor-gear"><div><b>${g.name}</b><p>${g.description}</p><small>${id==='bait'?`持有 ${p.bait} 份 · 每包 ${g.pack} 份`:(p[id]?'已拥有':g.mass+' 千克')}</small></div>${p[id]&&id!=='bait'?'<span>已备好</span>':`<button class="ui-button" data-outdoor-buy="${id}" ${!shop?'disabled':''}>${g.coins} 金币</button>`}</article>`).join('')}${shop?'':'<button class="ui-button" data-outdoor-action="shop">前往弹药补给铺采购</button>'}</section><section class="ui-section"><h3>今晚住哪里</h3><p>战车旁可直接驻营；购买套装后搭起帐篷、天幕、桌椅、炉具与营灯。请选择远离危险的开阔草地。</p>${camp?`<p>营地已搭好 · ${camp.mode==='vehicle'?'战车驻营':'帐篷露营'} · ${camp.mapId==='forest'?'晴叶森林':'九寨沟'}</p><div class="outdoor-actions"><button class="ui-button" data-outdoor-action="camp-nav">返回营地</button><button class="ui-button" data-outdoor-action="sleep">睡到明早</button><button class="ui-button" data-outdoor-action="nap">休息到下一时段</button><button class="ui-button" data-outdoor-action="pack">收回营地</button></div>`:'<div class="outdoor-actions"><button class="ui-button" data-outdoor-action="vehicle">战车旁驻营</button><button class="ui-button" data-outdoor-action="tent" '+(!p.tent?'disabled':'')+'>展开露营套装</button></div>'}</section><section class="ui-section"><h3>湖边垂钓</h3><p>按住蓄力，松手抛竿。浮漂轻晃时等待，明显下沉时扬竿。中鱼后按住收线，张力变红就松手；向鱼逃窜的反方向控竿。</p><div class="outdoor-actions"><button class="ui-button" data-outdoor-action="shore">寻找最近湖岸</button><button class="ui-button ui-button--primary" data-outdoor-action="fish" ${!p.rod||!p.bait?'disabled':''}>在这里钓鱼</button></div><p>累计钓获 ${p.caught} 条 · 最长 ${p.best} 厘米</p><div class="outdoor-fish-list">${FISH_SPECIES.map(f=>`<span>${f.name} ×${p.fish[f.id]}<small>${f.mass} 千克/条 · ${f.coins} 金币/条</small></span>`).join('')}</div><button class="ui-button" data-outdoor-action="sell" ${!shop?'disabled':''}>在柜台出售全部鱼获</button></section>`;
+  get('outdoor-content').innerHTML=`${fishingTackleMarkup(game)}<section class="ui-section"><details><summary>采购钓具与露营装备</summary><h3>行囊 · ${game.progress.coins} 金币</h3>${Object.entries(OUTDOOR_GEAR).map(([id,g])=>`<article class="outdoor-gear"><div><b>${g.name}</b><p>${g.description}</p><small>${g.kind==='bait'?`持有 ${baitCount(p,g.tackleId)} 份 · 每包 ${g.pack} 份`:g.mass+' 千克'+(g.tier?' · '+g.tier+'阶':'')}</small></div>${(g.kind==='tent'?p.tent:g.kind==='rod'&&rodOwned(p,g.tackleId))?'<span>已备好</span>':`<button class="ui-button" data-outdoor-buy="${id}" ${!shop?'disabled':''}>${g.coins} 金币</button>`}</article>`).join('')}${shop?'':'<button class="ui-button" data-outdoor-action="shop">前往弹药补给铺采购</button>'}</details></section><section class="ui-section"><h3>今晚住哪里</h3><p>战车旁可直接驻营；购买套装后搭起帐篷、天幕、桌椅、炉具与营灯。请选择远离危险的开阔草地。</p>${camp?`<p>营地已搭好 · ${camp.mode==='vehicle'?'战车驻营':'帐篷露营'} · ${camp.mapId==='forest'?'晴叶森林':'九寨沟'}</p><div class="outdoor-actions"><button class="ui-button" data-outdoor-action="camp-nav">返回营地</button><button class="ui-button" data-outdoor-action="sleep">睡到明早</button><button class="ui-button" data-outdoor-action="nap">休息到下一时段</button><button class="ui-button" data-outdoor-action="pack">收回营地</button></div>`:'<div class="outdoor-actions"><button class="ui-button" data-outdoor-action="vehicle">战车旁驻营</button><button class="ui-button" data-outdoor-action="tent" '+(!p.tent?'disabled':'')+'>展开露营套装</button></div>'}</section><section class="ui-section"><h3>湖边垂钓</h3><p>按住蓄力，松手抛竿。浮漂轻晃时等待，明显下沉时扬竿。中鱼后按住收线，张力变红就松手；向鱼逃窜的反方向控竿。</p><div class="outdoor-actions"><button class="ui-button" data-outdoor-action="shore">寻找最近湖岸</button><button class="ui-button ui-button--primary" data-outdoor-action="fish" ${fishingSetup(game).reason?'disabled':''}>在这里钓鱼</button></div><p>累计钓获 ${p.caught} 条 · 最长 ${p.best} 厘米</p><div class="outdoor-fish-list">${FISH_SPECIES.filter(f=>p.fish[f.id]>0).map(f=>`<span>${f.name} ×${p.fish[f.id]}<small>${f.mass} 千克/条 · ${f.coins} 金币/条</small></span>`).join('')}</div><button class="ui-button" data-outdoor-action="sell" ${!shop?'disabled':''}>在柜台出售全部鱼获</button></section>`;
+  get('outdoor-content').querySelectorAll('details').forEach((d,i)=>{d.open=expanded[i]||false;});get('outdoor-content').scrollTop=scroll;
   get('outdoor-message').textContent=message||game.outdoorNotice||'营地位置和装备会保存；离线不会自动钓鱼。';
  }
  // 关闭准备页后才开始现场动作，避免菜单暂停吞掉抛竿和睡眠时钟。
  function perform(action){
   let result;
   if(action==='shop'||action==='shore'||action==='camp-nav'){
+   if(game.cottage?.kind==='mine'){message='请先收起页面，在地下小地图找到湖岸；采购需返回地面补给铺。';renderPanel();return;}
    const site=action==='shop'?{...AMMO_SHOP,y:AMMO_SHOP.y+22}:action==='shore'?fishingShores(game)[0]:game.progress.outdoors.camp;
    if(!site){message='附近暂时找不到可站立的湖岸。';renderPanel();return;}
    requestWorldNavigation(game,site,action==='shore'?'前往湖岸钓鱼':action==='shop'?'购买露营与钓鱼装备':'返回野外营地',{direct:true,arrivalRadius:action==='shore'?OUTDOOR_RULES.castReach:undefined});dialogs.close(panel.id);onChange();return;
@@ -38,6 +44,7 @@ export function createOutdoors({game,root,dialogs,onChange,onFishCaught}){
  dialogs.register(panel.id,{focusId:'outdoor-close',onOpen:renderPanel});
  // 不重建原商店，只嵌入自己的装备页面；返回仍位于售货员所在房间。
  function open(){message='';dialogs.open(panel.id);}
+ scope.on(panel,'change',e=>{const kind=e.target.dataset.fishingEquip;if(!kind)return;const result=equipFishingTackle(game,kind,e.target.value);message=result.message;renderPanel();onChange();});
  scope.on(entry,'click',open);scope.on(get('outdoor-close'),'click',()=>dialogs.close(panel.id));
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.outdoorBuy){const result=buyOutdoorGear(game,b.dataset.outdoorBuy);message=result.message;renderPanel();onChange();}if(b.dataset.outdoorAction)perform(b.dataset.outdoorAction);});
  // 取消手势和窗口失焦只释放卷线轮，不把未完成蓄力误判为一次抛竿。

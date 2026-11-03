@@ -1,3 +1,5 @@
+import {FISHING_RODS,FISHING_BAITS,rodOwned,baitCount} from '../config/fishing-tackle.js';
+import {fishingSetup,fishingOdds,sampleFishingOdds} from './fishing-tackle.js';
 import {mineFishingShore,mineCastWater} from '../world/mine-fishing.js';
 import {mineLayer} from '../progression/mine-layers.js';
 import {mineLineClear} from '../physics/mine-motion.js';
@@ -45,12 +47,21 @@ function commit(game,next,message,hp=game.player.hp){
 }
 // 商店统一出售永久套装和成包鱼饵；满背包时先整理，不隐式丢物品。
 export function buyOutdoorGear(game,id){
- const reason=outdoorReason(game,{shop:true}),gear=OUTDOOR_GEAR[id];if(reason||!gear)return {ok:false,message:reason||'没有这件装备。'};
- if(id!=='bait'&&game.progress.outdoors[id])return {ok:false,message:'已经拥有这套装备。'};
+ const reason=outdoorReason(game,{shop:true}),gear=Object.hasOwn(OUTDOOR_GEAR,id)?OUTDOOR_GEAR[id]:null;if(reason||!gear)return {ok:false,message:reason||'没有这件装备。'};
+ if(gear.kind==='tent'&&game.progress.outdoors.tent||gear.kind==='rod'&&rodOwned(game.progress.outdoors,gear.tackleId))return {ok:false,message:'已经拥有这套装备。'};
  if(game.progress.coins<gear.coins)return {ok:false,message:`金币不足，需要 ${gear.coins} 金币。`};
- const next=validateProgress(structuredClone(game.progress));if(id==='bait'){if(next.outdoors.bait+gear.pack>999)return {ok:false,message:'鱼饵已满。'};next.outdoors.bait+=gear.pack;}else next.outdoors[id]=true;
+ const next=validateProgress(structuredClone(game.progress)),p=next.outdoors;
+ if(gear.kind==='bait'){if(baitCount(p,gear.tackleId)+gear.pack>999)return {ok:false,message:'这种鱼饵已满。'};if(gear.tackleId==='bait')p.bait+=gear.pack;else p.baits[gear.tackleId]+=gear.pack;}
+ else if(gear.kind==='rod'){const hadRod=rodOwned(p,p.selectedRod);if(gear.tackleId==='rod')p.rod=true;else p.rods[gear.tackleId]=true;if(!hadRod)p.selectedRod=gear.tackleId;}else p.tent=true;
  const snapshot=Object.assign(Object.create(game),{progress:next});if(catLoad(snapshot).overloaded)return {ok:false,message:'背包空间不足，先整理物品再购买。'};
  next.coins-=gear.coins;return commit(game,next,`已购入${gear.name}，打开「野外」开始使用。`);
+}
+// 钓具切换先落盘，进行中的抛竿不会被临时换饵或换竿改变概率。
+export function equipFishingTackle(game,kind,id){
+ if(!['playing','paused'].includes(game.state)||outdoorBusy(game))return {ok:false,message:'请先收竿或结束休息再更换钓具。'};
+ const p=game.progress.outdoors,valid=kind==='rod'?FISHING_RODS[id]&&rodOwned(p,id):kind==='bait'?FISHING_BAITS[id]&&baitCount(p,id)>0:false;
+ if(!valid)return {ok:false,message:'尚未拥有这件钓具或鱼饵已用完。'};
+ const next=validateProgress(structuredClone(game.progress));next.outdoors[kind==='rod'?'selectedRod':'selectedBait']=id;return commit(game,next,'已装备'+(kind==='rod'?FISHING_RODS[id]:FISHING_BAITS[id]).name+'。');
 }
 // 鱼获只有在正式柜台才兑换金币；收藏统计不随出售清空。
 export function sellOutdoorFish(game){
@@ -92,10 +103,10 @@ export function sleepAtCamp(game,mode='morning'){
 export function beginFishing(game){
  const reason=outdoorReason(game,{fishing:true});if(reason)return {ok:false,message:reason};
  if(outdoorBusy(game))return {ok:false,message:'请先结束当前动作。'};
- if(!game.progress.outdoors.rod||!game.progress.outdoors.bait)return {ok:false,message:'需要鱼竿和鱼饵，弹药补给铺有售。'};
+ const setup=fishingSetup(game);if(setup.reason)return {ok:false,message:setup.reason};
  if(game.vehicle.active)return {ok:false,message:'先下车，站在湖岸再抛竿。'};
  const shore=game.cottage?.kind==='mine'?mineFishingShore(game):fishingShores(game)[0];if(!shore||shore.distance>R.castReach)return {ok:false,message:game.cottage?.kind==='mine'?'请走到开阔水面旁的岸边，再试试钓鱼。':'请沿指引走到湖岸，靠近水面再钓鱼。'};
- game.fishing={phase:'ready',elapsed:0,clock:0,shore,origin:{x:game.player.x,y:game.player.y},mapId:game.mapId,mineRoom:shore.mineDepth?game.cottage:null,mineDepth:shore.mineDepth||0,hp:game.player.hp,charge:0,lean:0,reeling:false,tension:.3,progress:0,message:'按住抛竿蓄力，松手把浮漂送入湖里。'};
+ game.fishing={rodId:setup.rodId,baitId:setup.baitId,odds:fishingOdds(setup.rodId,setup.baitId,setup.water),phase:'ready',elapsed:0,clock:0,shore,origin:{x:game.player.x,y:game.player.y},mapId:game.mapId,mineRoom:shore.mineDepth?game.cottage:null,mineDepth:shore.mineDepth||0,hp:game.player.hp,charge:0,lean:0,reeling:false,tension:.3,progress:0,message:'按住抛竿蓄力，松手把浮漂送入湖里。'};
  if(shore.mineDepth)Object.assign(game.cottage,{tool:null,autoDig:false,dig:null,shaftWork:0,weaponReady:false,strike:0});
  game.player.angle=Math.atan2(shore.water.y-game.player.y,shore.water.x-game.player.x);return {ok:true,message:'鱼竿已备好。'};
 }
@@ -112,13 +123,13 @@ export function fishingControl(game,action,value=0){
  }
  if(action==='release'){
   f.reeling=false;if(f.phase!=='charging')return true;
-  const next=validateProgress(structuredClone(game.progress));if(next.outdoors.bait<1)return false;next.outdoors.bait--;
+  const next=validateProgress(structuredClone(game.progress)),baitId=f.baitId||'bait';if(baitCount(next.outdoors,baitId)<1||!f.odds?.length){f.phase='ready';f.message='鱼饵不足或当前搭配没有可钓鱼，请收竿调整。';return false;}if(baitId==='bait')next.outdoors.bait--;else next.outdoors.baits[baitId]--;
   const result=commit(game,next,'鱼饵已挂好，浮漂入水。');if(!result.ok){f.phase='ready';f.message=result.message;return false;}
   // 蓄力越充分，浮漂越靠近湖心；候选点始终校验真实湖水边界。
   const edge=f.shore.water,center=f.mineDepth?edge:nearest(f.shore.lake,edge),dx=center.x-edge.x,dy=center.y-edge.y,length=Math.hypot(dx,dy)||1;
   const water={x:edge.x+dx/length*f.charge*35,y:edge.y+dy/length*f.charge*35};f.water=f.mineDepth?mineCastWater(game,f.shore,f.charge):touchesLandform(f.shore.lake,water.x,water.y)?water:edge;
-  f.phase='casting';f.elapsed=0;f.wait=3+(game.random?.()??Math.random())*3;f.species=Math.min(FISH_SPECIES.length-1,Math.floor((game.random?.()??Math.random())*FISH_SPECIES.length));
-  f.size=Math.round((18+(game.random?.()??Math.random())*25+f.species*9)*10)/10;f.message='浮漂入水，等它稳定下来。';return true;
+  f.phase='casting';f.elapsed=0;f.wait=3+(game.random?.()??Math.random())*3;f.species=sampleFishingOdds(f.odds,game.random?.()??Math.random()).index;
+  const fish=FISH_SPECIES[f.species];f.size=Math.round((fish.minSize+(game.random?.()??Math.random())*(fish.maxSize-fish.minSize))*10)/10;f.message='浮漂入水，等它稳定下来。';return true;
  }return false;
 }
 // 上岸后保留或放流由玩家决定，保存失败仍留在待结算阶段以便重试。
@@ -152,7 +163,7 @@ export function updateOutdoors(game,dt){
  else if(f.phase==='fight'){
   const fish=FISH_SPECIES[f.species];f.pull=.5+.5*Math.sin(f.elapsed*1.8+f.species);f.direction=Math.sin(f.elapsed*1.3+f.species)>.0?1:-1;
   const counter=f.lean*f.direction<-.25;
-  f.tension=Math.max(0,Math.min(1.1,f.tension+dt*(f.reeling?.1+f.pull*.22*fish.strength-(counter?.12:0):-.3)));
+  f.tension=Math.max(0,Math.min(1.1,f.tension+dt*(f.reeling?.1+f.pull*.22*fish.strength/(FISHING_RODS[f.rodId]?.control||1)-(counter?.12:0):-.3)));
   f.progress=Math.max(0,Math.min(1,f.progress+dt*(f.reeling&&f.tension<.88?.095+(counter?.025:0):-.018)));
   f.slack=f.tension<.04?(f.slack||0)+dt:0;
   if(f.tension>=1||f.slack>3||f.elapsed>65){f.phase='missed';f.elapsed=0;f.message=f.tension>=1?'鱼线绷断了，下次红区记得松手。':'鱼挣脱了，保持适度张力再试一次。';}

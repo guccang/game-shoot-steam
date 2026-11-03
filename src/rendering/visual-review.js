@@ -1985,3 +1985,9 @@ export async function inspectSprinklerBackpack(game,root=document){
  const {backpackEntries}=await import('../progression/backpack.js'),{productionObjects}=await import('./farm-production.js');
  return {designCriterion:'sprinkler-backpack',inventory:game.progress.production.sprinklerInventory,bag:backpackEntries(game).filter(i=>i.id==='facility:sprinkler'),devices:productionObjects(game),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 百鱼钓具验收直接读取正式选择、真实概率池与当前页面画布预算。
+export async function inspectHundredFishTackle(game,renderer,root=document){
+ const {FISH_SPECIES}=await import('../config/fish-catalog.js'),{fishingSetup,fishingOdds}=await import('../core/fishing-tackle.js'),setup=fishingSetup(game);
+ return {designCriterion:'hundred-fish-tackle',species:FISH_SPECIES.length,setup,odds:fishingOdds(setup.rodId,setup.baitId,setup.water).map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],portraits:root.querySelectorAll('#codex-content canvas').length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}
