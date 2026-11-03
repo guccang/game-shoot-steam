@@ -1,4 +1,5 @@
 // 场景短按只安排真实行走；抵达后的入屋、上楼和睡眠仍由正式候停规则提交。
+import {MINING} from '../config/mining.js';
 import {COTTAGE,COTTAGE_FURNITURE,cottageFloor} from '../config/cottage.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
 import {CLICK_BUILDINGS,SCENE_APPROACH as A} from '../config/scene-approach.js';
@@ -24,7 +25,7 @@ export function cottageClickTargets(game){
  const room=game.cottage;if(!room||room.kind!=='cottage'||room.balcony||room.sleep||game.player.hp<=0)return [];
  const bed=COTTAGE_FURNITURE[0];
  const floor=cottageFloor(room),home=game.progress.homeDecor,transit=hasHomeElevator(home,floor)?[{...HOME_ELEVATOR,label:'走到电梯乘坐',y:425,width:84,height:170,goal:HOME_ELEVATOR.landing}]:homeStairRoutes(home,floor);
- return [...transit,...(!floor?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
+ return [...transit,...(!floor&&home.basement?[{...MINING.hatch,label:'走到地下室梯口'}]:[]),...(!floor?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
 }
 // 一个意图只属于当前角色、地图和楼层；不写入存档，不跨场景继续移动。
 function request(game,id,goal){
@@ -44,7 +45,8 @@ export function approachCottageTarget(game,id){
  if(id==='stairs'){const targets=cottageClickTargets(game);id=targets.find(t=>t.id==='stairs-up')?.id||'stairs-down';}
  const item=cottageClickTargets(game).find(item=>item.id===id);if(!item||!request(game,id,item.goal))return false;
  game.cottage.storageNotice='';game.cottage.restResult='';
- if(id.startsWith('stairs-')){game.cottage.stairsLatch=false;game.cottage.stairsElapsed=null;game.cottage.stairsTarget=item.target;}
+ if(id==='basement'){game.cottage.basementLatch=false;game.cottage.basementElapsed=0;}
+ else if(id.startsWith('stairs-')){game.cottage.stairsLatch=false;game.cottage.stairsElapsed=null;game.cottage.stairsTarget=item.target;}
  else if(id==='elevator'){game.cottage.elevatorLatch=false;game.cottage.elevatorElapsed=null;game.cottage.elevatorRequest=false;}
  else {game.cottage.bedLatch=false;game.cottage.restElapsed=null;}
  return true;

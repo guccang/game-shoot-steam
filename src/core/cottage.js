@@ -1,3 +1,5 @@
+import {MINING} from '../config/mining.js';
+import {updateMining,enterMine,updateMineEntrance} from './mining.js';
 import {travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from './home-construction.js';
 import {HOME_BALCONY,HOME_DIRECTIONS,HOME_ELEVATOR,floorBalconies,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {bossCombatActive} from './boss-engagement.js';
@@ -59,6 +61,7 @@ function parkDoorVehicle(game){
 export function cottageBlocked(x,y,game){if(game?.cottage?.balcony)return x<24||x>HOME_BALCONY.width-24||y<42||y>HOME_BALCONY.height-18;const layout=interiorLayout(game?.cottage),furniture=game?interiorFurniture(game):COTTAGE_FURNITURE;return x<22||x>layout.width-22||y<76||y>layout.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
 // 门口、床边判定与室内行走共用正式输入，暂停不累积倒计时或睡眠过渡。
 export function updateCottage(game,dt,input){
+ if(updateMining(game,dt,input))return true;
  if(game.cottage){
   if(game.state!=='playing')return true;
   const room=game.cottage,p=game.player,layout=interiorLayout(room);
@@ -78,6 +81,13 @@ export function updateCottage(game,dt,input){
   room.balconyElapsed=nearDoor&&!room.balconyLatch&&Math.hypot(input.x,input.y)<.01?(room.balconyElapsed||0)+dt:0;
   if(room.balconyElapsed>=1&&enterHomeBalcony(game,nearDoor))return true;
   if(updateCottageStairs(game,dt,input))return true;
+  // 地下室梯口与原楼梯一样先走近再候停，返回后离开梯口才重新触发。
+  if(room.kind==='cottage'&&!cottageFloor(room)&&game.progress.homeDecor.basement){
+   const near=Math.hypot(p.x-MINING.hatch.goal.x,p.y-MINING.hatch.goal.y)<=28;
+   if(!near)room.basementLatch=false;
+   room.basementElapsed=near&&!room.basementLatch&&Math.hypot(input.x,input.y)<.01?(room.basementElapsed||0)+dt:0;
+   if(room.basementElapsed>=1&&enterMine(game))return true;
+  }
   // 床前站定一秒直接入睡，移动取消，醒来须先离开床边才能再次触发。
   const nearBed=(!room.kind||room.kind==='cottage')&&!cottageFloor(room)&&Math.hypot(p.x-C.bed.x,p.y-C.bed.y)<=C.bedRadius;
   if(!nearBed)room.bedLatch=false;
@@ -90,6 +100,7 @@ export function updateCottage(game,dt,input){
  if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech||game.vehicleBoarding){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
  // 页面暂停不消耗等待时间，关闭后继续；步行和驾驶移动或离开门口立即取消。
  if(game.state!=='playing')return false;
+ if(updateMineEntrance(game,dt,input))return true;
  const layouts=[interiorLayout({kind:'cottage'}),...Object.values(WORKSHOP_INTERIORS)].filter(r=>r.id!=='warehouse'&&(r.id!=='legendary'||game.progress.vehicleHulls[6]));
  const layout=layouts.reduce((best,item)=>worldDistance(game.player,item.door)<worldDistance(game.player,best.door)?item:best);
  if(game.cottageDoorLatch){
@@ -104,7 +115,7 @@ export function updateCottage(game,dt,input){
 }
 // 出门恢复世界坐标；离开门口后才重新允许站立倒计时。
 export function leaveCottage(game){
- if(!game.cottage||game.cottage.balcony||game.cottage.sleep||game.state!=='playing'||game.cottage.kind==='cottage'&&cottageFloor(game.cottage)>0)return false;
+ if(!game.cottage||game.cottage.kind==='mine'||game.cottage.balcony||game.cottage.sleep||game.state!=='playing'||game.cottage.kind==='cottage'&&cottageFloor(game.cottage)>0)return false;
  const kind=game.cottage.kind||'cottage';Object.assign(game.player,game.cottage.outside,{vx:0,vy:0});game.cottage=null;game.cottageDoorLatch=kind==='cottage'?true:kind;game.onEvent('cottage-change');return true;
 }
 // 预告和实际休息共用同一目标日期，不修改传入的正式历法。

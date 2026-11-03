@@ -1,4 +1,6 @@
 import {drawHomeBalcony} from './home-balcony.js';
+import {drawMining,drawMineShaft} from './mining.js';
+import {mineShaftObjects} from '../core/mining.js';
 import {constructionObjects,drawConstructionCompany} from './construction-company.js';
 import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
 import {outdoorBusy} from '../core/outdoors.js';
@@ -202,6 +204,7 @@ export class Renderer {
       w = this.width,
       h = this.height,
       time = source.previewTime;
+    if(source.cottage?.kind==='mine'){drawMining(this,source);profiler?.end('render.prepare');return;}
     if(source.cottage?.balcony){drawHomeBalcony(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     if(source.cottage){this.sceneNpcContinuity?.actors.clear();this.stormStrike=null;if(source.cottage.kind&&source.cottage.kind!=='cottage')drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     const valley = source.mapId === 'jiuzhaigou';
@@ -380,6 +383,7 @@ export class Renderer {
     const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source).map(actor=>g.campActors?.get(actor.id)||actor)],view);
     const activeStoryResidents=new Set([...storyResidentIds(source),...scenePeople.map(a=>a.residentId).filter(Boolean)]);
     const objects = [
+      ...visibleBodies(mineShaftObjects(source),view,100),
       ...visibleBodies(constructionObjects(camp),view,160),
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
       ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
@@ -440,7 +444,8 @@ export class Renderer {
       if(item.type==='fire-station-back'&&!restorationBuildingVisible(camp,'fire'))continue;
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);continue;}
-      if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
+      if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
+      else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
       else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches);
       else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);

@@ -1,4 +1,7 @@
+import {MINING} from '../config/mining.js';
+import {placedDecor} from '../progression/home-decor.js';
 // 加盖事务先保存再扣款，通行只访问已建楼层和已装设施。
+import {openBasement,freshMining} from '../progression/mining.js';
 import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeFloors,floorBalconies,elevatorFloors,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
 import {bindEconomy,economyFor} from '../config/economy.js';
@@ -9,6 +12,7 @@ export function buildHome(game,kind,{floor=0,side='south'}={}){
  if(game.cottage?.kind!=='construction'||!['playing','paused'].includes(game.state))return {ok:false,message:'请到建筑公司办理。'};
  const removing=kind==='remove-elevator',price=removing?{coins:0,wood:0}:Object.hasOwn(HOME_BUILD_PRICES,kind)?HOME_BUILD_PRICES[kind]:null,home=game.progress.homeDecor;
  if(!price||!home)return {ok:false,message:'请选择有效的施工项目。'};
+ if(kind==='basement'&&home.basement)return {ok:false,message:'地下室已经建好，请从小屋一楼梯口下去。'};
  if(kind==='floor'&&!Number.isSafeInteger(homeFloors(home)+1))return {ok:false,message:'当前楼层编号超出数字表示范围。'};
  if((kind==='elevator'||removing)&&(!Number.isSafeInteger(floor)||floor<0||floor>=homeFloors(home)))return {ok:false,message:'请选择已建楼层。'};
  if(kind==='elevator'&&hasHomeElevator(home,floor))return {ok:false,message:'这一层已经安装电梯。'};
@@ -18,12 +22,18 @@ export function buildHome(game,kind,{floor=0,side='south'}={}){
  if(game.progress.coins<price.coins||game.progress.wood<price.wood)return {ok:false,message:'金币或仓库木材不足。'};
  const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress)),h=next.homeDecor;
  next.coins-=price.coins;next.wood-=price.wood;
+ if(kind==='basement'){
+  // 新梯口占用已有家具区域时，把原实例移入收纳，不删除或重复赠送家具。
+  const blockedIds=new Set(placedDecor(h,0).filter(i=>i.layer==='floor'&&Math.abs(i.x-MINING.hatch.x)<i.width/2+40&&Math.abs(i.y-460)<i.height/2+60).map(i=>i.uid));
+  for(const item of h.items)if(blockedIds.has(item.uid)){item.x=null;item.y=null;}
+  h.basement=true;next.mining??=freshMining();openBasement(next.mining);
+ }
  if(kind==='floor')h.floors=homeFloors(h)+1;
  if(kind==='elevator'||removing){h.elevators=removing?elevatorFloors(h).filter(f=>f!==floor):[...elevatorFloors(h),floor].sort((a,b)=>a-b);h.version=2;delete h.elevator;}
  if(kind==='balcony'){h.balconies??={};h.balconies[floor]=[...floorBalconies(h,floor),side];}
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  try{if(game.livingPersist&&game.livingPersist(next)!==true)return {ok:false,message:'保存失败，费用与设施均未改变。'};}catch{return {ok:false,message:'保存失败，费用与设施均未改变。'};}
- game.progress=next;game.onEvent?.('home-construction');return {ok:true,message:kind==='floor'?`已加盖第 ${h.floors} 楼，楼梯已接通。`:kind==='elevator'?`第 ${floor+1} 楼电梯已安装。`:removing?`第 ${floor+1} 楼电梯已拆除，楼梯已恢复。`:`第 ${floor+1} 楼${HOME_DIRECTIONS[side].name}侧大阳台已建好。`};
+ game.progress=next;game.onEvent?.('home-construction');return {ok:true,message:kind==='basement'?'地下室已建好，矿锄已备齐。回小屋一楼点击梯口下矿；梯口原有家具保留在收纳。':kind==='floor'?`已加盖第 ${h.floors} 楼，楼梯已接通。`:kind==='elevator'?`第 ${floor+1} 楼电梯已安装。`:removing?`第 ${floor+1} 楼电梯已拆除，楼梯已恢复。`:`第 ${floor+1} 楼${HOME_DIRECTIONS[side].name}侧大阳台已建好。`};
 }
 // 楼梯和电梯均要求到达设施前；只改变局部落点，绝不把室内坐标写回营地。
 export function travelHomeFloor(game,target,mode='stairs'){

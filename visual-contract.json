@@ -2679,4 +2679,6 @@
   "warehouseBuilding":{"id":"warehouse-building","designCriterion":"小屋仓库可辨认、实体通行正确，室外直接打开、双库存格子与数量角标和总计清晰，触摸拖拽存取、滑条确认与负重提示在手机昼夜可用。","entry":"src/rendering/warehouse.js#drawWarehouse / src/rendering/visual-review.js#inspectWarehouse","brief":"docs/art-tasks/warehouse-building.md","unitTests":["tests/warehouse.test.mjs"],"browserTests":["tests/warehouse-browser.cjs"]}
 ,
   "sceneNpcContinuity":{"designCriterion":"scene-npc-continuity","description":"营地四位伙伴独立于任务追踪常驻，刷新和返回可重建；剧情临时人物沿用原地留驻，旧道具清理、身份去重，切场景隔离。","entry":"src/rendering/scene-npc-continuity.js#inspectSceneNpcContinuity","brief":"docs/art-tasks/story-scene-continuity.md","unitTests":["tests/scene-npc-continuity.test.mjs","tests/camp-npc-presence.test.mjs"],"browserTests":["tests/story-scene-continuity-browser.cjs","tests/camp-npc-presence-browser.cjs"]}
+,
+  "undergroundMining":{"designCriterion":"underground-mining","description":"建筑公司创建地下室，矿锄独立挥动与持续开掘，地下地表坐标对齐，小地图指向小屋，地表洞口双向通行，轨道矿车连续行驶与即时停车、路线装点；手机昼夜可读。","entry":"src/rendering/mining.js#drawMining / src/rendering/visual-review.js#inspectMining","brief":"docs/art-tasks/underground-mining.md","unitTests":["tests/mining.test.mjs"],"browserTests":["tests/mining-browser.cjs"]}
 }

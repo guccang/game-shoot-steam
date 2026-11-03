@@ -1879,3 +1879,9 @@ export function inspectCampDailyLife(game,renderer,root){
 
 // 建筑验收读取真实房间、楼层、营地取景与触控尺寸，绝不为检查另造场景。
 export function inspectHomeConstruction(game,renderer,root=document){return {designCriterion:"cottage-construction",exterior:homeExterior(game.progress.homeDecor),elevators:elevatorFloors(game.progress.homeDecor),home:structuredClone(game.progress.homeDecor),room:game.cottage?{floor:game.cottage.floor,balcony:game.cottage.balcony,kind:game.cottage.kind}:null,view:renderer.balconyView,companyOpen:!!root.getElementById("home-construction-dialog")?.open,fields:[...root.querySelectorAll("#home-construction-dialog input,#home-construction-dialog select")].map(n=>({height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 地下验收直接读取正式矿区画布和手机触控节点，输出设计目标及实际资源预算。
+export function inspectMining(game,renderer,root){
+ const controls=root.getElementById('mine-controls'),buttons=[...controls.querySelectorAll('button')].filter(b=>!b.hidden&&b.getBoundingClientRect().width>0);
+ return {designCriterion:'underground-mining',scene:game.cottage?.kind,view:renderer.mineView,render:renderer.mineReview,body:game.player.bodyAnimation,dug:Object.keys(game.progress.mining.dug).length,rails:Object.keys(game.progress.mining.rails).length,shafts:game.progress.mining.shafts.length,canvasBytes:224*224*4,buttons:buttons.map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

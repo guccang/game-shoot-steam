@@ -21,7 +21,7 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   if(mode==='build'){
    const price=kind=>`${HOME_BUILD_PRICES[kind].coins} 金币 + ${HOME_BUILD_PRICES[kind].wood} 木材`;
    const valid=Number.isSafeInteger(buildFloor)&&buildFloor>=0&&buildFloor<floors,installed=valid&&hasHomeElevator(h,buildFloor),lifts=elevatorFloors(h);
-   get('content').innerHTML=`<section class="ui-section"><h3>向上加盖</h3><p>每次增加一整层，默认接通上下楼梯。</p><button class="ui-button" data-build="floor">加盖第 ${floors+1} 楼 · ${price('floor')}</button></section>
+   get('content').innerHTML=`<section class="ui-section"><h3>地下室与矿道</h3><p>小屋一楼接通地下室，自带矿锄。可持续挖矿、开地表洞口、铺轨与驾驶矿车。</p><button class="ui-button" data-build="basement" ${h.basement?'disabled':''}>${h.basement?'地下室已建成':'创建地下室 · '+price('basement')}</button></section><section class="ui-section"><h3>向上加盖</h3><p>每次增加一整层，默认接通上下楼梯。</p><button class="ui-button" data-build="floor">加盖第 ${floors+1} 楼 · ${price('floor')}</button></section>
     <section class="ui-section"><h3>本层电梯</h3><p>每层单独付费，安装后替换该层楼梯。可直达全部已建楼层，未安装的楼层仍用楼梯。</p><label>施工楼层 <input id="home-build-elevator-floor" type="number" inputmode="numeric" min="1" max="${floors}" value="${valid?buildFloor+1:''}" step="1"></label><p id="home-elevator-status">${valid?`第 ${buildFloor+1} 楼 · ${installed?'已安装电梯':'使用楼梯'}`:'请输入有效的已建楼层'}</p>
     <button class="ui-button" data-build="elevator" ${!valid||installed?'disabled':''}>安装本层电梯 · ${price('elevator')}</button>
     <button class="ui-button" data-remove-elevator ${installed?'':'hidden'}>拆除本层电梯</button>

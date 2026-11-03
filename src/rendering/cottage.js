@@ -1,3 +1,4 @@
+import {drawBasementHatch} from './mining.js';
 import {HOME_DIRECTIONS,HOME_ELEVATOR,floorBalconies,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {workshopInteriorView} from './workshop-interior.js';
 // 小屋正式绘制器：家具、窗景和角色共用局部坐标与脚底排序，无独立预览替身。
@@ -66,6 +67,7 @@ export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calend
  for(const item of items.filter(i=>['wall','curtain','rug'].includes(i.layer)))drawHomeDecor(c,item,night,g.progress.living.calendar,g.progress);
  // 门槛留空，出口地垫与下方出门按钮共同提示路线。
  if(!floor){box(c,COTTAGE.exit.x-37,COTTAGE.exit.y-18,74,22,4,'#8d9c77','#667d5b',1.5);c.fillStyle='#e5dfb6';c.font='12px sans-serif';c.textAlign='center';c.fillText('出门',COTTAGE.exit.x,COTTAGE.exit.y-2);}
+ if(!floor&&g.progress.homeDecor.basement)drawBasementHatch(c,night);
  drawCottageStairs(c,floor,night,g.progress.homeDecor);
  drawHomeFacilities(c,g,night);
  for(const item of [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),...items.filter(i=>!i.layer||i.layer==='floor'),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){

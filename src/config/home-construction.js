@@ -2,7 +2,7 @@
 import {TOWN_LAYOUT} from './town-layout.js';
 import {COTTAGE_STAIRS} from './cottage.js';
 export const CONSTRUCTION_COMPANY={...TOWN_LAYOUT.construction,width:166,height:140,id:'construction',name:'森筑建筑公司',mapId:'forest'};
-export const HOME_BUILD_PRICES={floor:{coins:3000,wood:400},elevator:{coins:6000,wood:800},balcony:{coins:1500,wood:200}};
+export const HOME_BUILD_PRICES={basement:{coins:2400,wood:180},floor:{coins:3000,wood:400},elevator:{coins:6000,wood:800},balcony:{coins:1500,wood:200}};
 export const HOME_DIRECTIONS={north:{name:'北',dx:0,dy:-1,door:{x:385,y:100}},east:{name:'东',dx:1,dy:0,door:{x:448,y:270}},south:{name:'南',dx:0,dy:1,door:{x:320,y:492}},west:{name:'西',dx:-1,dy:0,door:{x:32,y:380}}};
 export const HOME_ELEVATOR={...COTTAGE_STAIRS,id:'elevator'};
 export const HOME_BALCONY={width:480,height:230,spawn:{x:240,y:172},exit:{x:240,y:204},radius:28};

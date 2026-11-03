@@ -1,3 +1,4 @@
+import {MINING} from '../config/mining.js';
 import {HOME_DIRECTIONS,HOME_BALCONY,HOME_ELEVATOR} from '../config/home-construction.js';
 import {COTTAGE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
 import {VEHICLE_BOARDING,vehicleBoardingPoint} from '../core/vehicle-boarding.js';
@@ -9,6 +10,7 @@ import {doorwayInteractionAnchor,projectInteractionAnchor} from '../world/intera
 // 房屋入室与出门均站定一秒共用正式进度，绘制不改变计时或房间状态。
 export function playerActionCountdown(game){
  const room=game.cottage;
+ if(room?.basementElapsed>0)return {elapsed:room.basementElapsed,wait:1,icon:'stairs-down',anchor:{x:MINING.hatch.goal.x-62,y:MINING.hatch.goal.y-15,space:'room'}};
  if(room?.balcony)return room.balconyExitElapsed>0?{elapsed:room.balconyExitElapsed,wait:1,icon:'home',anchor:{...HOME_BALCONY.exit,space:'room'}}:null;
  if(room?.balconyElapsed>0){const side=Object.keys(HOME_DIRECTIONS).find(s=>Math.hypot(game.player.x-HOME_DIRECTIONS[s].door.x,game.player.y-HOME_DIRECTIONS[s].door.y)<=32);if(side)return {elapsed:room.balconyElapsed,wait:1,icon:'exit',anchor:{...HOME_DIRECTIONS[side].door,space:'room'}};}
  // 楼梯徽记固定在落脚点左前方，避免猫猫身体和扶手盖住数字。

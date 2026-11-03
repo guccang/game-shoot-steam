@@ -1,3 +1,4 @@
+import {freshMining,normalizeMining,openBasement} from './mining.js';
 import {normalizeNpcDialogue} from './npc-dialogue.js';
 import {normalizeOutdoors} from './outdoors.js';
 import {freshTreasure,normalizeTreasure} from './treasure.js';
@@ -64,6 +65,7 @@ export function freshProgress() {
     treasure:freshTreasure(),
     npcDialogue:{},
     homeDecor:freshHome(),
+    mining:freshMining(),
     monsterCamps:normalizeMonsterCamps(null),
     keepsakes:freshKeepsakes(true),
     restoration:freshRestoration(),
@@ -195,6 +197,8 @@ export function validateProgress(raw) {
   p.story = validateStory(raw.story);
   p.living=normalizeLivingWorld(raw.living);
   p.homeDecor=normalizeHome(raw.homeDecor,p.living.calendar);
+  p.mining=normalizeMining(raw.mining);
+  if(p.homeDecor.basement)openBasement(p.mining);
   initializeWildFarmAges(p.farm,p.living.calendar);
   p.monsterCamps=normalizeMonsterCamps(raw.monsterCamps);
   p.taskTracking=normalizeTaskTracking(raw.taskTracking,p.living);
