@@ -1,4 +1,12 @@
 {
+  "sprinklerRadiusRotation": {
+    "designCriterion": "sprinkler-radius-rotation",
+    "description": "简易洒水器覆盖田格圆形半径2格，预览与浇水一致；双喷口独立旋转并扫水，底座固定，暂停冻结，多台独立，手机昼夜清晰。",
+    "entry": "src/rendering/visual-review.js#inspectSprinklerRotation",
+    "brief": "docs/art-tasks/farm-mine-production.md",
+    "unitTests": ["tests/sprinkler-radius-rotation.test.mjs"],
+    "browserTests": ["tests/sprinkler-radius-rotation-browser.cjs"]
+  },
   "mineFunnelBoundary":{"designCriterion":"mine-funnel-boundary","description":"浮游炮在地下岩壁、拐角与矿区外缘连续收住并沿边移动，不重复回弹；返航泊位同源，保留原独立操枪、推进与装填，手机昼夜可读。","entry":"src/rendering/visual-review.js#inspectMineFunnelBoundary","brief":"docs/art-tasks/mine-funnel-boundary.md","unitTests":["tests/mine-funnel-boundary.test.mjs"],"browserTests":["tests/mine-funnel-boundary-browser.cjs","tests/mine-funnel-boundary-combat-browser.cjs"]},
   "mineCartControlsRemoval":{"designCriterion":"mine-cart-controls-removal","description":"行驶中在连接点按实时输入选路，松开恢复自动，保留路口设置；停车支持场景摇杆、四向按钮、页面摇杆及方向键/WASD选向，保持停车；下车回收附近铁轨和矿车，保护占用轨段，返还原价，手机昼夜短屏可读。","entry":"src/rendering/visual-review.js#inspectMineCartControls","brief":"docs/art-tasks/mine-cart-controls-removal.md","unitTests":["tests/mine-cart-controls-removal.test.mjs","tests/mine-cart-live-steering.test.mjs"],"browserTests":["tests/mine-cart-controls-removal-browser.cjs","tests/mine-cart-controls-edge-browser.cjs","tests/mine-cart-live-steering-browser.cjs"]},
   "sceneClickApproach":{"designCriterion":"scene-click-approach","description":"全部已有营业建筑本体和门前透明点击入口，真实绕障走到门口；楼梯和床点击走近后站定触发，手动取消、暂停冻结且不重复触发。","entry":"src/ui/world-workshop.js / src/ui/cottage-approach.js / src/rendering/visual-review.js#inspectSceneApproach","brief":"docs/art-tasks/scene-click-approach.md","unitTests":["tests/scene-approach.test.mjs"],"browserTests":["tests/scene-approach-browser.cjs","tests/scene-approach-visual-browser.cjs"]},

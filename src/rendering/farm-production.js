@@ -1,27 +1,60 @@
 // 生产设施正式Canvas绘制：矮底座、独立喷嘴、台面与压榨罐共享森林配色。
 import {carriedSprinkler} from '../core/farm-production.js';
-import {SPRINKLER_OFFSETS} from '../config/farm-production.js';
-import {nearest} from '../world/coordinates.js';
+import {SPRINKLER_OFFSETS,SPRINKLER} from '../config/farm-production.js';
+import {nearest,worldDistance} from '../world/coordinates.js';
 // 设施以脚底参与现有深度排序，不增加图片或独立画布。
 export function productionObjects(game){
  const s=game.progress.production;if(!s)return [];const held=carriedSprinkler(game);
  return [...s.sprinklers.filter(p=>p.id!==held?.id).map(p=>({...p,type:'farm-production',kind:'sprinkler'})),...(s.bench?[{...s.bench,type:'farm-production',kind:'bench'}]:[]),...(held?[{...held,x:game.player.x+32,y:game.player.y+8,type:'farm-production',kind:'sprinkler',carried:true}]:[])].filter(p=>p.mapId===game.mapId);
 }
-// 地面预览只画四个真实覆盖格，放置前玩家能判断对齐与范围。
+// 地面预览绘制半径轮廓和圆内田格，范围与实际浇水判定一致。
 export function drawProductionGround(c,game,view){
  const cursor=game.productionCursor;if(!cursor||cursor.point?.mapId!==game.mapId)return;
  const p=nearest(cursor.point,{x:view.x+view.w/2,y:view.y+view.h/2});c.save();c.translate(p.x,p.y);c.strokeStyle=cursor.reason?'#a35f45':'#527754';c.fillStyle=cursor.reason?'#b9724d33':'#a6c48b55';c.lineWidth=2;c.setLineDash([5,4]);
+ if(cursor.kind==='sprinkler'){c.beginPath();c.ellipse(0,0,SPRINKLER.radius*SPRINKLER.cellWidth,SPRINKLER.radius*SPRINKLER.cellHeight,0,0,Math.PI*2);c.stroke();}
  for(const [x,y] of cursor.kind==='sprinkler'?SPRINKLER_OFFSETS:[[0,0]]){c.beginPath();c.roundRect(x-25,y-18,50,36,7);c.fill();c.stroke();}c.setLineDash([]);c.restore();
  c.save();c.globalAlpha=.65;drawProductionDevice(c,{...p,kind:cursor.kind},game.time,true);c.restore();
 }
-// 局部喷水只在真实自动浇水后一秒内出现，暂停使用冻结的游戏时钟。
-export function drawProductionDevice(c,item,time=0,reduced=false,spray=false){
+// 正式绘制与验收共用喷头姿态；暂停不推进游戏时间，停转后回到同一个完整圈姿态。
+export function sprinklerPose(item,time,event,reduced=false){
+ const d=event?.devices?.find(d=>d.id===item.id&&d.mapId===item.mapId&&worldDistance(d,item)<.1);
+ const elapsed=d?time-d.time:-1,active=elapsed>=0&&elapsed<SPRINKLER.spraySeconds;
+ const progress=active?elapsed/SPRINKLER.spraySeconds:0;
+ const angle=active&&!reduced?Math.PI*2*progress*progress*(3-2*progress):0;
+ const pressure=active?Math.min(1,elapsed/.18,(SPRINKLER.spraySeconds-elapsed)/.18):0;
+ return {active,angle,elapsed,pressure};
+}
+// 喷嘴沿竖轴旋转：横向和纵深分别投影，只有横臂运动，底座与竖管保持固定。
+function drawSprinklerHead(c,angle){
+ const x=Math.cos(angle)*19,y=Math.sin(angle)*8;
+ c.lineCap='round';c.strokeStyle='#3b5742';c.lineWidth=9;c.beginPath();c.moveTo(-x,-25-y);c.lineTo(x,-25+y);c.stroke();
+ c.strokeStyle='#91b6a4';c.lineWidth=5;c.stroke();
+ for(const sign of [-1,1]){c.fillStyle='#d8e9cc';c.strokeStyle='#3b5742';c.lineWidth=1.5;c.beginPath();c.ellipse(sign*x,-25+sign*y,3,2.6,0,0,Math.PI*2);c.fill();c.stroke();}
+ c.fillStyle='#efd994';c.beginPath();c.arc(0,-25,5,0,Math.PI*2);c.fill();c.stroke();
+}
+// 两股水弧从独立喷口出发，水滴沿二次曲线落向覆盖边缘，不把动画烘焙为静态图。
+function drawSprinklerWater(c,pose){
+ c.save();c.lineCap='round';
+ for(const sign of [-1,1]){
+  const dx=Math.cos(pose.angle)*sign,dy=Math.sin(pose.angle)*sign;
+  const start={x:dx*19,y:-25+dy*8},end={x:dx*SPRINKLER.cellWidth*SPRINKLER.radius*pose.pressure,y:dy*SPRINKLER.cellHeight*SPRINKLER.radius*pose.pressure};
+  const control={x:(start.x+end.x)*.5,y:(start.y+end.y)*.5-27};
+  c.globalAlpha=pose.pressure*.75;c.strokeStyle='#63b8c7';c.lineWidth=2.6;c.beginPath();c.moveTo(start.x,start.y);c.quadraticCurveTo(control.x,control.y,end.x,end.y);c.stroke();
+  c.fillStyle='#d2f0df';
+  for(let i=0;i<6;i++){const t=(pose.elapsed*1.8+i/6)%1,u=1-t,x=u*u*start.x+2*u*t*control.x+t*t*end.x,y=u*u*start.y+2*u*t*control.y+t*t*end.y;c.beginPath();c.ellipse(x,y,1.5,2.2,0,0,Math.PI*2);c.fill();}
+  c.globalAlpha=pose.pressure*.45;c.strokeStyle='#7cc7cd';c.lineWidth=1.4;c.beginPath();c.ellipse(end.x,end.y,5+Math.sin(pose.elapsed*12)*1.5,2.5,0,0,Math.PI*2);c.stroke();
+ }
+ c.restore();
+}
+// 每台设备只在真实事务成功后播放一轮旋转浇水，静态图标与放置预览保持安静。
+export function drawProductionDevice(c,item,time=0,reduced=false,spray=null){
  c.save();c.translate(item.x,item.y);c.strokeStyle='#3b5742';c.lineWidth=2;c.lineJoin='round';c.fillStyle='#294c3c28';c.beginPath();c.ellipse(4,3,22,8,0,0,Math.PI*2);c.fill();
  if(item.carried)c.translate(0,-18);
  if(item.kind==='sprinkler'){
+  const pose=sprinklerPose(item,time,item.carried?null:spray,reduced);
   c.fillStyle='#8eaa77';c.beginPath();c.ellipse(0,-2,17,8,0,0,Math.PI*2);c.fill();c.stroke();c.fillStyle='#e7d8a6';c.beginPath();c.roundRect(-5,-25,10,25,3);c.fill();c.stroke();
-  c.fillStyle='#91b6a4';c.beginPath();c.roundRect(-20,-29,40,8,4);c.fill();c.stroke();c.fillStyle='#efd994';c.beginPath();c.arc(0,-25,5,0,Math.PI*2);c.fill();c.stroke();
-  if(spray&&!reduced&&!item.carried){c.strokeStyle='#8ac6d0';c.lineWidth=1.8;const pulse=Math.sin(time*10)*3;for(const [x,y] of SPRINKLER_OFFSETS){c.beginPath();c.moveTo(0,-25);c.quadraticCurveTo(x*.6,y*.5-35-pulse,x,y);c.stroke();}}
+  if(pose.active&&!reduced)drawSprinklerWater(c,pose);
+  drawSprinklerHead(c,pose.angle);
  }else{
   c.fillStyle='#96744b';for(const x of [-20,14]){c.beginPath();c.roundRect(x,-15,6,19,2);c.fill();c.stroke();}
   c.fillStyle='#f0dfaa';c.beginPath();c.roundRect(-25,-21,50,13,4);c.fill();c.stroke();

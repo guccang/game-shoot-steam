@@ -514,7 +514,7 @@ export class Renderer {
       else if(item.type==='furniture-shop')drawFurnitureShop(c,item,light.night,winter);
       else if(item.type==='seed-shop')drawSeedShop(c,item);
       else if(item.type==='farm-sign')drawCampFarmSign(c,item);
-      else if(item.type==='farm-production')drawProductionDevice(c,item,g.time,this.reduced.matches,item.kind==='sprinkler'&&!!camp.productionSpray?.sprinklers.includes(item.id)&&g.time-camp.productionSpray.time<1);
+      else if(item.type==='farm-production')drawProductionDevice(c,item,g.time,this.reduced.matches,camp.productionSpray);
       else if(item.type==='farm-crop')drawFarmCrop(c,item,g.time,this.reduced.matches,this.farmVisualNow,cropBoosts,zoom);
       else if(item.type==='race-bale')drawRaceBale(c,item);
       else if (item.type === 'race-runner')drawRaceRunner(c,item,this.reduced.matches);

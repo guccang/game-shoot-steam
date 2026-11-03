@@ -5,8 +5,10 @@ export const PRODUCTION_BUILDINGS={sprinkler:{name:'简易洒水器',ore:12,wood
 export const PRODUCTION_RECIPES={meal:{name:'矿工便当',count:3,description:'接下来100次成功开掘，耗时降低20%'},juice:{name:'探路果饮',count:3,description:'地下实际步行180秒，速度提高15%'},oil:{name:'植物油',count:3,description:'一辆矿车实际行驶180秒，速度提高20%'}};
 // 稳定作物ID映射既有库存索引，不以中文显示名关联数据。
 export function productionCrop(id){return FARM_CROPS.findIndex(c=>c.id===id);}
-// 四个覆盖中心沿用正式农田间距，不覆盖对角线。
-export const SPRINKLER_OFFSETS=[[0,-52],[56,0],[0,52],[-56,0]];
+// 覆盖规则、预览和喷水采用同一田格尺度，半径2格为圆形而非整块5×5方形。
+export const SPRINKLER={radius:2,cellWidth:56,cellHeight:52,spraySeconds:2.4};
+// 排除设备自身所在格，保留圆内12个相邻田格中心。
+export const SPRINKLER_OFFSETS=Array.from({length:25},(_,i)=>[i%5-2,Math.floor(i/5)-2]).filter(([x,y])=>(x||y)&&x*x+y*y<=SPRINKLER.radius**2).map(([x,y])=>[x*SPRINKLER.cellWidth,y*SPRINKLER.cellHeight]);
 
 // 开掘逻辑、锄头动作与进度环共用加速后的单次时长。
 export function productionDigSeconds(progress,base){return base*(progress.production?.effects.meal>0?1-PRODUCTION.mealReduction:1);}
