@@ -1,6 +1,7 @@
 // 地下生态只推进当前层的可见时间，采集再生、独立怪物和防卫不污染地表敌人。
 import {mineCell,mineKey,minePoint} from '../config/mining.js';
 import {MINE_ANIMALS as A,MINE_ECOLOGY as E,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
+import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {currentMineLayer} from './mine-layers.js';
 import {miningCommit,mineNotice} from './mine-transactions.js';
 import {mineOccupancy,mineLineClear} from '../physics/mine-motion.js';
@@ -20,7 +21,7 @@ export function buildMineBridge(game,ahead=true){
 export function harvestMine(game){
  if(game.cottage?.kind!=='mine'||game.state!=='playing'||game.cottage.ride)return mineNotice(game,'请下矿车后采集。');
  const l=currentMineLayer(game),cell=mineCell(game.player),key=mineKey(cell),t=mineTerrain(cell,l),b=t.biome;
- if(!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药或化石的地块采集。');
+ if(mineEntrancePlatform(cell,l)||!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药或化石的地块采集。');
  if((l.harvested[key]||0)>l.age)return mineNotice(game,`这里正在恢复，约 ${Math.ceil(l.harvested[key]-l.age)} 秒后可再次采集。`);
  const r=miningCommit(game,(m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')m.ore+=b.yield;},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.yield} ${b.resource==='wood'?'木材':'矿石'}。`);
  if(r.ok&&b.resource==='heal')game.player.hp=Math.min(game.maxHp(),game.player.hp+b.yield);return r;

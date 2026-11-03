@@ -12,6 +12,7 @@ import {wildFarmTime} from '../progression/wild-farm-age.js';
 import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_WATER,farmPosition} from '../config/farm.js';
 import {worldDistance,nearest} from '../world/coordinates.js';
 import {farmLandReason,farmApproach,farmDigTarget} from '../world/farm-land.js';
+import {mineEntranceFarmBlocked} from '../world/mine-entrances.js';
 import {naturalWaypoint} from '../physics/terrain-navigation.js';
 import {blocked} from '../physics/motion.js';
 import {attackTargetDistance,attackTargetKnown} from '../combat/perception.js';
@@ -88,6 +89,8 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
  // 空田的湿度属于土壤；播种重置本茬加速状态时，保留这份已获得的水分。
  const plantedInWetSoil=action==='plant'&&p?.watered===true;
  const cell=action==='dig'?point:p?farmPosition(p):null;
+ // 旧档已有的入口田可以收获或移除，但不能继续播种；提交时再次校验排队期间新增洞口。
+ if(['dig','plant'].includes(action)&&mineEntranceFarmBlocked(game.progress.mining,cell))return {ok:false,message:'矿洞和入口坡道不能种植，请选择旁边的草地。'};
  if(['dig','plant','harvest','water','remove'].includes(action)&&(!cell||cell.mapId!==game.mapId||worldDistance(game.player,cell)>78))return {ok:false,message:'先走到这块田边再操作。'};
  let message='',coins=0,harvest=null,lesson=false,wateredPlots=[],destination=null;
  if(action==='dig'){
@@ -153,6 +156,7 @@ export function queueFarmWork(game,action,{plot,point,crop=0,tree,view,removal}=
  const p=game.progress.farm.plots.find(p=>p.id===plot);
  const dig=action==='dig'?farmDigTarget(game,point||game.player,view):null;
  const target=dig?dig.point:action==='saw'?tree:p;
+ if(['dig','plant'].includes(action)&&mineEntranceFarmBlocked(game.progress.mining,target))return {ok:false,message:'矿洞和入口坡道不能种植，请选择旁边的草地。'};
  if(!target||action==='saw'&&!(target.hp>0))return {ok:false,message:'没有可操作的目标。'};
  if(dig?.reason)return {ok:false,message:dig.reason};
  if(action==='remove'&&(p.mapId!==game.mapId||!farmRemovalAllowed(p,removal)))return {ok:false,message:'请重新选择地块并确认移除。'};

@@ -11,6 +11,7 @@ import {FARM_DELIVERY,FARM_SEED_SHOP} from '../config/farm.js';
 import {COTTAGES} from './scenery.js';
 import {REALM_ENTRANCES} from './realm-entrances.js';
 import {farmOverlapsRoad} from './farm-roads.js';
+import {mineEntranceFarmBlocked} from './mine-entrances.js';
 // 没有参照田时保留点击位置；有参照时沿田块中心按原间距对齐，支持地图接缝。
 export function snapFarmPoint(point,mapId='forest',origin=null){
  if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y))return null;
@@ -40,6 +41,7 @@ export function farmCovers(game,point){if(game.realm)return false;return (game.p
 // 路面、水、山、建筑与树木都不能当作耕地，路边草地不额外扩大禁种范围。
 export function farmLandReason(game,point,ignorePlotId=null){
  if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y)||point.mapId!==game.mapId)return '请选择当前地图的地面。';
+ if(mineEntranceFarmBlocked(game.progress.mining,point))return '矿洞和入口坡道不能种植，请选择旁边的草地。';
  if(game.progress.farm.plots.some(p=>p.id!==ignorePlotId&&p.mapId===point.mapId&&Math.abs(delta(p.x-point.x,WORLD.width))<52&&Math.abs(delta(p.y-point.y,WORLD.height))<46))return '这里已有田块，请选择旁边的空地。';
  if(farmOverlapsRoad(point))return '田块会占到路面，请稍微移到旁边的草地。';
  if(game.mapId==='forest')for(const b of [...COTTAGES,...REALM_ENTRANCES,FARM_DELIVERY,FARM_SEED_SHOP,REPAIR_CENTER,FURNITURE_SHOP,CONSTRUCTION_COMPANY,WAREHOUSE,CAT_HOME,AMMO_SHOP]){const q=nearest(b,point);if(Math.abs(q.x-point.x)<(b.width||150)/2+27&&point.y>q.y-(b.height||140)-20&&point.y<q.y+34)return '建筑与入口需要留出通路，换一处空地吧。';}

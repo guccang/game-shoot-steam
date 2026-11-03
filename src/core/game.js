@@ -203,7 +203,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
-    this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.mineEntranceLatch=null;this.mineEntranceWait=0;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
+    this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.mineEntranceLatch=null;this.mineEntranceWait=0;this.mineEntranceKey=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
     resetBattlefield(this, continuation);

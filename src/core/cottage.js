@@ -99,7 +99,7 @@ export function updateCottage(game,dt,input){
   if(room.exitElapsed+1e-9>=layout.exitWait)leaveCottage(game);
   return true;
  }
- if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech||game.vehicleBoarding){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
+ if(!canEnterCottage(game)||game.progress.restoration?.build||game.mainlineSpeech||game.vehicleBoarding){game.cottageEntry=null;game.cottageEntryKind=null;game.mineEntranceWait=0;game.mineEntranceKey=null;return false;}
  // 页面暂停不消耗等待时间，关闭后继续；步行和驾驶移动或离开门口立即取消。
  if(game.state!=='playing')return false;
  if(updateMineEntrance(game,dt,input))return true;

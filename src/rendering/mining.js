@@ -10,6 +10,7 @@ import {drawMineTerrain,drawMineLandscape,drawMineAnimal,drawMineBolts} from './
 import {drawVehicleTracks,drawVehicleArmor} from './vehicle.js';
 import {riderPosition} from '../config/vehicle-rider.js';
 import {calendarView} from '../world/living-calendar.js';
+import {mineEntrances,mineEntranceMarkers} from '../world/mine-entrances.js';
 
 // 小屋梯井在地板层绘制，入口脚底不设置阻挡，踏步保持独立轮廓。
 export function drawBasementHatch(c,night){const {x,y}=M.hatch;drawLadder(c,x,y,night,'地下室 ↓');}
@@ -19,7 +20,7 @@ export function drawMineShaft(c,item,night){
  poly(c,[[x-40,y+7],[x-37,y-22],[x-20,y-46],[x+12,y-48],[x+35,y-25],[x+39,y+7]],night?'#6d8272':'#a5ad89','#385d47',2.5);
  poly(c,[[x-24,y+5],[x-22,y-20],[x-9,y-33],[x+12,y-31],[x+24,y-14],[x+24,y+6]],'#314c43','#476447',2);
  box(c,x-19,y-10,38,20,5,'#c9b389','#547153',1.5);for(let i=0;i<3;i++)box(c,x-17,y-6+i*6,34,3,1,'#f1d5a2');
- oval(c,x-26,y-28,14,5,night?'#688466':'#92b07b');label(c,'矿洞坡道 ↓',x,y-56,12);c.restore();
+ oval(c,x-26,y-28,14,5,night?'#688466':'#92b07b');label(c,`矿洞 ${item.number||''} ↓`,x,y-56,12);c.restore();
 }
 // 共用木梯入口，文字由运行时绘制，不烘焙到静态图片。
 function drawLadder(c,x,y,night,text){
@@ -77,7 +78,7 @@ function pickaxe(c,g){
 // 镜头只绘制可见网格，地图再大也不遍历历史矿道，顶部和底部留给手机操作。
 export function drawMining(renderer,g=renderer.game){
  const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=h-(h<500?139:168),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
- renderer.cottageView=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
+ renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
  const v=renderer.mineView,m=currentMineLayer(g),bounds=mineBounds(m);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
@@ -94,7 +95,8 @@ export function drawMining(renderer,g=renderer.game){
  if(m.descent&&m.descent!==m.entry){const down=minePoint(parseKey(m.descent));drawLadder(c,down.x,down.y,night,'下一层 ↓');}
  const entities=[];
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const cell={x,y},key=mineKey(cell);if(mineCellOpen(cell,m))entities.push({y:minePoint(cell).y+24,kind:'landscape',cell});if(m.decor[key])entities.push({y:minePoint(cell).y+8,kind:'decor',cell,value:m.decor[key]});}
- for(const key of m.shafts){const p=minePoint(parseKey(key));if(p.x>v.x-80&&p.x<v.x+w/zoom+80&&p.y>v.y+top/zoom-80&&p.y<v.y+bottom/zoom+80)drawLadder(c,p.x,p.y,night,'地面 ↑');}
+ const visibleShafts=mineEntrances(m).filter(p=>p.x>v.x-80&&p.x<v.x+w/zoom+80&&p.y>v.y+top/zoom-80&&p.y<v.y+bottom/zoom+80);
+ for(const p of visibleShafts)drawLadder(c,p.x,p.y,night,`矿洞 ${p.number} · 地面 ↑`);
  for(const cart of m.carts)if(Math.abs(cart.x-g.player.x)<w/zoom&&Math.abs(cart.y-g.player.y)<h/zoom)entities.push({y:cart.y,kind:'cart',cart});
  for(const animal of g.cottage.ecologyActors||[])entities.push({y:animal.y,kind:'animal',animal});
  if(!g.cottage.ride)entities.push({y:g.player.y,kind:'player'});
@@ -111,22 +113,26 @@ export function drawMining(renderer,g=renderer.game){
   else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride)drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);cartBody(c,e.cart,true);}
  }
  drawMineBolts(c,g.cottage.bolts);
+ // 入口文字在实体之后绘制；猫和怪物经过时仍能识别同一地表洞口编号。
+ for(const p of visibleShafts)label(c,`矿洞 ${p.number} · 地面 ↑`,p.x,p.y+38,12);
  // 未开放区域覆盖在边界外，部分边缘格也与实体边界一致。
  c.fillStyle='#29443c';c.fillRect(v.x-64,v.y-64,Math.max(0,bounds.left-v.x+64),h/zoom+128);c.fillRect(bounds.right,v.y-64,w/zoom+128,h/zoom+128);c.fillRect(v.x-64,v.y-64,w/zoom+128,Math.max(0,bounds.top-v.y+64));c.fillRect(v.x-64,bounds.bottom,w/zoom+128,h/zoom+128);
  const work=g.cottage.dig?g.cottage.dig.elapsed/M.digSeconds:g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
- c.restore();renderer.mineReview={tiles,night,cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
+ c.restore();renderer.mineReview={tiles,night,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
 }
 // 固定范围小地图显示天然洞厅、已挖区域、轨道、洞口和小屋方向，远处小屋以边缘箭头定位。
 export function drawMineMap(canvas,g){
  const c=canvas.getContext('2d'),s=112,scale=5,center=mineCell(g.player),m=currentMineLayer(g);c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,s,s);box(c,1,1,110,110,12,'#efe3bc','#47694e',2);
  c.save();c.beginPath();c.rect(10,21,92,78);c.clip();
  for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#344e42');else if(mineCellOpen(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
- for(const key of m.shafts){const p=parseKey(key),x=56+(p.x-center.x)*scale,y=60+(p.y-center.y)*scale;box(c,x-2,y-2,4,4,1,'#527ca0');}c.restore();
+ c.restore();
  const dx=-center.x,dy=-center.y,factor=Math.min(1,38/Math.max(1,Math.abs(dx*scale)),32/Math.max(1,Math.abs(dy*scale))),hx=56+dx*scale*factor,hy=60+dy*scale*factor;
  poly(c,[[hx-5,hy],[hx,hy-6],[hx+5,hy],[hx+4,hy+5],[hx-4,hy+5]],'#ddaa62','#42644a',1);
  // 层间坡道超出小地图时也显示在边缘，黄色房子仍指向原地表小屋。
  for(const [key,color] of [[m.entry,'#527ca0'],[m.descent,'#ab765b']])if(key){const p=parseKey(key),dx=(p.x-center.x)*scale,dy=(p.y-center.y)*scale,f=Math.min(1,36/Math.max(1,Math.abs(dx)),30/Math.max(1,Math.abs(dy))),x=56+dx*f,y=60+dy*f;box(c,x-3,y-3,6,6,1,color,'#315c43',1);}
+ // 地表洞口不随局部地形一起裁切，边缘箭头指向实际坐标，编号与地表一致。
+ for(const p of mineEntranceMarkers(m,center)){c.strokeStyle='#527ca0';c.lineWidth=1;c.beginPath();c.moveTo(p.targetX,p.targetY);c.lineTo(p.x,p.y);c.stroke();box(c,p.x-5,p.y-5,10,10,2,'#527ca0','#315c43',1);c.fillStyle='#fff0c5';c.font='bold 8px sans-serif';c.textAlign='center';c.fillText(String(p.number),p.x,p.y+3);if(p.edge){const a=p.angle;c.save();c.translate(p.x+Math.cos(a)*8,p.y+Math.sin(a)*8);c.rotate(a);poly(c,[[3,0],[-2,-3],[-2,3]],'#527ca0');c.restore();}}
  const d=MINE_DIRECTIONS[g.cottage.direction];c.save();c.translate(56,60);c.rotate(Math.atan2(d.y,d.x));poly(c,[[6,0],[-4,-4],[-2,0],[-4,4]],'#345e46');c.restore();
  c.fillStyle='#315c43';c.textAlign='center';c.font='bold 10px sans-serif';c.fillText('北 ↑',56,14);c.fillText('西',7,62);c.fillText('东',105,62);c.fillText('南',56,107);
 }

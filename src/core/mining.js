@@ -10,6 +10,7 @@ import {advanceVehicleWheels} from '../combat/vehicle-motion.js';
 import {updateCatMotion} from './cat-motion.js';
 import {blocked} from '../physics/motion.js';
 import {worldDistance} from '../world/coordinates.js';
+import {MINE_ENTRANCE,mineEntrances,mineEntranceFarmBlocked} from '../world/mine-entrances.js';
 import {movementLoadFactor} from '../progression/load-weight.js';
 
 // 地下操作只能在活着且运行中的矿区进行，暂停不接受施工和挖掘。
@@ -28,13 +29,14 @@ export function enterMine(game,shaft=null){
  else if(room?.kind!=='cottage'||room.floor!==0||room.sleep||room.balcony||Math.hypot(game.player.x-M.hatch.goal.x,game.player.y-M.hatch.goal.y)>28)return false;
  const point=shaft?minePoint(parseKey(shaft)):M.home,outside=shaft?{x:game.player.x,y:game.player.y}:room.outside;
  game.cottage={kind:'mine',depth:1,outside,returnRoom:shaft?null:room,direction:1,tool:null,autoDig:false,dig:null,shaftWork:0,ride:null,running:false,notice:game.vehicle.active?'战车已进入矿道。沿天然洞厅和宽通道行驶，主炮自动迎敌；开回地表后可以下车挖路。':'选择矿镐或铺轨，推动方向即可自动作业。天然洞厅和景观无需开掘。'};
- game.sceneApproach=null;game.parking=null;Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
+ game.mineEntranceWait=0;game.mineEntranceKey=null;game.sceneApproach=null;game.parking=null;Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
 }
 // 稳定网格键还原为整数坐标，仅消费本模块或已验证存档产生的键。
 export function parseKey(key){const [x,y]=key.split(',').map(Number);return {x,y};}
 // 地表洞口必须能完整站立，并避开树干、建筑、水界及其他洞口。
 export function canOpenShaft(game){
  const key=mineKey(mineCell(game.player)),point=minePoint(mineCell(game.player));
+ if(game.progress.farm?.plots.some(plot=>mineEntranceFarmBlocked({shafts:[key]},plot)))return false;
  if((game.cottage?.depth||1)!==1||mineCellArea(mineCell(game.player),currentMineLayer(game))<4096||mineTerrain(mineCell(game.player),currentMineLayer(game)).water||key==='0,0'||game.progress.mining.shafts.some(k=>worldDistance(minePoint(parseKey(k)),point)<128))return false;
  const body={...game.player,mapId:'forest',flying:false,amphibious:false,treePass:false,arena:null,livingCollision:true};
  return [[0,0],[0,38],[34,0],[-34,0],[0,-34]].every(([x,y])=>!blocked(point.x+x,point.y+y,18,game.trees,body));
@@ -43,7 +45,7 @@ export function canOpenShaft(game){
 export function startMineShaft(game){
  if(!active(game)||game.cottage.ride)return notice(game,'请先停稳并下车。');
  const room=game.cottage;if(room.shaftWork){room.shaftWork=0;return notice(game,'已取消向上开洞。',true);}
- if(!canOpenShaft(game))return notice(game,'上方有建筑、树木、水域或已有洞口，请换一块空地。');
+ if(!canOpenShaft(game))return notice(game,'上方有建筑、树木、水域、田块或已有洞口，请换一块空地。');
  if(!afford(game,'shaft'))return notice(game,'开洞需要 5 矿石、8 木材。');
  room.autoDig=false;room.tool=null;room.dig=null;room.shaftKey=mineKey(mineCell(game.player));room.shaftWork=.001;return notice(game,'正在向上开洞，移动可取消。',true);
 }
@@ -169,12 +171,14 @@ export function updateMining(game,dt,input){
 }
 // 地表洞口按原世界最近镜像候停进入；离开后需先移开，避免反复进出。
 export function updateMineEntrance(game,dt,input){
- if(game.cottage)return false;
- const shaft=game.progress.mining?.shafts.find(k=>worldDistance(game.player,minePoint(parseKey(k)))<=28);
- if(game.mineEntranceLatch){if(!shaft)game.mineEntranceLatch=null;else return false;}
- if(!shaft||Math.hypot(input.x,input.y)>.01){game.mineEntranceWait=0;return false;}
- game.mineEntranceWait=(game.mineEntranceWait||0)+dt;
- if(game.mineEntranceWait<1)return false;game.mineEntranceWait=0;return enterMine(game,shaft);
+ if(game.cottage||game.state!=='playing')return false;
+ const eligible=game.mapId==='forest'&&game.player.hp>0&&game.progress.homeDecor.basement&&!game.realm&&!game.story&&!game.farmWork?.tool;
+ const shaft=eligible&&game.progress.mining?.shafts.find(k=>worldDistance(game.player,minePoint(parseKey(k)))<=MINE_ENTRANCE.radius);
+ if(game.mineEntranceLatch&&!shaft)game.mineEntranceLatch=null;
+ if(!shaft||game.mineEntranceLatch===shaft||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>3){game.mineEntranceWait=0;game.mineEntranceKey=null;return false;}
+ if(game.mineEntranceKey!==shaft){game.mineEntranceKey=shaft;game.mineEntranceWait=0;}
+ game.mineEntranceWait=(game.mineEntranceWait||0)+Math.max(0,Number.isFinite(dt)?dt:0);
+ if(game.mineEntranceWait+1e-9<MINE_ENTRANCE.wait)return false;return enterMine(game,shaft);
 }
 // 正式地表绘制器消费洞口实体，不另造脱离实际通路的预览。
-export function mineShaftObjects(game){return game.mapId==='forest'&&!game.cottage&&!game.realm&&!game.story?(game.progress.mining?.shafts||[]).map(key=>({...minePoint(parseKey(key)),type:'mine-shaft',key})):[];}
+export function mineShaftObjects(game){return game.mapId==='forest'&&!game.cottage&&!game.realm&&!game.story?mineEntrances(game.progress.mining).map(site=>({...site,type:'mine-shaft'})):[];}
