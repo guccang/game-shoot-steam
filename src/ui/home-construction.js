@@ -1,3 +1,4 @@
+import {createHomeFloorPicker} from './home-floor-picker.js';
 import {constructionWood} from '../progression/resource-wallet.js';
 // 按层施工与场景乘梯共用手机底板，楼层再多也不创建全量按钮列表。
 import {createEventScope} from '../platform/events.js';
@@ -9,13 +10,14 @@ import {cottageFloor} from '../config/cottage.js';
 // 保存事务由规则层校验，电梯自动按顺序施工与拆除，面板保留按层费用和拆除确认。
 export function createHomeConstruction({game,root,panel,dialogs,input,onChange}){
  const scope=createEventScope(),dialog=root.createElement('dialog'),entry=root.createElement('button');
- let mode='travel',message='',balconyFloor=1,balconySide='north',removeFloor=null,pendingWalk=null;
+ let mode='travel',message='',balconyFloor=1,balconySide='north',removeFloor=null,pendingWalk=null,floorPicker=null,liftFloor=null;
  entry.id='home-travel-open';entry.className='ui-button';entry.textContent='楼层设施';panel.querySelector('footer').append(entry);
  dialog.id='home-construction-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','home-construction-title');
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="home-construction-title" tabindex="-1"></h2><p id="home-construction-summary"></p></div><button class="ui-close" data-build-close aria-label="关闭建筑服务">×</button></header><div class="ui-panel__body" id="home-construction-content"></div><footer class="ui-panel__footer"><p id="home-construction-message" role="status"></p></footer>';root.body.append(dialog);
  const get=id=>root.getElementById('home-construction-'+id);
  // 只在开页或操作后重画，输入过程中不被每帧覆盖。
  function paint(){
+  floorPicker?.dispose();floorPicker=null;dialog.querySelector('[data-lift],[data-walk-elevator]')?.remove();
   const h=game.progress.homeDecor,floors=homeFloors(h),floor=cottageFloor(game.cottage);
   get('title').textContent=mode==='build'?'森筑建筑公司':'小屋楼层设施';
   get('summary').textContent=`已建 ${floors} 层 · ${mode==='build'?`金币 ${game.progress.coins} · 木材 ${constructionWood(game.progress)}（背包 ${game.progress.logistics.bagWood}＋仓库 ${game.progress.wood}）`:`当前第 ${floor+1} 楼`}`;get('message').textContent=message;
@@ -31,7 +33,12 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
     <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><label>楼层 <input id="home-build-floor" type="number" inputmode="numeric" min="1" max="${floors}" value="${Math.min(floors,balconyFloor+1)}" step="1"></label><label>朝向 <select id="home-build-side">${Object.entries(HOME_DIRECTIONS).map(([id,d])=>`<option value="${id}" ${id===balconySide?'selected':''}>${d.name}侧</option>`).join('')}</select></label><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
   }else{
    const lift=hasHomeElevator(h,floor),near=Math.hypot(game.player.x-HOME_ELEVATOR.landing.x,game.player.y-HOME_ELEVATOR.landing.y)<=HOME_ELEVATOR.radius;
-   get('content').innerHTML=`<section class="ui-section"><h3>${lift?'本层电梯':'本层楼梯'}</h3>${lift?`<p>点击场景电梯会自动走近。电梯可前往全部已建楼层。</p><label>目标楼层 <input id="home-lift-floor" type="number" inputmode="numeric" min="1" max="${floors}" value="${floor+1<floors?floor+2:floor}" step="1"></label><button class="ui-button" ${near?'data-lift':'data-walk-elevator'}>${near?'乘电梯前往':'走到电梯门前'}</button>`:'<p>点击右侧上行踏步或下行梯井，猫猫会走到对应入口并站定一秒通行。也可直接走到入口，无需打开本页。</p><p>本层可在建筑公司付费安装电梯。</p>'}</section><section class="ui-section"><h3>本层阳台</h3><p>${floorBalconies(h,floor).map(s=>HOME_DIRECTIONS[s].name+'侧').join('、')||'尚未安装'}。走到对应门口站定一秒，走出后可在平台自由活动。</p></section>`;
+   get('content').innerHTML=`<section class="ui-section"><h3>${lift?'本层电梯':'本层楼梯'}</h3>${lift?`<p>点击场景电梯会自动走近。电梯可前往全部已建楼层。</p><div id="home-floor-picker"></div>`:'<p>点击右侧上行踏步或下行梯井，猫猫会走到对应入口并站定一秒通行。也可直接走到入口，无需打开本页。</p><p>本层可在建筑公司付费安装电梯。</p>'}</section><section class="ui-section"><h3>本层阳台</h3><p>${floorBalconies(h,floor).map(s=>HOME_DIRECTIONS[s].name+'侧').join('、')||'尚未安装'}。走到对应门口站定一秒，走出后可在平台自由活动。</p></section>`;
+   if(lift){
+    // 乘梯操作固定在底栏，短屏滑动选层时也能直接出发。
+    const button=root.createElement('button');button.className='ui-button ui-button--primary';button.setAttribute(near?'data-lift':'data-walk-elevator','');dialog.querySelector('footer').prepend(button);
+    floorPicker=createHomeFloorPicker(root.getElementById('home-floor-picker'),{floors,current:floor,value:liftFloor??(floor+1<floors?floor+1:floor-1),onChange:target=>{liftFloor=target;button.disabled=target===floor;button.textContent=near?'乘电梯前往第 '+(target+1)+' 楼':'走到电梯门前';}});
+   }
   }
  }
  dialogs.register(dialog.id,{focusId:'home-construction-title',onOpen:paint});
@@ -56,7 +63,7 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   }
   if(b.hasAttribute('data-walk-elevator')){pendingWalk={room:game.cottage,floor:cottageFloor(game.cottage)};dialogs.close(dialog.id);return;}
   if(!b.hasAttribute('data-lift'))return;
-  const target=Number(root.getElementById('home-lift-floor').value)-1;
+  const target=floorPicker.value;
   if(travelHomeFloor(game,target,'elevator')){dialogs.close(dialog.id);onChange();}else{message='请靠近电梯，选择其他已建楼层。';get('message').textContent=message;}
  });
  // 关闭说明后由统一弹窗恢复游戏，再安排走近；正式候停请求只消费一次。
@@ -68,6 +75,6 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   if(dialog.open&&!(mode==='build'?room?.kind==='construction':room?.kind==='cottage'&&!room.balcony&&!room.sleep))dialogs.close(dialog.id);
  }
  // 离开应用释放原生对话框与监听。
- function dispose(){if(dialog.open)dialogs.close(dialog.id);scope.dispose();dialog.remove();entry.remove();}
+ function dispose(){floorPicker?.dispose();if(dialog.open)dialogs.close(dialog.id);scope.dispose();dialog.remove();entry.remove();}
  return {open,render,dispose};
 }

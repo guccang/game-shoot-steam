@@ -20,7 +20,7 @@ async original=>{
  // 实际点击电梯门，等猫走近选层后乘坐，不通过底栏远程切层。
  async function lift(floor){
   await page.locator('[data-cottage-target="elevator"]').tap();await page.locator('#home-construction-dialog').waitFor({state:'visible'});
-  await page.locator('#home-lift-floor').fill(String(floor));await page.locator('[data-lift]').tap();
+  await page.locator('#home-lift-floor').press('Home');for(let i=1;i<floor;i++)await page.locator('#home-lift-floor').press('ArrowDown');await page.locator('[data-lift]').tap();
   await page.waitForFunction(floor=>a.game.cottage.floor===floor-1&&a.game.state==='playing',floor);await page.locator('#home-construction-dialog').waitFor({state:'hidden'});
  }
  // 点击具体梯井，验收完整行走与候停；切层后不能原地自动反向。

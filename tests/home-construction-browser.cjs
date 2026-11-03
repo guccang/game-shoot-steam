@@ -35,7 +35,7 @@ async original=>{
   await page.evaluate(async()=>{const g=a.game;g.update=homeUpdate;g.vehicle.active=false;g.enemies=[];const {COTTAGE}=await import('/src/config/cottage.js');Object.assign(g.player,COTTAGE.door);g.cottageDoorLatch=false;});
   await page.waitForFunction(()=>a.game.cottage?.kind==='cottage');
   await page.evaluate(async()=>Object.assign(a.game.player,(await import('/src/config/home-construction.js')).HOME_ELEVATOR.landing));
-  await page.locator('#home-travel-open').tap();await page.locator('#home-lift-floor').fill('2');await page.locator('[data-lift]').tap();
+  await page.locator('#home-travel-open').tap();await page.locator('#home-lift-floor').press('Home');await page.locator('#home-lift-floor').press('ArrowDown');await page.locator('[data-lift]').tap();
   await page.waitForFunction(()=>a.game.cottage.floor===1);
   await page.screenshot({path:'output/playwright/cottage-construction/second-floor.png'});
   for(const side of ['north','east','south','west']){
@@ -60,7 +60,7 @@ async original=>{
   }
   // 高层夹具只改变已建层数量，仍通过真实电梯输入和正式阳台门进入。
   await page.evaluate(async()=>{a.game.progress.homeDecor.floors=1000001;a.game.progress.homeDecor.balconies[1000000]=['south'];Object.assign(a.game.player,(await import('/src/config/home-construction.js')).HOME_ELEVATOR.landing);});
-  await page.locator('#home-travel-open').tap();await page.locator('#home-lift-floor').fill('1000001');await page.locator('[data-lift]').tap();await page.waitForFunction(()=>a.game.cottage.floor===1000000);
+  await page.locator('#home-travel-open').tap();await page.locator('#home-lift-floor').press('End');await page.locator('[data-lift]').tap();await page.waitForFunction(()=>a.game.cottage.floor===1000000);
   await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/home-construction.js')).HOME_DIRECTIONS.south.door);a.game.cottage.balconyLatch=false;});
   await page.waitForFunction(()=>a.game.cottage.balcony==='south');await page.waitForTimeout(400);
   const high=await page.evaluate(()=>a.renderer.balconyView);if(high.zoom>=views[2].view.zoom)throw Error('高度未改变世界比例');
