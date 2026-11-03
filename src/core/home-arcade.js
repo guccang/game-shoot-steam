@@ -19,7 +19,7 @@ export function homeArcadeAccess(game,kind){
 // 进入准备页时停止原施工与候停，实际位置保持不动，离场不触发自动下楼。
 export function openHomeArcade(game,kind){
  const access=homeArcadeAccess(game,kind);if(!access.ok)return access;if(game.state!=='playing'||game.cottage.arcade)return {ok:false,message:'请先返回游戏场景。'};
- const r=game.cottage;r.autoDig=false;r.dig=null;r.shaftWork=0;r.running=false;r.balconyExitElapsed=0;r.balconyLatch=true;game.sceneApproach=null;
+ const r=game.cottage;r.autoDig=false;r.tool=null;r.dig=null;r.shaftWork=0;r.running=false;r.balconyExitElapsed=0;r.balconyLatch=true;game.sceneApproach=null;
  r.arcade={kind,phase:'ready',paused:false,time:0,remaining:HOME_ARCADE[kind].seconds,score:0,hits:0,shots:0,notice:'',birds:[],items:[],traces:[],recoil:createRecoil(),aim:{x:180,y:100},settled:false};
  game.onEvent?.('home-arcade-change');return {ok:true};
 }

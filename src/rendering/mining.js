@@ -6,7 +6,7 @@ import {box,oval,poly} from './primitives.js';
 import {drawCat} from './characters.js';
 import {PLAYER_SCALE} from '../combat/recoil.js';
 import {currentMineLayer} from '../core/mine-layers.js';
-import {mineBounds,mineCellArea,mineTerrain} from '../config/mine-ecology.js';
+import {mineBounds,mineCellArea,mineTerrain,mineCellOpen,mineHash} from '../config/mine-ecology.js';
 import {drawMineTerrain,drawMineLandscape,drawMineAnimal,drawMineBolts} from './mine-ecology.js';
 import {drawVehicleTracks,drawVehicleArmor} from './vehicle.js';
 import {riderPosition} from '../config/vehicle-rider.js';
@@ -32,12 +32,15 @@ function drawLadder(c,x,y,night,text){
 // 简洁奶油文字牌统一标注梯口与路线，不遮挡猫的身体。
 function label(c,text,x,y,size=12){c.font=`bold ${size}px sans-serif`;c.textAlign='center';const w=c.measureText(text).width+16;box(c,x-w/2,y-14,w,21,5,'#f1e5bd','#4c6b50',1.5);c.fillStyle='#315c43';c.fillText(text,x,y+1);}
 // 岩壁保持低频块面；铜矿和晶矿用形状数量区分，避免只靠颜色。
-function rock(c,cell,night){
- const {x,y}=minePoint(cell),n=mineOre(cell),s=M.tile;
- box(c,x-s/2,y-s/2,s+1,s+1,0,night?'#405b51':'#657c61');
- poly(c,[[x-29,y-27],[x+16,y-30],[x+29,y-17],[x+27,y+20],[x-18,y+24],[x-30,y+10]],night?'#72816c':'#98a17c','#47674f',2);
- poly(c,[[x-29,y+10],[x-18,y+24],[x+27,y+20],[x+27,y+29],[x-21,y+30],[x-30,y+21]],night?'#526b59':'#738463');
- c.strokeStyle=night?'#9da486':'#bbc09a';c.lineWidth=2;c.beginPath();c.moveTo(x-20,y-20);c.lineTo(x+10,y-24);c.stroke();
+function rock(c,cell,night,layer){
+ const {x,y}=minePoint(cell),n=mineOre(cell),s=M.tile,hash=mineHash(cell.x,cell.y,layer.seed);
+ // 连续岩层只描开放洞厅一侧的壁缘，内部不画逐格方砖或预制道路。
+ box(c,x-s/2,y-s/2,s+1,s+1,0,night?'#566d5b':'#8b9775');
+ for(const d of MINE_DIRECTIONS)if(mineCellOpen({x:cell.x+d.x,y:cell.y+d.y},layer)){
+  c.fillStyle=night?'#354f43':'#5f785b';c.fillRect(d.x<0?x-32:d.x>0?x+25:x-32,d.y<0?y-32:d.y>0?y+24:y-32,d.x?7:64,d.y?8:64);
+  c.strokeStyle=night?'#a1ad88':'#c2c7a1';c.lineWidth=2;c.beginPath();if(d.x){c.moveTo(x+d.x*24,y-26);c.lineTo(x+d.x*24,y+24);}else{c.moveTo(x-26,y+d.y*23);c.lineTo(x+25,y+d.y*23);}c.stroke();
+ }
+ if(hash%5===0){c.strokeStyle=night?'#859578':'#aab38d';c.lineWidth=1.5;c.beginPath();c.moveTo(x-18,y-8);c.lineTo(x-6,y-12);c.lineTo(x+5,y-9);c.stroke();}
  if(n>1)for(let i=0;i<(n===4?3:2);i++){const xx=x-12+i*12,yy=y+Math.abs(i-1)*4;poly(c,[[xx-5,yy+5],[xx-4,yy-8],[xx+2,yy-13],[xx+7,yy-4],[xx+4,yy+7]],n===4?'#b4d5c1':'#d4b078','#42684f',1.5);}
 }
 // 自动接轨使用相邻格共同端点，枕木和双钢轨分别绘制，转弯保持连通。
@@ -74,7 +77,7 @@ function pickaxe(c,g){
 }
 // 镜头只绘制可见网格，地图再大也不遍历历史矿道，顶部和底部留给手机操作。
 export function drawMining(renderer,g=renderer.game){
- const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?124:182,bottom=h-154,zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
+ const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=h-(h<500?139:168),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
  renderer.cottageView=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
  const v=renderer.mineView,m=currentMineLayer(g),bounds=mineBounds(m);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
@@ -83,15 +86,15 @@ export function drawMining(renderer,g=renderer.game){
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){
   tiles++;const cell={x,y},key=mineKey(cell),p=minePoint(cell);
   if(!mineCellArea(cell,m)){box(c,p.x-32,p.y-32,65,65,0,'#29443c');continue;}
-  if(!m.dug[key]){rock(c,cell,night);continue;}
+  if(!mineCellOpen(cell,m)){rock(c,cell,night,m);continue;}
   drawMineTerrain(c,cell,m,night,m.age);
   if(m.rails[key])rail(c,cell,m);
  }
- const target=minePoint(mineTarget(g));c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);
+ const targetCell=mineTarget(g),target=minePoint(targetCell);if(g.cottage.tool||g.cottage.autoDig){c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);}
  const entry=minePoint(parseKey(m.entry));drawLadder(c,entry.x,entry.y,night,m.descent===m.entry?'上行 ↑ · 下层 ↓':(g.cottage.depth||1)===1?'小屋 ↑':'上一层 ↑');
  if(m.descent&&m.descent!==m.entry){const down=minePoint(parseKey(m.descent));drawLadder(c,down.x,down.y,night,'下一层 ↓');}
  const entities=[];
- for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const cell={x,y},key=mineKey(cell);if(m.dug[key])entities.push({y:minePoint(cell).y+24,kind:'landscape',cell});if(m.decor[key])entities.push({y:minePoint(cell).y+8,kind:'decor',cell,value:m.decor[key]});}
+ for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const cell={x,y},key=mineKey(cell);if(mineCellOpen(cell,m))entities.push({y:minePoint(cell).y+24,kind:'landscape',cell});if(m.decor[key])entities.push({y:minePoint(cell).y+8,kind:'decor',cell,value:m.decor[key]});}
  for(const key of m.shafts){const p=minePoint(parseKey(key));if(p.x>v.x-80&&p.x<v.x+w/zoom+80&&p.y>v.y+top/zoom-80&&p.y<v.y+bottom/zoom+80)drawLadder(c,p.x,p.y,night,'地面 ↑');}
  for(const cart of m.carts)if(Math.abs(cart.x-g.player.x)<w/zoom&&Math.abs(cart.y-g.player.y)<h/zoom)entities.push({y:cart.y,kind:'cart',cart});
  for(const animal of g.cottage.ecologyActors||[])entities.push({y:animal.y,kind:'animal',animal});
@@ -113,13 +116,13 @@ export function drawMining(renderer,g=renderer.game){
  c.fillStyle='#29443c';c.fillRect(v.x-64,v.y-64,Math.max(0,bounds.left-v.x+64),h/zoom+128);c.fillRect(bounds.right,v.y-64,w/zoom+128,h/zoom+128);c.fillRect(v.x-64,v.y-64,w/zoom+128,Math.max(0,bounds.top-v.y+64));c.fillRect(v.x-64,bounds.bottom,w/zoom+128,h/zoom+128);
  const work=g.cottage.dig?g.cottage.dig.elapsed/productionDigSeconds(g.progress,M.digSeconds):g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
- c.restore();renderer.mineReview={tiles,night,cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
+ c.restore();renderer.mineReview={tiles,night,cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
 }
-// 固定范围小地图显示已挖矿道、轨道、洞口和小屋方向，远处小屋以边缘箭头定位。
+// 固定范围小地图显示天然洞厅、已挖区域、轨道、洞口和小屋方向，远处小屋以边缘箭头定位。
 export function drawMineMap(canvas,g){
  const c=canvas.getContext('2d'),s=112,scale=5,center=mineCell(g.player),m=currentMineLayer(g);c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,s,s);box(c,1,1,110,110,12,'#efe3bc','#47694e',2);
  c.save();c.beginPath();c.rect(10,21,92,78);c.clip();
- for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#344e42');else if(m.dug[key])box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
+ for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#344e42');else if(mineCellOpen(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
  for(const key of m.shafts){const p=parseKey(key),x=56+(p.x-center.x)*scale,y=60+(p.y-center.y)*scale;box(c,x-2,y-2,4,4,1,'#527ca0');}c.restore();
  const dx=-center.x,dy=-center.y,factor=Math.min(1,38/Math.max(1,Math.abs(dx*scale)),32/Math.max(1,Math.abs(dy*scale))),hx=56+dx*scale*factor,hy=60+dy*scale*factor;
  poly(c,[[hx-5,hy],[hx,hy-6],[hx+5,hy],[hx+4,hy+5],[hx-4,hy+5]],'#ddaa62','#42644a',1);

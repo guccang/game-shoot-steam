@@ -1898,3 +1898,6 @@ export async function inspectFarmProduction(game,root=document){
  const {productionObjects}=await import('./farm-production.js'),panel=root.getElementById('production-dialog');
  return {designCriterion:'farm-mine-production',objects:productionObjects(game),production:structuredClone(game.progress.production),spray:game.productionSpray||null,time:game.time,open:!!panel?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,smallButtons:[...(panel?.open?panel.querySelectorAll('button'):[])].filter(b=>b.getClientRects().length).some(b=>{const r=b.getBoundingClientRect();return r.width<44||r.height<44;}),canvasCount:root.querySelectorAll('canvas').length};
 }
+
+// 新地下验收同时记录快捷工具状态和天然开放地形，沿用正式画面与同一存档。
+export function inspectNaturalMining(game,renderer,root){return {...inspectMining(game,renderer,root),designCriterion:'mining-tools-natural-caves',selectedTool:game.cottage?.tool,tools:[...root.querySelectorAll('[data-mine-tool]')].map(b=>({id:b.dataset.mineTool,selected:b.getAttribute('aria-pressed')==='true'})),newBitmapBytes:0};}

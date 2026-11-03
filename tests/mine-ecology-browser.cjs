@@ -19,8 +19,8 @@ async original=>{
   });
   await action('down');if(await page.evaluate(()=>a.game.cottage.depth)!==1)throw Error('低开发率错误解锁');
   // 真实触屏开掘继承原矿道行为，原地持续挥锄后沿新通道移动。
-  await page.locator('#mine-dig').tap();const cdp=await context.newCDPSession(page),before=await page.evaluate(()=>a.game.player.x);
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:125,y:490}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:205,y:490}]});await page.waitForTimeout(4200);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.locator('#mine-dig').tap();if(await page.evaluate(()=>a.game.player.x)<before+150)throw Error('触屏开掘移动没有推进');
+  await page.locator('[data-mine-tool="pick"]').tap();const cdp=await context.newCDPSession(page),before=await page.evaluate(()=>a.game.player.x);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:125,y:490}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:205,y:490}]});await page.waitForTimeout(4200);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.locator('[data-mine-tool="pick"]').tap();if(await page.evaluate(()=>a.game.player.x)<before+150)throw Error('触屏开掘移动没有推进');
   const ids=['mushroom','roots','crystal','moss','stalagmite','river','lake','spring','fossil'];
   for(const id of ids){await page.evaluate(id=>reveal(findCell(id)),id);for(const time of ['day','night']){await phase(time);await page.screenshot({path:`output/playwright/underground-ecology/${id}-${time}.png`});reviews.push(await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectMineEcology(a.game,a.renderer,document)));}}
   // 采集与桥梁必须通过弹窗暂停、返回场景后才兑现。
