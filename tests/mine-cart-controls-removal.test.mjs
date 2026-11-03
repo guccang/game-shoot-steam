@@ -30,9 +30,9 @@ test('键盘或摇杆输入停车选向，保持坐标且长按只保存一次',
  updateMining(g,.05,{x:0,y:0});updateMining(g,.05,{x:0,y:-1});assert.equal(saves,2);
  updateMining(g,.05,{x:1,y:0});assert.equal(cart(g).heading,1);assert.equal(saves,3);
 });
-test('摇杆死区、运行输入和暂停不会误改向或反复写档',()=>{
+test('摇杆死区、轨段中途输入和暂停不会误改向或反复写档',()=>{
  const g=setup();rideMineCart(g);let saves=0;g.livingPersist=()=>{saves++;return true;};
- updateMining(g,.05,{x:.1,y:.1});assert.equal(saves,0);toggleMineCart(g);
+ updateMining(g,.05,{x:.1,y:.1});assert.equal(saves,0);toggleMineCart(g);tick(g,1);
  updateMining(g,.05,{x:-1,y:0});assert.equal(cart(g).heading,1);assert.equal(saves,0);
  toggleMineCart(g);g.state='paused';const before=structuredClone(g.progress);updateMining(g,.05,{x:0,y:-1});assert.deepEqual(g.progress,before);
 });

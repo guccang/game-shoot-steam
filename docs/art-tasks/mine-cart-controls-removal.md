@@ -38,3 +38,12 @@ designCriterion：mine-cart-controls-removal，已登记 visual-contract.json。
 截图、录像及报告保存在主工作区 output/playwright/mine-cart-controls/；browser-result.txt、edge-result.txt 为对应执行记录。上述图片名均相对此目录。2026-11-03人工复核方向页昼夜、320短屏、回收页昼夜、横屏滚动及场景昼夜截图。
 动态效果开发结论：通过。PNG精修替换结论：不适用。
 本轮范围与结论：停车选向和设施回收已通过核心事务、实际触控/键盘和手机视觉验收；无待修订项。长期参考为上述方向页与回收页截图。
+
+## 行驶实时选路补充（2026-11-03）
+本轮继续同一任务：将停车选向扩展为行驶时的实时路径控制。只改输入优先级和中文说明/运行提示，不新增素材、图形、尺寸、锚点、碰撞或动画；第1—5节的保留合同继续适用。
+连接点读取当前摇杆/方向键/WASD 主轴方向；有效输入优先于停车预选及路口设置。松开或无对应轨道即回到原规则；轨段中保持原目标，到连接点再转向。路口设置不被手动输入改写，也不新增跨暂停、跨存档的输入队列。
+验收范围：键盘与真实触摸到岔路选向、提前松手、无轨方向、三岔和十字、反向、碰撞、暂停和存档；320短屏白天与390夜晚保持原场景同屏。
+
+补充验收结果：通过。新增7项实时驾驶测试，加上直接关联的停车/路口及回收测试，共25项通过。修正行驶提示后复跑7项实时驾驶检查，通过。真实浏览器4个场景（WASD白天320×568、方向键夜晚390×844、摇杆夜晚390×844、提前松开恢复路口设置）均通过，无页面错误；人工查看昼夜驾驶截图，提示条完整可读，角色、车轮、环境和摇杆继续采用正式绘制器。
+本轮无新增图片/画布/缓存，原武器、怪物与身体动作资产未改。新增中文说明沿用原底板正文，无布局修改。测试在入口附近隔离轨网上进行，未引入主动怪物；无需重验无改动的怪物美术。
+证据：主工作区 output/playwright/mine-cart-live-steering/ 下 browser-result.txt、browser-review.json、wasd-day.png、arrows-night.png、joystick-night.png、released-uses-junction.png 与 video/ 连续录制。正式输入入口 src/core/mining.js#cartStep；选路 src/config/mine-rail-routes.js#nextCartExit；designCriterion 继续为 mine-cart-controls-removal。

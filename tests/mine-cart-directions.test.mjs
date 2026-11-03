@@ -39,7 +39,7 @@ test('轨段两边均可掉头，不因跨过半格或刷新而瞬移',()=>{
   g.progress.mining=normalizeMining(g.progress.mining);assert.equal(cart(g).x,x);assert.equal(cart(g).heading,3);toggleMineCart(g);tick(g,1);assert.ok(cart(g).x<x);
  }
 });
-test('行驶时禁止改向，暂停和保存失败不污染选向或路口',()=>{
+test('停车选向接口拒绝行驶调用，暂停和保存失败不污染选向或路口',()=>{
  const g=setup();assert.ok(setMineJunctionDirection(g,'0,0',0).ok);g.livingPersist=()=>false;const before=structuredClone(g.progress);
  assert.equal(setMineJunctionDirection(g,'0,0',2).ok,false);assert.deepEqual(g.progress,before);g.livingPersist=()=>true;rideMineCart(g);
  const stopped=structuredClone(cart(g));g.livingPersist=()=>{throw Error('失败');};assert.equal(setMineCartDirection(g,3).ok,false);assert.deepEqual(cart(g),stopped);

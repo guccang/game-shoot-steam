@@ -61,7 +61,7 @@ export function mineInputDirection(input){
  if(Math.hypot(input.x,input.y)<.35)return null;
  return Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;
 }
-// 停车时接受一次方向变化；持续按住不会逐帧保存，行驶时不干预自动选路。
+// 停车选向只在方向变化时保存；行驶输入交给连接点选路，不逐帧写档。
 export function steerStoppedMineCart(game,input){
  const room=game.cottage,direction=mineInputDirection(input);
  if(!room)return;

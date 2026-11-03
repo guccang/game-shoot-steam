@@ -1,7 +1,7 @@
 import {workMineRock} from './mine-rocks.js';
 import {resetMineCombat} from './mine-combat.js';
 import {nextCartExit} from '../config/mine-rail-routes.js';
-import {setMineCartDirection,steerStoppedMineCart} from './mine-cart-directions.js';
+import {setMineCartDirection,steerStoppedMineCart,mineInputDirection} from './mine-cart-directions.js';
 // 地下玩法独立处理挖掘、铺轨和驾驶；复用正式输入、角色时钟与存档事务。
 import {PRODUCTION as PRODUCTION_RULES,productionDigSeconds} from '../config/farm-production.js';
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '../config/mining.js';
@@ -136,13 +136,13 @@ function nearMineCart(game,cart){
  const steps=Math.max(1,Math.ceil(distance/4));for(let i=0;i<=steps;i++)if(mineBlocked(game,p.x+dx*i/steps,p.y+dy*i/steps))return false;return true;
 }
 // 急停立即冻结轮毂相位和行驶位置，再次开车从原段继续。
-export function toggleMineCart(game){if(!active(game)||!game.cottage.ride)return false;game.cottage.running=!game.cottage.running;if(!game.cottage.running)commit(game,()=>{},'矿车已停止，可继续开车或下车。');return true;}
-// 矿车以实际行驶朝向选路，停车选择只覆盖一次起步，路口设置持续生效。
-function cartStep(game,dt){
+export function toggleMineCart(game){if(!active(game)||!game.cottage.ride)return false;game.cottage.running=!game.cottage.running;if(!game.cottage.running)commit(game,()=>{},'矿车已停止，可继续开车或下车。');else notice(game,'行驶中 · 推动摇杆或方向键选路，松开恢复自动。',true);return true;}
+// 行驶输入只在轨道连接点参与选路，不改写持久路口，也不在轨段中间横移。
+function cartStep(game,dt,input){
  const room=game.cottage,cart=currentMineLayer(game).carts.find(c=>c.id===room.ride);if(!cart){room.ride=null;return;}
  if(room.running){
   if(!cart.target){
-   const key=mineKey(mineCell(cart)),next=nextCartExit(currentMineLayer(game),cart,room.direction);
+   const key=mineKey(mineCell(cart)),next=nextCartExit(currentMineLayer(game),cart,room.direction,mineInputDirection(input));
    if(!next){room.running=false;notice(game,'轨道还没有连通，请下车继续铺轨。');return;}
    cart.target=next.key;cart.from=key;cart.heading=next.i;cart.departure=null;
   }
@@ -166,7 +166,7 @@ export function updateMining(game,dt,input){
  const room=game.cottage,p=game.player,before={x:p.x,y:p.y},length=Math.hypot(input.x,input.y);dt=Math.max(0,Math.min(.05,dt));
  room.surveyWait=Math.max(0,(room.surveyWait||0)-dt);
  steerStoppedMineCart(game,input);
- if(room.ride)cartStep(game,dt);
+ if(room.ride)cartStep(game,dt,input);
  else{
   if(length>.01){room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;room.shaftWork=0;}
   const rockWork=workMineRock(game,dt,length>.01);

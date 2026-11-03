@@ -25,10 +25,10 @@ export function cartDirectionChoices(layer,cart){
  }
  return railExits(layer,mineKey(mineCell(cart)));
 }
-// 优先一次起步方向、路口固定方向，再直行、右转、左转，最后尽头折返。
-export function nextCartExit(layer,cart,fallback=1){
+// 实时输入优先于一次起步和路口设置；无有效输入时按原规则直行、右转、左转和折返。
+export function nextCartExit(layer,cart,fallback=1,inputDirection=null){
  const key=mineKey(mineCell(cart)),exits=railExits(layer,key),heading=Number.isInteger(cart.heading)?cart.heading:fallback;
  const configured=exits.length>=3?layer.junctions?.[key]:null;
- const order=[cart.departure,configured,heading,(heading+1)%4,(heading+3)%4,(heading+2)%4];
+ const order=[inputDirection,cart.departure,configured,heading,(heading+1)%4,(heading+3)%4,(heading+2)%4];
  return order.map(i=>exits.find(n=>n.i===i)).find(Boolean)||null;
 }
