@@ -46,15 +46,16 @@ export function productionPlacement(game,point,kind,moving=null){
  return {point:target,reason};
 }
 // 放置和移动共用校验；移动不退款、不扣料且不重发教学种子。
-export function placeProduction(game,kind,point,moving=null){
+export function placeProduction(game,kind,point,moving=null,fromBag=false){
  if(!productionAvailable(game)||game.state!=='playing'||game.cottage||game.vehicle.active||!['forest','jiuzhaigou'].includes(game.mapId))return {ok:false,message:'请在地面下车后布置设施。'};
+ if(fromBag&&(kind!=='sprinkler'||moving!==null||!(game.progress.production.sprinklerInventory>0)))return {ok:false,message:'背包中没有可放置的洒水器。'};
  const check=productionPlacement(game,point,kind,moving);if(check.reason)return {ok:false,message:check.reason};
  const s=game.progress.production,price=PRODUCTION_BUILDINGS[kind];
- if(!productionUnlocked(game.progress,kind))return {ok:false,message:'请先完成当前生产目标。'};
- if(moving===null&&(kind==='bench'?!!s.bench:s.sprinklers.length>=P.maxSprinklers))return {ok:false,message:'设施数量已达上限，请移动已有设施。'};
- if(moving===null&&(game.progress.mining.ore<price.ore||game.progress.wood<price.wood))return {ok:false,message:`需要${price.ore}矿石、${price.wood}仓库木材。`};
+ if(!fromBag&&!productionUnlocked(game.progress,kind))return {ok:false,message:'请先完成当前生产目标。'};
+ if(moving===null&&(kind==='bench'?!!s.bench:s.sprinklers.length+(fromBag?0:s.sprinklerInventory||0)>=P.maxSprinklers))return {ok:false,message:'设施数量已达上限，请移动已有设施。'};
+ if(moving===null&&!fromBag&&(game.progress.mining.ore<price.ore||game.progress.wood<price.wood))return {ok:false,message:`需要${price.ore}矿石、${price.wood}仓库木材。`};
  const next=candidate(game),n=next.production;
- if(moving===null){next.mining.ore-=price.ore;next.wood-=price.wood;}
+ if(fromBag)n.sprinklerInventory--;else if(moving===null){next.mining.ore-=price.ore;next.wood-=price.wood;}
  if(kind==='bench')n.bench=check.point;
  else if(moving!==null)Object.assign(n.sprinklers.find(p=>p.id===moving),check.point);
  else n.sprinklers.push({...check.point,id:Math.max(0,...n.sprinklers.map(p=>p.id))+1});
@@ -62,7 +63,7 @@ export function placeProduction(game,kind,point,moving=null){
   for(const id of ['wheat','carrot'])if(next.farm.seeds[productionCrop(id)]>FARM_STOCK_CAP-2)return {ok:false,message:'请先为教学种子腾出库存。'};
   n.seedGift=true;for(const id of ['wheat','carrot'])grantFarmSeeds(next.farm,productionCrop(id),2);
  }
- const result=commit(game,next,`${price.name}已${moving===null?'建好':kind==='sprinkler'?'放下':'移动'}。${kind==='bench'&&!s.seedGift?'获得小麦、胡萝卜种子各2粒；可在种子小屋继续购买。':''}`);
+ const result=commit(game,next,`${price.name}已${fromBag?'从背包放置':moving===null?'建好':kind==='sprinkler'?'放下':'移动'}。${kind==='bench'&&!s.seedGift?'获得小麦、胡萝卜种子各2粒；可在种子小屋继续购买。':''}`);
  if(result.ok&&kind==='sprinkler'&&game.productionCarry?.id===moving)game.productionCarry=null;return result;
 }
 // 拆除只删除指定设施，保留种子领取记录、补给和原料；保存失败不丢设备。
@@ -74,6 +75,19 @@ export function removeProduction(game,kind,id){
  const next=candidate(game);if(kind==='bench')next.production.bench=null;else next.production.sprinklers=next.production.sprinklers.filter(p=>p.id!==id);
  const result=commit(game,next,`${PRODUCTION_BUILDINGS[kind].name}已移除，建造材料不返还。`);
  if(result.ok&&kind==='sprinkler'&&game.productionCarry?.id===id)game.productionCarry=null;return result;
+}
+// 近处设备原子收回背包，保留已浇作物；保存成功才撤去场景设施与该台水流。
+export function storeSprinkler(game,id){
+ if(!productionAvailable(game)||game.cottage||game.vehicle.active||!['forest','jiuzhaigou'].includes(game.mapId))return {ok:false,message:'请在地面下车后收回洒水器。'};
+ const item=game.progress.production.sprinklers.find(p=>p.id===id);
+ if(!item||item.mapId!==game.mapId||worldDistance(item,game.player)>130)return {ok:false,message:'请先走到要收回的洒水器旁。'};
+ const next=candidate(game);next.production.sprinklers=next.production.sprinklers.filter(p=>p.id!==id);next.production.sprinklerInventory++;
+ const result=commit(game,next,'洒水器已收回背包，可在随身物品或农矿生产中重新放置。');
+ if(result.ok){
+  if(game.productionSpray){game.productionSpray.devices=game.productionSpray.devices?.filter(d=>d.id!==id);game.productionSpray.sprinklers=game.productionSpray.sprinklers?.filter(n=>n!==id);}
+  if(game.productionCarry?.id===id)game.productionCarry=null;
+ }
+ return result;
 }
 // 入门可选择出售或保留2份；完成便当教学后可自由设置0至20份。
 export function setProductionKeep(game,crop,count){

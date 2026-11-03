@@ -1980,3 +1980,8 @@ export async function inspectSprinklerPickup(game,renderer,root=document){
 
 // 自然游鱼与图鉴复核直接读取正式场景鱼群和手机弹窗。
 export function inspectFishCreatureCodex(game,renderer,root=document){return {designCriterion:'fish-creature-codex',fish:renderer.ambientFishReview||[],fishing:!!game.fishing,state:game.state,collection:structuredClone(game.progress.outdoors.collection),codexOpen:!!root.getElementById('creature-codex')?.open,catchOpen:!!root.getElementById('fish-discovery')?.open,portraits:root.querySelectorAll('#creature-codex canvas,#fish-discovery canvas').length};}
+// 背包数量与正式场景实体同屏核对，不构造替代图案。
+export async function inspectSprinklerBackpack(game,root=document){
+ const {backpackEntries}=await import('../progression/backpack.js'),{productionObjects}=await import('./farm-production.js');
+ return {designCriterion:'sprinkler-backpack',inventory:game.progress.production.sprinklerInventory,bag:backpackEntries(game).filter(i=>i.id==='facility:sprinkler'),devices:productionObjects(game),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

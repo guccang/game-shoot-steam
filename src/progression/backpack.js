@@ -14,6 +14,7 @@ export function backpackEntries(game){
  const p=game.progress,entries=[],loaded={},mags=finiteSupply(game)?game.magazines:p.supplies?.handMags;let magazineCount=0;
  // 空数量不占格，所有展示重量均由物品表得出。
  function add(id,count,note=''){const item=ITEM_TABLE[id];if(item&&count>0)entries.push({...item,count,weight:Math.round(item.mass*count*1e6)/1e6,note});}
+ add('facility:sprinkler',p.production?.sprinklerInventory||0,'可重新放置');
  if(p.treasure?.detector)add('metal-detector',1,'永久工具');
  add('material:wood',p.logistics?.bagWood||0,'未入库');
  for(const key of Object.keys(p.supplies?.items||{}))add('supply:'+key,p.supplies.items[key]);
