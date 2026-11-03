@@ -1,8 +1,6 @@
 // 地下景观动态复核：正式九景昼夜、局部流水、暂停、减少动态与手机预算。
 async original=>{
  const context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir:'output/playwright/underground-landscape-quality/video',size:{width:390,height:844}}}),page=await context.newPage(),errors=[],reviews=[];page.on('pageerror',e=>errors.push(e.message));
- // 实际触屏推动方向，矿镐挥动和自动铺轨均由游戏循环执行。
- async function move(ms,dx=80){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:120,y:470}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:120+dx,y:470}]});await page.waitForTimeout(ms);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}
  // 昼夜只切正式历法和场景色调，不替换绘制器。
  async function phase(id){await page.evaluate(async id=>{const p=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===id);a.game.progress.living.calendar.elapsed=p.start+p.duration*.5;(await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,a.game.progress.living.calendar);Object.assign(a.environment,{weather:'sun',autoWeather:false,livingPreview:false});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,performance.now()-22000);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,performance.now()-22000);},id);await page.waitForTimeout(100);}
  // 保存当前真实画面与触区尺寸，采用正式验收接口。

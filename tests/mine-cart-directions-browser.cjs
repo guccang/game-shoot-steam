@@ -28,7 +28,8 @@ async original=>{
   await shot('junction-options');await page.locator('[data-route-direction="0"]').tap();await page.waitForFunction(()=>a.game.progress.mining.junctions[junctionKey]===0);
   // 在路口以西登车，不输入方向，检验下次经过确实自动向北。
   await page.evaluate(()=>{Object.assign(a.game.player,a.game.progress.mining.carts[0]);a.refresh();});await page.locator('#mine-board').tap();await page.locator('#mine-drive').tap();
-  if(!await page.locator('#mine-route').isDisabled())throw Error('行驶中仍允许选向');
+  // 触屏事件后等待正式下一帧刷新禁用态，避免在事件与界面更新之间抢读。
+  await page.waitForFunction(()=>a.game.cottage.running&&document.querySelector('#mine-route').disabled);
   await page.waitForFunction(()=>a.game.player.y<site.y-15,null,{timeout:10000});await page.locator('#mine-drive').tap();
   const stopped=await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y,wheel:a.game.progress.mining.carts[0].wheel}));await page.waitForTimeout(250);
   if(JSON.stringify(stopped)!==JSON.stringify(await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y,wheel:a.game.progress.mining.carts[0].wheel}))))throw Error('停车移动');
