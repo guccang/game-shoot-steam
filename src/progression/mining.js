@@ -21,7 +21,11 @@ export function normalizeMining(raw,depth=1){
  m.nextCart=m.carts.reduce((n,c)=>Math.max(n,c.id+1),1);normalizeLayerEcology(m,raw,depth);
  // 尚未施工的一层保持未生成；旧版已有矿道使用固定迁移种子，绝不重排。
  if(depth===1&&raw.seed===0&&!Object.keys(m.dug).length){m.seed=0;delete m.bounds;delete m.coverage;}
- if(depth===1)for(const d of [2,3])if(raw.layers?.[d]&&(d===2||m.layers[2]))m.layers[d]=normalizeMining({...raw.layers[d],version:2},d);
+ // 按已存层号迭代恢复全部连续层，不预生成深层，也不按最大层号遍历空洞。
+ if(depth===1){
+  const depths=Object.keys(raw.layers||{}).filter(key=>Number.isSafeInteger(Number(key))&&Number(key)>=2&&String(Number(key))===key).map(Number).sort((a,b)=>a-b);
+  let expected=2;for(const d of depths){if(d!==expected||!raw.layers[d]||typeof raw.layers[d]!=='object')break;m.layers[d]=normalizeMining({...raw.layers[d],version:2},d);expected++;}
+ }
  return m;
 }
 // 施工只开通小屋正下方九格，空格不产矿，防止重复施工刷取。

@@ -23,7 +23,7 @@ export function normalizeLayerEcology(target,raw,depth=1){
  const valid=b&&['left','top','right','bottom'].every(k=>Number.isFinite(b[k]))&&b.left>=0&&b.top>=0&&b.right<=base.bounds.right&&b.bottom<=base.bounds.bottom&&b.right-b.left>=100&&b.bottom-b.top>=100;
  target.seed=Number.isSafeInteger(raw?.seed)&&raw.seed>0?raw.seed:1847;target.bounds=valid?{...b}:base.bounds;
  const area=(target.bounds.right-target.bounds.left)*(target.bounds.bottom-target.bounds.top),fraction=area/(base.bounds.right*base.bounds.bottom)*100;
- if(depth===1||depth===2&&(fraction<10-1e-7||fraction>50+1e-7)||depth===3&&(fraction<10-1e-7||fraction>100+1e-7))target.bounds=depth===1?base.bounds:{left:0,top:0,right:base.bounds.right*Math.sqrt(.1),bottom:base.bounds.bottom*Math.sqrt(.1)};
+ if(depth===1||depth===2&&(fraction<10-1e-7||fraction>50+1e-7)||depth>=3&&(fraction<10-1e-7||fraction>100+1e-7))target.bounds=depth===1?base.bounds:{left:0,top:0,right:base.bounds.right*Math.sqrt(.1),bottom:base.bounds.bottom*Math.sqrt(.1)};
  target.coverage=Math.round((target.bounds.right-target.bounds.left)*(target.bounds.bottom-target.bounds.top)/(base.bounds.right*base.bounds.bottom)*1e8)/1e6;
  target.entry=Object.hasOwn(target.dug,raw?.entry)?raw.entry:'0,0';target.descent=Object.hasOwn(target.dug,raw?.descent)?raw.descent:null;target.age=Number.isFinite(raw?.age)?Math.max(0,raw.age):0;
  target.bridges={};target.harvested={};target.animals={};

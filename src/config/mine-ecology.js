@@ -13,10 +13,10 @@ export const MINE_BIOMES=[
  {id:'fossil',name:'化石遗迹',floor:'#c6b48c',night:'#938970',resource:'ore',yield:3,regrow:150,animal:'beetle'},
 ];
 export const MINE_ANIMALS={beetle:{name:'岩甲虫',hp:56,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'洞穴蝠',hp:34,speed:60,damage:6,range:36,windup:.45,recover:1,reward:2},spore:{name:'菌伞怪',hp:70,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
-export const MINE_ECOLOGY={maxDepth:3,unlockRatio:.5,bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};
+export const MINE_ECOLOGY={unlockRatio:.5,bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};
 // 无状态坐标散列使景观、栖地和轮廓在读档后保持原布局。
 export function mineHash(x,y,seed=1847){let n=(Math.imul(x,374761393)^Math.imul(y,668265263)^seed)>>>0;n=Math.imul(n^(n>>>13),1274126177);return (n^(n>>>16))>>>0;}
-// 面积按世界单位精确计算，随机矩形始终包含新层入口，禁止开层后再随机。
+// 地下不设层数上限；第三层起均按10%至100%生成，矩形包含入口且只在首次开通时随机。
 export function createMineGeography(depth,entry=MINING.home,random=Math.random){
  const seed=Math.floor(random()*2147483646)+1,coverage=depth===1?100:depth===2?10+Math.floor(random()*41):10+Math.floor(random()*91),scale=Math.sqrt(coverage/100),width=WORLD.width*scale,height=WORLD.height*scale;
  const left=Math.max(0,Math.min(WORLD.width-width,entry.x-width*(.25+random()*.5))),top=Math.max(0,Math.min(WORLD.height-height,entry.y-height*(.25+random()*.5)));

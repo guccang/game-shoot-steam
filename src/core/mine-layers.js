@@ -13,7 +13,6 @@ export function travelMineLayer(game,direction){
  let nextDepth=depth+direction,next=mineLayer(game.progress.mining,nextDepth);
  if(direction===-1){if(depth===1||key!==layer.entry||!next)return mineNotice(game,'请沿小地图回到本层上行坡道。');}
  else if(direction===1){
-  if(depth>=MINE_ECOLOGY.maxDepth)return mineNotice(game,'更深的地下层尚未开放。');
   if(next){if(key!==layer.descent)return mineNotice(game,'请回到已建的下行坡道。');}
   else{
    const development=mineDevelopment(layer);if(development.ratio<MINE_ECOLOGY.unlockRatio)return mineNotice(game,`本层开发 ${(development.ratio*100).toFixed(2)}%，达到 50% 才能开通下一层。`);
