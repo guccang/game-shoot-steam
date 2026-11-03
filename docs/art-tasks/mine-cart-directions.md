@@ -42,3 +42,7 @@
 动态效果开发结论：通过。需修订内容：本次范围无遗留；最终整合验证另附下文。长期参考图为本目录链接的正式运行截图。
 
 designCriterion：mine-cart-directions。正式绘制器与工作台检查将绑定此目标。
+
+## 合并前整合验证
+
+已整合 main 的矿洞入口对应、候停进入和设施互斥改动，保留两套工作台 designCriterion。对直接重叠的矿区核心、存档与入口补跑27项（矿车方向9、挖矿11、洞口7），全部通过；本轮累计覆盖46项不重复规则测试，未运行全量 npm test。整合后正式浏览器再次通过22次画面/布局记录，控制台异常0，最小触控44×44；日志为 output/playwright/mine-cart-directions/merged-rules.txt 和 merged-browser-result.txt。长期参考图同步为整合后的昼夜与短横屏截图。
