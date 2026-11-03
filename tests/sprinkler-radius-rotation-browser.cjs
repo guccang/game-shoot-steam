@@ -1,6 +1,6 @@
 // 使用正式手机游戏验证两格预览、真实放置、暂停与昼夜旋转喷水，不读写玩家存档。
 async original=>{
- const base=new URL(original.url()).origin,dir='output/playwright/sprinkler-empty-soil/';
+ const base=new URL(original.url()).origin,dir='output/playwright/sprinkler-sweep/';
  const context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir:dir+'video',size:{width:390,height:844}}}),page=await context.newPage(),errors=[],reviews=[];
  page.on('pageerror',e=>errors.push(e.message));
  // 保存正式画面及同一运行时的检查结果。
@@ -21,22 +21,26 @@ async original=>{
   await phase('day');await page.locator('#production-menu').tap();await page.locator('[data-production-tab="build"]').tap();await shot('build-description');
   await page.locator('[data-production-build="sprinkler"]').tap();await page.waitForFunction(()=>a.game.productionCursor);await shot('coverage-preview');
   await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.productionSpray?.devices?.length);
-  // 混合空田与作物必须同时润湿，空田保持零生长时间并持久保存供水来源。
-  await page.evaluate(async()=>{const plots=a.game.progress.farm.plots.slice(0,24),empty=plots.filter(p=>p.crop===null);if(empty.length!==12||!empty.every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===0)||!plots.every(p=>p.watered))throw Error('空田未正常润湿');const restored=(await import('/src/progression/progress.js')).validateProgress(a.game.progress);if(!restored.farm.plots.slice(0,24).every(p=>p.watered&&p.sprinklerWatered))throw Error('读档丢失湿度');});
   for(let i=0;i<3;i++){await shot('live-'+i);await page.waitForTimeout(120);}
   const angles=reviews.filter(r=>r.name.startsWith('live-')).map(r=>r.devices[0].angle);if(new Set(angles).size<2)throw Error('喷头没有随时钟转动');
+  await page.waitForFunction(()=>a.game.progress.farm.plots.slice(0,24).every(p=>p.watered));
+  // 混合空田与作物必须同时润湿，空田保持零生长时间并持久保存供水来源。
+  await page.evaluate(async()=>{const plots=a.game.progress.farm.plots.slice(0,24),empty=plots.filter(p=>p.crop===null);if(empty.length!==12||!empty.every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===0)||!plots.every(p=>p.watered))throw Error('空田未正常润湿');const restored=(await import('/src/progression/progress.js')).validateProgress(a.game.progress);if(!restored.farm.plots.slice(0,24).every(p=>p.watered&&p.sprinklerWatered))throw Error('读档丢失湿度');});
   const watered=await page.evaluate(()=>a.game.progress.farm.plots.map(p=>!!p.sprinklerWatered));if(!watered.slice(0,24).every(Boolean)||watered.slice(24).some(Boolean))throw Error('浇水范围错误：'+watered);
   await page.locator('#production-menu').tap();const paused=await page.evaluate(()=>a.game.time);await page.waitForTimeout(250);if(await page.evaluate(()=>a.game.time)!==paused)throw Error('暂停时钟仍在前进');await page.locator('[data-production-close]').first().tap();
   await page.waitForFunction(async()=>!(await import('/src/rendering/farm-production.js')).sprinklerPose(a.game.progress.production.sprinklers[0],a.game.time,a.game.productionSpray).active);await shot('finished');
   for(const time of ['day','night']){
    await page.evaluate(()=>a.game.state='playing');await phase(time);
    await page.evaluate(async()=>{
-    const c=await import('/src/core/farm-production.js'),g=a.game;g.productionSpray=null;g.livingWeather='sun';for(const p of g.progress.farm.plots){p.watered=false;p.sprinklerWatered=false;p.plantedAt=Date.now();p.readyAt=Date.now()+120000;}
-    if(!c.updateProduction(g))throw Error('浇水事件未生成');
+    const c=await import('/src/core/farm-production.js'),g=a.game;g.productionSpray=null;g.livingWeather='sun';for(const p of g.progress.farm.plots){p.watered=false;p.sprinklerWatered=false;p.plantedAt=p.crop===null?0:Date.now();p.readyAt=p.crop===null?0:Date.now()+120000;}
+    c.updateProduction(g);if(!g.productionSpray?.devices.length||g.progress.farm.plots.some(p=>p.watered))throw Error('扫描未开始或提前浇湿');
     // 连续游玩已录像；固定模拟时刻采样正式绘制器，避免暂停底板遮住喷头。
     window.simulationUpdate??=g.update;g.update=()=>{};g.state='playing';Object.assign(g.player,{x:site.x-10,y:site.y+80});g.enemies=[];g.progress.campParking.owned=[{hull:0,spot:null,mapId:'forest',x:site.x+100,y:site.y+90,hp:1,ammo:0}];g.spawnEnemy(0,150,{x:site.x+125,y:site.y-90},{ambient:true});a.renderer.camera.time=null;
    });
-   for(const t of [.35,.75,1.15]){await page.evaluate(t=>{a.game.time=a.game.productionSpray.devices[0].time+t;a.refresh();},t);await page.waitForTimeout(120);await shot('spray-'+time+'-'+t);}
+   for(const t of [.25,.65,1.1,1.4]){await page.evaluate(async t=>{const g=a.game,c=await import('/src/core/farm-production.js'),end=g.productionSpray.devices[0].time+t;while(g.time<end){g.time=Math.min(end,g.time+.02);c.updateProduction(g);}a.refresh();},t);await page.waitForTimeout(120);await shot('spray-'+time+'-'+t);}
+   const frames=reviews.filter(r=>r.name.startsWith('spray-'+time+'-')),counts=frames.map(r=>r.plots.slice(0,24).filter(p=>p.watered).length);
+   if(counts[0]!==4||counts.at(-1)!==24||new Set(counts).size<3||!frames.some(r=>r.plots.some(p=>p.wetness>0&&p.wetness<1)))throw Error('土壤未随扫描逐格渐湿：'+counts);
+
   }
   for(const size of [{width:320,height:568},{width:844,height:390},{width:1280,height:900}]){await page.setViewportSize(size);await shot('layout-'+size.width);}
   await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(150);await shot('reduced-motion');await page.emulateMedia({reducedMotion:'no-preference'});

@@ -6,7 +6,7 @@ export const PRODUCTION_RECIPES={meal:{name:'矿工便当',count:3,description:'
 // 稳定作物ID映射既有库存索引，不以中文显示名关联数据。
 export function productionCrop(id){return FARM_CROPS.findIndex(c=>c.id===id);}
 // 覆盖规则、预览和喷水采用同一田格尺度，周围两层为5×5仅去掉中心，共24格。
-export const SPRINKLER={radius:2,cellWidth:56,cellHeight:52,spraySeconds:2.4};
+export const SPRINKLER={radius:2,cellWidth:56,cellHeight:52,spraySeconds:2.4,wetFadeSeconds:.16};
 // 排除设备自身所在格，保留两层24个相邻田格中心。
 export const SPRINKLER_OFFSETS=Array.from({length:25},(_,i)=>[i%5-2,Math.floor(i/5)-2]).filter(([x,y])=>x||y).map(([x,y])=>[x*SPRINKLER.cellWidth,y*SPRINKLER.cellHeight]);
 
@@ -19,4 +19,9 @@ export const SPRINKLER_OUTLINE=[[-2,-2],[2,-2],[2,2],[-2,2]];
 export function sprinklerReach(angle){
  const x=Math.abs(Math.cos(angle)),y=Math.abs(Math.sin(angle));
  return SPRINKLER.radius/Math.max(x,y);
+}
+
+// 喷嘴绘制和扫水命中共用缓入缓出的旋转角，暂停由游戏时钟统一控制。
+export function sprinklerSweepAngle(elapsed){
+ const t=Math.max(0,Math.min(1,elapsed/SPRINKLER.spraySeconds));return Math.PI*2*t*t*(3-2*t);
 }

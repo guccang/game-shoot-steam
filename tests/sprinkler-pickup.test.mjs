@@ -16,7 +16,7 @@ test('拿起范围与场景有效性正确，取消不会丢失原位设备',()=
 // 所有落点使用正式校验；存档失败维持携带状态，允许重试。
 test('非法落点与保存失败不搬走设备，成功重试保持原ID',()=>{const {g,a,b}=scene();pickupSprinkler(g,1);Object.assign(g.player,b);g.progress.farm.plots=[{...b,id:1,crop:null,plantedAt:0,readyAt:0,watered:false}];assert.equal(placeProduction(g,'sprinkler',b,1).ok,false);g.progress.farm.plots=[];const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(placeProduction(g,'sprinkler',b,1).ok,false);assert.deepEqual(g.progress,before);assert.ok(carriedSprinkler(g));g.livingPersist=()=>true;assert.ok(placeProduction(g,'sprinkler',b,1).ok);assert.equal(g.productionCarry,null);assert.notEqual(g.progress.production.sprinklers[0].x,a.x);});
 // 搬起后原位不会继续灌溉，取消后恢复，其他设备仍可正常工作。
-test('拿起期间停止原位浇水，取消恢复并保持其他洒水器工作',()=>{const {g,a,b}=scene();g.livingPersist=()=>true;g.progress.production.sprinklers.push({...b,id:2});g.progress.farm.plots=[a,b].map((p,i)=>({...p,x:p.x+56,id:i+1,crop:1,plantedAt:1,readyAt:100000,watered:false}));pickupSprinkler(g,1);assert.ok(updateProduction(g,1000));assert.equal(g.progress.farm.plots[0].watered,false);assert.equal(g.progress.farm.plots[1].watered,true);assert.deepEqual(g.productionSpray.sprinklers,[2]);g.productionCarry=null;assert.ok(updateProduction(g,1000));assert.equal(g.progress.farm.plots[0].watered,true);});
+test('拿起期间停止原位浇水，取消恢复并保持其他洒水器工作',()=>{const {g,a,b}=scene();g.livingPersist=()=>true;g.progress.production.sprinklers.push({...b,id:2});g.progress.farm.plots=[a,b].map((p,i)=>({...p,x:p.x+56,id:i+1,crop:1,plantedAt:1,readyAt:100000,watered:false}));pickupSprinkler(g,1);assert.ok(finishWatering(g,1000));assert.equal(g.progress.farm.plots[0].watered,false);assert.equal(g.progress.farm.plots[1].watered,true);assert.deepEqual(g.productionSpray.sprinklers,[2]);g.productionCarry=null;assert.ok(finishWatering(g,1000));assert.equal(g.progress.farm.plots[0].watered,true);});
 
 // 拆除与建设同样先保存后提交，且不能反复拆建刷种子或退款。
 test('洒水器和加工台可移除，保留补给及赠种记录，不退款不重复删除',()=>{
@@ -28,3 +28,6 @@ test('移除必须在地面步行靠近，暂停确认允许提交',()=>{const {
 
 // 删除形成编号空缺后，保存归一化不能改变剩余设备ID，否则后续操作会误选。
 test('删除后的稀疏编号跨存档和连续移除保持稳定',()=>{const {g,a,b}=scene();g.livingPersist=()=>true;g.progress.production.sprinklers=[{...a,id:1},{...a,x:a.x+112,id:2},{...b,id:3}];assert.ok(removeProduction(g,'sprinkler',1).ok);assert.deepEqual(g.progress.production.sprinklers.map(p=>p.id),[2,3]);g.progress=validateProgress(g.progress);assert.deepEqual(g.progress.production.sprinklers.map(p=>p.id),[2,3]);Object.assign(g.player,b);assert.ok(pickupSprinkler(g,3).ok);assert.ok(removeProduction(g,'sprinkler',3).ok);assert.deepEqual(g.progress.production.sprinklers.map(p=>p.id),[2]);assert.equal(g.productionCarry,null);});
+
+// 保留原事务断言，但通过真实扫描时钟等待一轮落水。
+function finishWatering(g,now){const first=updateProduction(g,now);if(g.state!=='playing')return first;g.time+=1.25;return updateProduction(g,now)||first;}

@@ -24,6 +24,7 @@ async original=>{
   await page.evaluate(async()=>{window.persist=(await import('/src/platform/storage.js')).createSaveStore().saveProgress;a.game.livingPersist=window.persist;});
   await phase('day');await page.locator('#production-menu').tap();await page.locator('[data-production-tab=build]').tap();await page.locator('[data-production-build=sprinkler]').tap();await page.waitForFunction(()=>a.game.productionCursor);
   await shot('coverage-24');await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.productionSpray?.devices?.length);
+  await page.waitForFunction(()=>a.game.progress.farm.plots.filter(p=>p.sprinklerWatered).length===24);
   if(await page.evaluate(()=>a.game.progress.farm.plots.filter(p=>p.sprinklerWatered).length)!==24)throw Error('不是24块田');
   await page.locator('#production-menu').tap();await page.locator('[data-production-store]').scrollIntoViewIfNeeded();await shot('store-action');
   await page.evaluate(()=>a.game.livingPersist=()=>false);await page.locator('[data-production-store]').tap();if(await page.evaluate(()=>a.game.progress.production.sprinklerInventory)!==0)throw Error('失败仍收回');await shot('store-failure');

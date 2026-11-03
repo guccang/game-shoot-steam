@@ -9,7 +9,7 @@
   },
   "sprinklerRadiusRotation": {
     "designCriterion": "sprinkler-radius-rotation",
-    "description": "简易洒水器覆盖周围两层24格（仅去掉自身，包含四角），预览与浇水一致，已开垦空田也可润湿并在播种时继承水分；双喷口独立旋转并扫水，底座固定，暂停冻结，多台独立，手机昼夜清晰。",
+    "description": "简易洒水器覆盖周围两层24格（仅去掉自身，包含四角），预览与浇水一致，已开垦空田也可润湿并在播种时继承水分；双喷口独立旋转并扫水，扫过的田块才结算浇水并渐变湿色，底座固定，暂停冻结，多台独立，手机昼夜清晰。",
     "entry": "src/rendering/visual-review.js#inspectSprinklerRotation",
     "brief": "docs/art-tasks/farm-mine-production.md",
     "unitTests": ["tests/sprinkler-radius-rotation.test.mjs"],

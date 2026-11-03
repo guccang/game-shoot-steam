@@ -2,6 +2,7 @@
 import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES,productionCrop,SPRINKLER} from '../config/farm-production.js';
 import {productionUnlocked,productionIngredients,sprinklerCovers,productionCropStock,consumeProductionCrop} from '../progression/farm-production.js';
 import {FARM_CROPS,FARM_STOCK_CAP} from '../config/farm.js';
+import {sprinklerHitDelay,sameSprinklerPlot} from '../progression/sprinkler-sweep.js';
 import {farmGrowth,wetFarmPlot,grantFarmSeeds} from '../progression/farm.js';
 import {recordGardeningAction} from '../progression/mainline-gardening.js';
 import {validateProgress} from '../progression/progress.js';
@@ -119,22 +120,35 @@ export function useProduction(game,kind){
  return commit(game,next,`${PRODUCTION_RECIPES[kind].name}已使用，暂停和离线不消耗效果。`);
 }
 const retries=new WeakMap();
-// 自动浇水照料当前地面的干燥空田和未成熟作物；无待办不复制进度或写盘。
+// 仅在喷嘴扫过目标时提交湿度；扫描队列只存在运行时，未扫田块不会提前写入存档。
 export function updateProduction(game,now=Date.now()){
- if(!productionAvailable(game)||game.state!=='playing'||game.cottage||!['forest','jiuzhaigou'].includes(game.mapId)||now<(retries.get(game)||0))return false;
- const s=game.progress.production,held=carriedSprinkler(game),sprinklers=s.sprinklers.filter(p=>p.id!==held?.id),returning=!s.returned&&s.minedOre>=P.oreGoal;
- if(!returning&&!sprinklers.length)return false;
- const targets=game.progress.farm.plots.filter(p=>!p.wild&&p.mapId===game.mapId&&!p.watered&&(p.crop===null||farmGrowth(p,now)<1)&&sprinklers.some(d=>sprinklerCovers(d,p)));
+ if(game.state!=='playing')return false;
+ if(!productionAvailable(game)||game.cottage||!['forest','jiuzhaigou'].includes(game.mapId)){if(game.productionSpray){game.productionSpray.devices=[];game.productionSpray.sprinklers=[];}return false;}
+ if(now<(retries.get(game)||0))return false;
+ const s=game.progress.production,held=carriedSprinkler(game),sprinklers=s.sprinklers.filter(p=>p.id!==held?.id&&p.mapId===game.mapId),returning=!s.returned&&s.minedOre>=P.oreGoal;
+ // 没有在场设备时立即停止扫描，不为全地图空田逐帧分配待办。
+ if(!sprinklers.length&&!returning){if(game.productionSpray){game.productionSpray.devices=[];game.productionSpray.sprinklers=[];}return false;}
+ const dry=game.progress.farm.plots.filter(p=>!p.wild&&p.mapId===game.mapId&&!p.watered&&(p.crop===null||farmGrowth(p,now)<1));
+ const old=game.productionSpray,wetPlots=(old?.wetPlots||[]).filter(p=>game.time>=p.time&&game.time-p.time<SPRINKLER.wetFadeSeconds);
+ // 失效设备立即取消待扫目标；低帧率跨过轮末时仍结算该轮实际扫过的田块。
+ const devices=(old?.devices||[]).filter(d=>game.time>=d.time&&sprinklers.some(p=>p.id===d.id&&p.mapId===d.mapId&&worldDistance(p,d)<.1)&&(game.time-d.time<SPRINKLER.spraySeconds||d.targets?.some(t=>dry.some(p=>sameSprinklerPlot(t,p)))));
+ for(const d of sprinklers){
+  if(devices.some(p=>p.id===d.id))continue;
+  const targets=dry.filter(p=>sprinklerCovers(d,p)).map(p=>({...p,at:sprinklerHitDelay(d,p)}));
+  if(targets.length)devices.push({...d,time:game.time,targets});
+ }
+ game.productionSpray={time:old?.time??game.time,plots:old?.plots||[],sprinklers:devices.map(d=>d.id),devices,wetPlots};
+ const targets=dry.filter(p=>devices.some(d=>d.targets?.some(t=>sameSprinklerPlot(t,p)&&game.time-d.time>=t.at)));
  if(!returning&&!targets.length)return false;
  const next=candidate(game);if(returning)next.production.returned=true;
  for(const plot of next.farm.plots.filter(p=>targets.some(t=>t.id===p.id))){wetFarmPlot(next.farm,plot,now);plot.sprinklerWatered=true;if(plot.crop!==null)recordGardeningAction(next,'water',{crop:plot.crop,plot:plot.id});}
- const result=commit(game,next,returning?'矿石已带回地面，可以建造简易洒水器。':`洒水器已浇灌${targets.length}块田。`);
- if(!result.ok)retries.set(game,now+1000);else{retries.delete(game);if(targets.length){
-  // 每台保留本次旋转的起点，另一台后来浇水不截断正在播放的水流。
-  const touched=sprinklers.filter(d=>targets.some(p=>sprinklerCovers(d,p)));
-  const devices=(game.productionSpray?.devices||[]).filter(d=>game.time>=d.time&&game.time-d.time<SPRINKLER.spraySeconds&&sprinklers.some(n=>n.id===d.id&&n.mapId===d.mapId&&worldDistance(n,d)<.1));
-  for(const d of touched)if(!devices.some(n=>n.id===d.id&&n.mapId===d.mapId))devices.push({...d,time:game.time});
-  game.productionSpray={time:game.time,plots:targets.map(p=>p.id),sprinklers:devices.map(d=>d.id),devices};
- }}
+ const result=commit(game,next,returning?'矿石已带回地面，可以建造简易洒水器。':`洒水器扫过${targets.length}块田，土壤逐渐湿润。`);
+ if(!result.ok){
+  // 保存失败不改变土色或加速，停止本轮后限频重试，让下轮水流重新扫到干田。
+  retries.set(game,now+1000);game.productionSpray.devices=[];game.productionSpray.sprinklers=[];
+ }else{
+  retries.delete(game);game.productionSpray.plots=targets.map(p=>p.id);
+  game.productionSpray.wetPlots.push(...next.farm.plots.filter(p=>targets.some(t=>t.id===p.id)).map(p=>({...p,time:game.time})));
+ }
  return result.ok;
 }

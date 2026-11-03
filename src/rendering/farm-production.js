@@ -1,6 +1,6 @@
 // 生产设施正式Canvas绘制：矮底座、独立喷嘴、台面与压榨罐共享森林配色。
 import {carriedSprinkler} from '../core/farm-production.js';
-import {SPRINKLER_OFFSETS,SPRINKLER,SPRINKLER_OUTLINE,sprinklerReach} from '../config/farm-production.js';
+import {SPRINKLER_OFFSETS,SPRINKLER,SPRINKLER_OUTLINE,sprinklerReach,sprinklerSweepAngle} from '../config/farm-production.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 // 设施以脚底参与现有深度排序，不增加图片或独立画布。
 export function productionObjects(game){
@@ -19,8 +19,7 @@ export function drawProductionGround(c,game,view){
 export function sprinklerPose(item,time,event,reduced=false){
  const d=event?.devices?.find(d=>d.id===item.id&&d.mapId===item.mapId&&worldDistance(d,item)<.1);
  const elapsed=d?time-d.time:-1,active=elapsed>=0&&elapsed<SPRINKLER.spraySeconds;
- const progress=active?elapsed/SPRINKLER.spraySeconds:0;
- const angle=active&&!reduced?Math.PI*2*progress*progress*(3-2*progress):0;
+ const angle=active&&!reduced?sprinklerSweepAngle(elapsed):0;
  const pressure=active?Math.min(1,elapsed/.18,(SPRINKLER.spraySeconds-elapsed)/.18):0;
  return {active,angle,elapsed,pressure};
 }
@@ -46,7 +45,7 @@ function drawSprinklerWater(c,pose){
  }
  c.restore();
 }
-// 每台设备只在真实事务成功后播放一轮旋转浇水，静态图标与放置预览保持安静。
+// 每台设备对干田播放一轮旋转，水流扫过时才结算浇水，静态图标与放置预览保持安静。
 export function drawProductionDevice(c,item,time=0,reduced=false,spray=null){
  c.save();c.translate(item.x,item.y);c.strokeStyle='#3b5742';c.lineWidth=2;c.lineJoin='round';c.fillStyle='#294c3c28';c.beginPath();c.ellipse(4,3,22,8,0,0,Math.PI*2);c.fill();
  if(item.carried)c.translate(0,-18);

@@ -1968,8 +1968,8 @@ export function inspectMineFunnelBoundary(game,renderer){
 
 // 检查正式洒水器的半径、独立喷头动作与手机视口，供连续帧验收使用。
 export async function inspectSprinklerRotation(game,root=document){
- const {productionObjects,sprinklerPose}=await import('./farm-production.js'),{SPRINKLER_OFFSETS}=await import('../config/farm-production.js');
- return {designCriterion:'sprinkler-radius-rotation',time:game.time,devices:productionObjects(game).filter(d=>d.kind==='sprinkler').map(d=>({id:d.id,...sprinklerPose(d,game.time,game.productionSpray,root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches)})),plots:game.progress.farm.plots.map(p=>({id:p.id,watered:p.watered,sprinklerWatered:p.sprinklerWatered})),coverageCells:SPRINKLER_OFFSETS.length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+ const {productionObjects,sprinklerPose}=await import('./farm-production.js'),{SPRINKLER_OFFSETS}=await import('../config/farm-production.js'),{sprinklerSoilWetness}=await import('../progression/sprinkler-sweep.js');
+ return {designCriterion:'sprinkler-radius-rotation',time:game.time,devices:productionObjects(game).filter(d=>d.kind==='sprinkler').map(d=>({id:d.id,...sprinklerPose(d,game.time,game.productionSpray,root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches)})),plots:game.progress.farm.plots.map(p=>({id:p.id,watered:p.watered,sprinklerWatered:p.sprinklerWatered,wetness:sprinklerSoilWetness(p,game.time,game.productionSpray,root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches)})),coverageCells:SPRINKLER_OFFSETS.length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
 }
 
 // 洒水器搬移验收读取真实携带对象与正式预览，不另绘制静态样例。
