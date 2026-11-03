@@ -1964,3 +1964,9 @@ export function inspectMineCartControls(game,renderer,root=document){
 export function inspectMineFunnelBoundary(game,renderer){
  return {designCriterion:'mine-funnel-boundary',night:renderer.mineReview?.night,state:game.state,nodes:game.funnel.nodes.map(n=>({x:n.x,y:n.y,goalX:n.flight.goalX,goalY:n.flight.goalY,vx:n.flight.vx,vy:n.flight.vy,mode:n.flight.mode})),newBitmapBytes:0};
 }
+
+// 洒水器搬移验收读取真实携带对象与正式预览，不另绘制静态样例。
+export async function inspectSprinklerPickup(game,renderer,root=document){
+ const {productionObjects}=await import('./farm-production.js'),panel=root.getElementById('production-placement');
+ return {designCriterion:'sprinkler-pickup',objects:productionObjects(renderer.renderGame||game),carry:game.productionCarry||null,cursor:game.productionCursor||null,message:panel?.querySelector('p')?.textContent,dropDisabled:panel?.querySelector('[data-production-place]')?.disabled,visible:!!panel&&!panel.hidden};
+}

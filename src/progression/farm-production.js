@@ -10,7 +10,12 @@ function site(s){return s&&['forest','jiuzhaigou'].includes(s.mapId)&&Number.isF
 // 首次迁移只把现存矿石计入资格，不推算历史消费或赠送材料。
 export function normalizeProduction(raw,mining){
  const s=raw||{},sprinklers=[];
- for(const item of (Array.isArray(s.sprinklers)?s.sprinklers:[]).slice(0,P.maxSprinklers)){const point=site(item);if(point&&!sprinklers.some(p=>p.mapId===point.mapId&&worldDistance(p,point)<40))sprinklers.push({...point,id:sprinklers.length+1});}
+ // 删除后保留其余设施的稳定编号，防止候选存档归一化把搬移或移除指向另一台。
+ for(const item of (Array.isArray(s.sprinklers)?s.sprinklers:[]).slice(0,P.maxSprinklers)){
+  const point=site(item);if(!point||sprinklers.some(p=>p.mapId===point.mapId&&worldDistance(p,point)<40))continue;
+  let id=Number.isSafeInteger(item.id)&&item.id>0&&item.id<Number.MAX_SAFE_INTEGER?item.id:1;
+  while(sprinklers.some(p=>p.id===id))id++;sprinklers.push({...point,id});
+ }
  return {version:1,minedOre:integer(s.minedOre??mining?.ore),returned:s.returned===true,wateredHarvest:s.wateredHarvest===true,seedGift:s.seedGift===true,mealDigs:integer(s.mealDigs),rodeCart:s.rodeCart===true,bench:site(s.bench),sprinklers,keep:FARM_CROPS.map((_,i)=>integer(s.keep?.[i],P.keepMax)),stock:Object.fromEntries(['meal','juice','oil'].map(k=>[k,integer(s.stock?.[k],P.maxStock)])),effects:{meal:integer(s.effects?.meal,P.mealDigs),juice:Number.isFinite(s.effects?.juice)?Math.max(0,Math.min(P.juiceSeconds,s.effects.juice)):0}};
 }
 // 建筑和配方依据实际行为开放，果饮和植物油还需对应种子权限。
