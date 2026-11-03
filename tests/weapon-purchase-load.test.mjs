@@ -23,14 +23,21 @@ function scene(){
   const g=new Game(p);g.state='playing';g.vehicle.active=false;g.cottage={kind:'weapons'};g.livingPersist=()=>true;
   return g;
 }
-// 用真实子弹质量补足指定购买后重量，确保校验的是现有 30kg 限制。
+// 按整数克计算整发弹药，无法精确构造边界时直接失败，不四舍五入掩盖测试偏差。
 function fillAfterPurchase(g,weight){
   const quote=weaponPurchaseQuote(g,plan,quoteWorkshop(g.progress,plan));assert.ok(quote.ok,quote.reason);
-  g.progress.supplies.hand.light+=Math.round((weight-quote.load.weight)/AMMO_TYPES.light.mass);
+  assert.equal(quote.load.capacity,30);
+  const remaining=Math.round(weight*1000)-Math.round(quote.load.weight*1000),mass=Math.round(AMMO_TYPES.light.mass*1000);
+  assert.ok(remaining>=0);assert.equal(remaining%mass,0,'目标重量必须能由整发子弹精确组成');
+  g.progress.supplies.hand.light+=remaining/mass;
+  assert.equal(weaponPurchaseQuote(g,plan,quoteWorkshop(g.progress,plan)).load.weight,weight);
 }
 
 for(const weight of [30,30.002])test(`购买后 ${weight}kg 在保存前拒绝且不扣资源`,()=>{
-  const g=scene();fillAfterPurchase(g,weight);assert.ok(!catLoad(g).overloaded);
+  const g=scene();
+  // 50 克钥匙会留下 2 克余数；精确 30kg 场景不携带钥匙，其余场景保留正常随身物品。
+  if(weight===30)g.progress.keepsakes.items=g.progress.keepsakes.items.filter(id=>id!=='house-key');
+  fillAfterPurchase(g,weight);assert.ok(!catLoad(g).overloaded);
   const before=JSON.stringify(g.progress),mags=JSON.stringify(g.magazines);let writes=0;
   const r=commitWorkshop(g,plan,()=>{writes++;return true;});
   assert.equal(r.ok,false);assert.equal(r.loadBlocked,true);assert.equal(r.load.weight,weight);assert.match(r.reason,/整理背包/);
