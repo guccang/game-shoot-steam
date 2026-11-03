@@ -1,7 +1,7 @@
 // 钓具搭配与鱼种抽样只负责纯计算；购买、装备和扣饵由野外事务保存。
 import {FISH_SPECIES,FISH_WATERS} from '../config/fish-catalog.js';
 import {FISHING_RODS,FISHING_BAITS,rodOwned,baitCount,fishCatchWeight} from '../config/fishing-tackle.js';
-// 地下各层共享洞穴鱼群，地表按当前地图选池。
+// 先识别地表或地下生态类别；独立湖池和附近鱼群加权由 lake-fishing 继续筛选。
 export function fishingWater(game){return game.cottage?.kind==='mine'?'mine':game.mapId;}
 // 预览不要求拥有装备，便于购前比较；正式抛竿另外校验库存和正在使用的搭配。
 export function fishingOdds(rodId,baitId,water){const entries=FISH_SPECIES.map((fish,index)=>({fish,index,weight:fishCatchWeight(fish,rodId,baitId,water)})).filter(e=>e.weight>0),total=entries.reduce((s,e)=>s+e.weight,0);return entries.map(e=>({...e,probability:e.weight/total}));}

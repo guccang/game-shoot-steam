@@ -1,4 +1,4 @@
-import {naturalFishIndex} from '../config/fish-catalog.js';
+import {surfaceFishLake,mineFishLake,lakeFishSpecies} from './fish-ecology.js';
 // 常态游鱼采样真实水域；稳定散列决定栖点，不使用战斗随机数或新增存档实体。
 import {NATURAL_TERRAIN,touchesLandform} from './natural-terrain.js';
 import {JIUZHAIGOU_LAKES} from './jiuzhaigou.js';
@@ -25,14 +25,14 @@ function lakeAnchors(lake){
 // 地表水域与正式地貌共用轮廓，周期地图使用镜像坐标保持岸线一致。
 export function surfaceAmbientFish(mapId,view,time){
  const lakes=mapId==='forest'?NATURAL_TERRAIN.lakes:mapId==='jiuzhaigou'?JIUZHAIGOU_LAKES.filter(l=>l.kind==='lake'):[],result=[],center={x:view.x+view.w/2,y:view.y+view.h/2};
- for(const lake of lakes)for(const a of lakeAnchors(lake)){const p=ambientFishPose(a,time),q=nearest(p,center);if(visible(q,view))result.push({...p,x:q.x,y:q.y,species:naturalFishIndex(mapId,mineHash(a.seed,Math.floor(a.x),Math.floor(a.y))),lakeId:lake.id});if(result.length===AMBIENT_FISH_LIMIT)return result;}return result;
+ for(const lake of lakes)for(const a of lakeAnchors(lake)){const p=ambientFishPose(a,time),q=nearest(p,center);if(visible(q,view))result.push({...p,x:q.x,y:q.y,species:lakeFishSpecies(surfaceFishLake(mapId,lake),mineHash(a.seed,Math.floor(a.x),Math.floor(a.y))),lakeId:lake.id,waterId:surfaceFishLake(mapId,lake).id,schoolId:lake.id+':'+a.seed});if(result.length===AMBIENT_FISH_LIMIT)return result;}return result;
 }
 // 地下只查询视野中的96单位网格，缓存有界；真实开放水界决定能否存在鱼群。
-export function mineAmbientFish(layer,view,time){
+export function mineAmbientFish(layer,view,time,depth=1){
  let cache=mineCaches.get(layer);if(!cache){cache=new Map();mineCaches.set(layer,cache);}const result=[],water=(x,y)=>{const s=mineSurfaceAt(layer,x,y);return s.open&&s.water;};
  const left=Math.floor((view.x-40)/96),top=Math.floor((view.y-40)/96),right=Math.ceil((view.x+view.w+40)/96),bottom=Math.ceil((view.y+view.h+40)/96);
  for(let y=top;y<=bottom;y++)for(let x=left;x<=right;x++){
-  const key=x+','+y;let a=cache.get(key);if(a===undefined){const seed=mineHash(x,y,layer.seed),px=x*96+48,py=y*96+48;a=clearWater(water,px,py)?{x:px,y:py,seed:seed%997,species:naturalFishIndex('mine',seed)}:null;if(cache.size>=256)cache.delete(cache.keys().next().value);cache.set(key,a);}
+  const key=depth+':'+x+','+y;let a=cache.get(key);if(a===undefined){const seed=mineHash(x,y,layer.seed),px=x*96+48,py=y*96+48;const lake=clearWater(water,px,py)?mineFishLake(layer,{x:px,y:py},depth):null;a=lake?{x:px,y:py,seed:seed%997,species:lakeFishSpecies(lake,seed),waterId:lake.id,schoolId:key}:null;if(cache.size>=256)cache.delete(cache.keys().next().value);cache.set(key,a);}
   if(a){const p=ambientFishPose(a,time);if(visible(p,view))result.push(p);}if(result.length===AMBIENT_FISH_LIMIT)return result;
  }return result;
 }

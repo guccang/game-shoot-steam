@@ -1,11 +1,14 @@
+import {fishingCastPoint,lakeFishingContext,fishingPreview} from './lake-fishing.js';
+import {fishStruggle} from '../config/fish-struggles.js';
+import {fishingSurveyDefinition,fishingSurveyProgress,creditFishingSurvey} from '../progression/fishing-surveys.js';
+import {lakeFishPool} from '../world/fish-ecology.js';
 import {FISHING_RODS,FISHING_BAITS,rodOwned,baitCount} from '../config/fishing-tackle.js';
-import {fishingSetup,fishingOdds,sampleFishingOdds} from './fishing-tackle.js';
-import {mineFishingShore,mineCastWater} from '../world/mine-fishing.js';
+import {fishingSetup,sampleFishingOdds} from './fishing-tackle.js';
+import {mineFishingShore} from '../world/mine-fishing.js';
 import {mineLayer} from '../progression/mine-layers.js';
 import {mineLineClear} from '../physics/mine-motion.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {RESOURCE_CAP} from '../config/resource-limits.js';
-import {touchesLandform} from '../world/natural-terrain.js';
 import {farmWorking} from './farm.js';
 import {bossCombatActive} from './boss-engagement.js';
 import {clearingCombatActive} from './living-safety.js';
@@ -106,7 +109,7 @@ export function beginFishing(game){
  const setup=fishingSetup(game);if(setup.reason)return {ok:false,message:setup.reason};
  if(game.vehicle.active)return {ok:false,message:'先下车，站在湖岸再抛竿。'};
  const shore=game.cottage?.kind==='mine'?mineFishingShore(game):fishingShores(game)[0];if(!shore||shore.distance>R.castReach)return {ok:false,message:game.cottage?.kind==='mine'?'请走到开阔水面旁的岸边，再试试钓鱼。':'请沿指引走到湖岸，靠近水面再钓鱼。'};
- game.fishing={rodId:setup.rodId,baitId:setup.baitId,odds:fishingOdds(setup.rodId,setup.baitId,setup.water),phase:'ready',elapsed:0,clock:0,shore,origin:{x:game.player.x,y:game.player.y},mapId:game.mapId,mineRoom:shore.mineDepth?game.cottage:null,mineDepth:shore.mineDepth||0,hp:game.player.hp,charge:0,lean:0,reeling:false,tension:.3,progress:0,message:'按住抛竿蓄力，松手把浮漂送入湖里。'};
+ game.fishing={rodId:setup.rodId,baitId:setup.baitId,...lakeFishingContext(game,shore,shore.water,setup.rodId,setup.baitId),phase:'ready',elapsed:0,clock:0,shore,origin:{x:game.player.x,y:game.player.y},mapId:game.mapId,mineRoom:shore.mineDepth?game.cottage:null,mineDepth:shore.mineDepth||0,hp:game.player.hp,charge:0,lean:0,reeling:false,tension:.3,progress:0,message:'按住抛竿蓄力，松手把浮漂送入湖里。'};
  if(shore.mineDepth)Object.assign(game.cottage,{tool:null,autoDig:false,dig:null,shaftWork:0,weaponReady:false,strike:0});
  game.player.angle=Math.atan2(shore.water.y-game.player.y,shore.water.x-game.player.x);return {ok:true,message:'鱼竿已备好。'};
 }
@@ -123,11 +126,10 @@ export function fishingControl(game,action,value=0){
  }
  if(action==='release'){
   f.reeling=false;if(f.phase!=='charging')return true;
+  // 放手时锁定真实落漂位置和附近鱼群；保存失败不扣饵也不开始选鱼。
+  f.water=fishingCastPoint(game,f.shore,f.charge);Object.assign(f,lakeFishingContext(game,f.shore,f.water,f.rodId,f.baitId));
   const next=validateProgress(structuredClone(game.progress)),baitId=f.baitId||'bait';if(baitCount(next.outdoors,baitId)<1||!f.odds?.length){f.phase='ready';f.message='鱼饵不足或当前搭配没有可钓鱼，请收竿调整。';return false;}if(baitId==='bait')next.outdoors.bait--;else next.outdoors.baits[baitId]--;
   const result=commit(game,next,'鱼饵已挂好，浮漂入水。');if(!result.ok){f.phase='ready';f.message=result.message;return false;}
-  // 蓄力越充分，浮漂越靠近湖心；候选点始终校验真实湖水边界。
-  const edge=f.shore.water,center=f.mineDepth?edge:nearest(f.shore.lake,edge),dx=center.x-edge.x,dy=center.y-edge.y,length=Math.hypot(dx,dy)||1;
-  const water={x:edge.x+dx/length*f.charge*35,y:edge.y+dy/length*f.charge*35};f.water=f.mineDepth?mineCastWater(game,f.shore,f.charge):touchesLandform(f.shore.lake,water.x,water.y)?water:edge;
   f.phase='casting';f.elapsed=0;f.wait=3+(game.random?.()??Math.random())*3;f.species=sampleFishingOdds(f.odds,game.random?.()??Math.random()).index;
   const fish=FISH_SPECIES[f.species];f.size=Math.round((fish.minSize+(game.random?.()??Math.random())*(fish.maxSize-fish.minSize))*10)/10;f.message='浮漂入水，等它稳定下来。';return true;
  }return false;
@@ -139,6 +141,7 @@ export function finishFishing(game,keep){
  const fish=FISH_SPECIES[f.species],next=validateProgress(structuredClone(game.progress));
  if(Object.values(next.outdoors.fish).reduce((a,b)=>a+b,0)>=R.maxFish)return {ok:false,message:'鱼护已满，先出售鱼获或放流。'};
  const record=next.outdoors.collection[fish.id],first=record.count===0;record.count++;record.best=Math.max(record.best,f.size);
+ creditFishingSurvey(next.outdoors.surveys,f.lake?.id,fish.id);
  next.outdoors.fish[fish.id]++;next.outdoors.caught++;next.outdoors.best=Math.max(next.outdoors.best,f.size);
  if(catLoad(Object.assign(Object.create(game),{progress:next})).overloaded)return {ok:false,message:'背包负重不足，可以放流或先收好其他物品。'};
  const result=commit(game,next,`${fish.name} ${f.size} 厘米，已放入鱼护。`);if(result.ok){game.fishing=null;result.catch={id:fish.id,size:f.size,first};}return result;
@@ -161,13 +164,31 @@ export function updateOutdoors(game,dt){
  else if(f.phase==='nibble'&&f.elapsed>=1.5){f.phase='bite';f.elapsed=0;f.message='黑漂！现在扬竿！';game.onEvent('fishing-bite');}
  else if(f.phase==='bite'&&f.elapsed>R.biteSeconds){f.phase='missed';f.elapsed=0;f.message='晚了一点，鱼儿已经吐饵。';}
  else if(f.phase==='fight'){
-  const fish=FISH_SPECIES[f.species];f.pull=.5+.5*Math.sin(f.elapsed*1.8+f.species);f.direction=Math.sin(f.elapsed*1.3+f.species)>.0?1:-1;
+  const fish=FISH_SPECIES[f.species],behavior=fishStruggle(fish,f.elapsed);f.behavior=behavior;f.pull=behavior.pull;f.direction=behavior.direction;
   const counter=f.lean*f.direction<-.25;
   f.tension=Math.max(0,Math.min(1.1,f.tension+dt*(f.reeling?.1+f.pull*.22*fish.strength/(FISHING_RODS[f.rodId]?.control||1)-(counter?.12:0):-.3)));
-  f.progress=Math.max(0,Math.min(1,f.progress+dt*(f.reeling&&f.tension<.88?.095+(counter?.025:0):-.018)));
+  f.progress=Math.max(0,Math.min(1,f.progress+dt*(f.reeling&&f.tension<.88?(.095*behavior.speed+(counter?(behavior.kind==='weave'?.055:.025):0)): -.018)));
   f.slack=f.tension<.04?(f.slack||0)+dt:0;
   if(f.tension>=1||f.slack>3||f.elapsed>65){f.phase='missed';f.elapsed=0;f.message=f.tension>=1?'鱼线绷断了，下次红区记得松手。':'鱼挣脱了，保持适度张力再试一次。';}
   else if(f.progress>=1){f.phase='landed';f.elapsed=0;f.reeling=false;f.message=`钓到了${fish.name}！${f.size} 厘米，收进鱼护还是放流？`;game.onEvent('fishing-caught');}
-  else f.message=f.tension>.76?'绷得太紧！松手放线。':f.pull>.72?`鱼儿向${f.direction>0?'右':'左'}冲刺，适时松线稳住竿梢。`:`按住收线，向${f.direction>0?'左':'右'}压竿抵住鱼的拉力。`;
+  else f.message=behavior.name+' · '+(f.tension>.76?'绷得太紧！松手放线。':behavior.warning?behavior.warning:f.pull>.72?`鱼儿向${f.direction>0?'右':'左'}冲刺，适时松线稳住竿梢。`:`按住收线，向${f.direction>0?'左':'右'}压竿抵住鱼的拉力。`);
  }else if(f.phase==='missed'&&f.elapsed>2.3){game.fishing=null;game.outdoorNotice=f.message;}
+}
+
+// 接取时锁定所在水域和低阶常住目标；所有操作先保存，不能用旧鱼护完成新委托。
+export function acceptFishingSurvey(game){
+ if(!['playing','paused'].includes(game.state)||outdoorBusy(game))return {ok:false,message:'请先收竿，再接取调查。'};
+ if(game.progress.outdoors.surveys.active)return {ok:false,message:'已有进行中的湖泊调查。'};
+ const preview=fishingPreview(game);if(!preview.lake||preview.shore.distance>R.castReach)return {ok:false,message:'请先走到真实湖岸接取当地调查。'};
+ const next=validateProgress(structuredClone(game.progress)),lake=preview.lake,pool=lakeFishPool(lake),target=pool.map(i=>FISH_SPECIES[i]).filter(f=>f.tier===1)[next.outdoors.surveys.completed%2];
+ next.outdoors.surveys.active={lakeId:lake.id,water:lake.water,depth:lake.depth,x:lake.x,y:lake.y,target:target.id,count:0,species:[]};
+ return commit(game,next,'已接取当地湖泊调查，收进鱼护的鱼会记录进度。');
+}
+// 领奖不消耗鱼获；清空当前委托与发奖原子保存，重复点击不能重复领奖。
+export function claimFishingSurvey(game){
+ if(!['playing','paused'].includes(game.state)||outdoorBusy(game))return {ok:false,message:'请先收竿，再领取调查奖励。'};
+ const state=game.progress.outdoors.surveys,def=fishingSurveyDefinition(state);if(!state.active||fishingSurveyProgress(state)<def.goal)return {ok:false,message:'调查尚未完成。'};
+ if(game.progress.coins+def.reward>RESOURCE_CAP)return {ok:false,message:'金币接近上限，请先使用部分金币。'};
+ const next=validateProgress(structuredClone(game.progress));next.coins+=def.reward;next.outdoors.surveys.completed++;next.outdoors.surveys.active=null;
+ return commit(game,next,`调查完成，获得 ${def.reward} 金币。可以前往另一座湖接取新调查。`);
 }

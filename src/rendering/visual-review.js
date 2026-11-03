@@ -1988,6 +1988,12 @@ export async function inspectSprinklerBackpack(game,root=document){
 
 // 百鱼钓具验收直接读取正式选择、真实概率池与当前页面画布预算。
 export async function inspectHundredFishTackle(game,renderer,root=document){
- const {FISH_SPECIES}=await import('../config/fish-catalog.js'),{fishingSetup,fishingOdds}=await import('../core/fishing-tackle.js'),setup=fishingSetup(game);
- return {designCriterion:'hundred-fish-tackle',species:FISH_SPECIES.length,setup,odds:fishingOdds(setup.rodId,setup.baitId,setup.water).map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],portraits:root.querySelectorAll('#codex-content canvas').length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+ const {FISH_SPECIES}=await import('../config/fish-catalog.js'),{fishingSetup}=await import('../core/fishing-tackle.js'),{fishingPreview}=await import('../core/lake-fishing.js'),setup=fishingSetup(game);
+ return {designCriterion:'hundred-fish-tackle',species:FISH_SPECIES.length,setup,odds:fishingPreview(game).odds.map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],portraits:root.querySelectorAll('#codex-content canvas').length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}
+
+// 独立湖泊验收读取正式鱼群、锁定概率与调查存档，不创建另一套预览鱼。
+export async function inspectLakeEcologySurveys(game,renderer,root=document){
+ const {fishingPreview}=await import('../core/lake-fishing.js'),preview=fishingPreview(game),f=game.fishing;
+ return {designCriterion:'lake-ecology-surveys',lake:preview.lake,odds:(f?.odds||preview.odds).map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],behavior:f?.behavior,phase:f?.phase,surveys:structuredClone(game.progress.outdoors.surveys),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
 }
