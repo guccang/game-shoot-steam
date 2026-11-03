@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {CLICK_BUILDINGS,approachBuilding,buildingContains,approachCottageTarget,updateSceneApproach} from '../src/core/scene-approach.js';
+import {CLICK_BUILDINGS,approachBuilding,buildingContains,approachCottageTarget,updateSceneApproach,cottageClickTargets} from '../src/core/scene-approach.js';
 import {enterCottage,updateCottage,cottageBlocked} from '../src/core/cottage.js';
 import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
 import {driveBody} from '../src/physics/motion.js';
@@ -42,3 +42,13 @@ test('床点击绕过家具后候停睡觉，保存回血且醒来不重复',()=
 test('暂停冻结点击行走，手动方向接管取消，换层或重置清理旧意图',()=>{const game=scene(true);approachCottageTarget(game,'bed');game.state='paused';const before={x:game.player.x,y:game.player.y};for(let i=0;i<50;i++)step(game);assert.equal(game.sceneApproach.elapsed,0);assert.deepEqual({x:game.player.x,y:game.player.y},before);game.state='playing';step(game,{x:-1,y:0});assert.equal(game.sceneApproach,null);approachCottageTarget(game,'stairs');game.cottage.floor=1;step(game);assert.equal(game.sceneApproach,null);approachCottageTarget(game,'stairs');game.player={...game.player};step(game);assert.equal(game.sceneApproach,null);});
 test('未修复、楼上无床、睡眠和活动期间拒绝错误点击',()=>{const game=scene();game.progress.restoration.repaired=[];assert.equal(approachBuilding(game,'cottage'),false);game.progress.restoration.repaired=['cottage'];enterCottage(game);game.cottage.floor=1;assert.equal(approachCottageTarget(game,'bed'),false);game.cottage.sleep={elapsed:0};assert.equal(approachCottageTarget(game,'stairs'),false);game.cottage=null;game.story={};assert.equal(approachBuilding(game,'weapons'),false);});
 test('家具堵住目标时不穿透也不传送到楼梯',()=>{const game=scene(true);game.progress.homeDecor.items.push({uid:99,type:'weapon-rack',x:COTTAGE_STAIRS.landing.x,y:COTTAGE_STAIRS.landing.y,floor:0,weapons:[]});const start=game.player.x;assert.ok(approachCottageTarget(game,'stairs'));for(let i=0;i<100;i++)step(game);assert.equal(game.cottage.floor,0);assert.equal(game.player.x,start);assert.equal(game.sceneApproach,null);});
+
+// 中间层必须同时可点击上下楼，不再把所有楼梯点击都解释为向上。
+test('中间层场景下行入口真实走近并下楼，电梯替换后点击走近请求乘坐',()=>{
+ const g=scene(true);g.progress.homeDecor.floors=4;g.cottage.floor=2;
+ assert.deepEqual(cottageClickTargets(g).map(t=>t.id),['stairs-down','stairs-up']);
+ assert.ok(approachCottageTarget(g,'stairs-down'));until(g,()=>g.cottage.floor===1);assert.equal(cottageBlocked(g.player.x,g.player.y,g),false);
+ assert.ok(approachCottageTarget(g,'stairs-up'));until(g,()=>g.cottage.floor===2);
+ g.progress.homeDecor.elevators=[2];Object.assign(g.player,COTTAGE.spawn);assert.deepEqual(cottageClickTargets(g).map(t=>t.id),['elevator']);
+ assert.equal(approachCottageTarget(g,'stairs-down'),false);assert.ok(approachCottageTarget(g,'elevator'));until(g,()=>g.cottage.elevatorRequest===true);assert.equal(g.cottage.floor,2);
+});

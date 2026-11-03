@@ -1,4 +1,4 @@
-import {HOME_DIRECTIONS,HOME_ELEVATOR,homeFloors,floorBalconies} from '../config/home-construction.js';
+import {HOME_DIRECTIONS,HOME_ELEVATOR,floorBalconies,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {workshopInteriorView} from './workshop-interior.js';
 // 小屋正式绘制器：家具、窗景和角色共用局部坐标与脚底排序，无独立预览替身。
 import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
@@ -66,7 +66,7 @@ export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calend
  for(const item of items.filter(i=>['wall','curtain','rug'].includes(i.layer)))drawHomeDecor(c,item,night,g.progress.living.calendar,g.progress);
  // 门槛留空，出口地垫与下方出门按钮共同提示路线。
  if(!floor){box(c,COTTAGE.exit.x-37,COTTAGE.exit.y-18,74,22,4,'#8d9c77','#667d5b',1.5);c.fillStyle='#e5dfb6';c.font='12px sans-serif';c.textAlign='center';c.fillText('出门',COTTAGE.exit.x,COTTAGE.exit.y-2);}
- drawCottageStairs(c,floor,night,homeFloors(g.progress.homeDecor));
+ drawCottageStairs(c,floor,night,g.progress.homeDecor);
  drawHomeFacilities(c,g,night);
  for(const item of [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),...items.filter(i=>!i.layer||i.layer==='floor'),{id:'player',x:g.player.x,y:g.player.y}].sort((a,b)=>a.y-b.y)){
   if(item.id==='player')drawCat(c,item.x,item.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,reduced?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
@@ -77,24 +77,33 @@ export function drawCottageRoom(c,g,{night=calendarView(g.progress.living.calend
  if(g.cottage.sleep){c.fillStyle=`rgba(34,52,51,${Math.sin(Math.min(1,g.cottage.sleep.elapsed/1.2)*Math.PI)*.65})`;c.fillRect(0,0,w,h-10);c.fillStyle='#fff0c9';c.font='bold 19px sans-serif';c.fillText('好梦',w/2,h/2);}
 }
 
-// 双层共用斜踏步与扶手，楼层牌明确提示上楼或下楼，前方留出落脚空间。
-function drawCottageStairs(c,floor,night,floors){
- const s=COTTAGE_STAIRS;c.save();c.translate(s.x,s.y);
- box(c,-40,-60,80,121,5,night?'#8e795f':'#a98962','#536c51',2);
- for(let i=0;i<7;i++){const yy=-53+i*15;box(c,-31,yy,62,14,2,i%2?'#ccae7e':'#dcc493','#79674a',1.5);}
- for(const x of [-39,33]){box(c,x,-67,6,129,2,'#e0c596','#536c51',1.5);for(const y of [-58,-8,50])box(c,x-1,y,8,12,2,'#b99262','#536c51',1);}
- box(c,-42,68,84,24,5,'#e7dfb4','#536c51',1.5);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#315c43';c.fillText(floor+1<floors?`↑ 第 ${floor+2} 楼`:`↓ 第 ${floor} 楼`,0,84);c.restore();
+// 同一梯位分为北侧下行梯井和南侧上行踏步；中间楼层两个入口同时可见。
+function drawCottageStairs(c,floor,night,home){
+ const routes=homeStairRoutes(home,floor);if(!routes.length)return;
+ // 首层或顶层只有一个出口时，仍画出完整梯井底板，实体碰撞不会落在看似空地的位置。
+ box(c,COTTAGE_STAIRS.x-40,COTTAGE_STAIRS.y-61,80,124,5,night?'#927b5d':'#b99b72','#536c51',2);
+ for(const route of routes){
+  const down=route.id==='stairs-down';c.save();c.translate(route.x,route.artY);
+  box(c,-40,-30,80,60,5,down?'#526b54':night?'#8e795f':'#a98962','#536c51',2);
+  for(let i=0;i<4;i++){const yy=-22+i*12,inset=down?(3-i)*4:0;box(c,-30+inset,yy,60-inset*2,10,1,down?['#7d8968','#a1936c','#bba479','#d5bf8e'][i]:i%2?'#ccae7e':'#dcc493','#79674a',1.3);}
+  for(const x of [-39,33])box(c,x,-34,6,67,2,'#e0c596','#536c51',1.5);
+  const labelY=down?-43:34;box(c,-41,labelY,82,22,4,'#e7dfb4','#536c51',1.5);c.textAlign='center';c.font='bold 12px sans-serif';c.fillStyle='#315c43';c.fillText(`${down?'↓':'↑'} ${route.target+1} 楼`,0,labelY+15);c.restore();
+ }
 }
 
-// 电梯预留在左侧，四向门用实际通行坐标标记，不画无法进入的装饰阳台。
+// 电梯替换右侧梯位，开门进度随候停时钟；四向阳台门仍使用真实通行坐标。
 function drawHomeFacilities(c,g,night){
  const home=g.progress.homeDecor;
- if(home.elevator){const {x,y}=HOME_ELEVATOR;
+ if(hasHomeElevator(home,cottageFloor(g.cottage))){const {x,y}=HOME_ELEVATOR;
   box(c,x-35,y-53,70,99,6,'#739486','#3f6451',2);
-  box(c,x-28,y-44,56,84,3,night?'#a8af9a':'#d4dbc2','#47694e',1.5);
-  box(c,x-1,y-43,2,82,0,'#6a8270');
+  box(c,x-28,y-44,56,84,3,'#3e5b4c','#47694e',1.5);
+  const opening=Math.min(1,g.cottage.elevatorElapsed||0)*15;
+  // 门扇保持原宽，向两侧滑入门框；裁切隐藏收进墙内的部分，不缩放整扇门。
+  c.save();c.beginPath();c.rect(x-28,y-44,56,84);c.clip();
+  for(const side of [-1,1])box(c,side<0?x-28-opening:x+opening,y-44,28,84,2,night?'#a8af9a':'#d4dbc2','#47694e',1.5);
+  c.restore();
   box(c,x-37,y+63,74,25,5,'#eee3bb','#526d50',1.5);
-  c.fillStyle='#315c43';c.textAlign='center';c.font='bold 12px sans-serif';c.fillText('电梯 · 选楼层',x,y+80);
+  c.fillStyle='#315c43';c.textAlign='center';c.font='bold 12px sans-serif';c.fillText('电梯 · 乘坐',x,y+80);
  }
  for(const side of floorBalconies(home,cottageFloor(g.cottage))){const {door,name}=HOME_DIRECTIONS[side];
   box(c,door.x-27,door.y-24,54,43,5,night?'#82988a':'#b8cfb1','#48694e',2);

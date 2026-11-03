@@ -2,7 +2,7 @@
 import {RANGER_COTTAGE} from '../world/workshop.js';
 export const COTTAGE={door:{x:RANGER_COTTAGE.x,y:RANGER_COTTAGE.y+12},wait:1,exitWait:1,radius:26,clickRadius:155,width:480,height:560,spawn:{x:240,y:490},exit:{x:240,y:538},exitRadius:26,bed:{x:105,y:157},bedRadius:65,bedWait:1};
 // 各层共用同一楼梯和落脚点，摆放时保留梯身与前方通道。
-export const COTTAGE_STAIRS={id:'stairs',x:410,y:410,width:76,height:110,landing:{x:410,y:490},radius:48,wait:1};
+export const COTTAGE_STAIRS={id:'stairs',x:410,y:410,width:76,height:110,landing:{x:410,y:490},downLanding:{x:410,y:320},radius:28,wait:1};
 // 每层独立布置；只有一楼设床和室外出口。
 export function cottageFloor(room){return Number.isSafeInteger(room?.floor)&&room.floor>=0?room.floor:0;}
 export const COTTAGE_FURNITURE=[

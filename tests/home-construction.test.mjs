@@ -7,7 +7,7 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY} from '../src/config/home-construction.js';
+import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,hasHomeElevator,homeStairRoutes} from '../src/config/home-construction.js';
 import {buildHome,travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from '../src/core/home-construction.js';
 import {enterWorkshop,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/cottage.js';
 import {buyDecor,moveDecor} from '../src/core/home-decor.js';
@@ -31,7 +31,7 @@ test('施工仅限公司，扣料一次，设施重复购买不扣款，重载�
  for(const kind of ['floor','elevator','balcony'])assert.ok(buildHome(g,kind,{floor:2,side:'east'}).ok);
  assert.equal(g.progress.homeDecor.floors,3);assert.equal(g.progress.coins,before.coins-10500);assert.equal(g.progress.wood,before.wood-1400);
  const home=structuredClone(g.progress.homeDecor),coins=g.progress.coins;
- assert.equal(buildHome(g,'elevator').ok,false);assert.equal(buildHome(g,'balcony',{floor:2,side:'east'}).ok,false);assert.equal(g.progress.coins,coins);
+ assert.equal(buildHome(g,'elevator',{floor:2}).ok,false);assert.equal(buildHome(g,'balcony',{floor:2,side:'east'}).ok,false);assert.equal(g.progress.coins,coins);
  assert.deepEqual(validateProgress(g.progress).homeDecor,home);
  g.cottage.kind='cottage';assert.equal(buildHome(g,'floor').ok,false);
 });
@@ -40,7 +40,7 @@ test('低余额、非法楼层、朝向与保存异常都原子回滚',()=>{
  g.livingPersist=()=>true;for(const floor of [-1,2,1.5,NaN,Infinity])assert.equal(buildHome(g,'balcony',{floor}).ok,false);
  assert.equal(buildHome(g,'toString').ok,false);assert.equal(buildHome(g,'balcony',{floor:0,side:'toString'}).ok,false);g.progress.wood=HOME_BUILD_PRICES.floor.wood-1;const coins=g.progress.coins;assert.equal(buildHome(g,'floor').ok,false);assert.equal(g.progress.coins,coins);
 });
-test('百万楼层继续加盖，存档只记录实际家具，新增层自动接通电梯',()=>{
+test('百万楼层继续加盖，存档只记录实际家具，新增层保留楼梯且已装层电梯可直达',()=>{
  const g=setup();g.progress.homeDecor.floors=1000000;assert.ok(buildHome(g,'floor').ok);assert.ok(buildHome(g,'elevator').ok);
  g.cottage.kind='furniture';const item=buyDecor(g,'weapon-rack');assert.ok(item.ok);g.cottage.kind='cottage';Object.assign(g.player,HOME_ELEVATOR.landing);
  assert.ok(travelHomeFloor(g,1000000,'elevator'));assert.ok(moveDecor(g,item.uid,180,288).ok);
@@ -48,12 +48,12 @@ test('百万楼层继续加盖，存档只记录实际家具，新增层自动�
 });
 test('楼梯只能相邻切层，电梯须安装且靠近，不可越层或在阳台远程乘梯',()=>{
  const g=setup();buildHome(g,'floor');g.cottage.kind='cottage';Object.assign(g.player,COTTAGE.spawn);assert.equal(travelHomeFloor(g,1),false);
- Object.assign(g.player,COTTAGE_STAIRS.landing);assert.equal(travelHomeFloor(g,2),false);assert.ok(travelHomeFloor(g,1));assert.ok(travelHomeFloor(g,2));assert.equal(leaveCottage(g),false);assert.ok(travelHomeFloor(g,1));
- Object.assign(g.player,HOME_ELEVATOR.landing);assert.equal(travelHomeFloor(g,0,'elevator'),false);g.progress.homeDecor.elevator=true;assert.ok(travelHomeFloor(g,0,'elevator'));assert.equal(travelHomeFloor(g,3,'elevator'),false);g.cottage.balcony='north';assert.equal(travelHomeFloor(g,1,'elevator'),false);
+ Object.assign(g.player,COTTAGE_STAIRS.landing);assert.equal(travelHomeFloor(g,2),false);assert.ok(travelHomeFloor(g,1));Object.assign(g.player,COTTAGE_STAIRS.landing);assert.ok(travelHomeFloor(g,2));assert.equal(leaveCottage(g),false);assert.ok(travelHomeFloor(g,1));
+ Object.assign(g.player,HOME_ELEVATOR.landing);assert.equal(travelHomeFloor(g,0,'elevator'),false);g.progress.homeDecor.elevators=[1];assert.ok(travelHomeFloor(g,0,'elevator'));assert.equal(travelHomeFloor(g,3,'elevator'),false);g.cottage.balcony='north';assert.equal(travelHomeFloor(g,1,'elevator'),false);
 });
-test('三层楼梯候停默认逐层向上，顶层下楼且不会连续跳层',()=>{
+test('三层楼梯分别走上行与下行入口，落地不会连续跳层',()=>{
  const g=setup();buildHome(g,'floor');g.cottage.kind='cottage';Object.assign(g.player,COTTAGE_STAIRS.landing);tick(g,21);assert.equal(g.cottage.floor,1);tick(g,60);assert.equal(g.cottage.floor,1);
- for(const target of [2,1]){Object.assign(g.player,{x:320,y:490});tick(g,1);Object.assign(g.player,COTTAGE_STAIRS.landing);tick(g,1);assert.equal(playerActionCountdown(g).icon,target===2?'stairs-up':'stairs-down');tick(g,20);assert.equal(g.cottage.floor,target);}
+ for(const target of [2,1]){Object.assign(g.player,{x:320,y:490});tick(g,1);Object.assign(g.player,target>g.cottage.floor?COTTAGE_STAIRS.landing:COTTAGE_STAIRS.downLanding);tick(g,1);assert.equal(playerActionCountdown(g).icon,target===2?'stairs-up':'stairs-down');tick(g,20);assert.equal(g.cottage.floor,target);}
 });
 test('四向阳台门均可走到并进出，行走受栏杆限制，返回同一层',()=>{
  for(const side of Object.keys(HOME_DIRECTIONS)){
@@ -93,4 +93,38 @@ test('公司与小屋停车位的倒车入口分离',()=>{
  assert.ok(planQuestRoute({...body,x:390,y:729},WORKSHOP_INTERIORS.construction.door,g.trees,24000).reachable);
  assert.ok(planQuestRoute({...body,navigationRadius:32,x:390,y:729},{x:spot.x,y:spot.approachY},g.trees,24000).reachable);
  assert.equal(blocked(680,545,12,g.trees,body),false,'青芽原岗位仍可站立');
+});
+
+// 按层计价、拆除、重装及回滚必须同时约束存档和钱包。
+test('电梯逐层收费，拆除只恢复本层楼梯且不退款，失败不改变任何设施',()=>{
+ const g=setup(),before=g.progress.coins;buildHome(g,'floor');
+ assert.ok(buildHome(g,'elevator',{floor:0}).ok);assert.ok(buildHome(g,'elevator',{floor:2}).ok);
+ assert.equal(g.progress.coins,before-HOME_BUILD_PRICES.floor.coins-HOME_BUILD_PRICES.elevator.coins*2);
+ assert.deepEqual(g.progress.homeDecor.elevators,[0,2]);assert.equal(hasHomeElevator(g.progress.homeDecor,1),false);
+ const saved=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(buildHome(g,'remove-elevator',{floor:2}).ok,false);assert.deepEqual(g.progress,saved);
+ g.livingPersist=()=>true;assert.ok(buildHome(g,'remove-elevator',{floor:2}).ok);assert.equal(g.progress.coins,saved.coins);assert.deepEqual(g.progress.homeDecor.elevators,[0]);
+ assert.equal(buildHome(g,'remove-elevator',{floor:2}).ok,false);assert.ok(buildHome(g,'elevator',{floor:2}).ok);assert.equal(g.progress.coins,saved.coins-HOME_BUILD_PRICES.elevator.coins);
+ assert.deepEqual(validateProgress(g.progress).homeDecor.elevators,[0,2]);
+ for(const floor of [-1,3,1.5,NaN,Infinity])for(const kind of ['elevator','remove-elevator'])assert.equal(buildHome(g,kind,{floor}).ok,false);
+});
+// 旧档一次购买只对应一楼；新档显式空数组不能再次被旧布尔值恢复。
+test('电梯旧档迁移、坏数据清洗与百万层稀疏保存',()=>{
+ const legacy=normalizeHome({floors:1000001,elevator:true,items:[]},{});assert.deepEqual(legacy.elevators,[0]);assert.ok(JSON.stringify(legacy).length<200);
+ const home=normalizeHome({floors:1000001,elevator:true,elevators:[0,3,3,1000000,-1,1.5,1000001,'2',null],items:[]},{});
+ assert.deepEqual(home.elevators,[0,3,1000000]);assert.deepEqual(normalizeHome({...home,elevator:true,elevators:[]},{}).elevators,[]);
+});
+// 同一梯位只提供一种交通，已付费的出发层可到未付费的目标层，再用楼梯返回。
+test('电梯与楼梯同位置互斥，乘梯落到未付费层后可下楼返回',()=>{
+ const g=setup();g.progress.homeDecor.floors=4;buildHome(g,'elevator',{floor:0});g.cottage.kind='cottage';Object.assign(g.player,HOME_ELEVATOR.landing);
+ assert.equal(homeStairRoutes(g.progress.homeDecor,0).length,0);assert.equal(travelHomeFloor(g,1,'stairs'),false);assert.ok(travelHomeFloor(g,3,'elevator'));
+ assert.equal(cottageBlocked(g.player.x,g.player.y,g),false);assert.equal(travelHomeFloor(g,0,'elevator'),false);
+ for(const target of [2,1,0]){Object.assign(g.player,COTTAGE_STAIRS.downLanding);assert.ok(travelHomeFloor(g,target));}
+ assert.equal(g.cottage.floor,0);assert.deepEqual({x:g.player.x,y:g.player.y},HOME_ELEVATOR.landing);
+});
+// 候停电梯与楼梯使用相同的一秒规则，关闭乘梯页后不在原地反复打开。
+test('走到电梯前候停请求选层，暂停冻结、移动取消、落地闩锁有效',()=>{
+ const g=setup();buildHome(g,'elevator',{floor:0});g.cottage.kind='cottage';Object.assign(g.player,HOME_ELEVATOR.landing);
+ tick(g,8);const elapsed=g.cottage.elevatorElapsed;g.state='paused';tick(g,30);assert.equal(g.cottage.elevatorElapsed,elapsed);g.state='playing';tick(g,1,{x:-1,y:0});assert.equal(g.cottage.elevatorElapsed,null);
+ Object.assign(g.player,HOME_ELEVATOR.landing);tick(g,21);assert.equal(g.cottage.elevatorRequest,true);assert.equal(g.cottage.floor,0);
+ g.cottage.elevatorRequest=false;tick(g,80);assert.equal(g.cottage.elevatorRequest,false);Object.assign(g.player,COTTAGE.spawn);tick(g,1);Object.assign(g.player,HOME_ELEVATOR.landing);tick(g,21);assert.equal(g.cottage.elevatorRequest,true);
 });

@@ -1,21 +1,21 @@
 // 小屋家具存档与摆放几何共用规则；非法位置转入收纳，不丢失已购家具。
-import {homeFloors,HOME_ELEVATOR,HOME_DIRECTIONS} from '../config/home-construction.js';
+import {homeFloors,HOME_ELEVATOR,HOME_DIRECTIONS,elevatorFloors,hasHomeElevator} from '../config/home-construction.js';
 import {HOME_STARTERS,HOME_LIMIT,HOME_PLANTS,decorDefinition} from '../config/home-decor.js';
 import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS} from '../config/cottage.js';
 import {LIVING_DAY_MS} from '../config/living-world.js';
 
 // 新小屋默认两层和四件家具，新增楼层只保存实际摆放的内容。
-export function freshHome(){return {version:1,floors:2,elevator:false,balconies:{},nextId:5,items:HOME_STARTERS.map((d,i)=>({uid:i+1,type:d.id,x:d.x,y:d.y,plant:null,floor:0,weapons:[]}))};}
+export function freshHome(){return {version:2,floors:2,elevators:[],balconies:{},nextId:5,items:HOME_STARTERS.map((d,i)=>({uid:i+1,type:d.id,x:d.x,y:d.y,plant:null,floor:0,weapons:[]}))};}
 // 只把有合法落点的家具送入场景，宽高始终来自正式配置。
 export function placedDecor(home,floor=0){return (home?.items||[]).filter(i=>(i.floor||0)===floor&&Number.isFinite(i.x)&&Number.isFinite(i.y)&&decorDefinition(i.type)).map(i=>({...decorDefinition(i.type),...i}));}
 // 原床固定保留；挂件与地毯不阻挡脚底。
-export function homeFurniture(home,floor=0){return [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),COTTAGE_STAIRS,...(home?.elevator?[HOME_ELEVATOR]:[]),...placedDecor(home,floor).filter(i=>i.layer==='floor')];}
+export function homeFurniture(home,floor=0){return [...(floor===0?[COTTAGE_FURNITURE[0]]:[]),hasHomeElevator(home,floor)?HOME_ELEVATOR:COTTAGE_STAIRS,...placedDecor(home,floor).filter(i=>i.layer==='floor')];}
 // 家具碰撞与正式室内行走一致，给猫身体预留十个逻辑单位。
 function blocked(x,y,furniture){return x<22||x>COTTAGE.width-22||y<76||y>COTTAGE.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
 // 从门内落点寻路到床边和出口，拒绝把小屋隔成无法通行的区域。
 function hasPath(furniture,player,floor){
  const start=COTTAGE.spawn,queue=[[start.x,start.y]],seen=new Set([start.x+','+start.y]);let bed=floor>0,exit=floor>0,stairs=false,reachable=!player;
- const access=[HOME_ELEVATOR.landing,...Object.values(HOME_DIRECTIONS).map(d=>d.door)],reached=new Set();
+ const access=[COTTAGE_STAIRS.downLanding,...Object.values(HOME_DIRECTIONS).map(d=>d.door)],reached=new Set();
  if(blocked(start.x,start.y,furniture))return false;
  for(let n=0;n<queue.length;n++){
   const [x,y]=queue[n];for(let i=0;i<access.length;i++)if(Math.hypot(x-access[i].x,y-access[i].y)<=28)reached.add(i);if(Math.hypot(x-119,y-158)<18)bed=true;if(Math.hypot(x-COTTAGE.exit.x,y-COTTAGE.exit.y)<18)exit=true;if(Math.hypot(x-COTTAGE_STAIRS.landing.x,y-COTTAGE_STAIRS.landing.y)<18)stairs=true;if(player&&Math.hypot(x-player.x,y-player.y)<18)reachable=true;if(bed&&exit&&stairs&&reachable&&reached.size===access.length)return true;
@@ -38,10 +38,9 @@ export function placementError(home,uid,x,y,player,floor=0){
   if(floor===0&&Math.abs(x-bed.x)<(d.width+bed.width)/2+2&&Math.abs(y-bed.y)<(d.height+bed.height)/2+2)return '请留出床的位置。';
   if(player&&blocked(player.x,player.y,[f]))return '这里是猫猫站的位置，请先挪开家具。';
   if(Math.abs(x-stairs.x)<(d.width+stairs.width)/2+8&&Math.abs(y-stairs.y)<(d.height+stairs.height)/2+28)return '请留出楼梯和楼梯前的通道。';
-  // 电梯及四向阳台门通道预先留空，后装设施不会把家具或玩家封住。
-  if(Math.abs(x-HOME_ELEVATOR.x)<(d.width+HOME_ELEVATOR.width)/2+8&&Math.abs(y-HOME_ELEVATOR.y)<(d.height+HOME_ELEVATOR.height)/2+28)return '请留出电梯预留位置。';
+  // 电梯共用梯位，北侧下楼落点与四向阳台门都须保持可达。
   if(Object.values(HOME_DIRECTIONS).some(({door})=>Math.abs(x-door.x)<d.width/2+30&&Math.abs(y-door.y)<d.height/2+30))return '请留出阳台门通道。';
-  if(!hasPath([...(floor===0?[bed]:[]),stairs,...(home.elevator?[HOME_ELEVATOR]:[]),...other.filter(i=>i.layer==='floor'),f],player,floor))return '请留出通往床边、楼梯和门口的路。';
+  if(!hasPath([...(floor===0?[bed]:[]),hasHomeElevator(home,floor)?HOME_ELEVATOR:stairs,...other.filter(i=>i.layer==='floor'),f],player,floor))return '请留出通往床边、楼梯和门口的路。';
  }
  return '';
 }
@@ -58,7 +57,7 @@ export function plantState(item,calendar){
 // 防止未知类型、重复实例及损坏坐标污染正式绘制与购买上限。
 export function normalizeHome(raw,calendar){
  if(!raw||!Array.isArray(raw.items))return freshHome();
- const home={version:1,floors:homeFloors(raw),elevator:raw.elevator===true,balconies:{},nextId:1,items:[]},seen=new Set(),now=homeTime(calendar);
+ const home={version:2,floors:homeFloors(raw),elevators:elevatorFloors(raw),balconies:{},nextId:1,items:[]},seen=new Set(),now=homeTime(calendar);
  for(const [key,sides] of Object.entries(raw.balconies||{})){const floor=Number(key);if(Number.isSafeInteger(floor)&&floor>=0&&floor<home.floors&&Array.isArray(sides))home.balconies[floor]=[...new Set(sides.filter(d=>Object.hasOwn(HOME_DIRECTIONS,d)))];}
  for(const source of raw.items.slice(0,HOME_LIMIT*home.floors)){
   if(!source||!decorDefinition(source.type)||!Number.isSafeInteger(source.uid)||source.uid<1||source.uid>1000000000||seen.has(source.uid))continue;

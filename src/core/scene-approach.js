@@ -1,12 +1,12 @@
 // 场景短按只安排真实行走；抵达后的入屋、上楼和睡眠仍由正式候停规则提交。
-import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
+import {COTTAGE,COTTAGE_FURNITURE,cottageFloor} from '../config/cottage.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
 import {CLICK_BUILDINGS,SCENE_APPROACH as A} from '../config/scene-approach.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 import {canInspectBuilding} from './building-entry.js';
 import {canEnterCottage,cottageBlocked} from './cottage.js';
 import {facilityOpen} from '../config/town-restoration.js';
-import {homeExterior} from '../config/home-construction.js';
+import {homeExterior,HOME_ELEVATOR,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {createQuestRouteSearch} from '../physics/quest-route.js';
 import {playerNavigationBody} from './prepared-navigation.js';
 import {farmMode} from './farm.js';
@@ -23,7 +23,8 @@ export function buildingClickHeight(building,game){return building.id==='cottage
 export function cottageClickTargets(game){
  const room=game.cottage;if(!room||room.kind!=='cottage'||room.balcony||room.sleep||game.player.hp<=0)return [];
  const bed=COTTAGE_FURNITURE[0];
- return [{id:'stairs',label:'走到楼梯上下楼',x:COTTAGE_STAIRS.x,y:COTTAGE_STAIRS.y,width:COTTAGE_STAIRS.width,height:COTTAGE_STAIRS.height+A.stairsExtraHeight,goal:COTTAGE_STAIRS.landing},...(!cottageFloor(room)?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
+ const floor=cottageFloor(room),home=game.progress.homeDecor,transit=hasHomeElevator(home,floor)?[{...HOME_ELEVATOR,label:'走到电梯乘坐',y:425,width:84,height:170,goal:HOME_ELEVATOR.landing}]:homeStairRoutes(home,floor);
+ return [...transit,...(!floor?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
 }
 // 一个意图只属于当前角色、地图和楼层；不写入存档，不跨场景继续移动。
 function request(game,id,goal){
@@ -39,9 +40,12 @@ export function approachBuilding(game,id){
 }
 // 再次明确点击可重新上下楼或睡觉，切层与醒来仍自动锁住重复触发。
 export function approachCottageTarget(game,id){
+ // 旧调用的楼梯标识只作兼容；正式场景始终分别给出向上与向下的目标。
+ if(id==='stairs'){const targets=cottageClickTargets(game);id=targets.find(t=>t.id==='stairs-up')?.id||'stairs-down';}
  const item=cottageClickTargets(game).find(item=>item.id===id);if(!item||!request(game,id,item.goal))return false;
  game.cottage.storageNotice='';game.cottage.restResult='';
- if(id==='stairs'){game.cottage.stairsLatch=false;game.cottage.stairsElapsed=null;}
+ if(id.startsWith('stairs-')){game.cottage.stairsLatch=false;game.cottage.stairsElapsed=null;game.cottage.stairsTarget=item.target;}
+ else if(id==='elevator'){game.cottage.elevatorLatch=false;game.cottage.elevatorElapsed=null;game.cottage.elevatorRequest=false;}
  else {game.cottage.bedLatch=false;game.cottage.restElapsed=null;}
  return true;
 }

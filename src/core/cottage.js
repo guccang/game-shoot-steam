@@ -1,5 +1,5 @@
 import {travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from './home-construction.js';
-import {HOME_BALCONY,HOME_DIRECTIONS,floorBalconies,homeFloors} from '../config/home-construction.js';
+import {HOME_BALCONY,HOME_DIRECTIONS,HOME_ELEVATOR,floorBalconies,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {bossCombatActive} from './boss-engagement.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {dismountVehicle} from '../combat/vehicle.js';
@@ -62,7 +62,7 @@ export function updateCottage(game,dt,input){
  if(game.cottage){
   if(game.state!=='playing')return true;
   const room=game.cottage,p=game.player,layout=interiorLayout(room);
-  if(room.sleep){room.stairsElapsed=null;room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
+  if(room.sleep){room.stairsElapsed=null;room.elevatorElapsed=null;room.elevatorRequest=false;room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
   const before={x:p.x,y:p.y},length=Math.max(1,Math.hypot(input.x,input.y)),speed=115*movementLoadFactor(game),dx=input.x/length*speed*dt,dy=input.y/length*speed*dt;
   if(!cottageBlocked(p.x+dx,p.y,game))p.x+=dx;if(!cottageBlocked(p.x,p.y+dy,game))p.y+=dy;
   p.vx=(p.x-before.x)/Math.max(dt,.001);p.vy=(p.y-before.y)/Math.max(dt,.001);
@@ -134,16 +134,30 @@ function finishCottageSleep(game){
  game.cottage.restResult=game.cottage.notice=`HP 已恢复至满值（${hp}/${hp}）`;game.onEvent('cottage-change');
 }
 
-// 连续站定一秒才上下楼，首次采样不计时；切层落地后先移开才允许再次触发。
+// 双向入口分别候停，方向改变重启计时；电梯替换本层楼梯并打开真实乘梯服务。
 function updateCottageStairs(game,dt,input){
- const room=game.cottage,near=Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)<=COTTAGE_STAIRS.radius;
- if(!near)room.stairsLatch=false;
- if(room.kind!=='cottage'||game.player.hp<=0||!near||room.stairsLatch||Math.hypot(input.x,input.y)>.01){room.stairsElapsed=null;return false;}
- const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.stairsElapsed=room.stairsElapsed==null?0:room.stairsElapsed+tick;
+ const room=game.cottage,home=game.progress.homeDecor,floor=cottageFloor(room),moving=Math.hypot(input.x,input.y)>.01;
+ if(room.kind!=='cottage'||game.player.hp<=0){room.stairsElapsed=null;room.stairsTarget=null;room.elevatorElapsed=null;room.elevatorRequest=false;return false;}
+ const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;
+ if(hasHomeElevator(home,floor)){
+  room.stairsElapsed=null;room.stairsTarget=null;
+  const near=Math.hypot(game.player.x-HOME_ELEVATOR.landing.x,game.player.y-HOME_ELEVATOR.landing.y)<=HOME_ELEVATOR.radius;
+  if(!near)room.elevatorLatch=false;
+  if(!near||moving||room.elevatorLatch){room.elevatorElapsed=null;return false;}
+  room.elevatorElapsed=room.elevatorElapsed==null?0:room.elevatorElapsed+tick;
+  if(room.elevatorElapsed+1e-9<COTTAGE_STAIRS.wait)return false;
+  room.elevatorElapsed=null;room.elevatorLatch=true;room.elevatorRequest=true;return true;
+ }
+ room.elevatorElapsed=null;room.elevatorRequest=false;
+ const route=homeStairRoutes(home,floor).find(r=>Math.hypot(game.player.x-r.goal.x,game.player.y-r.goal.y)<=COTTAGE_STAIRS.radius);
+ if(!route)room.stairsLatch=false;
+ if(!route||moving||room.stairsLatch){room.stairsElapsed=null;room.stairsTarget=null;return false;}
+ if(room.stairsTarget!==route.target){room.stairsElapsed=null;room.stairsTarget=route.target;}
+ room.stairsElapsed=room.stairsElapsed==null?0:room.stairsElapsed+tick;
  return room.stairsElapsed+1e-9>=COTTAGE_STAIRS.wait&&changeCottageFloor(game);
 }
-// 切层只能由已完成的候停提交，点击或直接调用不能跳过一秒；室外返回位置不变。
+// 候停方向由真实入口决定，中间层可下楼，不再以“尚未到顶层”替玩家选向上。
 export function changeCottageFloor(game){
- const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||game.player.hp<=0||room.stairsLatch||room.stairsElapsed==null||room.stairsElapsed+1e-9<COTTAGE_STAIRS.wait||game.state!=='playing'||Math.hypot(game.player.x-COTTAGE_STAIRS.landing.x,game.player.y-COTTAGE_STAIRS.landing.y)>COTTAGE_STAIRS.radius)return false;
- const floor=cottageFloor(room);return travelHomeFloor(game,floor+(floor<homeFloors(game.progress.homeDecor)-1?1:-1));
+ const room=game.cottage;if(!room||room.kind!=='cottage'||room.sleep||room.balcony||game.player.hp<=0||room.stairsLatch||room.stairsElapsed==null||room.stairsElapsed+1e-9<COTTAGE_STAIRS.wait||game.state!=='playing')return false;
+ return travelHomeFloor(game,room.stairsTarget);
 }

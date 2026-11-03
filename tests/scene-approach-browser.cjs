@@ -42,8 +42,8 @@ async original=>{
   const screenStart=await original.evaluate(()=>window.sceneApproachScreenStart||0);
   for(const [width,height,time] of [[320,568,'day'],[390,844,'night'],[844,390,'night'],[900,1280,'day'],[320,568,'night'],[390,844,'day']].slice(screenStart)){
    await page.setViewportSize({width,height});await fixture('cottage',time);await shot(width+'-'+time+'-outside');await doorTap('cottage');await page.waitForFunction(()=>a.game.cottage?.kind==='cottage');
-   const stairs=page.locator('[data-cottage-target="stairs"]');await stairs.tap();await page.waitForFunction(()=>a.game.cottage.floor===1);await shot(width+'-'+time+'-up');await page.waitForTimeout(1250);if(await page.evaluate(()=>a.game.cottage.floor)!==1)throw Error('楼梯重复触发');
-   await stairs.tap();await page.waitForFunction(()=>a.game.cottage.floor===0);
+   const stairs=page.locator('[data-cottage-target="stairs-up"]');await stairs.tap();await page.waitForFunction(()=>a.game.cottage.floor===1);await shot(width+'-'+time+'-up');await page.waitForTimeout(1250);if(await page.evaluate(()=>a.game.cottage.floor)!==1)throw Error('楼梯重复触发');
+   await page.locator('[data-cottage-target="stairs-down"]').tap();await page.waitForFunction(()=>a.game.cottage.floor===0);
    // 短屏先通过真实移动让床进入镜头，再点可见床体；长屏直接点击。
    if(!await page.locator('[data-cottage-target="bed"]').isVisible()){await page.keyboard.down('ArrowLeft');await page.waitForFunction(()=>a.game.player.x<210);await page.keyboard.up('ArrowLeft');await page.keyboard.down('ArrowUp');await page.waitForFunction(()=>a.game.player.y<270);await page.keyboard.up('ArrowUp');}
    const day=await page.evaluate(()=>{a.game.player.hp=20;return a.game.progress.living.calendar.day;});await page.locator('[data-cottage-target="bed"]').tap();await page.waitForFunction(day=>a.game.progress.living.calendar.day===day+1,day);if(!await page.evaluate(()=>a.game.player.hp===a.game.maxHp()))throw Error('睡眠未回血');await shot(width+'-'+time+'-rest');checks.push(width+'-'+time+'-stairs-bed');

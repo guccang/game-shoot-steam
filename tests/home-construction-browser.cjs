@@ -14,10 +14,10 @@ async original=>{
   await page.locator('[data-room-item="shopkeeper"]').tap();
   await page.locator('[data-npc-service]').tap();
   await page.waitForFunction(()=>document.getElementById('home-construction-dialog').open);
-  await page.locator('[data-build="floor"]').tap();await page.locator('[data-build="elevator"]').tap();
+  await page.locator('[data-build="floor"]').tap();await page.locator('[data-build="elevator"]').tap();await page.locator('#home-build-elevator-floor').fill('2');await page.locator('[data-build="elevator"]').tap();
   for(const side of ['north','east','south','west']){await page.locator('#home-build-floor').fill('2');await page.locator('#home-build-side').selectOption(side);await page.locator('[data-build="balcony"]').tap();}
   const built=await page.evaluate(()=>({home:a.game.progress.homeDecor,coins:a.game.progress.coins,wood:a.game.progress.wood}));
-  if(built.home.floors!==3||!built.home.elevator||built.home.balconies[1].length!==4||built.coins!==85000||built.wood!==8000)throw Error('施工扣款或设施不正确：'+JSON.stringify(built));
+  if(built.home.floors!==3||JSON.stringify(built.home.elevators)!=='[0,1]'||built.home.balconies[1].length!==4||built.coins!==79000||built.wood!==7200)throw Error('施工扣款或设施不正确：'+JSON.stringify(built));
   for(const width of [320,390]){
    await page.setViewportSize({width,height:width===320?568:844});await page.locator('#home-build-floor').scrollIntoViewIfNeeded();
    const fields=await page.locator('#home-construction-dialog input,#home-construction-dialog select').evaluateAll(nodes=>nodes.map(n=>({height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})));if(fields.some(f=>f.height<44||f.width<44))throw Error('建筑输入触控区不足44像素');

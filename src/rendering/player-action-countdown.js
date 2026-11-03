@@ -1,4 +1,4 @@
-import {HOME_DIRECTIONS,HOME_BALCONY,homeFloors} from '../config/home-construction.js';
+import {HOME_DIRECTIONS,HOME_BALCONY,HOME_ELEVATOR} from '../config/home-construction.js';
 import {COTTAGE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
 import {VEHICLE_BOARDING,vehicleBoardingPoint} from '../core/vehicle-boarding.js';
 // 房间与地图共用门口徽记，固定屏幕尺寸和目标门的位置。
@@ -12,7 +12,8 @@ export function playerActionCountdown(game){
  if(room?.balcony)return room.balconyExitElapsed>0?{elapsed:room.balconyExitElapsed,wait:1,icon:'home',anchor:{...HOME_BALCONY.exit,space:'room'}}:null;
  if(room?.balconyElapsed>0){const side=Object.keys(HOME_DIRECTIONS).find(s=>Math.hypot(game.player.x-HOME_DIRECTIONS[s].door.x,game.player.y-HOME_DIRECTIONS[s].door.y)<=32);if(side)return {elapsed:room.balconyElapsed,wait:1,icon:'exit',anchor:{...HOME_DIRECTIONS[side].door,space:'room'}};}
  // 楼梯徽记固定在落脚点左前方，避免猫猫身体和扶手盖住数字。
- if(room?.kind==='cottage'&&!room.sleep&&room.stairsElapsed!=null)return {elapsed:room.stairsElapsed,wait:COTTAGE_STAIRS.wait,icon:cottageFloor(room)+1>=homeFloors(game.progress.homeDecor)?'stairs-down':'stairs-up',anchor:{x:COTTAGE_STAIRS.landing.x-115,y:COTTAGE_STAIRS.landing.y-12,space:'room'}};
+ if(room?.kind==='cottage'&&!room.sleep&&room.stairsElapsed!=null){const down=room.stairsTarget<cottageFloor(room),goal=down?COTTAGE_STAIRS.downLanding:COTTAGE_STAIRS.landing;return {elapsed:room.stairsElapsed,wait:COTTAGE_STAIRS.wait,icon:down?'stairs-down':'stairs-up',anchor:{x:goal.x-105,y:goal.y-12,space:'room'}};}
+ if(room?.kind==='cottage'&&!room.sleep&&room.elevatorElapsed!=null)return {elapsed:room.elevatorElapsed,wait:COTTAGE_STAIRS.wait,icon:'board',anchor:{x:HOME_ELEVATOR.landing.x-105,y:HOME_ELEVATOR.landing.y-12,space:'room'}};
  // 床和柜台徽记固定在目标侧边，避免盖住正在停留的猫猫。
  if(room&&!room.sleep&&room.restElapsed!=null)return {elapsed:room.restElapsed,wait:COTTAGE.bedWait,icon:'bed',anchor:{x:COTTAGE.bed.x+85,y:COTTAGE.bed.y-65,space:'room'}};
  if(room?.displayEntry&&!room.sleep)return {elapsed:room.displayEntry.elapsed,wait:SHOPKEEPER_ENTRY.wait,icon:'board',anchor:{x:room.displayEntry.site.x-90,y:room.displayEntry.site.y-60,space:'room'}};
