@@ -175,7 +175,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(popup==='seed'&&key!==signature){
    signature=key;
    // 按页显示当前类别，短屏每页四种，保留点选与拖播的完整触控空间。
-   get('picker').innerHTML=farmCategoryMarkup(category,'data-farm-category',f.seeds)+'<div class="farm-seed-grid">'+categorySeeds.slice(seedPage*pageSize,(seedPage+1)*pageSize).map(({crop,i})=>`<button data-farm-seed="${i}" aria-label="${crop.name}种子，库存${f.seeds[i]}粒，${farmSeedRequirement(crop)}，${crop.seconds/60}分钟成熟，售价${crop.value}金币/份" title="${crop.name} · ${farmSeedRequirement(crop)}" ${!loaded||!f.seeds[i]?'disabled':''}>${farmCropMarkup(i)}<span>${crop.name}</span><span class="farm-seed-count" aria-hidden="true">${f.unlocked[i]||f.seeds[i]?f.seeds[i]:'未获'}</span></button>`).join('')+`</div><div class="farm-seed-pages" aria-label="种子翻页"><button data-farm-page="-1" ${seedPage===0?'disabled':''}>上一页</button><span aria-live="polite">${seedPage+1} / ${pageCount}</span><button data-farm-page="1" ${seedPage===pageCount-1?'disabled':''}>下一页</button></div><button data-farm-shop aria-label="种子小屋：购买种子与查看来源">种子小屋</button>`;
+   get('picker').innerHTML='<header class="farm-picker-header">'+farmCategoryMarkup(category,'data-farm-category',f.seeds)+'<button type="button" class="ui-close" data-farm-picker-close aria-label="关闭种子选择">×</button></header>'+'<div class="farm-seed-grid">'+categorySeeds.slice(seedPage*pageSize,(seedPage+1)*pageSize).map(({crop,i})=>`<button data-farm-seed="${i}" aria-label="${crop.name}种子，库存${f.seeds[i]}粒，${farmSeedRequirement(crop)}，${crop.seconds/60}分钟成熟，售价${crop.value}金币/份" title="${crop.name} · ${farmSeedRequirement(crop)}" ${!loaded||!f.seeds[i]?'disabled':''}>${farmCropMarkup(i)}<span>${crop.name}</span><span class="farm-seed-count" aria-hidden="true">${f.unlocked[i]||f.seeds[i]?f.seeds[i]:'未获'}</span></button>`).join('')+`</div><div class="farm-seed-pages" aria-label="种子翻页"><button data-farm-page="-1" ${seedPage===0?'disabled':''}>上一页</button><span aria-live="polite">${seedPage+1} / ${pageCount}</span><button data-farm-page="1" ${seedPage===pageCount-1?'disabled':''}>下一页</button></div><button data-farm-shop aria-label="种子小屋：购买种子与查看来源">种子小屋</button>`;
   }
   farmProperty(get('picker'),'hidden',popup!=='seed');farmProperty(get('harvest-pop'),'hidden',popup!=='harvest');farmProperty(get('harvest'),'disabled',!loaded||blocked);
   farmProperty(get('sickle'),'disabled',!loaded||blocked);
@@ -220,6 +220,8 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  function finish(e){if(gesture?.pointer!==e.pointerId)return;const g=gesture;gesture=null;game.farmDragging=false;get('ghost').hidden=true;if(e.type==='pointercancel'){if(game.farmWork){game.farmWork.queue=[];game.farmWork.job=null;}}else if(e.type==='pointerup'&&(!g.mode||g.emptyHarvest)&&!g.moved&&g.id!==null)tap(g.id);}
  for(const type of ['pointerup','pointercancel','lostpointercapture'])scope.on(layer,type,finish);
  scope.on(layer,'click',e=>{
+  // 关闭仅收起选种并归还焦点，保留农具、种子库存及已安排的农活。
+  if(e.target.closest('[data-farm-picker-close]')){popup=null;input.reset();render();get('hoe').focus({preventScroll:true});return;}
   const tab=e.target.closest('[data-farm-category]');if(tab&&FARM_CATEGORIES.some(c=>c.id===tab.dataset.farmCategory)){category=tab.dataset.farmCategory;seedPage=0;render();return;}
   // 翻页只切换可见种子，不接管播种手势或清除农活队列。
   const page=e.target.closest('[data-farm-page]');if(page&&!page.disabled){seedPage=Math.max(0,seedPage+Number(page.dataset.farmPage));render();return;}

@@ -24,7 +24,7 @@
 /* 移除和退出沿用单格入口，整栏不换行遮挡田地。 */
 #farm-tools #farm-exit{grid-column:auto;}
 #farm-tools .farm-remove-symbol{font-size:28px;line-height:28px;height:28px;}
-#farm-tools button,#farm-picker button,#farm-harvest,#farm-mail button{min-height:44px;min-width:44px;border:1px solid #95a37e;border-radius:9px;padding:5px;background:#f9edc8;color:#304b37;font-size:12px;touch-action:none;cursor:pointer;}
+#farm-tools button,#farm-picker button:not(.ui-close),#farm-harvest,#farm-mail button{min-height:44px;min-width:44px;border:1px solid #95a37e;border-radius:9px;padding:5px;background:#f9edc8;color:#304b37;font-size:12px;touch-action:none;cursor:pointer;}
 #farm-tools canvas,#farm-tools svg{width:28px;height:28px;}#farm-tools [aria-pressed=true]{background:#d2e0b5;outline:2px solid #496d47;outline-offset:-2px;}
 /* 横持短屏使用图文并排的44像素按钮，短提示移到资源栏下方，互不压盖。 */
 @media(max-height:480px){
@@ -36,7 +36,7 @@
 /* 种子按钮高于任务卡、导航和提示，原生模态弹窗仍由浏览器顶层管理。 */
 #farm-picker{z-index:50;width:260px;box-sizing:border-box;touch-action:none;}#farm-picker>b,#farm-picker>small{display:block;font-size:11px;margin:3px;}
 #farm-picker>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;}
-#farm-picker button{min-width:0;display:flex;flex-direction:column;align-items:center;padding:3px;font-size:11px;}
+#farm-picker button:not(.ui-close){min-width:0;display:flex;flex-direction:column;align-items:center;padding:3px;font-size:11px;}
 #farm-picker svg{width:40px;height:42px;pointer-events:none;}#farm-picker small{font-size:10px;white-space:nowrap;}#farm-picker button:disabled{opacity:.5;}
 /* 收割入口用同源镰刀图标，点击区域保留足够尺寸。 */
 #farm-harvest-pop{z-index:7;}#farm-harvest{width:56px;height:52px;display:grid;place-items:center;}
@@ -89,6 +89,9 @@
 .farm-category-count{font-size:11px;line-height:13px;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .farm-categories button[aria-pressed=true],#farm-picker .farm-categories button[aria-pressed=true]{background:#d2e0b5;outline:2px solid #496d47;outline-offset:-2px;font-weight:bold;}
 #farm-picker .farm-categories{margin-bottom:6px;}
+/* 关闭按钮与分类共用一行，保持面板高度和短屏农具空间，样式复用统一关闭按钮。 */
+#farm-picker .farm-picker-header{display:flex;align-items:center;gap:4px;margin-bottom:6px;}
+#farm-picker .farm-picker-header .farm-categories{flex:1;min-width:0;margin-bottom:0;}
 #farm-picker [data-farm-seed],#farm-picker [data-farm-shop]{height:76px;min-height:76px;}
 #farm-picker .farm-seed-count{bottom:21px;}
 #farm-picker [data-farm-shop]{font-size:30px;}

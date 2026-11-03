@@ -29,3 +29,13 @@ farm.css在种子面板显示时取消farm-world-layer的局部堆叠上下文�
 截图：`output/playwright/seed-picker-layer/390-overlap.png`、`output/playwright/seed-picker-layer/320-overlap.png`；结果：同目录`result.txt`。已人工检查截图，原配色、角色、地块、底部工具栏和任务卡保持一致。测试入口：`tests/seed-picker-layer-browser.cjs`；正式入口：`src/main.js`及原农田UI/Canvas绘制器；designCriterion：seed-picker-layer。
 
 无需新桌面布局、资产或动作动画；不改变碰撞和通行，不增加资源下载或画布绘制。原生模态弹窗仍由浏览器顶层管理。
+
+## 2026-11-03：右上角关闭入口
+
+本轮目标：依据用户选种截图，在四类页签右侧增加44×44的统一`ui-close`按钮，中文辅助名称为“关闭种子选择”。顶部仍为一行，保留260px宽、四列种子、分页、地块锚点与原面板高度，避免短屏工具栏被遮挡。关闭只收起选种，不退出种地，不改种子库存、田块或已排农活。无新增图片、动画或碰撞，角色、昼夜与资源预算沿用原实现。
+
+正式入口仍为`src/ui/farm.js#createFarmPanel`、`src/styles/farm.css`及`inspectFarm`，对应`designCriterion: world-farm-delivery`。本轮只修改DOM交互与排列，无imagegen或PNG精修需求。
+
+本轮验收通过：4175正式页面在320×568、390×844、844×390分别检查白天和夜晚，共6组。全部按钮触点≥44px，关闭按钮位于右上角，面板保持在屏幕内且不遮底部农具。触摸关闭后仍在种地，库存/田块/农活记录完全一致；重新打开、分类翻页、键盘关闭和焦点回到锄头，以及再次选种后点田安排播种均通过，页面异常为0。人工复核[390白天](../art-reference/seed-picker-close/390-day.png)与[短横屏夜晚](../art-reference/seed-picker-close/844-night.png)，样式沿用原面板和统一关闭按钮，无新增图像、画布或缓存。角色、怪物、载具、地图及碰撞未改，不扩大测试；本轮不运行全量测试。
+
+可重放检查及全部截图：`output/playwright/seed-picker-close/check.cjs`与同目录的六张截图。动态UI结论：通过；PNG精修：不适用。
