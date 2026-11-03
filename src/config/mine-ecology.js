@@ -38,7 +38,7 @@ export function mineTerrain(cell,layer){
  // 洞厅在开层时由稳定种子决定，水域与岸边天然露出，不依赖已开掘记录。
  const chamber=(lx*lx/(3.1+Math.sin(cy+seed)*.35)**2+ly*ly/(2.7+Math.cos(cx+seed)*.4)**2)<1;
  const natural=safe||water||chamber;
- return {biome,water,natural,prop:natural&&!safe&&!water&&(hash>>>8)%5===0,hash,safe};
+ return {biome,region:cx+','+cy,water,natural,prop:natural&&!safe&&!water&&(hash>>>8)%5===0,hash,safe};
 }
 
 // 天然洞厅与玩家挖通区域共用开放判定，边界外始终不可通行或施工。

@@ -78,13 +78,13 @@ export function drawOutdoorFishing(c,game,player,night=0){
  const swing=f.phase==='charging'?-22*f.charge:f.phase==='casting'?Math.sin(Math.min(1,f.elapsed/OUTDOOR_RULES.flightSeconds)*Math.PI)*23:0;
  const fighting=['fight','landed'].includes(f.phase),bend=fighting?f.tension*23:Math.sin(f.clock*1.4)*2;
  const tip={x:origin.x+dx/len*55+f.lean*16-swing,y:origin.y+dy/len*42-28+bend-swing};
- let bob={x:target.x+(fighting?Math.sin(f.elapsed*1.3+f.species)*23:Math.sin(f.clock*1.5)*2),y:target.y+Math.cos(f.clock*1.2)*(fighting?8:1)};
+ let bob={x:target.x+(fighting?(f.behavior?.motion||0):Math.sin(f.clock*1.5)*2),y:target.y+(fighting?(f.behavior?.depth||0):Math.cos(f.clock*1.2))};
  if(['ready','charging'].includes(f.phase))bob={x:tip.x,y:tip.y+19};
  if(f.phase==='casting'){const q=Math.min(1,f.elapsed/OUTDOOR_RULES.flightSeconds);bob={x:tip.x+(target.x-tip.x)*q,y:tip.y+(target.y-tip.y)*q-Math.sin(q*Math.PI)*48};}
  if(f.phase==='landed')bob={x:player.x+26,y:player.y+10};
  const nibble=f.phase==='nibble'?Math.sin(f.elapsed*18)*3:0,sink=f.phase==='bite'?Math.min(12,f.elapsed*30):0;
  if(!['ready','charging','landed'].includes(f.phase)){
-  c.fillStyle='#183d3e';c.globalAlpha=.18;drawOutdoorFish(c,fighting?bob.x:target.x+Math.sin(f.clock)*20,fighting?bob.y+12:target.y+17,fighting&&f.direction<0?Math.PI:Math.sin(f.clock)*.4,f.clock,'#466c64',1.15);c.globalAlpha=1;
+  c.fillStyle='#183d3e';c.globalAlpha=.18;drawOutdoorFish(c,fighting?bob.x:target.x+Math.sin(f.clock)*20,fighting?bob.y+12:target.y+17,fighting&&f.direction<0?Math.PI:Math.sin(f.clock)*.4,f.clock,FISH_SPECIES[f.species]?.color||'#466c64',.82,FISH_SPECIES[f.species]);c.globalAlpha=1;
   c.strokeStyle='#e3f3d5';c.globalAlpha=.5;c.lineWidth=1;for(let i=0;i<2;i++){const r=5+((f.clock*9+i*8)%19);c.beginPath();c.ellipse(bob.x,bob.y,r,r*.36,0,0,7);c.stroke();}c.globalAlpha=1;
  }
  c.strokeStyle=night>.3?'#e4eacb':'#f7f1cd';c.lineWidth=1.1;c.beginPath();c.moveTo(tip.x,tip.y);c.quadraticCurveTo((tip.x+bob.x)/2,(tip.y+bob.y)/2+(fighting?3:18),bob.x,bob.y+sink);c.stroke();

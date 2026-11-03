@@ -1,3 +1,4 @@
+import {normalizeFishingSurveys} from './fishing-surveys.js';
 import {FISHING_RODS,FISHING_BAITS,rodOwned,baitCount} from '../config/fishing-tackle.js';
 // 野外存档只保留装备、营地和已入护鱼获；抛竿及未结算鱼获不会在读档时复制。
 import {OUTDOOR_GEAR,FISH_SPECIES,OUTDOOR_RULES} from '../config/outdoors.js';
@@ -10,7 +11,7 @@ export function normalizeOutdoors(raw){
  const rods=Object.fromEntries(Object.keys(FISHING_RODS).filter(id=>id!=='rod').map(id=>[id,raw?.rods?.[id]===true]));
  const baits=Object.fromEntries(Object.keys(FISHING_BAITS).filter(id=>id!=='bait').map(id=>[id,Math.max(0,Math.min(999,Math.floor(Number(raw?.baits?.[id])||0)))]));
  const selectedRod=Object.hasOwn(FISHING_RODS,raw?.selectedRod)&&rodOwned({rod,rods},raw.selectedRod)?raw.selectedRod:rod?'rod':Object.keys(rods).find(id=>rods[id])||'rod';
- return {version:2,tent,rod,rods,baits,selectedRod,selectedBait:Object.hasOwn(FISHING_BAITS,raw?.selectedBait)?raw.selectedBait:'bait',bait:Math.max(0,Math.min(999,Math.floor(Number(raw?.bait)||0))),
+ return {version:3,surveys:normalizeFishingSurveys(raw?.surveys),tent,rod,rods,baits,selectedRod,selectedBait:Object.hasOwn(FISHING_BAITS,raw?.selectedBait)?raw.selectedBait:'bait',bait:Math.max(0,Math.min(999,Math.floor(Number(raw?.bait)||0))),
   fish:Object.fromEntries(FISH_SPECIES.map(f=>[f.id,Math.max(0,Math.min(OUTDOOR_RULES.maxFish,Math.floor(Number(raw?.fish?.[f.id])||0)))])),
   // 鱼种历史独立于鱼护，旧档只从现有鱼获迁移，不伪造已出售鱼的种类。
   collection:Object.fromEntries(FISH_SPECIES.map(f=>{const r=raw?.collection?.[f.id],owned=Math.max(0,Math.min(OUTDOOR_RULES.maxFish,Math.floor(Number(raw?.fish?.[f.id])||0)));return [f.id,{count:Math.max(owned,Math.min(1e7,Math.max(0,Math.floor(Number(r?.count)||0)))),best:Number.isFinite(r?.best)?Math.max(0,Math.min(200,r.best)):0}];})),
