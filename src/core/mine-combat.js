@@ -1,3 +1,4 @@
+import {recordDefeat} from '../progression/game-statistics.js';
 import {MINING} from '../config/mining.js';
 import {mineRockTargets,hitMineRock} from './mine-rocks.js';
 // 地下战斗适配正式武器；弹道与特效属于当前层，弹药和装备读取真实库存。
@@ -27,7 +28,7 @@ export function hitMineAnimal(game,animal,damage,impact={}){
  if(a.hp>damage){a.hp-=damage;a.flash=.18;}
  else{
   const reward=mineAnimalStats(a.kind,game.cottage.depth).reward;
-  const result=miningCommit(game,(m,p,l)=>{Object.assign(l.animals[a.key],{hp:0,death:.6,phase:'dead',respawn:l.age+180});m.ore+=reward;},`击退${mineAnimalStats(a.kind).name}，获得 ${reward} 矿石。`);
+  const result=miningCommit(game,(m,p,l)=>{Object.assign(l.animals[a.key],{hp:0,death:.6,phase:'dead',respawn:l.age+180});m.ore+=reward;if(!game.workshopTrial&&!game.livingPreview)recordDefeat(p,'enemy',impact.statisticsSource,{mineKind:a.kind});},`击退${mineAnimalStats(a.kind).name}，获得 ${reward} 矿石。`);
   if(!result.ok){a.hp=1;return false;}a.hp=0;return true;
  }
  if(impact.water)a.wet=2;
@@ -108,7 +109,7 @@ function combatContext(game){
  const room=game.cottage;if(room.combat)return room.combat;
  resetMineCombat(game);
  const b=Object.create(game);Object.defineProperty(b,'progress',{get:()=>game.progress,set:p=>{game.progress=p;}});
- Object.assign(b,{trees:[],enemies:[],boss:null,projectiles:[],shots:[],gravityFields:[],fx:new CombatFX(),particles:[],numbers:[],drops:[],pulse:createPulseState(),weaponCycle:createWeaponCycle(),attackTimer:0,aimLock:null,statisticsExcluded:true});
+ Object.assign(b,{trees:[],enemies:[],boss:null,projectiles:[],shots:[],gravityFields:[],fx:new CombatFX(),particles:[],numbers:[],drops:[],pulse:createPulseState(),weaponCycle:createWeaponCycle(),attackTimer:0,aimLock:null,statisticsExcluded:!!game.workshopTrial||!!game.livingPreview});
  b.combatLineClear=(a,z)=>mineLineClear(game,a,z);b.clipCombatLine=(a,z)=>clipMineCombatLine(game,a,z);
  b.combatWalkClear=(a,z,r=0)=>{const n=Math.max(1,Math.ceil(Math.hypot(z.x-a.x,z.y-a.y)/6));for(let i=0;i<=n;i++)if(!mineOccupancy(game,a.x+(z.x-a.x)*i/n,a.y+(z.y-a.y)*i/n,r,false))return false;return true;};
  b.trees.mineScene={walkable:(x,y,r,fly)=>mineOccupancy(game,x,y,r,fly)};

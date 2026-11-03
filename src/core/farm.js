@@ -1,3 +1,4 @@
+import {recordCodexCrop} from '../progression/codex-statistics.js';
 import {harvestDestination,harvestLoadPreview} from './farm-harvest-load.js';
 import {isRainWeather} from '../world/season-weather.js';
 import {sellCrops} from './cargo.js';
@@ -104,7 +105,7 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   if(!crop)return {ok:false,message:'请选择有效的种子。'};
   if(!(f.seeds[cropId]>0))return {ok:false,message:'这包种子已用完，可打怪获取，或前往种子小屋购买已解锁品种。'};
   f.seeds[cropId]--;
-  Object.assign(p,{crop:cropId,plantedAt:now,readyAt:now+crop.seconds*1000,watered:false,sprinklerWatered:false});f.planted++;
+  Object.assign(p,{crop:cropId,plantedAt:now,readyAt:now+crop.seconds*1000,watered:false,sprinklerWatered:false});f.planted++;recordCodexCrop(next,cropId,'planted');
   // 只有成功播种才延长野外田地寿命，收获、浇水和失败事务不续期。
   if(p.wild)p.wildSownAt=wildFarmTime(next.living.calendar);
   message='已播种'+crop.name+' · 消耗库存种子 1 粒';
@@ -117,7 +118,7 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
  }else if(action==='harvest'){
   if(!p||p.crop===null||farmGrowth(p,now)<1)return {ok:false,message:'这块田还没有成熟。'};
   if(p.sprinklerWatered&&!p.wild)next.production.wateredHarvest=true;
-  harvest=p.crop;destination=harvestDestination(game);const stock=destination.hull===null?f.inventory:next.logistics.builds[destination.hull].cargo;const grown=FARM_CROPS[harvest];if(stock[harvest]>=FARM_STOCK_CAP)return {ok:false,message:'作物库存已满，请先装车或出售。'};
+  harvest=p.crop;recordCodexCrop(next,harvest,'harvested');destination=harvestDestination(game);const stock=destination.hull===null?f.inventory:next.logistics.builds[destination.hull].cargo;const grown=FARM_CROPS[harvest];if(stock[harvest]>=FARM_STOCK_CAP)return {ok:false,message:'作物库存已满，请先装车或出售。'};
   stock[harvest]++;f.xp=Math.min(FARM_STOCK_CAP,f.xp+grown.xp);f.harvested=Math.min(FARM_STOCK_CAP,f.harvested+1);
   Object.assign(p,{crop:null,plantedAt:0,readyAt:0,watered:false,sprinklerWatered:false});message=grown.name+'收获，'+destination.name+'作物 +1；靠近仓库出售未保留的收成，也可到种子小屋或快递站出售。';
   if(p.wild)message+=' · 野外也能种田，点击空田即可继续播种';

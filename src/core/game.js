@@ -625,7 +625,7 @@ export class Game {
     // 新召唤物不提前完成剧情／秘境／守门击杀条件，也不额外发放活动奖励。
     if(target.type==='boss')dismissBossSummons(this,target.id);
     if(target.bossSummon&&(this.story||this.realm||this.campDefense)){leaveEnemyRemnant(this,target,impact);return;}
-    if(!this.workshopTrial&&!this.livingPreview&&!target.football)recordDefeat(this.progress,target.type,impact?.statisticsSource);
+    if(!this.workshopTrial&&!this.livingPreview&&!target.football)recordDefeat(this.progress,target.type,impact?.statisticsSource,target);
     // 走过死亡保护后只发一次经验；试射、预览、伐木与召唤杂兵不计入角色成长。
     if(!this.workshopTrial&&!this.livingPreview&&!target.football&&!target.bossSummon&&['enemy','boss'].includes(target.type)){const earned=awardHeroXp(this.progress,target.type==='boss'?HERO_COMBAT_XP.boss:target.tough?HERO_COMBAT_XP.tough:HERO_COMBAT_XP.enemy);if(earned.gained){this.float(target.x,target.y-75,earned.levels?`${HEROES[earned.index].name}升到${earned.level}级`:`经验 +${earned.gained}`,'#e8d69b');this.onEvent('hero-experience',earned);}}
     recordMainlineVehiclePractice(this,target,impact);

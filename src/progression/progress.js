@@ -139,6 +139,7 @@ export function validateProgress(raw) {
   bindEconomy(p,economyFor(raw));
   p.economyLog=validateLedger(raw.economyLog);
   p.statistics=validateGameStatistics(raw.statistics);
+  if(!raw.statistics?.codex)p.statistics.codex.partial=true;
   p.mapId = raw.mapId === 'jiuzhaigou' ? 'jiuzhaigou' : 'forest';
   for (const key of ['coins', 'wood', 'bosses'])
     if (Number.isFinite(raw[key])) p[key] = clamp(Math.floor(raw[key]), 0, key==='bosses'?GAMEPLAY_VALUES.progress.counterCap:RESOURCE_CAP);

@@ -1,3 +1,4 @@
+import {statisticsSource} from '../combat/statistics-source.js';
 import {mineRockSite,hitMineRock,mineRockTargets} from './mine-rocks.js';
 import {updateMineCombat,hitMineAnimal} from './mine-combat.js';
 import {absorbEnergyShield} from '../combat/energy-shield.js';
@@ -54,7 +55,7 @@ function advanceBolts(game,dt){
  const room=game.cottage;room.bolts??=[];
  room.bolts=room.bolts.filter(b=>{const next={x:b.x+b.vx*dt,y:b.y+b.vy*dt};b.life-=dt;if(b.life<=0||!mineLineClear(game,b,next))return false;Object.assign(b,next);
   if(b.enemy){if(Math.hypot(b.x-game.player.x,b.y-game.player.y)<(game.vehicle.active?32:15)){hurtExplorer(game,b.damage);return false;}}
-  else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<20);if(a){hitMineAnimal(game,a,b.damage);return false;}const rock=mineRockTargets(game).find(t=>t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<24);if(rock){hitMineRock(game,rock,b.damage);return false;}}return true;});
+  else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<20);if(a){hitMineAnimal(game,a,b.damage,{statisticsSource:b.statisticsSource});return false;}const rock=mineRockTargets(game).find(t=>t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<24);if(rock){hitMineRock(game,rock,b.damage);return false;}}return true;});
 }
 // 矿锄自动近身防卫，战车使用实际主炮伤害、余弹、装填和独立后坐，未开掘岩壁阻断索敌。
 function defendExplorer(game,dt,actors){
@@ -70,7 +71,7 @@ function defendExplorer(game,dt,actors){
  room.charge=(room.charge||0)+dt;if(room.charge<(weapon.chargeTime||0))return;
  v.angle=Math.atan2(target.y-p.y,target.x-p.x);if(!consumeRound(module.magazine,weapon))return;
  room.charge=0;room.attackWait=Math.max(.12,weapon.interval||.65);triggerRecoil(v.recoil,v.weaponIndex);v.recoil.tankAngle=v.angle;
- const dx=target.x-p.x,dy=target.y-p.y,n=Math.max(1,Math.hypot(dx,dy));room.bolts.push({x:p.x,y:p.y,vx:dx/n*420,vy:dy/n*420,life:1.2,damage:vehicleDamage(game.progress,v.weaponIndex),enemy:false});
+ const dx=target.x-p.x,dy=target.y-p.y,n=Math.max(1,Math.hypot(dx,dy));room.bolts.push({x:p.x,y:p.y,vx:dx/n*420,vy:dy/n*420,life:1.2,damage:vehicleDamage(game.progress,v.weaponIndex),statisticsSource:statisticsSource(game,weapon,v.index),enemy:false});
 }
 // 六足步态、独立翼拍和菌伞步行分别使用自己的连续时钟，蓄力、恢复、受击和死亡可见。
 export function updateMineEcology(game,dt){

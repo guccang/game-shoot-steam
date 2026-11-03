@@ -35,3 +35,24 @@
 长期截图：[森林白天](../art-reference/fish-creature-codex-forest-day.png)、[森林夜晚](../art-reference/fish-creature-codex-forest-night.png)、[地下夜晚](../art-reference/fish-creature-codex-mine-night.png)、[短屏鱼获](../art-reference/fish-creature-codex-caught-320.png)、[图鉴](../art-reference/fish-creature-codex-fish-list.png)。
 
 完整截图和日志：`output/playwright/fish-creature-codex/`；最终通过录像：`video/page@b0fcee41a6c7be6d316f191e2ac6b64d.webm`。浏览器脚本：`tests/fish-creature-codex-browser.cjs`，默认4175，本次4175被既有服务占用，使用独立4176验收；未停止既有服务。
+
+## 世界图鉴与统计扩展
+制作前目标：沿用图鉴入口，增加总览、作物、武器（含专属主炮）和载具，与鱼类/怪物共用搜索、分页和详情。记录按怪物种类击败、按作物播种/收获；复用已有鱼获及装备击杀/伐木统计，旧档未知明细标记部分历史而不按库存推算。
+尺寸与分层：沿用160×128列表及192×160详情画布，作物复用正式图集，装备复用正式武器/载具绘制；静态资料页不新增动画循环、图片或缓存。六类入口采用三列两行44px触控布局，复用手机底板和原配色；原世界生物与角色动作不改。
+验收计划：真实地表/地下击杀和去重、保存失败不计农作或地下击杀、鱼出售不清历史、读档和旧档；全分类中文搜索分页与详情、正式肖像非空、手机短屏/长屏/横屏、昼夜场景入口与暂停恢复。沿用fish-creature-codex设计目标，扩展正式验收入口；PNG替换不适用。
+
+### 扩展验收结果（2026-11-03）
+
+结论：本次动态交互阶段通过，正式 `designCriterion` 为 `fish-creature-codex`。正式入口为 `src/ui/creature-codex.js`、`src/ui/codex-records.js`、`src/rendering/codex-portraits.js` 以及 `inspectFishCreatureCodex`。
+
+| 检查 | 结果与证据 |
+| --- | --- |
+| 分类与肖像 | 100 种鱼、17 种怪物、60 种作物、27 种武器装备和 11 种载具，共 215 条，全部分页检查正式肖像非空；中文搜索和 6 类代表详情通过。作物复用收获图集，武器和载具复用正式绘制器，等比缩放。 |
+| 实际记录 | 正式地表死亡、地下手枪击杀、载具归属、重复死亡保护、试用排除、播种/收割和成功收鱼均有针对性覆盖；保存失败不提交地下击杀或农作次数。放流不算入护，出售不清历史。 |
+| 保存与兼容 | 浏览器实际行为累计后重载，击杀、鱼获、播种和收获均保留；旧档保留已有总数和装备记录，缺失分类明细明确提示从更新后累计，不估算历史。 |
+| 手机与昼夜 | Chromium 触控模拟 320×568、390×844、844×390：无横向溢出，可见按钮至少 44px，短屏正文滚动、固定操作栏正常；未使用实体手机，未新增桌面布局。昼夜正式场景和图鉴同屏检查，选中分类文字对比已修正。打开暂停、关闭恢复正常，页面错误 0。 |
+| 资源与动作 | 无新增位图、视频、缓存或动画循环；列表最多 20 个画布，加一个详情画布。静态资料页不修改角色、怪物和载具运行时动作、遮挡或通行。PNG 生成与替换不适用。 |
+| 专项测试 | `node --test tests/world-codex.test.mjs tests/mine-combat.test.mjs tests/farm-harvest-load.test.mjs tests/fish-creature-codex.test.mjs`：51/51 通过；地下手枪归属断言补充后单项复查通过。修改模块语法、合同 JSON 和差异格式检查通过。 |
+| 既有失败 | 原统计/装备统计套件 8 项失败已在未修改 main（6767c9f）复现，涉及旧迁移预期及载具、活动测试；不属于本次新增失败，未扩展范围修改。原始结果见 `baseline-statistics.txt`。 |
+
+浏览器脚本：`tests/world-codex-browser.cjs`；16 张界面截图及 2 张昼夜场景截图、录像和结果位于 `output/playwright/world-codex/`，最终结果为 `browser-result.txt`。其中 `overview-day.png`、`overview-night.png`、`layout-320.png`、代表作物/武器/主炮/载具详情已人工查看。目录内 `failure.png` 为调试期间的旧截图，最终验收以结果文件为准。本次默认 4175 被既有服务占用，使用独立 4187，未停止既有服务。
