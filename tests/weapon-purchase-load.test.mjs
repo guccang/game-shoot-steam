@@ -53,7 +53,7 @@ test('报价计入运行弹匣，不依赖过期的存档弹匣数量',()=>{
 });
 
 test('已经满载可在工坊原地整理，清理后重算购枪资格并恢复移动',()=>{
-  const g=scene();g.progress.logistics.bagWood=100;assert.equal(movementLoadFactor(g),0);
+  const g=scene();g.progress.logistics.bagWood=100;assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);
   assert.equal(commitWorkshop(g,plan,()=>true).loadBlocked,true);
   assert.ok(discardLoad(g,{id:'material:wood',count:100}).ok);assert.ok(movementLoadFactor(g)>0);
   assert.ok(commitWorkshop(g,plan,()=>true).ok);assert.ok(movementLoadFactor(g)>0);

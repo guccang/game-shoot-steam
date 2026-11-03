@@ -14,13 +14,13 @@ import {RANGER} from '../src/config/ranger-arrival.js';
 // 只准备普通巡林及保存函数，移动、弹匣和清理继续使用正式状态。
 function scene(){const p=ownedPineProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.weapons.fill(0);p.weapons[0]=p.weapons[1]=1;p.weapon=0;const events=[],g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.spawnTimer=g.fireClock=g.mainlineTalkDelay=999;g.enemies=[];g.trees=[];g.progress.campParking.owned=[];g.vehicle.active=false;g.onEvent=(type,data)=>events.push({type,data});g.livingPersist=()=>true;Object.assign(g.player,{x:900,y:800,vx:0,vy:0});return {g,events};}
 
-test('角色满载不能移动，提示节流，清理后立即恢复并可再次提醒',()=>{
- const {g,events}=scene();g.progress.logistics.bagWood=100;const x=g.player.x;for(let i=0;i<20;i++)g.update(.05,{x:1,y:0});assert.equal(g.player.x,x);assert.equal(movementLoadFactor(g),0);assert.equal(events.filter(e=>e.type==='story-hint').length,1);assert.match(events.find(e=>e.type==='story-hint').data.text,/载荷已满.*清理背包/);
+test('角色满载缓行，提示节流，清理后恢复正常速度并可再次提醒',()=>{
+ const {g,events}=scene();g.progress.logistics.bagWood=100;const x=g.player.x;for(let i=0;i<20;i++)g.update(.05,{x:1,y:0});assert.ok(g.player.x>x);assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);assert.equal(events.filter(e=>e.type==='story-hint').length,1);assert.match(events.find(e=>e.type==='story-hint').data.text,/载荷已满.*清理背包/);
  assert.ok(discardLoad(g,{id:'material:wood',count:100}).ok);assert.ok(movementLoadFactor(g)>0);for(let i=0;i<6;i++)g.update(.05,{x:1,y:0});assert.ok(g.player.x>x);g.progress.logistics.bagWood=100;g.update(.05);assert.equal(events.filter(e=>e.type==='story-hint').length,2);
  const before=events.length;g.state='paused';updateLoadWarning(g,20,{x:1,y:0});assert.equal(events.length,before);
 });
-test('达到上限即停止，驾驶只按车辆总载荷判断，故障不误报满载',()=>{
- const {g,events}=scene(),capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight;assert.equal(catLoad(g).overloaded,true);assert.equal(movementLoadFactor(g),0);}finally{LOAD_RULES.catCapacity=capacity;}
+test('背包达到上限缓行，驾驶只按车辆总载荷判断，故障不误报满载',()=>{
+ const {g,events}=scene(),capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight;assert.equal(catLoad(g).overloaded,true);assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);}finally{LOAD_RULES.catCapacity=capacity;}
  g.vehicle.active=true;g.progress.logistics.builds[0].wood=4000;assert.equal(movementLoadFactor(g),0);updateLoadWarning(g,.05,{x:1,y:0});assert.match(events.at(-1).data.text,/载具载荷已满/);assert.ok(discardLoad(g,{hull:0,id:'material:wood',count:4000}).ok);assert.equal(vehicleLoad(g).overloaded,false);g.progress.supplies.engineFaults[0]=100;updateLoadWarning(g,10,{x:1,y:0});assert.equal(events.length,1);
 });
 test('数量、当前装备、农具和重要物品受保护，远车与活动不能清理',()=>{
@@ -64,6 +64,6 @@ test('快捷清理拒绝过期方案、远处车辆和不足以移动的方案',
 // 历史背包中的车用炮弹仍可在房内减重，无需先走到出口或载具旁。
 test('室内超载背包支持暂停清理炮弹，失败保留物品，确认后恢复移动',()=>{
  const {g}=scene();g.cottage={kind:'ammo',outside:{x:900,y:800}};g.state='paused';const count=Math.ceil(catLoad(g).capacity/AMMO_TYPES.heavy.mass);g.progress.supplies.hand.heavy=count;
- assert.equal(movementLoadFactor(g),0);assert.equal(cleanupEntries(g).find(r=>r.id==='ammo:heavy').count,count);const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(discardLoad(g,{id:'ammo:heavy',count}).ok,false);assert.deepEqual(g.progress,before);let saved;g.livingPersist=p=>{saved=structuredClone(p);return true;};assert.ok(discardLoad(g,{id:'ammo:heavy',count}).ok);assert.ok(movementLoadFactor(g)>0);assert.equal(g.cottage.kind,'ammo');assert.equal(new Game(saved).progress.supplies.hand.heavy,0);
+ assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);assert.equal(cleanupEntries(g).find(r=>r.id==='ammo:heavy').count,count);const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(discardLoad(g,{id:'ammo:heavy',count}).ok,false);assert.deepEqual(g.progress,before);let saved;g.livingPersist=p=>{saved=structuredClone(p);return true;};assert.ok(discardLoad(g,{id:'ammo:heavy',count}).ok);assert.ok(movementLoadFactor(g)>0);assert.equal(g.cottage.kind,'ammo');assert.equal(new Game(saved).progress.supplies.hand.heavy,0);
  g.progress.supplies.hand.shell=Math.ceil(catLoad(g).capacity/AMMO_TYPES.shell.mass);const plan=planLoadCleanup(g);assert.ok(plan.ok);assert.ok(discardForMobility(g,plan).ok);assert.ok(movementLoadFactor(g)>0);assert.ok(catLoad(g).weight<catLoad(g).capacity);
 });

@@ -19,7 +19,7 @@ export function catLoad(game){
  const weapon=total('weapon'),ammo=total('ammo'),crops=total('crop'),reserve=ammunitionMass(p.supplies?.hand),weight=Math.round(entries.reduce((n,r)=>n+r.weight,0)*1e6)/1e6,items=weight-weapon-ammo-crops;
  return {body:LOAD_RULES.catMass[p.hero]||40,weapon,ammo,crops,reserve,items,weight,capacity:LOAD_RULES.catCapacity,overloaded:weight>=LOAD_RULES.catCapacity};
 }
-// 达到容量即无法移动，自动收弹按整发预留边界，不把背包装到停步。
+// 满载会降低步速，自动收弹仍按整发预留边界，避免补弹触发减速。
 export function catAmmoRoom(game,key){
  const mass=AMMO_TYPES[key]?.mass;if(!mass)return 0;
  const load=catLoad(game);return Math.max(0,Math.floor((load.capacity-load.weight-1e-6)/mass));

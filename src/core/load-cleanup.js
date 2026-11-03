@@ -79,7 +79,7 @@ export function planLoadCleanup(game,hull=null){
  const rows=sources.flatMap(source=>cleanupEntries(game,source).filter(r=>r.mass>0&&r.category in priority).map(r=>({...r,hull:source}))).sort((a,b)=>priority[a.category]-priority[b.category]);
  let weight=load.weight;const changes=[];
  for(const r of rows){if(weight<load.capacity-.009999)break;const count=Math.min(r.count,Math.max(1,Math.ceil((weight-load.capacity+.01-1e-9)/r.mass)));changes.push({hull:r.hull,id:r.id,count,name:r.name,mass:r.mass});weight-=count*r.mass;}
- if(weight>=load.capacity)return {...base,ok:false,message:'可清理物品不足以恢复移动，请在工坊调整装甲或主炮，或手动整理武器。'};
+ if(weight>=load.capacity)return {...base,ok:false,message:'可清理物品不足以降至限重内，请在工坊调整装甲或主炮，或手动整理武器。'};
  return {...base,ok:true,changes,after:weight,message:'优先清理木头与作物，仅丢弃恢复载重所需数量。'};
 }
 // 提交玩家确认的原清单，不自动更换物品；过期计划不足以减重时完整取消。
@@ -87,7 +87,7 @@ export function discardForMobility(game,plan){
  if(!plan?.ok||!Array.isArray(plan.changes)||!plan.changes.length||!cleanupAvailable(game,plan.targetHull))return {ok:false,message:'清理方案已失效，请重新预览。'};
  const snapshot=cleanupSnapshot(game);
  for(const change of plan.changes){if(change.hull!==null&&change.hull!==plan.targetHull)return {ok:false,message:'清理来源已变化，请重新预览。'};const r=removeEntry(snapshot,change);if(!r.ok)return r;}
- const load=cleanupLoad(snapshot,plan.targetHull);if(load.weight>=load.capacity)return {ok:false,message:'载荷已变化，原方案无法恢复移动，请重新预览。'};
+ const load=cleanupLoad(snapshot,plan.targetHull);if(load.weight>=load.capacity)return {ok:false,message:'载荷已变化，原方案无法降至限重内，请重新预览。'};
  for(const change of plan.changes)recordLogisticsLesson(snapshot.progress,change.hull==null?'bagCleaned':'cargoCleaned');
- return commitCleanup(game,snapshot,'已清理至限重内，载荷不再阻止移动。');
+ return commitCleanup(game,snapshot,'已清理至限重内，负重限制已解除。');
 }
