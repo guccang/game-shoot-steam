@@ -43,6 +43,12 @@ function rail(c,cell,m){
   for(const y of [-10,10]){box(c,-1,y-2,length+2,4,1,'#c5cfba','#4a6650',1);box(c,0,y-2,length,1,0,'#eef0ce');}c.restore();
  }
  oval(c,p.x,p.y,6,6,'#839a7d','#49674f',1);
+ // 已设置的岔路在轨面绘制小箭头，低于猫与车厢，不增加遮挡或碰撞。
+ const direction=m.junctions?.[mineKey(cell)];
+ if(neighbors.length>=3&&Number.isInteger(direction)){
+  c.save();c.translate(p.x,p.y);c.rotate(direction*Math.PI/2-Math.PI/2);
+  poly(c,[[-12,-4],[2,-4],[2,-9],[14,0],[2,9],[2,4],[-12,4]],'#f1d99f','#315c43',2);c.restore();
+ }
 }
 // 灯笼和路牌落在格子左侧，脚底可自由通行，灯光限制为局部范围。
 function decoration(c,cell,type,night){
