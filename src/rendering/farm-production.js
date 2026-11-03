@@ -7,7 +7,7 @@ export function productionObjects(game){
  const s=game.progress.production;if(!s)return [];const held=carriedSprinkler(game);
  return [...s.sprinklers.filter(p=>p.id!==held?.id).map(p=>({...p,type:'farm-production',kind:'sprinkler'})),...(s.bench?[{...s.bench,type:'farm-production',kind:'bench'}]:[]),...(held?[{...held,x:game.player.x+32,y:game.player.y+8,type:'farm-production',kind:'sprinkler',carried:true}]:[])].filter(p=>p.mapId===game.mapId);
 }
-// 地面预览绘制两层去角轮廓和20个田格，范围与实际浇水判定一致。
+// 地面预览绘制两层方形轮廓和24个田格，范围与实际浇水判定一致。
 export function drawProductionGround(c,game,view){
  const cursor=game.productionCursor;if(!cursor||cursor.point?.mapId!==game.mapId)return;
  const p=nearest(cursor.point,{x:view.x+view.w/2,y:view.y+view.h/2});c.save();c.translate(p.x,p.y);c.strokeStyle=cursor.reason?'#a35f45':'#527754';c.fillStyle=cursor.reason?'#b9724d33':'#a6c48b55';c.lineWidth=2;c.setLineDash([5,4]);

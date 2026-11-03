@@ -1,4 +1,4 @@
-// 手机真实交互验证持久背包、失败重试、取消、免费再放置与二十格范围。
+// 手机真实交互验证持久背包、失败重试、取消、免费再放置与二十四格范围。
 async original=>{
  const base=new URL(original.url()).origin,dir='output/playwright/sprinkler-backpack/';
  const context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir:dir+'video',size:{width:390,height:844}}}),page=await context.newPage(),errors=[],reviews=[];page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
@@ -16,15 +16,15 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
    const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(x=>x.id);p.wood=1000;p.mining.ore=100;p.production.minedOre=12;p.production.returned=true;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.trees=[];g.enemies=[];g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=999999;g.livingPersist=()=>true;g.livingWeather='sun';Object.assign(a.environment,{weather:'sun',autoWeather:false,livingPreview:false});
-   const land=await import('/src/world/farm-land.js'),{SPRINKLER_OFFSETS}=await import('/src/config/farm-production.js');const offsets=[[0,0],...SPRINKLER_OFFSETS,[168,52],[112,104]];let point=null;
+   const land=await import('/src/world/farm-land.js'),{SPRINKLER_OFFSETS}=await import('/src/config/farm-production.js');const offsets=[[0,0],...SPRINKLER_OFFSETS,[168,52],[112,156]];let point=null;
    for(let y=2000;y<5000&&!point;y+=104)for(let x=2000;x<5000&&!point;x+=112){const q={x,y,mapId:'forest'};Object.assign(g.player,q);if(offsets.every(([dx,dy])=>!land.farmLandReason(g,{...q,x:x+dx,y:y+dy})))point=q;}
-   if(!point)throw Error('无合法二格区域');window.site=point;const now=Date.now();g.progress.farm.plots=offsets.slice(1).map(([dx,dy],i)=>({id:i+1,mapId:'forest',x:point.x+dx,y:point.y+dy,crop:i%3===0?3:1,plantedAt:now,readyAt:now+120000,watered:false}));g.progress.farm.nextId=23;g.progress.farm.dug=g.progress.farm.planted=22;Object.assign(g.player,{x:point.x-60,y:point.y});a.renderer.camera.time=null;a.refresh();
+   if(!point)throw Error('无合法二格区域');window.site=point;const now=Date.now();g.progress.farm.plots=offsets.slice(1).map(([dx,dy],i)=>({id:i+1,mapId:'forest',x:point.x+dx,y:point.y+dy,crop:i%3===0?3:1,plantedAt:now,readyAt:now+120000,watered:false}));g.progress.farm.nextId=27;g.progress.farm.dug=g.progress.farm.planted=26;Object.assign(g.player,{x:point.x-60,y:point.y});a.renderer.camera.time=null;a.refresh();
   });
 
   await page.evaluate(async()=>{window.persist=(await import('/src/platform/storage.js')).createSaveStore().saveProgress;a.game.livingPersist=window.persist;});
   await phase('day');await page.locator('#production-menu').tap();await page.locator('[data-production-tab=build]').tap();await page.locator('[data-production-build=sprinkler]').tap();await page.waitForFunction(()=>a.game.productionCursor);
-  await shot('coverage-20');await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.productionSpray?.devices?.length);
-  if(await page.evaluate(()=>a.game.progress.farm.plots.filter(p=>p.sprinklerWatered).length)!==20)throw Error('不是20块田');
+  await shot('coverage-24');await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.productionSpray?.devices?.length);
+  if(await page.evaluate(()=>a.game.progress.farm.plots.filter(p=>p.sprinklerWatered).length)!==24)throw Error('不是24块田');
   await page.locator('#production-menu').tap();await page.locator('[data-production-store]').scrollIntoViewIfNeeded();await shot('store-action');
   await page.evaluate(()=>a.game.livingPersist=()=>false);await page.locator('[data-production-store]').tap();if(await page.evaluate(()=>a.game.progress.production.sprinklerInventory)!==0)throw Error('失败仍收回');await shot('store-failure');
   await page.evaluate(()=>a.game.livingPersist=window.persist);await page.locator('[data-production-store]').tap();await page.waitForFunction(()=>a.game.progress.production.sprinklerInventory===1&&!a.game.progress.production.sprinklers.length);

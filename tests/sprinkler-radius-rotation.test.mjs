@@ -17,9 +17,9 @@ function setup(){
 }
 // 同一格心规则构造田块，成熟时间便于确认只应用一次减时。
 function plot(id,device,dx,dy){return {id,mapId:device.mapId,x:device.x+dx,y:device.y+dy,crop:1,plantedAt:1,readyAt:100000,watered:false};}
-test('两层去四角包含20个周围格，不包含远对角或三格外',()=>{
- const d={mapId:'forest',x:1000,y:1200};assert.equal(SPRINKLER_OFFSETS.length,20);
- for(let y=-3;y<=3;y++)for(let x=-3;x<=3;x++)assert.equal(sprinklerCovers(d,plot(1,d,x*56,y*52)),Math.max(Math.abs(x),Math.abs(y))<=2&&Math.abs(x)+Math.abs(y)<=3,x+','+y);
+test('两层包含四角共24个周围格，不包含三格外',()=>{
+ const d={mapId:'forest',x:1000,y:1200};assert.equal(SPRINKLER_OFFSETS.length,24);
+ for(let y=-3;y<=3;y++)for(let x=-3;x<=3;x++)assert.equal(sprinklerCovers(d,plot(1,d,x*56,y*52)),Math.max(Math.abs(x),Math.abs(y))<=2,x+','+y);
  assert.equal(sprinklerCovers(d,plot(1,d,112.1,0)),false);
  assert.equal(sprinklerCovers(d,plot(1,d,70,30)),true);
 });
@@ -27,15 +27,15 @@ test('覆盖使用世界最近镜像，不给另一张地图浇水',()=>{
  const d={id:1,mapId:'forest',x:20,y:30},p={mapId:'forest',x:WORLD.width-36,y:WORLD.height-22};
  assert.ok(sprinklerCovers(d,p));assert.equal(sprinklerCovers(d,{...p,mapId:'jiuzhaigou'}),false);
 });
-test('实际照料两层20格，只减时一次，保存后仍保持湿润',()=>{
+test('实际照料两层24格，只减时一次，保存后仍保持湿润',()=>{
  const g=setup(),d=g.progress.production.sprinklers[0];
  g.progress.farm.plots=SPRINKLER_OFFSETS.map(([x,y],i)=>plot(i+1,d,x,y));
- g.progress.farm.plots.push(plot(21,d,168,52),plot(22,d,112,104));g.progress.farm.nextId=23;
+ g.progress.farm.plots.push(plot(25,d,168,52),plot(26,d,112,156));g.progress.farm.nextId=27;
  assert.ok(updateProduction(g,1000));
- assert.ok(g.progress.farm.plots.slice(0,20).every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===70000));
- assert.ok(g.progress.farm.plots.slice(20).every(p=>!p.watered));
+ assert.ok(g.progress.farm.plots.slice(0,24).every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===70000));
+ assert.ok(g.progress.farm.plots.slice(24).every(p=>!p.watered));
  const before=structuredClone(g.progress);assert.equal(updateProduction(g,1001),false);assert.deepEqual(g.progress,before);
- assert.ok(validateProgress(g.progress).farm.plots.slice(0,20).every(p=>p.sprinklerWatered));
+ assert.ok(validateProgress(g.progress).farm.plots.slice(0,24).every(p=>p.sprinklerWatered));
 });
 test('失败不喷水不改湿土，暂停不处理，重试成功后才记录动画',()=>{
  const g=setup(),d=g.progress.production.sprinklers[0];g.progress.farm.plots=[plot(1,d,112,0)];

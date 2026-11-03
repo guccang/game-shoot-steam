@@ -38,11 +38,11 @@ export function consumeProductionCrop(progress,crop,count){
  const stores=[progress.farm.inventory,...progress.logistics.builds.filter((_,i)=>progress.vehicleHulls[i]).map(b=>b.cargo)];
  for(const stock of stores){const used=Math.min(stock[crop]||0,count);stock[crop]-=used;count-=used;if(!count)break;}
 }
-// 同茬只有真正被设备首次加速才记为设备照料；手浇和雨水优先时不抢功。
+// 按世界最近镜像覆盖周围两层方形区域，包含最外侧四角田块。
 export function sprinklerCovers(s,plot){
  if(s.mapId!==plot.mapId)return false;
  const p=nearest(plot,s),x=(p.x-s.x)/SPRINKLER.cellWidth,y=(p.y-s.y)/SPRINKLER.cellHeight;
- return Math.max(Math.abs(x),Math.abs(y))<=SPRINKLER.radius+1e-9&&Math.abs(x)+Math.abs(y)<=SPRINKLER.diagonalLimit+1e-9;
+ return Math.max(Math.abs(x),Math.abs(y))<=SPRINKLER.radius+1e-9;
 }
 // 所有出售入口共用一份保留配额，按背包、在场货舱顺序保护原料。
 export function productionSalePlan(progress,stocks){
