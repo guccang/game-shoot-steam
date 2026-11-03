@@ -5,7 +5,13 @@ import {mineTerrain,mineCellArea,mineBounds,mineInsideBounds} from '../config/mi
 const terrains=new WeakMap();
 export const MINE_SURFACE_STEP=16;
 // 只缓存稳定地理，不缓存开掘状态；同一对象直接开格也会立即反映到碰撞。
-function terrain(layer,x,y){let cache=terrains.get(layer);const tag=`${layer.seed}:${layer.entry}:${Object.values(mineBounds(layer)).join(',')}`;if(!cache||cache.tag!==tag){cache={tag,cells:new Map()};terrains.set(layer,cache);}const key=`${x},${y}`;let t=cache.cells.get(key);if(!t){if(cache.cells.size>=4096)cache.cells.clear();t={...mineTerrain({x,y},layer),area:mineCellArea({x,y},layer)>0};cache.cells.set(key,t);}return {open:t.area&&(t.natural||!!layer.dug?.[key])?1:0,water:t.area&&t.water?1:0};}
+function terrain(layer,x,y){
+ let cache=terrains.get(layer);const b=mineBounds(layer);
+ if(!cache||cache.seed!==layer.seed||cache.entry!==layer.entry||cache.left!==b.left||cache.top!==b.top||cache.right!==b.right||cache.bottom!==b.bottom){cache={seed:layer.seed,entry:layer.entry,...b,cells:new Map()};terrains.set(layer,cache);}
+ const key=`${x},${y}`;let t=cache.cells.get(key);
+ if(!t){if(cache.cells.size>=4096)cache.cells.clear();t={...mineTerrain({x,y},layer),area:mineCellArea({x,y},layer)>0};cache.cells.set(key,t);}
+ return {open:t.area&&(t.natural||!!layer.dug?.[key])?1:0,water:t.area&&t.water?1:0};
+}
 // 三次缓动让格角变成弧线；轻微低频偏移消除长直格边，不重抽地理种子。
 export function mineSurfaceField(layer,x,y){
  const seed=layer.seed||1847,wx=x+Math.sin(y/83+seed)*6+Math.cos(y/139+seed)*3,wy=y+Math.sin(x/97+seed)*6;

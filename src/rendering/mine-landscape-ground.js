@@ -1,20 +1,25 @@
+import {createMineSurfaceCache,mineSurfaceContours} from '../world/mine-surface-cache.js';
 // 连续地下地貌：复用地表的湿岸、浅滩、岩床和分层水色，不再逐格贴地板。
-import {buildMineSurface,mineSurfaceField} from '../world/mine-surface.js';
+import {mineSurfaceField} from '../world/mine-surface.js';
 import {mineCell,minePoint} from '../config/mining.js';
-import {mineTerrain,mineHash,mineBounds,mineInsideBounds} from '../config/mine-ecology.js';
+import {mineTerrain,mineHash,mineInsideBounds} from '../config/mine-ecology.js';
 import {oval,poly} from './primitives.js';
 import {shoreStone} from './shore-art.js';
 const caches=new WeakMap();
-// 所有小三角形一次填充成连续面，只有真实等值边生成描边。
-function surfacePath(polygons){const path=new Path2D();for(const points of polygons){path.moveTo(points[0].x,points[0].y);for(const p of points.slice(1))path.lineTo(p.x,p.y);path.closePath();}return path;}
+// 抵消三角面内部边后填充真实轮廓，保持原开口与孔洞，降低每帧填充和裁切成本。
+function surfacePath(polygons){const path=new Path2D();for(const points of mineSurfaceContours(polygons)){path.moveTo(points[0].x,points[0].y);for(const p of points.slice(1))path.lineTo(p.x,p.y);path.closePath();}return path;}
 // 短段只表示岸边，不把三角网格内部边缘画出来。
 function edgePath(edges){const path=new Path2D();for(const [a,b] of edges){path.moveTo(a.x,a.y);path.lineTo(b.x,b.y);}return path;}
-// 每个正式绘制器只保留一份可见几何，无离屏位图、无全图缓存。
+// 每个绘制器保留有界分块路径，跨格只合并路径，不重建整个视口的三角面。
 function geometry(renderer,layer,first,last){
- const key=`${first.x},${first.y}:${last.x},${last.y}:${layer.seed}:${layer.entry}:${Object.values(mineBounds(layer)).join(',')}`,previous=caches.get(renderer);
- if(previous?.dug===layer.dug&&previous.key===key)return previous;
- const p=minePoint(first),q=minePoint(last),mesh=buildMineSurface(layer,{x:p.x-64,y:p.y-64,w:q.x-p.x+128,h:q.y-p.y+128});
- const value={key,dug:layer.dug,open:surfacePath(mesh.open),water:surfacePath(mesh.water),walls:edgePath(mesh.walls),shores:edgePath(mesh.shores),rect:mesh.rect,nodes:mesh.nodes,edges:mesh.walls.length+mesh.shores.length};caches.set(renderer,value);return value;
+ let cache=caches.get(renderer);if(!cache){cache={chunks:createMineSurfaceCache(mesh=>({open:surfacePath(mesh.open),water:surfacePath(mesh.water),walls:edgePath(mesh.walls),shores:edgePath(mesh.shores)}))};caches.set(renderer,cache);}
+ const p=minePoint(first),q=minePoint(last),sample=cache.chunks.sample(layer,{x:p.x-64,y:p.y-64,w:q.x-p.x+128,h:q.y-p.y+128});
+ if(!cache.items||cache.items.length!==sample.items.length||sample.items.some((item,i)=>item!==cache.items[i])){
+  const value={open:new Path2D(),water:new Path2D(),walls:new Path2D(),shores:new Path2D(),rect:sample.rect,nodes:0,edges:0};
+  for(const chunk of sample.items){for(const kind of ['open','water','walls','shores'])value[kind].addPath(chunk.value[kind]);value.nodes+=chunk.nodes;value.edges+=chunk.edges;}
+  cache.items=sample.items;cache.value=value;
+ }
+ Object.assign(cache.value,{chunkCaches:sample.cached,chunkRebuilds:sample.rebuilt,totalChunkBuilds:sample.builds});return cache.value;
 }
 // 与地表草坡相同的中点曲线，宽窄变化由世界种子决定而非镜头随机。
 function patch(c,x,y,rx,ry,seed,color){
@@ -67,5 +72,5 @@ export function drawMineLandscapeGround(renderer,layer,first,last,night,time){
  // 深水色块轻微偏移，沿用地表湖泊的有限层次，不使用重渐变。
  c.globalAlpha=.14;for(let y=Math.floor(first.y/3)*3;y<=last.y+3;y+=3)for(let x=Math.floor(first.x/4)*4;x<=last.x+4;x+=4){const p=minePoint({x,y});patch(c,p.x-28,p.y+14,94,48,x+y,night?'#245c70':'#287e9c');}c.restore();
  const waves=waterMotion(c,layer,mesh,night,time),stones=shoreDetails(c,layer,first,last,night,time);c.restore();
- renderer.mineLandscapeReview={designCriterion:'underground-landscape-quality',continuous:true,sharedCollision:true,nodes:mesh.nodes,edges:mesh.edges,waves,stones,animationTime:time,newBitmapBytes:0,geometryCaches:1};
+ renderer.mineLandscapeReview={designCriterion:'underground-landscape-quality',continuous:true,sharedCollision:true,nodes:mesh.nodes,edges:mesh.edges,waves,stones,animationTime:time,newBitmapBytes:0,geometryCaches:1,chunkCaches:mesh.chunkCaches,chunkRebuilds:mesh.chunkRebuilds,totalChunkBuilds:mesh.totalChunkBuilds};
 }

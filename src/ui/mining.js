@@ -16,7 +16,7 @@ import {canonical} from '../world/coordinates.js';
 
 // HUD只更新数值和按钮状态，避免每帧重建触摸目标。
 export function createMining({game,renderer,root,panel,input,dialogs,onCharacter}){
- const scope=createEventScope(),hud=root.createElement('div'),controls=root.createElement('div'),dialog=root.createElement('dialog');let pending=null,mapTime=0;
+ const scope=createEventScope(),hud=root.createElement('div'),controls=root.createElement('div'),dialog=root.createElement('dialog');let pending=null,mapTime=0,hudTime=-Infinity,hudRoom=null,hudSignature='';
  hud.id='mine-hud';hud.hidden=true;hud.innerHTML='<div><b id="mine-layer-title">矿锄 · 地下探索</b><p id="mine-wallet"></p><p id="mine-development"></p><p id="mine-position"></p><p id="mine-home"></p></div><canvas id="mine-minimap" width="224" height="224" aria-label="地下小地图，北方朝上，小屋为黄色，洞口为蓝色"></canvas>';
  controls.id='mine-controls';controls.hidden=true;controls.innerHTML=`<p id="mine-message" role="status"></p><div class="mine-tools" role="group" aria-label="地下快捷工具">${MINE_TOOLS.map(([id,name])=>`<button class="ui-button" data-mine-tool="${id}" aria-label="${name}" aria-pressed="false">${mineToolIcon(id)}<span>${name}</span></button>`).join('')}</div><div class="mine-actions"><button class="ui-button" id="mine-weapon" aria-pressed="false">拿起武器</button><button class="ui-button" id="mine-build">更多建设</button><button class="ui-button" id="mine-board">乘矿车</button><button class="ui-button" id="mine-drive" hidden>开车</button><button class="ui-button" id="mine-exit">返回小屋</button></div>`;
  dialog.id='mine-build-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','mine-build-title');
@@ -37,9 +37,14 @@ export function createMining({game,renderer,root,panel,input,dialogs,onCharacter
  scope.on(dialog,'click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-mine-close'))dialogs.close(dialog.id);else if(b.dataset.mineSpecial||b.dataset.mineBuild||b.hasAttribute('data-mine-shaft')||b.hasAttribute('data-mine-backpack')){pending={room:game.cottage,kind:b.dataset.mineSpecial||b.dataset.mineBuild||(b.hasAttribute('data-mine-backpack')?'backpack':'shaft'),ahead:b.hasAttribute('data-ahead')};dialogs.close(dialog.id);}});
  // 地图每100毫秒采样可见格，所有按钮保留44像素触摸范围。
  function render(){
-  const room=game.cottage,isMine=room?.kind==='mine';hud.hidden=controls.hidden=!isMine;directions.render();
-  if(!isMine){pending=null;if(dialog.open)dialogs.close(dialog.id);return;}
+  const room=game.cottage,isMine=room?.kind==='mine';hud.hidden=controls.hidden=!isMine;
+  if(!isMine){hudRoom=null;hudTime=-Infinity;directions.render();pending=null;if(dialog.open)dialogs.close(dialog.id);return;}
   if(pending&&game.state==='playing'){const action=pending;pending=null;if(action.room===room){if(action.kind==='backpack'){input.reset();onCharacter();}else if(action.kind==='down'||action.kind==='up')travelMineLayer(game,action.kind==='down'?1:-1);else if(action.kind==='harvest')harvestMine(game);else if(action.kind==='bridge'||action.kind==='bridge-here')buildMineBridge(game,action.kind==='bridge');else if(action.kind==='shaft')startMineShaft(game);else buildMine(game,action.kind,action.ahead);}}
+  // 数值与小地图同为10Hz刷新；工具、停车、弹窗和屏幕尺寸变化立即更新。
+  // 避免每个显示帧重写相同文本后强制测量布局，让镜头移动不被HUD阻塞。
+  const now=performance.now(),signature=[room.tool,room.autoDig,room.ride,room.running,room.weaponReady,room.notice,game.state,renderer.width,renderer.height].join('|');
+  if(room===hudRoom&&signature===hudSignature&&now-hudTime<100)return;
+  hudTime=now;hudRoom=room;hudSignature=signature;directions.render();
   const m=currentMineLayer(game),cell=mineCell(game.player),key=mineKey(cell),point=canonical(game.player),distance=Math.round(Math.hypot(cell.x,cell.y));
   root.getElementById('mine-layer-title').textContent=`地下 ${room.depth||1} 层 · ${mineTerrain(cell,m).biome.name}`;
   root.getElementById('mine-development').textContent=`面积 ${m.coverage.toFixed(0)}% · 开发 ${(mineDevelopment(m).ratio*100).toFixed(2)}% / 50%`;

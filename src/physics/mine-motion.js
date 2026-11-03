@@ -9,7 +9,7 @@ export function mineBodyRadius(game){return game.vehicle?.active?game.vehicle.in
 export function mineOccupancy(game,x,y,radius=mineBodyRadius(game),swim=!!(game.vehicle?.active&&(game.player.amphibious||game.player.flying))){
  const layer=mineLayer(game.progress.mining,game.cottage?.depth||1);if(!layer)return false;const b=mineBounds(layer);
  if(x-radius<b.left||x+radius>b.right||y-radius<b.top||y+radius>b.bottom)return false;
- for(let i=-1;i<8;i++){const angle=i*Math.PI/4,px=x+(i<0?0:Math.cos(angle)*radius),py=y+(i<0?0:Math.sin(angle)*radius),cell=mineCell({x:px,y:py}),key=mineKey(cell),surface=mineSurfaceAt(layer,px,py);if(!surface.open||!swim&&surface.water&&!layer.bridges?.[key])return false;}
+ for(let i=-1;i<(radius>0?8:0);i++){const angle=i*Math.PI/4,px=x+(i<0?0:Math.cos(angle)*radius),py=y+(i<0?0:Math.sin(angle)*radius),cell=mineCell({x:px,y:py}),key=mineKey(cell),surface=mineSurfaceAt(layer,px,py);if(!surface.open||!swim&&surface.water&&!layer.bridges?.[key])return false;}
  return true;
 }
 // 弹道与攻击不越过未开掘岩壁；水面不会阻挡空中投射物。

@@ -1927,3 +1927,8 @@ export function inspectMineCombat(game,renderer,root=document){
  const b=game.cottage?.combat;
  return {...inspectMining(game,renderer,root),designCriterion:'mine-weapons-balance',weapon:renderer.mineReview?.weapon,armed:!!game.cottage?.weaponReady,projectiles:b?.projectiles.length||0,fx:b?.fx.items.length||0,newBitmapBytes:0,animals:(game.cottage?.ecologyActors||[]).map(a=>({kind:a.kind,hp:a.hp,maxHp:a.maxHp,phase:a.phase,clock:a.clock}))};
 }
+
+// 移动性能验收读取真实镜头、座位锚点和有界地形缓存，耗时由正式帧循环采集。
+export function inspectMineMotionPerformance(game,renderer,root=document){
+ return {...inspectMineLandscapeQuality(game,renderer,root),designCriterion:'mine-motion-performance',rider:renderer.mineCartRiderReview,chunkCacheLimit:48};
+}
