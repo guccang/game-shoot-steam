@@ -1,5 +1,5 @@
 // 建筑本体与门前空地都是透明入口，短按走到门口，拖动继续使用摇杆。
-import {CLICK_BUILDINGS,clickableBuildings,buildingContains,approachBuilding} from '../core/scene-approach.js';
+import {CLICK_BUILDINGS,clickableBuildings,buildingContains,buildingClickHeight,approachBuilding} from '../core/scene-approach.js';
 import {SCENE_APPROACH} from '../config/scene-approach.js';
 import {facilityOpen} from '../config/town-restoration.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
@@ -24,13 +24,13 @@ export function createWorldWorkshop({game,renderer,root,kind,onLocked}){
  function tap(event){
   if(!renderer.view||root.querySelector('dialog[open]'))return false;
   const r=renderer.canvas.getBoundingClientRect(),v=renderer.view,point={x:v.x+(event.clientX-r.left)/r.width*v.w,y:v.y+(event.clientY-r.top)/r.height*v.h};
-  const building=buildings.find(b=>buildingContains(b,point));return building?activate(building):false;
+  const building=buildings.find(b=>buildingContains(b,point,game));return building?activate(building):false;
  }
  // 屋顶至门前合并为透明触控区，保留中文无障碍名称与44像素最小边界。
  function render(){
   const available=clickableBuildings(game);layer.hidden=root.hidden||!!root.querySelector('dialog[open]')||!available.length;
   if(layer.hidden)return;
-  buildings.forEach((b,i)=>{const button=buttons[i];if(!available.some(item=>item.id===b.id)){button.hidden=true;return;}const foot=b.door.y-b.site.y+SCENE_APPROACH.doorDepth;placeSceneHit(button,b.site,renderer,frame,{width:b.site.width,height:b.site.height+foot,foot});});
+  buildings.forEach((b,i)=>{const button=buttons[i];if(!available.some(item=>item.id===b.id)){button.hidden=true;return;}const foot=b.door.y-b.site.y+SCENE_APPROACH.doorDepth;placeSceneHit(button,b.site,renderer,frame,{width:b.site.width,height:buildingClickHeight(b,game)+foot,foot});});
  }
  // 离场销毁热点及监听，不保留旧建筑的点击接线。
  function dispose(){scope.dispose();layer.remove();}

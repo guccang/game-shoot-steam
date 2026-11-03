@@ -18,6 +18,25 @@
 ## 5 生成指令
 不调用图片生成；复用现有画笔与世界渲染，主要入口为 construction-company、cottage、home-balcony 绘制模块。无需后续 PNG 替换才能交付。
 
+## 2026-11-03 加盖立面整体化（制作前约定）
+
+本轮继续程序几何开发，参考用户的63层截图及正式 `building-architecture.js` 小屋；修复“窄楼身后面叠完整小屋”的双屋顶结构。改用同宽连续墙面、贯通木柱、相同窗框、单个顶部屋顶，底部门、招牌与石基保持原位。2层保留原样，3层开始延伸立面，超高层最多绘制6排新增窗层并另显真实层数。
+
+逻辑宽130、屋檐宽146；原屋顶高135，每排加32，最高327；图集180×(164+新增高度)，2倍采样，底座原点(0,0)。单栋主体按原脚底排序，地面接触影与旧底座保持一致；上层窗光和屋顶雪随新高度移动，沿用昼夜/融雪材质混合。门口、实体占地、室内层数、电梯及阳台接口不变；点击范围和透显范围覆盖完整新楼身。图集仅按有限展示排数缓存，不按真实层数分配图片；不新增下载素材。角色、怪物、载具与操枪动画无修改，静态建筑不新增动画；PNG精修为后续独立阶段。
+
+### 本轮验收结果（通过）
+
+- 结构与风格：实际检查2、3、8、63、1000001层。原两层不变；加盖后墙面、侧墙和立柱从同一石基连续向上，唯一主屋顶位于最高处，首层入口和招牌保持原位。暖光与积雪跟随同一个新楼身。参考：[63层白天](../art-reference/cottage-unified/63-day.png)、[63层夜晚](../art-reference/cottage-unified/63-night.png)、[冬季屋顶](../art-reference/cottage-unified/63-snow-day.png)。
+- 昼夜同屏：正式营地里同时检查猫、手持枪、团怪、停放载具、周边建筑、草地与HUD；有限平涂和森林绿描边一致，无叠加原始小屋或第二个主屋顶。
+- 手机与容器：320×568、390×844、844×390、1280×900各昼夜截图通过；沿用既有竖版容器。短横屏按正常跟随镜头显示楼身局部，移动即可查看顶部，未新增桌面布局或缩小角色。
+- 遮挡、通行与交互：实际方向键横向走过楼后，整栋楼统一透显；[夜间屋后](../art-reference/cottage-unified/behind-night.png)中角色可辨。真实触屏点新增上层墙面（底座向上280单位）后，角色经原有寻路走到门口、一秒候停并进入一楼。原建筑碰撞和停车范围未改。连续过程保留在本地 `output/playwright/cottage-unified/video/page@6d972ee3dad8e20f6fa78e5b6a8c93e7.webm`。
+- 资源预算：无新增运行图片、下载、视频或动作素材。最高楼身的昼夜/有雪/无雪合计4张360×712 RGBA画布，共4,101,120字节（约3.91MiB）；换展示高度释放旧楼身。正式绘制器以半雪/半夜采样并连续绘制百万层以上28个层数，场景图集保持10项、5,472,768字节，不随真实层数增长。材质混合沿用现有单个工作画布。
+- 针对性检查：`home-construction.test.mjs` 11项、`scene-approach.test.mjs` 7项通过；`cottage-exterior-browser.cjs` 21个实机记录通过，页面异常0；另补充63层猫/怪物/载具昼夜同屏检查。首次绕行夹具落在快递站碰撞边缘，调整到可通行的屋后空地后完成实走，未改变正式碰撞。
+- 正式绘制入口：`renderer.js → scenery.js → cozy-cottage.js → building-architecture.js#drawBuildingArchitecture`；层数牌为 `construction-company.js#drawHomeFloorSign`。`visual-review.js#inspectHomeConstruction`返回共用外观高度；`visual-contract.json`的 `designCriterion: cottage-construction` 已补充整体立面目标和专项浏览器脚本。
+- 本轮开发阶段结论：通过。静态建筑无需新增动画；猫真实连续帧、武器独立部件、怪物和载具动作未修改。PNG精修仍为后续独立阶段，本次修复不依赖新增图片。
+
+其余截图和复现脚本保存在主检出的 `output/playwright/cottage-unified/`。
+
 ## 6 验收记录
 结论：通过。designCriterion：`cottage-construction`，绑定 `visual-contract.json` 与 `src/rendering/visual-review.js#inspectHomeConstruction`。
 

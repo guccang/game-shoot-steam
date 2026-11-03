@@ -1,4 +1,5 @@
 import {outdoorObjects} from './outdoors.js';
+import {homeExterior} from '../config/home-construction.js';
 // 野外验收只读取正式营地、动作条与钓鱼状态，不提供另一套预览绘制。
 export function inspectOutdoors(renderer,root){
  const g=renderer.game,f=g.fishing,hud=root.getElementById('fishing-hud');
@@ -1877,4 +1878,4 @@ export function inspectCampDailyLife(game,renderer,root){
 }
 
 // 建筑验收读取真实房间、楼层、营地取景与触控尺寸，绝不为检查另造场景。
-export function inspectHomeConstruction(game,renderer,root=document){return {designCriterion:"cottage-construction",home:structuredClone(game.progress.homeDecor),room:game.cottage?{floor:game.cottage.floor,balcony:game.cottage.balcony,kind:game.cottage.kind}:null,view:renderer.balconyView,companyOpen:!!root.getElementById("home-construction-dialog")?.open,fields:[...root.querySelectorAll("#home-construction-dialog input,#home-construction-dialog select")].map(n=>({height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+export function inspectHomeConstruction(game,renderer,root=document){return {designCriterion:"cottage-construction",exterior:homeExterior(game.progress.homeDecor),home:structuredClone(game.progress.homeDecor),room:game.cottage?{floor:game.cottage.floor,balcony:game.cottage.balcony,kind:game.cottage.kind}:null,view:renderer.balconyView,companyOpen:!!root.getElementById("home-construction-dialog")?.open,fields:[...root.querySelectorAll("#home-construction-dialog input,#home-construction-dialog select")].map(n=>({height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}

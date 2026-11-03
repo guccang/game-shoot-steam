@@ -21,8 +21,8 @@ function windowFrame(c,x,y,w,h,night){
  box(c,x-6,y+h+2,w+12,5,1,'#d9c999',EDGE,1);
 }
 // 石基和门槛明确房屋占地，通行口放在底座中央并与一秒进屋点对齐。
-export function drawBuildingArchitecture(c,kind,winter=false,night=0){
- const d=DESIGNS[kind]||DESIGNS.cottage,w=d.w,h=d.h,left=-w/2,right=w/2,wall=-h*.63;
+export function drawBuildingArchitecture(c,kind,winter=false,night=0,extraRows=0){
+ const d=DESIGNS[kind]||DESIGNS.cottage,w=d.w,lift=kind==='cottage'?extraRows*32:0,h=d.h+lift,left=-w/2,right=w/2,wall=-d.h*.63-lift;
  c.save();oval(c,7,5,w*.51,12,'#29463832');
  box(c,left,-14,w,20,3,'#849381',EDGE,2);for(let x=left+4;x<right-5;x+=22){c.strokeStyle='#bec4a2';c.lineWidth=1.4;c.beginPath();c.moveTo(x,-12);c.lineTo(x,-3);c.stroke();}
  poly(c,[[left+5,wall],[right-13,wall-8],[right,wall+4],[right,-5],[right-13,1],[left+5,-5]],'#eee0b9',EDGE,2.3);
@@ -30,6 +30,13 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
  // 木构柱与墙裙让封闭房屋区别于原先可穿行的小棚。
  for(const x of [left+5,right-19])box(c,x,wall+6,6,-wall-8,1,'#9e835d',EDGE,1.3);
  box(c,left+6,-23,w-25,10,1,'#d0bd8d');
+ // 加盖与首层共用完整墙面、侧墙和立柱，楼层之间只有腰线，不插入旧屋顶。
+ if(lift)for(let row=0;row<extraRows;row++){
+  const y=-d.h*.63-row*32;
+  box(c,left+6,y-2,w-25,4,1,'#c5b58c',EDGE,1);
+  poly(c,[[right-19,y-2],[right,y+1],[right,y+5],[right-19,y+2]],'#9c9876',EDGE,1);
+  for(const x of [left+13,right-43])windowFrame(c,x,y-25,22,17,night);
+ }
  if(kind==='weapons'||kind==='legendary'){
   // 锻造屋使用不对称高低屋面和独立烟囱，重车工坊使用更宽的厂房剪影。
   box(c,right-35,-h+4,16,31,2,'#9eab94',EDGE,2);box(c,right-39,-h+1,24,7,2,'#d7d3b0',EDGE,1.7);
@@ -85,7 +92,7 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0){
  }else if(kind==='kitchen'){
   box(c,-30,wall+6,60,16,3,'#c49569',EDGE,1.4);oval(c,0,wall+14,10,4,'#e7dcb5',EDGE,1.3);
  }
- drawWorldSign(c,d.name,0,kind==='relay'?-54:wall+15);
+ drawWorldSign(c,d.name,0,kind==='relay'?-54:wall+lift+15);
  if(winter)poly(c,[[left-6,wall-4],[-10,-h-1],[right-3,-h+24],[right, -h+31],[-9,-h+7],[left+2,wall-2]],'#ecf0db',null);
  c.restore();
 }

@@ -9,6 +9,20 @@ import {enterCottage,updateCottage,cottageBlocked} from '../src/core/cottage.js'
 import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
 import {driveBody} from '../src/physics/motion.js';
 import {WORLD} from '../src/world/coordinates.js';
+import {homeExterior} from '../src/config/home-construction.js';
+
+// 外观升高后的屋顶支持点击，压缩展示不得限制真实楼层或扩大未修复地块。
+test('加盖楼身和屋顶共用点击高度，超高楼层外观有界',()=>{
+ const game=scene(),building=CLICK_BUILDINGS.find(b=>b.id==='cottage');
+ for(const floors of [3,8,63,1000001]){
+  game.progress.homeDecor.floors=floors;
+  const shape=homeExterior(game.progress.homeDecor),point={x:building.site.x,y:building.site.y-shape.height+5};
+  assert.ok(buildingContains(building,point,game));assert.ok(!buildingContains(building,{...point,y:point.y-10},game));
+  assert.ok(shape.height<=362);assert.equal(shape.floors,floors);
+ }
+ game.progress.restoration.repaired=[];
+ assert.ok(!buildingContains(building,{x:building.site.x,y:building.site.y-300},game));
+});
 
 // 使用正式进度和房间，隔离战斗生成以验证本次移动职责。
 function scene(inside=false){const progress=freshProgress();progress.arrival={version:3,phase:'complete',keys:true,parked:false};progress.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);progress.vehicleHulls[6]=1;progress.homeDecor.floors=2;const game=new Game(progress,()=>.5);game.state='playing';game.vehicle.active=false;game.mainlineSpeech=null;game.trees=[];game.player.livingCollision=true;Object.assign(game.player,COTTAGE.door);if(inside)assert.ok(enterCottage(game));return game;}

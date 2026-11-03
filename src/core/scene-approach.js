@@ -6,6 +6,7 @@ import {nearest,worldDistance} from '../world/coordinates.js';
 import {canInspectBuilding} from './building-entry.js';
 import {canEnterCottage,cottageBlocked} from './cottage.js';
 import {facilityOpen} from '../config/town-restoration.js';
+import {homeExterior} from '../config/home-construction.js';
 import {createQuestRouteSearch} from '../physics/quest-route.js';
 import {playerNavigationBody} from './prepared-navigation.js';
 import {farmMode} from './farm.js';
@@ -15,7 +16,9 @@ export {CLICK_BUILDINGS};
 // 限制场景状态，保留修复、传奇解锁及活动中的原有权限。
 export function clickableBuildings(game){return canInspectBuilding(game)&&canEnterCottage(game)&&game.state==='playing'&&!game.progress.restoration?.build&&!farmMode(game)?CLICK_BUILDINGS.filter(b=>b.id!=='legendary'||game.progress.vehicleHulls[6]):[];}
 // 命中完整建筑和门前空地，循环世界边缘使用最近镜像。
-export function buildingContains(building,point){const site=nearest(building.site,point),door=nearest(building.door,point);return Math.abs(point.x-site.x)<=building.site.width/2&&point.y>=site.y-building.site.height&&point.y<=site.y+20||Math.abs(point.x-door.x)<=A.doorHalfWidth&&Math.abs(point.y-door.y)<=A.doorDepth;}
+export function buildingContains(building,point,game){const site=nearest(building.site,point),door=nearest(building.door,point);return Math.abs(point.x-site.x)<=building.site.width/2&&point.y>=site.y-buildingClickHeight(building,game)&&point.y<=site.y+20||Math.abs(point.x-door.x)<=A.doorHalfWidth&&Math.abs(point.y-door.y)<=A.doorDepth;}
+// 加盖后的整栋立面都可点击；未修复时继续使用原施工地块的范围。
+export function buildingClickHeight(building,game){return building.id==='cottage'&&facilityOpen(game?.progress,'cottage')?homeExterior(game.progress.homeDecor).height:building.site.height;}
 // 当前楼层只暴露真实床和楼梯；阳台、死亡和睡眠不接受新的移动意图。
 export function cottageClickTargets(game){
  const room=game.cottage;if(!room||room.kind!=='cottage'||room.balcony||room.sleep||game.player.hp<=0)return [];

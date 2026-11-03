@@ -59,7 +59,7 @@ export function winterPlant(c) {
 // 屋顶、麦穗和低矮摆件的薄雪贴合已有顶面，保留材质与前后遮挡。
 export function drawScenerySnow(c, item) {
   if(item.kind==='cottage') {
-    drawCozyCottageSnow(c);
+    drawCozyCottageSnow(c,item.homeFloors);
   } else if(item.kind==='fence') {
     for(const [x,y] of [[-42,-41],[0,-37],[42,-39]])snowCap(c,x,y,7,3);
   } else if(item.kind==='stones') {

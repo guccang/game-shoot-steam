@@ -1,5 +1,5 @@
 import {drawHomeBalcony} from './home-balcony.js';
-import {constructionObjects,drawConstructionCompany,drawHomeExpansion} from './construction-company.js';
+import {constructionObjects,drawConstructionCompany} from './construction-company.js';
 import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
 import {outdoorBusy} from '../core/outdoors.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from './scene-npc-continuity.js';
@@ -433,7 +433,7 @@ export class Renderer {
         item.x < cameraX - margin ||
         item.x > cameraX + w / zoom + margin ||
         item.y < cameraY - (item.burst?180:70) ||
-        item.y > cameraY + h / zoom + (item.kind==='cottage'&&!item.workshop?340:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
+        item.y > cameraY + h / zoom + (item.kind==='cottage'&&!item.workshop?380:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
       )
         continue;
       // 屋体前后层同步显露；库内车辆仍只在消防设施已开放时出现。
@@ -466,8 +466,8 @@ export class Renderer {
       else if (item.type === 'scenery') {
         // 工坊造型由已保存的入职阶段投影，不叠画旧小屋或额外封门图层。
         const build=item.workshop===true?workshopBuildView(source):null;
-        if(item.kind==='cottage'&&!item.workshop&&facilityOpen(source.progress,'cottage'))drawHomeExpansion(c,item,source.progress.homeDecor,light.night,g.player);
-        drawScenery(c,build?{...item,workshopState:build.state,rebuildProgress:build.progress,reducedMotion:this.reduced.matches}:item,light.night,item.kind==='garage'&&parkingGaragePose(g.player,g.vehicle)?null:g.player,winter);
+        const home=item.kind==='cottage'&&!item.workshop&&facilityOpen(source.progress,'cottage')?{...item,homeFloors:source.progress.homeDecor?.floors}:item;
+        drawScenery(c,build?{...item,workshopState:build.state,rebuildProgress:build.progress,reducedMotion:this.reduced.matches}:home,light.night,item.kind==='garage'&&parkingGaragePose(g.player,g.vehicle)?null:g.player,winter);
       }
       else if (item.type === 'fixture') drawLightFixture(c, item, time, light, this.reduced.matches);
       else if (item.type === 'signpost') drawRegionSignpost(c, item, light.night, g.player, zoom);

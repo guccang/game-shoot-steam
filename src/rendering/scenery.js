@@ -1,4 +1,6 @@
 import {createRenderCanvas} from './canvas-recovery.js';
+import {homeExterior} from '../config/home-construction.js';
+import {drawHomeFloorSign} from './construction-company.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { releaseArtCache } from '../art-styles/cache.js';
@@ -7,7 +9,7 @@ import { drawTownGround, drawTownSign } from './town-layout.js';
 import { TOWN_LAYOUT,TOWN_SHIFT_X } from '../config/town-layout.js';
 import {WORLD} from '../world/coordinates.js';
 import { drawGarage, drawGarageGround } from './garage.js';
-import { mixRaster } from './season-raster.js';
+import { mixRaster, releaseRaster } from './season-raster.js';
 import { drawWeaponWorkshop, drawWeaponWorkshopConstruction } from './weapon-workshop-building.js';
 import { drawScenerySnow, winterPlant } from './winter-art.js';
 import { box, oval, poly } from './primitives.js';
@@ -390,9 +392,12 @@ function tent(c) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 function sprite(item, winter) {
+  const home=item.kind==='cottage'&&!item.workshop?homeExterior({floors:item.homeFloors}):null;
+  // 加盖后释放旧高度的昼夜/雪景图集，只保留当前楼身，连续购买也不会累积历史画布。
+  if(home)for(const [key,entry] of atlas)if(entry.homeRows!=null&&entry.homeRows!==home.rows){releaseRaster(entry.day);releaseRaster(entry.night);atlas.delete(key);}
   // 图集键与宽穗/短茎的两行周期一致，避免另一行命中错误造型。
   const key =
-    `${winter}:` +
+    `${winter}:${home?.rows||0}:` +
     (item.kind === 'wheat'
       ? `wheat:${item.width}:${item.row % style.scenery.wheatRowPeriod}`
       : item.kind +
@@ -405,7 +410,7 @@ function sprite(item, winter) {
   if (atlas.has(key)) return atlas.get(key);
   const propSize = CAMP_PROP_SIZES[item.kind];
   const width = item.kind === 'wheat' ? item.width + 24 : propSize?.[0] || (item.kind === 'garage' ? 240 : 180);
-  const height = item.kind === 'wheat' ? 48 : propSize?.[1] || (item.kind === 'garage' ? 200 : 164);
+  const height = (item.kind === 'wheat' ? 48 : propSize?.[1] || (item.kind === 'garage' ? 200 : 164))+(home?.lift||0);
   const canvas = createRenderCanvas();
   canvas.width = width * 2;
   canvas.height = height * 2;
@@ -416,13 +421,13 @@ function sprite(item, winter) {
   else if (item.kind === 'cottage') {
     if (item.workshop)
       drawWeaponWorkshop(c, item.workshopState === 'ruined' || item.workshopState === 'rebuilding', winter);
-    else drawCozyCottage(c, winter);
+    else drawCozyCottage(c, winter,item.homeFloors);
   } else if (item.kind === 'garage') drawGarage(c, winter);
   else if (item.kind === 'tent') tent(c);
   else if (winter && item.kind === 'flowers') winterPlant(c);
   else drawCampProp(c, item.kind);
   if (winter && !item.workshop) drawScenerySnow(c, item);
-  const entry = { day: canvas, night: null, width, height };
+  const entry = { day: canvas, night: null, width, height,homeRows:home?.rows };
   atlas.set(key, entry);
   return entry;
 }
@@ -433,7 +438,7 @@ function buildingOpacity(item, player) {
     x = (player.x - item.x) / size,
     y = (player.y - item.y) / size;
   const bounds =
-    item.kind === 'garage' ? [-120, 120, -175] : item.kind === 'cottage' ? [-80, 82, -140] : [-62, 80, -80];
+    item.kind === 'garage' ? [-120, 120, -175] : item.kind === 'cottage' ? [-80, 82, item.workshop?-140:-homeExterior({floors:item.homeFloors}).height] : [-62, 80, -80];
   const overlap = Math.max(0, Math.min(1, (x - bounds[0]) / 18, (bounds[1] - x) / 18, (y - bounds[2]) / 18, -y / 12));
   return 1 - 0.45 * overlap * overlap * (3 - 2 * overlap);
 }
@@ -445,7 +450,7 @@ function sceneryNight(entry, item) {
     context.save();
     context.scale(2, 2);
     context.translate(entry.width / 2, entry.height - 16);
-    drawCozyCottageWarmth(context);
+    drawCozyCottageWarmth(context,item.homeFloors);
     context.restore();
   }
   return canvas;
@@ -489,6 +494,8 @@ export function drawScenery(c, item, night = 0, player = null, winter = false) {
     c.globalAlpha = alpha;
     drawWeaponWorkshopConstruction(c, item.rebuildProgress, night, snow, item.reducedMotion);
   }
+  // 层数牌不烘焙入图集，百万层与同样的六排外观共用缓存。
+  if(item.kind==='cottage'&&!item.workshop){c.globalAlpha=alpha;drawHomeFloorSign(c,item.homeFloors);}
   c.restore();
 }
 // 共用绘制与动作输入，风格差异由配置提供。

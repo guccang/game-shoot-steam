@@ -7,5 +7,7 @@ export const HOME_ELEVATOR={id:'elevator',x:88,y:410,width:68,height:76,landing:
 export const HOME_BALCONY={width:480,height:230,spawn:{x:240,y:172},exit:{x:240,y:204},radius:28};
 // 整数楼层编号只受JavaScript安全整数表示约束，不设十层或百层等游戏封顶。
 export function homeFloors(home){return Number.isSafeInteger(home?.floors)&&home.floors>=2?home.floors:2;}
+// 外观只展开六排新增楼层，图集、透显与点击共用高度；真实可用层数不受压缩影响。
+export function homeExterior(home){const floors=homeFloors(home),rows=Math.min(6,floors-2),lift=rows*32;return {floors,rows,lift,height:(rows?170:150)+lift};}
 // 每层只记录已安装的方向，拒绝原型键与不存在的楼层。
 export function floorBalconies(home,floor){const sides=home?.balconies?.[floor];return Array.isArray(sides)?sides.filter(d=>Object.hasOwn(HOME_DIRECTIONS,d)):[];}
