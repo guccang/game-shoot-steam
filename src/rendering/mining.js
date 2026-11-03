@@ -1,3 +1,4 @@
+import {drawAmbientFish} from './ambient-fish.js';
 import {mineRockDamage} from '../core/mine-rocks.js';
 import {drawOutdoorFishing,outdoorFishingView} from './outdoors.js';
 import {drawMineArmedCat,drawMineCombat} from './mine-combat.js';
@@ -71,6 +72,7 @@ export function drawMining(renderer,g=renderer.game){
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
  const first=mineCell({x:v.x-64,y:v.y+top/zoom-64}),last=mineCell({x:v.x+w/zoom+64,y:v.y+bottom/zoom+64});let tiles=0;const railKinds={};
  const landscapeTime=renderer.reduced.matches?0:m.age;drawMineLandscapeGround(renderer,m,first,last,night,landscapeTime);
+ renderer.ambientFishReview=drawAmbientFish(c,g,{x:v.x,y:v.y,w:w/zoom,h:h/zoom},renderer.reduced.matches,night?1:0,m);
  renderer.mineBoundaryReview=drawMineBoundary(c,m,{x:v.x,y:v.y+top/zoom,w:w/zoom,h:(bottom-top)/zoom},night);
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){
   tiles++;const cell={x,y},key=mineKey(cell),p=minePoint(cell);

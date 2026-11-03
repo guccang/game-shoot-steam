@@ -1,3 +1,4 @@
+import {createCreatureCodex} from '../ui/creature-codex.js';
 import {createOutdoors} from '../ui/outdoors.js';
 import {createTreasure} from '../ui/treasure.js';
 import {createLoadCleanup} from '../ui/load-cleanup.js';
@@ -250,7 +251,8 @@ export function createApplication({
   }});
   game.requestFacility=id=>restorationPanel.open(id);
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
-  const outdoors=createOutdoors({game,root,dialogs,onChange:refresh});
+  const creatureCodex=createCreatureCodex({game,root,dialogs});
+  const outdoors=createOutdoors({game,root,dialogs,onChange:refresh,onFishCaught:creatureCodex.showCatch});
   const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onOutdoor:()=>outdoors.open(),onCargo:()=>logistics.open('cargo',game.vehicle.index),onCleanup:()=>loadCleanup.open(game.vehicle.index)});
   const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
   const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
@@ -673,7 +675,7 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    warehouse.dispose();treasure.dispose();backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();outdoors.dispose();loadCleanup.dispose();
+    warehouse.dispose();treasure.dispose();backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();outdoors.dispose();creatureCodex.dispose();loadCleanup.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();

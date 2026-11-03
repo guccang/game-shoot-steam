@@ -127,9 +127,10 @@ export function finishFishing(game,keep){
  if(!keep){game.fishing=null;game.outdoorNotice='鱼儿摆尾游回湖里了。';return {ok:true,message:game.outdoorNotice};}
  const fish=FISH_SPECIES[f.species],next=validateProgress(structuredClone(game.progress));
  if(Object.values(next.outdoors.fish).reduce((a,b)=>a+b,0)>=R.maxFish)return {ok:false,message:'鱼护已满，先出售鱼获或放流。'};
+ const record=next.outdoors.collection[fish.id],first=record.count===0;record.count++;record.best=Math.max(record.best,f.size);
  next.outdoors.fish[fish.id]++;next.outdoors.caught++;next.outdoors.best=Math.max(next.outdoors.best,f.size);
  if(catLoad(Object.assign(Object.create(game),{progress:next})).overloaded)return {ok:false,message:'背包负重不足，可以放流或先收好其他物品。'};
- const result=commit(game,next,`${fish.name} ${f.size} 厘米，已放入鱼护。`);if(result.ok)game.fishing=null;return result;
+ const result=commit(game,next,`${fish.name} ${f.size} 厘米，已放入鱼护。`);if(result.ok){game.fishing=null;result.catch={id:fish.id,size:f.size,first};}return result;
 }
 // 浮漂、鱼影、张力和竿梢共用这一游戏时钟，菜单、失焦及暂停时完全冻结。
 export function updateOutdoors(game,dt){

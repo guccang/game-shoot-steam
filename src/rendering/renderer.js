@@ -1,3 +1,4 @@
+import {drawAmbientFish} from './ambient-fish.js';
 import {drawHomeArcade} from './home-arcade.js';
 import {drawHomeBalcony,balconyProject,balconyWorldTransform,balconyUpright,balconyObjectVisible} from './home-balcony.js';
 import {drawMining,drawMineShaft} from './mining.js';
@@ -332,6 +333,7 @@ export class Renderer {
     if (source.realm) drawRealmGround(c, view, source.realm, g.time, this.reduced.matches);
     if(source.realm?.mode==='race')drawRaceTrackEffects(c,source.realm,g.player,this.reduced.matches);
     if (valley) drawJiuzhaigouWater(c, view, time, light.night, this.reduced.matches);
+    this.ambientFishReview=drawAmbientFish(c,source,view,this.reduced.matches,light.night);
     profiler?.end('render.river');
     profiler?.start('render.lighting');
     this.rain.drawGround(c, light.rain, this.reduced.matches ? 0 : this.storm?.flash || 0);

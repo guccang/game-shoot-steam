@@ -8,6 +8,8 @@ export function normalizeOutdoors(raw){
  const tent=raw?.tent===true,rod=raw?.rod===true;
  return {version:1,tent,rod,bait:Math.max(0,Math.min(999,Math.floor(Number(raw?.bait)||0))),
   fish:Object.fromEntries(FISH_SPECIES.map(f=>[f.id,Math.max(0,Math.min(OUTDOOR_RULES.maxFish,Math.floor(Number(raw?.fish?.[f.id])||0)))])),
+  // 鱼种历史独立于鱼护，旧档只从现有鱼获迁移，不伪造已出售鱼的种类。
+  collection:Object.fromEntries(FISH_SPECIES.map(f=>{const r=raw?.collection?.[f.id],owned=Math.max(0,Math.min(OUTDOOR_RULES.maxFish,Math.floor(Number(raw?.fish?.[f.id])||0)));return [f.id,{count:Math.max(owned,Math.min(1e7,Math.max(0,Math.floor(Number(r?.count)||0)))),best:Number.isFinite(r?.best)?Math.max(0,Math.min(200,r.best)):0}];})),
   caught:Math.max(0,Math.min(1e7,Math.floor(Number(raw?.caught)||0))),best:Math.max(0,Math.min(200,Number(raw?.best)||0)),
   camp:valid&&(c.mode!=='tent'||tent)?{...canonical(c),mapId:c.mapId,mode:c.mode,hull:Number.isInteger(c.hull)&&c.hull>=0&&c.hull<100?c.hull:null,kit:tent&&c.kit===true}:null};
 }

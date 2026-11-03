@@ -7,7 +7,7 @@ import {requestWorldNavigation} from '../core/world-navigation.js';
 import {createEventScope} from '../platform/events.js';
 
 // 装备页共用标准底板，野外动作条保留足够的触控范围和中文操作反馈。
-export function createOutdoors({game,root,dialogs,onChange}){
+export function createOutdoors({game,root,dialogs,onChange,onFishCaught}){
  const scope=createEventScope(),panel=root.createElement('dialog'),hud=root.createElement('section'),entry=root.createElement('button');
  entry.id='outdoor-menu';entry.setAttribute('aria-controls','outdoor-dialog');entry.setAttribute('aria-haspopup','dialog');entry.type='button';entry.setAttribute('aria-label','打开野外露营与钓鱼');entry.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 39 23 8 43 39Z" fill="#c8d39b" stroke="#315c43" stroke-width="3"/><path d="m14 39 9-18 10 18" fill="#f6e6b6" stroke="#315c43" stroke-width="2"/></svg><span>野外</span>';root.getElementById('field-menu-items').append(entry);
  panel.id='outdoor-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','outdoor-title');panel.innerHTML='<header class="ui-panel__header"><div><h2 id="outdoor-title">露营与垂钓</h2><p>把一天留给湖水和晚风</p></div><button class="ui-close" id="outdoor-close" aria-label="关闭野外装备">×</button></header><div class="ui-panel__body" id="outdoor-content"></div><footer class="ui-panel__footer"><p id="outdoor-message" role="status"></p></footer>';root.body.append(panel);
@@ -48,7 +48,7 @@ export function createOutdoors({game,root,dialogs,onChange}){
  scope.on(control,'pointerup',e=>{e.preventDefault();e.stopPropagation();release();});scope.on(control,'pointercancel',()=>release(true));scope.on(control,'lostpointercapture',()=>release(true));
  scope.on(control,'keydown',e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();held=true;fishingControl(game,'press');}});scope.on(control,'keyup',e=>{if([' ','Enter'].includes(e.key)){e.preventDefault();release();}});
  scope.on(root.defaultView,'blur',()=>release(true));scope.on(get('fishing-lean'),'input',e=>fishingControl(game,'lean',Number(e.target.value)));
- scope.on(hud,'pointerdown',e=>e.stopPropagation());scope.on(hud,'click',e=>{e.stopPropagation();if(e.target.closest('#fishing-cancel')){fishingControl(game,'cancel');game.campSleep=null;held=false;onChange();}if(e.target.closest('[data-fish-keep],[data-fish-release]')){const result=finishFishing(game,!!e.target.closest('[data-fish-keep]'));if(!result.ok&&game.fishing)game.fishing.message=result.message;onChange();}});
+ scope.on(hud,'pointerdown',e=>e.stopPropagation());scope.on(hud,'click',e=>{e.stopPropagation();if(e.target.closest('#fishing-cancel')){fishingControl(game,'cancel');game.campSleep=null;held=false;onChange();}if(e.target.closest('[data-fish-keep],[data-fish-release]')){const result=finishFishing(game,!!e.target.closest('[data-fish-keep]'));if(!result.ok&&game.fishing)game.fishing.message=result.message;if(result.ok&&result.catch)onFishCaught?.(result.catch);onChange();}});
  // 低成本刷新文字、进度和显隐，不每帧重建按住中的按钮。
  function renderFrame(){
   const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||!!root.querySelector('dialog[open]');hud.hidden=hidden;if(hidden){release(true);return;}

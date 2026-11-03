@@ -1977,3 +1977,6 @@ export async function inspectSprinklerPickup(game,renderer,root=document){
  const {productionObjects}=await import('./farm-production.js'),panel=root.getElementById('production-placement');
  return {designCriterion:'sprinkler-pickup',objects:productionObjects(renderer.renderGame||game),carry:game.productionCarry||null,cursor:game.productionCursor||null,message:panel?.querySelector('p')?.textContent,dropDisabled:panel?.querySelector('[data-production-place]')?.disabled,visible:!!panel&&!panel.hidden};
 }
+
+// 自然游鱼与图鉴复核直接读取正式场景鱼群和手机弹窗。
+export function inspectFishCreatureCodex(game,renderer,root=document){return {designCriterion:'fish-creature-codex',fish:renderer.ambientFishReview||[],fishing:!!game.fishing,state:game.state,collection:structuredClone(game.progress.outdoors.collection),codexOpen:!!root.getElementById('creature-codex')?.open,catchOpen:!!root.getElementById('fish-discovery')?.open,portraits:root.querySelectorAll('#creature-codex canvas,#fish-discovery canvas').length};}
