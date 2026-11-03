@@ -356,6 +356,15 @@ export function inspectWaveProgress(root) {
     toastClear:!toast.height||toast.top>=box.bottom,
     overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+// 清缴详情与进场提示读取同一正式轨道，同时核对所在容器、倒计时与唯一性。
+export function inspectBossWaveUi(root){
+ const track=root.getElementById('wave-track'),notice=root.getElementById('clearing-arrival-notice');
+ return {...inspectWaveProgress(root),designCriterion:'boss-wave-ui',host:track.parentElement.id,
+  trackCount:root.querySelectorAll('#wave-track').length,noticeVisible:!notice.hidden,
+  closeCountdown:root.getElementById('clearing-notice-countdown').textContent,
+  dialogOpen:root.getElementById('wave-help-dialog').open,
+  noticeBox:notice.getBoundingClientRect().toJSON(),trackBox:track.getBoundingClientRect().toJSON()};
+}
 import {STORY_POSTS} from '../config/story-posts.js';
 import {storyCollectionStatus} from '../progression/story-rewards.js';
 // 怪物委托复核绑定正式人物列表、奖励存档与界面，无独立展示假数据。

@@ -2,7 +2,7 @@ import { HELP_EMBLEM } from './help-emblem.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 // 波次详情复用正式进度与弹窗暂停归属，不维护第二套计数或计时。
 import {waveDifficulty} from '../config/waves.js';
-import {waveProgressState} from './wave-progress.js';
+import {waveProgressState,updateWaveProgress} from './wave-progress.js';
 import {createEventScope} from '../platform/events.js';
 import {clearingRound} from './clearing-round.js';
 import {clearingCombatActive} from '../core/living-safety.js';
@@ -24,7 +24,8 @@ export function createWaveHelp({game,root,dialogs}){
   const scope=createEventScope(),button=root.createElement('button'),dialog=root.createElement('dialog');
   const frame=root.getElementById('game-frame'),health=root.querySelector('.bottom-info'),quest=root.getElementById('quest');
   const notice=root.createElement('section');notice.id='clearing-arrival-notice';notice.className='ui-panel ui-panel--compact';notice.hidden=true;notice.setAttribute('role','status');
-  notice.innerHTML='<header class="ui-panel__header"><b id="clearing-notice-round"></b></header><div class="ui-panel__body"><p id="clearing-notice-progress"></p><progress id="clearing-notice-bar" max="100" aria-label="清缴进度"></progress></div>';health.append(notice);
+  notice.innerHTML='<header class="ui-panel__header"><b id="clearing-notice-round"></b><small id="clearing-notice-countdown"></small></header><div class="ui-panel__body"><p id="clearing-notice-progress"></p><div id="clearing-notice-track" inert></div></div>';health.append(notice);
+  const track=root.getElementById('wave-track'),noticeTrack=notice.querySelector('#clearing-notice-track');
   let hideAt=0;
   button.id='wave-help';button.type='button';button.setAttribute('aria-label',i18nText("ui.wave-help.6ec1f91040"));
   button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls','wave-help-dialog');button.innerHTML=HELP_EMBLEM;
@@ -32,6 +33,10 @@ export function createWaveHelp({game,root,dialogs}){
   dialog.id='wave-help-dialog';dialog.className='wave-help-dialog';dialog.setAttribute('aria-labelledby','wave-help-title');
   dialog.innerHTML=`<header><h2 id="wave-help-title">Boss 清缴任务</h2><button id="wave-help-close" aria-label="${i18nHtml("ui.wave-help.586c88a44f")}">×</button></header><p id="wave-help-wave"></p><div class="wave-help-counter"><span>${i18nHtml("ui.wave-help.054525de16")}</span><strong id="wave-help-count"></strong></div><p id="wave-help-group"></p><p id="wave-help-note"></p>`;
   root.body.append(dialog);
+  // 直接移动正式轨道，保留唯一节点、头像画布与按钮事件，不复制静态快照。
+  const detailTrack=root.createElement('div');detailTrack.id='wave-help-track';root.getElementById('wave-help-wave').after(detailTrack);
+  // 容器切换时立即刷新，关闭或范围外打开均不等待下一次HUD更新。
+  function placeTrack(parent){if(track.parentElement!==parent){parent.append(track);updateWaveProgress(root,game);}}
   const routeButton=root.createElement('button');routeButton.id='clearing-detail-navigation';routeButton.type='button';routeButton.className='ui-button';dialog.append(routeButton);
   // 区分实际输入方式，避免弹窗程序恢复焦点被浏览器误判为键盘操作。
   button.dataset.focusInput='pointer';
@@ -42,6 +47,8 @@ export function createWaveHelp({game,root,dialogs}){
   },true);
   // 每次打开重新读取战场，不沿用上次打开时的快照。
   function render(){
+    placeTrack(detailTrack);
+    updateWaveProgress(root,game);
     const s=waveHelpState(game);
     root.getElementById('wave-help-wave').textContent=`第 ${s.round} 轮清缴 · ${s.status}`;
     root.getElementById('wave-help-count').textContent=s.kills+' / '+s.total;
@@ -56,14 +63,17 @@ export function createWaveHelp({game,root,dialogs}){
     if(!game.story&&!game.realm&&!event.target.closest('button,a,input,summary'))dialogs.open(dialog.id);
   });
   scope.on(root.getElementById('wave-help-close'),'click',()=>dialogs.close(dialog.id));
+  // 原生关闭和Escape均归还轨道，避免详情关闭后原HUD丢失节点。
+  scope.on(dialog,'close',()=>{if(!dialog.open)placeTrack(quest);});
   scope.on(routeButton,'click',()=>{toggleTaskNavigation(game);render();});
-  // 一秒提示仍读取实时击杀；只有文案或进度变化时才写DOM，不维护第二份计数。
-  function renderNotice(){
-    const s=waveHelpState(game),group=waveProgressState(game);
+  // 三秒提示仍读取实时击杀；关闭倒计时与波间准备圆环各自使用原时钟。
+  function renderNotice(now){
+    const s=waveHelpState(game);
     const title=`第 ${s.round} 轮清缴 · ${s.status}`,progress=`已完成 ${s.completed} / ${s.count} 批 · 当前 ${s.kills} / ${s.total}`;
-    const heading=root.getElementById('clearing-notice-round'),detail=root.getElementById('clearing-notice-progress'),bar=root.getElementById('clearing-notice-bar');
+    const heading=root.getElementById('clearing-notice-round'),detail=root.getElementById('clearing-notice-progress'),countdown=root.getElementById('clearing-notice-countdown');
     if(heading.textContent!==title)heading.textContent=title;if(detail.textContent!==progress)detail.textContent=progress;
-    if(bar.value!==group.progress*100)bar.value=group.progress*100;
+    const remaining=`${Math.max(1,Math.ceil((hideAt-now)/1000))}秒后关闭`;
+    if(countdown.textContent!==remaining)countdown.textContent=remaining;
   }
   // 每帧只更新出现/消失与父容器变化；自动提示无弹窗遮罩、不夺焦点且不暂停战斗。
   function renderFrame(){
@@ -71,14 +81,15 @@ export function createWaveHelp({game,root,dialogs}){
     if(button.parentElement!==parent)parent.append(button);
     const hidden=!!root.querySelector('dialog[open]')||root.hidden||game.state!=='playing'||frame.dataset.page==='title'||!!game.mainlineSpeech;
     const now=root.defaultView.performance.now();
-    if(hidden||!game.progress.living.patrolActive){if(!notice.hidden)notice.hidden=true;hideAt=0;return;}
+    if(hidden||!game.progress.living.patrolActive){if(!notice.hidden)notice.hidden=true;hideAt=0;placeTrack(dialog.open?detailTrack:quest);return;}
     if(claimClearingNotice(game)){
-      hideAt=now+1000;notice.hidden=false;
+      hideAt=now+3000;notice.hidden=false;
     }
     if(hideAt&&now>=hideAt){notice.hidden=true;hideAt=0;}
-    if(!notice.hidden)renderNotice();
+    placeTrack(notice.hidden?quest:noticeTrack);
+    if(!notice.hidden)renderNotice(now);
   }
   // 与 HUD 一起卸载，重新挂载不会增加按钮或重复注册监听。
-  function dispose(){scope.dispose();button.remove();dialog.remove();notice.remove();}
+  function dispose(){scope.dispose();placeTrack(quest);button.remove();dialog.remove();notice.remove();}
   return {dispose,renderFrame};
 }

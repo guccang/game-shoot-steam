@@ -18,7 +18,7 @@ export const MOBILE_PANEL_CONTRACTS = {
   'help-dialog':{kind:'sheet',close:'#close-help',footer:['#help-ok']},
   'realm-help-dialog':{kind:'sheet',close:'#close-realm-help',footer:['#realm-help-done']},
   'resource-help-dialog':{kind:'sheet',close:'#close-resource-help'},
-  'wave-help-dialog':{kind:'sheet',header:'header',close:'#wave-help-close'},
+  'wave-help-dialog':{kind:'sheet',header:'header',close:'#wave-help-close',footer:['#clearing-detail-navigation']},
   'ws-mastery-dialog':{kind:'sheet',header:'header',close:'#ws-mastery-help-close',footer:['#ws-mastery-help-done']},
   'legendary-dialog':{header:'header',body:'#legendary-content',close:'#legendary-close',footer:['#legendary-status','#legendary-primary']},
   'ws-equipment-dialog':{kind:'sheet',header:'header',body:'.ws-equipment-copy',close:'#ws-equipment-close',footer:['#ws-legendary','#ws-equipment-done']},

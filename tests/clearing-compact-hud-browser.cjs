@@ -26,14 +26,14 @@ async original=>{
    const shown=noticeTransitions.find(t=>t.visible),closed=noticeTransitions.find(t=>!t.visible&&t.time>shown.time);
    return {events:noticeEvents,duration:closed.time-shown.time,states:noticeTransitions.filter(t=>t.time>=shown.time&&t.time<=closed.time).map(t=>t.state),distance:Math.hypot(a.game.player.x-before.x,a.game.player.y-before.y)};
   },before);
-  if(automatic.events!==1||automatic.duration<950||automatic.duration>1500||automatic.states.some(s=>s!=='playing')||automatic.distance<10)throw Error('自动提示打断操作或时序错误 '+JSON.stringify(automatic));
+  if(automatic.events!==1||automatic.duration<2950||automatic.duration>3500||automatic.states.some(s=>s!=='playing')||automatic.distance<10)throw Error('自动提示打断操作或时序错误 '+JSON.stringify(automatic));
   // 同一场清缴离开再进入、手动暂停恢复，均不能再次触发。
   await page.evaluate(()=>{Object.assign(a.game.player,{x:post.x,y:post.y});a.refresh();});await page.waitForTimeout(200);
   await page.evaluate(()=>{Object.assign(a.game.player,{x:site.x,y:site.y});a.refresh();});await page.waitForTimeout(200);
   await page.locator('#settings-button').tap();await page.locator('#settings-done').tap();
   if(await page.evaluate(()=>noticeEvents)!==1)throw Error('同一清缴重复提示');
   // 手动详情一直保留，寻路控制仍可使用，读完关闭才恢复战斗。
-  await page.locator('#wave-help').tap();await page.locator('#wave-help-dialog').waitFor({state:'visible'});await page.waitForTimeout(1200);
+  await page.locator('#wave-help').tap();await page.locator('#wave-help-dialog').waitFor({state:'visible'});await page.waitForTimeout(3200);
   if(!await page.locator('#wave-help-dialog').isVisible())throw Error('手动阅读被自动关闭');
   const detail=await page.locator('#wave-help-dialog').innerText();if(!detail.includes('第 1 轮清缴')||!detail.includes('0 / 5 批'))throw Error('清缴详情数据错误 '+detail);
   await page.locator('#clearing-detail-navigation').tap();if(await page.evaluate(()=>a.game.progress.mainline.navigationEnabled)!==false)throw Error('详情无法关闭寻路');

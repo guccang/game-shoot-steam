@@ -456,6 +456,13 @@
   },
   "fireWorldCriterion": {"id":"forest-fire-world","designCriterion":"真实森林可拒绝随机火警与主动接警，消防站出车，沿原道路扑救原树、河岸取水、清怪，首通永久得车；两片火场和邻树蔓延提供先灭火或先补水的选择；消防栓和一个武器架独立，车轮按位移滚动、火冠与双脚局部动作、受击与死亡保留。原猫视频连续帧不变。320/390/桌面昼夜同屏可读，消防站可透显、补水与火点通路畅通。",
     "entry":"src/rendering/renderer.js / src/rendering/fire-world.js / src/rendering/fire-rescue.js / src/rendering/visual-review.js#inspectFireWorld", "unitTests":["tests/fire-rescue.test.mjs"], "browserTests":["tests/fire-world-browser.cjs","tests/fire-world-interaction.cjs","tests/fire-rescue-workshop.cjs"]},
+  "bossWaveUiCriterion": {
+    "id": "boss-wave-ui",
+    "designCriterion": "Boss清缴任务详情显示原主UI的实时波次节点、准备圆环与Boss头像；进入范围的非模态提示复用同一轨道，显示3、2、1秒后关闭，不暂停战斗或夺取触控。手动详情不自动关闭；手机窄屏、短横屏与昼夜同屏可读。",
+    "entry": "src/ui/wave-help.js#createWaveHelp / src/ui/wave-progress.js#updateWaveProgress / src/rendering/visual-review.js#inspectBossWaveUi",
+    "brief": "docs/art-tasks/boss-wave-ui.md",
+    "browserTests": ["tests/clearing-compact-hud-browser.cjs", "tests/boss-wave-ui-browser.cjs"]
+  },
   "waveCompactHelpCriterion": {
     "id": "wave-compact-help",
     "designCriterion": "普通波次主面板只显示单行节点轨道、Boss与问号，高度收紧；问号打开详情显示真实当前波次和已击败/总数，关闭恢复战场。圆环、Boss手动入口、剧情秘境计数不变，320/390/桌面昼夜均可操作。",

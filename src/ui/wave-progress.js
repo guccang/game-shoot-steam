@@ -34,7 +34,9 @@ export function waveProgressState(game) {
 // 建立节点组时复用同一个 Boss 按钮，保留原事件、头像缓存和猫爪动画。
 export function updateWaveProgress(root,game) {
   const quest=root.getElementById('quest'),track=root.getElementById('wave-track');
-  const visible=!game.story&&!game.realm&&!game.fireActive&&(livingWaveAllowed(game)||clearingCombatActive(game));
+  // 详情和短提示复用同一轨道，范围外查看任务时也能读取已保存的波次。
+  const embedded=!!track.closest('#wave-help-dialog,#clearing-arrival-notice');
+  const visible=!game.story&&!game.realm&&!game.fireActive&&(embedded||livingWaveAllowed(game)||clearingCombatActive(game));
   quest.classList.toggle('wave-quest',visible);
   track.hidden=!visible;
   if(!visible)return;
