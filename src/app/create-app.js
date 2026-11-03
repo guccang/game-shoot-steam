@@ -26,6 +26,7 @@ import {createCampDefensePanel} from '../ui/camp-defense.js';
 import {createWaveTailNavigation} from '../ui/wave-tail-navigation.js';
 import {createClearingPanel} from '../ui/clearing.js';
 import { createLivingPanel } from '../ui/living-world.js';
+import {createFarmProduction} from '../ui/farm-production.js';
 import {createFarmPanel} from '../ui/farm.js';
 import {SeasonPrewarmScheduler,seasonPrewarmCombat} from '../platform/season-prewarm.js';
 import { createLivingSoundscape } from '../platform/audio-living.js';
@@ -148,11 +149,11 @@ export function createApplication({
   const onTalk=(id,service)=>npcConversations.open(id,service);
   let worldRealms, worldWorkshop, worldVehicleWorkshop, guardianBuild, cameraControls;
   const input = createInput({ game, root, host, enabled:()=>shell.page==='game', onChange: () => refresh(),
-    onTap: event => { if(farmPanel?.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
+    onTap: event => { if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
   const dialogs = createDialogs({ game, root, isGameplayActive:()=>shell.page==='game', resetInput: input.reset, onChange: () => { refresh(); syncAudio(); },onEvent:(type,data)=>diagnostics.gameplay.event(type,data) });
   const inventory = createInventory({ game, root, dialogs, onChange: () => refresh(), onInventoryRender:()=>backpack.render(), onCleanup:()=>loadCleanup.open(null) });
   const updateHud = createHud({ game, root, inventory, dialogs, getView: () => renderer.view });
-  let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, seedShop, monsterCampPanel;
+  let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, productionPanel, seedShop, monsterCampPanel;
   refresh = () => {
     titleMenu?.render();
     if(shell.page==='title')return;
@@ -170,6 +171,7 @@ export function createApplication({
     storyPanel?.render();
     livingPanel?.render();
     farmPanel?.render();
+    productionPanel?.render();
     seedShop?.render();
     monsterCampPanel?.render();
     clearingPanel?.render();
@@ -294,6 +296,7 @@ export function createApplication({
   monsterCampPanel=createMonsterCampPanel({game,root,renderer,dialogs,onTalk,onChange:refresh});
   seedShop=createSeedShop({game,root,renderer,dialogs,onChange:refresh});
   farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onSeedShop:()=>seedShop.open()});
+  productionPanel=createFarmProduction({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPlacementStart:()=>farmPanel.close(false)});
   game.mainlinePersist=store.saveProgress;
   game.campDefensePersist=store.saveProgress;
   campDefensePanel=createCampDefensePanel({game,root,renderer,dialogs,onChange:refresh});
@@ -595,7 +598,7 @@ export function createApplication({
         profiler.start('render.panels.fire'); firePanel.renderFrame(); profiler.end('render.panels.fire');
         profiler.start('render.panels.story'); storyPanel.renderFrame(dt); profiler.end('render.panels.story');
         profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
-        profiler.start('render.panels.farm'); farmPanel.renderFrame(); profiler.end('render.panels.farm');
+        profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); profiler.end('render.panels.farm');
         legendaryWorkshop.renderFrame();
         seedShop.renderFrame();
         outdoors.renderFrame();
@@ -678,6 +681,7 @@ export function createApplication({
     vehiclePanel.dispose();
     storyPanel.dispose();
     livingPanel.dispose();
+    productionPanel.dispose();
     farmPanel.dispose();
     clearingPanel.dispose();
     rangerArrival.dispose();
@@ -708,7 +712,7 @@ export function createApplication({
     mounted.delete(canvas);
   }
   const application = { game, renderer, environment, chronicle, refresh, save, destroy, diagnostics, audio, workshop,
-    ready, navigationWarmup, living:livingPanel, farm:farmPanel, menu:{enter:enterFromMenu,home:returnToMenu,reset:resetFromMenu,
+    ready, navigationWarmup, living:livingPanel, farm:farmPanel, production:productionPanel, menu:{enter:enterFromMenu,home:returnToMenu,reset:resetFromMenu,
       get page(){return shell.page;},get saveStatus(){return shell.saveStatus;}} };
   mounted.set(canvas, application);
   resizeScene();

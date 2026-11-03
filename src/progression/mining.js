@@ -16,7 +16,7 @@ export function normalizeMining(raw,depth=1){
  const shafts=new Set();for(const key of Array.isArray(raw.shafts)?raw.shafts:[])if(Object.hasOwn(m.dug,key)&&!shafts.has(key)){shafts.add(key);m.shafts.push(key);}
  const ids=new Set();for(const cart of Array.isArray(raw.carts)?raw.carts:[]){
   if(!Number.isSafeInteger(cart?.id)||cart.id<1||ids.has(cart.id)||!Number.isFinite(cart.x)||!Number.isFinite(cart.y)||!m.rails[mineKey(mineCell(cart))])continue;
-  const point=minePoint(mineCell(cart));ids.add(cart.id);m.carts.push({id:cart.id,...point,previous:null,wheel:0});
+  const point=minePoint(mineCell(cart));ids.add(cart.id);m.carts.push({id:cart.id,...point,previous:null,wheel:0,lubrication:Number.isFinite(cart.lubrication)?Math.max(0,Math.min(180,cart.lubrication)):0});
  }
  m.nextCart=m.carts.reduce((n,c)=>Math.max(n,c.id+1),1);normalizeLayerEcology(m,raw,depth);
  // 尚未施工的一层保持未生成；旧版已有矿道使用固定迁移种子，绝不重排。

@@ -1892,3 +1892,9 @@ export function inspectMineEcology(game,renderer,root){return {...inspectMining(
 
 // 小游戏验收读取正式阳台或矿工绘制和手机操作节点，动作与数值均来自当前回合。
 export function inspectHomeArcade(game,renderer,root){const ui=root.getElementById('home-arcade-ui');return {designCriterion:'home-mine-minigames',render:renderer.arcadeReview,view:renderer.arcadeView,body:game.player.bodyAnimation,stats:game.progress.homeArcade,buttons:[...ui.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
+
+// 农矿验收读取正式设施、存档、DOM和绘制器对象，连续取样可检查喷水与暂停。
+export async function inspectFarmProduction(game,root=document){
+ const {productionObjects}=await import('./farm-production.js'),panel=root.getElementById('production-dialog');
+ return {designCriterion:'farm-mine-production',objects:productionObjects(game),production:structuredClone(game.progress.production),spray:game.productionSpray||null,time:game.time,open:!!panel?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,smallButtons:[...(panel?.open?panel.querySelectorAll('button'):[])].filter(b=>b.getClientRects().length).some(b=>{const r=b.getBoundingClientRect();return r.width<44||r.height<44;}),canvasCount:root.querySelectorAll('canvas').length};
+}

@@ -36,11 +36,13 @@ export function farmDigTarget(game,point,view){
  return {point:target,reason:reason?.includes('已有田块')?'这处空隙放不下一整块田，请选择更宽的空地。':reason};
 }
 // 树木在已经开垦的土地上不再生，刷新和切图也保持清出的空间。
-export function farmCovers(game,point){if(game.realm)return false;return (game.progress?.farm?.plots||[]).some(p=>p.mapId===game.mapId&&worldDistance(p,point)<43);}
+export function farmCovers(game,point){if(game.realm)return false;return [...(game.progress?.farm?.plots||[]),...(game.progress?.production?.sprinklers||[]),...(game.progress?.production?.bench?[game.progress.production.bench]:[])].some(p=>p.mapId===game.mapId&&worldDistance(p,point)<43);}
 // 路面、水、山、建筑与树木都不能当作耕地，路边草地不额外扩大禁种范围。
 export function farmLandReason(game,point,ignorePlotId=null){
  if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y)||point.mapId!==game.mapId)return '请选择当前地图的地面。';
  if(game.progress.farm.plots.some(p=>p.id!==ignorePlotId&&p.mapId===point.mapId&&Math.abs(delta(p.x-point.x,WORLD.width))<52&&Math.abs(delta(p.y-point.y,WORLD.height))<46))return '这里已有田块，请选择旁边的空地。';
+ const production=game.progress.production,devices=[...(production?.sprinklers||[]),...(production?.bench?[{...production.bench,id:'bench'}]:[])];
+ if(devices.some(p=>p.id!==game.productionPlacementIgnore&&p.mapId===point.mapId&&Math.abs(delta(p.x-point.x,WORLD.width))<52&&Math.abs(delta(p.y-point.y,WORLD.height))<46))return '这里已有生产设施，请留出位置。';
  if(farmOverlapsRoad(point))return '田块会占到路面，请稍微移到旁边的草地。';
  if(game.mapId==='forest')for(const b of [...COTTAGES,...REALM_ENTRANCES,FARM_DELIVERY,FARM_SEED_SHOP,REPAIR_CENTER,FURNITURE_SHOP,CONSTRUCTION_COMPANY,WAREHOUSE,CAT_HOME,AMMO_SHOP]){const q=nearest(b,point);if(Math.abs(q.x-point.x)<(b.width||150)/2+27&&point.y>q.y-(b.height||140)-20&&point.y<q.y+34)return '建筑与入口需要留出通路，换一处空地吧。';}
  if((game.trees||[]).some(t=>t.hp>0&&worldDistance(t,point)<(t.radius||14)+30))return '这里有树，先用电锯清理。';

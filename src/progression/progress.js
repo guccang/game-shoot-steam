@@ -1,3 +1,4 @@
+import {normalizeProduction} from './farm-production.js';
 import {freshHomeArcade,normalizeHomeArcade} from './home-arcade.js';
 import {freshMining,normalizeMining,openBasement} from './mining.js';
 import {normalizeNpcDialogue} from './npc-dialogue.js';
@@ -58,6 +59,7 @@ export function freshProgress() {
     legendaryWorkshop:normalizeLegendaryWorkshop(null),
     arrival: null,
     farm:freshFarm(),
+    production:normalizeProduction(null),
     mailbox:freshMailbox(),
     logistics:freshLogistics(),
     supplies:freshSupplies(),
@@ -201,6 +203,7 @@ export function validateProgress(raw) {
   p.homeDecor=normalizeHome(raw.homeDecor,p.living.calendar);
   p.mining=normalizeMining(raw.mining);
   p.homeArcade=normalizeHomeArcade(raw.homeArcade);
+  p.production=normalizeProduction(raw.production,p.mining);
   if(p.homeDecor.basement)openBasement(p.mining);
   initializeWildFarmAges(p.farm,p.living.calendar);
   p.monsterCamps=normalizeMonsterCamps(raw.monsterCamps);

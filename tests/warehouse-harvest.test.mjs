@@ -28,7 +28,7 @@ function scene(){
 const total=3*FARM_CROPS[0].value+2*FARM_CROPS[1].value+4*FARM_CROPS[3].value;
 
 test('正式收割先进入背包，回到仓库才兑换金币并保留收获统计',()=>{
- const {g}=scene();g.progress.farm.inventory.fill(0);g.progress.logistics.builds.forEach(b=>b.cargo.fill(0));g.player.x+=400;
+ const {g}=scene();g.progress.farm.inventory.fill(0);g.progress.logistics.builds.forEach(b=>b.cargo.fill(0));g.vehicles=[];g.player.x+=400;
  g.progress.farm.plots=[{id:0,x:g.player.x,y:g.player.y,mapId:'forest',crop:1,plantedAt:1,readyAt:2,watered:false}];g.progress.farm.nextId=1;
  const harvested=g.progress.farm.harvested;assert.equal(farmAction(g,'harvest',{plot:0,now:1000}).ok,true);assert.equal(g.progress.coins,100);assert.equal(g.progress.farm.inventory[1],1);updateWarehouseHarvest(g,.05);assert.equal(g.progress.coins,100);
  g.player.x-=400;g.update(.05);assert.equal(g.progress.coins,100+FARM_CROPS[1].value);assert.equal(g.progress.farm.inventory[1],0);assert.equal(g.progress.farm.harvested,harvested+1);

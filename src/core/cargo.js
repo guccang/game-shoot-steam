@@ -1,4 +1,5 @@
 // 背包与各车型货舱独立保存，装卸只在车旁，超载后仍能卸货恢复行驶。
+import {productionSalePlan} from '../progression/farm-production.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {validateProgress} from '../progression/progress.js';
 import {FARM_CROPS,FARM_STOCK_CAP,FARM_DELIVERY,FARM_SEED_DOOR} from '../config/farm.js';
@@ -32,7 +33,8 @@ export function canSellCrops(game){return personalFleet(game)&&['playing','pause
 export function sellCrops(game){
  if(!canSellCrops(game))return {ok:false,message:'请带作物到种子小屋或快递站出售。'};
  const next=validateProgress(structuredClone(game.progress)),stores=[next.farm.inventory,...next.logistics.builds.filter((_,i)=>cargoAccessible(game,i)).map(b=>b.cargo)];let coins=0,count=0;
- for(const stock of stores)for(let i=0;i<FARM_CROPS.length;i++){const n=Math.min(stock[i],Math.floor((RESOURCE_CAP-next.coins)/FARM_CROPS[i].value));if(n>0){stock[i]-=n;count+=n;coins+=creditResource(next,'coins',n*FARM_CROPS[i].value);}}
+ const sale=productionSalePlan(next,stores);
+ for(const [source,stock] of stores.entries())for(let i=0;i<FARM_CROPS.length;i++){const n=Math.min(sale[source][i],Math.floor((RESOURCE_CAP-next.coins)/FARM_CROPS[i].value));if(n>0){stock[i]-=n;count+=n;coins+=creditResource(next,'coins',n*FARM_CROPS[i].value);}}
  if(!count)return {ok:false,message:'没有可出售的作物，或金币已满。'};
  recordEconomy(next,'income','farm:sale',{coins});
  return commitCargo(game,next,`已售出 ${count} 份作物，金币 +${coins}。`);

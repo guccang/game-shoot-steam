@@ -1,4 +1,5 @@
 // 直接复用林间小院的真实透明图集边界；植物三阶段均为独立图案，脚底锚点固定。
+import {productionObjects,drawProductionGround} from './farm-production.js';
 export {drawFarmTool} from './farm-tools.js';
 import {FARM_CROP_SIZE} from '../config/farm-tools.js';
 import {sampleCropGrowth,drawGrowingCrop,drawCropChange} from './farm-growth.js';
@@ -27,7 +28,7 @@ import {nearest,visibleBodies} from '../world/coordinates.js';
 export function farmVisible(game){return ['forest','jiuzhaigou'].includes(game.mapId)&&!game.realm;}
 // 土壤跟随地图镜像，未开垦位置显示小圆点；已有田块的选择提示由上层热点负责。
 export function drawFarmGround(c,game,view){
- if(!farmVisible(game))return;c.save();c.lineWidth=1.5;
+ if(!farmVisible(game))return;drawProductionGround(c,game,view);c.save();c.lineWidth=1.5;
  for(const p of visibleBodies(game.progress.farm.plots.filter(p=>p.mapId===game.mapId),view,60)){
   const {width,height,radius}=FARM_PLOT_SHAPE;
   c.beginPath();c.roundRect(p.x-width/2,p.y-height/2,width,height,radius);c.fillStyle=p.watered?'#594f40':'#806047';c.fill();c.strokeStyle=p.watered?'#4f5944':'#4c6343';c.stroke();c.strokeStyle=p.watered?'#7d795b':'#b69567';
@@ -54,7 +55,7 @@ export function drawCampFarmSign(c,item){
 // 作物、田牌和快递柜台都按脚底排序，允许人物走到前后形成真实遮挡。
 export function farmObjects(game){
  if(!farmVisible(game))return [];
- return [...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
+ return [...productionObjects(game),...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
 }
 // 三阶段保持宽高比例和固定根部，过渡期间茎叶逐渐长成并局部轻摆。
 export function drawFarmCrop(c,item,time=0,reduced=false,now=Date.now(),boosts=[],zoom=1){
