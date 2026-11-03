@@ -24,6 +24,8 @@ export function createMineGeography(depth,entry=MINING.home,random=Math.random){
 }
 // 已保存层缺少边界只按旧版地下一层迁移，不重新随机旧档。
 export function mineBounds(layer){return layer?.bounds||{left:0,top:0,right:WORLD.width,bottom:WORLD.height};}
+// 实际层范围是不可挖掘岩层的内沿；施工格心和移动采样共用此判定。
+export function mineInsideBounds(layer,x,y){const b=mineBounds(layer);return x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;}
 // 边界格只计算与真实地图相交的面积，使100%一层与随机百分比精确成立。
 export function mineCellArea(cell,layer){const p=minePoint(cell),b=mineBounds(layer),half=MINING.tile/2;return Math.max(0,Math.min(p.x+half,b.right)-Math.max(p.x-half,b.left))*Math.max(0,Math.min(p.y+half,b.bottom)-Math.max(p.y-half,b.top));}
 // 根据固定地理种子生成相邻成片生态，边界轻微起伏，入口九格始终干燥。

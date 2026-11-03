@@ -6,7 +6,7 @@ import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '..
 import {miningCommit as commit,mineNotice as notice} from './mine-transactions.js';
 import {currentMineLayer,travelMineLayer} from './mine-layers.js';
 import {mineOccupancy,mineBodyRadius} from '../physics/mine-motion.js';
-import {mineCellArea,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
+import {mineCellArea,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
 import {updateMineEcology} from './mine-ecology.js';
 import {vehicleSpeed} from '../config/vehicles.js';
 import {advanceVehicleWheels} from '../combat/vehicle-motion.js';
@@ -96,6 +96,7 @@ function movementMineWork(game){
 // 工具完整挥动后才开通一格；已挖空格不能重复掉矿。
 function digStep(game,dt){
  const room=game.cottage,target=mineTarget(game),key=mineKey(target),point=minePoint(target);
+ if(room.autoDig&&!mineInsideBounds(currentMineLayer(game),point.x,point.y)){room.dig=null;notice(game,'外围是坚硬岩层，无法开采或铺轨。');return;}
  if(game.vehicle.active||!room.autoDig||mineCellOpen(target,currentMineLayer(game))||mineCellArea(target,currentMineLayer(game))<=0||Math.hypot(point.x-game.player.x,point.y-game.player.y)>M.tile+8){room.dig=null;return;}
  if(room.dig?.key!==key)room.dig={key,elapsed:0};room.dig.elapsed+=dt;
  if(room.dig.elapsed<productionDigSeconds(game.progress,M.digSeconds))return;
@@ -110,6 +111,7 @@ export function buildMine(game,kind,ahead=false){
  if(!active(game)||game.cottage.ride)return notice(game,'请下车后再施工。');
  if(!['rail','cart','lamp','sign'].includes(kind))return notice(game,'请选择有效设施。');
  const cell=ahead?mineTarget(game):mineCell(game.player),key=mineKey(cell),m=currentMineLayer(game);
+ if(!mineInsideBounds(m,minePoint(cell).x,minePoint(cell).y))return notice(game,'外围是坚硬岩层，无法开采或铺轨。');
  if(mineTerrain(cell,m).water&&!m.bridges?.[key])return notice(game,'水面需要先建桥，再铺轨和装点。');
  if(!mineCellOpen(cell,m))return notice(game,'先挖通这块岩壁，再布置路线。');
  if(kind==='rail'&&m.rails[key]||['lamp','sign'].includes(kind)&&m.decor[key])return notice(game,'这里已经放置了同类设施。');
@@ -143,7 +145,9 @@ function cartStep(game,dt){
    cart.target=next.key;cart.from=key;cart.heading=next.i;cart.departure=null;
   }
   room.direction=cart.heading??room.direction;
-  const target=minePoint(parseKey(cart.target)),dx=target.x-cart.x,dy=target.y-cart.y,distance=Math.hypot(dx,dy),boostSeconds=Math.min(dt,cart.lubrication||0),step=Math.min(distance,M.cartSpeed*(dt+boostSeconds*(PRODUCTION_RULES.oilSpeed-1)));
+  const target=minePoint(parseKey(cart.target));
+  if(!mineInsideBounds(currentMineLayer(game),target.x,target.y)){room.running=false;cart.target=null;notice(game,'前方是坚硬岩层，矿车已停车。');return;}
+  const dx=target.x-cart.x,dy=target.y-cart.y,distance=Math.hypot(dx,dy),boostSeconds=Math.min(dt,cart.lubrication||0),step=Math.min(distance,M.cartSpeed*(dt+boostSeconds*(PRODUCTION_RULES.oilSpeed-1)));
   const other=currentMineLayer(game).carts.some(c=>c.id!==cart.id&&Math.hypot(c.x-(cart.x+dx/Math.max(1,distance)*step),c.y-(cart.y+dy/Math.max(1,distance)*step))<38);
   if(other){room.running=false;notice(game,'前方有矿车，已安全停车。');return;}
   if(step>0&&cart.lubrication>0)cart.lubrication=Math.max(0,cart.lubrication-Math.min(dt,step/(M.cartSpeed*PRODUCTION_RULES.oilSpeed)));

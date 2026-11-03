@@ -1,7 +1,7 @@
 // 连续地下地貌：复用地表的湿岸、浅滩、岩床和分层水色，不再逐格贴地板。
 import {buildMineSurface,mineSurfaceField} from '../world/mine-surface.js';
 import {mineCell,minePoint} from '../config/mining.js';
-import {mineTerrain,mineHash} from '../config/mine-ecology.js';
+import {mineTerrain,mineHash,mineBounds,mineInsideBounds} from '../config/mine-ecology.js';
 import {oval,poly} from './primitives.js';
 import {shoreStone} from './shore-art.js';
 const caches=new WeakMap();
@@ -11,7 +11,7 @@ function surfacePath(polygons){const path=new Path2D();for(const points of polyg
 function edgePath(edges){const path=new Path2D();for(const [a,b] of edges){path.moveTo(a.x,a.y);path.lineTo(b.x,b.y);}return path;}
 // 每个正式绘制器只保留一份可见几何，无离屏位图、无全图缓存。
 function geometry(renderer,layer,first,last){
- const key=`${first.x},${first.y}:${last.x},${last.y}:${layer.seed}:${layer.entry}`,previous=caches.get(renderer);
+ const key=`${first.x},${first.y}:${last.x},${last.y}:${layer.seed}:${layer.entry}:${Object.values(mineBounds(layer)).join(',')}`,previous=caches.get(renderer);
  if(previous?.dug===layer.dug&&previous.key===key)return previous;
  const p=minePoint(first),q=minePoint(last),mesh=buildMineSurface(layer,{x:p.x-64,y:p.y-64,w:q.x-p.x+128,h:q.y-p.y+128});
  const value={key,dug:layer.dug,open:surfacePath(mesh.open),water:surfacePath(mesh.water),walls:edgePath(mesh.walls),shores:edgePath(mesh.shores),rect:mesh.rect,nodes:mesh.nodes,edges:mesh.walls.length+mesh.shores.length};caches.set(renderer,value);return value;
@@ -25,7 +25,7 @@ function patch(c,x,y,rx,ry,seed,color){
 // 岩面裂隙与嵌矿呈稀疏成组分布，真实矿格仍由原开采规则结算。
 function rockBed(c,layer,first,last,night){
  const a=minePoint(first),b=minePoint(last);c.fillStyle=night?'#526958':'#8d997e';c.fillRect(a.x-80,a.y-80,b.x-a.x+160,b.y-a.y+160);
- for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const h=mineHash(x,y,layer.seed),p=minePoint({x,y});if(h%13===0){c.strokeStyle=night?'#6f8065':'#aab597';c.lineWidth=1.8;c.beginPath();c.moveTo(p.x-25,p.y+8);c.bezierCurveTo(p.x-14,p.y-3,p.x+9,p.y+2,p.x+27,p.y-12);c.stroke();}if((h>>>10)%17===0){for(let i=0;i<3;i++){const xx=p.x-12+i*10,yy=p.y+(i%2)*7;poly(c,[[xx-5,yy],[xx-2,yy-10],[xx+4,yy-15],[xx+9,yy-5],[xx+5,yy+3]],i===1?'#bdcbb0':'#d0b47f','#5c7155',1.4);}}}
+ for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const h=mineHash(x,y,layer.seed),p=minePoint({x,y});if(h%13===0){c.strokeStyle=night?'#6f8065':'#aab597';c.lineWidth=1.8;c.beginPath();c.moveTo(p.x-25,p.y+8);c.bezierCurveTo(p.x-14,p.y-3,p.x+9,p.y+2,p.x+27,p.y-12);c.stroke();}if(mineInsideBounds(layer,p.x,p.y)&&(h>>>10)%17===0){for(let i=0;i<3;i++){const xx=p.x-12+i*10,yy=p.y+(i%2)*7;poly(c,[[xx-5,yy],[xx-2,yy-10],[xx+4,yy-15],[xx+9,yy-5],[xx+5,yy+3]],i===1?'#bdcbb0':'#d0b47f','#5c7155',1.4);}}}
 }
 // 自然地面按生态组铺草坡、土壤和岩床，轮廓与格子边界无关。
 function meadows(c,layer,first,last,night){

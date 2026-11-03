@@ -1,6 +1,6 @@
 // 地下生态只推进当前层的可见时间，采集再生、独立怪物和防卫不污染地表敌人。
 import {mineCell,mineKey,minePoint} from '../config/mining.js';
-import {MINE_ANIMALS as A,MINE_ECOLOGY as E,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
+import {MINE_ANIMALS as A,MINE_ECOLOGY as E,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
 import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {currentMineLayer} from './mine-layers.js';
 import {miningCommit,mineNotice} from './mine-transactions.js';
@@ -13,7 +13,7 @@ import {triggerRecoil,updateRecoil} from '../combat/recoil.js';
 export function buildMineBridge(game,ahead=true){
  if(game.cottage?.kind!=='mine'||game.state!=='playing'||game.cottage.ride)return mineNotice(game,'请停稳下矿车后建桥。');
  const cell=mineCell(game.player),d=[{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}][game.cottage.direction];if(ahead){cell.x+=d.x;cell.y+=d.y;}
- const key=mineKey(cell),l=currentMineLayer(game);if(!mineCellOpen(cell,l)||!mineTerrain(cell,l).water||l.bridges[key])return mineNotice(game,'请选择附近的无桥水面。');
+ const key=mineKey(cell),l=currentMineLayer(game);if(!mineInsideBounds(l,minePoint(cell).x,minePoint(cell).y))return mineNotice(game,'外围是坚硬岩层，无法建桥。');if(!mineCellOpen(cell,l)||!mineTerrain(cell,l).water||l.bridges[key])return mineNotice(game,'请选择附近的无桥水面。');
  if(game.progress.mining.ore<E.bridge.ore||game.progress.wood<E.bridge.wood)return mineNotice(game,'桥面需要 2 矿石、4 木材。');
  return miningCommit(game,(m,p,layer)=>{m.ore-=E.bridge.ore;p.wood-=E.bridge.wood;layer.dug[key]=true;layer.bridges[key]=true;},'桥面已铺好，可以通行和铺轨。');
 }

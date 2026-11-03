@@ -1918,3 +1918,6 @@ export function inspectMineRailJunctions(game,renderer,root){return {...inspectM
 
 // 乘坐稳定性只消费正式矿车、猫座位和镜头锚点，连续采样用于发现模拟步跳动。
 export function inspectMineCartRider(game,renderer,root){return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-cart-rider-stability',rider:renderer.mineCartRiderReview};}
+
+// 边界验收同时读取正式岩层、地形几何和镜头，不用矩形遮挡数量替代视觉复核。
+export function inspectMineNaturalBoundary(game,renderer,root=document){return {...inspectMining(game,renderer,root),designCriterion:'mine-natural-boundary',boundary:renderer.mineBoundaryReview,landscape:renderer.mineLandscapeReview,player:{x:game.player.x,y:game.player.y},notice:game.cottage?.notice};}

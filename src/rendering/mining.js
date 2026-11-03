@@ -1,3 +1,4 @@
+import {drawMineBoundary} from './mine-boundary.js';
 import {productionDigSeconds} from '../config/farm-production.js';
 // 地下正式绘制器：矿道、轨道、轮毂、矿锄与真实猫身体分层，不新增位图缓存。
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint} from '../config/mining.js';
@@ -6,7 +7,7 @@ import {box,oval,poly} from './primitives.js';
 import {drawCat} from './characters.js';
 import {PLAYER_SCALE} from '../combat/recoil.js';
 import {currentMineLayer} from '../core/mine-layers.js';
-import {mineBounds,mineCellArea,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
+import {mineInsideBounds,mineCellArea,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
 import {drawMineTerrain,drawMineLandscape,drawMineAnimal,drawMineBolts} from './mine-ecology.js';
 import {drawVehicleTracks,drawVehicleArmor} from './vehicle.js';
 import {riderPosition} from '../config/vehicle-rider.js';
@@ -61,19 +62,20 @@ function pickaxe(c,g){
 export function drawMining(renderer,g=renderer.game){
  const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=h-(h<500?139:168),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
  renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineCartRiderReview=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
- const v=renderer.mineView,m=currentMineLayer(g),bounds=mineBounds(m);
+ const v=renderer.mineView,m=currentMineLayer(g);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
  const first=mineCell({x:v.x-64,y:v.y+top/zoom-64}),last=mineCell({x:v.x+w/zoom+64,y:v.y+bottom/zoom+64});let tiles=0;const railKinds={};
  const landscapeTime=renderer.reduced.matches?0:m.age;drawMineLandscapeGround(renderer,m,first,last,night,landscapeTime);
+ renderer.mineBoundaryReview=drawMineBoundary(c,m,{x:v.x,y:v.y+top/zoom,w:w/zoom,h:(bottom-top)/zoom},night);
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){
   tiles++;const cell={x,y},key=mineKey(cell),p=minePoint(cell);
-  if(!mineCellArea(cell,m)){box(c,p.x-32,p.y-32,65,65,0,'#29443c');continue;}
+  if(!mineInsideBounds(m,p.x,p.y))continue;
   if(!mineCellOpen(cell,m))continue;
   drawMineTerrain(c,cell,m,night,m.age);
   if(m.rails[key]){const kind=drawMineRail(c,cell,m,night);railKinds[kind]=(railKinds[kind]||0)+1;}
  }
- const targetCell=mineTarget(g),target=minePoint(targetCell);if(g.cottage.tool||g.cottage.autoDig){c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);}
+ const targetCell=mineTarget(g),target=minePoint(targetCell);if((g.cottage.tool||g.cottage.autoDig)&&mineInsideBounds(m,target.x,target.y)){c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);}
  const entry=minePoint(parseKey(m.entry));drawLadder(c,entry.x,entry.y,night,m.descent===m.entry?'上行 ↑ · 下层 ↓':(g.cottage.depth||1)===1?'小屋 ↑':'上一层 ↑');
  if(m.descent&&m.descent!==m.entry){const down=minePoint(parseKey(m.descent));drawLadder(c,down.x,down.y,night,'下一层 ↓');}
  const entities=[];
@@ -107,8 +109,6 @@ export function drawMining(renderer,g=renderer.game){
  drawMineBolts(c,g.cottage.bolts);
  // 入口文字在实体之后绘制；猫和怪物经过时仍能识别同一地表洞口编号。
  for(const p of visibleShafts)label(c,`矿洞 ${p.number} · 地面 ↑`,p.x,p.y+38,12);
- // 未开放区域覆盖在边界外，部分边缘格也与实体边界一致。
- c.fillStyle='#29443c';c.fillRect(v.x-64,v.y-64,Math.max(0,bounds.left-v.x+64),h/zoom+128);c.fillRect(bounds.right,v.y-64,w/zoom+128,h/zoom+128);c.fillRect(v.x-64,v.y-64,w/zoom+128,Math.max(0,bounds.top-v.y+64));c.fillRect(v.x-64,bounds.bottom,w/zoom+128,h/zoom+128);
  const work=g.cottage.dig?g.cottage.dig.elapsed/productionDigSeconds(g.progress,M.digSeconds):g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
  c.restore();renderer.mineReview={tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
@@ -117,7 +117,7 @@ export function drawMining(renderer,g=renderer.game){
 export function drawMineMap(canvas,g){
  const c=canvas.getContext('2d'),s=112,scale=5,center=mineCell(g.player),m=currentMineLayer(g);c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,s,s);box(c,1,1,110,110,12,'#efe3bc','#47694e',2);
  c.save();c.beginPath();c.rect(10,21,92,78);c.clip();
- for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#344e42');else if(mineCellOpen(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
+ for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#8d997e');else if(mineCellOpen(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
  c.restore();
  const dx=-center.x,dy=-center.y,factor=Math.min(1,38/Math.max(1,Math.abs(dx*scale)),32/Math.max(1,Math.abs(dy*scale))),hx=56+dx*scale*factor,hy=60+dy*scale*factor;
  poly(c,[[hx-5,hy],[hx,hy-6],[hx+5,hy],[hx+4,hy+5],[hx-4,hy+5]],'#ddaa62','#42644a',1);

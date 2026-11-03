@@ -1,3 +1,4 @@
+import {mineInsideBounds} from './mine-ecology.js';
 // 轨道连接和选路共用纯规则，界面、存档与驾驶读取同一合法出口。
 import {MINE_DIRECTIONS,mineCell,mineKey,minePoint} from './mining.js';
 // 网格键还原为轨道坐标，调用方只传已验证的轨道键。
@@ -5,8 +6,8 @@ export function railCell(key){const [x,y]=key.split(',').map(Number);return {x,y
 // 只返回与当前格直接相连的四向轨道，不允许斜跨或跳轨。
 export function railExits(layer,key){
  if(typeof key!=='string'||!layer?.rails?.[key])return [];
- const cell=railCell(key);
- return MINE_DIRECTIONS.map((d,i)=>({i,key:mineKey({x:cell.x+d.x,y:cell.y+d.y})})).filter(n=>layer.rails[n.key]);
+ const cell=railCell(key),point=minePoint(cell);if(!mineInsideBounds(layer,point.x,point.y))return [];
+ return MINE_DIRECTIONS.map((d,i)=>({i,key:mineKey({x:cell.x+d.x,y:cell.y+d.y})})).filter(n=>{const p=minePoint(railCell(n.key));return layer.rails[n.key]&&mineInsideBounds(layer,p.x,p.y);});
 }
 // 判断车体是否确实停在两端点之间，同时用于旧档和损坏存档恢复。
 export function cartOnSegment(layer,cart){
