@@ -57,3 +57,28 @@
  #game-frame.inside-cottage #fishing-lean-label{grid-column:1}
  #game-frame.inside-cottage #fishing-hud[data-phase="fight"] #fishing-control{grid-column:2;grid-row:3/5;min-width:0;white-space:normal}
 }
+
+/* 小地图本体成为完整触控入口，沿用原尺寸，不额外占用场景空间。 */
+#cottage-controls #mine-map-open{display:block;flex:none;width:64px;height:64px;min-height:44px;padding:0;border:0;background:transparent;box-shadow:none;touch-action:manipulation}
+#mine-map-open canvas{display:block;pointer-events:none}
+#mine-map-open:focus-visible{outline:3px solid var(--ui-paper);outline-offset:3px}
+/* 地图使用手机全屏底板，宽屏仍是同一手机单列；画布填满剩余正文。 */
+#mine-map-dialog{width:min(480px,100%);margin:0 auto}
+#mine-map-dialog .ui-panel__body{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding-top:8px;padding-bottom:6px;gap:8px}
+#mine-exploration-canvas{display:block;width:100%;min-height:80px;flex:1;height:0;border:1px solid var(--ui-line);border-radius:12px;touch-action:none;box-sizing:border-box}
+#mine-map-dialog .mine-map-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;margin:0}
+#mine-map-dialog .mine-map-help{font-size:12px;margin:0;text-align:center}
+#mine-map-dialog .ui-panel__footer{display:flex;gap:6px;flex-wrap:nowrap}
+#mine-map-dialog .ui-panel__footer button{min-width:44px;min-height:44px;padding:8px}
+#mine-map-dialog :is([data-map-fit],[data-map-locate]){flex:1}
+@media(max-height:500px){
+ #cottage-controls #mine-map-open{width:52px;height:52px}
+ #mine-map-dialog .ui-panel__header{padding-top:8px;padding-bottom:8px}
+ #mine-map-dialog .ui-panel__header h2{font-size:18px}
+ #mine-map-dialog .ui-panel__footer{padding-top:6px;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+ #mine-map-dialog .mine-map-help{display:none}
+}
+
+/* 窄屏给定位文案足够宽度，缩放按钮保持44像素，避免中文孤字换行。 */
+#mine-map-dialog .ui-panel__footer [data-map-zoom]{flex:0 0 44px}
+#mine-map-dialog :is([data-map-fit],[data-map-locate]){white-space:nowrap}

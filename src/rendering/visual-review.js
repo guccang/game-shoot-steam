@@ -1945,3 +1945,9 @@ export function inspectMineRocks(game,renderer){
  const room=game.cottage,layer=room?.depth>1?game.progress.mining.layers[room.depth]:game.progress.mining;
  return {designCriterion:'mine-breakable-rocks',view:renderer.mineView,night:renderer.mineReview?.night,ore:game.progress.mining.ore,damage:room?.rockDamage||{},harvested:layer.harvested,cacheTargets:room?.rockScan?.targets.length||0,newBitmapBytes:0};
 }
+
+// 探索图验收消费正式绘制器记录与手机DOM，不另造独立预览地图。
+export function inspectMineExplorationMap(game,renderer,root=document){
+ const dialog=root.getElementById('mine-map-dialog'),canvas=root.getElementById('mine-exploration-canvas');
+ return {...renderer.mineMapReview,open:dialog.open,state:game.state,canvas:{width:canvas.clientWidth,height:canvas.clientHeight},buttons:[...dialog.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({label:b.getAttribute('aria-label')||b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:dialog.scrollWidth>dialog.clientWidth};
+}
