@@ -319,12 +319,19 @@ export function updateFunnelMovement(game, dt, targets, formations) {
     f.goalX = goals[node.index].x;
     f.goalY = goals[node.index].y;
   }
+  // 地下把驻点、环绕和充能目标都先收进可达空间，避免飞控持续追逐岩壁内的目标。
+  if(game.projectFlyingPoint)for(const node of s.nodes){
+    const goal=game.projectFlyingPoint(goals[node.index]);goals[node.index]=goal;
+    node.flight.goalX=goal.x;node.flight.goalY=goal.y;
+    if(reduced){node.x=goal.x;node.y=goal.y;}
+  }
   if (!reduced) {
     const steps = Math.max(1, Math.ceil(dt * 120)),
       h = dt / steps;
     for (let k = 0; k < steps; k++) {
       // 同一步先采样全部避让向量，避免炮体更新顺序产生偏置。
-      const forces = s.nodes.map((n) => avoidance(n, s.nodes, player));
+      // 地下狭窄泊位允许紧凑收拢，避免避让力将归队炮不断推出合法装填点。
+      const forces = s.nodes.map((n) => game.projectFlyingPoint&&(s.charging||n.charging)?{x:0,y:0}:avoidance(n, s.nodes, player));
       for (const node of s.nodes) {
         const returning = !node.flight.station || node.flight.delay > 0;
         const follow =

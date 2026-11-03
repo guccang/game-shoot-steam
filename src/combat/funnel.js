@@ -204,7 +204,9 @@ export function updateFunnel(game, dt) {
           : game.player;
         const dx = game.player.x - prior.x,
           dy = game.player.y - prior.y;
-        if (Math.hypot(node.x - dx - x, node.y - dy - y) < GAMEPLAY_VALUES.funnel.supplyDockRadius) {
+        // 地下泊位与飞行目标采用同一投影，靠墙归队也能完成装填。
+        const dock=game.projectFlyingPoint?game.projectFlyingPoint({x,y}):{x,y};
+        if (Math.hypot(node.x - dx - dock.x, node.y - dy - dock.y) < GAMEPLAY_VALUES.funnel.supplyDockRadius) {
           advanceReload(node.magazine, module, dt, (type,data)=>game.onEvent(type,{...data,source:'companion'}));
           supplied = true;
           if (node.magazine.remaining === 0) {

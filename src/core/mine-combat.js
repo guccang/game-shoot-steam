@@ -1,3 +1,4 @@
+import {MINING} from '../config/mining.js';
 import {mineRockTargets,hitMineRock} from './mine-rocks.js';
 // 地下战斗适配正式武器；弹道与特效属于当前层，弹药和装备读取真实库存。
 import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
@@ -42,6 +43,49 @@ export function clipMineCombatLine(game,start,end){
  }
  return {...end,blocked:false};
 }
+// 把目标连同边缘余量一起检测，提前收住而不是穿墙后再回退一段距离。
+export function projectMineFlyingPoint(game,point){
+ const p=game.player,length=Math.hypot(point.x,point.y);
+ if(length<.0001)return {x:point.x,y:point.y};
+ const extended=(length+MINING.flyingMargin)/length;
+ const hit=clipMineCombatLine(game,p,{x:p.x+point.x*extended,y:p.y+point.y*extended});
+ if(!hit.blocked)return {x:point.x,y:point.y};
+ const safe=Math.max(0,Math.hypot(hit.x-p.x,hit.y-p.y)-MINING.flyingMargin),ratio=Math.min(1,safe/length);
+ return {x:point.x*ratio,y:point.y*ratio};
+}
+// 弱引用只记录运行时位置，不进入存档，也不延长炮体生命周期。
+const mineFlyingAnchors=new WeakMap();
+// 已在安全区内的炮体按上一帧位置扫掠，拐角处也不会被径向投影突然拉回。
+export function constrainMineFlyingNode(game,node){
+ const p=game.player,f=node.flight,anchor=mineFlyingAnchors.get(node);
+ // 容差仅吸收射线二分的误差，不允许肉眼可见的越界。
+ const valid=point=>{const safe=projectMineFlyingPoint(game,point);return Math.hypot(point.x-safe.x,point.y-safe.y)<.04;};
+ const prior=anchor&&anchor.flight===f&&anchor.room===game.cottage&&anchor.depth===(game.cottage.depth||1)?{x:anchor.x-p.x,y:anchor.y-p.y}:null;
+ const desired={x:node.x,y:node.y};
+ let safe;
+ // 传送或大幅换位直接恢复局部锚点，避免沿旧位置扫掠整条矿道。
+ if(prior&&Math.hypot(prior.x-desired.x,prior.y-desired.y)<=MINING.tile*2&&valid(prior)){
+  // 逐段扫掠防止跨过狭小岩角；只在遇阻后做二分，不重置飞行相位。
+  const sweep=(from,to)=>{
+   const length=Math.hypot(to.x-from.x,to.y-from.y),steps=Math.max(1,Math.ceil(length/4));let lo=0;
+   for(let i=1;i<=steps;i++){const t=i/steps,q={x:from.x+(to.x-from.x)*t,y:from.y+(to.y-from.y)*t};if(!valid(q)){let hi=t;for(let j=0;j<8;j++){const mid=(lo+hi)/2;if(valid({x:from.x+(to.x-from.x)*mid,y:from.y+(to.y-from.y)*mid}))lo=mid;else hi=mid;}return {x:from.x+(to.x-from.x)*lo,y:from.y+(to.y-from.y)*lo};}lo=t;}
+   return to;
+  };
+  safe=sweep(prior,desired);
+  if(Math.hypot(safe.x-desired.x,safe.y-desired.y)>.04){
+   // 允许沿墙滑行，只拦住受阻分量，不把切向运动一并归零。
+   safe=sweep(safe,{x:desired.x,y:safe.y});safe=sweep(safe,{x:safe.x,y:desired.y});
+  }
+  if(f){if(Math.abs(safe.x-desired.x)>.04)f.vx=0;if(Math.abs(safe.y-desired.y)>.04)f.vy=0;}
+ }else{
+  // 首次展开、切层或玩家传送后从当前可见空间恢复，旧层锚点不参与插值。
+  safe=projectMineFlyingPoint(game,desired);
+  const dx=desired.x-safe.x,dy=desired.y-safe.y,distance=Math.hypot(dx,dy);
+  if(f&&distance>.0001){const outward=(f.vx*dx+f.vy*dy)/distance;if(outward>0){f.vx-=outward*dx/distance;f.vy-=outward*dy/distance;}}
+ }
+ node.x=safe.x;node.y=safe.y;
+ mineFlyingAnchors.set(node,{x:p.x+node.x,y:p.y+node.y,flight:f,room:game.cottage,depth:game.cottage.depth||1});
+}
 // 只回收编队位置和场内特效，保留供给、装填、伙伴生命与冷却。
 export function resetMineCombat(game){
  resetFunnelFormation(game.funnel);resetFunnelFormation(game.drone);resetMechanicalFormation(game.mechanical);resetSpiderFormation(game.spider);
@@ -69,7 +113,8 @@ function combatContext(game){
  b.combatWalkClear=(a,z,r=0)=>{const n=Math.max(1,Math.ceil(Math.hypot(z.x-a.x,z.y-a.y)/6));for(let i=0;i<=n;i++)if(!mineOccupancy(game,a.x+(z.x-a.x)*i/n,a.y+(z.y-a.y)*i/n,r,false))return false;return true;};
  b.trees.mineScene={walkable:(x,y,r,fly)=>mineOccupancy(game,x,y,r,fly)};
  // 飞行炮体不能藏进岩壁或跨墙展开，水面上方仍可悬停。
- b.constrainFlyingNode=node=>{const p=game.player,end={x:p.x+node.x,y:p.y+node.y},hit=clipMineCombatLine(game,p,end);if(hit.blocked){const length=Math.hypot(hit.x-p.x,hit.y-p.y),ratio=Math.max(0,length-14)/Math.max(1,length);node.x=(hit.x-p.x)*ratio;node.y=(hit.y-p.y)*ratio;if(node.flight)node.flight.vx=node.flight.vy=0;}};
+ b.projectFlyingPoint=point=>projectMineFlyingPoint(game,point);
+ b.constrainFlyingNode=node=>constrainMineFlyingNode(game,node);
  b.hit=(target,amount,critical,impact)=>target.mineRock?hitMineRock(game,target,amount):hitMineAnimal(game,target,amount,impact);
  b.findAttackTarget=()=>[...b.enemies,...(b.weapon().targetTrees===false?[]:b.trees)].filter(a=>a.hp>0&&Math.hypot(a.x-b.player.x,a.y-b.player.y)<Math.min(420,b.weapon().range+a.radius)&&b.combatLineClear(b.player,a)).sort((a,z)=>Number(!!a.mineRock)-Number(!!z.mineRock)||Math.hypot(a.x-b.player.x,a.y-b.player.y)-Math.hypot(z.x-b.player.x,z.y-b.player.y))[0]||null;
  b.recordStoryEvent=()=>{};room.combat=b;return b;

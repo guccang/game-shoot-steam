@@ -1959,3 +1959,8 @@ export function inspectMineCartControls(game,renderer,root=document){
   dialogs:dialogs.map(d=>({id:d.id,width:d.clientWidth,overflow:d.scrollWidth>d.clientWidth,buttons:[...d.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height}))})),
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
 }
+
+// 地下边缘稳定性读取正式炮体位置、飞行目标与推进速度，轨迹由浏览器连续采样。
+export function inspectMineFunnelBoundary(game,renderer){
+ return {designCriterion:'mine-funnel-boundary',night:renderer.mineReview?.night,state:game.state,nodes:game.funnel.nodes.map(n=>({x:n.x,y:n.y,goalX:n.flight.goalX,goalY:n.flight.goalY,vx:n.flight.vx,vy:n.flight.vy,mode:n.flight.mode})),newBitmapBytes:0};
+}
