@@ -6,13 +6,15 @@ export const MINE_BIOMES=[
  {id:'roots',name:'地下根木林',floor:'#b6a37c',night:'#887c61',resource:'wood',yield:5,regrow:120,animal:'beetle'},
  {id:'crystal',name:'晶簇花园',floor:'#acc3ad',night:'#708f84',resource:'ore',yield:4,regrow:120,animal:'bat'},
  {id:'moss',name:'苔藓草甸',floor:'#a5b986',night:'#728c67',resource:'heal',yield:12,regrow:60,animal:'spore'},
- {id:'stalagmite',name:'钟乳石厅',floor:'#c1baa0',night:'#8c9685',resource:null,animal:'bat'},
+ {id:'stalagmite',name:'钟乳石厅',floor:'#c1baa0',night:'#8c9685',resource:'ore',yield:6,regrow:180,animal:'bat'},
  {id:'river',name:'地下暗河',floor:'#b9ba96',night:'#7c9481',resource:null,animal:'bat'},
  {id:'lake',name:'蓝萤湖',floor:'#abbca1',night:'#728f85',resource:null,animal:'bat'},
  {id:'spring',name:'地热温泉',floor:'#c7baa0',night:'#968e7f',resource:'heal',yield:16,regrow:80,animal:'beetle'},
  {id:'fossil',name:'化石遗迹',floor:'#c6b48c',night:'#938970',resource:'ore',yield:3,regrow:150,animal:'beetle'},
 ];
 export const MINE_ANIMALS={beetle:{name:'岩甲虫',hp:48,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'洞穴蝠',hp:30,speed:60,damage:6,range:36,windup:.65,recover:1,reward:2},spore:{name:'菌伞怪',hp:60,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
+// 景观石柱耐久与矿镐伤害独立于普通岩壁，矿石产量与恢复时间读取生态配置。
+export const MINE_ROCK={hp:60,pickDamage:20,pickReach:72};
 export const MINE_ECOLOGY={unlockRatio:.5,bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};
 // 无状态坐标散列使景观、栖地和轮廓在读档后保持原布局。
 export function mineHash(x,y,seed=1847){let n=(Math.imul(x,374761393)^Math.imul(y,668265263)^seed)>>>0;n=Math.imul(n^(n>>>13),1274126177);return (n^(n>>>16))>>>0;}

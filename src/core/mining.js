@@ -1,3 +1,4 @@
+import {workMineRock} from './mine-rocks.js';
 import {resetMineCombat} from './mine-combat.js';
 import {nextCartExit} from '../config/mine-rail-routes.js';
 import {setMineCartDirection} from './mine-cart-directions.js';
@@ -168,13 +169,14 @@ export function updateMining(game,dt,input){
  if(room.ride)cartStep(game,dt);
  else{
   if(length>.01){room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;room.shaftWork=0;}
+  const rockWork=workMineRock(game,dt,length>.01);
   if(room.shaftWork){room.shaftWork+=dt;if(room.shaftWork>=M.shaftSeconds){room.shaftWork=0;finishShaft(game);}}
-  else if(!room.tool||length>.01)digStep(game,dt);else room.dig=null;
+  else if(!rockWork){if(!room.tool||length>.01)digStep(game,dt);else room.dig=null;}
   // 铺轨沿主方向移动，避免斜跨格角造成两段轨道不相连；放下工具即可自由斜行。
   const rail=room.tool==='rail'&&!game.vehicle.active,axis=MINE_DIRECTIONS[room.direction],move=rail?{x:axis.x*Math.min(1,length),y:axis.y*Math.min(1,length)}:{x:input.x/Math.max(1,length),y:input.y/Math.max(1,length)};
-  const speed=(game.vehicle.active?vehicleSpeed(game.progress,game.vehicle.index):M.speed*(1+(PRODUCTION_RULES.juiceSpeed-1)*Math.min(dt,game.progress.production.effects.juice)/Math.max(.001,dt)))*movementLoadFactor(game),dx=move.x*speed*dt,dy=move.y*speed*dt;
+  const speed=(game.vehicle.active?vehicleSpeed(game.progress,game.vehicle.index):M.speed*(1+(PRODUCTION_RULES.juiceSpeed-1)*Math.min(dt,game.progress.production.effects.juice)/Math.max(.001,dt)))*movementLoadFactor(game),dx=rockWork?0:move.x*speed*dt,dy=rockWork?0:move.y*speed*dt;
   if(!mineBlocked(game,p.x+dx,p.y))p.x+=dx;if(!mineBlocked(game,p.x,p.y+dy))p.y+=dy;
-  if(length>.01&&!room.surveyWait)movementMineWork(game);
+  if(length>.01&&!rockWork&&!room.surveyWait)movementMineWork(game);
  }
  if(!room.ride&&!game.vehicle.active&&Math.hypot(p.x-before.x,p.y-before.y)>.001)game.progress.production.effects.juice=Math.max(0,game.progress.production.effects.juice-dt);
  p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);if(!game.fishing&&(!room.weaponTarget||room.tool||room.autoDig))p.angle=room.direction*Math.PI/2-Math.PI/2;

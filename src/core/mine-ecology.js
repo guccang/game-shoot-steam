@@ -1,8 +1,9 @@
+import {mineRockSite,hitMineRock,mineRockTargets} from './mine-rocks.js';
 import {updateMineCombat,hitMineAnimal} from './mine-combat.js';
 import {absorbEnergyShield} from '../combat/energy-shield.js';
 // 地下生态只推进当前层的可见时间，采集再生、独立怪物和防卫不污染地表敌人。
 import {mineCell,mineKey,minePoint} from '../config/mining.js';
-import {MINE_ANIMALS as A,MINE_ECOLOGY as E,mineAnimalStats,mineThreatLimit,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
+import {MINE_ANIMALS as A,MINE_ECOLOGY as E,MINE_ROCK,mineAnimalStats,mineThreatLimit,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
 import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {currentMineLayer} from './mine-layers.js';
 import {miningCommit,mineNotice} from './mine-transactions.js';
@@ -23,8 +24,9 @@ export function buildMineBridge(game,ahead=true){
 export function harvestMine(game){
  if(game.cottage?.kind!=='mine'||game.state!=='playing'||game.cottage.ride)return mineNotice(game,'请下矿车后采集。');
  const l=currentMineLayer(game),cell=mineCell(game.player),key=mineKey(cell),t=mineTerrain(cell,l),b=t.biome;
- if(mineEntrancePlatform(cell,l)||!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药或化石的地块采集。');
+ if(mineEntrancePlatform(cell,l)||!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药、山体或化石的地块采集。');
  if((l.harvested[key]||0)>l.age)return mineNotice(game,`这里正在恢复，约 ${Math.ceil(l.harvested[key]-l.age)} 秒后可再次采集。`);
+ if(b.id==='stalagmite'){const rock=mineRockSite(l,cell);return rock?{ok:hitMineRock(game,rock,MINE_ROCK.hp),message:game.cottage.notice}:mineNotice(game,'这里没有可破坏的山体。');}
  const r=miningCommit(game,(m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')m.ore+=b.yield;},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.yield} ${b.resource==='wood'?'木材':'矿石'}。`);
  if(r.ok&&b.resource==='heal')game.player.hp=Math.min(game.maxHp(),game.player.hp+b.yield);return r;
 }
@@ -52,7 +54,7 @@ function advanceBolts(game,dt){
  const room=game.cottage;room.bolts??=[];
  room.bolts=room.bolts.filter(b=>{const next={x:b.x+b.vx*dt,y:b.y+b.vy*dt};b.life-=dt;if(b.life<=0||!mineLineClear(game,b,next))return false;Object.assign(b,next);
   if(b.enemy){if(Math.hypot(b.x-game.player.x,b.y-game.player.y)<(game.vehicle.active?32:15)){hurtExplorer(game,b.damage);return false;}}
-  else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<20);if(a){hitMineAnimal(game,a,b.damage);return false;}}return true;});
+  else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<20);if(a){hitMineAnimal(game,a,b.damage);return false;}const rock=mineRockTargets(game).find(t=>t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<24);if(rock){hitMineRock(game,rock,b.damage);return false;}}return true;});
 }
 // 矿锄自动近身防卫，战车使用实际主炮伤害、余弹、装填和独立后坐，未开掘岩壁阻断索敌。
 function defendExplorer(game,dt,actors){

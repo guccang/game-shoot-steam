@@ -1939,3 +1939,9 @@ export function inspectMineFishingFullscreen(game,renderer,root=document){
  const buttons=[...root.querySelectorAll('#mine-controls button,#fishing-hud button')].filter(b=>b.getClientRects().length).map(b=>{const r=b.getBoundingClientRect();return {id:b.id||b.dataset.mineTool,width:r.width,height:r.height};});
  return {designCriterion:'mineFishingFullscreenCriterion',view:renderer.mineView,night:renderer.mineReview?.night,collapsed:panel.hidden,expanded:toggle.getAttribute('aria-expanded'),fishing:game.fishing?.phase||null,fishingVisible:!!fishing?.getClientRects().length,buttons,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 山体验收读取正式地下绘制器与当前层破坏状态，截图仍须检查裂纹、碎屑与残基。
+export function inspectMineRocks(game,renderer){
+ const room=game.cottage,layer=room?.depth>1?game.progress.mining.layers[room.depth]:game.progress.mining;
+ return {designCriterion:'mine-breakable-rocks',view:renderer.mineView,night:renderer.mineReview?.night,ore:game.progress.mining.ore,damage:room?.rockDamage||{},harvested:layer.harvested,cacheTargets:room?.rockScan?.targets.length||0,newBitmapBytes:0};
+}

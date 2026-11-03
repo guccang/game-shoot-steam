@@ -1,3 +1,4 @@
+import {mineRockDamage} from '../core/mine-rocks.js';
 import {drawOutdoorFishing,outdoorFishingView} from './outdoors.js';
 import {drawMineArmedCat,drawMineCombat} from './mine-combat.js';
 import {drawMineBoundary} from './mine-boundary.js';
@@ -93,7 +94,7 @@ export function drawMining(renderer,g=renderer.game){
   if(e.kind==='landscape'){
    // 高景物遮住角色时只淡化前景实体，地形、水流和真实脚底排序保持不变。
    const anchor=mineLandscapeAnchor(e.cell,mineTerrain(e.cell,m).hash,m),overlap=anchor.y>=g.player.y&&anchor.y-g.player.y<95&&Math.abs(anchor.x-g.player.x)<55;
-   c.save();if(overlap)c.globalAlpha=.48;drawMineLandscape(c,e.cell,m,night,landscapeTime,renderer.reduced.matches);c.restore();
+   c.save();if(overlap)c.globalAlpha=.48;drawMineLandscape(c,e.cell,m,night,landscapeTime,renderer.reduced.matches,mineRockDamage(g,mineKey(e.cell)));c.restore();
   }
   else if(e.kind==='animal')drawMineAnimal(c,e.animal,m.age);
   else if(e.kind==='decor')decoration(c,e.cell,e.value,night);

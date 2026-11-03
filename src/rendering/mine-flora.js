@@ -1,5 +1,5 @@
 // 地下九景的实体层：原位根部、独立茎叶、菌伞暗面与矿物岩床，按实际脚底排序。
-import {mineTerrain} from '../config/mine-ecology.js';
+import {mineTerrain,MINE_ROCK} from '../config/mine-ecology.js';
 import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {mineLandscapeAnchor} from '../world/mine-surface.js';
 import {drawNaturalFarmCrop} from './farm.js';
@@ -60,21 +60,33 @@ function fossil(c,x,y,night){
  c.strokeStyle=night?'#ddd7b0':'#f2e3b8';c.lineWidth=4;c.beginPath();c.arc(x-10,y-6,12,.2,Math.PI*1.9);c.arc(x-10,y-6,6,Math.PI*1.9,.1,true);c.stroke();c.lineWidth=3;c.beginPath();c.moveTo(x+7,y+4);c.quadraticCurveTo(x+16,y-2,x+26,y-4);c.stroke();for(let i=0;i<4;i++){c.beginPath();c.moveTo(x+8+i*5,y+3-i*2);c.quadraticCurveTo(x+4+i*5,y-6-i*2,x+9+i*5,y-10-i);c.stroke();}c.strokeStyle='#7e8b6d';c.lineWidth=1.3;c.beginPath();c.moveTo(x+2,y+7);c.lineTo(x-4,y+12);c.lineTo(x-2,y+16);c.stroke();
 }
 // 九景正式实体入口；采集后留下幼芽或基座，恢复时沿原稳定锚点长回。
-export function drawMineFlora(c,cell,layer,night,time,reduced=false){
+export function drawMineFlora(c,cell,layer,night,time,reduced=false,damage=null){
  // 已施工的轨道与路牌位置留白，车轮、分岔标识和玩家路线始终可辨。
  if(mineEntrancePlatform(cell,layer)||layer.rails?.[`${cell.x},${cell.y}`]||layer.decor?.[`${cell.x},${cell.y}`])return;const t=mineTerrain(cell,layer);if(!t.natural||t.safe||t.water)return;const {x,y}=mineLandscapeAnchor(cell,t.hash,layer),h=t.hash,harvested=(layer.harvested?.[`${cell.x},${cell.y}`]||0)>layer.age;
  if(!t.prop){if(t.biome.id==='moss'&&h%7===0)fern(c,x,y,18,time,h,night);return;}
  oval(c,x+3,y+3,26,9,'#355c3f25');
  if(t.biome.id==='moss'){fern(c,x-18,y,24,time,h,night);drawNaturalFarmCrop(c,herbs[h%herbs.length],x+5,y,time,h%7,night,reduced,harvested?0:2);return;}
+ if(harvested&&t.biome.id==='stalagmite'){
+  // 破坏后仅保留矮碎石，不把石柱替换为植株；原脚底和通道保持不变。
+  for(const [dx,dy,w] of [[-18,2,11],[3,4,14],[23,1,8]])poly(c,[[x+dx-w,y+dy],[x+dx-4,y+dy-9],[x+dx+6,y+dy-6],[x+dx+w,y+dy+2]],night?'#829780':'#b2b99a',ink,1.5);
+  return;
+ }
  if(harvested){oval(c,x,y,13,5,night?'#7a8769':'#a6ad83',ink,1.4);fern(c,x-4,y,12,time,h,night);return;}
  switch(t.biome.id){
   case 'mushroom':mushroom(c,x-16,y-4,39,time,h+1,night);mushroom(c,x+8,y+3,68+(h%14),time,h,night);mushroom(c,x+28,y+8,27,time,h+2,night);break;
   case 'roots':rootTree(c,x,y,time,h,night);break;
   case 'crystal':crystal(c,x,y,h,night);break;
-  case 'stalagmite':stalagmite(c,x,y,h,night);break;
+  case 'stalagmite':stalagmite(c,x,y,h,night);if(damage)drawMineRockDamage(c,x,y,damage,layer.age,night);break;
   case 'river':reeds(c,x,y,time,h,night);break;
   case 'lake':reeds(c,x-8,y,time,h,night);for(let i=0;i<3;i++){const px=x+Math.sin(time*.6+i*2+h)*27,py=y-26-i*13+Math.cos(time*.8+i)*3;oval(c,px,py,night?2.1:1.3,1.7,night?'#eee3a5':'#d5d9a2');if(night)oval(c,px,py,5,4,'#ece0a521');}break;
   case 'spring':spring(c,x,y,time,night);break;
   case 'fossil':fossil(c,x,y,night);break;
  }
+}
+
+// 受击裂纹按耐久递增，碎屑沿各自短抛物线运动，不旋转或拉伸整座山体。
+function drawMineRockDamage(c,x,y,damage,time,night){
+ const ratio=1-damage.hp/MINE_ROCK.hp,t=time-damage.hit;c.strokeStyle=night?'#e5d6aa':'#5c7258';c.lineWidth=1.8;
+ c.beginPath();c.moveTo(x+5,y-52);c.lineTo(x+1,y-40);c.lineTo(x+9,y-30);c.lineTo(x+2,y-17);if(ratio>.5){c.moveTo(x-21,y-27);c.lineTo(x-16,y-18);c.lineTo(x-24,y-9);c.moveTo(x+9,y-30);c.lineTo(x+17,y-34);}c.stroke();
+ if(t>=0&&t<.35){c.save();c.globalAlpha=1-t/.35;for(let i=0;i<5;i++){const dx=(i-2)*(5+t*45),dy=-18-t*85+t*t*240;poly(c,[[x+dx-3,y+dy],[x+dx,y+dy-4],[x+dx+4,y+dy+1]],night?'#d2d3ae':'#e1d5af',ink,1);}c.restore();}
 }

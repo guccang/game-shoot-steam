@@ -1,3 +1,4 @@
+import {mineRockTargets,hitMineRock} from './mine-rocks.js';
 // 地下战斗适配正式武器；弹道与特效属于当前层，弹药和装备读取真实库存。
 import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
 import {mineAnimalStats} from '../config/mine-ecology.js';
@@ -69,14 +70,15 @@ function combatContext(game){
  b.trees.mineScene={walkable:(x,y,r,fly)=>mineOccupancy(game,x,y,r,fly)};
  // 飞行炮体不能藏进岩壁或跨墙展开，水面上方仍可悬停。
  b.constrainFlyingNode=node=>{const p=game.player,end={x:p.x+node.x,y:p.y+node.y},hit=clipMineCombatLine(game,p,end);if(hit.blocked){const length=Math.hypot(hit.x-p.x,hit.y-p.y),ratio=Math.max(0,length-14)/Math.max(1,length);node.x=(hit.x-p.x)*ratio;node.y=(hit.y-p.y)*ratio;if(node.flight)node.flight.vx=node.flight.vy=0;}};
- b.hit=(target,amount,critical,impact)=>hitMineAnimal(game,target,amount,impact);
- b.findAttackTarget=()=>b.enemies.filter(a=>a.hp>0&&Math.hypot(a.x-b.player.x,a.y-b.player.y)<Math.min(420,b.weapon().range+a.radius)&&b.combatLineClear(b.player,a)).sort((a,z)=>Math.hypot(a.x-b.player.x,a.y-b.player.y)-Math.hypot(z.x-b.player.x,z.y-b.player.y))[0]||null;
+ b.hit=(target,amount,critical,impact)=>target.mineRock?hitMineRock(game,target,amount):hitMineAnimal(game,target,amount,impact);
+ b.findAttackTarget=()=>[...b.enemies,...(b.weapon().targetTrees===false?[]:b.trees)].filter(a=>a.hp>0&&Math.hypot(a.x-b.player.x,a.y-b.player.y)<Math.min(420,b.weapon().range+a.radius)&&b.combatLineClear(b.player,a)).sort((a,z)=>Number(!!a.mineRock)-Number(!!z.mineRock)||Math.hypot(a.x-b.player.x,a.y-b.player.y)-Math.hypot(z.x-b.player.x,z.y-b.player.y))[0]||null;
  b.recordStoryEvent=()=>{};room.combat=b;return b;
 }
 // 作业保留近身矿镐；普通行走和乘矿车使用真实装备，暂停由地下循环冻结。
 export function updateMineCombat(game,dt){
  const room=game.cottage,b=combatContext(game),w=game.weapon(),index=game.loadout.weapon,mag=game.magazines[index];
  b.enemies=Object.keys(currentMineLayer(game).animals).filter(key=>{const a=currentMineLayer(game).animals[key];return a.hp>0&&Math.hypot(a.x-game.player.x,a.y-game.player.y)<650;}).map(key=>mineTargetProxy(game,key,Number(key.split(',')[0])*10000+Number(key.split(',')[1])+10000000));
+ b.trees.splice(0,b.trees.length,...mineRockTargets(game));
  const armed=!game.fishing&&!game.vehicle.active&&!room.tool&&!room.autoDig&&!room.shaftWork;
  room.weaponReady=armed;room.weaponTarget=null;
  b.fx.update(dt);for(const n of b.numbers){n.life-=dt;n.y-=dt*35;}b.numbers=b.numbers.filter(n=>n.life>0);for(const s of b.shots)s.life-=dt;b.shots=b.shots.filter(s=>s.life>0);
