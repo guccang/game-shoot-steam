@@ -18,12 +18,12 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
   const building=game.progress.restoration.build?.id===selected,f=s.facility;
   get('restoration-title').textContent=f.name;
   const summary=get('restoration-summary');summary.replaceChildren();
-  for(const text of [s.ready?'已修复 · 功能已开放':building?'木料已投放 · 正在修复':s.taskRequired?'当前任务 · 靠近自动修复':s.active?'可提前修复 · 不受主线顺序限制':'完成初次入营引导后可自由修复',f.benefit,building?'已投入 '+f.wood+' 木头':'已采集木头 '+s.wood.progress+' · '+s.wood.breakdown,
+  for(const text of [s.ready?'已修复 · 功能已开放':building?'木料已投放 · 正在修复':s.taskRequired?'当前任务 · 靠近自动修复':s.active?'可提前修复 · 不受主线顺序限制':'完成初次入营引导后可自由修复',f.benefit,building?'已投入 '+f.wood+' 木头':'可用木头 '+s.wood.progress+' · '+s.wood.breakdown,
    s.ready?'不需要重复修复，主线会自动跳过修复步骤。':building?'返回游戏继续施工，无需再次交付木料。':!s.enough?s.wood.hint:s.taskRequired?'返回游戏并靠近修复区，自动投入 '+f.wood+' 木头开工。':'到达修复区后点击修复，投入 '+f.wood+' 木头并开始修复。']){
    const p=root.createElement('p');p.textContent=text;summary.append(p);
   }
   get('restoration-message').textContent=game.restorationError||message;
-  get('restoration-repair').textContent=s.ready?'使用功能':building?'正在修复':!s.active?'完成入营引导后修复':!s.near?'请先到达修复区':!s.enough?(s.wood.collected?'木材待入库':'木头不足'):'修复 · 消耗 '+f.wood+' 木头';
+  get('restoration-repair').textContent=s.ready?'使用功能':building?'正在修复':!s.active?'完成入营引导后修复':!s.near?'请先到达修复区':!s.enough?'木头不足':'修复 · 消耗 '+f.wood+' 木头';
   get('restoration-repair').disabled=!s.ready&&!s.canRepair;
   get('restoration-go').textContent=s.ready||s.enough?'前往设施':s.wood.destination?(s.wood.destination.kind==='store'?'前往仓库':'取回木材'):'前往采木';
   get('restoration-roadmap').replaceChildren();

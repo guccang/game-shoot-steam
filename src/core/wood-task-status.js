@@ -1,4 +1,4 @@
-// 木材任务读取真实库存：采集统计全部自有货物，施工仍只使用已入库建材。
+// 木材任务读取真实库存：采集统计全部自有货物，普通交易使用入库建材，房屋施工另按背包与仓库合计。
 import {woodInventory} from '../progression/resource-wallet.js';
 import {CAMP_WAREHOUSE} from '../config/wood-storage.js';
 import {TREE_REWARD} from '../config/rewards.js';
@@ -25,5 +25,11 @@ export function woodTaskStatus(game,required){
   }
  }
  const hint=stored?'木材已入库，可前往修复':collected?(destination?.label||'木材已采齐，运回小屋仓库入库'):`还差 ${missing} 木头${destination?'，先回仓库卸货腾空间':'，靠近树木采集'}`;
- return {...stock,required,missing,stored,collected,progress,breakdown,destination,hint};
+ return {...stock,required,missing,stored,ready:stored,collected,progress,breakdown,destination,hint};
+}
+
+// 房屋施工按可直接消费的两处库存展示进度，材料齐备后不再要求先回仓库。
+export function repairWoodStatus(game,required){
+ const stock=woodInventory(game.progress),available=stock.warehouse+stock.bag,missing=Math.max(0,required-available),ready=missing===0;
+ return {...stock,required,available,missing,stored:stock.warehouse>=required,ready,collected:ready,progress:Math.min(required,available)+'/'+required,breakdown:`仓库 ${stock.warehouse} · 背包 ${stock.bag}`,destination:null,hint:ready?'背包和仓库木材已备齐，可前往修复':`还差 ${missing} 木头，背包和仓库合计 ${available}${stock.vehicles?'；车载木材需先取回背包或存入仓库':'，靠近树木采集'}`};
 }

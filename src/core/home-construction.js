@@ -1,3 +1,4 @@
+import {constructionWood,spendConstructionWood} from '../progression/resource-wallet.js';
 import {MINING} from '../config/mining.js';
 import {placedDecor} from '../progression/home-decor.js';
 // 加盖事务先保存再扣款，通行只访问已建楼层和已装设施。
@@ -19,9 +20,9 @@ export function buildHome(game,kind,{floor=0,side='south'}={}){
  if(removing&&!hasHomeElevator(home,floor))return {ok:false,message:'这一层没有电梯可拆除。'};
  if(kind==='balcony'&&(!Number.isSafeInteger(floor)||floor<0||floor>=homeFloors(home)||!Object.hasOwn(HOME_DIRECTIONS,side)))return {ok:false,message:'请选择已建楼层和阳台朝向。'};
  if(kind==='balcony'&&floorBalconies(home,floor).includes(side))return {ok:false,message:'这一侧已经有大阳台。'};
- if(game.progress.coins<price.coins||game.progress.wood<price.wood)return {ok:false,message:'金币或仓库木材不足。'};
+ if(game.progress.coins<price.coins||constructionWood(game.progress)<price.wood)return {ok:false,message:'金币或背包与仓库的合计木材不足。'};
  const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress)),h=next.homeDecor;
- next.coins-=price.coins;next.wood-=price.wood;
+ next.coins-=price.coins;spendConstructionWood(next,price.wood);
  if(kind==='basement'){
   // 新梯口占用已有家具区域时，把原实例移入收纳，不删除或重复赠送家具。
   const blockedIds=new Set(placedDecor(h,0).filter(i=>i.layer==='floor'&&Math.abs(i.x-MINING.hatch.x)<i.width/2+40&&Math.abs(i.y-460)<i.height/2+60).map(i=>i.uid));

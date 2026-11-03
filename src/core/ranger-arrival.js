@@ -1,6 +1,6 @@
-import {woodTaskStatus} from './wood-task-status.js';
+import {woodTaskStatus,repairWoodStatus} from './wood-task-status.js';
 import {vehicleBoardingPoint} from './vehicle-boarding.js';
-import {creditResource} from '../progression/resource-wallet.js';
+import {creditResource,constructionWood,spendConstructionWood} from '../progression/resource-wallet.js';
 import {freshKeepsakes} from '../progression/keepsakes.js';
 import {RESTORATION_FLIGHT} from '../config/town-restoration.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -121,11 +121,11 @@ export function nextArrivalSpeech(game){
   a.elapsed=Math.min(stage.seconds-.001,(line+1)*stage.seconds/stage.lines.length+.001);
   game.arrivalSpeechPaused=false;return true;
 }
-// 真实伐木登记来源；修复资格按仓库存量判断，随身木材要先入库。
+// 真实伐木登记来源；修复资格按背包与仓库合计判断，随身木材可直接投料。
 export function recordArrivalWood(game,wood,impact) {
   const a=game.progress.arrival;if(!a||!['gather','repair','craft'].includes(a.phase)||impact?.weaponIndex!==RANGER.saw)return;
   a.wood+=wood;
-  if(a.phase==='gather'&&game.progress.wood>=RANGER.repairWood)a.phase='repair';
+  if(a.phase==='gather'&&constructionWood(game.progress)>=RANGER.repairWood)a.phase='repair';
 }
 // 修复和购买均允许骑乘靠近工坊，不要求额外下车。
 export function arrivalWorkReady(game) {return ['gather','repair'].includes(game.progress.arrival?.phase)?inRestorationArea(game.player,restorationArea(WORKSHOP)):worldDistance(game.player,{x:WORKSHOP.x,y:WORKSHOP.y+25})<=115;}
@@ -134,8 +134,8 @@ export function advanceArrival(game) {
   const a=game.progress.arrival;if(!arrivalPending(game.progress)||!['playing','paused'].includes(game.state))return false;
   if(game.arrivalError){game.arrivalError=false;return true;}
   if(!arrivalWorkReady(game)||!a.keys)return false;
-  if(['gather','repair'].includes(a.phase)&&game.progress.wood>=RANGER.repairWood)
-    return phaseArrival(game,'repairing',p=>{p.arrival.workWood=RANGER.repairWood;p.wood-=RANGER.repairWood;recordEconomy(p,'expense','arrival:repair',{wood:RANGER.repairWood});});
+  if(['gather','repair'].includes(a.phase)&&constructionWood(game.progress)>=RANGER.repairWood)
+    return phaseArrival(game,'repairing',p=>{p.arrival.workWood=RANGER.repairWood;spendConstructionWood(p,RANGER.repairWood);recordEconomy(p,'expense','arrival:repair',{wood:RANGER.repairWood});});
   // 新购枪只由正式工坊交易提交；保留crafting读档分支以完成历史制作。
   if(a.phase==='craft')return false;
   return false;
@@ -172,10 +172,10 @@ export function updateArrival(game,dt) {
   if(game.arrivalSpeechPaused&&RANGER_STAGES[a.phase])return true;
   // 上车必须由真实操作完成；已有材料跳过采集。
   if(a.phase==='ride-guide'&&game.vehicle.active&&game.vehicle.index===RANGER.scooter)
-    return !phaseArrival(game,game.progress.wood>=RANGER.repairWood?'repair':'gather');
+    return !phaseArrival(game,constructionWood(game.progress)>=RANGER.repairWood?'repair':'gather');
   // 旧存档的下车阶段直接续到购枪，保留当前骑乘状态及保存失败重试。
   // 已有材料直接转向工坊；花掉材料后只补差额，不要求重新采满任务配额。
-  if(['gather','repair'].includes(a.phase))a.phase=game.progress.wood>=RANGER.repairWood?'repair':'gather';
+  if(['gather','repair'].includes(a.phase))a.phase=constructionWood(game.progress)>=RANGER.repairWood?'repair':'gather';
   // 首次工坊属于入职任务，材料齐备且靠近时自动投料；保存失败仍由原界面重试。
   if(a.phase==='repair'&&a.keys&&arrivalWorkReady(game)&&!game.boss&&!game.livingBattle&&!game.progress.living?.patrolActive){
     return !advanceArrival(game);
@@ -209,15 +209,15 @@ export function arrivalWorkshopObjective(game) {
   if(!a||!arrivalGuidanceVisible(game)||!['ride-guide','gather','repair','craft'].includes(a.phase))return null;
   if(a.phase==='ride-guide')return {task:{id:'arrival-scooter',title:'坐上电动车'},key:'arrival-ride-guide',phase:'travel',site:{...arrivalTarget(game),mapId:'forest'},label:'前往北广场找到电动车'};
   const needed=a.phase==='craft'?RANGER.pistolWood:RANGER.repairWood;
-  const wood=woodTaskStatus(game,needed);
+  const wood=a.phase==='craft'?woodTaskStatus(game,needed):repairWoodStatus(game,needed);
   if(wood.destination){const key='arrival-wood-'+wood.destination.kind;return {task:{id:key,title:wood.destination.kind==='store'?'木材存入仓库':'取回车载木材'},key,phase:'travel',site:wood.destination.site,label:wood.destination.label};}
-  // 木材已直接入包，继续采集或在余量不足时导航仓库。
-  if(a.phase==='gather'||game.progress.wood<(a.phase==='repair'?RANGER.repairWood:RANGER.pistolWood)){
+  // 修复按背包与仓库合计判断；购枪仍保留原入库要求，缺料才继续采集。
+  if(!wood.ready){
     const tree=arrivalTarget(game);if(!tree)return null;
     return {task:{id:'arrival-wood',title:'采集木料'},key:'arrival-wood',phase:'travel',site:{...tree,type:'tree',mapId:'forest'},label:'前往树木旁，自动采集木料'};
   }
   return {task:{id:'arrival-workshop',title:'武器工坊'},key:'arrival-'+a.phase,phase:'travel',
-    site:{...arrivalTarget(game),mapId:'forest',...(a.phase==='repair'?{repairArea:restorationArea(WORKSHOP)}:{})},label:a.phase==='repair'?'前往武器工坊，靠近自动修复':'前往武器工坊购买手枪'};
+    site:{...arrivalTarget(game),mapId:'forest',...(a.phase!=='craft'?{repairArea:restorationArea(WORKSHOP)}:{})},label:a.phase!=='craft'?'前往武器工坊，靠近自动修复':'前往武器工坊购买手枪'};
 }
 // 采集箭头继续寻找存活树木，工坊门口与实际施工距离保持一致。
 export function arrivalTarget(game) {
@@ -227,10 +227,10 @@ export function arrivalTarget(game) {
     // 导航落在车位前的通道，不把终点放进车体碰撞内；已取出的随行车原地可上。
     return parked?vehicleBoardingPoint(parked):a.parked?{x:RANGER.parking.x,y:RANGER.parking.y+60}:{x:game.player.x,y:game.player.y};
   }
-  if(['gather','repair','craft'].includes(a.phase)){const wood=woodTaskStatus(game,a.phase==='craft'?RANGER.pistolWood:RANGER.repairWood);if(wood.destination)return wood.destination.site;}
-  if(a.phase==='gather'||(['repair','craft'].includes(a.phase)&&game.progress.wood<(a.phase==='repair'?RANGER.repairWood:RANGER.pistolWood)))
+  if(['gather','repair','craft'].includes(a.phase)){const wood=a.phase==='craft'?woodTaskStatus(game,RANGER.pistolWood):repairWoodStatus(game,RANGER.repairWood);if(wood.destination)return wood.destination.site;}
+  if((['gather','repair'].includes(a.phase)&&constructionWood(game.progress)<RANGER.repairWood)||(a.phase==='craft'&&game.progress.wood<RANGER.pistolWood))
     {let target=null,distance=Infinity;for(const tree of game.trees){if(tree.hp<=0)continue;const d=worldDistance(tree,game.player);if(d<distance){target=tree;distance=d;}}return target;}
-  if(['repair','repairing','craft','crafting'].includes(a.phase))return {x:WORKSHOP.x,y:WORKSHOP.y+25};
+  if(['gather','repair','repairing','craft','crafting'].includes(a.phase))return {x:WORKSHOP.x,y:WORKSHOP.y+25};
   return null;
 }
 

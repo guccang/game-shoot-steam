@@ -1,5 +1,6 @@
+import {spendConstructionWood} from '../progression/resource-wallet.js';
 import {bossCombatActive} from './boss-engagement.js';
-import {woodTaskStatus} from './wood-task-status.js';
+import {repairWoodStatus} from './wood-task-status.js';
 // 修复任务靠近自动投料，自选建筑由界面确认；持久化成功才扣料和开放功能。
 import {TOWN_RESTORATIONS,pendingRestoration,facilityOpen,RESTORATION_SECONDS} from '../config/town-restoration.js';
 import {currentMainlineTask} from '../config/mainline.js';
@@ -22,10 +23,10 @@ export function restorationStatus(game,id){
  const f=restorationLocation(config,game.player),area=restorationArea(f);
  const gathered=game.progress.restoration?.gathered[f.id]||0,ready=facilityOpen(game.progress,id),active=!arrivalCinematic(game.progress);
  const near=game.mapId==='forest'&&!game.cottage&&inRestorationArea(game.player,area);
- const enough=game.progress.restoration?.build?.id===id||game.progress.wood>=f.wood;
+ const wood=repairWoodStatus(game,f.wood),enough=game.progress.restoration?.build?.id===id||wood.ready;
  const safe=!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!bossCombatActive(game)&&!game.livingBattle&&!game.workshopTrial&&['playing','paused'].includes(game.state);
  const taskRequired=!arrivalPending(game.progress)&&!!currentMainlineTask(game.progress.mainline)&&pendingRestoration(game.progress)?.id===id;
- return {facility:f,area,gathered,wood:woodTaskStatus(game,f.wood),ready,active,near,enough,taskRequired,canRepair:!ready&&!game.progress.restoration?.build&&active&&near&&enough&&safe};
+ return {facility:f,area,gathered,wood,ready,active,near,enough,taskRequired,canRepair:!ready&&!game.progress.restoration?.build&&active&&near&&enough&&safe};
 }
 // 主线、地图和修复页共用真实树木与门前落点。
 export function restorationObjective(game,task){
@@ -42,7 +43,7 @@ export function restorationObjective(game,task){
 export function repairFacility(game,id,persist=game.restorationPersist){
  const s=restorationStatus(game,id);
  if(!s?.canRepair)return {ok:false,message:s?.ready?'这里已经修好了。':!s?.active?'请等待当前过场结束，再修复这里。':!s?.enough?s.wood.hint:!s?.near?'请靠近设施的修复区，步行或骑乘到达后点击修复。':'请先结束当前活动，再点击修复。'};
- const next=validateProgress(structuredClone(game.progress));next.wood-=s.facility.wood;next.restoration.build={id,elapsed:0,x:game.player.x,y:game.player.y};
+ const next=validateProgress(structuredClone(game.progress));spendConstructionWood(next,s.facility.wood);next.restoration.build={id,elapsed:0,x:game.player.x,y:game.player.y};
  recordEconomy(next,'expense','town:repair:'+id,{wood:s.facility.wood});
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  let saved=false;try{saved=(persist?.(next)??false)===true;}catch{}

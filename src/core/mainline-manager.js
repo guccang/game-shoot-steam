@@ -52,11 +52,10 @@ export function mainlineSteps(game){
  const task=mainlineTask(game);if(!task)return [];
  const f=pendingRestoration(game.progress);if(f){
   const s=restorationStatus(game,f.id),repair={label:'修复'+f.name,hint:f.benefit,done:false,operation:{type:'restoration',id:f.id}};
-  // 采齐与入库分开展示，背包和货舱有木头时立即更新采集进度。
+  // 修复直接使用背包与仓库合计，材料齐备即可前往建筑。
   if(s.enough)return [repair];
   const wood=s.wood,resourceHint=wood.hint+' · '+wood.breakdown;
-  return [{label:'采集木头',hint:resourceHint,resourceHint,done:wood.collected,progress:wood.progress},
-   {label:'木材存入小屋仓库',hint:wood.destination?.label||'采集后靠近小屋仓库自动入库',done:false,progress:wood.warehouse+'/'+f.wood},repair];
+  return [{label:'采集木头',hint:resourceHint,resourceHint,done:wood.collected,progress:wood.progress},repair];
  }
  const conditions=task.goal.all||[task.goal];
  const steps=task.guide.steps.map((step,index)=>{

@@ -1,3 +1,4 @@
+import {constructionWood} from '../progression/resource-wallet.js';
 // 按层施工与场景乘梯共用手机底板，楼层再多也不创建全量按钮列表。
 import {createEventScope} from '../platform/events.js';
 import {buildHome,travelHomeFloor} from '../core/home-construction.js';
@@ -17,7 +18,7 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
  function paint(){
   const h=game.progress.homeDecor,floors=homeFloors(h),floor=cottageFloor(game.cottage);
   get('title').textContent=mode==='build'?'森筑建筑公司':'小屋楼层设施';
-  get('summary').textContent=`已建 ${floors} 层 · ${mode==='build'?`金币 ${game.progress.coins} · 木材 ${game.progress.wood}`:`当前第 ${floor+1} 楼`}`;get('message').textContent=message;
+  get('summary').textContent=`已建 ${floors} 层 · ${mode==='build'?`金币 ${game.progress.coins} · 木材 ${constructionWood(game.progress)}（背包 ${game.progress.logistics.bagWood}＋仓库 ${game.progress.wood}）`:`当前第 ${floor+1} 楼`}`;get('message').textContent=message;
   if(mode==='build'){
    const price=kind=>`${HOME_BUILD_PRICES[kind].coins} 金币 + ${HOME_BUILD_PRICES[kind].wood} 木材`;
    const valid=Number.isSafeInteger(buildFloor)&&buildFloor>=0&&buildFloor<floors,installed=valid&&hasHomeElevator(h,buildFloor),lifts=elevatorFloors(h);
