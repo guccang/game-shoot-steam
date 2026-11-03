@@ -13,7 +13,7 @@ import {FIRE_EXIT,FIRE_PARKING} from '../src/world/fire-navigation.js';
 import {fireTransferOpacity} from '../src/core/fire-transit.js';
 import {worldDistance} from '../src/world/coordinates.js';
 // 室外田地包含空地、成长、成熟、手浇和另一张地图，使用固定时间排除墙钟误差。
-function farm(){const p=freshProgress();p.arrival=null;p.farm.seeds[0]=2;p.farm.plots=[0,1,2,3,4].map(id=>({id,x:2000+id*40,y:2000,mapId:id===4?'jiuzhaigou':'forest',crop:id===0?null:0,plantedAt:id===0?0:1000,readyAt:id===0?0:id===2?5000:id===3?46000:61000,watered:id===3}));return {state:'playing',mapId:'forest',livingWeather:'rain',progress:p,player:{x:2040,y:2000},trees:[],livingPersist:()=>true};}
+function farm(){const p=freshProgress();p.arrival=null;p.farm.seeds[0]=2;p.farm.plots=[0,1,2,3,4].map(id=>({id,x:2000+id*40,y:2000,mapId:id===4?'jiuzhaigou':'forest',crop:id===0?null:0,plantedAt:id===0?0:1000,readyAt:id===0?0:id===2?5000:id===3?46000:61000,watered:id===3}));return {state:'playing',mapId:'forest',livingWeather:'rain',progress:p,player:{x:2040,y:2000},trees:[],vehicles:[],livingPersist:()=>true};}
 // 消防测试明确开放已修复设施，避免旧夹具在接警前即被权限拦截。
 function fire(){const p=freshProgress();p.arrival=null;p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';const g=new Game(p,()=>.4);g.start();g.livingWeather='sun';return g;}
 // 只推进既有转场与消防更新，真实碰撞、连续路径和交接结算仍由正式代码执行。

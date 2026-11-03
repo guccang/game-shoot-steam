@@ -119,15 +119,15 @@ export function useProduction(game,kind){
  return commit(game,next,`${PRODUCTION_RECIPES[kind].name}已使用，暂停和离线不消耗效果。`);
 }
 const retries=new WeakMap();
-// 自动浇水只作用于当前地面在线未成熟作物；无待办不复制进度或写盘。
+// 自动浇水照料当前地面的干燥空田和未成熟作物；无待办不复制进度或写盘。
 export function updateProduction(game,now=Date.now()){
  if(!productionAvailable(game)||game.state!=='playing'||game.cottage||!['forest','jiuzhaigou'].includes(game.mapId)||now<(retries.get(game)||0))return false;
  const s=game.progress.production,held=carriedSprinkler(game),sprinklers=s.sprinklers.filter(p=>p.id!==held?.id),returning=!s.returned&&s.minedOre>=P.oreGoal;
  if(!returning&&!sprinklers.length)return false;
- const targets=game.progress.farm.plots.filter(p=>!p.wild&&p.mapId===game.mapId&&p.crop!==null&&!p.watered&&farmGrowth(p,now)<1&&sprinklers.some(d=>sprinklerCovers(d,p)));
+ const targets=game.progress.farm.plots.filter(p=>!p.wild&&p.mapId===game.mapId&&!p.watered&&(p.crop===null||farmGrowth(p,now)<1)&&sprinklers.some(d=>sprinklerCovers(d,p)));
  if(!returning&&!targets.length)return false;
  const next=candidate(game);if(returning)next.production.returned=true;
- for(const plot of next.farm.plots.filter(p=>targets.some(t=>t.id===p.id))){wetFarmPlot(next.farm,plot,now);plot.sprinklerWatered=true;recordGardeningAction(next,'water',{crop:plot.crop,plot:plot.id});}
+ for(const plot of next.farm.plots.filter(p=>targets.some(t=>t.id===p.id))){wetFarmPlot(next.farm,plot,now);plot.sprinklerWatered=true;if(plot.crop!==null)recordGardeningAction(next,'water',{crop:plot.crop,plot:plot.id});}
  const result=commit(game,next,returning?'矿石已带回地面，可以建造简易洒水器。':`洒水器已浇灌${targets.length}块田。`);
  if(!result.ok)retries.set(game,now+1000);else{retries.delete(game);if(targets.length){
   // 每台保留本次旋转的起点，另一台后来浇水不截断正在播放的水流。
