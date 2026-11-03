@@ -1,6 +1,6 @@
 // 农矿配合事务：设施、配方和补给只在保存成功后生效。
 import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES,productionCrop} from '../config/farm-production.js';
-import {productionUnlocked,productionIngredients,sprinklerCovers} from '../progression/farm-production.js';
+import {productionUnlocked,productionIngredients,sprinklerCovers,productionCropStock,consumeProductionCrop} from '../progression/farm-production.js';
 import {FARM_CROPS,FARM_STOCK_CAP} from '../config/farm.js';
 import {farmGrowth,wetFarmPlot,grantFarmSeeds} from '../progression/farm.js';
 import {recordGardeningAction} from '../progression/mainline-gardening.js';
@@ -57,14 +57,14 @@ export function setProductionKeep(game,crop,count){
  if(game.progress.production.mealDigs<P.lessonDigs&&![0,2].includes(count))return {ok:false,message:'入门可选出售或保留2份，完成20次便当开掘后可自定上限。'};
  const next=candidate(game);next.production.keep[crop]=count;return commit(game,next,count?`${FARM_CROPS[crop].name}保留${count}份，多余照常出售。`:`${FARM_CROPS[crop].name}恢复全部出售。`);
 }
-// 加工只消耗背包真实收成，远处货舱不能隔空取料；每次制作一批。
+// 加工合计背包与已拥有载具的真实收成，校验与扣料同口径，保存失败不改原库存。
 export function craftProduction(game,kind,fruit){
- if(!nearProductionBench(game))return {ok:false,message:'请下车走到农产加工台旁，原料需要放在背包中。'};
+ if(!nearProductionBench(game))return {ok:false,message:'请下车走到农产加工台旁，原料可放在背包或载具仓库中。'};
  if(!productionUnlocked(game.progress,kind))return {ok:false,message:'配方尚未解锁，请查看生产目标。'};
  const ingredients=productionIngredients(kind,fruit),recipe=PRODUCTION_RECIPES[kind];
- if(!ingredients||ingredients.some(([i,n])=>!game.progress.farm.unlocked[i]||game.progress.farm.inventory[i]<n))return {ok:false,message:'背包原料不足，或尚未发现这个品种。'};
+ if(!ingredients||ingredients.some(([i,n])=>!game.progress.farm.unlocked[i]||productionCropStock(game.progress,i).total<n))return {ok:false,message:'背包与载具仓库的原料合计不足，或尚未发现这个品种。'};
  if(game.progress.production.stock[kind]+recipe.count>P.maxStock)return {ok:false,message:'补给库存已满，请先使用。'};
- const next=candidate(game);for(const [i,n] of ingredients)next.farm.inventory[i]-=n;next.production.stock[kind]+=recipe.count;
+ const next=candidate(game);for(const [i,n] of ingredients)consumeProductionCrop(next,i,n);next.production.stock[kind]+=recipe.count;
  return commit(game,next,`${recipe.name} +${recipe.count}，原料已消耗。`);
 }
 // 食物仅供地下步行使用，油只绑定当前层正在乘坐或身旁的矿车。
