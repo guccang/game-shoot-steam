@@ -12,10 +12,11 @@ import {buildHome,travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from '../sr
 import {enterWorkshop,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/cottage.js';
 import {buyDecor,moveDecor} from '../src/core/home-decor.js';
 import {accessibleWeaponRack} from '../src/core/weapon-storage.js';
-import {homeBalconyView,balconySceneGame} from '../src/rendering/home-balcony.js';
+import {homeBalconyView,balconySceneGame,balconyProject,balconyObjectVisible,balconyWorldTransform,balconyUpright} from '../src/rendering/home-balcony.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 import {normalizeHome} from '../src/progression/home-decor.js';
 import {worldDistance} from '../src/world/coordinates.js';
+import {WORLD} from '../src/world/coordinates.js';
 import {RANGER_COTTAGE} from '../src/world/workshop.js';
 import {PARKING_SPOTS} from '../src/config/parking.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';
@@ -127,4 +128,39 @@ test('走到电梯前候停请求选层，暂停冻结、移动取消、落地�
  tick(g,8);const elapsed=g.cottage.elevatorElapsed;g.state='paused';tick(g,30);assert.equal(g.cottage.elevatorElapsed,elapsed);g.state='playing';tick(g,1,{x:-1,y:0});assert.equal(g.cottage.elevatorElapsed,null);
  Object.assign(g.player,HOME_ELEVATOR.landing);tick(g,21);assert.equal(g.cottage.elevatorRequest,true);assert.equal(g.cottage.floor,0);
  g.cottage.elevatorRequest=false;tick(g,80);assert.equal(g.cottage.elevatorRequest,false);Object.assign(g.player,COTTAGE.spawn);tick(g,1);Object.assign(g.player,HOME_ELEVATOR.landing);tick(g,21);assert.equal(g.cottage.elevatorRequest,true);
+});
+
+// 四向投影必须从小屋朝外，左右关系、地图镜像与直立实体共用同一正交基。
+test('阳台四向以前方为上，只看屋外且场景形体保持直立',()=>{
+ for(const [side,d] of Object.entries(HOME_DIRECTIONS))for(const [width,height] of [[320,300],[390,550],[844,180]])for(const floor of [0,62,1000000]){
+  const view=homeBalconyView({balcony:side,floor,outside:{x:RANGER_COTTAGE.x+WORLD.width,y:RANGER_COTTAGE.y-WORLD.height}},width,height);
+  const a=view.anchor,front={x:a.x+d.dx*200,y:a.y+d.dy*200},far={x:a.x+d.dx*300,y:a.y+d.dy*300};
+  assert.ok(balconyProject(view,far).y<balconyProject(view,front).y);
+  assert.equal(balconyProject(view,front).x,width/2);
+  const right={x:front.x-d.dy*100,y:front.y+d.dx*100};assert.ok(balconyProject(view,right).x>width/2);
+  for(const point of [{x:view.x,y:view.y},{x:view.x+view.w,y:view.y+view.h}])assert.ok((point.x-a.x)*d.dx+(point.y-a.y)*d.dy>=view.near-1e-8);
+  assert.equal(balconyObjectVisible(view,{...front,type:'scenery',kind:'cottage'}),false);
+  assert.equal(balconyObjectVisible(view,{...front,type:'scenery',kind:'cottage',workshop:true}),true);
+  assert.equal(balconyObjectVisible(view,a),false);assert.ok(view.w<WORLD.width&&view.h<WORLD.height);
+  // 使用轻量矩阵记录器验证世界投影后抵消方向，实体的向上轴仍是屏幕向上。
+  let matrix=[1,0,0,1,0,0];const c={
+   // 组合Canvas同序矩阵，避免测试依赖浏览器DOMMatrix。
+   transform(a,b,c,d,e,f){const [A,B,C,D,E,F]=matrix;matrix=[A*a+C*b,B*a+D*b,A*c+C*d,B*c+D*d,A*e+C*f+E,B*e+D*f+F];},
+   // 平移不影响主体的直立方向。
+   translate(x,y){this.transform(1,0,0,1,x,y);},
+   // 世界倍率与主体尺寸使用同一个缩放。
+   scale(x,y){this.transform(x,0,0,y,0,0);}
+  };
+  balconyWorldTransform(c,view);balconyUpright(c,view,front);assert.deepEqual(matrix.slice(0,4),[view.zoom,0,0,view.zoom]);
+ }
+});
+
+// 矩形地块在90度和180度朝向下仍必须覆盖相邻边界，不能因零对角项漏画。
+test('四向地块像素对齐保留有限正尺寸和连续接缝',async()=>{
+ const {alignedTileRect}=await import('../src/rendering/tile-blit.js');
+ for(const [a,b,c,d] of [[.58,0,0,.58],[0,-.58,.58,0],[-.58,0,0,-.58],[0,.58,-.58,0]]){
+  const matrix={a,b,c,d,e:190.25,f:600.4},first=alignedTileRect(matrix,0,0,384,384),right=alignedTileRect(matrix,384,0,384,384),below=alignedTileRect(matrix,0,384,384,384);
+  assert.ok(Object.values(first).every(Number.isFinite));assert.ok(first.w>0&&first.h>0);
+  assert.ok(Math.abs(first.x+first.w-right.x)<1e-8);assert.ok(Math.abs(first.y+first.h-below.y)<1e-8);
+ }
 });
