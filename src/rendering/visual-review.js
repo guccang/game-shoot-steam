@@ -1815,8 +1815,11 @@ export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoa
 // 快捷清理与一级种地入口读取正式DOM，记录真实数量、来源及拖拽浮标。
 export async function inspectCleanupDrag(game,root){return {...await inspectLoadCleanup(game,root),designCriterion:'load-cleanup-drag',source:root.getElementById('load-cleanup-dialog')?.dataset.source,range:root.getElementById('cleanup-quantity-range')?.value,ghosts:root.querySelectorAll('.cleanup-ghost').length,farmPrimary:root.getElementById('farm-menu')?.parentElement?.classList.contains('field-menu'),farmOpen:!root.getElementById('farm-tools')?.hidden};}
 
-// 自动楼梯验收直接读取室内计时、楼层与正式屏幕徽记，确认不存在点击热点。
+// 楼梯验收读取正式计时、楼层与徽记；点击只安排走近，站定仍由原计时提交。
 export function inspectCottageStairs(game,renderer,root){return {designCriterion:'stairs-auto-transition',floor:game.cottage?.floor,elapsed:game.cottage?.stairsElapsed,latch:game.cottage?.stairsLatch,countdown:renderer.actionCountdownView,clickTargets:root.querySelectorAll('[data-cottage-target="stairs"]').length};}
+
+// 点击交互验收读取正式透明热点、移动意图和渲染镜头，不构造替代画面。
+export function inspectSceneApproach(game,renderer,root){return {designCriterion:'scene-click-approach',target:game.sceneApproach?.id||null,position:{x:game.player.x,y:game.player.y},room:game.cottage?.kind||null,floor:game.cottage?.floor,sleep:!!game.cottage?.sleep,view:game.cottage?renderer.cottageView:renderer.view,hits:[...root.querySelectorAll('[data-building-entry],[data-cottage-target="stairs"],[data-cottage-target="bed"]')].filter(n=>!n.hidden&&n.getClientRects().length).map(n=>({id:n.dataset.buildingEntry||n.dataset.cottageTarget,text:n.textContent,label:n.getAttribute('aria-label'),width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height}))};}
 
 // 载具HUD验收读取正式按钮填充、弹药与当前载荷，不使用独立示意图。
 export async function inspectVehicleLoadHud(game,root){const {vehicleLoadHudState}=await import('../ui/vehicle-load-hud.js'),n=root.getElementById('vehicle-button');return {designCriterion:'vehicle-hud-load',hull:game.vehicle.index,...vehicleLoadHudState(game),ammo:n.querySelector('.vehicle-ammo-count')?.textContent,clip:n.querySelector('.vehicle-load-filled')?.style.clipPath,label:n.getAttribute('aria-label'),mark:n.querySelector('.vehicle-hud-state')?.textContent,art:n.dataset.vehicleArt,reloadState:n.dataset.reloadState,reloadFill:Number(n.dataset.reloadFill),reloadStroke:n.querySelector('.vehicle-reload-value')?.style.strokeDasharray,canvasCount:n.querySelectorAll('canvas').length,svgCount:n.querySelectorAll('.vehicle-load-art svg').length};}

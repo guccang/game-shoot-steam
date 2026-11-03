@@ -39,12 +39,12 @@ function* lineSearch(a,b,collision){
  return true;
 }
 // A*在最近世界镜像内搜索；生成器同时供同步规则检查与正式分帧会话使用。
-function* routeSearch(player,target,trees,budget,local=false,bounds=null){
+function* routeSearch(player,target,trees,budget,local=false,bounds=null,canOccupy=null){
  const body={...player},start={x:player.x,y:player.y},goal=nearest(target,start),grid=trees.query?trees:new SpatialGrid(trees);
  // 同次搜索缓存精确坐标的碰撞结果，不取整或放大网格，避免树角与窄门误判。
  const columns=new Map(),collision={samples:0,
   // 相邻边共享端点和采样点；缓存随本次搜索释放，能力或障碍变化仍由会话重新规划。
-  clear(x,y){let column=columns.get(x);if(!column){column=new Map();columns.set(x,column);}if(!column.has(y))column.set(y,pointClear(x,y,body,grid));return column.get(y);}
+  clear(x,y){let column=columns.get(x);if(!column){column=new Map();columns.set(x,column);}if(!column.has(y))column.set(y,canOccupy?canOccupy(x,y):pointClear(x,y,body,grid));return column.get(y);}
  };
  const clear=(a,b)=>lineSearch(a,b,collision);
  if(yield* clear(start,goal)){
@@ -89,8 +89,9 @@ function* routeSearch(player,target,trees,budget,local=false,bounds=null){
 }
 
 // 每帧最多1.5毫秒或256个搜索批次；每批最多32次采样，重复绘制不推进或伪造直线。
-export function createQuestRouteSearch(player,target,trees=[],budget=QUEST_ROUTE_BUDGET,{bounds=null}={}){
- const iterator=routeSearch(player,target,trees,budget,true,bounds);
+export function createQuestRouteSearch(player,target,trees=[],budget=QUEST_ROUTE_BUDGET,{bounds=null,canOccupy=null}={}){
+ // 室内点击行走注入正式家具碰撞，仍共用有界搜索与逐段扫掠。
+ const iterator=routeSearch(player,target,trees,budget,true,bounds,canOccupy);
  return {result:null,steps:0,slices:0,lastFrame:null,
   // 有界推进供故事和邻里共用；时钟参数支持确定性预算回归。
   advance(frame,{milliseconds=1.5,steps=256,now=()=>performance.now()}={}){

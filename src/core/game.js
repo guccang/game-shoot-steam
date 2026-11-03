@@ -1,3 +1,4 @@
+import {updateSceneApproach} from './scene-approach.js';
 import {updateWarehouseHarvest} from './warehouse-harvest.js';
 import {updateOutdoors,outdoorBusy} from './outdoors.js';
 import {updateLoadWarning} from './load-warning.js';
@@ -823,6 +824,7 @@ export class Game {
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
     updateLoadWarning(this,dt,input);
+    input=updateSceneApproach(this,dt,input);
     if(outdoorBusy(this))input={x:0,y:0};
     if(!outdoorBusy(this))updateVehicleBoarding(this,dt,input);
     maintainPlayerTow(this);

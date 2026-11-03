@@ -258,9 +258,9 @@ export function createApplication({
   const legendaryWorkshop=createLegendaryWorkshop({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show,workshop});
   game.openLegendaryWorkshop=()=>legendaryWorkshop.open();
   campHome=createCampHome({game,renderer,root,input,dialogs,onTalk,onDecorChange:refresh,openWorkshop:openRoomService,onCharacter:()=>inventory.openCurrentCat('items'),onChange:()=>{save();refresh();}});
-  // 工坊外部不建立点击入口，门前站定后由室内售货员提供服务。
-  worldWorkshop = createWorldWorkshop({ game, renderer, root, onEnter: () => !facilityOpen(game.progress,'weapons')?rangerArrival.openWorkshop():workshop.open('weapons') });
-  worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onEnter:()=>workshop.open('vehicle')});
+  // 全部营业建筑短按走向门口，未修复建筑继续使用原修复事务。
+  worldWorkshop = createWorldWorkshop({game,renderer,root,onLocked:id=>id==='weapons'?rangerArrival.openWorkshop():restorationPanel.open(id)});
+  worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onLocked:id=>restorationPanel.open(id)});
   const vehicleControls = createVehicleControls({ game, root, onChange: () => refresh() });
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
@@ -363,6 +363,7 @@ export function createApplication({
     // 清缴胜利沿用奖励队列展示等级快照，和主线奖励同时到达也不会互相覆盖。
     if(type==='victory'&&data?.clearingComplete&&data.qualification)taskReward.enqueue({title:'清缴完成',challenge:data.qualification,clearingRound:data.clearingRound});
     // 停车完成只恢复步行；入室须自行走到门口站定，升级页由按钮打开。
+    if(type==='scene-warehouse'){warehouse.open();return;}
     if(type==='camp-parking-change'||type==='cottage-change'){input.reset();renderer.camera.time=null;save();return;}
     if(type==='vehicle-parked'){input.reset();save();refresh();return;}
     if(type==='navigation-change'){save();toast.show(game.progress.mainline.navigationEnabled?'寻路已开启':'寻路已关闭，再点右侧箭头即可开启');return;}
