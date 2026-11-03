@@ -1,5 +1,5 @@
 // 生产存档只存事实、设施、保留策略和补给余量；恢复时不发奖励。
-import {taskCropStock,taskResourceStock} from './task-resources.js';
+import {taskResourceStock} from './task-resources.js';
 import {FARM_CROPS} from '../config/farm.js';
 import {PRODUCTION as P,productionCrop,SPRINKLER_OFFSETS} from '../config/farm-production.js';
 import {worldDistance} from '../world/coordinates.js';
@@ -17,15 +17,16 @@ export function normalizeProduction(raw,mining){
 export function productionUnlocked(progress,kind){
  const s=progress.production;if(!s)return false;
  if(kind==='sprinkler')return s.returned&&s.minedOre>=P.oreGoal;
- if(kind==='bench')return !!s.bench||taskCropStock(progress).total>0;
+ // 加工台无作物或教学前置，建造事务单独校验矿石与木材。
+ if(kind==='bench')return true;
  if(kind==='meal')return !!s.bench;
  if(kind==='juice')return !!s.bench&&FARM_CROPS.some((c,i)=>c.category==='fruit'&&progress.farm.unlocked[i]);
  if(kind==='oil')return !!s.bench&&s.rodeCart&&progress.farm.unlocked[productionCrop('corn')];
  return false;
 }
 // 供应链引导只展示下一步，读档或查看界面不推进阶段。
-export function productionGoal(p){const s=p.production;if(!s.bench)return productionUnlocked(p,'bench')?'已拥有作物，可以建造农产加工台（8矿石＋20仓库木材）':'收获任意作物并存入背包或载具仓库，即可解锁农产加工台';if(s.mealDigs<P.lessonDigs)return `制作并使用便当，完成20次加速开掘（${s.mealDigs}/20）`;return '准备矿车和玉米可制作植物油，发现水果可制作果饮';}
-// 加工库存与解锁共用真实所有权口径，未拥有车体的残留货物不计入。
+export function productionGoal(p){const s=p.production;if(!s.bench)return '准备8矿石＋20仓库木材，即可建造农产加工台';if(s.mealDigs<P.lessonDigs)return `制作并使用便当，完成20次加速开掘（${s.mealDigs}/20）`;return '准备矿车和玉米可制作植物油，发现水果可制作果饮';}
+// 加工展示与扣料共用真实所有权口径，未拥有车体的残留货物不计入。
 export function productionCropStock(progress,crop){return taskResourceStock(progress,'crop:'+crop);}
 // 在候选存档内优先扣背包，再按车型顺序扣已拥有载具；调用前须校验全部配方原料。
 export function consumeProductionCrop(progress,crop,count){
