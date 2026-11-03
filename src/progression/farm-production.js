@@ -1,8 +1,8 @@
 // 生产存档只存事实、设施、保留策略和补给余量；恢复时不发奖励。
 import {taskResourceStock} from './task-resources.js';
 import {FARM_CROPS} from '../config/farm.js';
-import {PRODUCTION as P,productionCrop,SPRINKLER_OFFSETS} from '../config/farm-production.js';
-import {worldDistance} from '../world/coordinates.js';
+import {PRODUCTION as P,productionCrop,SPRINKLER} from '../config/farm-production.js';
+import {worldDistance,nearest} from '../world/coordinates.js';
 // 有界整数用于数量，浮点余量另行校验以保留真实行驶时间。
 function integer(n,max=999999){return Number.isFinite(n)?Math.max(0,Math.min(max,Math.floor(n))):0;}
 // 设施仅接受正常世界坐标，不从损坏存档创建离屏实体。
@@ -34,7 +34,11 @@ export function consumeProductionCrop(progress,crop,count){
  for(const stock of stores){const used=Math.min(stock[crop]||0,count);stock[crop]-=used;count-=used;if(!count)break;}
 }
 // 同茬只有真正被设备首次加速才记为设备照料；手浇和雨水优先时不抢功。
-export function sprinklerCovers(s,plot){return s.mapId===plot.mapId&&SPRINKLER_OFFSETS.some(([x,y])=>worldDistance({x:s.x+x,y:s.y+y},plot)<5);}
+export function sprinklerCovers(s,plot){
+ if(s.mapId!==plot.mapId)return false;
+ const p=nearest(plot,s),x=(p.x-s.x)/SPRINKLER.cellWidth,y=(p.y-s.y)/SPRINKLER.cellHeight;
+ return x*x+y*y<=SPRINKLER.radius**2+1e-9;
+}
 // 所有出售入口共用一份保留配额，按背包、在场货舱顺序保护原料。
 export function productionSalePlan(progress,stocks){
  const remaining=[...(progress.production?.keep||FARM_CROPS.map(()=>0))];

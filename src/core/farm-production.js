@@ -1,5 +1,5 @@
 // 农矿配合事务：设施、配方和补给只在保存成功后生效。
-import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES,productionCrop} from '../config/farm-production.js';
+import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES,productionCrop,SPRINKLER} from '../config/farm-production.js';
 import {productionUnlocked,productionIngredients,sprinklerCovers,productionCropStock,consumeProductionCrop} from '../progression/farm-production.js';
 import {FARM_CROPS,FARM_STOCK_CAP} from '../config/farm.js';
 import {farmGrowth,wetFarmPlot,grantFarmSeeds} from '../progression/farm.js';
@@ -90,6 +90,12 @@ export function updateProduction(game,now=Date.now()){
  const next=candidate(game);if(returning)next.production.returned=true;
  for(const plot of next.farm.plots.filter(p=>targets.some(t=>t.id===p.id))){wetFarmPlot(next.farm,plot,now);plot.sprinklerWatered=true;recordGardeningAction(next,'water',{crop:plot.crop,plot:plot.id});}
  const result=commit(game,next,returning?'矿石已带回地面，可以建造简易洒水器。':`洒水器已浇灌${targets.length}块田。`);
- if(!result.ok)retries.set(game,now+1000);else{retries.delete(game);if(targets.length)game.productionSpray={time:game.time,plots:targets.map(p=>p.id),sprinklers:s.sprinklers.filter(d=>targets.some(p=>sprinklerCovers(d,p))).map(d=>d.id)};}
+ if(!result.ok)retries.set(game,now+1000);else{retries.delete(game);if(targets.length){
+  // 每台保留本次旋转的起点，另一台后来浇水不截断正在播放的水流。
+  const touched=s.sprinklers.filter(d=>targets.some(p=>sprinklerCovers(d,p)));
+  const devices=(game.productionSpray?.devices||[]).filter(d=>game.time>=d.time&&game.time-d.time<SPRINKLER.spraySeconds&&s.sprinklers.some(n=>n.id===d.id&&n.mapId===d.mapId&&worldDistance(n,d)<.1));
+  for(const d of touched)if(!devices.some(n=>n.id===d.id&&n.mapId===d.mapId))devices.push({...d,time:game.time});
+  game.productionSpray={time:game.time,plots:targets.map(p=>p.id),sprinklers:devices.map(d=>d.id),devices};
+ }}
  return result.ok;
 }

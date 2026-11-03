@@ -1964,3 +1964,10 @@ export function inspectMineCartControls(game,renderer,root=document){
 export function inspectMineFunnelBoundary(game,renderer){
  return {designCriterion:'mine-funnel-boundary',night:renderer.mineReview?.night,state:game.state,nodes:game.funnel.nodes.map(n=>({x:n.x,y:n.y,goalX:n.flight.goalX,goalY:n.flight.goalY,vx:n.flight.vx,vy:n.flight.vy,mode:n.flight.mode})),newBitmapBytes:0};
 }
+
+
+// 检查正式洒水器的半径、独立喷头动作与手机视口，供连续帧验收使用。
+export async function inspectSprinklerRotation(game,root=document){
+ const {productionObjects,sprinklerPose}=await import('./farm-production.js'),{SPRINKLER_OFFSETS}=await import('../config/farm-production.js');
+ return {designCriterion:'sprinkler-radius-rotation',time:game.time,devices:productionObjects(game).filter(d=>d.kind==='sprinkler').map(d=>({id:d.id,...sprinklerPose(d,game.time,game.productionSpray,root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches)})),plots:game.progress.farm.plots.map(p=>({id:p.id,watered:p.watered,sprinklerWatered:p.sprinklerWatered})),coverageCells:SPRINKLER_OFFSETS.length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}
