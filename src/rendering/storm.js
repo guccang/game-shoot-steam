@@ -1,4 +1,5 @@
 // 雷电合成包含云层散射、场景受光、地面反光和缓存序列帧，界面仍位于独立 DOM 层。
+import {worldPointToView,viewPointToWorld} from '../world/view-projection.js';
 import { LIGHTNING_ATLAS, getLightningAtlas } from './weather-atlas.js';
 import { lightningFrame } from '../world/storm.js';
 import { nearest } from '../world/coordinates.js';
@@ -21,8 +22,7 @@ export function prepareStormStrike(previous, view, storm, mapId, intensity, redu
   const layout = stormLayout(view.width, view.height, storm.cycle);
   return {
     cycle: storm.cycle, mapId,
-    x: view.x + layout.x / view.zoom,
-    y: view.y + layout.groundY / view.zoom,
+    ...viewPointToWorld(view,{x:layout.x,y:layout.groundY}),
     scale: layout.scale / view.zoom,
     glowOffset: (view.height * 0.12 - layout.groundY) / view.zoom,
     glowRadius: view.height * 0.65 / view.zoom,
@@ -38,8 +38,7 @@ export function stormStrikePosition(strike, view) {
 // 将固定世界尺寸投影到当前视口；缩放与屏幕旋转不会重新选择落点。
 export function projectStormStrike(strike, view) {
   const point = stormStrikePosition(strike, view);
-  const x = (point.x - view.x) * view.zoom;
-  const groundY = (point.y - view.y) * view.zoom;
+  const {x,y:groundY}=worldPointToView(view,point);
   const scale = strike.scale * view.zoom;
   return { x, groundY, scale, y: groundY - LIGHTNING_ATLAS.anchor[1] * scale,
     glowY: groundY + strike.glowOffset * view.zoom,

@@ -1,4 +1,5 @@
 // 分层降雨：世界坐标雨滴与连续落点、表面水花、远处细雨和近镜头风雨。
+import {worldPointToView} from '../world/view-projection.js';
 import { rainSample, RAIN_CELL, weatherNoise, precipitationPresence, rainVisibility } from '../world/precipitation.js';
 import { RainSurfaces } from '../world/rain-surfaces.js';
 import { getRainAtlas } from './weather-atlas.js';
@@ -43,6 +44,7 @@ export class RainRenderer {
         const tree = this.surfaces.canopyAt(drop);
         drop.surface = tree ? 'canopy' : this.surfaces.groundAt(drop);
         if (tree) {
+          drop.canopyHeight=75*tree.size;
           drop.y -= 75 * tree.size;
           drop.dropY -= 75 * tree.size;
         }
@@ -145,20 +147,26 @@ export class RainRenderer {
       }
     }
     c.scale(view.zoom, view.zoom);
-    c.translate(-view.x, -view.y);
+    if(!view.forward)c.translate(-view.x, -view.y);
     for (const drop of this.drops) {
+      // 阳台雨滴先投影地面落点，再沿屏幕竖轴下落，不能随朝向横着飘。
+      let display=drop;
+      if(view.forward){
+        const ground=worldPointToView(view,{x:drop.x,y:drop.y+(drop.canopyHeight||0)}),x=ground.x/view.zoom,y=ground.y/view.zoom-(drop.canopyHeight||0);
+        display={...drop,x,y,dropX:x+drop.dropX-drop.x,dropY:y+drop.dropY-drop.y};
+      }
       if (drop.falling)
         this.streak(
           c,
-          drop.dropX,
-          drop.dropY,
+          display.dropX,
+          display.dropY,
           drop.width,
           drop.length,
           drop.wind,
-          intensity * drop.visibility * rainVisibility((drop.dropX-view.x)*view.zoom,(drop.dropY-view.y)*view.zoom,focus) * (0.5 + drop.n * 0.25) * (1 + flash * 0.5),
+          intensity * drop.visibility * rainVisibility((display.dropX-(view.forward?0:view.x))*view.zoom,(display.dropY-(view.forward?0:view.y))*view.zoom,focus) * (0.5 + drop.n * 0.25) * (1 + flash * 0.5),
         );
       else if (drop.surface === 'canopy' && drop.splash < 1)
-        this.drawSplash(c, drop, intensity, true);
+        this.drawSplash(c, display, intensity, true);
     }
     c.restore();
   }

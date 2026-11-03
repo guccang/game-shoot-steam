@@ -1,4 +1,5 @@
 // 雪场绑定循环世界格点和表现时钟，镜头只负责选择可见格点，不参与雪花运动。
+import {worldPointToView} from './view-projection.js';
 import { WORLD, wrap } from './coordinates.js';
 import { weatherNoise } from './precipitation.js';
 export const SNOW_LAYERS = [
@@ -22,11 +23,11 @@ export function snowSample(column,row,layer,time) {
 // 世界到屏幕统一使用完整位移与倍率；纯函数便于核对移动和缩放连续性。
 export function projectSnow(sample,view) {
   const zoom=view.zoom||1;
-  return {...sample,x:(sample.x-view.x)*zoom,y:(sample.y-view.y)*zoom,radius:sample.radius*zoom};
+  return {...sample,...worldPointToView(view,sample),radius:sample.radius*zoom};
 }
 // 枚举视口周围固定格点；缩小视野只稀疏选取原索引，绝不重排已有雪花位置。
 export function* visibleSnow(view,width,height,time) {
-  const zoom=view.zoom||1,w=width/zoom,h=height/zoom,pad=16;
+  const zoom=view.zoom||1,w=view.w??width/zoom,h=view.h??height/zoom,pad=16;
   for(let layer=0;layer<SNOW_LAYERS.length;layer++) {
     const cfg=SNOW_LAYERS[layer];
     const stride=Math.max(1,Math.ceil(Math.sqrt(w*h/(cfg.width*cfg.height*cfg.limit*(layer===2?2:.85)))));

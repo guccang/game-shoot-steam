@@ -1,4 +1,4 @@
-import {drawHomeBalcony} from './home-balcony.js';
+import {drawHomeBalcony,balconyProject,balconyWorldTransform,balconyUpright,balconyObjectVisible} from './home-balcony.js';
 import {drawMining,drawMineShaft} from './mining.js';
 import {mineShaftObjects} from '../core/mining.js';
 import {constructionObjects,drawConstructionCompany} from './construction-company.js';
@@ -293,19 +293,19 @@ export class Renderer {
     profiler?.end('render.rainPrepare');
     profiler?.start('render.ground');
     c.save();
-    c.scale(zoom, zoom);
-    c.translate(-cameraX, -cameraY);
+    if(source.balconyScene)balconyWorldTransform(c,view);
+    else {c.scale(zoom, zoom);c.translate(-cameraX, -cameraY);}
     this.ground.draw(c, view, light.night);
     profiler?.end('render.ground');
     profiler?.start('render.river');
     if (!valley) for (
       let tx = Math.floor(cameraX / WORLD.width);
-      tx <= Math.floor((cameraX + w / zoom) / WORLD.width);
+      tx <= Math.floor((cameraX + view.w) / WORLD.width);
       tx++
     )
       for (
         let ty = Math.floor(cameraY / WORLD.height);
-        ty <= Math.floor((cameraY + h / zoom) / WORLD.height);
+        ty <= Math.floor((cameraY + view.h) / WORLD.height);
         ty++
       ) {
         const x = tx * WORLD.width,
@@ -315,8 +315,8 @@ export class Renderer {
         this.river.draw(c, time, light.night, light.rain, this.reduced.matches, {
           x: cameraX - x,
           y: cameraY - y,
-          w: w / zoom,
-          h: h / zoom,
+          w: view.w,
+          h: view.h,
         });
         c.restore();
       }
@@ -335,7 +335,11 @@ export class Renderer {
     // 树影统一留在地面层；树干与树冠随后排序，避免后方树影涂到前景单位身上。
     const riverCrossings=visibleBodies(riverCrossingObjects(source),view,120);
     for(const item of riverCrossings)drawRiverCrossingGround(c,item,light.night);
-    for (const tree of g.trees) drawForestShadow(c, tree, light.night, winter, this.ground.season);
+    for (const tree of g.trees) {
+      if(source.balconyScene&&!balconyObjectVisible(view,tree))continue;
+      if(source.balconyScene){c.save();balconyUpright(c,view,tree);}
+      drawForestShadow(c, tree, light.night, winter, this.ground.season);if(source.balconyScene)c.restore();
+    }
     drawPlayerTow(c,source,g.player);
     const entrances = visibleBodies(valley ? [] : source.realm ? source.realm.mode === 'tower' ? [towerRealmLandmark(source.realm.arena)] : [] : REALM_ENTRANCES, view, 190);
     for (const entry of entrances) drawRealmEntranceGround(c, entry, light.night);
@@ -417,10 +421,11 @@ export class Renderer {
       ...(g.boss ? [g.boss] : []),
       { type: 'player', x: g.player.x, y: g.player.y, flying: g.player.flying,
         depthOffset:parkingGaragePose(g.player,g.vehicle)?parkingGaragePose(g.player,g.vehicle).y+3-g.player.y:0 },
-    ].sort((a, b) =>
+    ].filter(item=>!source.balconyScene||balconyObjectVisible(view,item)).sort((a, b) =>
       // 空中单位及其预警在树冠上方，避免飞行近战从完全遮挡的位置突然命中。
-      Number(!!a.flying) - Number(!!b.flying) || (a.y+(a.depthOffset||0)) - (b.y+(b.depthOffset||0)),
+      Number(!!a.flying) - Number(!!b.flying) || (source.balconyScene?(balconyProject(view,a).y-balconyProject(view,b).y)/zoom: a.y-b.y)+(a.depthOffset||0)-(b.depthOffset||0),
     );
+    if(source.balconyScene)this.balconyObjects=objects.map(item=>({type:item.type,kind:item.kind,workshop:item.workshop,x:item.x,y:item.y}));
     drawStormGround(c, view, objects, light.storm, this.storm, this.reduced.matches, this.stormStrike);
     profiler?.end('render.lighting');
     profiler?.start('render.gravity');
@@ -435,15 +440,16 @@ export class Renderer {
       const margin = item.burst ? 180 : ['realm-entrance','fire-station-back'].includes(item.type) ? Math.max(90,item.width/2+10) : item.type === 'landform' ? item.rx + 45 : item.scenic ? 190 : item.type === 'scenery' ? Math.max(100, (item.width || 160) / 2 + 16) : 90;
       if (
         item.x < cameraX - margin ||
-        item.x > cameraX + w / zoom + margin ||
+        item.x > cameraX + view.w + margin ||
         item.y < cameraY - (item.burst?180:70) ||
-        item.y > cameraY + h / zoom + (item.kind==='cottage'&&!item.workshop?380:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
+        item.y > cameraY + view.h + (item.kind==='cottage'&&!item.workshop?380:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
       )
         continue;
       // 屋体前后层同步显露；库内车辆仍只在消防设施已开放时出现。
       if(item.type==='fire-station-back'&&!restorationBuildingVisible(camp,'fire'))continue;
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
-      if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);continue;}
+      if(source.balconyScene){c.save();balconyUpright(c,view,item);}
+      if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();continue;}
       if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
       else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
@@ -459,7 +465,7 @@ export class Renderer {
       else if(item.type==='story-post')(item.clearing?drawClearingPost:drawStoryPost)(c,item,light.night,g.player);
       else if(item.type.startsWith('monster-camp-'))drawMonsterCampObject(c,item,source,light.night,this.reduced.matches,true);
       else if(item.type==='camp-resident'||item.type==='living-resident'||item.type==='living-facility')drawLivingObject(c,item,camp,light.night,this.reduced.matches);
-      else if(item.type==='settlement-fence'||item.type==='settlement-gate')drawSettlement(c,item,source,light.night);
+      else if(item.type==='settlement-fence'||item.type==='settlement-gate')drawSettlement(c,source.balconyScene&&view.forward.x?{...item,horizontal:!item.horizontal}:item,source,light.night);
       else if(item.type==='story-prop')drawStoryProp(c,item,source.time,light.night,this.reduced.matches,g.player);
       else if (item.type === 'mechanical-cat') drawMechanicalCat(c,item,item.weapon,this.reduced.matches);
       else if(item.type==='mechanical-spider')drawArmedSpider(c,item,item.weapon,this.reduced.matches);
@@ -510,7 +516,7 @@ export class Renderer {
       else if (item.type === 'race-runner')drawRaceRunner(c,item,this.reduced.matches);
       else if (item.type === 'boss') drawBoss(c, item, time, this.reduced.matches);
       else {
-        if((source.arrivalScene?.riding||source.arrivalScene?.playerOnBus)&&source.arrivalPending)continue;
+        if((source.arrivalScene?.riding||source.arrivalScene?.playerOnBus)&&source.arrivalPending){if(source.balconyScene)c.restore();continue;}
         c.save();
         const garage=parkingGaragePose(g.player,g.vehicle);if(garage)clipGarageOpening(c,garage);
         if (g.player.invincible > 0) c.globalAlpha = 0.55 + Math.sin(time * 40) * 0.3;
@@ -554,7 +560,7 @@ export class Renderer {
         drawEnergyShield(c,source,g.player,this.reduced.matches);
         c.restore();
       }
-      drawRestorationScaffold(c,item,camp,light.night);
+      drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();
     }
     // 营地居民血条在实体之后绘制，避免被相邻盾卫或棚子盖住，只绘制一次。
     for(const item of objects)if(item.type==='monster-camp-resident')drawEnemyHealthBar(c,item);
@@ -650,7 +656,7 @@ export class Renderer {
       c,
       time,
       light,
-      { x: cameraX, y: cameraY, w: w / zoom, h: h / zoom },
+      { x: cameraX, y: cameraY, w: view.w, h: view.h },
       this.reduced.matches,
     );
     c.restore();
@@ -665,9 +671,9 @@ export class Renderer {
       light.storm,
       this.storm?.flash || 0,
       this.reduced.matches,
-      {x:(g.player.x-cameraX)*zoom,y:(g.player.y-cameraY)*zoom},
+      source.balconyScene?balconyProject(view,g.player):{x:(g.player.x-cameraX)*zoom,y:(g.player.y-cameraY)*zoom},
     );
-    this.snow.draw(c,time,w,h,view,light.snow,light.night,this.reduced.matches,{x:(g.player.x-cameraX)*zoom,y:(g.player.y-cameraY)*zoom});
+    this.snow.draw(c,time,w,h,view,light.snow,light.night,this.reduced.matches,source.balconyScene?balconyProject(view,g.player):{x:(g.player.x-cameraX)*zoom,y:(g.player.y-cameraY)*zoom});
     drawStorm(c, w, h, light.storm, this.storm, this.reduced.matches, view, this.stormStrike);
     profiler?.end('render.atmosphere');
     profiler?.start('render.tone');
@@ -677,7 +683,7 @@ export class Renderer {
     drawPlayerActionCountdown(this);
     // 用屏幕坐标贴在角色头顶，装填环不参与世界光照、后坐震动或树冠排序。
     if (
-      !this.actionCountdownView && !source.weapon().independentSupply &&
+      !source.balconyScene && !this.actionCountdownView && !source.weapon().independentSupply &&
       (source.state === 'playing' || source.state === 'paused')
     )
       drawReloadIndicator(

@@ -49,3 +49,20 @@ test('镜头不改变雪花自身轨迹，广角预算有界，大雪花仍有�
  }
  assert.ok(largeOn&&largeOff);
 });
+
+// 方向镜头的天气和实体必须落在同一点，普通营地投影不变。
+test('阳台四向雨雪与闪电共用投影并保持预算',async()=>{
+ const {homeBalconyView}=await import('../src/rendering/home-balcony.js');
+ const {worldPointToView,viewPointToWorld}=await import('../src/world/view-projection.js');
+ const {prepareStormStrike,projectStormStrike}=await import('../src/rendering/storm.js');
+ for(const side of ['north','east','south','west']){
+  const view=homeBalconyView({balcony:side,floor:62},390,550);
+  const point={x:100,y:200},world=viewPointToWorld(view,point),screen=worldPointToView(view,world);
+  close(screen.x,point.x);close(screen.y,point.y);
+  const snow=projectSnow({...world,radius:4},view);close(snow.x,point.x);close(snow.y,point.y);
+  const particles=[...visibleSnow(view,390,550,3)];assert.ok(particles.length>0&&particles.length<=167);
+  const strike=prepareStormStrike(null,view,{frame:1,cycle:0},'forest',1),bolt=projectStormStrike(strike,view);
+  close(bolt.x,390*.68);assert.ok(bolt.groundY>=0&&bolt.groundY<550);
+ }
+ const normal={x:100,y:200,zoom:.5};assert.deepEqual(worldPointToView(normal,{x:200,y:400}),{x:50,y:100});assert.deepEqual(viewPointToWorld(normal,{x:50,y:100}),{x:200,y:400});
+});
