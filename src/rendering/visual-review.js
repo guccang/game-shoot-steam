@@ -1932,3 +1932,10 @@ export function inspectMineCombat(game,renderer,root=document){
 export function inspectMineMotionPerformance(game,renderer,root=document){
  return {...inspectMineLandscapeQuality(game,renderer,root),designCriterion:'mine-motion-performance',rider:renderer.mineCartRiderReview,chunkCacheLimit:48};
 }
+
+// 从正式地下画布与实时DOM读取全屏、折叠、垂钓和触控尺寸，供同屏验收使用。
+export function inspectMineFishingFullscreen(game,renderer,root=document){
+ const panel=root.getElementById('mine-tools-panel'),toggle=root.getElementById('mine-tools-toggle'),fishing=root.getElementById('fishing-hud');
+ const buttons=[...root.querySelectorAll('#mine-controls button,#fishing-hud button')].filter(b=>b.getClientRects().length).map(b=>{const r=b.getBoundingClientRect();return {id:b.id||b.dataset.mineTool,width:r.width,height:r.height};});
+ return {designCriterion:'mineFishingFullscreenCriterion',view:renderer.mineView,night:renderer.mineReview?.night,collapsed:panel.hidden,expanded:toggle.getAttribute('aria-expanded'),fishing:game.fishing?.phase||null,fishingVisible:!!fishing?.getClientRects().length,buttons,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

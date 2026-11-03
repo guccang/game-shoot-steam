@@ -22,7 +22,7 @@ async original=>{
    window.phaseTimes={};if(location.hash==='#profile'){const p=g.profiler,start=p.start.bind(p),end=p.end.bind(p),active=new Map();p.start=name=>{active.set(name,performance.now());return start(name);};p.end=name=>{if(active.has(name)){const values=phaseTimes[name]||=[];values.push(performance.now()-active.get(name));active.delete(name);}return end(name);};}const update=g.update.bind(g),draw=a.renderer.draw.bind(a.renderer);
    g.update=(...args)=>{const start=performance.now();const r=update(...args);times.logic.push(performance.now()-start);return r;};
    a.renderer.draw=(...args)=>{const start=performance.now();const r=draw(...args);times.render.push(performance.now()-start);return r;};
-  });await page.locator('#mine-board').tap();await page.locator('#mine-drive').tap();
+  });await page.locator('#mine-tools-toggle').tap();await page.locator('#mine-board').tap();await page.locator('#mine-drive').tap();await page.locator('#mine-tools-toggle').tap();
   // 采样实际 RAF 和插值镜头，只报告本机数据，不将其当作设备帧率保证。
   async function measure(name){return await page.evaluate(async name=>{
    times.logic=[];times.render=[];const frames=[],positions=[];let prior=performance.now();
@@ -35,7 +35,7 @@ async original=>{
   const combat=await measure('cart-combat');
   await page.evaluate(async()=>{const phase=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id==='night');a.game.progress.living.calendar.elapsed=phase.start+phase.duration*.5;});
   const night=await measure('cart-night');await page.screenshot({path:'output/playwright/mine-motion/'+tag+'-night.png'});
-  await page.locator('#mine-drive').tap();await page.locator('#mine-board').tap();await page.keyboard.down('ArrowRight');const walk=await measure('walking');await page.keyboard.up('ArrowRight');
+  await page.locator('#mine-tools-toggle').tap();await page.locator('#mine-drive').tap();await page.locator('#mine-board').tap();await page.locator('#mine-tools-toggle').tap();await page.keyboard.down('ArrowRight');const walk=await measure('walking');await page.keyboard.up('ArrowRight');
   if(errors.length)throw Error(errors.join('/'));const phases=await page.evaluate(()=>Object.entries(phaseTimes).map(([name,values])=>({name,mean:values.reduce((s,v)=>s+v,0)/values.length,max:Math.max(...values)})).sort((a,b)=>b.mean-a.mean));return {designCriterion:'mine-motion-performance',tag,quiet,combat,night,walk,phases,errors};
  }finally{await context.close();}
 }

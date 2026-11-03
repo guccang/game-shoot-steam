@@ -5,7 +5,7 @@ const ink='#315c43',cream='#f6e6b6';
 // 钓鱼镜头为底部完整操作条预留空间，短屏仍同时看清猫手、竿梢和真实落漂点。
 export function outdoorFishingView(game,normal,width,height){
  const f=game.fishing;if(!f)return normal;
- const p=game.player,water=nearest(f.shore.water,p),top=136,space=Math.max(90,height-top-320);
+ const p=game.player,water=nearest(f.shore.water,p),top=game.cottage?.kind==='mine'?86:136,space=Math.max(80,height-top-(game.cottage?.kind==='mine'?(height<500?220:310):320));
  const zoom=Math.min(normal.zoom,(width-36)/(Math.abs(water.x-p.x)+110),space/(Math.abs(water.y-p.y)+95));
  return {...normal,zoom,w:width/zoom,h:height/zoom,x:(p.x+water.x)/2-width/zoom/2,y:(p.y-27+water.y)/2-(top+space/2)/zoom};
 }

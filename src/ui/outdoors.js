@@ -48,7 +48,7 @@ export function createOutdoors({game,root,dialogs,onChange}){
  scope.on(control,'pointerup',e=>{e.preventDefault();e.stopPropagation();release();});scope.on(control,'pointercancel',()=>release(true));scope.on(control,'lostpointercapture',()=>release(true));
  scope.on(control,'keydown',e=>{if([' ','Enter'].includes(e.key)&&!e.repeat){e.preventDefault();held=true;fishingControl(game,'press');}});scope.on(control,'keyup',e=>{if([' ','Enter'].includes(e.key)){e.preventDefault();release();}});
  scope.on(root.defaultView,'blur',()=>release(true));scope.on(get('fishing-lean'),'input',e=>fishingControl(game,'lean',Number(e.target.value)));
- scope.on(hud,'pointerdown',e=>e.stopPropagation());scope.on(hud,'click',e=>{e.stopPropagation();if(e.target.closest('#fishing-cancel')){game.fishing=null;game.campSleep=null;held=false;onChange();}if(e.target.closest('[data-fish-keep],[data-fish-release]')){const result=finishFishing(game,!!e.target.closest('[data-fish-keep]'));if(!result.ok&&game.fishing)game.fishing.message=result.message;onChange();}});
+ scope.on(hud,'pointerdown',e=>e.stopPropagation());scope.on(hud,'click',e=>{e.stopPropagation();if(e.target.closest('#fishing-cancel')){fishingControl(game,'cancel');game.campSleep=null;held=false;onChange();}if(e.target.closest('[data-fish-keep],[data-fish-release]')){const result=finishFishing(game,!!e.target.closest('[data-fish-keep]'));if(!result.ok&&game.fishing)game.fishing.message=result.message;onChange();}});
  // 低成本刷新文字、进度和显隐，不每帧重建按住中的按钮。
  function renderFrame(){
   const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||!!root.querySelector('dialog[open]');hud.hidden=hidden;if(hidden){release(true);return;}

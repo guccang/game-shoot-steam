@@ -69,7 +69,7 @@ test('两张地图钓鱼导航在可抛竿范围内才算抵达，不提前撤�
  }
 });
 test('营地放置、跨读档与收营保持唯一装备及重量',()=>{
- const g=angler();wilderness(g);const weight=catLoad(g).weight;assert.equal(deployCamp(g).ok,true);assert.equal(catLoad(g).weight,weight-6);assert.equal(deployCamp(g).ok,false);
+ const g=angler();wilderness(g);const weight=catLoad(g).weight;assert.equal(deployCamp(g).ok,true);assert.ok(Math.abs(catLoad(g).weight-(weight-6))<1e-9);assert.equal(deployCamp(g).ok,false);
  const c=g.progress.outdoors.camp;assert.deepEqual(validateProgress(g.progress).outdoors.camp,c);Object.assign(g.player,c);g.livingPersist=()=>false;assert.equal(packCamp(g).ok,false);assert.ok(g.progress.outdoors.camp);
  g.livingPersist=()=>true;assert.equal(packCamp(g).ok,true);assert.equal(catLoad(g).weight,weight);assert.equal(packCamp(g).ok,false);
 });

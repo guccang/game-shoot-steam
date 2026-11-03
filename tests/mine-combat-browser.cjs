@@ -17,7 +17,7 @@ async original=>{
   a.refresh();
  },index);await page.waitForTimeout(350);}
  // 机械记录和截图一起验收，视觉效果由实际截图另行复核。
- async function shot(name){await page.screenshot({path:'output/playwright/mine-weapons/'+name+'.png'});const r=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectMineCombat(a.game,a.renderer,document));if(r.view.bottom>await page.evaluate(()=>a.renderer.mineControlsTop))throw Error('游戏场景被操作栏遮挡');if(r.overflow||r.buttons.some(b=>b.width<43.9||b.height<43.9))throw Error('手机操作区不合格 '+JSON.stringify(r));reviews.push({name,...r});}
+ async function shot(name){await page.screenshot({path:'output/playwright/mine-weapons/'+name+'.png'});const r=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectMineCombat(a.game,a.renderer,document));if(r.view.top!==0||r.view.bottom!==r.view.height)throw Error('地下地图未铺满画布');if(r.overflow||r.buttons.some(b=>b.width<43.9||b.height<43.9))throw Error('手机操作区不合格 '+JSON.stringify(r));reviews.push({name,...r});}
  try{
   await page.goto(base);await page.locator('#start').tap();await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining.js');
@@ -27,7 +27,7 @@ async original=>{
   });
 
   await scene();await phase('day');await shot('pistol-day');const before=await page.evaluate(()=>({ammo:a.game.magazines[0].ammo,hp:Object.values(a.game.progress.mining.animals).map(a=>a.hp)}));await page.waitForTimeout(1000);const after=await page.evaluate(()=>({ammo:a.game.magazines[0].ammo,hp:Object.values(a.game.progress.mining.animals).map(a=>a.hp)}));if(after.ammo>=before.ammo||after.hp.every((hp,i)=>hp===before.hp[i]))throw Error('实机未射击扣弹伤敌');
-  await page.locator('[data-mine-tool="pick"]').tap();await page.waitForTimeout(150);if(await page.evaluate(()=>a.game.cottage.weaponReady))throw Error('矿镐未切换');await shot('pick-mode');
+  await page.locator('#mine-tools-toggle').tap();await page.locator('[data-mine-tool="pick"]').tap();await page.waitForTimeout(150);if(await page.evaluate(()=>a.game.cottage.weaponReady))throw Error('矿镐未切换');await shot('pick-mode');
   await page.locator('#mine-weapon').tap();await page.waitForTimeout(150);if(!await page.evaluate(()=>a.game.cottage.weaponReady))throw Error('武器未恢复');
   const y=await page.evaluate(()=>a.game.player.y);await move(0,60,350);if(await page.evaluate(()=>a.game.player.y)<=y)throw Error('持枪触控无法移动');await shot('moving-armed');
   await page.locator('#mine-build').tap();const age=await page.evaluate(()=>a.game.progress.mining.age);await page.waitForTimeout(250);if(await page.evaluate(()=>a.game.progress.mining.age)!==age)throw Error('暂停推进战斗');await page.locator('[data-mine-close]').first().tap();

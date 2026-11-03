@@ -160,6 +160,8 @@ function cartStep(game,dt){
 // 地下主循环只推进可见游戏时间，移动挖掘、轨道与角色局部动作保持一致。
 export function updateMining(game,dt,input){
  if(game.cottage?.kind!=='mine')return false;if(!active(game))return true;
+ // 垂钓锁定作业与位移，怪物和世界时钟继续运行。
+ if(game.fishing)input={x:0,y:0};
  const room=game.cottage,p=game.player,before={x:p.x,y:p.y},length=Math.hypot(input.x,input.y);dt=Math.max(0,Math.min(.05,dt));
  room.surveyWait=Math.max(0,(room.surveyWait||0)-dt);
  if(length>.01)room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;
@@ -175,7 +177,7 @@ export function updateMining(game,dt,input){
   if(length>.01&&!room.surveyWait)movementMineWork(game);
  }
  if(!room.ride&&!game.vehicle.active&&Math.hypot(p.x-before.x,p.y-before.y)>.001)game.progress.production.effects.juice=Math.max(0,game.progress.production.effects.juice-dt);
- p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);if(!room.weaponTarget||room.tool||room.autoDig)p.angle=room.direction*Math.PI/2-Math.PI/2;
+ p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);if(!game.fishing&&(!room.weaponTarget||room.tool||room.autoDig))p.angle=room.direction*Math.PI/2-Math.PI/2;
  if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
  updateMineEcology(game,dt);
  updateCatMotion(p.bodyAnimation,dt,room.ride?0:Math.hypot(p.vx,p.vy),!room.ride);game.time+=dt;return true;

@@ -77,7 +77,7 @@ function combatContext(game){
 export function updateMineCombat(game,dt){
  const room=game.cottage,b=combatContext(game),w=game.weapon(),index=game.loadout.weapon,mag=game.magazines[index];
  b.enemies=Object.keys(currentMineLayer(game).animals).filter(key=>{const a=currentMineLayer(game).animals[key];return a.hp>0&&Math.hypot(a.x-game.player.x,a.y-game.player.y)<650;}).map(key=>mineTargetProxy(game,key,Number(key.split(',')[0])*10000+Number(key.split(',')[1])+10000000));
- const armed=!game.vehicle.active&&!room.tool&&!room.autoDig&&!room.shaftWork;
+ const armed=!game.fishing&&!game.vehicle.active&&!room.tool&&!room.autoDig&&!room.shaftWork;
  room.weaponReady=armed;room.weaponTarget=null;
  b.fx.update(dt);for(const n of b.numbers){n.life-=dt;n.y-=dt*35;}b.numbers=b.numbers.filter(n=>n.life>0);for(const s of b.shots)s.life-=dt;b.shots=b.shots.filter(s=>s.life>0);
  updateRecoil(game.player.recoil,index,dt);

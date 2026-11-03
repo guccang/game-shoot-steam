@@ -56,6 +56,7 @@ function advanceBolts(game,dt){
 }
 // 矿锄自动近身防卫，战车使用实际主炮伤害、余弹、装填和独立后坐，未开掘岩壁阻断索敌。
 function defendExplorer(game,dt,actors){
+ if(game.fishing)return;
  const room=game.cottage,p=game.player,v=game.vehicle;room.attackWait=Math.max(0,(room.attackWait||0)-dt);room.strike=Math.max(0,(room.strike||0)-dt);
  const weapon=v.active?vehicleWeapon(game.progress,v.weaponIndex):null,module=v.module;
  if(v.active&&weapon&&module){advanceReload(module.magazine,weapon,dt,game.onEvent,n=>takeSupplyAmmo(game,weapon,n,v.index),supplyAmmoCount(game,weapon,v.index));updateRecoil(v.recoil,v.weaponIndex,dt);}

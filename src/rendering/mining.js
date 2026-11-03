@@ -1,3 +1,4 @@
+import {drawOutdoorFishing,outdoorFishingView} from './outdoors.js';
 import {drawMineArmedCat,drawMineCombat} from './mine-combat.js';
 import {drawMineBoundary} from './mine-boundary.js';
 import {productionDigSeconds} from '../config/farm-production.js';
@@ -59,10 +60,11 @@ function pickaxe(c,g){
  box(c,-2,-27,5,39,2,'#bb9767','#466448',1.5);poly(c,[[-15,-26],[-9,-33],[9,-33],[17,-25],[8,-27],[-8,-27]],'#becbb6','#3c624a',2);
  oval(c,1,0,6,5,'#efc997','#4c684d',1.5);c.restore();
 }
-// 镜头只绘制可见网格，地图再大也不遍历历史矿道，顶部和底部留给手机操作。
+// 镜头只绘制可见网格，地图再大也不遍历历史矿道，地图铺满画布，手机操作悬浮于地图上。
 export function drawMining(renderer,g=renderer.game){
- const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=Math.min(h-(h<500?139:168),renderer.mineControlsTop?renderer.mineControlsTop-5:h),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
- renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineCartRiderReview=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
+ const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=0,bottom=h,baseZoom=Math.min(1.05,w/360),cx=w/2,cy=h/2;
+ const camera=outdoorFishingView(g,{x:g.player.x-cx/baseZoom,y:g.player.y-cy/baseZoom,zoom:baseZoom},w,h),zoom=camera.zoom;
+ renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineCartRiderReview=null;renderer.mineView={...camera,top,bottom,width:w,height:h};
  const v=renderer.mineView,m=currentMineLayer(g);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
@@ -98,8 +100,8 @@ export function drawMining(renderer,g=renderer.game){
   else if(e.kind==='player'){
    if(g.vehicle.active)drawVehicleTracks(c,g.player,g.vehicle,renderer.reduced.matches,g.time,g.progress);
    const rider=g.vehicle.active?riderPosition(g.player,g.vehicle):g.player;
-   if(g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
-   if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(!g.cottage.weaponReady||g.cottage.strike)pickaxe(c,g);
+   if(!g.fishing&&g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(g.fishing)drawOutdoorFishing(c,g,rider,night?1:0);else if(!g.cottage.weaponReady||g.cottage.strike)pickaxe(c,g);
   }
   else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride){
    if(g.cottage.weaponReady)drawMineArmedCat(c,g,e.cart.x,e.cart.y-8);else drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);

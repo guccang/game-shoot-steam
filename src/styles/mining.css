@@ -31,3 +31,29 @@
 #mine-direction-dialog .ui-button{min-height:44px}
 #mine-direction-dialog .mine-route-auto{width:100%}
 #mine-direction-dialog [aria-pressed="true"]{background:var(--ui-forest);color:var(--ui-paper)}
+
+/* 地图贯穿整块手机画布；层名与生命留在小型悬浮牌，详细数据随工具展开。 */
+#cottage-controls[data-room="mine"]>header{display:none}
+#mine-hud{top:max(10px,env(safe-area-inset-top));align-items:flex-start}
+#mine-hud>div{padding:8px 10px;background:#294c3ce8;border:1px solid var(--ui-line);border-radius:var(--ui-radius-button)}
+#mine-minimap{width:64px;height:64px}
+#mine-hud[data-expanded="false"] :is(#mine-development,#mine-position,#mine-home){display:none}
+#mine-controls #mine-message{min-height:0;max-height:32px;padding:4px 8px;border-radius:8px;background:#294c3ce8;max-width:100%;width:fit-content;margin:0 auto 6px}
+#mine-controls .mine-compact{display:flex;justify-content:flex-end;gap:8px;margin-bottom:6px}
+#mine-controls .mine-compact button{min-width:68px;min-height:44px}
+#mine-tools-panel[hidden]{display:none}
+#mine-tools-panel{max-height:45vh;overflow:auto;pointer-events:auto}
+/* 地下钓鱼复用正式操作条，贴近底部，避免与折叠工具重复占用空间。 */
+#game-frame.inside-cottage #fishing-hud{bottom:max(8px,env(safe-area-inset-bottom))}
+@media(max-height:500px){
+ #mine-minimap{width:52px;height:52px}
+ #mine-hud>div{padding:4px 8px}
+ #mine-hud[data-expanded="true"] #mine-development{display:none}
+ #game-frame.inside-cottage #fishing-hud{padding:6px}
+ #game-frame.inside-cottage #fishing-hud[data-phase="fight"]{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}
+ #game-frame.inside-cottage #fishing-hud[data-phase="fight"] .fishing-heading,
+ #game-frame.inside-cottage #fishing-hud[data-phase="fight"] #fishing-message{grid-column:1/-1}
+ #game-frame.inside-cottage #fishing-meters{margin:0}
+ #game-frame.inside-cottage #fishing-lean-label{grid-column:1}
+ #game-frame.inside-cottage #fishing-hud[data-phase="fight"] #fishing-control{grid-column:2;grid-row:3/5;min-width:0;white-space:normal}
+}

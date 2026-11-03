@@ -1,3 +1,6 @@
+import {mineFishingShore,mineCastWater} from '../world/mine-fishing.js';
+import {mineLayer} from '../progression/mine-layers.js';
+import {mineLineClear} from '../physics/mine-motion.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {RESOURCE_CAP} from '../config/resource-limits.js';
 import {touchesLandform} from '../world/natural-terrain.js';
@@ -15,10 +18,17 @@ import {cottageSleepTarget} from './cottage.js';
 import {catLoad} from '../progression/load-weight.js';
 
 // 明确拒绝战斗、室内和借用活动；普通暂停菜单允许查看与提交事务。
-export function outdoorReason(game,{shop=false}={}){
+export function outdoorReason(game,{shop=false,fishing=false}={}){
  if(!['playing','paused'].includes(game.state)||game.player.hp<=0||game.arrivalPending||game.story||game.realm||game.fireActive||game.campDefense||game.workshopTrial)return '请在自由巡林时使用野外装备。';
  if(shop)return game.cottage?.kind==='ammo'?'':'请到弹药补给铺找售货员购买野外装备。';
  if(farmWorking(game))return '请先完成手上的农活。';
+ // 地下只开放垂钓，露营与采购仍遵循原有场所规则；地表敌人不影响地下湖岸。
+ if(fishing&&game.cottage?.kind==='mine'){
+  if(game.cottage.ride)return '请先停稳并下矿车，再到岸边钓鱼。';
+  const layer=mineLayer(game.progress.mining,game.cottage.depth||1);
+  if(Object.values(layer.animals).some(a=>a.hp>0&&Math.hypot(a.x-game.player.x,a.y-game.player.y)<R.safeRadius&&mineLineClear(game,game.player,a)))return '附近有危险，请先清理怪物再钓鱼。';
+  return '';
+ }
  if(game.cottage)return '请先走到屋外。';
  // 未完成的清缴或远处脱战领主不代表湖岸仍在交战；与其他生活交互共用现场战斗判定。
  if(bossCombatActive(game)||game.livingBattle||clearingCombatActive(game)||game.enemies.some(e=>e.hp>0&&worldDistance(e,game.player)<R.safeRadius))return '附近有危险，请先脱离战斗再露营或钓鱼。';
@@ -80,12 +90,13 @@ export function sleepAtCamp(game,mode='morning'){
 }
 // 仅在真实湖岸准备鱼竿；未抛竿前不扣鱼饵。
 export function beginFishing(game){
- const reason=outdoorReason(game);if(reason)return {ok:false,message:reason};
+ const reason=outdoorReason(game,{fishing:true});if(reason)return {ok:false,message:reason};
  if(outdoorBusy(game))return {ok:false,message:'请先结束当前动作。'};
  if(!game.progress.outdoors.rod||!game.progress.outdoors.bait)return {ok:false,message:'需要鱼竿和鱼饵，弹药补给铺有售。'};
  if(game.vehicle.active)return {ok:false,message:'先下车，站在湖岸再抛竿。'};
- const shore=fishingShores(game)[0];if(!shore||shore.distance>R.castReach)return {ok:false,message:'请沿指引走到湖岸，靠近水面再钓鱼。'};
- game.fishing={phase:'ready',elapsed:0,clock:0,shore,origin:{x:game.player.x,y:game.player.y},mapId:game.mapId,charge:0,lean:0,reeling:false,tension:.3,progress:0,message:'按住抛竿蓄力，松手把浮漂送入湖里。'};
+ const shore=game.cottage?.kind==='mine'?mineFishingShore(game):fishingShores(game)[0];if(!shore||shore.distance>R.castReach)return {ok:false,message:game.cottage?.kind==='mine'?'请走到开阔水面旁的岸边，再试试钓鱼。':'请沿指引走到湖岸，靠近水面再钓鱼。'};
+ game.fishing={phase:'ready',elapsed:0,clock:0,shore,origin:{x:game.player.x,y:game.player.y},mapId:game.mapId,mineRoom:shore.mineDepth?game.cottage:null,mineDepth:shore.mineDepth||0,hp:game.player.hp,charge:0,lean:0,reeling:false,tension:.3,progress:0,message:'按住抛竿蓄力，松手把浮漂送入湖里。'};
+ if(shore.mineDepth)Object.assign(game.cottage,{tool:null,autoDig:false,dig:null,shaftWork:0,weaponReady:false,strike:0});
  game.player.angle=Math.atan2(shore.water.y-game.player.y,shore.water.x-game.player.x);return {ok:true,message:'鱼竿已备好。'};
 }
 // 钓竿操作保留按住、松开和左右控竿，不能通过连点直接领取鱼获。
@@ -104,8 +115,8 @@ export function fishingControl(game,action,value=0){
   const next=validateProgress(structuredClone(game.progress));if(next.outdoors.bait<1)return false;next.outdoors.bait--;
   const result=commit(game,next,'鱼饵已挂好，浮漂入水。');if(!result.ok){f.phase='ready';f.message=result.message;return false;}
   // 蓄力越充分，浮漂越靠近湖心；候选点始终校验真实湖水边界。
-  const edge=f.shore.water,center=nearest(f.shore.lake,edge),dx=center.x-edge.x,dy=center.y-edge.y,length=Math.hypot(dx,dy)||1;
-  const water={x:edge.x+dx/length*f.charge*35,y:edge.y+dy/length*f.charge*35};f.water=touchesLandform(f.shore.lake,water.x,water.y)?water:edge;
+  const edge=f.shore.water,center=f.mineDepth?edge:nearest(f.shore.lake,edge),dx=center.x-edge.x,dy=center.y-edge.y,length=Math.hypot(dx,dy)||1;
+  const water={x:edge.x+dx/length*f.charge*35,y:edge.y+dy/length*f.charge*35};f.water=f.mineDepth?mineCastWater(game,f.shore,f.charge):touchesLandform(f.shore.lake,water.x,water.y)?water:edge;
   f.phase='casting';f.elapsed=0;f.wait=3+(game.random?.()??Math.random())*3;f.species=Math.min(FISH_SPECIES.length-1,Math.floor((game.random?.()??Math.random())*FISH_SPECIES.length));
   f.size=Math.round((18+(game.random?.()??Math.random())*25+f.species*9)*10)/10;f.message='浮漂入水，等它稳定下来。';return true;
  }return false;
@@ -124,10 +135,11 @@ export function finishFishing(game,keep){
 export function updateOutdoors(game,dt){
  const f=game.fishing,s=game.campSleep;if(!f&&!s)return;
  // 进入房间或独立玩法时即撤销野外动作，避免活动提前返回让旧操作条滞留。
- if(game.realm||game.story||game.cottage||game.fireActive||game.campDefense||game.workshopTrial||game.player.hp<=0||game.mapId!==(f||s).mapId){game.fishing=null;game.campSleep=null;return;}
+ const mineSession=f?.mineDepth&&game.cottage===f.mineRoom&&game.cottage.kind==='mine'&&(game.cottage.depth||1)===f.mineDepth;
+ if(game.realm||game.story||(game.cottage&&!mineSession)||(f?.mineDepth&&!mineSession)||game.fireActive||game.campDefense||game.workshopTrial||game.player.hp<=0||game.mapId!==(f||s).mapId){game.fishing=null;game.campSleep=null;return;}
  if(game.state!=='playing'||dt<=0)return;
- const reason=outdoorReason(game);
- if(reason||(f&& (f.mapId!==game.mapId||game.vehicle.active||worldDistance(f.origin,game.player)>30))||(s&&(s.mapId!==game.mapId||game.player.hp<s.hp||game.vehicle.active||worldDistance(s.bed,game.player)>R.campReach+60))){game.fishing=null;game.campSleep=null;game.outdoorNotice=reason||'动作已中断，请重新准备。';return;}
+ const reason=outdoorReason(game,{fishing:!!f});
+ if(reason||(f&&game.player.hp<f.hp)||(f&& (f.mapId!==game.mapId||game.vehicle.active||worldDistance(f.origin,game.player)>30))||(s&&(s.mapId!==game.mapId||game.player.hp<s.hp||game.vehicle.active||worldDistance(s.bed,game.player)>R.campReach+60))){game.fishing=null;game.campSleep=null;game.outdoorNotice=reason||'动作已中断，请重新准备。';return;}
  game.player.vx=game.player.vy=0;
  if(s){s.elapsed+=dt;const q=Math.min(1,s.elapsed/.6);game.player.x=s.origin.x+(s.bed.x-s.origin.x)*q;game.player.y=s.origin.y+(s.bed.y-s.origin.y)*q;if(s.elapsed>=R.sleepSeconds){const next=validateProgress(structuredClone(game.progress));next.living.calendar={...s.target};const result=commit(game,next,'睡醒了，生命已恢复，营地还在原处。',game.maxHp());game.outdoorNotice=result.message;game.campSleep=null;}return;}
  f.elapsed+=dt;f.clock+=dt;

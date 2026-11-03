@@ -1,5 +1,5 @@
 /* 小屋操作保持上下留白，中央整块画布供键盘和触屏自由走动。 */
-#game-frame.inside-cottage[data-page="game"] > :not(#game):not(#cottage-controls):not(#joystick):not(#nearby-interaction){display:none!important}
+#game-frame.inside-cottage[data-page="game"] > :not(#game):not(#cottage-controls):not(#joystick):not(#nearby-interaction):not(#fishing-hud){display:none!important}
 #cottage-controls{position:absolute;inset:0;pointer-events:none;z-index:12;color:#f7eac4}
 #cottage-controls[hidden]{display:none}
 /* 场景说明只定位直属节点，不覆盖休息弹窗的共用标题和操作栏。 */
