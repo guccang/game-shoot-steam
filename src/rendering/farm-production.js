@@ -1,17 +1,17 @@
 // 生产设施正式Canvas绘制：矮底座、独立喷嘴、台面与压榨罐共享森林配色。
 import {carriedSprinkler} from '../core/farm-production.js';
-import {SPRINKLER_OFFSETS,SPRINKLER} from '../config/farm-production.js';
+import {SPRINKLER_OFFSETS,SPRINKLER,SPRINKLER_OUTLINE,sprinklerReach} from '../config/farm-production.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 // 设施以脚底参与现有深度排序，不增加图片或独立画布。
 export function productionObjects(game){
  const s=game.progress.production;if(!s)return [];const held=carriedSprinkler(game);
  return [...s.sprinklers.filter(p=>p.id!==held?.id).map(p=>({...p,type:'farm-production',kind:'sprinkler'})),...(s.bench?[{...s.bench,type:'farm-production',kind:'bench'}]:[]),...(held?[{...held,x:game.player.x+32,y:game.player.y+8,type:'farm-production',kind:'sprinkler',carried:true}]:[])].filter(p=>p.mapId===game.mapId);
 }
-// 地面预览绘制半径轮廓和圆内田格，范围与实际浇水判定一致。
+// 地面预览绘制两层去角轮廓和20个田格，范围与实际浇水判定一致。
 export function drawProductionGround(c,game,view){
  const cursor=game.productionCursor;if(!cursor||cursor.point?.mapId!==game.mapId)return;
  const p=nearest(cursor.point,{x:view.x+view.w/2,y:view.y+view.h/2});c.save();c.translate(p.x,p.y);c.strokeStyle=cursor.reason?'#a35f45':'#527754';c.fillStyle=cursor.reason?'#b9724d33':'#a6c48b55';c.lineWidth=2;c.setLineDash([5,4]);
- if(cursor.kind==='sprinkler'){c.beginPath();c.ellipse(0,0,SPRINKLER.radius*SPRINKLER.cellWidth,SPRINKLER.radius*SPRINKLER.cellHeight,0,0,Math.PI*2);c.stroke();}
+ if(cursor.kind==='sprinkler'){c.beginPath();for(const [i,[x,y]] of SPRINKLER_OUTLINE.entries())c[i?'lineTo':'moveTo'](x*SPRINKLER.cellWidth,y*SPRINKLER.cellHeight);c.closePath();c.stroke();}
  for(const [x,y] of cursor.kind==='sprinkler'?SPRINKLER_OFFSETS:[[0,0]]){c.beginPath();c.roundRect(x-25,y-18,50,36,7);c.fill();c.stroke();}c.setLineDash([]);c.restore();
  c.save();c.globalAlpha=.65;drawProductionDevice(c,{...p,kind:cursor.kind},game.time,true);c.restore();
 }
@@ -36,8 +36,8 @@ function drawSprinklerHead(c,angle){
 function drawSprinklerWater(c,pose){
  c.save();c.lineCap='round';
  for(const sign of [-1,1]){
-  const dx=Math.cos(pose.angle)*sign,dy=Math.sin(pose.angle)*sign;
-  const start={x:dx*19,y:-25+dy*8},end={x:dx*SPRINKLER.cellWidth*SPRINKLER.radius*pose.pressure,y:dy*SPRINKLER.cellHeight*SPRINKLER.radius*pose.pressure};
+  const dx=Math.cos(pose.angle)*sign,dy=Math.sin(pose.angle)*sign,reach=sprinklerReach(pose.angle);
+  const start={x:dx*19,y:-25+dy*8},end={x:dx*SPRINKLER.cellWidth*reach*pose.pressure,y:dy*SPRINKLER.cellHeight*reach*pose.pressure};
   const control={x:(start.x+end.x)*.5,y:(start.y+end.y)*.5-27};
   c.globalAlpha=pose.pressure*.75;c.strokeStyle='#63b8c7';c.lineWidth=2.6;c.beginPath();c.moveTo(start.x,start.y);c.quadraticCurveTo(control.x,control.y,end.x,end.y);c.stroke();
   c.fillStyle='#d2f0df';

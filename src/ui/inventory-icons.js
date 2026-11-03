@@ -1,3 +1,4 @@
+import {productionIcon} from '../rendering/farm-production.js';
 import {ammoIcon} from './ammo-icons.js';
 import {resourceIcon} from '../rendering/resource-icons.js';
 // 背包图标复用正式武器、农具与作物主体，补给品使用森林绿描边的固定矢量图案。
@@ -25,6 +26,7 @@ const drawings={
 };
 // 图标只接受目录中的稳定字段，数量和文字由外部可访问按钮提供。
 export function inventoryIcon(item){const icon=item.icon;
+ if(icon.kind==='production')return productionIcon(icon.key);
  if(icon.kind==='ammo')return ammoIcon(icon.key);
  if(icon.kind==='resource')return resourceIcon(icon.key);
  if(icon.kind==='keepsake')return keepsakeIcon(icon.key);

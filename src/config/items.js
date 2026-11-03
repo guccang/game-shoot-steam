@@ -7,13 +7,15 @@ import {KEEPSAKES} from './keepsakes.js';
 import {CAMP_CHARACTERS,MONSTER_CAMPS} from './monster-camps.js';
 import {AMMO_TYPES,SUPPLY_ITEMS} from './supplies.js';
 import {WEAPON_MASSES,CROP_MASSES,LOAD_RULES} from './vehicle-load.js';
-export const ITEM_CATEGORIES={currency:'金币',outdoor:'野外装备与鱼获',supply:'道具',weapon:'武器',ammo:'弹药与弹匣',crop:'农作物',seed:'种子',tool:'农具',keepsake:'重要物品',relic:'奇物',material:'采集材料',equipment:'载具部件',exploration:'探索工具'};
+export const ITEM_CATEGORIES={facility:'设施',currency:'金币',outdoor:'野外装备与鱼获',supply:'道具',weapon:'武器',ammo:'弹药与弹匣',crop:'农作物',seed:'种子',tool:'农具',keepsake:'重要物品',relic:'奇物',material:'采集材料',equipment:'载具部件',exploration:'探索工具'};
 export const FARM_ITEMS={hoe:{name:'锄头',mass:1.5,description:'结实的木柄锄头。',use:'打开种地工具，点击空地开垦。'},sickle:{name:'镰刀',mass:.6,description:'用于收割的弧刃镰刀。',use:'打开种地工具，长按拖过成熟作物收割。'},water:{name:'水壶',mass:1.2,description:'随身浇灌工具。',use:'打开种地工具，选择水壶并点击成长中的田块。'}};
 const supplyUses={medkit:`使用后回复猫猫${SUPPLY_ITEMS.medkit.heal} HP。`,gunKit:`降低当前主炮${SUPPLY_ITEMS.gunKit.repair}%损坏；100%损坏必须回厂。`,engineKit:`降低当前发动机${SUPPLY_ITEMS.engineKit.repair}%损坏；100%损坏必须回厂。`};
 const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'供标准坦克主炮装填。',heavy:'供红狼重炮装填。',water:'供潮汐主炮装填。'};
 // 每件可堆叠物品只定义单位重量，数量由实际存档读取。
 const entries=[
  WOOD_ITEM,
+ // 收纳设施沿用生产库存，不新增负重规则；放置后从背包清单移除。
+ {id:'facility:sprinkler',name:'简易洒水器',category:'facility',mass:0,icon:{kind:'production',key:'sprinkler'},description:'收回的洒水器，可带到新的地面位置重新布置。',use:'在地面下车后选择放置；无需再支付材料，取消选址仍留在背包。设施收纳暂不计重。'},
  {id:'currency:coins',name:'金币',category:'currency',mass:0,icon:{kind:'resource',key:'coins'},description:'小屋仓库保管的通用货币，与界面顶部的金币余额一致。',use:'购买装备、补给、修理和升级时直接支付，无需取出。'},
  {id:'metal-detector',name:'金属探测器',category:'exploration',mass:DETECTOR.mass,icon:{kind:'detector'},description:'可反复使用的金属探测器，感知附近埋藏装备。',use:'在手机寻宝页开启探测，到线索区域寻找增强的信号；近距离挖掘。'},
  ...TREASURE_PARTS.map(p=>({...p,category:'equipment',icon:{kind:p.kind==='gun'?'treasure-gun':'treasure-engine',key:p.id},use:'运输到载具工坊换装；货舱中的未安装部件也占用载荷。'})),

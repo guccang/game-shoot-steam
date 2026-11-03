@@ -1977,3 +1977,9 @@ export async function inspectSprinklerPickup(game,renderer,root=document){
  const {productionObjects}=await import('./farm-production.js'),panel=root.getElementById('production-placement');
  return {designCriterion:'sprinkler-pickup',objects:productionObjects(renderer.renderGame||game),carry:game.productionCarry||null,cursor:game.productionCursor||null,message:panel?.querySelector('p')?.textContent,dropDisabled:panel?.querySelector('[data-production-place]')?.disabled,visible:!!panel&&!panel.hidden};
 }
+
+// 背包数量与正式场景实体同屏核对，不构造替代图案。
+export async function inspectSprinklerBackpack(game,root=document){
+ const {backpackEntries}=await import('../progression/backpack.js'),{productionObjects}=await import('./farm-production.js');
+ return {designCriterion:'sprinkler-backpack',inventory:game.progress.production.sprinklerInventory,bag:backpackEntries(game).filter(i=>i.id==='facility:sprinkler'),devices:productionObjects(game),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

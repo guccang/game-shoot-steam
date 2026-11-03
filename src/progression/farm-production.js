@@ -16,7 +16,7 @@ export function normalizeProduction(raw,mining){
   let id=Number.isSafeInteger(item.id)&&item.id>0&&item.id<Number.MAX_SAFE_INTEGER?item.id:1;
   while(sprinklers.some(p=>p.id===id))id++;sprinklers.push({...point,id});
  }
- return {version:1,minedOre:integer(s.minedOre??mining?.ore),returned:s.returned===true,wateredHarvest:s.wateredHarvest===true,seedGift:s.seedGift===true,mealDigs:integer(s.mealDigs),rodeCart:s.rodeCart===true,bench:site(s.bench),sprinklers,keep:FARM_CROPS.map((_,i)=>integer(s.keep?.[i],P.keepMax)),stock:Object.fromEntries(['meal','juice','oil'].map(k=>[k,integer(s.stock?.[k],P.maxStock)])),effects:{meal:integer(s.effects?.meal,P.mealDigs),juice:Number.isFinite(s.effects?.juice)?Math.max(0,Math.min(P.juiceSeconds,s.effects.juice)):0}};
+ return {version:1,minedOre:integer(s.minedOre??mining?.ore),returned:s.returned===true,wateredHarvest:s.wateredHarvest===true,seedGift:s.seedGift===true,mealDigs:integer(s.mealDigs),rodeCart:s.rodeCart===true,bench:site(s.bench),sprinklers,sprinklerInventory:integer(s.sprinklerInventory,P.maxSprinklers-sprinklers.length),keep:FARM_CROPS.map((_,i)=>integer(s.keep?.[i],P.keepMax)),stock:Object.fromEntries(['meal','juice','oil'].map(k=>[k,integer(s.stock?.[k],P.maxStock)])),effects:{meal:integer(s.effects?.meal,P.mealDigs),juice:Number.isFinite(s.effects?.juice)?Math.max(0,Math.min(P.juiceSeconds,s.effects.juice)):0}};
 }
 // 建筑和配方依据实际行为开放，果饮和植物油还需对应种子权限。
 export function productionUnlocked(progress,kind){
@@ -42,7 +42,7 @@ export function consumeProductionCrop(progress,crop,count){
 export function sprinklerCovers(s,plot){
  if(s.mapId!==plot.mapId)return false;
  const p=nearest(plot,s),x=(p.x-s.x)/SPRINKLER.cellWidth,y=(p.y-s.y)/SPRINKLER.cellHeight;
- return x*x+y*y<=SPRINKLER.radius**2+1e-9;
+ return Math.max(Math.abs(x),Math.abs(y))<=SPRINKLER.radius+1e-9&&Math.abs(x)+Math.abs(y)<=SPRINKLER.diagonalLimit+1e-9;
 }
 // 所有出售入口共用一份保留配额，按背包、在场货舱顺序保护原料。
 export function productionSalePlan(progress,stocks){

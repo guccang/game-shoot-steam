@@ -20,7 +20,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 随身格子嵌入角色页，物品详情和手机使用子弹窗，逐层返回保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onTreasure}){
+export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler}){
  const scope=createEventScope(),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -51,7 +51,7 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  function renderInventoryItem(){
   const item=backpackEntries(game).find(r=>r.id===selected);if(!item)return false;
   detail.innerHTML=`<section class="ui-section inventory-detail"><div class="inventory-detail-icon">${inventoryIcon(item)}</div><small>${ITEM_CATEGORIES[item.category]}</small><h3>${escape(item.name)}</h3><p>${escape(item.description)}</p><div class="ui-inset"><p>数量 ${item.count} · 单件 ${item.mass.toFixed(2)} kg</p><b>总重 ${item.weight.toFixed(2)} kg</b>${item.note?`<p>${escape(item.note)}</p>`:''}</div><h3>用途</h3><p>${escape(item.use)}</p></section>`;
-  actions.innerHTML=(item.category==='supply'?button('use-item','使用'+item.name,true):selected==='patrol-phone'?button('open-phone','打开手机',true):selected==='elder-letter'?button('read-letter','阅读来信',true):selected==='house-key'?button('home','标出回家的路',true):'')+button('close','返回随身物品');paintInventoryIcons(detail,game.progress);return true;
+  actions.innerHTML=(selected==='facility:sprinkler'?button('place-sprinkler','选择位置放置',true):item.category==='supply'?button('use-item','使用'+item.name,true):selected==='patrol-phone'?button('open-phone','打开手机',true):selected==='elder-letter'?button('read-letter','阅读来信',true):selected==='house-key'?button('home','标出回家的路',true):'')+button('close','返回随身物品');paintInventoryIcons(detail,game.progress);return true;
  }
  // 物品详情与手机按用户操作更新，正文不再常驻背包页。
  function render(){
@@ -103,6 +103,8 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
   const contact=event.target.closest('[data-call]');if(contact){const result=callNeighbor(game,contact.dataset.call);if(result.ok){call=result;resetView();}else{message.textContent=result.message;message.hidden=false;}return;}
   const action=event.target.closest('[data-pack-action]')?.dataset.packAction;if(!action)return;
 
+  // 先验证选址资格，再退出背包层级；此时设备仍保存在背包。
+  if(action==='place-sprinkler'){if(onPlaceSprinkler?.()){for(const p of [itemPanel,bag])if(p.open)dialogs.close(p.id);}return;}
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);show(phone);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
