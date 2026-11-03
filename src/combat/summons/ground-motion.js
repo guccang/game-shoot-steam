@@ -11,7 +11,7 @@ import { mechanicalVehicleWaypoint } from '../mechanical-formation.js';
 export function deployNode(game, node, count) {
   const angle = node.index * Math.PI * 2 / count, owner = game.player;
   node.arena = owner.arena; node.mapId = owner.mapId;
-  const origin = owner.arena && owner.arena.terrain !== 'forest' ? owner : nearestDryTerrain(owner, owner, node.radius||9);
+  const origin = game.combatWalkClear?owner:owner.arena && owner.arena.terrain !== 'forest' ? owner : nearestDryTerrain(owner, owner, node.radius||9);
   // 机械伙伴在车壳外落脚；共享部署入口中的蜘蛛不套用此间距。
   const startRadius=game.vehicle?.active&&!node.spider&&!node.mother?MECHANICAL_VEHICLE_SPACING.spawnRadius:32;
   for (let radius = startRadius; radius <= startRadius+48; radius += 16) {
@@ -43,7 +43,8 @@ export function groundDestination(game,node,goal){
 export function walkNode(game, node, goal, speed, dt, approach = null) {
   node.worldBarriers=game.player.worldBarriers; // 维修护栏与主人共享，寻路和实际行走使用同一边界。
   let route;
-  if(node.mother){
+  if(game.combatWalkClear)route=groundDestination(game,node,goal);
+  else if(node.mother){
     // 落点以主人为参考，母体绕门移动时不会把同一个跟随位置反复投到护栏两侧。
     const home=groundDestination(game,{...node,x:game.player.x,y:game.player.y},goal);
     route=spiderFollowWaypoint(game,node,home);

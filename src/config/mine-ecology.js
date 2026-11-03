@@ -12,7 +12,7 @@ export const MINE_BIOMES=[
  {id:'spring',name:'地热温泉',floor:'#c7baa0',night:'#968e7f',resource:'heal',yield:16,regrow:80,animal:'beetle'},
  {id:'fossil',name:'化石遗迹',floor:'#c6b48c',night:'#938970',resource:'ore',yield:3,regrow:150,animal:'beetle'},
 ];
-export const MINE_ANIMALS={beetle:{name:'岩甲虫',hp:56,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'洞穴蝠',hp:34,speed:60,damage:6,range:36,windup:.45,recover:1,reward:2},spore:{name:'菌伞怪',hp:70,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
+export const MINE_ANIMALS={beetle:{name:'岩甲虫',hp:48,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'洞穴蝠',hp:30,speed:60,damage:6,range:36,windup:.65,recover:1,reward:2},spore:{name:'菌伞怪',hp:60,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
 export const MINE_ECOLOGY={unlockRatio:.5,bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};
 // 无状态坐标散列使景观、栖地和轮廓在读档后保持原布局。
 export function mineHash(x,y,seed=1847){let n=(Math.imul(x,374761393)^Math.imul(y,668265263)^seed)>>>0;n=Math.imul(n^(n>>>13),1274126177);return (n^(n>>>16))>>>0;}
@@ -41,3 +41,11 @@ export function mineTerrain(cell,layer){
 
 // 天然洞厅与玩家挖通区域共用开放判定，边界外始终不可通行或施工。
 export function mineCellOpen(cell,layer){return mineCellArea(cell,layer)>0&&(!!layer.dug?.[`${cell.x},${cell.y}`]||mineTerrain(cell,layer).natural);}
+
+// 怪物只按层数温和成长，第九层封顶；不读取玩家装备等级。
+export function mineAnimalStats(kind,depth=1){
+ const base=MINE_ANIMALS[kind],step=Math.min(8,Math.max(0,(depth||1)-1));
+ return {...base,hp:Math.round(base.hp*(1+step*.12)),damage:Math.round(base.damage*(1+step*.08)),speed:base.speed*(1+step*.025)};
+}
+// 前两层最多两只同时追击，第三至五层三只，更深四只，保留躲避空间。
+export function mineThreatLimit(depth=1){return depth<=2?2:depth<=5?3:4;}

@@ -1,3 +1,4 @@
+import {resetMineCombat} from './mine-combat.js';
 import {nextCartExit} from '../config/mine-rail-routes.js';
 import {setMineCartDirection} from './mine-cart-directions.js';
 // 地下玩法独立处理挖掘、铺轨和驾驶；复用正式输入、角色时钟与存档事务。
@@ -31,7 +32,7 @@ export function enterMine(game,shaft=null){
  if(shaft){if(room||!game.progress.mining.shafts.includes(shaft)||worldDistance(game.player,minePoint(parseKey(shaft)))>30)return false;}
  else if(room?.kind!=='cottage'||room.floor!==0||room.sleep||room.balcony||Math.hypot(game.player.x-M.hatch.goal.x,game.player.y-M.hatch.goal.y)>28)return false;
  const point=shaft?minePoint(parseKey(shaft)):M.home,outside=shaft?{x:game.player.x,y:game.player.y}:room.outside;
- game.cottage={kind:'mine',depth:1,outside,returnRoom:shaft?null:room,direction:1,tool:null,autoDig:false,dig:null,shaftWork:0,ride:null,running:false,notice:game.vehicle.active?'战车已进入矿道。沿天然洞厅和宽通道行驶，主炮自动迎敌；开回地表后可以下车挖路。':'选择矿镐或铺轨，推动方向即可自动作业。天然洞厅和景观无需开掘。'};
+ game.cottage={kind:'mine',depth:1,outside,returnRoom:shaft?null:room,direction:1,tool:null,autoDig:false,dig:null,shaftWork:0,ride:null,running:false,notice:game.vehicle.active?'战车已进入矿道。沿天然洞厅和宽通道行驶，主炮自动迎敌；开回地表后可以下车挖路。':'已装备武器自动迎敌；选择矿镐或铺轨即可作业，再点「拿起武器」恢复射击。'};
  game.mineEntranceWait=0;game.mineEntranceKey=null;game.sceneApproach=null;game.parking=null;Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
 }
 // 稳定网格键还原为整数坐标，仅消费本模块或已验证存档产生的键。
@@ -65,13 +66,13 @@ export function leaveMine(game){
  if(Math.hypot(game.player.x-point.x,game.player.y-point.y)>28)return notice(game,'请走到梯口中央。');
  if(key==='0,0'){
   if(game.vehicle.active)return notice(game,'战车请从地表矿洞坡道返回，不能进入小屋木梯。');
-  game.cottage=room.returnRoom||{kind:'cottage',floor:0,outside:{x:M.home.x+50,y:M.home.y+30},sleep:null};
+  resetMineCombat(game);game.cottage=room.returnRoom||{kind:'cottage',floor:0,outside:{x:M.home.x+50,y:M.home.y+30},sleep:null};
   Object.assign(game.cottage,{basementLatch:true,basementElapsed:0,notice:'从地下室回来了。',exitElapsed:0});Object.assign(game.player,M.hatch.goal,{vx:0,vy:0});
  }else if(game.progress.mining.shafts.includes(key)){
   const body={...game.player,mapId:'forest',flying:false,amphibious:false,treePass:false,arena:null,livingCollision:true};
   Object.assign(body,{flying:game.player.flying,amphibious:game.player.amphibious,treePass:game.player.treePass});
   if(blocked(point.x,point.y,mineBodyRadius(game),game.trees,body))return notice(game,'地表出口暂时被挡住，请从其他梯口返回。');
-  game.cottage=null;game.mineEntranceLatch=key;Object.assign(game.player,point,{vx:0,vy:0});
+  resetMineCombat(game);game.cottage=null;game.mineEntranceLatch=key;Object.assign(game.player,point,{vx:0,vy:0});
  }else return notice(game,'请沿小地图返回小屋梯口，或在这里向上开洞。');
  game.sceneApproach=null;game.onEvent?.('cottage-change');return {ok:true,message:'已离开矿区。'};
 }
@@ -174,7 +175,7 @@ export function updateMining(game,dt,input){
   if(length>.01&&!room.surveyWait)movementMineWork(game);
  }
  if(!room.ride&&!game.vehicle.active&&Math.hypot(p.x-before.x,p.y-before.y)>.001)game.progress.production.effects.juice=Math.max(0,game.progress.production.effects.juice-dt);
- p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);p.angle=room.direction*Math.PI/2-Math.PI/2;
+ p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);if(!room.weaponTarget||room.tool||room.autoDig)p.angle=room.direction*Math.PI/2-Math.PI/2;
  if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
  updateMineEcology(game,dt);
  updateCatMotion(p.bodyAnimation,dt,room.ride?0:Math.hypot(p.vx,p.vy),!room.ride);game.time+=dt;return true;

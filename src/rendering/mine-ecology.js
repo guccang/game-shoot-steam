@@ -25,7 +25,7 @@ export function drawMineAnimal(c,a,time){
  }else{
   for(const side of [-1,1])box(c,x+side*6-3,y-4+step*side*3,7,9,3,'#83976e',ink,1.5);box(c,x-8,y-24,16,25,6,'#ddd0a2',ink,2);oval(c,x,y-25,22,12,fill,ink,2);for(const dx of [-12,0,12])oval(c,x+dx,y-28+Math.abs(dx)/4,3,2,'#f2dfa6');for(const dx of [-3,3])oval(c,x+dx,y-12,1.5,2,ink);
  }
- if(a.hp>0&&a.hp<MINE_ANIMALS[a.kind].hp){box(c,x-17,y-43,34,4,2,ink);box(c,x-16,y-42,32*a.hp/MINE_ANIMALS[a.kind].hp,2,1,'#e3c88c');}c.restore();
+ if(a.hp>0&&a.hp<(a.maxHp||MINE_ANIMALS[a.kind].hp)){box(c,x-17,y-43,34,4,2,ink);box(c,x-16,y-42,32*Math.min(1,a.hp/(a.maxHp||MINE_ANIMALS[a.kind].hp)),2,1,'#e3c88c');}c.restore();
 }
 // 孢子和车炮使用独立运动实体，弹道不依附于角色位图。
 export function drawMineBolts(c,bolts){for(const b of bolts||[]){oval(c,b.x,b.y,b.enemy?5:4,b.enemy?5:4,b.enemy?'#baac84':'#f2d89b',ink,1.5);if(!b.enemy){c.strokeStyle='#ead491';c.lineWidth=2;c.beginPath();c.moveTo(b.x,b.y);c.lineTo(b.x-b.vx*.025,b.y-b.vy*.025);c.stroke();}}}

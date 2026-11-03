@@ -1,6 +1,6 @@
 // 每层独立保存地形、生态和设施；矿石与木材仍使用共同库存。
 import {MINING,mineKey,minePoint} from '../config/mining.js';
-import {createMineGeography,mineBounds,mineCellArea,mineCellOpen,MINE_ANIMALS} from '../config/mine-ecology.js';
+import {createMineGeography,mineBounds,mineCellArea,mineCellOpen,MINE_ANIMALS,mineAnimalStats} from '../config/mine-ecology.js';
 const progressCache=new WeakMap();
 // 一层继续使用原根记录，兼容所有旧矿道与施工事务。
 export function mineLayer(mining,depth=1){return depth===1?mining:mining.layers?.[depth]||null;}
@@ -32,7 +32,7 @@ export function normalizeLayerEcology(target,raw,depth=1){
  for(const key of keys){const [x,y]=key.split(',').map(Number);if(!Number.isSafeInteger(x)||!Number.isSafeInteger(y)||key!==mineKey({x,y})||!mineCellOpen({x,y},target)){delete target.dug[key];delete target.rails[key];delete target.decor[key];continue;}
   if(raw?.bridges?.[key]===true)target.bridges[key]=true;
   if(Number.isFinite(raw?.harvested?.[key])&&raw.harvested[key]>=0)target.harvested[key]=Math.min(target.age+180,raw.harvested[key]);
-  const a=raw?.animals?.[key];if(a&&MINE_ANIMALS[a.kind]){const home=minePoint({x,y}),spec=MINE_ANIMALS[a.kind];target.animals[key]={key,kind:a.kind,x:Number.isFinite(a.x)&&Math.abs(a.x-home.x)<192?a.x:home.x,y:Number.isFinite(a.y)&&Math.abs(a.y-home.y)<192?a.y:home.y,hp:Number.isFinite(a.hp)?Math.max(0,Math.min(spec.hp,a.hp)):spec.hp,respawn:Number.isFinite(a.respawn)?Math.max(0,Math.min(target.age+180,a.respawn)):0,clock:Number.isFinite(a.clock)?Math.max(0,a.clock):0,walk:Number.isFinite(a.walk)?a.walk:0,phase:'roam',timer:0,flash:0,death:0};}
+  const a=raw?.animals?.[key];if(a&&MINE_ANIMALS[a.kind]){const home=minePoint({x,y}),spec=mineAnimalStats(a.kind,depth);target.animals[key]={key,kind:a.kind,maxHp:spec.hp,x:Number.isFinite(a.x)&&Math.abs(a.x-home.x)<192?a.x:home.x,y:Number.isFinite(a.y)&&Math.abs(a.y-home.y)<192?a.y:home.y,hp:Number.isFinite(a.hp)?Math.max(0,Math.min(spec.hp,a.hp)):spec.hp,respawn:Number.isFinite(a.respawn)?Math.max(0,Math.min(target.age+180,a.respawn)):0,clock:Number.isFinite(a.clock)?Math.max(0,a.clock):0,walk:Number.isFinite(a.walk)?a.walk:0,phase:'roam',timer:0,flash:0,death:0};}
  }
  // 清理被层边界裁掉的设施，坡道和入口只能指向本层真实地块。
  target.shafts=target.shafts.filter(key=>target.dug[key]);target.carts=target.carts.filter(c=>target.rails[mineKey({x:Math.floor((c.x-MINING.home.x)/MINING.tile+.5),y:Math.floor((c.y-MINING.home.y)/MINING.tile+.5)})]);

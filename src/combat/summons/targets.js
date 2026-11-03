@@ -4,7 +4,7 @@ import { worldDistance } from '../../world/coordinates.js';
 
 // 调用方显式指定飞行敌人资格、领主优先及同距离排序，保持原索敌行为。
 export function summonTargetPool(game,origin,range,{allowFlying=true,bossFirst=false,tieById=false,targetTrees=true}={}) {
-  const valid=t=>t.hp>0&&(!game.player.arena||worldDistance(t,game.player.arena)+(t.radius||0)<=game.player.arena.radius)&&summonTargetVisible(game,t)&&(allowFlying||!t.flying)&&worldDistance(t,origin)<=range;
+  const valid=t=>t.hp>0&&(!game.combatLineClear||game.combatLineClear(origin,t))&&(!game.player.arena||worldDistance(t,game.player.arena)+(t.radius||0)<=game.player.arena.radius)&&summonTargetVisible(game,t)&&(allowFlying||!t.flying)&&worldDistance(t,origin)<=range;
   if(bossFirst&&game.boss&&valid(game.boss))return [game.boss];
   const enemies=(bossFirst?game.enemies:[...game.enemies,...(game.boss?[game.boss]:[])]).filter(valid);
   return (enemies.length?enemies:targetTrees===false?[]:game.trees.filter(valid)).sort((a,b)=>worldDistance(a,origin)-worldDistance(b,origin)||(tieById?a.id-b.id:0));

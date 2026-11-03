@@ -49,6 +49,7 @@ export function fireBallistics(
   critical,
   independentMuzzle = false,
 ) {
+  if(game.combatLineClear&&!game.combatLineClear(independentMuzzle?muzzle:hitCenter(game.player),muzzle))return;
   const profile = GAMEPLAY_TABLES.projectileProfiles[weapon.id] || GAMEPLAY_TABLES.projectileProfiles.default;
   const all = liveTargets(game).filter(t=>weapon.targetTrees!==false||t.type!=='tree'),
     // 独立炮口只检查自身重叠，不能误伤角色身体与浮游炮之间的实体。
@@ -67,6 +68,7 @@ export function fireBallistics(
       x: muzzle.x + direction.x * weapon.range,
       y: muzzle.y + direction.y * weapon.range,
     };
+    if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(muzzle,end));
     const shot = {
       x: muzzle.x,
       y: muzzle.y,
@@ -214,7 +216,7 @@ function resolveHit(game, b, hit) {
     return;
   }
   const candidates = liveTargets(game).filter(
-    (t) => !b.hitIds.includes(t.id) && worldDistance(hitCenter(t), b) < GAMEPLAY_VALUES.projectile.bounceRange,
+    (t) => (!game.combatLineClear||game.combatLineClear(b,hitCenter(t))) && !b.hitIds.includes(t.id) && worldDistance(hitCenter(t), b) < GAMEPLAY_VALUES.projectile.bounceRange,
   );
   candidates.sort(
     (a, d) =>
@@ -288,6 +290,8 @@ function stepBallistics(game, dt, targets) {
     while (budget > 0.001 && b.remaining > 0.001 && attempts++ < 64) {
       const travel = Math.min(budget, b.remaining),
         end = { x: b.x + b.dx * travel, y: b.y + b.dy * travel };
+      const clipped=game.clipCombatLine?.(b,end);if(clipped)Object.assign(end,clipped);
+      const actualTravel=Math.hypot(end.x-b.x,end.y-b.y);
       const hit = traceTargets(
         b,
         end,
@@ -297,7 +301,7 @@ function stepBallistics(game, dt, targets) {
       ).find(hit=>(b.targetTrees!==false||hit.target.type!=='tree')&&gravityPointSafe(game,b,hit));
       b.trail.push({ x: b.x, y: b.y, z: b.z });
       if (b.trail.length > 8) b.trail.shift();
-      const used = hit ? travel * hit.t : travel;
+      const used = hit ? actualTravel * hit.t : actualTravel;
       // 按实际经过的距离发射地表余波，碰撞前方不会凭空出现破坏或伤害。
       if (b.kind === 'pulse') {
         while (b.wakeAt <= b.travelled + used) {
@@ -313,6 +317,7 @@ function stepBallistics(game, dt, targets) {
       else {
         b.x = end.x;
         b.y = end.y;
+        if(clipped?.blocked){b.remaining=0;b.terrainStopped=true;}
       }
       if (b.beam) {
         b.beam.ex = b.x;
@@ -323,7 +328,7 @@ function stepBallistics(game, dt, targets) {
     }
   }
   // 玩家向前移动时允许弹丸继续飞出离身圈，仍受原射程与落地约束，不能贴身展开或无限追逐。
-  for(const b of game.projectiles)if(b.gravityRadius&&b.remaining<=.001&&b.z>=0&&!gravityPointSafe(game,b)&&b.travelled<b.gravityMaxTravel){
+  for(const b of game.projectiles)if(b.gravityRadius&&!b.terrainStopped&&b.remaining<=.001&&b.z>=0&&!gravityPointSafe(game,b)&&b.travelled<b.gravityMaxTravel){
     b.remaining=gravityFlightRange(game,{...b,range:b.gravityMaxTravel-b.travelled},b,{x:b.dx,y:b.dy},[]);
   }
   for(const b of game.projectiles)if(b.remaining<=.001){landGravityField(game,b);if(b.kind==='wolf-256')explodeHeavyShell(game,b,null);}

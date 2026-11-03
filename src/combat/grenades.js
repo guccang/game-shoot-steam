@@ -26,6 +26,7 @@ export function advanceGrenadeCharge(cycle, weapon, dt, hasTarget) {
 // 锁定发射时的落点与伤害，换枪、升级或目标移动都不会追踪修改在途榴弹。
 export function launchGrenade(game, weapon, muzzle, target, amount) {
   const end = nearest(hitCenter(target), muzzle);
+  if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(muzzle,end));
   const distance = Math.hypot(end.x - muzzle.x, end.y - muzzle.y);
   const duration = Math.max(GAMEPLAY_VALUES.grenade.minFlightSeconds, distance / weapon.grenade.speed);
   game.projectiles.push({
@@ -66,7 +67,7 @@ export function explodeGrenade(game, grenade) {
     if (target.hp <= 0) continue;
     const center = nearest(hitCenter(target), grenade);
     const distance = worldDistance(center, grenade);
-    if (distance > grenade.radius + target.radius) continue;
+    if (distance > grenade.radius + target.radius || game.combatLineClear&&!game.combatLineClear(grenade,center)) continue;
     const strength = 1 - GAMEPLAY_VALUES.grenade.edgeFalloff * Math.min(1, distance / grenade.radius);
     const direction =
       distance > 0.001

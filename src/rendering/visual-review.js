@@ -1921,3 +1921,9 @@ export function inspectMineCartRider(game,renderer,root){return {...inspectMineC
 
 // 边界验收同时读取正式岩层、地形几何和镜头，不用矩形遮挡数量替代视觉复核。
 export function inspectMineNaturalBoundary(game,renderer,root=document){return {...inspectMining(game,renderer,root),designCriterion:'mine-natural-boundary',boundary:renderer.mineBoundaryReview,landscape:renderer.mineLandscapeReview,player:{x:game.player.x,y:game.player.y},notice:game.cottage?.notice};}
+
+// 地下武器验收读取正式实体和实际手机按钮，不另建演示战斗。
+export function inspectMineCombat(game,renderer,root=document){
+ const b=game.cottage?.combat;
+ return {...inspectMining(game,renderer,root),designCriterion:'mine-weapons-balance',weapon:renderer.mineReview?.weapon,armed:!!game.cottage?.weaponReady,projectiles:b?.projectiles.length||0,fx:b?.fx.items.length||0,newBitmapBytes:0,animals:(game.cottage?.ecologyActors||[]).map(a=>({kind:a.kind,hp:a.hp,maxHp:a.maxHp,phase:a.phase,clock:a.clock}))};
+}

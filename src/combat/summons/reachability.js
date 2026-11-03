@@ -7,6 +7,7 @@ import {hitCenter,traceTargets} from '../collision.js';
 const scenes=new WeakMap(),routes=new WeakMap();
 // 蓄力、命中和攻击落点共用同一阻挡检查，树干挡刀时必须换位置，不能原地反复空挥。
 export function summonMeleeLineClear(game,node,target){
+ if(game.combatWalkClear)return game.combatWalkClear(node,target,0);
  const t=nearest(target,node),body={...node,worldBarriers:game.player.worldBarriers};
  const steps=Math.max(1,Math.ceil(worldDistance(node,target)/8));
  for(let i=0;i<=steps;i++)if(blocked(node.x+(t.x-node.x)*i/steps,node.y+(t.y-node.y)*i/steps,0,[],body))return false;
@@ -23,6 +24,7 @@ function scene(game){
 }
 // 攻击点放在目标近侧；路径尚未确认时先归队，确认不可达的目标短暂缓存后再试。
 export function summonGroundReachable(game,node,target,reach){
+ if(game.combatWalkClear)return game.combatWalkClear(node,target,node.radius||9);
  const s=scene(game),t=nearest(target,node),d=worldDistance(node,target),stand=(target.radius||12)+reach*.7;
  // 寻路使用伙伴自己的脚底半径，避免已经能站稳的小猫被玩家12单位半径判成卡在墙里。
  const body={...node,navigationRadius:node.radius||9,worldBarriers:game.player.worldBarriers};

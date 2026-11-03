@@ -17,6 +17,7 @@ const BOSS_PUSH_LIMIT = GAMEPLAY_VALUES.physics.bossPushLimit, BOSS_PUSH_DRAG = 
 
 // 河岸、湖山及树干统一使用脚底圆形碰撞体，桥面是河流通道。
 export function blocked(x, y, radius = 12, trees = [], body = null) {
+  if(trees.mineScene)return !trees.mineScene.walkable(x,y,radius,!!body?.flying);
   // 建筑墙体连低空载具也不能穿过；飞行仍可跨越水面、树木与普通围栏。
   if(worldBuildingBlocked(x,y,radius,body||{}))return true;
   if(body?.flying)return false;
@@ -47,6 +48,7 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
 }
 // 小步扫掠并沿障碍滑动，避免高速冲量穿过狭窄河道或树干。
 export function moveBody(body, dx, dy, bounds, radius = 12, trees = []) {
+  if(trees.mineScene){const n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/4));for(let i=0;i<n;i++){if(!blocked(body.x+dx/n,body.y,radius,trees,body))body.x+=dx/n;if(!blocked(body.x,body.y+dy/n,radius,trees,body))body.y+=dy/n;}return;}
   // 野外敌人不能沿门洞或飞行闯入聚落；剧情和独立战斗圈沿用各自边界。
   if(body.mapId==='forest'&&['enemy','boss'].includes(body.type)&&!body.story&&!body.arena&&!settlementAt(body)&&settlementAt({x:body.x+dx,y:body.y+dy}))return;
   // 静止刚体无需重复扫描河岸与树干；原地移动不会产生位置修正。

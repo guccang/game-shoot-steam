@@ -10,6 +10,7 @@ export function fireArc(game, weapon, muzzle, direction, amount, critical, targe
     x: muzzle.x + direction.x * weapon.range,
     y: muzzle.y + direction.y * weapon.range,
   };
+  if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(muzzle,end));
   let hit = nearHits[0] || traceTargets(muzzle, end, targets, GAMEPLAY_VALUES.arc.hitRadius)[0];
   let origin = muzzle;
   const seen = new Set();
@@ -50,7 +51,7 @@ export function fireArc(game, weapon, muzzle, direction, amount, critical, targe
         (t) =>
           t.hp > 0 &&
           t.type !== 'tree' &&
-          !seen.has(t.id) &&
+          !seen.has(t.id) && (!game.combatLineClear||game.combatLineClear(origin,hitCenter(t))) &&
           worldDistance(hitCenter(t), origin) < weapon.chainRange,
       )
       .sort((a, b) => worldDistance(hitCenter(a), origin) - worldDistance(hitCenter(b), origin))[0];

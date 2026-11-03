@@ -38,12 +38,12 @@ export function landGravityField(game,bullet){
 // 每个敌人只承受最强一处场，保留碰撞和领主抗性；死体、居民与玩家不参与。
 export function updateGravityFields(game,dt){
  const fields=currentGravityFields(game);game.gravityFields=fields;if(!fields.length||dt<=0)return;
- const trees=new SpatialGrid(game.trees),targets=[...game.enemies,...(game.boss?[game.boss]:[])];
+ const trees=new SpatialGrid(game.trees);trees.mineScene=game.trees.mineScene;const targets=[...game.enemies,...(game.boss?[game.boss]:[])];
  for(const target of targets){
   if(target.hp<=0||!['enemy','boss'].includes(target.type))continue;
   let best=null,strength=0;
   for(const field of fields){const point=nearest(field,target),distance=Math.hypot(point.x-target.x,point.y-target.y);
-   if(distance>=field.radius||distance<20)continue;
+   if(distance>=field.radius||distance<20||game.combatLineClear&&!game.combatLineClear(field,target))continue;
    const force=field.pull*(.35+.65*(1-distance/field.radius));if(force>strength){strength=force;best={point,distance,field};}
   }
   if(!best)continue;
@@ -57,7 +57,8 @@ export function explodeHeavyShell(game,bullet,directTarget){
  if(!bullet.blastRadius||bullet.exploded)return;bullet.exploded=true;
  for(const target of [...game.enemies,...(game.boss?[game.boss]:[])]){
   if(target===directTarget||target.hp<=0||worldDistance(hitCenter(target),bullet)>bullet.blastRadius)continue;
-  if((!target.arena||target.arena.terrain==='forest')&&!terrainLineClear(bullet,hitCenter(target),0))continue;
+  if(game.combatLineClear&&!game.combatLineClear(bullet,hitCenter(target)))continue;
+  if(!game.combatLineClear&&(!target.arena||target.arena.terrain==='forest')&&!terrainLineClear(bullet,hitCenter(target),0))continue;
   const at=nearest(hitCenter(target),bullet),distance=Math.max(1,Math.hypot(at.x-bullet.x,at.y-bullet.y));
   game.hit(target,Math.round(bullet.amount*bullet.blastRatio),bullet.critical,{x:at.x,y:at.y,direction:{x:(at.x-bullet.x)/distance,y:(at.y-bullet.y)/distance},impulse:bullet.impulse*.55,power:bullet.impactScale,kind:'wolf-256',weaponIndex:bullet.weaponIndex,statisticsSource:bullet.statisticsSource,audioSource:bullet.audioSource});
  }

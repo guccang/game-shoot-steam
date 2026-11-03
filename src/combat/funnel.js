@@ -112,8 +112,9 @@ function fireNode(game, node, target, weapon, state) {
   // 同时记录挂载枪与载体成长来源，不改变原枪伤害、弹道及表现类型。
   weapon = { ...weapon,...(weapon.id==='chainsaw'?{sawScale:.42,sawAngle:node.angle}:{}),audioSource:'companion',...(state.kind==='funnel'?{masteryOwnerIndex:FUNNEL_INDEX}:{}) };
   const magazine = state.kind === 'funnel' ? node.magazine : game.magazines[weapon.weaponIndex];
-  if (!consumeRound(magazine, weapon)) return false;
   const muzzle = funnelMuzzle(game.player, node, game.reducedMotion);
+  if(game.combatLineClear&&!game.combatLineClear(game.player,muzzle))return false;
+  if (!consumeRound(magazine, weapon)) return false;
   const center = nearest(hitCenter(target), muzzle);
   const distance = Math.hypot(center.x - muzzle.x, center.y - muzzle.y) || 1;
   const direction = { x: (center.x - muzzle.x) / distance, y: (center.y - muzzle.y) / distance };
@@ -242,6 +243,7 @@ export function updateFunnel(game, dt) {
     open: FUNNEL_OPEN,
     charging: FUNNEL_CHARGING,
   });
+  if(game.constrainFlyingNode)for(const node of state.nodes)game.constrainFlyingNode(node);
   if (state.deploy > 0 || state.charging) return;
   if (!state.primed && hasTargets) {
     state.primed = true;

@@ -1,3 +1,4 @@
+import {drawMineArmedCat,drawMineCombat} from './mine-combat.js';
 import {drawMineBoundary} from './mine-boundary.js';
 import {productionDigSeconds} from '../config/farm-production.js';
 // 地下正式绘制器：矿道、轨道、轮毂、矿锄与真实猫身体分层，不新增位图缓存。
@@ -60,7 +61,7 @@ function pickaxe(c,g){
 }
 // 镜头只绘制可见网格，地图再大也不遍历历史矿道，顶部和底部留给手机操作。
 export function drawMining(renderer,g=renderer.game){
- const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=h-(h<500?139:168),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
+ const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=Math.min(h-(h<500?139:168),renderer.mineControlsTop?renderer.mineControlsTop-5:h),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
  renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineCartRiderReview=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
  const v=renderer.mineView,m=currentMineLayer(g);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
@@ -97,21 +98,21 @@ export function drawMining(renderer,g=renderer.game){
   else if(e.kind==='player'){
    if(g.vehicle.active)drawVehicleTracks(c,g.player,g.vehicle,renderer.reduced.matches,g.time,g.progress);
    const rider=g.vehicle.active?riderPosition(g.player,g.vehicle):g.player;
-   drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
-   if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else pickaxe(c,g);
+   if(g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(!g.cottage.weaponReady||g.cottage.strike)pickaxe(c,g);
   }
   else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride){
-   drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   if(g.cottage.weaponReady)drawMineArmedCat(c,g,e.cart.x,e.cart.y-8);else drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
    // 验收读取实际绘制锚点；保留真实待机连续帧，不以静帧掩盖位移抖动。
    renderer.mineCartRiderReview={id:e.cart.id,x:e.cart.x,y:e.cart.y,wheel:e.cart.wheel,screenX:(e.cart.x-v.x)*zoom,screenY:(e.cart.y-8-v.y)*zoom,seatOffset:-8,cameraError:Math.hypot(e.cart.x-g.player.x,e.cart.y-g.player.y),idleTime:g.player.bodyAnimation.idleTime,moveWeight:g.player.bodyAnimation.moveWeight};
   }cartBody(c,e.cart,true);}
  }
- drawMineBolts(c,g.cottage.bolts);
+ drawMineCombat(c,g,renderer.reduced.matches);drawMineBolts(c,g.cottage.bolts);
  // 入口文字在实体之后绘制；猫和怪物经过时仍能识别同一地表洞口编号。
  for(const p of visibleShafts)label(c,`矿洞 ${p.number} · 地面 ↑`,p.x,p.y+38,12);
  const work=g.cottage.dig?g.cottage.dig.elapsed/productionDigSeconds(g.progress,M.digSeconds):g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
- c.restore();renderer.mineReview={tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
+ c.restore();renderer.mineReview={weaponReady:!!g.cottage.weaponReady,weapon:g.weapon().id,ammo:g.magazines[g.loadout.weapon].ammo,projectiles:g.cottage.combat?.projectiles.length||0,tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
 }
 // 固定范围小地图显示天然洞厅、已挖区域、轨道、洞口和小屋方向，远处小屋以边缘箭头定位。
 export function drawMineMap(canvas,g){

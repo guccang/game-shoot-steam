@@ -17,6 +17,7 @@ export function cutWithChainsaw(game, weapon, muzzle, direction, amount, critica
     radius:mountedRadius,
   }:heldChainsawSegment(riderPosition(game.player,game.vehicle),weapon.range,game.reducedMotion);
   const {start,end}=segment;
+  if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(start,end));
   const targets = [...game.trees, ...game.enemies, ...(game.boss ? [game.boss] : [])];
   const hit = traceTargets(start, end, targets, segment.radius)[0];
   if (!hit) return;
