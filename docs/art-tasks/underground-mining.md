@@ -93,3 +93,5 @@
 需修订内容：当前动态范围无阻断项；物理手机安装包检查和PNG精修留待对应阶段。
 
 确认版本：本次地下玩法提交；长期参考为`docs/art-reference/mining-day.png`、`mining-night.png`（按仓库规范保存在本地验收资料，不打入运行包）。
+
+合并复核：保留 main 同期的阳台四向投影修复；合并后正式矿区与东侧阳台绘制均正常，浏览器错误为空，证据为 output/playwright/mining/merged-mine.png、merged-balcony.png 和 merge-smoke-result.txt。
