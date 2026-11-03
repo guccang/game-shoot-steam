@@ -1,3 +1,5 @@
+import {nextCartExit} from '../config/mine-rail-routes.js';
+import {setMineCartDirection} from './mine-cart-directions.js';
 // 地下玩法独立处理挖掘、铺轨和驾驶；复用正式输入、角色时钟与存档事务。
 import {PRODUCTION as PRODUCTION_RULES,productionDigSeconds} from '../config/farm-production.js';
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '../config/mining.js';
@@ -16,7 +18,7 @@ import {movementLoadFactor} from '../progression/load-weight.js';
 // 地下操作只能在活着且运行中的矿区进行，暂停不接受施工和挖掘。
 function active(game){return game.cottage?.kind==='mine'&&game.state==='playing'&&game.player.hp>0;}
 // 朝向用于挖掘目标与岔路选择，沿用移动输入，不替换身体帧。
-export function faceMine(game,direction){if(!active(game)||!MINE_DIRECTIONS[direction])return false;game.cottage.direction=direction;game.cottage.dig=null;return true;}
+export function faceMine(game,direction){if(!active(game)||!MINE_DIRECTIONS[direction])return false;if(game.cottage.ride)return setMineCartDirection(game,direction).ok;game.cottage.direction=direction;game.cottage.dig=null;return true;}
 // 目标永远是脚下格的相邻格，不能远程开矿或越过实体墙。
 export function mineTarget(game){const cell=mineCell(game.player),d=MINE_DIRECTIONS[game.cottage?.direction??1];return {x:cell.x+d.x,y:cell.y+d.y};}
 // 地下墙体使用脚底圆周采样，视觉网格与实体碰撞同源。
@@ -111,7 +113,7 @@ export function buildMine(game,kind,ahead=false){
  if(kind==='rail'&&m.rails[key]||['lamp','sign'].includes(kind)&&m.decor[key])return notice(game,'这里已经放置了同类设施。');
  if(kind==='cart'&&(!m.rails[key]||m.carts.some(c=>mineKey(mineCell(c))===key)))return notice(game,'请在没有矿车的轨道格造车。');
  if(!afford(game,kind))return notice(game,`材料不足，需要 ${M.prices[kind].ore} 矿石、${M.prices[kind].wood} 木材。`);
- return commit(game,(next,p,l)=>{pay(next,p,kind);l.dug[key]=true;if(kind==='rail')l.rails[key]=true;else if(kind==='cart')l.carts.push({id:l.nextCart++,...minePoint(cell),previous:null,wheel:0});else l.decor[key]=kind;},kind==='rail'?'轨道已铺好，相邻轨道自动连接。':kind==='cart'?'矿车已建好，靠近后可乘坐。':'路线装点已放好。');
+ return commit(game,(next,p,l)=>{pay(next,p,kind);l.dug[key]=true;if(kind==='rail')l.rails[key]=true;else if(kind==='cart')l.carts.push({id:l.nextCart++,...minePoint(cell),previous:null,wheel:0,heading:game.cottage.direction,departure:null});else l.decor[key]=kind;},kind==='rail'?'轨道已铺好，相邻轨道自动连接。':kind==='cart'?'矿车已建好，靠近后可乘坐。':'路线装点已放好。');
 }
 // 玩家登乘最近的真实矿车；停止后下车，无需等待固定车站。
 export function rideMineCart(game){
@@ -120,7 +122,7 @@ export function rideMineCart(game){
  const cart=currentMineLayer(game).carts.find(c=>nearMineCart(game,c));
  if(!cart){notice(game,'请靠近矿车，或先在脚下轨道造一辆。');return false;}
  const boarded=commit(game,(_m,p)=>{p.production.rodeCart=true;},'已乘坐矿车。');if(!boarded.ok)return false;
- room.ride=cart.id;room.running=false;room.autoDig=false;room.tool=null;room.dig=null;room.shaftWork=0;Object.assign(game.player,{x:cart.x,y:cart.y,vx:0,vy:0});return true;
+ room.ride=cart.id;room.direction=cart.heading??room.direction;room.running=false;room.autoDig=false;room.tool=null;room.dig=null;room.shaftWork=0;Object.assign(game.player,{x:cart.x,y:cart.y,vx:0,vy:0});return true;
 }
 // 登车线段逐步检查脚底，防止隔着未开掘岩壁登上邻近的矿车。
 function nearMineCart(game,cart){
@@ -129,16 +131,16 @@ function nearMineCart(game,cart){
 }
 // 急停立即冻结轮毂相位和行驶位置，再次开车从原段继续。
 export function toggleMineCart(game){if(!active(game)||!game.cottage.ride)return false;game.cottage.running=!game.cottage.running;if(!game.cottage.running)commit(game,()=>{},'矿车已停止，可继续开车或下车。');return true;}
-// 矿车在格心选择下一段：优先玩家指定方向，然后直行或转弯，端点自动折返。
+// 矿车以实际行驶朝向选路，停车选择只覆盖一次起步，路口设置持续生效。
 function cartStep(game,dt){
  const room=game.cottage,cart=currentMineLayer(game).carts.find(c=>c.id===room.ride);if(!cart){room.ride=null;return;}
  if(room.running){
   if(!cart.target){
-   const cell=mineCell(cart),key=mineKey(cell),choices=MINE_DIRECTIONS.map((d,i)=>({key:mineKey({x:cell.x+d.x,y:cell.y+d.y}),i})).filter(n=>currentMineLayer(game).rails[n.key]);
-   const forward=choices.filter(n=>n.key!==cart.previous),next=forward.find(n=>n.i===room.direction)||forward[0]||choices[0];
+   const key=mineKey(mineCell(cart)),next=nextCartExit(currentMineLayer(game),cart,room.direction);
    if(!next){room.running=false;notice(game,'轨道还没有连通，请下车继续铺轨。');return;}
-   cart.target=next.key;cart.from=key;
+   cart.target=next.key;cart.from=key;cart.heading=next.i;cart.departure=null;
   }
+  room.direction=cart.heading??room.direction;
   const target=minePoint(parseKey(cart.target)),dx=target.x-cart.x,dy=target.y-cart.y,distance=Math.hypot(dx,dy),boostSeconds=Math.min(dt,cart.lubrication||0),step=Math.min(distance,M.cartSpeed*(dt+boostSeconds*(PRODUCTION_RULES.oilSpeed-1)));
   const other=currentMineLayer(game).carts.some(c=>c.id!==cart.id&&Math.hypot(c.x-(cart.x+dx/Math.max(1,distance)*step),c.y-(cart.y+dy/Math.max(1,distance)*step))<38);
   if(other){room.running=false;notice(game,'前方有矿车，已安全停车。');return;}

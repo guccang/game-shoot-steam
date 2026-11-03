@@ -1901,3 +1901,9 @@ export async function inspectFarmProduction(game,root=document){
 
 // 新地下验收同时记录快捷工具状态和天然开放地形，沿用正式画面与同一存档。
 export function inspectNaturalMining(game,renderer,root){return {...inspectMining(game,renderer,root),designCriterion:'mining-tools-natural-caves',selectedTool:game.cottage?.tool,tools:[...root.querySelectorAll('[data-mine-tool]')].map(b=>({id:b.dataset.mineTool,selected:b.getAttribute('aria-pressed')==='true'})),newBitmapBytes:0};}
+
+// 正式轨面箭头与手机方向底板的验收快照，机械检查不能代替同屏视觉复核。
+export function inspectMineCartDirections(game,renderer,root){
+ const panel=root.getElementById('mine-direction-dialog'),layer=game.cottage?.depth>1?game.progress.mining.layers[game.cottage.depth]:game.progress.mining;
+ return {...inspectMining(game,renderer,root),designCriterion:'mine-cart-directions',junctions:structuredClone(layer?.junctions||{}),carts:structuredClone(layer?.carts||[]),panelOpen:!!panel?.open,directions:[...(panel?.querySelectorAll('[data-route-direction]')||[])].map(b=>({direction:Number(b.dataset.routeDirection),disabled:b.disabled,selected:b.getAttribute('aria-pressed'),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),newBitmapBytes:0};
+}

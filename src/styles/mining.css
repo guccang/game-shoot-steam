@@ -25,3 +25,9 @@
 
 /* 层名与开发进度已有专用HUD，隐藏旧日期副标题以免两行文字重叠。 */
 #cottage-controls[data-room="mine"]>header small{display:none}
+
+/* 选向沿用统一底板；四向按钮留足触控空间，选中态为深绿浅字。 */
+#mine-direction-dialog .mine-direction-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+#mine-direction-dialog .ui-button{min-height:44px}
+#mine-direction-dialog .mine-route-auto{width:100%}
+#mine-direction-dialog [aria-pressed="true"]{background:var(--ui-forest);color:var(--ui-paper)}
