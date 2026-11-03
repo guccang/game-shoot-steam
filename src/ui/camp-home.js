@@ -35,7 +35,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。
  function render(){
   const room=game.cottage;mining.render();frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;storage.render();roomExit.render();homeDecor.render();catHome.render();construction.render();shopkeeper.render();approach.render();
-  panel.dataset.room=room?.kind||'cottage';panel.dataset.balcony=String(!!room?.balcony);panel.querySelector('header b').textContent=room?.kind==='mine'?'小屋地下 · 无尽矿道':interiorLayout(room).name;
+  panel.dataset.room=room?.kind||'cottage';panel.dataset.balcony=String(!!room?.balcony);panel.querySelector('header b').textContent=room?.kind==='mine'?'地下世界 · 自由开掘':interiorLayout(room).name;
   panel.querySelector('#cottage-character').hidden=room?.kind==='mine';
   if(room){
    const overloaded=catLoad(game).overloaded,unavailable=!!room.sleep||!['playing','paused'].includes(game.state);

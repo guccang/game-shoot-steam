@@ -1886,3 +1886,6 @@ export function inspectMining(game,renderer,root){
  return {designCriterion:'underground-mining',scene:game.cottage?.kind,view:renderer.mineView,render:renderer.mineReview,body:game.player.bodyAnimation,dug:Object.keys(game.progress.mining.dug).length,rails:Object.keys(game.progress.mining.rails).length,shafts:game.progress.mining.shafts.length,canvasBytes:224*224*4,buttons:buttons.map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
+
+// 地下生态验收直接读取正式景观、生物时钟和分层存档，不使用独立展示模型。
+export function inspectMineEcology(game,renderer,root){return {...inspectMining(game,renderer,root),designCriterion:'underground-ecology',depth:game.cottage?.depth||1,layers:[game.progress.mining,...Object.values(game.progress.mining.layers||{})].map(l=>({seed:l.seed,coverage:l.coverage,bounds:l.bounds,dug:Object.keys(l.dug).length,animals:Object.keys(l.animals||{}).length})),newBitmapBytes:0};}

@@ -20,6 +20,7 @@ async original=>{
   if(!await page.locator('[data-build="basement"]').isDisabled())throw Error('地下室重复购买未禁用');await page.screenshot({path:'output/playwright/mining/company-service.png'});await page.locator('[data-build-close]').tap();
   await page.evaluate(async()=>Object.assign(a.game.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.construction.exit));await page.waitForFunction(()=>!a.game.cottage);
   await page.evaluate(async()=>Object.assign(a.game.player,(await import('/src/config/cottage.js')).COTTAGE.door));await page.waitForFunction(()=>a.game.cottage?.kind==='cottage');await page.locator('[data-cottage-target="basement"]').tap();await page.waitForFunction(()=>a.game.cottage?.kind==='mine',null,{timeout:20000});
+  await page.evaluate(()=>{a.game.progress.mining.seed=1847;});
   await page.locator('#mine-dig').tap();
   const cdp=await context.newCDPSession(page),before=await page.evaluate(()=>a.game.player.x);
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:125,y:490}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:205,y:490}]});await page.waitForTimeout(7500);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});

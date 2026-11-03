@@ -15,4 +15,4 @@
 #cottage-controls[data-room="mine"]>footer{display:none}
 #cottage-controls[data-room="mine"]>header b{font-size:18px;letter-spacing:1px}
 /* 横向短屏缩小地图，不另起桌面布局；仍保留足够的连续行走区域。 */
-@media(max-height:500px){#mine-hud{top:40px}#mine-minimap{width:76px;height:76px}#mine-hud p{margin:3px 0}#cottage-controls[data-room="mine"]>header{top:8px}#cottage-controls[data-room="mine"]>header small{display:none}#mine-controls{bottom:4px}}
+@media(max-height:500px){#mine-position{display:none}#mine-hud{top:40px}#mine-minimap{width:76px;height:76px}#mine-hud p{margin:3px 0}#cottage-controls[data-room="mine"]>header{top:8px}#cottage-controls[data-room="mine"]>header small{display:none}#mine-controls{bottom:4px}}

@@ -109,6 +109,8 @@ export function summonVehicle(game) {
 
 // 下车保留驾驶员生命与武器；特殊通行载具先找安全步行落点，避免红狼下车后卡进树干。
 export function dismountVehicle(game) {
+  // 地下没有地表停车点，避免下车把车辆存到同坐标的森林里。
+  if(game.cottage?.kind==='mine'){game.cottage.notice='请沿矿洞坡道开回地表后下战车；地下开路请步行进入。';return false;}
   const parkedPosition={x:game.player.x,y:game.player.y};
   if (!game.vehicle.active) return false;
   if ((!game.player.arena || game.player.arena.terrain === 'forest') && (game.player.flying || game.player.amphibious || game.player.treePass) && !landVehicle(game)) return false;
