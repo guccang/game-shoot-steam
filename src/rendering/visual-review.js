@@ -1904,3 +1904,6 @@ export function inspectNaturalMining(game,renderer,root){return {...inspectMinin
 
 // 洞口验收读取正式图层、原倒计时和透明热点，覆盖地上地下对应及手机触控。
 export function inspectMineEntrances(game,renderer,root){return {designCriterion:"mine-entrance-links",room:game.cottage?.kind||null,shafts:[...game.progress.mining.shafts],mining:game.cottage?.kind==="mine"?renderer.mineReview:null,countdown:renderer.actionCountdownView,hits:[...root.querySelectorAll("[data-mine-entrance]")].filter(n=>n.getClientRects().length&&!n.hidden).map(n=>({key:n.dataset.mineEntrance,label:n.getAttribute("aria-label"),width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
+
+// 自然地貌验收绑定正式连续轮廓、实际水流时钟与同屏工具，不使用另一个演示画面。
+export function inspectMineLandscapeQuality(game,renderer,root){return {...inspectNaturalMining(game,renderer,root),designCriterion:"underground-landscape-quality",landscape:renderer.mineLandscapeReview};}

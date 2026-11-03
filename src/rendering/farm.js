@@ -20,6 +20,12 @@ export function drawHarvestIcon(c,index,x,y,size=23){
 }
 // 验收读取正式图集缓存与像素预算，昼夜不新增位图副本。
 export function farmArtBudget(){return {sheets:sheets.size,pixels:[...sheets.values()].reduce((n,i)=>n+i.naturalWidth*i.naturalHeight,0),maxSheets:manifest.runtimeFiles.length};}
+// 地下天然草药直接复用正式作物图集与茎叶弯曲，绝不复制图片或制造地表田块。
+export function drawNaturalFarmCrop(c,index,x,y,time,phase,night=false,reduced=false,stage=2){
+ const a=manifest.crops[`crop-${index}-${stage}`],image=a&&sheets.get(a.file);if(!a||!image)throw Error('地下草药所需作物图集尚未加载或缺失');
+ const size=FARM_CROP_SIZE[stage],scale=Math.min(size.width/a.rect[2],size.height/a.rect[3]);
+ c.save();if(night)c.globalAlpha*=.82;drawGrowingCrop(c,image,a.rect,x,y,a.rect[2]*scale,a.rect[3]*scale,{time:reduced?0:time,phase,reduced},stage,1);c.restore();
+}
 // 实景土地、作物、快递站与独立农具共享正式世界镜头。
 import {FARM_DELIVERY,FARM_SEED_SHOP,FARM_GARDEN,FARM_PLOT_SHAPE,farmPosition} from '../config/farm.js';
 import {farmWorking} from '../core/farm.js';
