@@ -1951,3 +1951,11 @@ export function inspectMineExplorationMap(game,renderer,root=document){
  const dialog=root.getElementById('mine-map-dialog'),canvas=root.getElementById('mine-exploration-canvas');
  return {...renderer.mineMapReview,open:dialog.open,state:game.state,canvas:{width:canvas.clientWidth,height:canvas.clientHeight},buttons:[...dialog.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({label:b.getAttribute('aria-label')||b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:dialog.scrollWidth>dialog.clientWidth};
 }
+
+// 矿车控制验收读取正式矿道画面与弹窗控件，按钮尺寸和暂停状态不使用模拟预览。
+export function inspectMineCartControls(game,renderer,root=document){
+ const dialogs=[...root.querySelectorAll('#mine-direction-dialog,#mine-removal-dialog')].filter(d=>d.open);
+ return {designCriterion:'mine-cart-controls-removal',night:renderer.mineReview?.night,state:game.state,ride:game.cottage?.ride,running:game.cottage?.running,
+  dialogs:dialogs.map(d=>({id:d.id,width:d.clientWidth,overflow:d.scrollWidth>d.clientWidth,buttons:[...d.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height}))})),
+  overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}

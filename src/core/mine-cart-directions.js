@@ -55,3 +55,17 @@ export function setMineJunctionDirection(game,key,direction){
   layer.junctions??={};if(direction===null)delete layer.junctions[key];else layer.junctions[key]=direction;
  },direction===null?'路口已恢复自动：直行优先，再右转、左转，尽头折返。':'路口已设为向'+MINE_DIRECTIONS[direction].name+'，下次经过时自动采用。');
 }
+
+// 摇杆和键盘共用主轴选向；轻微漂移落在死区内，不产生保存请求。
+export function mineInputDirection(input){
+ if(Math.hypot(input.x,input.y)<.35)return null;
+ return Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;
+}
+// 停车时接受一次方向变化；持续按住不会逐帧保存，行驶时不干预自动选路。
+export function steerStoppedMineCart(game,input){
+ const room=game.cottage,direction=mineInputDirection(input);
+ if(!room)return;
+ if(!room.ride||room.running){room.cartInputDirection=direction;return;}
+ if(direction!==null&&direction!==room.cartInputDirection)setMineCartDirection(game,direction);
+ room.cartInputDirection=direction;
+}

@@ -1,7 +1,7 @@
 import {workMineRock} from './mine-rocks.js';
 import {resetMineCombat} from './mine-combat.js';
 import {nextCartExit} from '../config/mine-rail-routes.js';
-import {setMineCartDirection} from './mine-cart-directions.js';
+import {setMineCartDirection,steerStoppedMineCart} from './mine-cart-directions.js';
 // 地下玩法独立处理挖掘、铺轨和驾驶；复用正式输入、角色时钟与存档事务。
 import {PRODUCTION as PRODUCTION_RULES,productionDigSeconds} from '../config/farm-production.js';
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '../config/mining.js';
@@ -165,7 +165,7 @@ export function updateMining(game,dt,input){
  if(game.fishing)input={x:0,y:0};
  const room=game.cottage,p=game.player,before={x:p.x,y:p.y},length=Math.hypot(input.x,input.y);dt=Math.max(0,Math.min(.05,dt));
  room.surveyWait=Math.max(0,(room.surveyWait||0)-dt);
- if(length>.01)room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;
+ steerStoppedMineCart(game,input);
  if(room.ride)cartStep(game,dt);
  else{
   if(length>.01){room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;room.shaftWork=0;}
