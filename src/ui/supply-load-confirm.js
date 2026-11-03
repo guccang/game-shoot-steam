@@ -19,7 +19,7 @@ export function createSupplyLoadConfirm({game,root,dialogs,onResult}){
   panel.querySelector('[data-load-product]').textContent=result.name+' ×'+result.amount+' '+result.unit;
   panel.querySelector('[data-load-destination]').textContent='放入：'+(result.storage?.vehicle>0?`猫猫背包 ${result.storage.hand} 发、${vehicleModel(load.hull).name}货舱 ${result.storage.vehicle} 发（载荷含驾驶员及背包）`:load.target==='vehicle'?vehicleModel(load.hull).name+'货舱（含驾驶员及背包）':'猫猫背包');
   panel.querySelector('[data-load-weight]').textContent=`${kg(load.before)} → ${kg(load.after)} / ${kg(load.capacity)} kg`;
-  panel.querySelector('#supply-load-effect').textContent=(load.target==='vehicle'?'载具将无法行驶':'猫猫将无法移动')+'，需要整理载荷。是否仍然'+(request.craft?'制作':'购买')+'？';
+  panel.querySelector('#supply-load-effect').textContent=(load.target==='vehicle'?'载具将无法行驶':'猫猫将只能缓慢行走')+'，需要整理载荷。是否仍然'+(request.craft?'制作':'购买')+'？';
   panel.querySelector('[data-load-continue]').textContent=request.craft?'仍然制作':'仍然购买';
   panel.querySelector('[data-load-cancel]').setAttribute('aria-label',request.craft?'取消制作':'取消购买');
   dialogs.open(panel.id);

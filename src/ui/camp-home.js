@@ -45,7 +45,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
    notice.textContent=(room.stairsElapsed!=null?'楼梯前站定 1 秒'+(room.floor+1>=homeFloors(game.progress.homeDecor)?'下楼':'上楼')+' · 移开可取消':room.stairsLatch?'已到'+('第 '+((room.floor||0)+1)+' 楼')+'，移开楼梯后可再次上下楼。':room.storageNotice)|| (room.sleep?room.notice:room.exitElapsed>0?'即将出门 · 移开可取消':!home?'点击售货员，或在柜台前站定 1 秒打开服务；门口站定 1 秒出门。':room.restResult?room.restResult:near?'床前站定 1 秒自动睡到明早，恢复全部生命；移开可取消。':room.floor?'本层可布置家具；靠近楼梯或电梯后，点击「楼层通行」选择目的楼层。':'床边可休息。装扮小屋摆放家具；右侧楼梯前站定 1 秒上楼。');
    if(room.balcony)notice.textContent=`第 ${room.floor+1} 楼${HOME_DIRECTIONS[room.balcony].name}侧阳台 · 栏杆内可自由走动；回到下方门垫站定 1 秒返回。`;
    else if(room.balconyElapsed>0)notice.textContent='阳台门前站定 1 秒走出 · 移开可取消';
-   if(overloaded&&!room.sleep){notice.dataset.result='true';notice.textContent='背包载荷已满，无法移动。打开「当前猫猫」→「整理背包」，清理后即可继续行走。';}
+   if(overloaded&&!room.sleep){notice.dataset.result='true';notice.textContent='背包载荷已满，只能缓慢行走。可到仓库存放物品，或打开「当前猫猫」→「整理背包」，减重后恢复正常速度。';}
   }
 
  }

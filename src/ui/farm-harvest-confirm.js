@@ -16,7 +16,7 @@ export function createFarmHarvestConfirm({game,root,dialogs,onChange,onNotice}){
   panel.querySelector('[data-harvest-product]').textContent=FARM_CROPS[request.crop].name+' ×1';
   panel.querySelector('[data-harvest-destination]').textContent='存放到：'+l.name+(l.hull===null?'':'（载荷含驾驶员及背包）');
   panel.querySelector('[data-harvest-weight]').textContent=`${l.before.toFixed(3)} → ${l.after.toFixed(3)} / ${l.capacity.toFixed(3)} 千克`;
-  panel.querySelector('[data-harvest-effect]').textContent=(l.hull===null?'背包达到上限后猫猫无法移动。':'载具达到载荷上限后无法行驶。')+'可先整理或到小屋仓库结算。是否仍然收获这一份？暂不收获会停止后续队列，田里的作物保留。';
+  panel.querySelector('[data-harvest-effect]').textContent=(l.hull===null?'背包达到上限后猫猫只能缓慢行走。':'载具达到载荷上限后无法行驶。')+'可先整理或到小屋仓库结算。是否仍然收获这一份？暂不收获会停止后续队列，田里的作物保留。';
   dialogs.open(panel.id);
  }
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-harvest-cancel'))dialogs.close(panel.id);else if(b.hasAttribute('data-harvest-continue')){accepted=true;dialogs.close(panel.id);}});
