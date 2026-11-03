@@ -3,7 +3,7 @@
     "designCriterion": "sprinkler-backpack",
     "entry": "src/rendering/visual-review.js#inspectSprinklerBackpack",
     "brief": "docs/art-tasks/sprinkler-backpack.md",
-    "browserTests": ["tests/sprinkler-backpack-browser.cjs"],
+    "browserTests": ["tests/sprinkler-backpack-browser.cjs", "tests/sprinkler-map-store-browser.cjs"],
     "unitTests": ["tests/sprinkler-backpack.test.mjs"]
   },
   "sprinklerRadiusRotation": {

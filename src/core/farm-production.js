@@ -80,7 +80,8 @@ export function removeProduction(game,kind,id){
 export function storeSprinkler(game,id){
  if(!productionAvailable(game)||game.cottage||game.vehicle.active||!['forest','jiuzhaigou'].includes(game.mapId))return {ok:false,message:'请在地面下车后收回洒水器。'};
  const item=game.progress.production.sprinklers.find(p=>p.id===id);
- if(!item||item.mapId!==game.mapId||worldDistance(item,game.player)>130)return {ok:false,message:'请先走到要收回的洒水器旁。'};
+ // 已合法拿起的设备跟随玩家，走离原位置后仍可收纳；未拿起时保留距离限制。
+ if(!item||item.mapId!==game.mapId||worldDistance(item,game.player)>130&&carriedSprinkler(game)?.id!==id)return {ok:false,message:'请先走到要收回的洒水器旁。'};
  const next=candidate(game);next.production.sprinklers=next.production.sprinklers.filter(p=>p.id!==id);next.production.sprinklerInventory++;
  const result=commit(game,next,'洒水器已收回背包，可在随身物品或农矿生产中重新放置。');
  if(result.ok){

@@ -14,7 +14,7 @@ export function createFarmProduction({game,root,renderer,input,dialogs,onNotice,
  const mineMenu=root.createElement('button');mineMenu.id='mine-production';mineMenu.className='ui-button';mineMenu.textContent='补给';mineMenu.setAttribute('aria-label','地下补给与剩余效果');root.querySelector('#mine-controls .mine-actions').append(mineMenu);
  dialog.id='production-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','production-title');
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="production-title" tabindex="-1">农矿生产</h2><p id="production-wallet"></p></div><button class="ui-close" data-production-close aria-label="关闭农矿生产">×</button></header><div class="ui-panel__body"><section class="ui-inset production-goal"><h3>当前目标</h3><p id="production-goal"></p></section><nav class="production-tabs" aria-label="生产分类"><button class="ui-button" data-production-tab="build">设施</button><button class="ui-button" data-production-tab="keep">原料</button><button class="ui-button" data-production-tab="supply">补给</button></nav><div id="production-body"></div></div><footer class="ui-panel__footer"><p id="production-result" role="status"></p><button class="ui-button" data-production-close>回到场景</button></footer>';
- root.body.append(dialog);placement.id='production-placement';placement.hidden=true;placement.innerHTML='<p role="status"></p><button class="ui-button" data-production-cancel>取消</button><button class="ui-button ui-button--primary" data-production-place>确认位置</button>';root.getElementById('game-frame').append(placement);
+ root.body.append(dialog);placement.id='production-placement';placement.hidden=true;placement.innerHTML='<p role="status"></p><button class="ui-button" data-production-cancel>取消</button><button class="ui-button ui-button--primary" data-production-place>确认位置</button><button class="ui-button" data-production-store-held hidden>收回背包</button>';root.getElementById('game-frame').append(placement);
  const body=dialog.querySelector('#production-body'),result=dialog.querySelector('#production-result');
  // 反馈在原页面显示，失败不关闭页面或偷偷重新提交。
  function report(r){result.textContent=r.message;onNotice?.(r.message);signature='';if(r.ok)onChange?.();render();}
@@ -33,10 +33,12 @@ export function createFarmProduction({game,root,renderer,input,dialogs,onNotice,
   const carrying=selection.kind==='sprinkler'&&selection.moving!==null;
   const check=point?productionPlacement(game,point,selection.kind,selection.moving):{point:null,reason:''};
   game.productionCursor=point?{...check,kind:selection.kind}:null;
-  placement.querySelector('p').textContent=selection.error||check.reason||(carrying?(point?'目标已选，确认后放下；取消会放回原位。':'已拿起洒水器，点击目标位置；可用摇杆走动。'):'点击地面调整位置，再确认；洒水器覆盖两层20格的虚线区域');
+  placement.querySelector('p').textContent=selection.error||check.reason||(carrying?(point?'目标已选，确认后放下；取消会放回原位。':'已拿起洒水器，可直接收回背包，或点击地面选择放下位置。'):'点击地面调整位置，再确认；洒水器覆盖两层20格的虚线区域');
   placement.querySelector('[data-production-place]').textContent=carrying?'放下':'确认位置';
   placement.querySelector('[data-production-cancel]').textContent=carrying?'取消搬移':'取消';
   placement.querySelector('[data-production-place]').disabled=!point||!!check.reason;
+  // 收纳无需选落点，仅对实际拿起的洒水器显示，普通建造与背包放置不出现。
+  placement.querySelector('[data-production-store-held]').hidden=!carrying;
  }
  // 菜单和场景点击共用拿起事务；开始时记录地图及玩家身份，重置或切图取消。
  function begin(){
@@ -56,7 +58,7 @@ export function createFarmProduction({game,root,renderer,input,dialogs,onNotice,
  scope.on(menu,'click',open);scope.on(mineMenu,'click',open);
  scope.on(dialog,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-production-close'))dialogs.close(dialog.id);else if(b.hasAttribute('data-production-remove-cancel')){removal=null;content();}else if(b.hasAttribute('data-production-remove-confirm')&&removal){const r=removeProduction(game,removal.kind,removal.id);if(r.ok)removal=null;report(r);}else if(b.dataset.productionRemove){removal={kind:b.dataset.kind,id:b.dataset.productionRemove==='bench'?'bench':Number(b.dataset.productionRemove)};content();dialog.querySelector('[data-production-remove-cancel]')?.focus();}else if(b.dataset.productionTab){removal=null;tab=b.dataset.productionTab;content();}else if(b.hasAttribute('data-production-from-bag'))placeStored();else if(b.dataset.productionStore){removal=null;report(storeSprinkler(game,Number(b.dataset.productionStore)));}else if(b.dataset.productionBuild||b.dataset.productionMove){pending={kind:b.dataset.productionBuild||b.dataset.kind,moving:b.dataset.productionMove?(b.dataset.productionMove==='bench'?'bench':Number(b.dataset.productionMove)):null};dialogs.close(dialog.id);}else if(b.dataset.productionCraft)report(craftProduction(game,b.dataset.productionCraft,Number(root.getElementById('production-fruit')?.value)));else if(b.dataset.productionUse)report(useProduction(game,b.dataset.productionUse));});
  scope.on(dialog,'change',e=>{if(e.target.dataset.productionKeep!==undefined)report(setProductionKeep(game,Number(e.target.dataset.productionKeep),Number(e.target.value)));});
- scope.on(placement,'click',e=>{if(e.target.closest('[data-production-cancel]'))cancel();else if(e.target.closest('[data-production-place]')&&selection&&game.productionCursor?.point){const r=placeProduction(game,selection.kind,game.productionCursor.point,selection.moving,selection.fromBag);onNotice?.(r.message);if(r.ok){cancel();onChange?.();}else{selection.error=r.message;placement.querySelector('p').textContent=r.message;}}});
+ scope.on(placement,'click',e=>{if(e.target.closest('[data-production-cancel]'))cancel();else if(e.target.closest('[data-production-store-held]')&&selection?.kind==='sprinkler'&&selection.moving!==null){const r=storeSprinkler(game,selection.moving);onNotice?.(r.message);if(r.ok){cancel();onChange?.();}else{selection.error=r.message;placement.querySelector('p').textContent=r.message;}}else if(e.target.closest('[data-production-place]')&&selection&&game.productionCursor?.point){const r=placeProduction(game,selection.kind,game.productionCursor.point,selection.moving,selection.fromBag);onNotice?.(r.message);if(r.ok){cancel();onChange?.();}else{selection.error=r.message;placement.querySelector('p').textContent=r.message;}}});
  scope.on(root.defaultView,'keydown',e=>{if(e.key==='Escape')cancel();});
  // 在现有场景短按处理链最前面消费选址，不抢占普通摇杆拖动。
  function tapWorld(event){

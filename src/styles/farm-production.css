@@ -32,3 +32,9 @@
 /* 矿道已有小游戏入口；新增补给后窄屏必须换行，不能把七个触控区压窄。 */
 #mine-controls .mine-actions{flex-wrap:wrap}
 #mine-controls .mine-actions button{min-width:44px}
+
+/* 收回仅在搬移真实洒水器时显示，不让按钮布局覆盖原生隐藏状态。 */
+#production-placement [data-production-store-held][hidden]{display:none}
+
+/* 三个操作在窄屏保持完整中文标签，沿用44px高度并缩减横向内边距。 */
+#production-placement button{padding:8px 6px;white-space:nowrap}
