@@ -2,7 +2,7 @@
 #production-menu svg{width:24px;height:24px}
 .production-tabs,.production-actions{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
 .production-tabs button{flex:1;min-height:44px}
-.production-tabs [aria-pressed=true]{background:var(--ui-forest,#35583e);color:#fff5d9}
+#production-dialog .production-tabs button[aria-pressed=true]{background:var(--ui-forest,#35583e);color:var(--ui-paper,#fff5d9)}
 .production-card>svg{width:48px;height:48px;float:right;margin-left:8px}
 .production-row label,.production-card label{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 #production-dialog select{min-height:44px;max-width:100%;font:inherit;color:inherit;background:#fff5d9;border:1px solid #6e8568;border-radius:8px;padding:6px}
@@ -32,4 +32,3 @@
 /* 矿道已有小游戏入口；新增补给后窄屏必须换行，不能把七个触控区压窄。 */
 #mine-controls .mine-actions{flex-wrap:wrap}
 #mine-controls .mine-actions button{min-width:44px}
-@media(max-width:359px){#mine-controls .mine-actions button{flex-basis:calc((100% - 15px)/4)}}
