@@ -1,3 +1,4 @@
+import {createHomeArcade} from './home-arcade.js';
 import {createMining} from './mining.js';
 import {createCottageApproach} from './cottage-approach.js';
 import {createHomeConstruction} from './home-construction.js';
@@ -19,6 +20,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  panel.id='cottage-controls';panel.hidden=true;panel.innerHTML='<header><b>巡林小屋</b><small id="cottage-date"></small></header><footer><p id="cottage-notice" role="status"></p><div><button id="cottage-character" class="ui-button">当前猫猫</button></div></footer>';
  frame.append(panel);
  const mining=createMining({game,renderer,root,panel,input,dialogs,onCharacter});
+ const arcade=createHomeArcade({game,renderer,root,panel,input});
  const roomExit=createRoomExit({game,renderer,root,panel,input,onChange});
  const approach=createCottageApproach({game,renderer,root,panel});
  const catHome=createCatHome({game,root,dialogs,input,onChange:onDecorChange});
@@ -29,12 +31,12 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  // 室内入口不依赖移动或接近售货员，超载时也能整理随身物品。
  scope.on(panel.querySelector('#cottage-character'),'click',()=>{input.reset();onCharacter();});
  // 售货员与家具都保留短按，柜台前固定步长候停继续自动打开服务。
- function tap(e){if(game.cottage?.kind==='mine')return true;if(game.cottage){if(!approach.tap(e)&&!shopkeeper.tap(e))storage.tap(e);return true;}return false;}
+ function tap(e){if(arcade.tap(e))return true;if(game.cottage?.kind==='mine')return true;if(game.cottage){if(!approach.tap(e)&&!shopkeeper.tap(e))storage.tap(e);return true;}return false;}
  // 猫窝与家具服务也沿用统一候停，其他房间交给原应用服务路由。
  function openService(kind,index){if(kind==='construction')construction.open('build');else if(kind==='cat-home')catHome.open();else if(kind==='furniture')homeDecor.open();else openWorkshop(kind,index);}
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。
  function render(){
-  const room=game.cottage;mining.render();frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;storage.render();roomExit.render();homeDecor.render();catHome.render();construction.render();shopkeeper.render();approach.render();
+  const room=game.cottage;mining.render();frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;storage.render();roomExit.render();homeDecor.render();catHome.render();construction.render();shopkeeper.render();approach.render();arcade.render();
   panel.dataset.room=room?.kind||'cottage';panel.dataset.balcony=String(!!room?.balcony);panel.querySelector('header b').textContent=room?.kind==='mine'?'地下世界 · 自由开掘':interiorLayout(room).name;
   panel.querySelector('#cottage-character').hidden=room?.kind==='mine';
   if(room){
@@ -55,6 +57,6 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
 
  }
  // 卸载清理动态热点，返回首页不能遗留室内样式。
- function dispose(){mining.dispose();approach.dispose();construction.dispose();shopkeeper.dispose();storage.dispose();catHome.dispose();homeDecor.dispose();roomExit.dispose();scope.dispose();renderer.interiorArt=null;panel.remove();frame.classList.remove('inside-cottage');}
+ function dispose(){arcade.dispose();mining.dispose();approach.dispose();construction.dispose();shopkeeper.dispose();storage.dispose();catHome.dispose();homeDecor.dispose();roomExit.dispose();scope.dispose();renderer.interiorArt=null;panel.remove();frame.classList.remove('inside-cottage');}
  return {tap,render,dispose,openService,openHomeDecor:homeDecor.open};
 }

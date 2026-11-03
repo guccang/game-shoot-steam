@@ -1,3 +1,4 @@
+import {drawHomeArcade} from './home-arcade.js';
 import {drawHomeBalcony,balconyProject,balconyWorldTransform,balconyUpright,balconyObjectVisible} from './home-balcony.js';
 import {drawMining,drawMineShaft} from './mining.js';
 import {mineShaftObjects} from '../core/mining.js';
@@ -204,6 +205,7 @@ export class Renderer {
       w = this.width,
       h = this.height,
       time = source.previewTime;
+    if(source.cottage?.arcade){drawHomeArcade(this,source);profiler?.end('render.prepare');return;}
     if(source.cottage?.kind==='mine'){drawMining(this,source);profiler?.end('render.prepare');return;}
     if(source.cottage?.balcony){drawHomeBalcony(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}
     if(source.cottage){this.sceneNpcContinuity?.actors.clear();this.stormStrike=null;if(source.cottage.kind&&source.cottage.kind!=='cottage')drawWorkshopInterior(this,source);else drawCottage(this,source);drawPlayerActionCountdown(this);profiler?.end('render.prepare');return;}

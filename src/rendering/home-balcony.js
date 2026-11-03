@@ -49,7 +49,7 @@ export function balconySceneGame(game,view){
 
 // 原绘制器的缓存可复用，派生镜头和绘制状态留在代理；返回室内或营地不会发生镜头跳变。
 export function drawHomeBalcony(renderer,game){
- const {c,width:w,height:h,dpr}=renderer,night=calendarView(game.progress.living.calendar).id==='night',zoom=Math.min((w-24)/HOME_BALCONY.width,1.2,(h-235)/HOME_BALCONY.height),x=(w-HOME_BALCONY.width*zoom)/2,y=h-125-HOME_BALCONY.height*zoom;
+ const {c,width:w,height:h,dpr}=renderer,arcade=game.cottage.arcade?.kind==='birds'?game.cottage.arcade:null,night=calendarView(game.progress.living.calendar).id==='night',zoom=arcade?Math.min((w-24)/HOME_BALCONY.width,.8,(h-180)/HOME_BALCONY.height*.55):Math.min((w-24)/HOME_BALCONY.width,1.2,(h-235)/HOME_BALCONY.height),x=(w-HOME_BALCONY.width*zoom)/2,y=h-(arcade?88:125)-HOME_BALCONY.height*zoom;
  const scenicHeight=y+35*zoom,view=homeBalconyView(game.cottage,w,scenicHeight),scene=balconySceneGame(game,view);
  const outdoor=renderer.balconyRenderer??=Object.assign(Object.create(renderer),{camera:new CombatCamera(),storyCamera:new StoryCamera(),sceneNpcContinuity:null,profiler:null});
  // 景色止于远侧栏杆，平台下面不再透出俯视地图；共享原画布，无额外全屏纹理。
@@ -68,9 +68,12 @@ export function drawHomeBalcony(renderer,game){
  box(c,12,5,456,9,3,night?'#c4b48b':'#f1deb1','#385e4a',2);
  for(const xx of [14,459]){box(c,xx,12,7,205,3,'#d6bd90','#385e4a',2);for(let yy=50;yy<215;yy+=37)box(c,xx-2,yy,11,14,2,'#e8d4a7','#526c50',1.5);}
  box(c,205,191,70,27,5,'#8eab86','#47684f',1.5);c.textAlign='center';c.font='bold 13px sans-serif';c.fillStyle='#304e3f';c.fillText('回到屋内',240,210);
- drawCat(c,game.player.x,game.player.y,game.progress.hero,game.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,game.player.bodyAnimation,0,null,0,true);
+ // 小游戏借用原练习枪与独立后坐，原猫身体和阳台普通状态保持同一正式路径。
+ const aim=arcade?.aim,angle=arcade?Math.atan2((h<500?66:104)+(aim?.y??100)/240*Math.max(50,y-10-(h<500?66:104))-(y+158*zoom),16+(aim?.x??180)/360*(w-32)-(x+240*zoom)):game.player.angle;
+ drawCat(c,arcade?240:game.player.x,arcade?158:game.player.y,game.progress.hero,angle,PLAYER_SCALE,0,0,arcade?.recoil||null,renderer.reduced.matches?.35:1,null,0,false,false,game.player.bodyAnimation,0,null,0,!arcade);
  for(const [xx,ww] of [[14,183],[283,183]])box(c,xx,216,ww,10,3,'#ddc597','#385e4a',2);
  c.restore();
+ if(arcade)return;
  // 罗盘说明对应真实世界方位，避免把方向切换误认成随机背景。
  c.save();c.setTransform(dpr,0,0,dpr,0,0);box(c,14,86,Math.min(w-28,280),34,9,night?'#d3c8a5':'#fff4ce','#527357',1.5);c.fillStyle='#315641';c.font='bold 12px sans-serif';c.textAlign='left';c.fillText(`第 ${view.floor+1} 楼 · 朝${HOME_DIRECTIONS[view.side].name}眺望`,25,108);c.restore();
 }

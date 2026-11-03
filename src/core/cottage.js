@@ -1,3 +1,4 @@
+import {updateHomeArcade} from './home-arcade.js';
 import {MINING} from '../config/mining.js';
 import {updateMining,enterMine,updateMineEntrance} from './mining.js';
 import {travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from './home-construction.js';
@@ -61,6 +62,7 @@ function parkDoorVehicle(game){
 export function cottageBlocked(x,y,game){if(game?.cottage?.balcony)return x<24||x>HOME_BALCONY.width-24||y<42||y>HOME_BALCONY.height-18;const layout=interiorLayout(game?.cottage),furniture=game?interiorFurniture(game):COTTAGE_FURNITURE;return x<22||x>layout.width-22||y<76||y>layout.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
 // 门口、床边判定与室内行走共用正式输入，暂停不累积倒计时或睡眠过渡。
 export function updateCottage(game,dt,input){
+ if(updateHomeArcade(game,dt))return true;
  if(updateMining(game,dt,input))return true;
  if(game.cottage){
   if(game.state!=='playing')return true;

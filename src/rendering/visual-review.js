@@ -1889,3 +1889,6 @@ export function inspectMining(game,renderer,root){
 
 // 地下生态验收直接读取正式景观、生物时钟和分层存档，不使用独立展示模型。
 export function inspectMineEcology(game,renderer,root){return {...inspectMining(game,renderer,root),designCriterion:'underground-ecology',depth:game.cottage?.depth||1,layers:[game.progress.mining,...Object.values(game.progress.mining.layers||{})].map(l=>({seed:l.seed,coverage:l.coverage,bounds:l.bounds,dug:Object.keys(l.dug).length,animals:Object.keys(l.animals||{}).length})),newBitmapBytes:0};}
+
+// 小游戏验收读取正式阳台或矿工绘制和手机操作节点，动作与数值均来自当前回合。
+export function inspectHomeArcade(game,renderer,root){const ui=root.getElementById('home-arcade-ui');return {designCriterion:'home-mine-minigames',render:renderer.arcadeReview,view:renderer.arcadeView,body:game.player.bodyAnimation,stats:game.progress.homeArcade,buttons:[...ui.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}

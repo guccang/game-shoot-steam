@@ -2683,4 +2683,6 @@
   "undergroundMining":{"designCriterion":"underground-mining","description":"建筑公司创建地下室，矿锄独立挥动与持续开掘，地下地表坐标对齐，小地图指向小屋，地表洞口双向通行，轨道矿车连续行驶与即时停车、路线装点；手机昼夜可读。","entry":"src/rendering/mining.js#drawMining / src/rendering/visual-review.js#inspectMining","brief":"docs/art-tasks/underground-mining.md","unitTests":["tests/mining.test.mjs"],"browserTests":["tests/mining-browser.cjs"]}
 ,
   "undergroundEcology":{"designCriterion":"underground-ecology","description":"九类成片地下景观随开掘露出，河湖建桥与采集再生；岩甲虫六足、洞穴蝠翼拍、菌伞怪步态和蓄力受击死亡独立。地下不限层数，第三层起面积10%至100%，首次开通随机后持久化，整层50%解锁、边界不可穿越；正式战车沿地表矿洞往返并保留动作与弹药。手机昼夜同屏、地图坡道指向和中文操作可读。","entry":"src/rendering/mining.js#drawMining / src/rendering/visual-review.js#inspectMineEcology","brief":"docs/art-tasks/underground-ecology.md","unitTests":["tests/mine-ecology.test.mjs"],"browserTests":["tests/mine-ecology-browser.cjs","tests/unlimited-mine-layers-browser.cjs"]}
+,
+  "homeMineMinigames":{"designCriterion":"home-mine-minigames","description":"十楼起在实际阳台用独立练习枪打飞鸟，双翼分别运动、受击下落；地下第一层即可用摆动抓钩抓矿，不同重量影响收绳速度。原猫连续帧、操枪、昼夜和手机按钮同屏，计时暂停、结算重试与最高纪录持久化正确。","entry":"src/rendering/home-arcade.js#drawHomeArcade / src/rendering/visual-review.js#inspectHomeArcade","brief":"docs/art-tasks/home-mine-minigames.md","unitTests":["tests/home-arcade.test.mjs"],"browserTests":["tests/home-arcade-browser.cjs"]}
 }
