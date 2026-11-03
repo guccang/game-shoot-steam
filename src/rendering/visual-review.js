@@ -1915,3 +1915,6 @@ export function inspectMineLandscapeQuality(game,renderer,root){return {...inspe
 
 // 接轨验收沿用正式矿车状态，读取可见连接种类和纯几何缓存预算。
 export function inspectMineRailJunctions(game,renderer,root){return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-rail-junctions',railGeometryVariants:16,newBitmapBytes:0};}
+
+// 乘坐稳定性只消费正式矿车、猫座位和镜头锚点，连续采样用于发现模拟步跳动。
+export function inspectMineCartRider(game,renderer,root){return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-cart-rider-stability',rider:renderer.mineCartRiderReview};}

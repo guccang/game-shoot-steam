@@ -1,5 +1,6 @@
 // 表现快照只覆盖动态分支；静态地图、装备配置、生命与存档继续读取权威对象。
 import { delta, WORLD } from '../world/coordinates.js';
+import {createMineCartInterpolation} from './mine-cart-interpolation.js';
 import {bindGameSource} from '../core/game-source.js';
 
 const ROOTS = ['player', 'vehicle', 'enemies', 'boss', 'enemyBolts', 'hazards', 'projectiles',
@@ -19,12 +20,12 @@ const QUERIES = ['weapon', 'findAttackTarget', 'findAttackLane'];
 // 一份历史对应一个权威对象；弱引用缓存不会保留已回收的弹丸、怪物与动作轨道。
 export function createRenderInterpolation() {
   let history = new WeakMap(), mirrors = new WeakMap(), scene = null;
-  const bindings = new WeakMap();
+  const bindings = new WeakMap(), mineCart = createMineCartInterpolation();
   // 状态切换和地图/会话替换必须直接显示新场景，不能跨场景拖影。
   function sceneKey(game) { return [game.state, game.mapId, game.realm, game.cottage, game.story, game.player]; }
   // 捕获连续字段，不复制静态树林或递归进入配置、存档和目标引用。
   function beforeStep(game) {
-    history = new WeakMap(); scene = sceneKey(game);
+    history = new WeakMap(); scene = sceneKey(game);mineCart.beforeStep(game);
     const seen = new WeakSet();
     // 只遍历显式列出的表现分支，并跳过共享引用形成的环。
     function visit(value, root = false) {
@@ -42,7 +43,7 @@ export function createRenderInterpolation() {
     visit(game, true);
   }
   // 清理插值历史，表现对象身份仍保留，猫身体姿态匹配不会在暂停后重建轨道。
-  function reset() { history = new WeakMap(); scene = null; }
+  function reset() { history = new WeakMap(); scene = null;mineCart.reset(); }
   // 同一身体动画始终使用同一表现对象；每帧只更新有界动态分支。
   function sample(game, alpha) {
     const key = sceneKey(game), continuous = scene && key.every((value, i) => value === scene[i]);
@@ -100,6 +101,9 @@ export function createRenderInterpolation() {
     // 条件解释器只读取自有字段；显式共享最新存档，让地面导航与任务栏使用同一进度。
     // 每帧更新引用以覆盖保存后的整份替换，不复制或插值任务完成条件。
     view.progress = game.progress;
+    // 矿车存于权威进度，另投影当前座位；镜头、车厢与猫必须使用同一时刻的位置。
+    view.mineCart=mineCart.sample(game,amount);
+    if(view.mineCart){view.player.x=view.mineCart.x;view.player.y=view.mineCart.y;}
     // 命中/寻敌等查询仍以权威对象为键，避免破坏感知 WeakMap 与锁定目标身份。
     // 查询绑定只在方法身份改变时重建，不为每个中间帧分配三个新函数。
     let queries = bindings.get(game);

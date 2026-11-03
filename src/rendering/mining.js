@@ -60,7 +60,7 @@ function pickaxe(c,g){
 // 镜头只绘制可见网格，地图再大也不遍历历史矿道，顶部和底部留给手机操作。
 export function drawMining(renderer,g=renderer.game){
  const {c,width:w,height:h,dpr}=renderer,night=calendarView(g.progress.living.calendar).id==='night',top=h<500?99:151,bottom=h-(h<500?139:168),zoom=Math.min(1.05,w/360),cx=w/2,cy=(top+bottom)/2;
- renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
+ renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineCartRiderReview=null;renderer.mineView={x:g.player.x-cx/zoom,y:g.player.y-cy/zoom,zoom,top,bottom,width:w,height:h};
  const v=renderer.mineView,m=currentMineLayer(g),bounds=mineBounds(m);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
@@ -80,7 +80,8 @@ export function drawMining(renderer,g=renderer.game){
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const cell={x,y},key=mineKey(cell);if(mineCellOpen(cell,m))entities.push({y:mineLandscapeAnchor(cell,mineTerrain(cell,m).hash,m).y,kind:'landscape',cell});if(m.decor[key])entities.push({y:minePoint(cell).y+8,kind:'decor',cell,value:m.decor[key]});}
  const visibleShafts=mineEntrances(m).filter(p=>p.x>v.x-80&&p.x<v.x+w/zoom+80&&p.y>v.y+top/zoom-80&&p.y<v.y+bottom/zoom+80);
  for(const p of visibleShafts)drawLadder(c,p.x,p.y,night,`矿洞 ${p.number} · 地面 ↑`);
- for(const cart of m.carts)if(Math.abs(cart.x-g.player.x)<w/zoom&&Math.abs(cart.y-g.player.y)<h/zoom)entities.push({y:cart.y,kind:'cart',cart});
+ // 乘坐车辆使用与镜头相同的表现快照，其他停放车辆继续读取真实存档。
+ for(const stored of m.carts){const cart=stored.id===g.cottage.ride&&g.mineCart?.id===stored.id?g.mineCart:stored;if(Math.abs(cart.x-g.player.x)<w/zoom&&Math.abs(cart.y-g.player.y)<h/zoom)entities.push({y:cart.y,kind:'cart',cart});}
  for(const animal of g.cottage.ecologyActors||[])entities.push({y:animal.y,kind:'animal',animal});
  if(!g.cottage.ride)entities.push({y:g.player.y,kind:'player'});
  for(const e of entities.sort((a,b)=>a.y-b.y)){
@@ -97,7 +98,11 @@ export function drawMining(renderer,g=renderer.game){
    drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
    if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else pickaxe(c,g);
   }
-  else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride)drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);cartBody(c,e.cart,true);}
+  else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride){
+   drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   // 验收读取实际绘制锚点；保留真实待机连续帧，不以静帧掩盖位移抖动。
+   renderer.mineCartRiderReview={id:e.cart.id,x:e.cart.x,y:e.cart.y,wheel:e.cart.wheel,screenX:(e.cart.x-v.x)*zoom,screenY:(e.cart.y-8-v.y)*zoom,seatOffset:-8,cameraError:Math.hypot(e.cart.x-g.player.x,e.cart.y-g.player.y),idleTime:g.player.bodyAnimation.idleTime,moveWeight:g.player.bodyAnimation.moveWeight};
+  }cartBody(c,e.cart,true);}
  }
  drawMineBolts(c,g.cottage.bolts);
  // 入口文字在实体之后绘制；猫和怪物经过时仍能识别同一地表洞口编号。

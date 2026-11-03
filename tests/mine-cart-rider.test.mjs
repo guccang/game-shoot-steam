@@ -1,0 +1,16 @@
+// 矿车乘坐抖动回归：固定逻辑步与显示帧共用座位锚点，保持原待机与权威存档。
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
+import {createFixedStep} from '../src/platform/fixed-step.js';
+import {updateCatMotion} from '../src/core/cat-motion.js';
+// 最小乘坐现场保留正式进度层级与动画，排除与坐标采样无关的随机战斗。
+function scene(){return {state:'playing',mapId:'forest',time:0,player:{x:550,y:312,bodyAnimation:{idleTime:0,moveTime:0,moveWeight:0}},cottage:{kind:'mine',depth:1,ride:1,running:true},progress:{mining:{seed:1847,carts:[{id:1,x:550,y:312,wheel:0,heading:1}],layers:{}}}};}
+// 正式绘制器修复前回退到存档矿车，可用同一断言复现旧版每逻辑步的跳动。
+function displayed(g,view){return view.mineCart||g.progress.mining.carts[0];}
+// 位置误差限定为浮点舍入，不用宽容差掩盖一个逻辑步的抖动。
+function close(a,b){assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);}
+test('25Hz逻辑配60/90/120Hz显示时车体、猫与镜头始终同位，四向和转弯不跳动',()=>{for(const hz of [60,90,120]){const g=scene(),i=createRenderInterpolation(),clock=createFixedStep();let ticks=0;for(let frame=0;frame<hz*4;frame++){const timing=clock.advance(1/hz,dt=>{i.beforeStep(g);const c=g.progress.mining.carts[0],direction=Math.floor(ticks++/25)%4,dx=[1,0,-1,0][direction]*176*dt,dy=[0,1,0,-1][direction]*176*dt;c.x+=dx;c.y+=dy;c.wheel=(c.wheel+176*dt/8)%(Math.PI*2);g.player.x=c.x;g.player.y=c.y;updateCatMotion(g.player.bodyAnimation,dt,0,false);});const view=i.sample(g,timing.alpha),c=displayed(g,view);close(c.x,view.player.x);close(c.y,view.player.y);}close(g.player.bodyAnimation.idleTime,4);assert.equal(g.player.bodyAnimation.moveWeight,0);}});
+test('存档事务替换矿车对象后仍连续，表现状态不写回存档',()=>{const g=scene(),i=createRenderInterpolation();i.beforeStep(g);g.progress=structuredClone(g.progress);const c=g.progress.mining.carts[0];c.x+=8;c.wheel=1;g.player.x=c.x;const saved=JSON.stringify(g),v=i.sample(g,.25);close(v.mineCart.x,552);close(v.mineCart.wheel,.25);assert.equal(v.progress,g.progress);assert.notEqual(v.mineCart,c);assert.equal(JSON.stringify(g),saved);assert.equal(i.sample(g,.75).mineCart,v.mineCart);});
+test('轮毂跨整圈平滑向前，停车、暂停及重置立即冻结在真实座位',()=>{const g=scene(),i=createRenderInterpolation(),c=g.progress.mining.carts[0];c.wheel=Math.PI*2-.2;i.beforeStep(g);c.x+=3.2;c.wheel=.2;g.player.x=c.x;const v=i.sample(g,.5);close(Math.cos(v.mineCart.wheel),1);close(Math.sin(v.mineCart.wheel),0);g.cottage.running=false;close(i.sample(g,0).mineCart.x,c.x);close(i.sample(g,.7).player.x,c.x);g.state='paused';close(i.sample(g,0).mineCart.wheel,c.wheel);i.reset();close(i.sample(g,0).player.x,c.x);});
+test('上下车、换车、切层同ID与传送不会沿旧历史滑动',()=>{const g=scene(),i=createRenderInterpolation();i.beforeStep(g);g.cottage.ride=null;assert.equal(i.sample(g,.5).mineCart,null);i.beforeStep(g);g.cottage.ride=1;g.player.x=510;close(i.sample(g,0).player.x,550);i.beforeStep(g);g.progress.mining.carts.push({id:2,x:700,y:400,wheel:1});g.cottage.ride=2;close(i.sample(g,0).mineCart.x,700);g.cottage.ride=1;i.beforeStep(g);g.progress.mining.layers[2]={seed:77,carts:[{id:1,x:1200,y:900,wheel:2}]};g.cottage.depth=2;close(i.sample(g,.2).mineCart.x,1200);close(i.sample(g,.2).player.y,900);i.beforeStep(g);g.progress.mining.layers[2].carts[0].x+=1000;close(i.sample(g,.1).mineCart.x,2200);g.cottage=null;assert.equal(i.sample(g,.5).mineCart,null);});
