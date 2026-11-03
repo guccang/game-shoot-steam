@@ -88,6 +88,8 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
  const next=validateProgress(structuredClone(game.progress)),f=next.farm,p=f.plots.find(p=>p.id===plotId),crop=FARM_CROPS[cropId];
  // 空田的湿度属于土壤；播种重置本茬加速状态时，保留这份已获得的水分。
  const plantedInWetSoil=action==='plant'&&p?.watered===true;
+ // 空田保留设备供水来源，播种后仍可用于本茬的设备照料收获判定。
+ const plantedInSprinklerSoil=plantedInWetSoil&&p.sprinklerWatered===true;
  const cell=action==='dig'?point:p?farmPosition(p):null;
  // 旧档已有的入口田可以收获或移除，但不能继续播种；提交时再次校验排队期间新增洞口。
  if(['dig','plant'].includes(action)&&mineEntranceFarmBlocked(game.progress.mining,cell))return {ok:false,message:'矿洞和入口坡道不能种植，请选择旁边的草地。'};
@@ -138,6 +140,7 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   // 雨停或天气切换后，新作物也继承湿土；只处理本田，不浇湿附近干田。
   wetPlots(next,[p],now);message+=' · 土壤保持湿润，无需浇水';
  }
+ if(plantedInSprinklerSoil)p.sprinklerWatered=true;
  if(!game.progress.farm.lessonRewarded&&next.farm.lessonRewarded&&!lesson){lesson=true;message+=' · 园艺入门完成，胡萝卜种子 +2';}
  // 收获、经验与奖励种子同一候选进度预演，拒绝时不修改田块或任何库存。
  if(action==='harvest'){

@@ -6,7 +6,8 @@ import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {SPRINKLER,SPRINKLER_OFFSETS} from '../src/config/farm-production.js';
 import {sprinklerCovers} from '../src/progression/farm-production.js';
-import {updateProduction} from '../src/core/farm-production.js';
+import {farmAction} from '../src/core/farm.js';
+import {updateProduction,storeSprinkler} from '../src/core/farm-production.js';
 import {sprinklerPose} from '../src/rendering/farm-production.js';
 import {WORLD} from '../src/world/coordinates.js';
 // 隔离真实进度，田块处于自种未成熟状态；不使用用户存档。
@@ -17,9 +18,9 @@ function setup(){
 }
 // 同一格心规则构造田块，成熟时间便于确认只应用一次减时。
 function plot(id,device,dx,dy){return {id,mapId:device.mapId,x:device.x+dx,y:device.y+dy,crop:1,plantedAt:1,readyAt:100000,watered:false};}
-test('两层去四角包含20个周围格，不包含远对角或三格外',()=>{
- const d={mapId:'forest',x:1000,y:1200};assert.equal(SPRINKLER_OFFSETS.length,20);
- for(let y=-3;y<=3;y++)for(let x=-3;x<=3;x++)assert.equal(sprinklerCovers(d,plot(1,d,x*56,y*52)),Math.max(Math.abs(x),Math.abs(y))<=2&&Math.abs(x)+Math.abs(y)<=3,x+','+y);
+test('两层包含四角共24个周围格，不包含三格外',()=>{
+ const d={mapId:'forest',x:1000,y:1200};assert.equal(SPRINKLER_OFFSETS.length,24);
+ for(let y=-3;y<=3;y++)for(let x=-3;x<=3;x++)assert.equal(sprinklerCovers(d,plot(1,d,x*56,y*52)),Math.max(Math.abs(x),Math.abs(y))<=2,x+','+y);
  assert.equal(sprinklerCovers(d,plot(1,d,112.1,0)),false);
  assert.equal(sprinklerCovers(d,plot(1,d,70,30)),true);
 });
@@ -27,15 +28,15 @@ test('覆盖使用世界最近镜像，不给另一张地图浇水',()=>{
  const d={id:1,mapId:'forest',x:20,y:30},p={mapId:'forest',x:WORLD.width-36,y:WORLD.height-22};
  assert.ok(sprinklerCovers(d,p));assert.equal(sprinklerCovers(d,{...p,mapId:'jiuzhaigou'}),false);
 });
-test('实际照料两层20格，只减时一次，保存后仍保持湿润',()=>{
+test('实际照料两层24格，只减时一次，保存后仍保持湿润',()=>{
  const g=setup(),d=g.progress.production.sprinklers[0];
  g.progress.farm.plots=SPRINKLER_OFFSETS.map(([x,y],i)=>plot(i+1,d,x,y));
- g.progress.farm.plots.push(plot(21,d,168,52),plot(22,d,112,104));g.progress.farm.nextId=23;
+ g.progress.farm.plots.push(plot(25,d,168,52),plot(26,d,112,156));g.progress.farm.nextId=27;
  assert.ok(updateProduction(g,1000));
- assert.ok(g.progress.farm.plots.slice(0,20).every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===70000));
- assert.ok(g.progress.farm.plots.slice(20).every(p=>!p.watered));
+ assert.ok(g.progress.farm.plots.slice(0,24).every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===70000));
+ assert.ok(g.progress.farm.plots.slice(24).every(p=>!p.watered));
  const before=structuredClone(g.progress);assert.equal(updateProduction(g,1001),false);assert.deepEqual(g.progress,before);
- assert.ok(validateProgress(g.progress).farm.plots.slice(0,20).every(p=>p.sprinklerWatered));
+ assert.ok(validateProgress(g.progress).farm.plots.slice(0,24).every(p=>p.sprinklerWatered));
 });
 test('失败不喷水不改湿土，暂停不处理，重试成功后才记录动画',()=>{
  const g=setup(),d=g.progress.production.sprinklers[0];g.progress.farm.plots=[plot(1,d,112,0)];
@@ -73,4 +74,40 @@ test('场景时钟重置后不沿用未来的喷头起点，新作物仍播放�
  const g=setup(),d=g.progress.production.sprinklers[0];g.time=50;g.progress.farm.plots=[plot(1,d,56,0)];assert.ok(updateProduction(g,1000));
  g.time=0;g.progress.farm.plots.push(plot(2,d,0,52));assert.ok(updateProduction(g,1001));
  assert.equal(g.productionSpray.devices[0].time,0);assert.ok(sprinklerPose(d,0,g.productionSpray).active);
+});
+
+// 空田与作物共用覆盖边界，但空田润湿不虚增照料和任务奖励。
+test('24块空田包含四角均可浇湿，范围外和异图不浇，重复扫描不写盘',()=>{
+ const g=setup(),d=g.progress.production.sprinklers[0];let saves=0;g.livingPersist=()=>{saves++;return true;};
+ g.progress.farm.plots=SPRINKLER_OFFSETS.map(([x,y],i)=>({...plot(i+1,d,x,y),crop:null,plantedAt:0,readyAt:0}));
+ g.progress.farm.plots.push({...plot(25,d,168,0),crop:null},{...plot(26,d,0,156),crop:null},{...plot(27,d,56,0),crop:null,mapId:'jiuzhaigou'});
+ const lesson=structuredClone(g.progress.mainline.gardening);assert.ok(updateProduction(g,1000));
+ assert.ok(g.progress.farm.plots.slice(0,24).every(p=>p.crop===null&&p.watered&&p.sprinklerWatered&&p.readyAt===0));
+ assert.ok(g.progress.farm.plots.slice(24).every(p=>!p.watered));assert.equal(g.productionSpray.plots.length,24);
+ assert.equal(g.progress.farm.watered,0);assert.equal(g.progress.farm.lessonRewarded,false);assert.equal(g.progress.production.wateredHarvest,false);assert.deepEqual(g.progress.mainline.gardening,lesson);
+ g.progress=validateProgress(structuredClone(g.progress));assert.ok(g.progress.farm.plots.slice(0,24).every(p=>p.watered&&p.sprinklerWatered));
+ assert.equal(updateProduction(g,2000),false);assert.equal(saves,1);
+});
+// 保存后收起设备再播种，验证水分属于田地且收获仍能记录设备照料。
+test('空田湿度读档后保留，收回洒水器后播种只加速一次并保留收获归属',()=>{
+ const g=setup(),d=g.progress.production.sprinklers[0];g.progress.farm.plots=[{...plot(1,d,56,0),crop:null,plantedAt:0,readyAt:0}];g.progress.farm.seeds[1]=2;
+ assert.ok(updateProduction(g,1000));g.progress=validateProgress(structuredClone(g.progress));Object.assign(g.player,d);assert.ok(storeSprinkler(g,1).ok);
+ Object.assign(g.player,g.progress.farm.plots[0]);g.livingWeather='sun';
+ const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(farmAction(g,'plant',{plot:1,crop:1,now:2000}).ok,false);assert.deepEqual(g.progress,before);
+ g.livingPersist=()=>true;assert.ok(farmAction(g,'plant',{plot:1,crop:1,now:2000}).ok);
+ const planted=g.progress.farm.plots[0];assert.equal(planted.readyAt,92000);assert.ok(planted.watered&&planted.sprinklerWatered);assert.equal(g.progress.farm.watered,1);
+ assert.ok(farmAction(g,'water',{plot:1,now:3000}).ok);assert.equal(g.progress.farm.plots[0].readyAt,92000);assert.equal(g.progress.farm.watered,1);
+ assert.ok(farmAction(g,'harvest',{plot:1,now:92000}).ok);assert.equal(g.progress.production.wateredHarvest,true);
+ assert.ok(farmAction(g,'plant',{plot:1,crop:1,now:93000}).ok);assert.equal(g.progress.farm.plots[0].sprinklerWatered,false);assert.equal(g.progress.farm.plots[0].watered,false);
+});
+// 失败与暂停不改变空田或播放水流；成功后不会伪造没有水分的来源标记。
+test('空田浇水失败可重试，暂停冻结，旧档和非设备湿土不会误记设备照料',()=>{
+ const g=setup(),d=g.progress.production.sprinklers[0];g.progress.farm.plots=[{...plot(1,d,-112,104),crop:null,plantedAt:0,readyAt:0}];
+ g.state='paused';assert.equal(updateProduction(g,1000),false);g.state='playing';const before=structuredClone(g.progress);g.livingPersist=()=>false;
+ assert.equal(updateProduction(g,1000),false);assert.deepEqual(g.progress,before);assert.equal(g.productionSpray,undefined);
+ g.livingPersist=()=>true;assert.equal(updateProduction(g,1500),false);assert.ok(updateProduction(g,2001));assert.ok(g.progress.farm.plots[0].watered);
+ const old=structuredClone(g.progress);delete old.farm.plots[0].sprinklerWatered;assert.equal(validateProgress(old).farm.plots[0].sprinklerWatered,false);
+ old.farm.plots[0].sprinklerWatered=true;old.farm.plots[0].watered=false;assert.equal(validateProgress(old).farm.plots[0].sprinklerWatered,false);
+ old.farm.plots[0].watered=true;old.farm.plots[0].sprinklerWatered=false;g.progress=validateProgress(old);g.progress.farm.seeds[1]=1;Object.assign(g.player,g.progress.farm.plots[0]);g.livingWeather='sun';
+ assert.ok(farmAction(g,'plant',{plot:1,crop:1,now:3000}).ok);assert.ok(g.progress.farm.plots[0].watered);assert.equal(g.progress.farm.plots[0].sprinklerWatered,false);
 });

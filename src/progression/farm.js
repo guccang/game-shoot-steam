@@ -21,7 +21,7 @@ export function validateFarm(raw){
   const x=((p.x%10800)+10800)%10800,y=((p.y%8400)+8400)%8400;
   if(plots.some(q=>q.mapId===mapId&&Math.abs(q.x-x)<1&&Math.abs(q.y-y)<1))continue;seen.add(id);
   const crop=Number.isInteger(p.crop)&&FARM_CROPS[p.crop]?p.crop:null,plantedAt=integer(p.plantedAt,8640000000000000),readyAt=integer(p.readyAt,8640000000000000);
-  plots.push({id,mapId,x,y,crop,plantedAt:crop===null?0:plantedAt,readyAt:crop===null?0:Math.max(plantedAt,Math.min(readyAt,plantedAt+FARM_CROPS[crop].seconds*1000)),watered:p.watered===true,sprinklerWatered:crop!==null&&p.sprinklerWatered===true,...(p.wild===true?{wild:true,...(Number.isFinite(p.wildSownAt)&&p.wildSownAt>=0?{wildSownAt:p.wildSownAt}:{})}:{})});
+  plots.push({id,mapId,x,y,crop,plantedAt:crop===null?0:plantedAt,readyAt:crop===null?0:Math.max(plantedAt,Math.min(readyAt,plantedAt+FARM_CROPS[crop].seconds*1000)),watered:p.watered===true,sprinklerWatered:p.watered===true&&p.sprinklerWatered===true,...(p.wild===true?{wild:true,...(Number.isFinite(p.wildSownAt)&&p.wildSownAt>=0?{wildSownAt:p.wildSownAt}:{})}:{})});
  }
  const d=raw.delivery||{},parcelIds=new Set(),parcels=[];
  for(const p of (Array.isArray(d.parcels)?d.parcels:[]).slice(0,5)){

@@ -46,9 +46,9 @@ test('背包可跨地面地图重新布置，库存与地面台数合计仍受32
  const g=scene();g.progress.production.sprinklerInventory=32;let point=field(g);assert.equal(placeProduction(g,'sprinkler',point).ok,false);g.mapId='jiuzhaigou';point=field(g);
  assert.ok(placeProduction(g,'sprinkler',point,null,true).ok);assert.equal(g.progress.production.sprinklers[0].mapId,'jiuzhaigou');assert.equal(g.progress.production.sprinklerInventory,31);assert.ok(storeSprinkler(g,g.progress.production.sprinklers[0].id).ok);assert.equal(g.progress.production.sprinklerInventory,32);
 });
-test('二层20格包含第二层侧角，排除四角；喷水终点和覆盖判定相符',()=>{
- assert.equal(SPRINKLER_OFFSETS.length,20);const d={mapId:'forest',x:1000,y:1000};
- for(let y=-2;y<=2;y++)for(let x=-2;x<=2;x++)if(x||y)assert.equal(sprinklerCovers(d,{...d,x:d.x+x*56,y:d.y+y*52}),!(Math.abs(x)===2&&Math.abs(y)===2));
+test('二层24格包含第二层全部四角；喷水终点和覆盖判定相符',()=>{
+ assert.equal(SPRINKLER_OFFSETS.length,24);const d={mapId:'forest',x:1000,y:1000};
+ for(let y=-2;y<=2;y++)for(let x=-2;x<=2;x++)if(x||y)assert.equal(sprinklerCovers(d,{...d,x:d.x+x*56,y:d.y+y*52}),true);
  for(let i=0;i<72;i++){const angle=i*Math.PI/36,r=sprinklerReach(angle),p={...d,x:d.x+Math.cos(angle)*r*SPRINKLER.cellWidth,y:d.y+Math.sin(angle)*r*SPRINKLER.cellHeight};assert.ok(sprinklerCovers(d,p));assert.equal(sprinklerCovers(d,{...p,x:d.x+(p.x-d.x)*1.001,y:d.y+(p.y-d.y)*1.001}),false);}
 });
 
