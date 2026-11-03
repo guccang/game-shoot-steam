@@ -31,5 +31,11 @@ export function mineTerrain(cell,layer){
  const seed=layer?.seed||1847,entry=layer?.entry||'0,0',[ex,ey]=entry.split(',').map(Number),safe=Math.abs(cell.x-ex)<=1&&Math.abs(cell.y-ey)<=1;
  const wx=cell.x+Math.sin(cell.y*.32+(seed%11))*.8,wy=cell.y+Math.sin(cell.x*.27+(seed%7))*.8,cx=Math.floor((wx+3)/7),cy=Math.floor((wy+3)/7),index=((cx+cy*3+seed)%9+9)%9,biome=MINE_BIOMES[index],hash=mineHash(cell.x,cell.y,seed),lx=wx-(cx*7+.5),ly=wy-(cy*7+.5);
  const water=!safe&&(biome.id==='river'?Math.abs(lx-Math.sin(wy*.65)*.8)<1:biome.id==='lake'?((lx+.6)**2/6+(ly-.5)**2/3.5)<1:biome.id==='spring'?lx*lx+ly*ly<1.8:false);
- return {biome,water,prop:!safe&&!water&&hash%4===0,hash,safe};
+ // 洞厅在开层时由稳定种子决定，水域与岸边天然露出，不依赖已开掘记录。
+ const chamber=(lx*lx/(3.1+Math.sin(cy+seed)*.35)**2+ly*ly/(2.7+Math.cos(cx+seed)*.4)**2)<1;
+ const natural=safe||water||chamber;
+ return {biome,water,natural,prop:natural&&!safe&&!water&&(hash>>>8)%5===0,hash,safe};
 }
+
+// 天然洞厅与玩家挖通区域共用开放判定，边界外始终不可通行或施工。
+export function mineCellOpen(cell,layer){return mineCellArea(cell,layer)>0&&(!!layer.dug?.[`${cell.x},${cell.y}`]||mineTerrain(cell,layer).natural);}

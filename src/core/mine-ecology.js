@@ -1,6 +1,6 @@
 // 地下生态只推进当前层的可见时间，采集再生、独立怪物和防卫不污染地表敌人。
 import {mineCell,mineKey,minePoint} from '../config/mining.js';
-import {MINE_ANIMALS as A,MINE_ECOLOGY as E,mineTerrain} from '../config/mine-ecology.js';
+import {MINE_ANIMALS as A,MINE_ECOLOGY as E,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
 import {currentMineLayer} from './mine-layers.js';
 import {miningCommit,mineNotice} from './mine-transactions.js';
 import {mineOccupancy,mineLineClear} from '../physics/mine-motion.js';
@@ -8,29 +8,29 @@ import {vehicleWeapon,vehicleDamage} from '../config/vehicles.js';
 import {consumeRound,advanceReload} from '../combat/magazine.js';
 import {takeSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {triggerRecoil,updateRecoil} from '../combat/recoil.js';
-// 水面只有挖开之后才能铺桥，脚下和前方均可施工，桥面支持轨道与战车。
+// 天然水面无需挖掘即可铺桥，脚下和前方均可施工，桥面支持轨道与战车。
 export function buildMineBridge(game,ahead=true){
  if(game.cottage?.kind!=='mine'||game.state!=='playing'||game.cottage.ride)return mineNotice(game,'请停稳下矿车后建桥。');
  const cell=mineCell(game.player),d=[{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}][game.cottage.direction];if(ahead){cell.x+=d.x;cell.y+=d.y;}
- const key=mineKey(cell),l=currentMineLayer(game);if(!l.dug[key]||!mineTerrain(cell,l).water||l.bridges[key])return mineNotice(game,'请选择已经挖开的无桥水面。');
+ const key=mineKey(cell),l=currentMineLayer(game);if(!mineCellOpen(cell,l)||!mineTerrain(cell,l).water||l.bridges[key])return mineNotice(game,'请选择附近的无桥水面。');
  if(game.progress.mining.ore<E.bridge.ore||game.progress.wood<E.bridge.wood)return mineNotice(game,'桥面需要 2 矿石、4 木材。');
- return miningCommit(game,(m,p,layer)=>{m.ore-=E.bridge.ore;p.wood-=E.bridge.wood;layer.bridges[key]=true;},'桥面已铺好，可以通行和铺轨。');
+ return miningCommit(game,(m,p,layer)=>{m.ore-=E.bridge.ore;p.wood-=E.bridge.wood;layer.dug[key]=true;layer.bridges[key]=true;},'桥面已铺好，可以通行和铺轨。');
 }
 // 林木、晶簇、遗迹和草甸采用同一再生时钟；暂停与离开本层都不会刷取奖励。
 export function harvestMine(game){
  if(game.cottage?.kind!=='mine'||game.state!=='playing'||game.cottage.ride)return mineNotice(game,'请下矿车后采集。');
  const l=currentMineLayer(game),cell=mineCell(game.player),key=mineKey(cell),t=mineTerrain(cell,l),b=t.biome;
- if(!l.dug[key]||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药或化石的地块采集。');
+ if(!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药或化石的地块采集。');
  if((l.harvested[key]||0)>l.age)return mineNotice(game,`这里正在恢复，约 ${Math.ceil(l.harvested[key]-l.age)} 秒后可再次采集。`);
- const r=miningCommit(game,(m,p,layer)=>{layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')m.ore+=b.yield;},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.yield} ${b.resource==='wood'?'木材':'矿石'}。`);
+ const r=miningCommit(game,(m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')m.ore+=b.yield;},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.yield} ${b.resource==='wood'?'木材':'矿石'}。`);
  if(r.ok&&b.resource==='heal')game.player.hp=Math.min(game.maxHp(),game.player.hp+b.yield);return r;
 }
-// 扫描只覆盖附近已挖通格，栖地由开层种子决定，不提前揭示未挖景观。
+// 扫描附近天然洞厅与已开掘区域，天然生物无需先挖出景观才出现。
 function discoverAnimals(game,l){
  const center=mineCell(game.player);let count=Object.values(l.animals).filter(a=>a.hp>0&&Math.hypot(a.x-game.player.x,a.y-game.player.y)<520).length;
  for(let y=-E.scanRadius;y<=E.scanRadius;y++)for(let x=-E.scanRadius;x<=E.scanRadius;x++){
   if(count>=E.maxNearby)return;const cell={x:center.x+x,y:center.y+y},key=mineKey(cell),t=mineTerrain(cell,l),entry=minePoint(Object.fromEntries(l.entry.split(',').map((v,i)=>[i?'y':'x',Number(v)]))),p=minePoint(cell);
-  if(!l.dug[key]||t.safe||t.water||t.hash%37!==0||Math.hypot(p.x-entry.x,p.y-entry.y)<240)continue;
+  if(!mineCellOpen(cell,l)||t.safe||t.water||t.hash%37!==0||Math.hypot(p.x-entry.x,p.y-entry.y)<240)continue;
   const old=l.animals[key];if(old&&(old.hp>0||old.respawn>l.age))continue;
   l.animals[key]={key,kind:t.biome.animal,...p,hp:A[t.biome.animal].hp,respawn:0,clock:0,phase:'roam',timer:0,flash:0,death:0};count++;
  }
@@ -46,7 +46,7 @@ function hurtExplorer(game,damage){
  if(game.vehicle.active)game.vehicle.hp=Math.max(0,game.vehicle.hp-damage);else game.player.hp=Math.max(0,game.player.hp-damage);
  if(game.player.hp>0&&(!game.vehicle.active||game.vehicle.hp>0))return;
  const l=currentMineLayer(game),[x,y]=l.entry.split(',').map(Number);Object.assign(game.player,minePoint({x,y}),{vx:0,vy:0});game.player.hp=Math.max(game.player.hp,Math.ceil(game.maxHp()*.4));if(game.vehicle.active)game.vehicle.hp=1;
- room.autoDig=false;room.ride=null;room.running=false;room.hurtWait=4;room.bolts=[];mineNotice(game,'紧急撤回本层入口。生命恢复到四成；受损战车请尽快返回维修。');
+ room.autoDig=false;room.tool=null;room.ride=null;room.running=false;room.hurtWait=4;room.bolts=[];mineNotice(game,'紧急撤回本层入口。生命恢复到四成；受损战车请尽快返回维修。');
 }
 // 独立投射物与真实岩壁碰撞，孢子蓄力后瞄准固定位置，玩家可以走位躲避。
 function advanceBolts(game,dt){

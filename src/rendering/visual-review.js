@@ -1892,3 +1892,6 @@ export function inspectMineEcology(game,renderer,root){return {...inspectMining(
 
 // 小游戏验收读取正式阳台或矿工绘制和手机操作节点，动作与数值均来自当前回合。
 export function inspectHomeArcade(game,renderer,root){const ui=root.getElementById('home-arcade-ui');return {designCriterion:'home-mine-minigames',render:renderer.arcadeReview,view:renderer.arcadeView,body:game.player.bodyAnimation,stats:game.progress.homeArcade,buttons:[...ui.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().width>0).map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
+
+// 新地下验收同时记录快捷工具状态和天然开放地形，沿用正式画面与同一存档。
+export function inspectNaturalMining(game,renderer,root){return {...inspectMining(game,renderer,root),designCriterion:'mining-tools-natural-caves',selectedTool:game.cottage?.tool,tools:[...root.querySelectorAll('[data-mine-tool]')].map(b=>({id:b.dataset.mineTool,selected:b.getAttribute('aria-pressed')==='true'})),newBitmapBytes:0};}

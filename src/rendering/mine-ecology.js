@@ -6,17 +6,17 @@ const ink='#365a47';
 // 地面先铺生态底色，水流随运行时钟移动，桥板与轨道可叠加而不遮住岸线。
 export function drawMineTerrain(c,cell,layer,night,time){
  const p=minePoint(cell),t=mineTerrain(cell,layer),{x,y}=p;box(c,x-32,y-32,65,65,0,night?t.biome.night:t.biome.floor);
- if(t.water){box(c,x-32,y-32,65,65,0,night?'#426d69':'#72a69a');for(let i=0;i<3;i++){const yy=y-22+i*19;const drift=Math.sin(time*1.2+i+cell.y)*5;c.strokeStyle=night?'#8eb8a1':'#c4d9b3';c.lineWidth=1.5;c.beginPath();c.moveTo(x-22+drift,yy);c.quadraticCurveTo(x-6+drift,yy+5,x+13+drift,yy);c.stroke();}
+ if(t.water){box(c,x-32,y-32,65,65,0,night?'#426d69':'#72a69a');for(let i=0;i<((t.hash>>>12)%3===0?0:1);i++){const yy=y-18+(t.hash>>>18)%36;const drift=Math.sin(time*1.2+i+cell.y)*4-5+(t.hash>>>10)%10;c.strokeStyle=night?'#8eb8a1':'#c4d9b3';c.lineWidth=1.5;c.beginPath();c.moveTo(x-22+drift,yy);c.quadraticCurveTo(x-6+drift,yy+5,x+13+drift,yy);c.stroke();}
   if(t.biome.id==='spring')for(let i=0;i<2;i++){const yy=y-8-((time*10+i*16)%32);oval(c,x-12+i*22,yy,9,3,'#e9e0c344');}
- }else{oval(c,x-20,y+22,3,1.5,'#526e4b35');oval(c,x+18,y-19,2,1,'#eee5bb66');}
+ }else if((t.hash>>>14)%3===0){oval(c,x-23+(t.hash>>>8)%46,y-22+(t.hash>>>20)%44,3,1.5,'#526e4b35');}
  if(layer.bridges?.[`${cell.x},${cell.y}`]){box(c,x-31,y-31,62,62,2,'#c4aa79',ink,2);for(let j=-24;j<32;j+=12){box(c,x-30,y+j,60,2,0,'#8c805c');oval(c,x-26,y+j+5,1,1,ink);oval(c,x+26,y+j+5,1,1,ink);}}
  return t;
 }
 // 设施和大型景观共用脚底排序，主体位于格边，中心留下步行、矿车与战车通路。
 export function drawMineLandscape(c,cell,layer,night,time){
- const t=mineTerrain(cell,layer),p=minePoint(cell),x=p.x-25,y=p.y+24,key=`${cell.x},${cell.y}`;
- if(t.safe||t.water)return;const harvested=(layer.harvested?.[key]||0)>layer.age;
- if(!t.prop){if(t.biome.id==='moss'){for(let i=0;i<3;i++)oval(c,p.x-20+i*17,p.y+22,7,2,night?'#80936c':'#c0cc8d');}return;}
+ const t=mineTerrain(cell,layer),p=minePoint(cell),x=p.x-28+(t.hash>>>16)%14,y=p.y+10+(t.hash>>>24)%18,key=`${cell.x},${cell.y}`;
+ if(!t.natural||t.safe||t.water)return;const harvested=(layer.harvested?.[key]||0)>layer.age;
+ if(!t.prop){if(t.biome.id==='moss'&&(t.hash>>>12)%3===0){for(let i=0;i<2;i++)oval(c,x+i*13,y-i*3,6,2,night?'#80936c':'#c0cc8d');}return;}
  if(harvested){oval(c,x,y,8,3,'#7e9065',ink,1);box(c,x-2,y-5,4,5,1,'#c1b07f');return;}
  oval(c,x+1,y+3,14,5,'#294a3633');
  switch(t.biome.id){

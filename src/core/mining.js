@@ -3,7 +3,7 @@ import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '..
 import {miningCommit as commit,mineNotice as notice} from './mine-transactions.js';
 import {currentMineLayer,travelMineLayer} from './mine-layers.js';
 import {mineOccupancy,mineBodyRadius} from '../physics/mine-motion.js';
-import {mineCellArea,mineTerrain} from '../config/mine-ecology.js';
+import {mineCellArea,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
 import {updateMineEcology} from './mine-ecology.js';
 import {vehicleSpeed} from '../config/vehicles.js';
 import {advanceVehicleWheels} from '../combat/vehicle-motion.js';
@@ -14,7 +14,7 @@ import {movementLoadFactor} from '../progression/load-weight.js';
 
 // 地下操作只能在活着且运行中的矿区进行，暂停不接受施工和挖掘。
 function active(game){return game.cottage?.kind==='mine'&&game.state==='playing'&&game.player.hp>0;}
-// 朝向用于挖掘目标与岔路选择，四向按钮不会移动角色或替换身体帧。
+// 朝向用于挖掘目标与岔路选择，沿用移动输入，不替换身体帧。
 export function faceMine(game,direction){if(!active(game)||!MINE_DIRECTIONS[direction])return false;game.cottage.direction=direction;game.cottage.dig=null;return true;}
 // 目标永远是脚下格的相邻格，不能远程开矿或越过实体墙。
 export function mineTarget(game){const cell=mineCell(game.player),d=MINE_DIRECTIONS[game.cottage?.direction??1];return {x:cell.x+d.x,y:cell.y+d.y};}
@@ -27,7 +27,7 @@ export function enterMine(game,shaft=null){
  if(shaft){if(room||!game.progress.mining.shafts.includes(shaft)||worldDistance(game.player,minePoint(parseKey(shaft)))>30)return false;}
  else if(room?.kind!=='cottage'||room.floor!==0||room.sleep||room.balcony||Math.hypot(game.player.x-M.hatch.goal.x,game.player.y-M.hatch.goal.y)>28)return false;
  const point=shaft?minePoint(parseKey(shaft)):M.home,outside=shaft?{x:game.player.x,y:game.player.y}:room.outside;
- game.cottage={kind:'mine',depth:1,outside,returnRoom:shaft?null:room,direction:1,autoDig:false,dig:null,shaftWork:0,ride:null,running:false,notice:game.vehicle.active?'战车已进入矿道。沿已挖宽的通道行驶，主炮自动迎敌；开回地表后可以下车挖路。':'矿锄已装备。推动方向靠近岩壁，开启挖矿；矿石可用于铺轨和造车。'};
+ game.cottage={kind:'mine',depth:1,outside,returnRoom:shaft?null:room,direction:1,tool:null,autoDig:false,dig:null,shaftWork:0,ride:null,running:false,notice:game.vehicle.active?'战车已进入矿道。沿天然洞厅和宽通道行驶，主炮自动迎敌；开回地表后可以下车挖路。':'选择矿镐或铺轨，推动方向即可自动作业。天然洞厅和景观无需开掘。'};
  game.sceneApproach=null;game.parking=null;Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
 }
 // 稳定网格键还原为整数坐标，仅消费本模块或已验证存档产生的键。
@@ -45,7 +45,7 @@ export function startMineShaft(game){
  const room=game.cottage;if(room.shaftWork){room.shaftWork=0;return notice(game,'已取消向上开洞。',true);}
  if(!canOpenShaft(game))return notice(game,'上方有建筑、树木、水域或已有洞口，请换一块空地。');
  if(!afford(game,'shaft'))return notice(game,'开洞需要 5 矿石、8 木材。');
- room.autoDig=false;room.dig=null;room.shaftKey=mineKey(mineCell(game.player));room.shaftWork=.001;return notice(game,'正在向上开洞，移动可取消。',true);
+ room.autoDig=false;room.tool=null;room.dig=null;room.shaftKey=mineKey(mineCell(game.player));room.shaftWork=.001;return notice(game,'正在向上开洞，移动可取消。',true);
 }
 // 洞口只有站在原格并完整施工四秒才提交，失败不扣资源。
 function finishShaft(game){
@@ -71,30 +71,46 @@ export function leaveMine(game){
  game.sceneApproach=null;game.onEvent?.('cottage-change');return {ok:true,message:'已离开矿区。'};
 }
 // 保持持续挖掘开关；暂停自动冻结，不生成后台奖励。
-export function toggleMineDig(game){if(!active(game)||game.cottage.ride||game.vehicle.active)return false;game.cottage.autoDig=!game.cottage.autoDig;game.cottage.dig=null;game.cottage.shaftWork=0;return true;}
+export function toggleMineDig(game){if(!active(game)||game.cottage.ride||game.vehicle.active)return false;game.cottage.tool=null;game.cottage.autoDig=!game.cottage.autoDig;game.cottage.dig=null;game.cottage.shaftWork=0;return true;}
+// 矿镐和铺轨为移动作业模式，再点取消；其他快捷按钮仅执行一次明确施工。
+export function selectMineTool(game,tool){
+ if(!active(game)||game.cottage.ride||game.vehicle.active)return notice(game,'请停车并步行使用工具。');
+ const r=game.cottage;if(!['pick','rail','cart','lamp','sign','shaft'].includes(tool))return notice(game,'请选择有效工具。');
+ if(tool==='pick'||tool==='rail'){r.tool=r.tool===tool?null:tool;r.autoDig=!!r.tool;r.dig=null;r.shaftWork=0;r.autoBuildKey=null;return notice(game,r.tool?(tool==='pick'?'矿镐已选中 · 推动方向靠近岩壁自动开采。':'铺轨已选中 · 移动自动开采并铺轨，每格消耗 1 矿石、2 木材。'):'已放下工具，可自由行走。',true);}
+ if(tool==='shaft')return startMineShaft(game);
+ r.tool=null;r.autoDig=false;r.dig=null;r.shaftWork=0;return buildMine(game,tool);
+}
+// 只有实际推动方向才连续施工；已有设施跳过，失败立即停止，避免逐帧尝试扣费。
+function movementMineWork(game){
+ const r=game.cottage,l=currentMineLayer(game),cell=mineCell(game.player),key=mineKey(cell);
+ if(game.vehicle.active){r.tool=null;r.autoDig=false;}
+ if(r.tool==='rail'&&!l.rails[key]){const result=buildMine(game,'rail');if(!result.ok){r.tool=null;r.autoDig=false;r.dig=null;return;}}
+ // 勘探天然地块只记录开发面积，不发放矿石、不改变天然景观。
+ if(!currentMineLayer(game).dug[key]&&mineCellOpen(cell,currentMineLayer(game))){const result=commit(game,(m,p,layer)=>{layer.dug[key]=true;},r.notice);if(!result.ok)r.surveyWait=1;}
+}
 // 工具完整挥动后才开通一格；已挖空格不能重复掉矿。
 function digStep(game,dt){
  const room=game.cottage,target=mineTarget(game),key=mineKey(target),point=minePoint(target);
- if(game.vehicle.active||!room.autoDig||currentMineLayer(game).dug[key]||mineCellArea(target,currentMineLayer(game))<=0||Math.hypot(point.x-game.player.x,point.y-game.player.y)>M.tile+8){room.dig=null;return;}
+ if(game.vehicle.active||!room.autoDig||mineCellOpen(target,currentMineLayer(game))||mineCellArea(target,currentMineLayer(game))<=0||Math.hypot(point.x-game.player.x,point.y-game.player.y)>M.tile+8){room.dig=null;return;}
  if(room.dig?.key!==key)room.dig={key,elapsed:0};room.dig.elapsed+=dt;
  if(room.dig.elapsed<M.digSeconds)return;
- const amount=mineOre(target),r=commit(game,(m,p,l)=>{l.dug[key]=true;m.ore+=amount;},`挖通矿道，获得 ${amount} 矿石。`);room.dig=null;if(!r.ok)room.autoDig=false;
+ const amount=mineOre(target),r=commit(game,(m,p,l)=>{l.dug[key]=true;m.ore+=amount;},`挖通矿道，获得 ${amount} 矿石。`);room.dig=null;if(!r.ok){room.autoDig=false;room.tool=null;}
 }
 // 所有设施报价来自同一配置，矿石为矿区建造材料，木材沿用正式仓库。
 function afford(game,kind){const price=M.prices[kind];return game.progress.mining.ore>=price.ore&&game.progress.wood>=price.wood;}
 // 费用与设施共同写入候选存档，不发生先扣费后保存。
 function pay(m,p,kind){m.ore-=M.prices[kind].ore;p.wood-=M.prices[kind].wood;}
-// 铺轨和装点可放脚下或前方一格，只允许已挖通的矿道。
+// 铺轨和装点可放脚下或前方一格，允许天然洞厅与已挖通区域。
 export function buildMine(game,kind,ahead=false){
  if(!active(game)||game.cottage.ride)return notice(game,'请下车后再施工。');
  if(!['rail','cart','lamp','sign'].includes(kind))return notice(game,'请选择有效设施。');
  const cell=ahead?mineTarget(game):mineCell(game.player),key=mineKey(cell),m=currentMineLayer(game);
  if(mineTerrain(cell,m).water&&!m.bridges?.[key])return notice(game,'水面需要先建桥，再铺轨和装点。');
- if(!m.dug[key])return notice(game,'先挖通这块岩壁，再布置路线。');
+ if(!mineCellOpen(cell,m))return notice(game,'先挖通这块岩壁，再布置路线。');
  if(kind==='rail'&&m.rails[key]||['lamp','sign'].includes(kind)&&m.decor[key])return notice(game,'这里已经放置了同类设施。');
  if(kind==='cart'&&(!m.rails[key]||m.carts.some(c=>mineKey(mineCell(c))===key)))return notice(game,'请在没有矿车的轨道格造车。');
  if(!afford(game,kind))return notice(game,`材料不足，需要 ${M.prices[kind].ore} 矿石、${M.prices[kind].wood} 木材。`);
- return commit(game,(next,p,l)=>{pay(next,p,kind);if(kind==='rail')l.rails[key]=true;else if(kind==='cart')l.carts.push({id:l.nextCart++,...minePoint(cell),previous:null,wheel:0});else l.decor[key]=kind;},kind==='rail'?'轨道已铺好，相邻轨道自动连接。':kind==='cart'?'矿车已建好，靠近后可乘坐。':'路线装点已放好。');
+ return commit(game,(next,p,l)=>{pay(next,p,kind);l.dug[key]=true;if(kind==='rail')l.rails[key]=true;else if(kind==='cart')l.carts.push({id:l.nextCart++,...minePoint(cell),previous:null,wheel:0});else l.decor[key]=kind;},kind==='rail'?'轨道已铺好，相邻轨道自动连接。':kind==='cart'?'矿车已建好，靠近后可乘坐。':'路线装点已放好。');
 }
 // 玩家登乘最近的真实矿车；停止后下车，无需等待固定车站。
 export function rideMineCart(game){
@@ -102,7 +118,7 @@ export function rideMineCart(game){
  if(room.ride){room.running=false;room.ride=null;commit(game,()=>{},'已停车并下车。');return true;}
  const cart=currentMineLayer(game).carts.find(c=>nearMineCart(game,c));
  if(!cart){notice(game,'请靠近矿车，或先在脚下轨道造一辆。');return false;}
- room.ride=cart.id;room.running=false;room.autoDig=false;room.dig=null;room.shaftWork=0;Object.assign(game.player,{x:cart.x,y:cart.y,vx:0,vy:0});return true;
+ room.ride=cart.id;room.running=false;room.autoDig=false;room.tool=null;room.dig=null;room.shaftWork=0;Object.assign(game.player,{x:cart.x,y:cart.y,vx:0,vy:0});return true;
 }
 // 登车线段逐步检查脚底，防止隔着未开掘岩壁登上邻近的矿车。
 function nearMineCart(game,cart){
@@ -133,13 +149,18 @@ function cartStep(game,dt){
 export function updateMining(game,dt,input){
  if(game.cottage?.kind!=='mine')return false;if(!active(game))return true;
  const room=game.cottage,p=game.player,before={x:p.x,y:p.y},length=Math.hypot(input.x,input.y);dt=Math.max(0,Math.min(.05,dt));
+ room.surveyWait=Math.max(0,(room.surveyWait||0)-dt);
+ if(length>.01)room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;
  if(room.ride)cartStep(game,dt);
  else{
   if(length>.01){room.direction=Math.abs(input.x)>Math.abs(input.y)?input.x>0?1:3:input.y>0?2:0;room.shaftWork=0;}
   if(room.shaftWork){room.shaftWork+=dt;if(room.shaftWork>=M.shaftSeconds){room.shaftWork=0;finishShaft(game);}}
-  else digStep(game,dt);
-  const speed=(game.vehicle.active?vehicleSpeed(game.progress,game.vehicle.index):M.speed)*movementLoadFactor(game),dx=input.x/Math.max(1,length)*speed*dt,dy=input.y/Math.max(1,length)*speed*dt;
+  else if(!room.tool||length>.01)digStep(game,dt);else room.dig=null;
+  // 铺轨沿主方向移动，避免斜跨格角造成两段轨道不相连；放下工具即可自由斜行。
+  const rail=room.tool==='rail'&&!game.vehicle.active,axis=MINE_DIRECTIONS[room.direction],move=rail?{x:axis.x*Math.min(1,length),y:axis.y*Math.min(1,length)}:{x:input.x/Math.max(1,length),y:input.y/Math.max(1,length)};
+  const speed=(game.vehicle.active?vehicleSpeed(game.progress,game.vehicle.index):M.speed)*movementLoadFactor(game),dx=move.x*speed*dt,dy=move.y*speed*dt;
   if(!mineBlocked(game,p.x+dx,p.y))p.x+=dx;if(!mineBlocked(game,p.x,p.y+dy))p.y+=dy;
+  if(length>.01&&!room.surveyWait)movementMineWork(game);
  }
  p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);p.angle=room.direction*Math.PI/2-Math.PI/2;
  if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
