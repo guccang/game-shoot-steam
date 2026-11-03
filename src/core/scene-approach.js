@@ -11,6 +11,7 @@ import {homeExterior,HOME_ELEVATOR,hasHomeElevator,homeStairRoutes} from '../con
 import {createQuestRouteSearch} from '../physics/quest-route.js';
 import {playerNavigationBody} from './prepared-navigation.js';
 import {farmMode} from './farm.js';
+import {mineEntrances} from '../world/mine-entrances.js';
 
 // 全部已有营业房共用目录，仓库保留室外存取事务，不另造库存或室内服务。
 export {CLICK_BUILDINGS};
@@ -38,6 +39,13 @@ export function approachBuilding(game,id){
  const b=clickableBuildings(game).find(b=>b.id===id);if(!b||!facilityOpen(game.progress,id==='vehicle'?'garage':id))return false;
  if(!request(game,id,nearest(b.door,game.player)))return false;
  game.cottageDoorLatch=false;return true;
+}
+// 地表矿洞只提交寻路意图；抵达后由同一候停规则进入共享地下一层。
+export function approachMineEntrance(game,key){
+ const site=mineEntrances(game.progress.mining).find(s=>s.key===key);
+ if(!site||game.farmWork?.tool||!game.progress.homeDecor.basement||!clickableBuildings(game).length)return false;
+ if(!request(game,'mine:'+key,nearest(site,game.player)))return false;
+ game.mineEntranceLatch=null;game.mineEntranceWait=0;game.mineEntranceKey=null;return true;
 }
 // 再次明确点击可重新上下楼或睡觉，切层与醒来仍自动锁住重复触发。
 export function approachCottageTarget(game,id){

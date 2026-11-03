@@ -1,5 +1,6 @@
 // 地下九类景观使用同一森林描边与低饱和块面，独立绘制地面、水流、植株和生物动作。
 import {minePoint} from '../config/mining.js';
+import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {mineTerrain,MINE_ANIMALS} from '../config/mine-ecology.js';
 import {box,oval,poly} from './primitives.js';
 const ink='#365a47';
@@ -14,6 +15,7 @@ export function drawMineTerrain(c,cell,layer,night,time){
 }
 // 设施和大型景观共用脚底排序，主体位于格边，中心留下步行、矿车与战车通路。
 export function drawMineLandscape(c,cell,layer,night,time){
+ if(mineEntrancePlatform(cell,layer))return;
  const t=mineTerrain(cell,layer),p=minePoint(cell),x=p.x-28+(t.hash>>>16)%14,y=p.y+10+(t.hash>>>24)%18,key=`${cell.x},${cell.y}`;
  if(!t.natural||t.safe||t.water)return;const harvested=(layer.harvested?.[key]||0)>layer.age;
  if(!t.prop){if(t.biome.id==='moss'&&(t.hash>>>12)%3===0){for(let i=0;i<2;i++)oval(c,x+i*13,y-i*3,6,2,night?'#80936c':'#c0cc8d');}return;}
