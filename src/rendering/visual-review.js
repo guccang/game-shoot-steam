@@ -1912,3 +1912,6 @@ export function inspectMineEntrances(game,renderer,root){return {designCriterion
 
 // 自然地貌验收绑定正式连续轮廓、实际水流时钟与同屏工具，不使用另一个演示画面。
 export function inspectMineLandscapeQuality(game,renderer,root){return {...inspectNaturalMining(game,renderer,root),designCriterion:"underground-landscape-quality",landscape:renderer.mineLandscapeReview};}
+
+// 接轨验收沿用正式矿车状态，读取可见连接种类和纯几何缓存预算。
+export function inspectMineRailJunctions(game,renderer,root){return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-rail-junctions',railGeometryVariants:16,newBitmapBytes:0};}

@@ -11,6 +11,7 @@ import {drawMineTerrain,drawMineLandscape,drawMineAnimal,drawMineBolts} from './
 import {drawVehicleTracks,drawVehicleArmor} from './vehicle.js';
 import {riderPosition} from '../config/vehicle-rider.js';
 import {drawMineLandscapeGround} from './mine-landscape-ground.js';
+import {drawMineRail} from './mine-rails.js';
 import {mineLandscapeAnchor} from '../world/mine-surface.js';
 import {calendarView} from '../world/living-calendar.js';
 import {mineEntrances,mineEntranceMarkers} from '../world/mine-entrances.js';
@@ -34,22 +35,6 @@ function drawLadder(c,x,y,night,text){
 }
 // 简洁奶油文字牌统一标注梯口与路线，不遮挡猫的身体。
 function label(c,text,x,y,size=12){c.font=`bold ${size}px sans-serif`;c.textAlign='center';const w=c.measureText(text).width+16;box(c,x-w/2,y-14,w,21,5,'#f1e5bd','#4c6b50',1.5);c.fillStyle='#315c43';c.fillText(text,x,y+1);}
-// 自动接轨使用相邻格共同端点，枕木和双钢轨分别绘制，转弯保持连通。
-function rail(c,cell,m){
- const p=minePoint(cell),neighbors=MINE_DIRECTIONS.filter(d=>m.rails[mineKey({x:cell.x+d.x,y:cell.y+d.y})]);
- for(const d of neighbors.length?neighbors:[MINE_DIRECTIONS[1],MINE_DIRECTIONS[3]]){
-  const length=neighbors.length?32:18;c.save();c.translate(p.x,p.y);c.rotate(Math.atan2(d.y,d.x));
-  for(let x=0;x<length;x+=12)box(c,x-3,-17,6,34,2,'#9c8058','#4a6248',1);
-  for(const y of [-10,10]){box(c,-1,y-2,length+2,4,1,'#c5cfba','#4a6650',1);box(c,0,y-2,length,1,0,'#eef0ce');}c.restore();
- }
- oval(c,p.x,p.y,6,6,'#839a7d','#49674f',1);
- // 已设置的岔路在轨面绘制小箭头，低于猫与车厢，不增加遮挡或碰撞。
- const direction=m.junctions?.[mineKey(cell)];
- if(neighbors.length>=3&&Number.isInteger(direction)){
-  c.save();c.translate(p.x,p.y);c.rotate(direction*Math.PI/2-Math.PI/2);
-  poly(c,[[-12,-4],[2,-4],[2,-9],[14,0],[2,9],[2,4],[-12,4]],'#f1d99f','#315c43',2);c.restore();
- }
-}
 // 灯笼和路牌落在格子左侧，脚底可自由通行，灯光限制为局部范围。
 function decoration(c,cell,type,night){
  const p=minePoint(cell),x=p.x-23,y=p.y+8;oval(c,x+3,y+5,10,4,'#2548383d');
@@ -79,14 +64,14 @@ export function drawMining(renderer,g=renderer.game){
  const v=renderer.mineView,m=currentMineLayer(g),bounds=mineBounds(m);
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
- const first=mineCell({x:v.x-64,y:v.y+top/zoom-64}),last=mineCell({x:v.x+w/zoom+64,y:v.y+bottom/zoom+64});let tiles=0;
+ const first=mineCell({x:v.x-64,y:v.y+top/zoom-64}),last=mineCell({x:v.x+w/zoom+64,y:v.y+bottom/zoom+64});let tiles=0;const railKinds={};
  const landscapeTime=renderer.reduced.matches?0:m.age;drawMineLandscapeGround(renderer,m,first,last,night,landscapeTime);
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){
   tiles++;const cell={x,y},key=mineKey(cell),p=minePoint(cell);
   if(!mineCellArea(cell,m)){box(c,p.x-32,p.y-32,65,65,0,'#29443c');continue;}
   if(!mineCellOpen(cell,m))continue;
   drawMineTerrain(c,cell,m,night,m.age);
-  if(m.rails[key])rail(c,cell,m);
+  if(m.rails[key]){const kind=drawMineRail(c,cell,m,night);railKinds[kind]=(railKinds[kind]||0)+1;}
  }
  const targetCell=mineTarget(g),target=minePoint(targetCell);if(g.cottage.tool||g.cottage.autoDig){c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);}
  const entry=minePoint(parseKey(m.entry));drawLadder(c,entry.x,entry.y,night,m.descent===m.entry?'上行 ↑ · 下层 ↓':(g.cottage.depth||1)===1?'小屋 ↑':'上一层 ↑');
@@ -121,7 +106,7 @@ export function drawMining(renderer,g=renderer.game){
  c.fillStyle='#29443c';c.fillRect(v.x-64,v.y-64,Math.max(0,bounds.left-v.x+64),h/zoom+128);c.fillRect(bounds.right,v.y-64,w/zoom+128,h/zoom+128);c.fillRect(v.x-64,v.y-64,w/zoom+128,Math.max(0,bounds.top-v.y+64));c.fillRect(v.x-64,bounds.bottom,w/zoom+128,h/zoom+128);
  const work=g.cottage.dig?g.cottage.dig.elapsed/productionDigSeconds(g.progress,M.digSeconds):g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
- c.restore();renderer.mineReview={tiles,night,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
+ c.restore();renderer.mineReview={tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
 }
 // 固定范围小地图显示天然洞厅、已挖区域、轨道、洞口和小屋方向，远处小屋以边缘箭头定位。
 export function drawMineMap(canvas,g){
