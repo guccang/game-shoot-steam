@@ -43,7 +43,9 @@ async original=>{
   let bought=null;
   if(!resume){
   await enter('construction');await page.locator('[data-room-item="shopkeeper"]').tap();await page.locator('[data-npc-service]').tap();
-  await page.locator('[data-build="elevator"]').tap();await page.locator('#home-build-elevator-floor').fill('3');await page.locator('[data-build="elevator"]').tap();
+  await page.locator('[data-build="elevator"]').tap();
+  // 构造旧版不连续付费楼层，继续验证未装层的楼梯通行。
+  await page.evaluate(async()=>{const r=(await import('/src/core/home-construction.js')).buildHome(a.game,'elevator',{floor:2});if(!r.ok)throw Error(r.message);});
   bought=await page.evaluate(()=>({floors:a.game.progress.homeDecor.elevators,coins:a.game.progress.coins,wood:a.game.progress.wood}));
   if(JSON.stringify(bought)!==JSON.stringify({floors:[0,2],coins:38000,wood:8400}))throw Error('按层收费失败 '+JSON.stringify(bought));await shot('purchase-two-floors');await page.locator('[data-build-close]').tap();
   await enter('cottage');await shot('first-floor-elevator');await lift(4);await shot('top-floor-down-only');await stairs('down',3);await shot('third-floor-elevator');
@@ -51,7 +53,7 @@ async original=>{
   // 取消乘梯后原地不会自动重开，明确再点电梯才能重新呼叫。
   await page.locator('[data-cottage-target="elevator"]').tap();await page.locator('[data-build-close]').tap();await page.waitForTimeout(1300);if(await page.locator('#home-construction-dialog').isVisible())throw Error('取消乘梯后反复打开');
   await lift(1);
-  await enter('construction');await page.locator('[data-room-item="shopkeeper"]').tap();await page.locator('[data-npc-service]').tap();await page.locator('#home-build-elevator-floor').fill('3');
+  await enter('construction');await page.locator('[data-room-item="shopkeeper"]').tap();await page.locator('[data-npc-service]').tap();
   await page.locator('[data-remove-elevator]').tap();await shot('remove-confirm');await page.locator('[data-cancel-remove]').tap();if(!await page.evaluate(()=>a.game.progress.homeDecor.elevators.includes(2)))throw Error('取消拆除失效');
   await page.locator('[data-remove-elevator]').tap();await page.locator('[data-build="remove-elevator"]').tap();if(await page.evaluate(()=>JSON.stringify(a.game.progress.homeDecor.elevators))!=='[0]')throw Error('拆除影响其他楼层');
   if(!await page.evaluate(()=>a.game.progress.coins===38000&&a.game.progress.wood===8400))throw Error('拆除意外返款或扣款');await page.locator('[data-build-close]').tap();

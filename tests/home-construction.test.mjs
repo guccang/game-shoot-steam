@@ -7,7 +7,7 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,hasHomeElevator,homeStairRoutes} from '../src/config/home-construction.js';
+import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeElevatorPlan,hasHomeElevator,homeStairRoutes} from '../src/config/home-construction.js';
 import {buildHome,travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from '../src/core/home-construction.js';
 import {enterWorkshop,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/cottage.js';
 import {buyDecor,moveDecor} from '../src/core/home-decor.js';
@@ -164,3 +164,10 @@ test('四向地块像素对齐保留有限正尺寸和连续接缝',async()=>{
   assert.ok(Math.abs(first.x+first.w-right.x)<1e-8);assert.ok(Math.abs(first.y+first.h-below.y)<1e-8);
  }
 });
+
+// 自动施工逐层向上，拆除逐层向下，边界不会再扣钱或越过已建楼层。
+test('电梯默认从一楼逐层向上，最高层拆除后自动回退施工目标',()=>{const g=setup(),coins=g.progress.coins;assert.deepEqual(homeElevatorPlan(g.progress.homeDecor),{lifts:[],installFloor:0,removeFloor:null});assert.equal(buildHome(g,'remove-elevator').ok,false);for(let floor=0;floor<2;floor++){assert.ok(buildHome(g,'elevator').ok);assert.equal(homeElevatorPlan(g.progress.homeDecor).removeFloor,floor);}assert.equal(buildHome(g,'elevator').ok,false);assert.equal(g.progress.coins,coins-12000);assert.ok(buildHome(g,'floor').ok);assert.ok(buildHome(g,'elevator').ok);for(let floor=2;floor>=0;floor--){assert.equal(homeElevatorPlan(g.progress.homeDecor).removeFloor,floor);assert.ok(buildHome(g,'remove-elevator').ok);assert.equal(homeElevatorPlan(g.progress.homeDecor).installFloor,floor);}assert.equal(buildHome(g,'remove-elevator').ok,false);assert.ok(buildHome(g,'elevator').ok);assert.deepEqual(g.progress.homeDecor.elevators,[0]);});
+// 保存失败不能推进自动施工或拆除的目标，也不能扣掉金币木材。
+test('电梯自动层号保存失败原样保留，重试仍操作同一层',()=>{const g=setup();assert.ok(buildHome(g,'elevator').ok);for(const kind of ['elevator','remove-elevator']){const before=structuredClone(g.progress),plan=homeElevatorPlan(g.progress.homeDecor);g.livingPersist=()=>false;assert.equal(buildHome(g,kind).ok,false);assert.deepEqual(g.progress,before);assert.deepEqual(homeElevatorPlan(g.progress.homeDecor),plan);g.livingPersist=()=>true;assert.ok(buildHome(g,kind).ok);}assert.deepEqual(g.progress.homeDecor.elevators,[0]);});
+// 旧版稀疏电梯从最高层接续，不按总楼层数生成数组或改写低层楼梯。
+test('旧档稀疏电梯和百万层仅按已装记录计算施工顺序',()=>{assert.deepEqual(homeElevatorPlan({floors:1000000,elevators:[900000,0,5]}),{lifts:[0,5,900000],installFloor:900001,removeFloor:900000});assert.deepEqual(homeElevatorPlan({floors:4,elevator:true}),{lifts:[0],installFloor:1,removeFloor:0});assert.equal(homeElevatorPlan({floors:4,elevators:[3]}).installFloor,null);});

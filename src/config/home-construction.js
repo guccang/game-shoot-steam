@@ -10,6 +10,8 @@ export const HOME_BALCONY={width:480,height:230,spawn:{x:240,y:172},exit:{x:240,
 export function homeFloors(home){return Number.isSafeInteger(home?.floors)&&home.floors>=2?home.floors:2;}
 // 电梯只保存实际付费楼层；旧的一次性购买迁为一楼，不按高楼层数展开数组。
 export function elevatorFloors(home){return [...new Set((Array.isArray(home?.elevators)?home.elevators:home?.elevator===true?[0]:[]).filter(f=>Number.isSafeInteger(f)&&f>=0&&f<homeFloors(home)))].sort((a,b)=>a-b);}
+// 施工从最高已装层的上一层接续，拆除从最高已装层向下；旧档空缺楼层保留楼梯。
+export function homeElevatorPlan(home){const lifts=elevatorFloors(home),removeFloor=lifts.at(-1)??null,next=(removeFloor??-1)+1;return {lifts,installFloor:next<homeFloors(home)?next:null,removeFloor};}
 // 未安装的楼层保留楼梯，同一梯位始终只有一种设施。
 export function hasHomeElevator(home,floor){return elevatorFloors(home).includes(floor);}
 // 楼梯南侧入口上楼、北侧入口下楼，中间层同时保留两个方向；场景绘制与行走使用同一数据。

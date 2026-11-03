@@ -3,16 +3,18 @@ import {MINING} from '../config/mining.js';
 import {placedDecor} from '../progression/home-decor.js';
 // 加盖事务先保存再扣款，通行只访问已建楼层和已装设施。
 import {openBasement,freshMining} from '../progression/mining.js';
-import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeFloors,floorBalconies,elevatorFloors,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
+import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeFloors,floorBalconies,elevatorFloors,homeElevatorPlan,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
 import {bindEconomy,economyFor} from '../config/economy.js';
 import {capturePatrol} from './patrol-session.js';
 
 // 公司柜台提供施工服务，重复装配、越界层号和保存失败都不产生扣费。
-export function buildHome(game,kind,{floor=0,side='south'}={}){
+export function buildHome(game,kind,{floor,side='south'}={}){
  if(game.cottage?.kind!=='construction'||!['playing','paused'].includes(game.state))return {ok:false,message:'请到建筑公司办理。'};
  const removing=kind==='remove-elevator',price=removing?{coins:0,wood:0}:Object.hasOwn(HOME_BUILD_PRICES,kind)?HOME_BUILD_PRICES[kind]:null,home=game.progress.homeDecor;
  if(!price||!home)return {ok:false,message:'请选择有效的施工项目。'};
+ // 未指定层号的正式施工入口自动接续，保留显式层号供旧存档工具和已有规则调用。
+ if(floor===undefined){const plan=homeElevatorPlan(home);floor=kind==='elevator'?plan.installFloor:removing?plan.removeFloor:0;if(floor===null)return {ok:false,message:removing?'没有已安装的电梯可拆除。':'电梯已装至最高楼层，请先加盖楼层。'};}
  if(kind==='basement'&&home.basement)return {ok:false,message:'地下室已经建好，请从小屋一楼梯口下去。'};
  if(kind==='floor'&&!Number.isSafeInteger(homeFloors(home)+1))return {ok:false,message:'当前楼层编号超出数字表示范围。'};
  if((kind==='elevator'||removing)&&(!Number.isSafeInteger(floor)||floor<0||floor>=homeFloors(home)))return {ok:false,message:'请选择已建楼层。'};

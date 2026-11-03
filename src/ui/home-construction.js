@@ -3,13 +3,13 @@ import {constructionWood} from '../progression/resource-wallet.js';
 import {createEventScope} from '../platform/events.js';
 import {buildHome,travelHomeFloor} from '../core/home-construction.js';
 import {approachCottageTarget} from '../core/scene-approach.js';
-import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,homeFloors,floorBalconies,elevatorFloors,hasHomeElevator} from '../config/home-construction.js';
+import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,homeFloors,floorBalconies,homeElevatorPlan,hasHomeElevator} from '../config/home-construction.js';
 import {cottageFloor} from '../config/cottage.js';
 
-// 保存事务由规则层校验，面板保留按层费用、拆除确认及有效楼层输入。
+// 保存事务由规则层校验，电梯自动按顺序施工与拆除，面板保留按层费用和拆除确认。
 export function createHomeConstruction({game,root,panel,dialogs,input,onChange}){
  const scope=createEventScope(),dialog=root.createElement('dialog'),entry=root.createElement('button');
- let mode='travel',message='',buildFloor=0,balconyFloor=1,balconySide='north',removeFloor=null,pendingWalk=null;
+ let mode='travel',message='',balconyFloor=1,balconySide='north',removeFloor=null,pendingWalk=null;
  entry.id='home-travel-open';entry.className='ui-button';entry.textContent='楼层设施';panel.querySelector('footer').append(entry);
  dialog.id='home-construction-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','home-construction-title');
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="home-construction-title" tabindex="-1"></h2><p id="home-construction-summary"></p></div><button class="ui-close" data-build-close aria-label="关闭建筑服务">×</button></header><div class="ui-panel__body" id="home-construction-content"></div><footer class="ui-panel__footer"><p id="home-construction-message" role="status"></p></footer>';root.body.append(dialog);
@@ -21,12 +21,12 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   get('summary').textContent=`已建 ${floors} 层 · ${mode==='build'?`金币 ${game.progress.coins} · 木材 ${constructionWood(game.progress)}（背包 ${game.progress.logistics.bagWood}＋仓库 ${game.progress.wood}）`:`当前第 ${floor+1} 楼`}`;get('message').textContent=message;
   if(mode==='build'){
    const price=kind=>`${HOME_BUILD_PRICES[kind].coins} 金币 + ${HOME_BUILD_PRICES[kind].wood} 木材`;
-   const valid=Number.isSafeInteger(buildFloor)&&buildFloor>=0&&buildFloor<floors,installed=valid&&hasHomeElevator(h,buildFloor),lifts=elevatorFloors(h);
+   const {lifts,installFloor,removeFloor:highest}=homeElevatorPlan(h);
    get('content').innerHTML=`<section class="ui-section"><h3>地下室与矿道</h3><p>小屋一楼接通地下室，自带矿锄。可持续挖矿、开地表洞口、铺轨与驾驶矿车。</p><button class="ui-button" data-build="basement" ${h.basement?'disabled':''}>${h.basement?'地下室已建成':'创建地下室 · '+price('basement')}</button></section><section class="ui-section"><h3>向上加盖</h3><p>每次增加一整层，默认接通上下楼梯。</p><button class="ui-button" data-build="floor">加盖第 ${floors+1} 楼 · ${price('floor')}</button></section>
-    <section class="ui-section"><h3>本层电梯</h3><p>每层单独付费，安装后替换该层楼梯。可直达全部已建楼层，未安装的楼层仍用楼梯。</p><label>施工楼层 <input id="home-build-elevator-floor" type="number" inputmode="numeric" min="1" max="${floors}" value="${valid?buildFloor+1:''}" step="1"></label><p id="home-elevator-status">${valid?`第 ${buildFloor+1} 楼 · ${installed?'已安装电梯':'使用楼梯'}`:'请输入有效的已建楼层'}</p>
-    <button class="ui-button" data-build="elevator" ${!valid||installed?'disabled':''}>安装本层电梯 · ${price('elevator')}</button>
-    <button class="ui-button" data-remove-elevator ${installed?'':'hidden'}>拆除本层电梯</button>
-    <div id="home-elevator-removal">${removeFloor===buildFloor&&installed?`<div class="ui-inset"><p>确认拆除第 ${buildFloor+1} 楼电梯？本层恢复楼梯，已花费的金币和木材不返还。</p><button class="ui-button ui-button--danger" data-build="remove-elevator">确认拆除第 ${buildFloor+1} 楼电梯</button><button class="ui-button" data-cancel-remove>保留电梯</button></div>`:''}</div>
+    <section class="ui-section" id="home-elevator-section"><h3>电梯施工</h3><p>每次安装一层，从最高已装电梯层继续向上；拆除从最高已装层向下进行。每层单独付费，安装后替换该层楼梯，可直达全部已建楼层。</p><p id="home-elevator-status">${installFloor!==null?`下一层施工：第 ${installFloor+1} 楼`:'电梯已装至最高楼层，继续施工请先加盖楼层。'}</p>
+    <button class="ui-button" data-build="elevator" ${installFloor===null?'disabled':''}>${installFloor===null?'已装至最高楼层':`安装第 ${installFloor+1} 楼电梯 · ${price('elevator')}`}</button>
+    <button class="ui-button" data-remove-elevator ${highest===null?'disabled':''}>${highest===null?'暂无电梯可拆除':`拆除第 ${highest+1} 楼电梯`}</button>
+    <div id="home-elevator-removal">${removeFloor!==null&&removeFloor===highest?`<div class="ui-inset"><p>确认拆除第 ${removeFloor+1} 楼电梯？本层恢复楼梯，已花费的金币和木材不返还。</p><button class="ui-button ui-button--danger" data-build="remove-elevator">确认拆除第 ${removeFloor+1} 楼电梯</button><button class="ui-button" data-cancel-remove>保留电梯</button></div>`:''}</div>
     <p>已安装 ${lifts.length} 层${lifts.length?'：'+lifts.slice(0,8).map(f=>f+1+'楼').join('、')+(lifts.length>8?'…':''):''}</p></section>
     <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><label>楼层 <input id="home-build-floor" type="number" inputmode="numeric" min="1" max="${floors}" value="${Math.min(floors,balconyFloor+1)}" step="1"></label><label>朝向 <select id="home-build-side">${Object.entries(HOME_DIRECTIONS).map(([id,d])=>`<option value="${id}" ${id===balconySide?'selected':''}>${d.name}侧</option>`).join('')}</select></label><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
   }else{
@@ -41,24 +41,18 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   mode=next;message='';removeFloor=null;input.reset();dialogs.open(dialog.id);
  }
  scope.on(entry,'click',()=>open('travel'));
- // 输入楼层时只更新状态和按钮，保留输入框及点击目标，避免失焦后首次触摸丢失。
- scope.on(dialog,'input',event=>{
-  if(event.target.id==='home-build-elevator-floor'){
-   buildFloor=Number(event.target.value)-1;removeFloor=null;
-   const valid=Number.isSafeInteger(buildFloor)&&buildFloor>=0&&buildFloor<homeFloors(game.progress.homeDecor),installed=valid&&hasHomeElevator(game.progress.homeDecor,buildFloor);
-   root.getElementById('home-elevator-status').textContent=valid?`第 ${buildFloor+1} 楼 · ${installed?'已安装电梯':'使用楼梯'}`:'请输入有效的已建楼层';
-   dialog.querySelector('[data-build="elevator"]').disabled=!valid||installed;dialog.querySelector('[data-remove-elevator]').hidden=!installed;root.getElementById('home-elevator-removal').replaceChildren();
-  }else if(event.target.id==='home-build-floor')balconyFloor=Number(event.target.value)-1;
- });
+ // 阳台仍可选择楼层；电梯施工不再显示或读取楼层输入。
+ scope.on(dialog,'input',event=>{if(event.target.id==='home-build-floor')balconyFloor=Number(event.target.value)-1;});
  scope.on(dialog,'change',event=>{if(event.target.id==='home-build-side')balconySide=event.target.value;});
  scope.on(dialog,'click',event=>{
   const b=event.target.closest('button');if(!b||b.disabled)return;
   if(b.hasAttribute('data-build-close')){dialogs.close(dialog.id);return;}
-  if(b.hasAttribute('data-remove-elevator')){removeFloor=buildFloor;paint();return;}
+  if(b.hasAttribute('data-remove-elevator')){removeFloor=homeElevatorPlan(game.progress.homeDecor).removeFloor;paint();return;}
   if(b.hasAttribute('data-cancel-remove')){removeFloor=null;paint();return;}
   if(b.dataset.build){
-   if(b.dataset.build==='remove-elevator'&&removeFloor!==buildFloor)return;
-   const r=buildHome(game,b.dataset.build,{floor:b.dataset.build==='balcony'?balconyFloor:buildFloor,side:balconySide});message=r.message;if(r.ok){removeFloor=null;onChange();}paint();return;
+   // 确认期间最高层发生变化时重新展示，不把旧确认用于另一层。
+   if(b.dataset.build==='remove-elevator'&&(removeFloor===null||removeFloor!==homeElevatorPlan(game.progress.homeDecor).removeFloor)){removeFloor=null;message='电梯楼层已变化，请重新确认拆除。';paint();return;}
+   const r=buildHome(game,b.dataset.build,{floor:b.dataset.build==='balcony'?balconyFloor:undefined,side:balconySide});message=r.message;if(r.ok){removeFloor=null;onChange();}paint();return;
   }
   if(b.hasAttribute('data-walk-elevator')){pendingWalk={room:game.cottage,floor:cottageFloor(game.cottage)};dialogs.close(dialog.id);return;}
   if(!b.hasAttribute('data-lift'))return;
