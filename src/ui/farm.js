@@ -245,7 +245,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  prepare();
  // 卸载释放动画与监听，停止未完成动作，不影响已保存的进度。
  function dispose(){disposed=true;setFarmTool(game,null);game.farmVehicleReturn=null;game.farmDragging=false;scope.dispose();placement.dispose();for(const f of flights){f.animation.cancel();f.node.remove();}flights.clear();harvestConfirm.dispose();removalPanel.dispose();layer.remove();menu.remove();}
- return {open,render,renderFrame:render,tapWorld,dispose};
+ return {open,close:stop,render,renderFrame:render,tapWorld,dispose};
 }
 // 绑定正式世界与实际动画节点，验收不创建替身场景。
 export function inspectFarm(game,root){return {designCriterion:'world-farm-delivery',open:!root.getElementById('farm-tools')?.hidden,plots:game.progress.farm.plots.length,coins:game.progress.coins,seeds:game.progress.farm.seeds,parcels:game.progress.farm.delivery.parcels.length,queue:game.farmWork?.queue?.length||0,job:game.farmWork?.job?.action,flights:root.querySelectorAll('.farm-coin-flight').length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,world:!!root.getElementById('farm-world-layer')&&!root.getElementById('farm-dialog'),art:farmArtBudget(),notice:root.getElementById('farm-notice')?.textContent};}

@@ -13,6 +13,7 @@ import {drawPlayerTow} from './player-towing.js';
 import {furnitureShopObjects,drawFurnitureShop} from './furniture-shop.js';
 import {vehicleServiceObjects,drawVehicleServiceObject} from './vehicle-repair.js';
 import {storyCampScene} from './story-camp.js';
+import {drawProductionDevice} from './farm-production.js';
 import {drawFarmGround,farmObjects,drawFarmCrop,drawFarmTool,drawFarmDelivery,drawCampFarmSign} from './farm.js';
 import {drawSeedShop} from './seed-shop.js';
 import {cropGrowthBoosts} from './farm-growth.js';
@@ -513,6 +514,7 @@ export class Renderer {
       else if(item.type==='furniture-shop')drawFurnitureShop(c,item,light.night,winter);
       else if(item.type==='seed-shop')drawSeedShop(c,item);
       else if(item.type==='farm-sign')drawCampFarmSign(c,item);
+      else if(item.type==='farm-production')drawProductionDevice(c,item,g.time,this.reduced.matches,item.kind==='sprinkler'&&!!camp.productionSpray?.sprinklers.includes(item.id)&&g.time-camp.productionSpray.time<1);
       else if(item.type==='farm-crop')drawFarmCrop(c,item,g.time,this.reduced.matches,this.farmVisualNow,cropBoosts,zoom);
       else if(item.type==='race-bale')drawRaceBale(c,item);
       else if (item.type === 'race-runner')drawRaceRunner(c,item,this.reduced.matches);

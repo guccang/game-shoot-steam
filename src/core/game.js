@@ -19,6 +19,7 @@ import {recordMainlineVehiclePractice} from '../progression/mainline-combat.js';
 import {updateMonsterCamps,canHitCampActor,settleMonsterCampKill} from './monster-camps.js';
 import {awardFarmSeedDrop} from './farm-seeds.js';
 import {ensureWildFarms,expireWildFarms} from './wild-farm.js';
+import {updateProduction} from './farm-production.js';
 import {farmWorking,updateFarmWork,updateFarmRain} from './farm.js';
 import {createResourceDrop} from '../combat/resource-pickup.js';
 import {updateRestoration} from './town-restoration.js';
@@ -817,6 +818,7 @@ export class Game {
     this.previewTime += dt;
     updateBossEngagement(this);
     updateOutdoors(this,dt);
+    updateProduction(this);
     updateFarmRain(this);
     updateWarehouseWood(this,dt);
     updateWarehouseHarvest(this,dt);

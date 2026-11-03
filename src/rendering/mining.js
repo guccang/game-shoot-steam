@@ -1,3 +1,4 @@
+import {productionDigSeconds} from '../config/farm-production.js';
 // 地下正式绘制器：矿道、轨道、轮毂、矿锄与真实猫身体分层，不新增位图缓存。
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '../config/mining.js';
 import {mineTarget,parseKey} from '../core/mining.js';
@@ -70,7 +71,7 @@ function cartBody(c,cart,front=false){
 }
 // 矿锄和手独立于身体，挥动只改变手臂与柄的角度，不变形角色图集。
 function pickaxe(c,g){
- const room=g.cottage,p=g.player,work=room.dig?.elapsed||room.shaftWork||room.strike||0,phase=work?Math.sin(work/M.digSeconds*Math.PI*2):0,d=MINE_DIRECTIONS[room.direction],side=d.x<0?-1:1;
+ const room=g.cottage,p=g.player,work=room.dig?.elapsed||room.shaftWork||room.strike||0,phase=work?Math.sin(work/productionDigSeconds(g.progress,M.digSeconds)*Math.PI*2):0,d=MINE_DIRECTIONS[room.direction],side=d.x<0?-1:1;
  c.save();c.translate(p.x+side*13,p.y-17);c.rotate(side*(-.35+phase*.65));
  box(c,-2,-27,5,39,2,'#bb9767','#466448',1.5);poly(c,[[-15,-26],[-9,-33],[9,-33],[17,-25],[8,-27],[-8,-27]],'#becbb6','#3c624a',2);
  oval(c,1,0,6,5,'#efc997','#4c684d',1.5);c.restore();
@@ -117,7 +118,7 @@ export function drawMining(renderer,g=renderer.game){
  for(const p of visibleShafts)label(c,`矿洞 ${p.number} · 地面 ↑`,p.x,p.y+38,12);
  // 未开放区域覆盖在边界外，部分边缘格也与实体边界一致。
  c.fillStyle='#29443c';c.fillRect(v.x-64,v.y-64,Math.max(0,bounds.left-v.x+64),h/zoom+128);c.fillRect(bounds.right,v.y-64,w/zoom+128,h/zoom+128);c.fillRect(v.x-64,v.y-64,w/zoom+128,Math.max(0,bounds.top-v.y+64));c.fillRect(v.x-64,bounds.bottom,w/zoom+128,h/zoom+128);
- const work=g.cottage.dig?g.cottage.dig.elapsed/M.digSeconds:g.cottage.shaftWork/M.shaftSeconds;
+ const work=g.cottage.dig?g.cottage.dig.elapsed/productionDigSeconds(g.progress,M.digSeconds):g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
  c.restore();renderer.mineReview={tiles,night,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
 }

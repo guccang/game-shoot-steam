@@ -7,7 +7,7 @@ import {farmGrowth,validateFarm} from '../src/progression/farm.js';
 import {farmCell,FARM_CROPS} from '../src/config/farm.js';
 import {farmApproach} from '../src/world/farm-land.js';
 // 营地测试田只用作初始夹具，结算均调用正式事务。
-function scene(){const progress=freshRangerProgress();progress.farm.seeds[0]=1;progress.farm.plots=Array.from({length:8},(_,id)=>({...farmCell(id),mapId:'forest',crop:0,plantedAt:1000,readyAt:61000,watered:false}));progress.farm.nextId=8;return {state:'playing',mapId:'forest',progress,player:{...farmCell(1),hp:100,mapId:'forest'},trees:[],livingPersist:()=>true};}
+function scene(){const progress=freshRangerProgress();progress.farm.seeds[0]=1;progress.farm.plots=Array.from({length:8},(_,id)=>({...farmCell(id),mapId:'forest',crop:0,plantedAt:1000,readyAt:61000,watered:false}));progress.farm.nextId=8;return {state:'playing',mapId:'forest',progress,player:{...farmCell(1),hp:100,mapId:'forest'},trees:[],vehicles:[],livingPersist:()=>true};}
 test('一次只浇点击的田块，邻田、其他地图和远田不受影响',()=>{
  const g=scene();g.progress.farm.plots.push({...g.progress.farm.plots[1],id:20,mapId:'jiuzhaigou'});
  const ids=farmWaterTargets(g.progress.farm,1,'forest',10000).map(p=>p.id);assert.deepEqual(ids,[1]);
@@ -36,7 +36,8 @@ test('保存失败回滚单田，收获重种重置本茬浇水资格，旧档�
  const g=scene(),before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(farmAction(g,'water',{plot:1,now:10000}).ok,false);assert.deepEqual(g.progress,before);
  g.livingPersist=()=>true;farmAction(g,'water',{plot:1,now:10000});assert.ok(farmAction(g,'harvest',{plot:1,now:46000}).ok);assert.equal(g.progress.farm.plots[1].watered,false);
  assert.ok(farmAction(g,'plant',{plot:1,now:47000}).ok);assert.ok(farmAction(g,'water',{plot:1,now:48000}).ok);assert.equal(g.progress.farm.plots[1].readyAt,92000);
- const old=validateFarm({version:2,plots:[{id:0,crop:0,plantedAt:1000,readyAt:61000}]});assert.equal(old.plots[0].watered,false);
+ // 当前支持的v6旧记录缺少浇水字段时补false；更早版本遵循现行重置合同。
+ const old=validateFarm({version:6,plots:[{...farmCell(0),mapId:'forest',id:0,crop:0,plantedAt:1000,readyAt:61000}]});assert.equal(old.plots[0].watered,false);assert.equal(validateFarm({version:2}).plots.length,0);
 });
 test('走近动作落水才修改单田，移动取消不加速，队列重复点击只做一次',()=>{
  const g=scene(),now=Date.now();for(const p of g.progress.farm.plots){p.plantedAt=now;p.readyAt=now+60000;}setFarmTool(g,'water');queueFarmWork(g,'water',{plot:1});queueFarmWork(g,'water',{plot:1});assert.equal(g.farmWork.queue.length,1);

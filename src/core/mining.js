@@ -1,4 +1,5 @@
 // 地下玩法独立处理挖掘、铺轨和驾驶；复用正式输入、角色时钟与存档事务。
+import {PRODUCTION as PRODUCTION_RULES,productionDigSeconds} from '../config/farm-production.js';
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '../config/mining.js';
 import {miningCommit as commit,mineNotice as notice} from './mine-transactions.js';
 import {currentMineLayer,travelMineLayer} from './mine-layers.js';
@@ -36,7 +37,7 @@ export function parseKey(key){const [x,y]=key.split(',').map(Number);return {x,y
 // 地表洞口必须能完整站立，并避开树干、建筑、水界及其他洞口。
 export function canOpenShaft(game){
  const key=mineKey(mineCell(game.player)),point=minePoint(mineCell(game.player));
- if(game.progress.farm?.plots.some(plot=>mineEntranceFarmBlocked({shafts:[key]},plot)))return false;
+ if([...(game.progress.farm?.plots||[]),...(game.progress.production?.sprinklers||[]),game.progress.production?.bench].filter(Boolean).some(plot=>mineEntranceFarmBlocked({shafts:[key]},plot)))return false;
  if((game.cottage?.depth||1)!==1||mineCellArea(mineCell(game.player),currentMineLayer(game))<4096||mineTerrain(mineCell(game.player),currentMineLayer(game)).water||key==='0,0'||game.progress.mining.shafts.some(k=>worldDistance(minePoint(parseKey(k)),point)<128))return false;
  const body={...game.player,mapId:'forest',flying:false,amphibious:false,treePass:false,arena:null,livingCollision:true};
  return [[0,0],[0,38],[34,0],[-34,0],[0,-34]].every(([x,y])=>!blocked(point.x+x,point.y+y,18,game.trees,body));
@@ -45,7 +46,7 @@ export function canOpenShaft(game){
 export function startMineShaft(game){
  if(!active(game)||game.cottage.ride)return notice(game,'请先停稳并下车。');
  const room=game.cottage;if(room.shaftWork){room.shaftWork=0;return notice(game,'已取消向上开洞。',true);}
- if(!canOpenShaft(game))return notice(game,'上方有建筑、树木、水域、田块或已有洞口，请换一块空地。');
+ if(!canOpenShaft(game))return notice(game,'上方有建筑、树木、水域、田块、生产设施或已有洞口，请换一块空地。');
  if(!afford(game,'shaft'))return notice(game,'开洞需要 5 矿石、8 木材。');
  room.autoDig=false;room.tool=null;room.dig=null;room.shaftKey=mineKey(mineCell(game.player));room.shaftWork=.001;return notice(game,'正在向上开洞，移动可取消。',true);
 }
@@ -95,8 +96,8 @@ function digStep(game,dt){
  const room=game.cottage,target=mineTarget(game),key=mineKey(target),point=minePoint(target);
  if(game.vehicle.active||!room.autoDig||mineCellOpen(target,currentMineLayer(game))||mineCellArea(target,currentMineLayer(game))<=0||Math.hypot(point.x-game.player.x,point.y-game.player.y)>M.tile+8){room.dig=null;return;}
  if(room.dig?.key!==key)room.dig={key,elapsed:0};room.dig.elapsed+=dt;
- if(room.dig.elapsed<M.digSeconds)return;
- const amount=mineOre(target),r=commit(game,(m,p,l)=>{l.dug[key]=true;m.ore+=amount;},`挖通矿道，获得 ${amount} 矿石。`);room.dig=null;if(!r.ok){room.autoDig=false;room.tool=null;}
+ if(room.dig.elapsed<productionDigSeconds(game.progress,M.digSeconds))return;
+ const amount=mineOre(target),r=commit(game,(m,p,l)=>{l.dug[key]=true;m.ore+=amount;p.production.minedOre+=amount;if(p.production.effects.meal>0){p.production.effects.meal--;p.production.mealDigs++;}},`挖通矿道，获得 ${amount} 矿石。`);room.dig=null;if(!r.ok){room.autoDig=false;room.tool=null;}
 }
 // 所有设施报价来自同一配置，矿石为矿区建造材料，木材沿用正式仓库。
 function afford(game,kind){const price=M.prices[kind];return game.progress.mining.ore>=price.ore&&game.progress.wood>=price.wood;}
@@ -120,6 +121,7 @@ export function rideMineCart(game){
  if(room.ride){room.running=false;room.ride=null;commit(game,()=>{},'已停车并下车。');return true;}
  const cart=currentMineLayer(game).carts.find(c=>nearMineCart(game,c));
  if(!cart){notice(game,'请靠近矿车，或先在脚下轨道造一辆。');return false;}
+ const boarded=commit(game,(_m,p)=>{p.production.rodeCart=true;},'已乘坐矿车。');if(!boarded.ok)return false;
  room.ride=cart.id;room.running=false;room.autoDig=false;room.tool=null;room.dig=null;room.shaftWork=0;Object.assign(game.player,{x:cart.x,y:cart.y,vx:0,vy:0});return true;
 }
 // 登车线段逐步检查脚底，防止隔着未开掘岩壁登上邻近的矿车。
@@ -139,9 +141,10 @@ function cartStep(game,dt){
    if(!next){room.running=false;notice(game,'轨道还没有连通，请下车继续铺轨。');return;}
    cart.target=next.key;cart.from=key;
   }
-  const target=minePoint(parseKey(cart.target)),dx=target.x-cart.x,dy=target.y-cart.y,distance=Math.hypot(dx,dy),step=Math.min(distance,M.cartSpeed*dt);
+  const target=minePoint(parseKey(cart.target)),dx=target.x-cart.x,dy=target.y-cart.y,distance=Math.hypot(dx,dy),boostSeconds=Math.min(dt,cart.lubrication||0),step=Math.min(distance,M.cartSpeed*(dt+boostSeconds*(PRODUCTION_RULES.oilSpeed-1)));
   const other=currentMineLayer(game).carts.some(c=>c.id!==cart.id&&Math.hypot(c.x-(cart.x+dx/Math.max(1,distance)*step),c.y-(cart.y+dy/Math.max(1,distance)*step))<38);
   if(other){room.running=false;notice(game,'前方有矿车，已安全停车。');return;}
+  if(step>0&&cart.lubrication>0)cart.lubrication=Math.max(0,cart.lubrication-Math.min(dt,step/(M.cartSpeed*PRODUCTION_RULES.oilSpeed)));
   cart.x+=dx/Math.max(1,distance)*step;cart.y+=dy/Math.max(1,distance)*step;cart.wheel=(cart.wheel+step/8)%(Math.PI*2);
   if(distance<=step+.001){cart.x=target.x;cart.y=target.y;cart.previous=cart.from;cart.target=null;}
  }
@@ -160,10 +163,11 @@ export function updateMining(game,dt,input){
   else if(!room.tool||length>.01)digStep(game,dt);else room.dig=null;
   // 铺轨沿主方向移动，避免斜跨格角造成两段轨道不相连；放下工具即可自由斜行。
   const rail=room.tool==='rail'&&!game.vehicle.active,axis=MINE_DIRECTIONS[room.direction],move=rail?{x:axis.x*Math.min(1,length),y:axis.y*Math.min(1,length)}:{x:input.x/Math.max(1,length),y:input.y/Math.max(1,length)};
-  const speed=(game.vehicle.active?vehicleSpeed(game.progress,game.vehicle.index):M.speed)*movementLoadFactor(game),dx=move.x*speed*dt,dy=move.y*speed*dt;
+  const speed=(game.vehicle.active?vehicleSpeed(game.progress,game.vehicle.index):M.speed*(1+(PRODUCTION_RULES.juiceSpeed-1)*Math.min(dt,game.progress.production.effects.juice)/Math.max(.001,dt)))*movementLoadFactor(game),dx=move.x*speed*dt,dy=move.y*speed*dt;
   if(!mineBlocked(game,p.x+dx,p.y))p.x+=dx;if(!mineBlocked(game,p.x,p.y+dy))p.y+=dy;
   if(length>.01&&!room.surveyWait)movementMineWork(game);
  }
+ if(!room.ride&&!game.vehicle.active&&Math.hypot(p.x-before.x,p.y-before.y)>.001)game.progress.production.effects.juice=Math.max(0,game.progress.production.effects.juice-dt);
  p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);p.angle=room.direction*Math.PI/2-Math.PI/2;
  if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
  updateMineEcology(game,dt);
