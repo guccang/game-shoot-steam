@@ -30,9 +30,9 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
     <button class="ui-button" data-remove-elevator ${highest===null?'disabled':''}>${highest===null?'暂无电梯可拆除':`拆除第 ${highest+1} 楼电梯`}</button>
     <div id="home-elevator-removal">${removeFloor!==null&&removeFloor===highest?`<div class="ui-inset"><p>确认拆除第 ${removeFloor+1} 楼电梯？本层恢复楼梯，已花费的金币和木材不返还。</p><button class="ui-button ui-button--danger" data-build="remove-elevator">确认拆除第 ${removeFloor+1} 楼电梯</button><button class="ui-button" data-cancel-remove>保留电梯</button></div>`:''}</div>
     <p>已安装 ${lifts.length} 层${lifts.length?'：'+lifts.slice(0,8).map(f=>f+1+'楼').join('、')+(lifts.length>8?'…':''):''}</p></section>
-    <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><div id="home-balcony-floor-picker"></div><label>朝向 <select id="home-build-side">${Object.entries(HOME_DIRECTIONS).map(([id,d])=>`<option value="${id}" ${id===balconySide?'selected':''}>${d.name}侧</option>`).join('')}</select></label><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
+    <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><div id="home-balcony-floor-picker"></div><p id="home-balcony-status"></p><div id="home-build-side" class="home-balcony-directions" role="group" aria-label="阳台朝向" aria-describedby="home-balcony-status">${['east','south','west','north'].map(id=>`<button type="button" class="ui-button" data-balcony-side="${id}" aria-pressed="false"><span>${HOME_DIRECTIONS[id].name}</span><small></small></button>`).join('')}</div><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
    // 施工窗口与乘梯窗口共用选择规则，重画时保留所选层与朝向。
-   floorPicker=createHomeFloorPicker(root.getElementById('home-balcony-floor-picker'),{floors,value:balconyFloor,id:'home-build-floor',label:'阳台施工楼层',onChange:target=>{balconyFloor=target;}});
+   floorPicker=createHomeFloorPicker(root.getElementById('home-balcony-floor-picker'),{floors,value:balconyFloor,id:'home-build-floor',label:'阳台施工楼层',onChange:target=>{balconyFloor=target;updateBalconyDirections();}});
   }else{
    const lift=hasHomeElevator(h,floor),near=Math.hypot(game.player.x-HOME_ELEVATOR.landing.x,game.player.y-HOME_ELEVATOR.landing.y)<=HOME_ELEVATOR.radius;
    get('content').innerHTML=`<section class="ui-section"><h3>${lift?'本层电梯':'本层楼梯'}</h3>${lift?`<p>点击场景电梯会自动走近。电梯可前往全部已建楼层。</p><div id="home-floor-picker"></div>`:'<p>点击右侧上行踏步或下行梯井，猫猫会走到对应入口并站定一秒通行。也可直接走到入口，无需打开本页。</p><p>本层可在建筑公司付费安装电梯。</p>'}</section><section class="ui-section"><h3>本层阳台</h3><p>${floorBalconies(h,floor).map(s=>HOME_DIRECTIONS[s].name+'侧').join('、')||'尚未安装'}。走到对应门口站定一秒，走出后可在平台自由活动。</p></section>`;
@@ -43,6 +43,18 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
    }
   }
  }
+ // 当前施工楼层的四向状态直接读取存档；只更新按钮，不重画滑动窗口。
+ function updateBalconyDirections(){
+  const group=root.getElementById('home-build-side');if(!group)return;
+  const built=floorBalconies(game.progress.homeDecor,balconyFloor),price=HOME_BUILD_PRICES.balcony;
+  root.getElementById('home-balcony-status').textContent='第 '+(balconyFloor+1)+' 楼 · 已建 '+built.length+'/4 个方向';
+  for(const button of group.querySelectorAll('[data-balcony-side]')){
+   const side=button.dataset.balconySide,done=built.includes(side),status=done?'已建好':'可建造';
+   button.dataset.built=String(done);button.setAttribute('aria-pressed',String(side===balconySide));button.setAttribute('aria-label',HOME_DIRECTIONS[side].name+'侧，'+status);button.querySelector('small').textContent=(done?'✓ ':'')+status;
+  }
+  const action=dialog.querySelector('[data-build="balcony"]'),done=built.includes(balconySide),place='第 '+(balconyFloor+1)+' 楼'+HOME_DIRECTIONS[balconySide].name+'侧';
+  action.disabled=done;action.textContent=done?place+'阳台已建好':'加装'+place+'阳台 · '+price.coins+' 金币 + '+price.wood+' 木材';
+ }
  dialogs.register(dialog.id,{focusId:'home-construction-title',onOpen:paint});
  // 场景电梯候停与手动查看设施共用入口，阳台和睡眠不能远程乘梯。
  function open(next='build'){
@@ -52,10 +64,11 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   mode=next;message='';removeFloor=null;input.reset();dialogs.open(dialog.id);
  }
  scope.on(entry,'click',()=>open('travel'));
- // 阳台楼层由共用滑动窗口更新，朝向继续使用原生选择菜单。
- scope.on(dialog,'change',event=>{if(event.target.id==='home-build-side')balconySide=event.target.value;});
+
  scope.on(dialog,'click',event=>{
   const b=event.target.closest('button');if(!b||b.disabled)return;
+  // 四向按钮直接选中，已建方向仍可查看，但施工按钮保持禁用。
+  if(b.dataset.balconySide&&Object.hasOwn(HOME_DIRECTIONS,b.dataset.balconySide)){balconySide=b.dataset.balconySide;updateBalconyDirections();return;}
   if(b.hasAttribute('data-build-close')){dialogs.close(dialog.id);return;}
   if(b.hasAttribute('data-remove-elevator')){removeFloor=homeElevatorPlan(game.progress.homeDecor).removeFloor;paint();return;}
   if(b.hasAttribute('data-cancel-remove')){removeFloor=null;paint();return;}

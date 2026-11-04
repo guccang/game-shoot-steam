@@ -15,7 +15,7 @@ async original=>{
   await page.locator('[data-npc-service]').tap();
   await page.waitForFunction(()=>document.getElementById('home-construction-dialog').open);
   await page.locator('[data-build="floor"]').tap();await page.locator('[data-build="elevator"]').tap();await page.locator('[data-build="elevator"]').tap();
-  for(const side of ['north','east','south','west']){await page.locator('#home-build-floor').press('Home');await page.locator('#home-build-floor').press('ArrowDown');await page.locator('#home-build-side').selectOption(side);await page.locator('[data-build="balcony"]').tap();}
+  for(const side of ['north','east','south','west']){await page.locator('#home-build-floor').press('Home');await page.locator('#home-build-floor').press('ArrowDown');await page.locator('[data-balcony-side="'+side+'"]').tap();await page.locator('[data-build="balcony"]').tap();}
   const built=await page.evaluate(()=>({home:a.game.progress.homeDecor,coins:a.game.progress.coins,wood:a.game.progress.wood}));
   if(built.home.floors!==3||JSON.stringify(built.home.elevators)!=='[0,1]'||built.home.balconies[1].length!==4||built.coins!==79000||built.wood!==7200)throw Error('施工扣款或设施不正确：'+JSON.stringify(built));
   for(const width of [320,390]){
