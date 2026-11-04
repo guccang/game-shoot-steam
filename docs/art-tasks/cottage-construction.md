@@ -135,3 +135,11 @@
 - Chromium手机触控模拟320×568、390×844、844×390分别检查昼夜，四向按钮至少64px高，正文可滚动、无横向溢出；人工查看 `all-built.png`、`swipe-east.png`、`320-day.png`、`390-night.png`、`844-day.png`，选中与已建状态对比清楚，中文及费用可换行。未使用实体手机，不新增桌面布局。
 - 正式入口 `src/ui/home-construction.js#updateBalconyDirections`；验收入口 `inspectHomeConstruction` 返回四向的选中及已建状态，合同目标 `cottage-construction` 已更新。无新增图片、画布、动画、存档字段或楼层缓存，场景碰撞/遮挡/角色动作不受影响，PNG替换及动作素材验收不适用。
 - 证据：`output/playwright/balcony-direction-buttons/`，14张截图、连续录制和 `browser-result.txt`。默认4175仍由既有服务占用，本次独立4187测试，原服务保留。
+
+## 战车进出小屋与读档落点修复（2026-11-04）
+- 已复现：战车在小屋门口偏右（门口横向偏移20）候停进屋后，车辆保留在门外；固定出屋位置(600,342)落在停车碰撞体内。旧读档恢复只检查建筑/地形，不检查停驻车辆，读档后四向小步移动都可能被拒绝。
+- 修复：停车实体边界统一供移动、入屋保存、出屋和读档查询。入屋记录安全屋外落点，出门重新核验；旧存档重叠时在原位附近找步行空地，并保存修正位置，车辆位置/耐久/弹药和任务资产不变。完全找不到安全空地时留在室内并提示，不把角色放入障碍。
+- 新增 `tests/cottage-vehicle-reload.test.mjs` 的5项用例全部通过：左右门口停车、直接/延后建图读档、旧重叠档解困后自动上车与驾驶、屋内存档、周期镜像、门外新增车辆和完全堵塞保护。额外相关原回归有8项通过；4项旧失败（车炮配置1项、营地通路/旧落点3项）在未修改main（bb41a66）逐项复现，未扩展修改无关规则。
+- 本次仅修改落点与碰撞查询，未修改美术资源、角色/载具动作或场景绘制；正式入口 `src/core/cottage.js`、`src/core/town-layout.js`、`src/core/camp-parking.js`。浏览器复现脚本 `tests/cottage-vehicle-reload-browser.cjs`，默认4175；本次原服务占用4175，使用独立4187。
+- 正式浏览器完整流程通过：实际按方向驾驶到门前候停入屋、屋内走到出口、设置返回首页、刷新并开始；读档落点(632,342)无碰撞，自动上车后可继续驾驶。模拟旧档固定落点(600,342)同样就近修正32单位，恢复上车与驾驶，车体耐久比仍为0.65、没有重复停车记录，页面异常0。
+- 证据 `output/playwright/cottage-vehicle-reload/` 中 `browser-result.txt`、`inside.png`、`normal-reload-mounted.png`、`legacy-reload-mounted.png`、`outside-day.png`、`outside-night.png` 及连续录制；人工查看正式昼夜场景与载具位置。使用390×844触控浏览器环境，非实体手机；原调试 `failure.png` 不代表最终结果。浏览器断言按实际位移等待，避免低帧率及自动上车重置输入造成固定时长误判。未改动用户存档。

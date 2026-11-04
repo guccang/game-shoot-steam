@@ -93,11 +93,17 @@ export function boardParkedVehicle(game,hull){
  game.parking=parked.record.spot?{id:parked.id,hull,phase:'cancelled',idle:false}:null;
  game.onEvent('camp-parking-change');return true;
 }
+// 出屋、读档和移动共用停车实体边界，室内查询也返回室外车辆，不依赖上一帧缓存。
+export function parkingCollisionBarriers(game){
+ const sites=[...parkedOwned(game)];
+ if(game.mapId==='forest')sites.push(...(game.progress.vehicleService||[]).map(repairParkingSpot).filter(Boolean),...(game.parkingVisitors||[]).map(v=>PARKING_SPOTS.find(s=>s.id===v.spot)).filter(Boolean));
+ return sites.map(s=>({x:s.x,y:s.y-20,width:72,height:60}));
+}
 // 访客在看不到的空位轮换，两个空位和所有自有车、倒车预约始终保留。
 export function updateParkingVisitors(game,dt){
  if(!campParkingVisible(game)||!arrivalParkingAllowed(game)){game.player.parkingBarriers=[];return;}
  if(game.state!=='playing')return;
- if(game.mapId!=='forest'){game.parkingVisitors=[];game.player.parkingBarriers=parkedOwned(game).map(s=>({x:s.x,y:s.y-20,width:72,height:60}));return;}
+ if(game.mapId!=='forest'){game.parkingVisitors=[];game.player.parkingBarriers=parkingCollisionBarriers(game);return;}
  adoptArrivalParking(game);
  // 新购与赠礼车辆优先占位，访客不能与自有车重叠；旧档也在同一入口补齐停放记录。
  if(parkingFleetApplies(game)&&game.progress.vehicleHulls.some((level,hull)=>level&&!vehicleService(game,hull)?.phase&&hull!==game.progress.vehicleIndex&&!(hull===4&&game.fireGarageParked)&&!game.progress.campParking.owned.some(r=>r.hull===hull)))
@@ -105,7 +111,7 @@ export function updateParkingVisitors(game,dt){
  game.parkingVisitors=(game.parkingVisitors||[]).filter(v=>!game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,PARKING_SPOTS.find(s=>s.id===v.spot))));
  game.parkingVisitors||=[];game.parkingVisitTimer??=8;
  // 停车实体只给当前玩家提供脚底碰撞，不改动入职导演和居民路线。
- game.player.parkingBarriers=[...parkedOwned(game),...(game.progress.vehicleService||[]).map(repairParkingSpot).filter(Boolean),...game.parkingVisitors.map(v=>PARKING_SPOTS.find(s=>s.id===v.spot))].map(s=>({x:s.x,y:s.y-20,width:72,height:60}));
+ game.player.parkingBarriers=parkingCollisionBarriers(game);
  // 入职任务期间开放赠车与碰撞，访客轮换仍等任务结束，避免干扰引导。
  if(game.arrivalPending)return;
  game.parkingVisitTimer-=dt;if(game.parkingVisitTimer>0)return;

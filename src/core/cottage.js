@@ -1,3 +1,4 @@
+import {townStandingPoint} from './town-layout.js';
 import {updateHomeArcade} from './home-arcade.js';
 import {MINING} from '../config/mining.js';
 import {updateMining,enterMine,updateMineEntrance} from './mining.js';
@@ -43,7 +44,8 @@ function enterInterior(game,kind,parkingEntrance=null,mountedCountdown=false){
  if(game.cottage||!canEnterCottage(game)||game.state!=='playing'||game.progress.restoration?.build||game.mainlineSpeech||worldDistance(game.player,parkingEntrance||layout.door)>layout.radius)return false;
  // 驾驶入屋只能由完整倒计时提交；先在门口留下真实车辆，再切换室内坐标。
  if(game.vehicle.active&&(!mountedCountdown||!parkDoorVehicle(game)))return false;
- const outside=nearest(layout.outside||{x:C.door.x+50,y:C.door.y+30},game.player);
+ const outside=townStandingPoint(game,nearest(layout.outside||{x:C.door.x+50,y:C.door.y+30},game.player));
+ if(!outside)return false;
  game.cottage={kind,floor:0,outside,notice:kind==='cottage'?'到家了。床边可以休息。':'在售货员柜台前站定1秒，查看服务。',sleep:null,stairsElapsed:null,stairsLatch:false,exitElapsed:0,restElapsed:null,bedLatch:false};game.cottageEntry=null;game.cottageEntryKind=null;game.vehicleBoarding=null;game.vehicleBoardingBlocked=null;game.parking=null;game.mainlineSpeech=null;
  Object.assign(game.player,layout.spawn,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent('cottage-change');return true;
 }
@@ -118,7 +120,9 @@ export function updateCottage(game,dt,input){
 // 出门恢复世界坐标；离开门口后才重新允许站立倒计时。
 export function leaveCottage(game){
  if(!game.cottage||game.cottage.kind==='mine'||game.cottage.balcony||game.cottage.sleep||game.state!=='playing'||game.cottage.kind==='cottage'&&cottageFloor(game.cottage)>0)return false;
- const kind=game.cottage.kind||'cottage';Object.assign(game.player,game.cottage.outside,{vx:0,vy:0});game.cottage=null;game.cottageDoorLatch=kind==='cottage'?true:kind;game.onEvent('cottage-change');return true;
+ // 门外可能在入屋期间新增停车实体，离开前再次确认，不能把角色放进车身。
+ const outside=townStandingPoint(game,game.cottage.outside);if(!outside){game.cottage.notice='门外暂时没有安全落脚点，请稍后再试。';return false;}
+ const kind=game.cottage.kind||'cottage';Object.assign(game.player,outside,{vx:0,vy:0,pushX:0,pushY:0});game.cottage=null;game.cottageDoorLatch=kind==='cottage'?true:kind;game.onEvent('cottage-change');return true;
 }
 // 预告和实际休息共用同一目标日期，不修改传入的正式历法。
 export function cottageSleepTarget(calendar,mode){
