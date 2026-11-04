@@ -30,11 +30,11 @@
 #cottage-controls[data-balcony="true"] > header small{color:var(--ui-forest)}
 #cottage-controls[data-balcony="true"] #cottage-notice{padding:8px 10px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-button);background:var(--ui-paper);color:var(--ui-text);line-height:1.5}
 
-/* 电梯楼层原生滚动窗口：48像素整行吸附，中间高亮，节点数量固定。 */
-#home-floor-picker .home-floor-frame{border:1px solid var(--ui-line);border-radius:var(--ui-radius-button);overflow:hidden;background:var(--ui-paper)}
-#home-lift-floor{height:144px;box-sizing:border-box;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y;scroll-snap-type:y mandatory;padding:48px 0;outline-offset:-3px}
-#home-lift-floor [role=option]{box-sizing:border-box;height:48px;min-height:48px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:14px;font-weight:700;cursor:pointer;color:var(--ui-text)}
-#home-lift-floor [aria-selected=true]{background:var(--ui-forest);color:var(--ui-paper)}
-#home-floor-picker .home-floor-shortcuts{display:flex;gap:8px;margin-top:8px}
-#home-floor-picker .home-floor-shortcuts button{flex:1;min-width:0}
-#home-floor-picker .home-floor-selection{font-weight:700;margin:8px 0}
+/* 电梯与施工楼层共用原生滚动窗口：48像素整行吸附，中间高亮，节点数量固定。 */
+.home-floor-picker .home-floor-frame{border:1px solid var(--ui-line);border-radius:var(--ui-radius-button);overflow:hidden;background:var(--ui-paper)}
+#home-construction-dialog .home-floor-wheel{height:144px;box-sizing:border-box;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y;scroll-snap-type:y mandatory;padding:48px 0;outline-offset:-3px}
+#home-construction-dialog .home-floor-wheel [role=option]{box-sizing:border-box;height:48px;min-height:48px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:14px;font-weight:700;cursor:pointer;color:var(--ui-text)}
+#home-construction-dialog .home-floor-wheel [aria-selected=true]{background:var(--ui-forest);color:var(--ui-paper)}
+.home-floor-picker .home-floor-shortcuts{display:flex;gap:8px;margin-top:8px}
+.home-floor-picker .home-floor-shortcuts button{flex:1;min-width:0}
+.home-floor-picker .home-floor-selection{font-weight:700;margin:8px 0}

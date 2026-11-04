@@ -30,7 +30,9 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
     <button class="ui-button" data-remove-elevator ${highest===null?'disabled':''}>${highest===null?'暂无电梯可拆除':`拆除第 ${highest+1} 楼电梯`}</button>
     <div id="home-elevator-removal">${removeFloor!==null&&removeFloor===highest?`<div class="ui-inset"><p>确认拆除第 ${removeFloor+1} 楼电梯？本层恢复楼梯，已花费的金币和木材不返还。</p><button class="ui-button ui-button--danger" data-build="remove-elevator">确认拆除第 ${removeFloor+1} 楼电梯</button><button class="ui-button" data-cancel-remove>保留电梯</button></div>`:''}</div>
     <p>已安装 ${lifts.length} 层${lifts.length?'：'+lifts.slice(0,8).map(f=>f+1+'楼').join('、')+(lifts.length>8?'…':''):''}</p></section>
-    <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><label>楼层 <input id="home-build-floor" type="number" inputmode="numeric" min="1" max="${floors}" value="${Math.min(floors,balconyFloor+1)}" step="1"></label><label>朝向 <select id="home-build-side">${Object.entries(HOME_DIRECTIONS).map(([id,d])=>`<option value="${id}" ${id===balconySide?'selected':''}>${d.name}侧</option>`).join('')}</select></label><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
+    <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><div id="home-balcony-floor-picker"></div><label>朝向 <select id="home-build-side">${Object.entries(HOME_DIRECTIONS).map(([id,d])=>`<option value="${id}" ${id===balconySide?'selected':''}>${d.name}侧</option>`).join('')}</select></label><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
+   // 施工窗口与乘梯窗口共用选择规则，重画时保留所选层与朝向。
+   floorPicker=createHomeFloorPicker(root.getElementById('home-balcony-floor-picker'),{floors,value:balconyFloor,id:'home-build-floor',label:'阳台施工楼层',onChange:target=>{balconyFloor=target;}});
   }else{
    const lift=hasHomeElevator(h,floor),near=Math.hypot(game.player.x-HOME_ELEVATOR.landing.x,game.player.y-HOME_ELEVATOR.landing.y)<=HOME_ELEVATOR.radius;
    get('content').innerHTML=`<section class="ui-section"><h3>${lift?'本层电梯':'本层楼梯'}</h3>${lift?`<p>点击场景电梯会自动走近。电梯可前往全部已建楼层。</p><div id="home-floor-picker"></div>`:'<p>点击右侧上行踏步或下行梯井，猫猫会走到对应入口并站定一秒通行。也可直接走到入口，无需打开本页。</p><p>本层可在建筑公司付费安装电梯。</p>'}</section><section class="ui-section"><h3>本层阳台</h3><p>${floorBalconies(h,floor).map(s=>HOME_DIRECTIONS[s].name+'侧').join('、')||'尚未安装'}。走到对应门口站定一秒，走出后可在平台自由活动。</p></section>`;
@@ -45,11 +47,12 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
  // 场景电梯候停与手动查看设施共用入口，阳台和睡眠不能远程乘梯。
  function open(next='build'){
   if(next==='build'?game.cottage?.kind!=='construction':game.cottage?.kind!=='cottage'||game.cottage.balcony||game.cottage.sleep||game.player.hp<=0)return;
+  // 手动选层也消费门前候停请求，关闭后须离开或再次点电梯才重新呼叫。
+  if(next==='travel'&&hasHomeElevator(game.progress.homeDecor,cottageFloor(game.cottage))&&Math.hypot(game.player.x-HOME_ELEVATOR.landing.x,game.player.y-HOME_ELEVATOR.landing.y)<=HOME_ELEVATOR.radius){game.cottage.elevatorRequest=false;game.cottage.elevatorElapsed=null;game.cottage.elevatorLatch=true;}
   mode=next;message='';removeFloor=null;input.reset();dialogs.open(dialog.id);
  }
  scope.on(entry,'click',()=>open('travel'));
- // 阳台仍可选择楼层；电梯施工不再显示或读取楼层输入。
- scope.on(dialog,'input',event=>{if(event.target.id==='home-build-floor')balconyFloor=Number(event.target.value)-1;});
+ // 阳台楼层由共用滑动窗口更新，朝向继续使用原生选择菜单。
  scope.on(dialog,'change',event=>{if(event.target.id==='home-build-side')balconySide=event.target.value;});
  scope.on(dialog,'click',event=>{
   const b=event.target.closest('button');if(!b||b.disabled)return;

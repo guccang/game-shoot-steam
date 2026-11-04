@@ -108,3 +108,18 @@
 - 资源预算：最多41个楼层选项，百万层不展开全量楼层；无新增位图、画布、游戏动画循环或存档结构。关闭后重开重建窗口，应用卸载解绑监听和定时器。场景碰撞、遮挡、真实角色动作和施工阳台输入未改变，相关美术替换/动作采样不适用。
 - 正式入口：`src/ui/home-floor-picker.js#createHomeFloorPicker`、`src/ui/home-construction.js#createHomeConstruction`；`inspectHomeConstruction` 已报告选中层和窗口节点数，合同 `designCriterion: cottage-construction` 已绑定专项浏览器脚本。
 - 运行日志：`output/playwright/elevator-floor-picker/browser-result.txt`。默认4175被既有服务占用，本次使用独立4187验收，保留既有服务。无图片精修需求，PNG替换不适用。
+
+## 阳台施工滑动选层（2026-11-04）
+制作前方案：阳台施工复用电梯三行滑动窗口，替换数字输入；保留楼层、朝向选择和原收费事务。共用48px行高、144px窗口、首层/顶层快捷及最多41行的稀疏渲染，继续使用统一手机底板。施工后保留所选楼层和朝向；楼层数量变化后按实际已建层更新范围。不新增图片、画布、场景动作或碰撞。正式入口为 `createHomeFloorPicker` 与 `createHomeConstruction`，目标 `cottage-construction`。
+验收计划：实际触摸滑动后施工，核对目标楼层和朝向、扣费、重复施工及保存失败，百万层及重新读档；检查320/390宽与短横屏的昼夜界面，并回归共用组件的电梯选层。PNG生成/替换与角色动作变更不适用。
+
+### 阳台选层验收结果（2026-11-04）
+- 通过：阳台施工移除数字输入，复用三行滑动、整行吸附、相邻层点击和首层/顶层快捷。所选楼层和方向在成功施工、重复施工提示、保存失败及加盖刷新后保留。
+- 正式触摸操作选至第4楼，分别安装东/西/南侧阳台，随后选择第1000001楼安装北侧阳台。四次阳台安装与一次加盖后余额从100000金币/10000木材变为91000/8800；重复安装和保存失败没有扣费，重试与重载记录正确。
+- `node --test tests/home-construction.test.mjs` 20/20通过；`tests/balcony-floor-picker-browser.cjs` 完成正式柜台进入、滑动施工、方向切换、失败重试、百万层和重载，页面异常0。修改模块/脚本语法、合同JSON及差异格式已检查。
+- 手机触控模拟320×568、390×844、844×390昼夜检查，窗口144px、行高48px、按钮和方向菜单至少44px，无横向溢出；短屏正文可滚动到施工按钮。人工查看 `swipe-east.png`、`320-day.png`、`390-night.png`、`844-day-action.png`，高亮、中文和操作区正常。未使用实体手机，不新增桌面布局。
+- 正式入口 `src/ui/home-floor-picker.js#createHomeFloorPicker`、`src/ui/home-construction.js#createHomeConstruction`，沿用 `cottage-construction`。`inspectHomeConstruction` 同时读取施工和乘梯窗口，合同增加阳台专项脚本。共用控件为两个用途提供独立ID及中文无障碍名称。
+- 资源：仍最多41行，不按总楼层分配列表；无新增图片、画布、游戏动画或存档字段。场景碰撞、遮挡及角色动作未改，相关动作美术验收与PNG替换不适用。
+- 截图、连续录像、结果文件保存在 `output/playwright/balcony-floor-picker/`（13张截图，`browser-result.txt`）；默认4175被既有服务占用，本次使用4187，原服务保留。
+- 共用电梯窗口回归通过（10张截图，`output/playwright/elevator-floor-picker/browser-result.txt`）：滑动、百万层、实际乘梯、取消/重开及底栏均正常。回归发现手动开页可能与门前自动候停请求竞争，现已在手动开页时消费请求并设置门前闩锁；新增稳定复现场景验证关闭后不再自动重弹。原失败截图仅为调试记录，最终以结果文件为准。
+- 合并归档时，电梯回归证据另保留在 `output/playwright/balcony-floor-picker/elevator-regression/`，避免覆盖上一轮电梯任务截图。
