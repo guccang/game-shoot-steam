@@ -1,6 +1,8 @@
+import {cartProductIcon} from './cart-product-icon.js';
 import {buyFarmSeeds} from '../core/farm-seeds.js';
 import {tradeSupply} from '../core/supplies.js';
 import {buyOutdoorGear} from '../core/outdoors.js';
+import {tendPasture,upgradeWateringCan} from '../core/farm-production.js';
 import {buyDetector} from '../core/treasure.js';
 import {ERA_RESOURCES,eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 // 商品在上、结账区在下，点按或拖入购物车后统一确认。
@@ -67,7 +69,7 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
   if(row){
    if(row.repeatable)row.batches++;
    else onNotice('这件商品已在购物车中。');
-  }else lines.push({key,source:button.cloneNode(false),units:q.count,batches:1,repeatable:SHOP_GOODS[button.dataset.shopGood]?.cap>1||button.hasAttribute('data-buy')});
+  }else lines.push({key,icon:cartProductIcon(button,game.progress),source:button.cloneNode(false),units:q.count,batches:1,repeatable:SHOP_GOODS[button.dataset.shopGood]?.cap>1||button.hasAttribute('data-buy')});
   carts.set(shop,lines);updateZone(shop);
  }
  // 数字和单位来自商店现有报价，同一货币或材料分别求和。
@@ -87,7 +89,7 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
    name.textContent=q.name+' ×'+row.batches*row.units;
    info.textContent=q.price+(row.batches>1?' × '+row.batches:'')+' · '+(q.ok?'交付到'+(q.place||'当前地点'):q.error);
    remove.type='button';remove.className='ui-button';remove.dataset.removeLine=i;remove.textContent='移除';remove.setAttribute('aria-label','移除'+q.name);
-   entry.append(name,info,remove);
+   entry.append(row.icon,name,info,remove);
    // 种子及弹药仍可在清单内快速选择常用数量。
    const presets=row.source.hasAttribute('data-buy-seed')?[1,5,10]:row.source.hasAttribute('data-ammo-buy')?[1,5,20]:[];
    if(presets.length){
@@ -100,8 +102,9 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
   const costs=totals(lines);
   panel.querySelector('[data-price]').textContent=lines.length?'合计　'+([...costs].map(([unit,n])=>n+' '+unit).join('、')||'免费'):'购物车是空的';
   const short=(costs.get('金币')||0)>game.progress.coins;
-  panel.querySelector('[data-cart-message]').textContent=message||(short?'金币不足，请调整清单。':'');
-  panel.querySelector('[data-pay]').disabled=!lines.length||short||lines.some(r=>!r.quote.ok);
+  const shortOre=(costs.get('矿石')||0)>game.progress.mining.ore;
+  panel.querySelector('[data-cart-message]').textContent=message||(short?'金币不足，请调整清单。':shortOre?'矿石不足，请调整清单。':'');
+  panel.querySelector('[data-pay]').disabled=!lines.length||short||shortOre||lines.some(r=>!r.quote.ok);
  }
 
  // 商品手柄独占拖放，货架文字和格间留白仍支持原生滚动。
@@ -191,6 +194,8 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
   if(d.ammoBuy)return tradeSupply(game,{kind:'ammo',id:d.ammoBuy,batches:1,target:d.ammoTarget});
   if(d.itemBuy)return tradeSupply(game,{kind:'item',id:d.itemBuy,batches:1,target:'hand'});
   if(d.outdoorBuy)return buyOutdoorGear(game,d.outdoorBuy);
+  if(d.canUpgrade!==undefined)return upgradeWateringCan(game);
+  if(['adopt-horse','adopt-ox','adopt'].includes(d.tend))return tendPasture(game,d.tend);
   if(d.buyDetector!==undefined)return buyDetector(game);
   return {ok:false,message:'请返回该商品的货架后重试。'};
  }

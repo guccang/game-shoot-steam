@@ -1,3 +1,4 @@
+import {oreCount} from '../config/mine-freight.js';
 // 拆除只作用于当前层附近设施，资源和轨网通过同一事务提交。
 import {MINING,MINE_DIRECTIONS,mineCell,mineKey,minePoint} from '../config/mining.js';
 import {railCell,railExits,cartOnSegment} from '../config/mine-rail-routes.js';
@@ -29,6 +30,7 @@ export function mineRemovalCheck(game,target){
   if(occupied(layer,target.key))return {ok:false,message:'铁轨被矿车占用，请先移走或回收矿车。'};
  }else if(target?.kind==='cart'){
   const cart=layer.carts.find(c=>c.id===target.id);
+  if(cart&&(oreCount(cart.cargo)||cart.leader||layer.carts.some(c=>c.leader===cart.id)))return {ok:false,message:'先卸空货物并解开挂钩，再回收矿车。'};
   if(!cart||!reachable(game,cart,56))return {ok:false,message:'请走近要回收的空矿车。'};
  }else return {ok:false,message:'请选择铁轨或矿车。'};
  const refund=MINING.prices[target.kind];

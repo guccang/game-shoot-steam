@@ -57,9 +57,10 @@ test('全部营地周边共用中心等级，重叠区域使用最近营地且�
   const point={x:c.x+300,y:c.y};assert.equal(monsterCampTerritoryAt(point.x,point.y,c.mapId)?.id,c.id);
   assert.equal(enemyIdentity(point.x,point.y,0,c.mapId).level,monsterCampLevel(c));
  }
- const [a,b]=MONSTER_CAMPS,mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
- assert.equal(monsterCampTerritoryAt(mid.x+1,mid.y)?.id,a.id);
- assert.equal(monsterCampTerritoryAt(mid.x-1,mid.y)?.id,b.id);
+ const a=MONSTER_CAMPS.find(c=>c.id==='ember-pot-annex-1'),b=MONSTER_CAMPS.find(c=>c.id==='snore-pine-annex-2');
+ const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+ assert.equal(monsterCampTerritoryAt(mid.x-1,mid.y)?.id,a.id);
+ assert.equal(monsterCampTerritoryAt(mid.x+1,mid.y)?.id,b.id);
  assert.equal(monsterCampTerritoryAt(camp.x,camp.y,'jiuzhaigou'),null);
 });
 
@@ -70,7 +71,7 @@ test('营地等级范围使用循环世界距离，范围外恢复原地区等�
  const edge={x:camp.x-RULES.territoryRadius,y:camp.y};assert.equal(enemyIdentity(edge.x,edge.y,0).level,20);
  const outside={x:edge.x-1,y:edge.y};assert.equal(monsterCampTerritoryAt(outside.x,outside.y),null);
  assert.equal(enemyIdentity(outside.x,outside.y,0).level,forestThreatAt(outside.x,outside.y).level);
- assert.equal(RULES.radius,150*Math.sqrt(1.3)*1.3);assert.equal(RULES.warningRadius,RULES.radius+35);
+ assert.equal(RULES.radius,150*RULES.scale*1.3);assert.equal(RULES.warningRadius,RULES.radius+35);
 });
 
 // 对照真实地图出生入口，确保攻击加成不会串入指定等级活动或低级营地。
@@ -89,9 +90,9 @@ test('营地攻击按等级平滑提升，低级营地、固定等级活动和�
 
 // 使用实际受伤和载具损毁入口验证有效命中数；每次清除无敌代表间隔后的独立命中。
 test('装甲、引擎和主炮均Lv4气垫船受到20级营地攻击会正常扣甲、保护驾驶员并损毁',()=>{
- for(const [hero,hullHp,slimeHits] of [[1,450,5],[4,630,7]]){
+ for(const [hero,hullHp,slimeHits] of [[1,450,5],[4,450,5]]){
   const p=freshProgress();p.heroes[p.hero]=hero;p.vehicleIndex=3;p.vehicleHulls[3]=4;
-  p.vehicleParts[3]={engine:4};grantVehicleArmament(p,3);p.vehicleWeapons[20]=4;
+  p.logistics.builds[3].plates=3;p.vehicleParts[3]={engine:4};grantVehicleArmament(p,3);p.vehicleWeapons[20]=4;
   const g=new Game(p,()=>.5);g.start();Object.assign(g.player,camp);g.enemies=[];
   updateMonsterCamps(g,.04);assert.equal(summonVehicle(g),true);assert.equal(g.vehicle.maxHp,hullHp);
   const driverHp=g.player.hp;
@@ -104,6 +105,6 @@ test('装甲、引擎和主炮均Lv4气垫船受到20级营地攻击会正常扣
   const slime=g.enemies.find(e=>e.species==='slime');let hits=0;
   while(g.vehicle.active&&hits<20){g.player.invincible=0;g.hurt(slime.damage);hits++;}
   assert.equal(hits,slimeHits);assert.equal(g.vehicle.hp,0);assert.equal(g.vehicle.active,false);
-  assert.equal(g.vehicle.cooldown,60);assert.equal(g.player.hp,driverHp);
+  assert.equal(g.progress.vehicleService[3].phase,'wrecked');assert.equal(g.player.hp,driverHp);
  }
 });

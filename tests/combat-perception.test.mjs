@@ -5,6 +5,7 @@ import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {attackTargetVisible,attackTargetKnown,updateCombatPerception} from '../src/combat/perception.js';
 import {updateAimLock} from '../src/combat/targeting.js';
+import {vehicleWeapon} from '../src/config/vehicles.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
 import {fireBallistics} from '../src/combat/ballistics.js';
 import {WORLD} from '../src/world/coordinates.js';
@@ -50,6 +51,8 @@ test('视野与射程同时满足才攻击，不因广角镜头扩大武器射�
 });
 test('车炮不沿用屏外领主和敌人锁定，入屏后正常耗弹',()=>{
  const g=scene(),e=target(g,1,220),boss={...target(g,2,-230),type:'boss'};g.enemies=[e];g.boss=boss;g.vehicle.active=true;g.vehicle.targetId=e.id;
+ // 车炮需先装弹，空弹仓不能验证射击耗弹。
+ Object.assign(g.vehicle.module.magazine,{ammo:vehicleWeapon(g.progress,g.vehicle.weaponIndex).magazineSize,remaining:0});
  const ammo=g.vehicle.module.magazine.ammo;
  for(let i=0;i<120;i++)updateVehicle(g,1/60);
  assert.equal(g.vehicle.targetId,null);assert.equal(g.vehicle.module.magazine.ammo,ammo);
@@ -82,7 +85,7 @@ test('靶场沿用固定取景，无视口模拟不引入额外射程限制',()=
 // 使用正式领主工厂的野猪尺寸，覆盖旧版边缘留白与脚底判定造成的盲区。
 test('野猪在窄屏两侧或脚底出屏但上半身可见时仍能进入射程索敌',()=>{
  for(const [x,y] of [[180,0],[-180,0],[0,480]]){
-  const g=scene(8);g.progress.bossChallenge={bosses:0,maxHp:10000,speed:0,damage:0,blastDamage:0};
+  const g=scene(8);g.progress.living.patrolActive=true;g.progress.bossChallenge={bosses:0,kind:'boar',maxHp:10000,speed:0,damage:0,blastDamage:0};
   assert.equal(restoreBoss(g,10000),true);const b=g.boss;assert.equal(b.kind,'boar');
   Object.assign(b,{x:g.player.x+x,y:g.player.y+y});
   assert.equal(attackTargetVisible(g,b),true,x+','+y);assert.equal(g.findAttackTarget(),b);

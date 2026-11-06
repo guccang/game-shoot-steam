@@ -66,3 +66,9 @@ designCriterion：sprinkler-radius-rotation；正式入口 src/rendering/farm-pr
 证据目录：output/playwright/sprinkler-rotation/，browser-result.txt记录16场景且errors为空，video为连续录制。昼夜定点采样只冻结模拟时钟，仍调用正式场景Renderer；实际放置、连续转动、暂停、恢复和通行在正常游戏循环内验证。
 合并main同期加工台与载具供料修改后，生产15项、洒水器8项、手浇6项共29项通过；未运行全量测试。语法、视觉合同JSON和差异格式检查通过。4175已有用户服务，本轮隔离服务用4187，未停止原服务。
 开发阶段动态验收结论：通过。手机系统栏和真实设备触感未实测；横向大视口仅检查已有手机容器，不新增桌面布局。
+
+## 农具与牧栏商品卡
+
+在农具页单列展示双格水壶改造、挽马、耕牛和绵羊。每张卡保留独立名称、用途、原价及购物车入口。图标居中占 48×48，复用正式农具、材料及正面动物图集；货架和购物车同图。在窄屏检查矿石和金币混合结算、领养状态、栏边喂养及门外导航。仅调整手机界面，世界实体的锚点、遮挡、动作及碰撞沿用原实现。
+
+验收通过（farm-mine-production）。正式页面入口为 `src/ui/farm-production.js`，图标由 `cartProductIcon` 绘制。复用原图集，无新增贴图或动画时钟。已检查 [390 宽白天货架](../../output/playwright/production-shelf/tools-390-day.png)、[320 宽夜间牧栏](../../output/playwright/production-shelf/animals-320-night.png)及原桌面竖版容器。浏览器触屏模拟中四款商品加购后切换页签结账，仅在确认时扣除 4 矿石及 252 金币；逐项交付后成功喂羊一次。三项改造与领养专项测试通过。

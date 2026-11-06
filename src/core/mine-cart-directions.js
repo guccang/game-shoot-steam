@@ -35,6 +35,7 @@ export function setMineCartDirection(game,direction){
  if(!active(game)||!game.cottage.ride||game.cottage.running)return mineNotice(game,'请先停车，再选择开车方向。');
  const l=currentMineLayer(game),cart=l.carts.find(c=>c.id===game.cottage.ride);
  const choice=cart&&cartDirectionChoices(l,cart).find(n=>n.i===direction);
+ if(choice&&cart.target&&choice.key===cart.from&&l.carts.some(c=>c.leader===cart.id))return mineNotice(game,'请先驶至格心，再换到尾车返程。');
  if(!choice)return mineNotice(game,'这个方向没有相连轨道；轨段中间只能前进或掉头。');
  const result=miningCommit(game,(_m,_p,layer)=>{
   const c=layer.carts.find(n=>n.id===cart.id);

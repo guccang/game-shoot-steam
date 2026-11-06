@@ -8,6 +8,7 @@ import {worldDistance} from '../world/coordinates.js';
 import {restorationLocation,restorationArea,inRestorationArea} from '../world/restoration-area.js';
 import {arrivalPending,arrivalCinematic} from '../config/ranger-arrival.js';
 import {validateProgress} from '../progression/progress.js';
+import {bindEconomy,economyFor} from '../config/economy.js';
 import {recordEconomy} from '../progression/economy-ledger.js';
 import {capturePatrol} from './patrol-session.js';
 import {startRestoredTask} from '../progression/restoration-task.js';
@@ -28,16 +29,28 @@ export function restorationStatus(game,id){
  const taskRequired=!arrivalPending(game.progress)&&!!currentMainlineTask(game.progress.mainline)&&pendingRestoration(game.progress)?.id===id;
  return {facility:f,area,gathered,wood,ready,active,near,enough,taskRequired,canRepair:!ready&&!game.progress.restoration?.build&&active&&near&&enough&&safe};
 }
+// 点击待修建筑时登记设施身份，采集数量和下一步从现有库存读取。
+export function trackRestoration(game,id){
+ if(!TOWN_RESTORATIONS.some(f=>f.id===id)||facilityOpen(game.progress,id))return false;
+ const tracking=game.progress.taskTracking;
+ if(tracking?.kind==='restoration'&&tracking.id===id)return true;
+ const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));
+ next.taskTracking={kind:'restoration',id};
+ const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
+ try{if(game.restorationPersist?.(next)!==true)return false;}catch{return false;}
+ game.progress=next;game.mainlineSpeech=null;return true;
+}
 // 主线、地图和修复页共用真实树木与门前落点。
-export function restorationObjective(game,task){
- const pending=pendingRestoration(game.progress);if(!pending||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense)return null;
- const s=restorationStatus(game,pending.id),f=s.facility,build=game.progress.restoration?.build,gather=!build&&!s.enough;
- if(gather&&s.wood.destination){const d=s.wood.destination;return {task,restoration:f.id,key:(d.kind==='store'?'store-wood-':'retrieve-wood-')+f.id,phase:'doing',navigation:true,site:d.site,label:d.label,hint:'木头 '+s.wood.progress+' · '+s.wood.breakdown};}
+export function restorationObjective(game,task,pending=pendingRestoration(game.progress)){
+ if(!pending||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense)return null;
+ const s=restorationStatus(game,pending.id),f=s.facility,build=game.progress.restoration?.build?.id===f.id,gather=!build&&!s.enough;
+ task??={id:'restore-'+f.id,title:'修复'+f.name};
+ if(gather&&s.wood.destination){const d=s.wood.destination;return {task,restoration:f.id,key:(d.kind==='store'?'store-wood-':'retrieve-wood-')+f.id,phase:'doing',navigation:true,site:d.site,label:(d.kind==='store'?'运回木材':'取回木材')+' '+s.wood.gatherProgress+' · '+f.name,hint:d.label+' · '+s.wood.breakdown};}
  let tree=null,distance=Infinity;
  if(gather)for(const t of game.trees){const d=worldDistance(game.player,t);if(t.hp>0&&d<distance){tree=t;distance=d;}}
  return {task,restoration:f.id,key:'restore-'+f.id,phase:'doing',navigation:true,site:{...(tree||f.site),mapId:'forest',...(!gather&&!build?{repairArea:s.area}:{})},
- label:build?'正在修复'+f.name:gather?'采集木头，修复'+f.name:'前往修复'+f.name,
- hint:game.restorationError|| (gather?'木头 '+s.wood.progress+' · '+s.wood.hint+' · '+s.wood.breakdown:'靠近修复区自动开工 · '+f.benefit)};
+ label:build?'正在修复'+f.name:gather?'采集木头 '+s.wood.gatherProgress+' · 修复'+f.name:'木材已齐 · 前往修复'+f.name,
+ hint:game.restorationError|| (gather?'木头 '+s.wood.gatherProgress+' · '+s.wood.hint+' · '+s.wood.breakdown:(s.taskRequired?'靠近修复区自动开工':'到修复区点击修复')+' · '+f.benefit)};
 }
 // 材料、账本和修复状态一次提交；失败不扣钱、不改变外观，可原地重试。
 export function repairFacility(game,id,persist=game.restorationPersist){
@@ -76,6 +89,7 @@ export function updateRestoration(game,dt){
  // 与首次工坊一致容忍浮点累计误差，三秒所在帧即完成。
  build.elapsed=Math.min(RESTORATION_SECONDS,build.elapsed+dt);if(build.elapsed+1e-9<RESTORATION_SECONDS)return;
  const next=validateProgress(structuredClone(game.progress));next.restoration.repaired.push(build.id);next.restoration.build=null;
+ if(next.taskTracking?.kind==='restoration'&&next.taskTracking.id===build.id)next.taskTracking=null;
  const startedTask=startRestoredTask(next,build.id);
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  let saved=false;try{saved=game.restorationPersist?.(next)===true;}catch{}

@@ -10,9 +10,9 @@ import { stepGrenade } from './grenades.js';
 import { fireArc } from './elemental.js';
 import { SpatialGrid } from '../world/spatial-grid.js';
 
-// 获取本帧有效碰撞目标；远程火力只命中敌人和参与采矿的岩壁。
-export function liveTargets(game) {
-  return [...weaponTerrainTargets(game), ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
+// 索敌、预览和弹道共用木材开关；炮口来源和武器自身的目标限制分别判断。
+export function liveTargets(game, targetTrees = true) {
+  return [...(targetTrees ? weaponTerrainTargets(game, true) : []), ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
     (t) => t.hp > 0,
   );
 }
@@ -52,7 +52,8 @@ export function fireBallistics(
 ) {
   if(game.combatLineClear&&!game.combatLineClear(independentMuzzle?muzzle:hitCenter(game.player),muzzle))return;
   const profile = GAMEPLAY_TABLES.projectileProfiles[weapon.id] || GAMEPLAY_TABLES.projectileProfiles.default;
-  const all = liveTargets(game).filter(t=>weapon.targetTrees!==false||t.type!=='tree'),
+  const targetTrees = weapon.targetTrees !== false && (!independentMuzzle || !!game.trees.mineScene);
+  const all = liveTargets(game, targetTrees),
     // 独立炮口只检查自身重叠，不能误伤角色身体与浮游炮之间的实体。
     nearHits = traceTargets(
       independentMuzzle ? muzzle : hitCenter(game.player),
@@ -137,7 +138,7 @@ export function fireBallistics(
       age: 0,
       remaining: weapon.range,
       travelled: 0,
-      gravityRadius:weapon.gravityRadius,gravityDuration:weapon.gravityDuration,gravityPull:weapon.gravityPull,gravityMinDistance:weapon.gravityMinDistance,targetTrees:weapon.targetTrees,blastRadius:weapon.blastRadius,blastRatio:weapon.blastRatio,
+      gravityRadius:weapon.gravityRadius,gravityDuration:weapon.gravityDuration,gravityPull:weapon.gravityPull,gravityMinDistance:weapon.gravityMinDistance,targetTrees,blastRadius:weapon.blastRadius,blastRatio:weapon.blastRatio,
       amount,
       weaponIndex: weapon.weaponIndex,
       masteryOwnerIndex: weapon.masteryOwnerIndex,
@@ -216,7 +217,7 @@ function resolveHit(game, b, hit) {
     b.remaining = 0;
     return;
   }
-  const candidates = liveTargets(game).filter(
+  const candidates = liveTargets(game, b.targetTrees).filter(
     (t) => (!game.combatLineClear||game.combatLineClear(b,hitCenter(t))) && !b.hitIds.includes(t.id) && worldDistance(hitCenter(t), b) < GAMEPLAY_VALUES.projectile.bounceRange,
   );
   candidates.sort(
@@ -248,7 +249,7 @@ export function updateBallistics(game, dt) {
   let remaining = Math.max(0, dt);
   if (!game.projectiles.length || remaining <= 0) return;
   // 弹道阶段实体尚未移动；所有弹丸和 120Hz 小步共用索引，死亡即时读取原对象。
-  const targets = new SpatialGrid(liveTargets(game), { offsetY: -8 });
+  const targets = new SpatialGrid(liveTargets(game, game.projectiles.some(b => b.targetTrees !== false)), { offsetY: -8 });
   while (remaining > 1e-8 && game.projectiles.length) {
     const step = Math.min(remaining, 1 / 120);
     remaining -= step;

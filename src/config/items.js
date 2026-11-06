@@ -1,3 +1,4 @@
+import {ORE_KEYS,ORE_NAMES,ORE_MASS} from './mine-freight.js';
 import {FORAGE_ID} from './pasture.js';
 import {DETECTOR,TREASURE_PARTS} from './treasure.js';
 import {WOOD_ITEM} from './wood-storage.js';
@@ -15,6 +16,8 @@ const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'
 // 每件可堆叠物品只定义单位重量，数量由实际存档读取。
 const entries=[
  WOOD_ITEM,
+ {id:'trade:cargo-tag',name:'遗失的货签',category:'keepsake',mass:0,icon:{kind:'keepsake',key:'elder-letter'},description:'商队托你找回的货物标签。',use:'集齐三张后，回营地订单板交还商队领取报酬。'},
+ ...ORE_KEYS.map(key=>({id:'ore:'+key,name:ORE_NAMES[key],category:'material',mass:ORE_MASS,icon:{kind:'resource',key},description:'地下开采的原矿。',use:'带回矿层入口自动运至小屋仓库，分出矿石与金属。'})),
  {id:FORAGE_ID,name:'甜穗草',category:'material',mass:.1,icon:{kind:'forage'},description:'一束带着甜香的金穗牧草，常长在营地牧栏东南的草地上。',use:'走近野牛，喂它一束就能领回牧栏。也可以留给栏里的耕牛吃。'},
  // 收纳设施沿用生产库存，不新增负重规则；放置后从背包清单移除。
  {id:'facility:sprinkler',name:'简易洒水器',category:'facility',mass:0,icon:{kind:'production',key:'sprinkler'},description:'收回的洒水器，可带到新的地面位置重新布置。',use:'在地面下车后选择放置；无需再支付材料，取消选址仍留在背包。设施收纳暂不计重。'},

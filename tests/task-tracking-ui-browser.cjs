@@ -3,10 +3,10 @@ async page=>{
  await page.reload();await page.getByRole('button',{name:'继续游戏',exact:true}).click();
  await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;Object.assign(a.game.player,{x:650,y:1520});a.game.mainlineTalkDelay=999;});
  if(!await page.locator('#living-menu').isVisible())await page.locator('#field-menu-toggle').click();
- await page.locator('#living-menu').click();await page.locator('[data-living-track="neighbors-night"]').click();
- await page.locator('[data-living-tab="news"]').click();await page.locator('#living-close').click();await page.waitForTimeout(200);
+ await page.locator('#living-menu').click();await page.locator('[data-living-tab="board"]').click();await page.locator('[data-living-item="neighbors-night"]').click();await page.locator('[data-living-track="neighbors-night"]').click();
+ await page.locator('#living-menu').evaluate(n=>n.click());await page.locator('[data-living-tab="news"]').click();await page.locator('#living-close').click();await page.waitForTimeout(200);
  await page.locator('#mainline-hud').click();
- if(await page.locator('[data-living-tab="board"]').getAttribute('aria-pressed')!=='true')throw Error('任务卡未打开委托页');
+ if(await page.locator('[data-living-tab="board"]').getAttribute('aria-selected')!=='true')throw Error('任务卡未打开委托页');
  await page.screenshot({path:'output/playwright/active-task/board-320.png'});
  await page.locator('#living-close').click();await page.waitForTimeout(200);
  if(!await page.locator('#map-button').isVisible())await page.locator('#field-menu-toggle').click();

@@ -123,7 +123,12 @@ export function createOperationGuide({game,root,workshop}){
    const node=dialog.querySelector(operation.selector);
    // 有车停在店旁时商店默认车载分类，购弹教学先指引切到猫猫弹药。
    if(!visible(node)&&dialog.id==='field-equipment-dialog'&&o.task.id==='supply-ammo')return cue('ammo-target','[data-supply-target="hand"]','选择猫猫弹药');
-   if(!visible(node)&&dialog.id==='living-dialog')return cue('board','[data-living-tab="board"]','打开邻里委托');
+   if(!visible(node)&&dialog.id==='living-dialog'){
+     const request=operation.selector.match(/data-living-accept="([^"]+)"/)?.[1];
+     const row=request&&dialog.querySelector('[data-living-item="'+request+'"]');
+     if(visible(row))return cue('request','[data-living-item="'+request+'"]','查看这项委托');
+     return cue('board','[data-living-tab="board"]','打开邻里委托');
+   }
    // 购种任务的商品位于分类中，切到其他类后先指回真实分类按钮。
    if(!visible(node)&&dialog.id==='seed-shop-dialog'){const crop=FARM_CROPS[mainlineTask(game)?.gardening?.crop];if(crop)return cue('seed-category',`[data-seed-shop-category="${crop.category}"]`,'选择'+FARM_CATEGORIES.find(c=>c.id===crop.category).name);}
    return cue('action',operation.selector,operation.label);

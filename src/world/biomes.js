@@ -16,6 +16,7 @@ import { NATURAL_TERRAIN } from './natural-terrain.js';
 import { FOREST_VARIANTS } from './landscape-variants.js';
 import {coversRealmEntrance} from './realm-entrances.js';
 import { thinSceneryTrees, CAMP_EDGE_TREES, coversScenery } from './forest-clearings.js';
+import {BUS_STOP_TREES} from './bus-stop-landscape.js';
 export const BIOMES = [
   {
     id: 'meadow',
@@ -119,13 +120,13 @@ export function forestLayout() {
     [2300, 2500, 190], [2860, 2530, 180], [3290, 2540, 195],
   ];
   groves.push(...outerForestGroves());
-  for (const [groveIndex,[cx,cy,r]] of groves.entries()) {
+  for (const [groveIndex,[cx,cy,r,count=24]] of groves.entries()) {
     const anchor=NATURAL_TERRAIN.lakes.reduce((a,b)=>!a?b:worldDistance({x:cx,y:cy},a)<worldDistance({x:cx,y:cy},b)?a:b,null);
     const style=FOREST_VARIANTS.find(v=>v.id===anchor?.forestVariant && worldDistance({x:cx,y:cy},anchor)<570)
       ||FOREST_VARIANTS[groveIndex%6];
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < count; i++) {
       const a = i * 2.39996,
-        radius = Math.sqrt((i + 0.5) / 24) * r * style.spread;
+        radius = Math.sqrt((i + 0.5) / count) * r * style.spread;
       // 宽林缘可能越过世界边缘，先归一化再检查道路与景观留白。
       const {x,y}=canonical({x:cx+Math.cos(a)*radius,y:cy+Math.sin(a)*radius});
       if (
@@ -153,6 +154,12 @@ export function forestLayout() {
     return { ...tree, variant: zone.tree, palette: zone.palette, biome: zone.id };
   })];
   forestTemplate=forestTemplate.filter(t=>!monsterCampClearing(t.x,t.y));
+    // 站边栽植点已避开驻怪区、棚顶和接送路线；追加以保留原有采集树的顺序。
+    for(const tree of BUS_STOP_TREES){
+      if(coversScenery(tree.x,tree.y)||forestTemplate.some(t=>worldDistance(t,tree)<52))continue;
+      const zone=biomeAt(tree.x,tree.y);
+      forestTemplate.push({...tree,variant:zone.tree,palette:zone.palette,biome:zone.id});
+    }
   return forestTemplate.map(tree => ({ ...tree }));
 }
 // 野外等级由区域决定；清缴可指定基础等级，保留当地配色而不叠加区域属性和奖励。
@@ -160,7 +167,7 @@ export function enemyIdentity(x, y, roll = 0.5, mapId = 'forest', fixedLevel = n
   // 营地及其周边按营地中心的原始区域等级生成完整属性，避免边缘混入低一级野怪。
   // 清缴、剧情指定等级仍优先；物种与阶级倍率在基础等级计算之后应用。
   const territory = fixedLevel == null ? monsterCampTerritoryAt(x,y,mapId) : null;
-  const origin = territory?.levelOrigin || territory || {x,y};
+  const origin = territory || {x,y};
   const zone = biomeAt(x, y, mapId),
     rank = roll > GAMEPLAY_VALUES.enemy.eliteRollThreshold ? 2 : roll > GAMEPLAY_VALUES.enemy.toughRollThreshold ? 1 : 0,
     level = fixedLevel ?? (mapId==='forest'?forestThreatAt(origin.x,origin.y).level:biomeAt(origin.x,origin.y,mapId).level + Math.floor(terrainNoise(Math.floor(origin.x / GAMEPLAY_VALUES.enemy.levelNoiseCell), Math.floor(origin.y / GAMEPLAY_VALUES.enemy.levelNoiseCell)) * GAMEPLAY_VALUES.enemy.zoneLevelSpan));

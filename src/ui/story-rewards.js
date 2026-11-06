@@ -14,7 +14,7 @@ export function storyRewardMarkup(def,record){
  return `<div class="story-rewards" aria-label="${i18nHtml("ui.story-rewards.baed36af79")}"><div>${items.map(([key,n])=>`<span>${resourceIcon(key)}<strong aria-label="${esc(resourceName(key))} +${n}" title="${esc(resourceName(key))}">+${n}</strong></span>`).join('')}</div></div>`;
 }
 // 整组赠礼默认只占一行，展开后展示实际选择；规则与折算额放入问号说明。
-export function storyCollectionMarkup(progress,post,near){
+export function storyCollectionMarkup(progress,post,near,{flat=false}={}){
  if(!post?.collection)return '';
  const c=post.collection,s=storyCollectionStatus(progress,post);
  const cards=c.options.map(o=>{
@@ -23,7 +23,9 @@ export function storyCollectionMarkup(progress,post,near){
   const state=s.claimed?(selected?i18nText("ui.story-rewards.5fdddf2e66"):i18nText("ui.story-rewards.2a1f5b5694")):!s.ready?i18nText("ui.story-rewards.7f750504c5"):progress.story.run?i18nText("ui.story-rewards.4ff8d7e1d0"):!near?i18nText("ui.story-rewards.733291b49c"):i18nText("ui.story-rewards.844ab94772");
   return `<article><small>${resources?i18nText("ui.story-rewards.4a232ccc67"):o.kind==='vehicle'?i18nText("app.game-events.8f9f50d425"):i18nText("ui.story-rewards.4fe131173e")}</small><b>${esc(storyEquipmentName(o))}</b>${contents}<button data-story-prize="${esc(o.id)}" data-story-board="${esc(post.id)}" ${s.ready&&!s.claimed&&near&&!progress.story.run?'':'disabled'}>${state}</button></article>`;
  }).join('');
- return `<details class="story-collection" data-story-disclosure="collection-${esc(post.id)}"><summary>${storyTypeIcon('gift')}<b>${esc(c.title)}</b><span>${s.count} / ${s.total}${s.claimed?' ✓':s.ready?i18nText("ui.story-rewards.e90d90fb23"):''}</span></summary><div class="story-collection-tools"><span>${storyCollectionChoice(post)}</span><button data-story-help="collection" aria-label="${i18nHtml("ui.story-rewards.962eb82e69")}" class="story-help-button">${HELP_EMBLEM}</button></div><div class="story-prizes">${cards}</div></details>`;
+ const count=s.count+' / '+s.total+(s.claimed?' ✓':s.ready?i18nText("ui.story-rewards.e90d90fb23"):'');
+ const heading=flat?`<section class="living-gift-page"><h3>${esc(c.title)}</h3><p>已完成 ${count}</p>`:`<details class="story-collection" data-story-disclosure="collection-${esc(post.id)}"><summary>${storyTypeIcon('gift')}<b>${esc(c.title)}</b><span>${count}</span></summary>`;
+ return `${heading}<div class="story-collection-tools"><span>${storyCollectionChoice(post)}</span><button data-story-help="collection" aria-label="${i18nHtml("ui.story-rewards.962eb82e69")}" class="story-help-button">${HELP_EMBLEM}</button></div><div class="story-prizes">${cards}</div>${flat?'</section>':'</details>'}`;
 }
 // 赠礼说明使用正式配置与当前所有权，不缓存会过期的领取条件。
 export function storyCollectionHelp(progress,post,near){

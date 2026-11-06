@@ -6,6 +6,16 @@ import { CAT_SCARVES } from '../config/cat-scarves.js';
 import { drawCatEars } from './cat-breed-shapes.js';
 import { drawTitleScarf } from './title-scarf.js';
 import { CatCoatFrames } from './cat-coats.js';
+import { PLAYER_SCALE } from '../combat/recoil.js';
+
+// 居民的小幅肖像以 0.7 倍绘制；地图上围绕原脚底放大到与骑手相同的身材。
+export const RESIDENT_PORTRAIT_SCALE = 0.7;
+const spriteFootY = 13;
+export function scaleResidentForWorld(c) {
+  c.translate(0, spriteFootY * (RESIDENT_PORTRAIT_SCALE - PLAYER_SCALE));
+  const ratio = PLAYER_SCALE / RESIDENT_PORTRAIT_SCALE;
+  c.scale(ratio, ratio);
+}
 
 // 根据动作自己的帧率取帧；减少动态时固定待机，时间完全来自战斗时钟。
 export function catFrame(action, time, reduced = false) {
@@ -91,7 +101,7 @@ export class CatSpriteAtlas {
     const frame = catFrame(action, ((time + track.phase) % duration + duration) % duration, reduced);
     track.frame = frame;
     const decay = Math.exp(-Math.max(0, state.idleTime - track.changedAt) * 24);
-    c.save(); c.translate(pose.bodyX, pose.bodyY + 13);
+    c.save(); c.translate(pose.bodyX, pose.bodyY + spriteFootY);
     const x = (-h.anchor[0] + track.shiftX * decay) / h.pixelsPerUnit,
       y = (-h.anchor[1] + track.shiftY * decay) / h.pixelsPerUnit, span = size / h.pixelsPerUnit;
     const separateEars = gust > .001 && !reduced;

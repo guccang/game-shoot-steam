@@ -2,7 +2,7 @@
 import {StaticRasterCache} from './static-raster-cache.js';
 import {drawBuildingArchitecture} from './building-architecture.js';
 export const campBuildingCache=new StaticRasterCache();
-const sizes={warehouse:[144,124],'cat-home':[144,132],furniture:[136,120],seed:[114,110],legendary:[214,158]};
+const sizes={'warehouse-depot':[182,101],warehouse:[144,124],'cat-home':[144,132],furniture:[136,120],seed:[114,110],legendary:[214,158]};
 // 底座原点不变，顶部额外留出猫耳与描边，下方包含接触影。
 export function drawCachedCampArchitecture(c,kind,winter=false,night=0){
  const [w,h]=sizes[kind];const snow=!!winter,dark=!!night;

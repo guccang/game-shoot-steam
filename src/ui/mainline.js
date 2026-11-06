@@ -11,6 +11,7 @@ import {mainlineReward} from '../config/economy.js';
 import {layoutTaskCombatHud,combatHudVisible} from './task-combat-layout.js';
 import {clearingCombatActive} from '../core/living-safety.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
+import {MAP_CAT_HIT} from './scene-resident.js';
 // 巡林簿界面只展示任务表和提交操作意图；不直接改等级、赠装备或判定通关。
 import {campTalkSite} from '../core/camp-routines.js';
 import {MAINLINE_TASKS,MAINLINE_SITES,MAINLINE_NPCS} from '../config/mainline.js';
@@ -64,6 +65,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  // 正文打开当前任务的数据或操作页，保持玩家在右侧按钮选择的寻路状态。
  scope.on(card,'click',()=>{
   const visit=worldTaskObjective(game),current=mainlineObjective(game);
+  if(visit?.restoration){openAction({type:'restoration',id:visit.restoration});return;}
   if(visit?.key==='boss-clearing'){openAction({type:'clearing',inspect:true});return;}
   // 临时访问优先于主线；远处的守门入口先显示地图，不隐式恢复寻路。
   if(visit?.key==='visit'){
@@ -74,7 +76,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   }
   if(current?.clearingStage){openAction({type:'clearing',inspect:true});return;}
   if(current&&current.site.mapId!==game.mapId){$('phone-button').click();return;}
-  if(trackedLivingRequest(game)){$('living-menu').click();root.querySelector('[data-living-tab="board"]')?.click();return;}
+  if(trackedLivingRequest(game)){$('living-menu').click();return;}
   if(!openCurrentAction({inspect:true}))dialogs.open('mainline-dialog');
  });
  // 种田任务按钮恢复世界后展开农具，不在任务簿中代做农活。
@@ -117,7 +119,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  function render(){
   const selected=worldTaskObjective(game);
   // 卡片保留清缴返场、临时访问和修复目标；关闭路点只影响指引，不撤掉正文与操作入口。
-  const main=mainlineObjective(game),priority=selected?.key==='visit'||selected?.key==='boss-clearing'||main?.restoration||main?.cottageRest;
+  const main=mainlineObjective(game),priority=selected?.restoration||selected?.key==='visit'||selected?.key==='boss-clearing'||main?.restoration||main?.cottageRest;
   const request=priority?null:trackedLivingRequest(game),target=request&&livingRequestTarget(game,request);
   const o=priority?(selected||main):target?{task:request,label:target.text,site:{...target,mapId:game.mapId}}:main,dialogOpen=!!root.querySelector('dialog[open]');
   // 靠近建筑仍保留任务入口，屋顶提示通过场景取景避让任务卡。
@@ -125,7 +127,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   if(!card.hidden){
    card.dataset.taskKind=['visit','boss-clearing'].includes(o.key)?'navigation':request?'living':'mainline';card.dataset.taskId=o.task.id;
    card.querySelector('.mainline-kicker').textContent=o.key==='visit'?'正在前往':o.key==='boss-clearing'?'野外任务':request?'森林邻里':isCampaignTask(o.task)?'主线':'自选体验';
-   const visiting=o.key==='visit'||o.key==='boss-clearing',step=!request&&mainlineStep(game);
+   const visiting=o.key==='visit'||o.key==='boss-clearing',step=!request&&!o.restoration&&mainlineStep(game);
    card.dataset.navigationTutorial=String(step?.operation?.id==='task-navigation-toggle'&&!step.done);
    card.querySelector('b').textContent=request?o.task.title:o.label;
    card.querySelector('.mainline-objective').textContent=o.hint|| (visiting?o.site.name||o.label:request?o.label:o.phase==='doing'?[step?.progress,step?.hint].filter(Boolean).join(' · '):MAINLINE_SITES[o.task.site].name);
@@ -177,7 +179,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
    dockNpcDialogue(root,bubble);bubble.dataset.speaker=MAINLINE_NPCS[o.task.npc].name;
   }else{
    const label=(o.phase==='report'?'交付 · ':'交谈 · ')+MAINLINE_NPCS[o.task.npc].name;if(npc.getAttribute('aria-label')!==label)npc.setAttribute('aria-label',label);
-   placeSceneHit(npc,actor,renderer,frame,{width:56,height:82});
+   placeSceneHit(npc,actor,renderer,frame,MAP_CAT_HIT);
   }
  }
  // 先提交本帧NPC热点，再测量并定位气泡；低频刷新也保持相同顺序。

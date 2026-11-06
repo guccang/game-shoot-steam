@@ -21,6 +21,7 @@ import {leaveCottage} from '../src/core/cottage.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
 import {parkedVehicleObjects} from '../src/rendering/parked-vehicles.js';
 import {parkingGaragePose} from '../src/rendering/parking.js';
+import {vehicleServiceObjects} from '../src/rendering/vehicle-repair.js';
 import {settlementAt,settlementBlocked} from '../src/world/settlements.js';
 import {livingRoadDistance} from '../src/world/living-spaces.js';
 const spots=PARKING_SPOTS.filter(s=>s.building==='repair');
@@ -34,7 +35,7 @@ test('西扩营地内外边界正确，新增道路跨世界接缝仍可识别',
 });
 
 test('野怪警戒和交互点留在扩建围栏之外',()=>{
- assert.deepEqual(MONSTER_CAMPS.filter(c=>c.mapId==='forest').map(monsterCampLevel),[2,4,7,10,13,16,20]);
+ assert.deepEqual([...new Set(MONSTER_CAMPS.filter(c=>c.mapId==='forest').map(monsterCampLevel))].sort((a,b)=>a-b),Array.from({length:20},(_,i)=>i+1));
  for(const camp of MONSTER_CAMPS.filter(c=>c.mapId==='forest')){
   assert.equal(settlementAt(camp,MONSTER_CAMP_RULES.warningRadius),null,camp.id);
   for(const site of [campSignSite(camp),campCacheSite(camp),campVisitorSite(camp)])assert.equal(settlementAt(site,25),null,site.id);
@@ -42,13 +43,23 @@ test('野怪警戒和交互点留在扩建围栏之外',()=>{
 });
 
 test('真实森林中维修门口、泊位、交付区和西门都可通行，墙柱与后墙不可穿过',()=>{
- const g=setup(),start={x:350,y:220,mapId:'forest',livingCollision:true,navigationRadius:18};
+ const g=setup(),start={...TOWN_LAYOUT.spawn,mapId:'forest',livingCollision:true,navigationRadius:18};
  for(const target of [...spots.map(s=>({x:s.x,y:s.approachY})),WORKSHOP_INTERIORS.repair.door,REPAIR_BAY,{x:-820,y:729}])assert.ok(planQuestRoute(start,target,g.trees,24000).reachable,JSON.stringify(target));
  for(const dx of [0,WORLD.width]){
   assert.equal(blocked(R.x+dx,R.y-42,12,g.trees,start),false);
   for(const [x,y] of [[R.x+90,R.y],[R.x,R.y-110]])assert.equal(blocked(x+dx,y,12,g.trees,start),true);
  }
  assert.ok(planQuestRoute({...start,...WORKSHOP_INTERIORS.repair.door},{x:50,y:1065},g.trees).reachable);
+});
+
+test('步行进入维修门洞和绕到屋后时，猫位于内壁底图与门框之间',()=>{
+ const layers=vehicleServiceObjects(setup());
+ const back=layers.find(o=>o.type==='repair-center-back'),front=layers.find(o=>o.type==='repair-center');
+ for(const y of [R.y-10,R.y-75,R.y-139]){
+  assert.ok(back.y+back.depthOffset<y);
+  assert.ok(y<front.y);
+ }
+ assert.ok(front.y<R.y+20);
 });
 
 test('三个维修泊位与周期镜像均可 P 倒车、刷新、重新上车并保留耐久',()=>{

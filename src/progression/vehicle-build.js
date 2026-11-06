@@ -16,6 +16,6 @@ export function normalizeLogistics(raw,progress){
   return {engine:engines.includes(b.engine)?b.engine:0,engines,plates:integer(b.plates,LOAD_RULES.maxPlates),spares:integer(b.spares,LOAD_RULES.maxPlates),wood:integer(b.wood,RESOURCE_CAP),cargo:FARM_CROPS.map((_,j)=>integer(b.cargo?.[j],FARM_STOCK_CAP))};
  });
  const t=raw?.tow;
- if(Number.isInteger(t?.tractor)&&Number.isInteger(t?.target)&&t.tractor!==t.target&&progress.vehicleHulls[t.tractor]&&progress.vehicleHulls[t.target]&&progress.vehicleService?.[t.target]?.phase==='wrecked')result.tow={tractor:t.tractor,target:t.target};
+ if(Number.isInteger(t?.target)&&(t.tractor==='cat'||(Number.isInteger(t.tractor)&&progress.vehicleHulls[t.tractor]))&&t.tractor!==t.target&&progress.vehicleHulls[t.target]&&progress.vehicleService?.[t.target]?.phase==='wrecked')result.tow={tractor:t.tractor,target:t.target};
  return result;
 }

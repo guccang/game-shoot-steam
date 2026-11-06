@@ -102,10 +102,15 @@ test('加特林持续射击更快，换枪不改变在途弹丸，所有弹体�
   assert.ok(counts[1]>counts[0]*3);
   const g=arena(5);g.enemies=[mob(1,1080,700)];g.attack();const bullet=g.projectiles[0];g.progress.weapon=3;assert.equal(bullet.kind,'water');g.enemies=[];for(let i=0;i<120;i++)g.updateProjectiles(1/60);assert.equal(g.projectiles.length,0);
 });
-test('远程枪械只瞄准怪物，没有怪物时保留树木', () => {
+test('手持枪械优先瞄准怪物，开启木材后能自动打树，关闭后停止伐木', () => {
   const g=arena();Object.assign(g.player,{x:900,y:700});Object.assign(g.magazines[0],{ammo:1,remaining:0});g.addTree(920,790);g.enemies=[mob(1,1090,700)];g.attack();assert.equal(g.player.angle,0);
   for(let i=0;i<30;i++)g.updateProjectiles(1/60);assert.ok(g.enemies[0].hp<1000);assert.equal(g.trees[0].hp,55);
-  g.enemies=[];assert.equal(g.attack(),false);for(let i=0;i<5;i++)g.update(.05);assert.equal(g.findAttackTarget(),null);
+  g.enemies=[];const tree=g.trees[0];assert.equal(g.findAttackTarget(),tree);
+  g.gameplayPreferences={targetWood:false};Object.assign(g.magazines[0],{ammo:3,remaining:0});
+  assert.equal(g.findAttackTarget(),null);assert.equal(g.attack(),false);assert.equal(g.magazines[0].ammo,3);
+  g.gameplayPreferences.targetWood=true;g.attackTimer=0;
+  for(let i=0;i<90&&tree.hp===55;i++)g.update(1/60);
+  assert.ok(tree.hp<55);assert.ok(g.magazines[0].ammo<3);
 });
 test('推力不能把怪物推进河中；碎片重力独立于水平弹道并在地面收敛', () => {
   // 起点位于新河湾的干岸外侧，验证冲量从合法陆地不能穿入水中。

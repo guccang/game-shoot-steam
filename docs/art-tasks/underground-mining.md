@@ -95,3 +95,6 @@
 确认版本：本次地下玩法提交；长期参考为`docs/art-reference/mining-day.png`、`mining-night.png`（按仓库规范保存在本地验收资料，不打入运行包）。
 
 合并复核：保留 main 同期的阳台四向投影修复；合并后正式矿区与东侧阳台绘制均正常，浏览器错误为空，证据为 output/playwright/mining/merged-mine.png、merged-balcony.png 和 merge-smoke-result.txt。
+
+## 矿车运输追加任务
+以现有 50 世界单位宽车斗为参照，矿石堆在斗内，牵引连接置于车后。入口复用本层上行标记，矿石从车斗飞向升井。保留乘员、车轮、深度排序及地下武器。验证目标 mine-freight：满载、联运、入库动画及真实仓库余额一致。

@@ -1,5 +1,5 @@
 // 地下生态目录和层级面积规则，稳定种子只在开通时生成一次。
-import {WORLD} from '../world/coordinates.js';
+import {PREVIOUS_FOREST_WORLD as MINE_EXTENT} from '../world/coordinates.js';
 import {MINING,minePoint} from './mining.js';
 export const MINE_BIOMES=[
  {id:'mushroom',name:'荧菇林',floor:'#aaa982',night:'#76856c',resource:'wood',yield:3,regrow:90,animal:'spore'},
@@ -20,12 +20,12 @@ export const MINE_ECOLOGY={unlockRatio:.5,bridge:{ore:2,wood:4},respawn:180,scan
 export function mineHash(x,y,seed=1847){let n=(Math.imul(x,374761393)^Math.imul(y,668265263)^seed)>>>0;n=Math.imul(n^(n>>>13),1274126177);return (n^(n>>>16))>>>0;}
 // 地下不设层数上限；第三层起均按10%至100%生成，矩形包含入口且只在首次开通时随机。
 export function createMineGeography(depth,entry=MINING.home,random=Math.random){
- const seed=Math.floor(random()*2147483646)+1,coverage=depth===1?100:depth===2?10+Math.floor(random()*41):10+Math.floor(random()*91),scale=Math.sqrt(coverage/100),width=WORLD.width*scale,height=WORLD.height*scale;
- const left=Math.max(0,Math.min(WORLD.width-width,entry.x-width*(.25+random()*.5))),top=Math.max(0,Math.min(WORLD.height-height,entry.y-height*(.25+random()*.5)));
+ const seed=Math.floor(random()*2147483646)+1,coverage=depth===1?100:depth===2?10+Math.floor(random()*41):10+Math.floor(random()*91),scale=Math.sqrt(coverage/100),width=MINE_EXTENT.width*scale,height=MINE_EXTENT.height*scale;
+ const left=Math.max(0,Math.min(MINE_EXTENT.width-width,entry.x-width*(.25+random()*.5))),top=Math.max(0,Math.min(MINE_EXTENT.height-height,entry.y-height*(.25+random()*.5)));
  return {seed,coverage,bounds:{left,top,right:left+width,bottom:top+height}};
 }
 // 已保存层缺少边界只按旧版地下一层迁移，不重新随机旧档。
-export function mineBounds(layer){return layer?.bounds||{left:0,top:0,right:WORLD.width,bottom:WORLD.height};}
+export function mineBounds(layer){return layer?.bounds||{left:0,top:0,right:MINE_EXTENT.width,bottom:MINE_EXTENT.height};}
 // 实际层范围是不可挖掘岩层的内沿；施工格心和移动采样共用此判定。
 export function mineInsideBounds(layer,x,y){const b=mineBounds(layer);return x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;}
 // 边界格只计算与真实地图相交的面积，使100%一层与随机百分比精确成立。

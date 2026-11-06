@@ -10,6 +10,7 @@ export const WORLD_BUILDINGS=[
  {id:'outdoor',...TOWN_LAYOUT.outdoor,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {id:'ammo',...TOWN_LAYOUT.ammo,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {id:'cat-home',...TOWN_LAYOUT.catHome,rects:[[-67,-93,69,5]]},
+ {id:'warehouse-depot',...TOWN_LAYOUT.warehouseDepot,rects:[[-86,-62,86,6]]},
  {id:'warehouse',...TOWN_LAYOUT.warehouse,rects:[[-67,-88,69,5]]},
  {id:'furniture',...TOWN_LAYOUT.furniture,rects:[[-63,-84,65,5]]},
  {id:'construction',...TOWN_LAYOUT.construction,rects:[[-66,-92,66,6]]},

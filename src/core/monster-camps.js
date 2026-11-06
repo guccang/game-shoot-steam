@@ -2,7 +2,7 @@ import {activeGardeningLesson} from '../progression/mainline-gardening.js';
 import {currentMainlineTask} from '../config/mainline.js';
 import {gameSource} from './game-source.js';
 // 营地生活与战斗分离：只有追击居民进入敌人列表，沿用正式攻击和死亡动作。
-import {MONSTER_CAMPS,CAMP_CHARACTERS,MONSTER_CAMP_RULES as RULES,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
+import {MONSTER_CAMPS,campCandidates,CAMP_CHARACTERS,MONSTER_CAMP_RULES as RULES,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {arrivalView} from './enemy-arrival.js';
 import {groundPursuit} from '../physics/ground-pursuit.js';
 import {enemyIdentity} from '../world/biomes.js';
@@ -101,11 +101,13 @@ export function updateMonsterCamps(game,dt){
  }
 }
 // 正式绘制器只取得附近的非战斗居民与营地摆件；具名人物永不登记敌人。
-export function monsterCampObjects(game){
+export function monsterCampObjects(game,view){
  if(!monsterCampsAvailable(game))return [];
  const s=session(game),items=[];
- for(const camp of MONSTER_CAMPS){if(camp.mapId!==game.mapId)continue;items.push({...camp,type:'monster-camp-fire'});
-  const run=s.runs.get(camp.id);if(run)for(const actor of run.actors)if(actor.hp>0&&actor.campState!=='chasing')items.push({...actor,type:'monster-camp-resident'});
+ const sites=view?campCandidates(game.mapId,view.x,view.y,700,view.w,view.h):MONSTER_CAMPS;
+ // 返营中的居民可能已离开营地视口，始终按居民自身的位置绘制。
+ for(const run of s.runs.values())for(const actor of run.actors)if(actor.mapId===game.mapId&&actor.hp>0&&actor.campState!=='chasing')items.push({...actor,type:'monster-camp-resident'});
+ for(const camp of sites){if(camp.mapId!==game.mapId)continue;items.push({...camp,type:'monster-camp-fire'});
   const npc=CAMP_CHARACTERS.find(n=>n.camp===camp.id);if(npc)items.push({...enemyIdentity(camp.x,camp.y,0,camp.mapId),...campCharacterSite(camp),type:'monster-camp-npc',campNpc:true,kind:'dumpling',name:npc.name,npc:npc.id,phase:1,hp:1,maxHp:1});
   if(CAMP_CHARACTERS.some(n=>n.destination===camp.id&&game.progress.monsterCamps.clues.includes(n.id)))items.push({...campCacheSite(camp),type:'monster-camp-cache'});
  }return items;

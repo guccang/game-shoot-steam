@@ -17,7 +17,7 @@ function harvestNotice(game,state,message){if(state.notice===message)return;stat
 
 // 背包和附近自有载具共用正式售价；只扣能完整兑换的作物，金币满时保留余货。
 export function updateWarehouseHarvest(game,dt){
- if(game.state!=='playing'||dt<=0)return;
+ if(game.state!=='playing'||dt<=0||game.progress.trade?.keep)return;
  if(game.mapId!=='forest'||game.cottage||worldDistance(game.player,{x:WAREHOUSE.x,y:WAREHOUSE.y+22})>150){game.warehouseAutoHarvest=null;return;}
  if(!canUseWarehouse(game))return;
  const state=game.warehouseAutoHarvest??={retry:0,notice:''};state.retry=Math.max(0,state.retry-dt);if(state.retry>0)return;

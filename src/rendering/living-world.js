@@ -11,7 +11,7 @@ import { calendarView } from '../world/living-calendar.js';
 import { nearest, worldDistance, visibleBodies } from '../world/coordinates.js';
 import { box, oval, poly } from './primitives.js';
 import { canvasFont } from './text-style.js';
-import { catSprites } from './cat-animation.js';
+import { catSprites, RESIDENT_PORTRAIT_SCALE, scaleResidentForWorld } from './cat-animation.js';
 import { drawSlime } from './enemies.js';
 import { drawNewBoss } from './bosses.js';
 
@@ -299,7 +299,7 @@ function drawFacility(c, item, night) {
 function drawResidentBody(c,r,time,reduced){
   if (Number.isInteger(r.hero)) {
     c.save();
-    c.scale(0.7, 0.7);
+    c.scale(RESIDENT_PORTRAIT_SCALE, RESIDENT_PORTRAIT_SCALE);
     if (!catSprites.draw(c, r.hero, r.motion, { bodyX: 0, bodyY: 0 }, reduced)) throw Error('常驻居民猫猫图集未就绪');
     c.restore();
   } else {
@@ -327,6 +327,8 @@ function drawResident(c, r, game, night, reduced) {
   c.save();
   c.translate(r.x, r.y - (r.elevation || 0));
   const time = reduced ? 0 : r.clock;
+  c.save();
+  if(Number.isInteger(r.hero))scaleResidentForWorld(c);
   drawResidentBody(c,r,time,reduced);
   if (!r.moving && !['rest', 'walk', 'flowers', 'shelter', 'chat'].includes(r.action)) {
     // 营地伙伴的手持物按身体比例缩小并放低，保留脸部和脚步的完整轮廓。
@@ -353,7 +355,8 @@ function drawResident(c, r, game, night, reduced) {
         c.stroke();
       }
     } else if (['repair', 'watch', 'handover'].includes(r.action)) {
-      lamp(c, 0, -4, night > 0.5);
+      // 灯靠在左爪旁，正面同屏时露出猫鼻和围巾。
+      lamp(c, r.type==='camp-resident'?-18:0, -4, night > 0.5);
       box(c, x - 2, y - 12, 4, 13, 1, '#aa8b61', EDGE, 1);
       box(c, x - 7, y - 15, 14, 5, 1, '#9aa99a', EDGE, 1);
     } else {
@@ -368,6 +371,7 @@ function drawResident(c, r, game, night, reduced) {
     }
     c.restore();
   }
+  c.restore();
   if (worldDistance(r, game.player) < 100) {
     c.font = canvasFont(11);
     c.textAlign = 'center';

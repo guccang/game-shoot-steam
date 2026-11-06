@@ -1,7 +1,31 @@
 /* 野外页面沿用手机统一底板；实时钓鱼条留出安全区和战场视野。 */
 .outdoor-gear{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #315c4328}.outdoor-gear>div{flex:1}.outdoor-gear p{margin:6px 0}.outdoor-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.outdoor-fish-list{display:grid;gap:8px;margin:12px 0}.outdoor-fish-list span{display:flex;justify-content:space-between;gap:8px}.outdoor-fish-list small{font-size:11px}
-#fishing-hud{position:absolute;z-index:85;bottom:calc(92px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:430px;margin:auto;padding:12px;border:2px solid #315c43;border-radius:18px;background:#fff6dcf5;color:#315c43;box-shadow:0 5px 18px #254d4033;touch-action:none}#fishing-hud[hidden],#fishing-hud [hidden]{display:none!important}.fishing-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.fishing-heading b{font-size:17px}#fishing-cancel{min-height:44px;padding:5px 12px}#fishing-message{font-size:13px;line-height:1.5;margin:7px 0;min-height:20px}#fishing-control{width:100%;min-height:52px;touch-action:none;user-select:none}#fishing-hud[data-phase=bite]{border-color:#aa6835;box-shadow:0 0 0 3px #efc47480}#fishing-meters{display:grid;gap:5px;font-size:12px;margin-bottom:8px}#fishing-meters label{display:flex;align-items:center;gap:8px}#fishing-meters meter,#fishing-meters progress{flex:1;width:100%;height:13px;accent-color:#638d62}#fishing-lean-label{display:flex;align-items:center;gap:5px;font-size:11px}#fishing-lean{min-width:0;flex:1;height:44px;accent-color:#638d62}#fishing-catch{display:flex;gap:8px}#fishing-catch button{flex:1;min-height:48px}
+#fishing-hud{position:absolute;z-index:85;bottom:calc(92px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:430px;margin:auto;padding:12px;border:2px solid #315c43;border-radius:18px;background:#fff6dcf5;color:#315c43;box-shadow:0 5px 18px #254d4033;touch-action:none}#fishing-hud[hidden],#fishing-hud [hidden]{display:none!important}.fishing-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.fishing-heading b{font-size:17px}#fishing-cancel{min-height:44px;padding:5px 12px}#fishing-message{font-size:13px;line-height:1.5;margin:7px 0;min-height:20px}#fishing-control{width:100%;min-height:52px;touch-action:none;user-select:none}#fishing-hud[data-phase=bite]{border-color:#aa6835;box-shadow:0 0 0 3px #efc47480}#fishing-meters{display:grid;gap:5px;font-size:12px;margin-bottom:8px}#fishing-meters label{display:flex;align-items:center;gap:8px}#fishing-meters meter,#fishing-meters progress{flex:1;width:100%;height:13px;accent-color:#638d62}#fishing-lean-label{display:flex;align-items:center;gap:5px;font-size:11px}#fishing-lean{min-width:0;flex:1;height:44px;accent-color:#638d62}
 @media(max-height:650px){#fishing-hud{bottom:calc(77px + env(safe-area-inset-bottom));padding:8px;left:8px;right:8px}#fishing-message{font-size:12px;margin:4px 0}#fishing-control{min-height:46px}.fishing-heading b{font-size:15px}}
 
 /* 钓具选择和概率表适配短屏，使用统一底板的颜色与44像素触控区。 */
 .fishing-setup label{display:grid;gap:6px;margin:10px 0}.fishing-setup select{width:100%;min-width:0;min-height:44px;background:var(--ui-paper);color:var(--ui-forest);border:1px solid var(--ui-line);border-radius:10px;padding:8px;font:inherit}.fishing-odds summary,#outdoor-content summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:bold}.fishing-probabilities>div{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--ui-line);padding:8px 0}.fishing-probabilities small{display:block;font-size:11px}.fishing-probabilities b{white-space:nowrap}.fishing-tier-odds{display:flex;flex-wrap:wrap;gap:8px;font-size:12px}.fishing-odds p{font-size:12px;line-height:1.6}.outdoor-gear>div{min-width:0}.outdoor-gear button{flex:none;max-width:100px}
+/* 单列货架让商品名、短说明与价格有足够空间，图标和购买各自接受触摸。 */
+.outdoor-products {display:grid;gap:8px}
+.outdoor-shelf-heading {justify-content:space-between;flex-wrap:wrap;gap:2px 8px;margin-bottom:6px}
+.outdoor-shelf-heading small {color:var(--ui-muted);white-space:nowrap}
+#outdoor-dialog .ui-panel__footer:has(#outdoor-message:empty) {display:none}
+.outdoor-product {
+  display:grid;grid-template-columns:60px minmax(0,1fr);gap:8px 12px;
+  align-items:center;padding:10px 12px;background:var(--ui-paper);
+  border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);
+}
+.outdoor-product-icon {
+  display:grid;place-items:center;align-content:center;gap:1px;width:60px;min-height:66px;
+  padding:3px;background:var(--ui-sage);color:var(--ui-forest);border:1px solid var(--ui-line);
+  border-radius:9px;cursor:pointer;font:inherit;
+}
+.outdoor-product-icon svg {width:40px;height:40px}
+.outdoor-product-icon small {font-size:11px;line-height:1.2}
+.outdoor-product-copy p {margin:4px 0 0;font-size:13px;line-height:1.45}
+.outdoor-product-order {grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.outdoor-product-order .ui-button {min-height:44px;padding:5px 12px}
+.outdoor-detail-intro {display:flex;align-items:center;gap:12px}
+.outdoor-detail-intro svg {flex:none;width:64px;height:64px;background:var(--ui-sage);border-radius:10px}
+.outdoor-detail-specs {display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding-block:12px;border-block:1px solid var(--ui-line)}
+.outdoor-detail-specs dd {margin:0;text-align:right;font-weight:bold}

@@ -21,6 +21,12 @@ export const PATHS = [
 ];
 // 外围纵路与两条连接支路保持原路宽；横向支路止于河东，不制造无桥跨河通道。
 for (const x of [5200, 7800, 10000]) PATHS.push(Array.from({length:WORLD.height/20+1},(_,i)=>({x:x+Math.sin(i*20/ORIGINAL_WORLD.height*Math.PI*2)*65,y:i*20})));
+// 新边长不再是旧路形周期的整数倍，末段平滑接回对侧的同一条路。
+for(const road of PATHS){
+ const axis=road[0].x===0?'y':'x',offset=road[0][axis]-road.at(-1)[axis];
+ const tail=road.slice(-41);
+ tail.forEach((point,i)=>{const t=i/(tail.length-1);point[axis]+=offset*t*t*(3-2*t);});
+}
 for (const y of [3600,6000]) {const wave=Math.sin(y/ORIGINAL_WORLD.height*Math.PI*2),left=2600+wave*110,right=10000+wave*65;PATHS.push(Array.from({length:371},(_,i)=>({x:left+(right-left)*i/370,y:y+Math.sin(i/370*Math.PI*2)*45})));}
 
 // 道路段构成一次性空间树，局部留白查询不再扫描整张扩展地图。

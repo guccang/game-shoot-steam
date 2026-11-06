@@ -1,6 +1,6 @@
 // 牧栏分前后两层，羊的卷毛、面部及四蹄独立绘制。
 import {drawLivestock} from './livestock-atlas.js';
-import {PEN_RAILS} from '../config/pasture.js';
+import {PASTURE,PEN_RAILS} from '../config/pasture.js';
 // 三支金穗从同一个根部伸出；压低叶丛，方便小屏玩家从普通地被里辨认。
 function drawSweetGrass(c){
  c.fillStyle='rgba(58,74,45,.20)';c.beginPath();c.ellipse(2,1,20,5,0,0,Math.PI*2);c.fill();
@@ -26,8 +26,9 @@ export function drawPasture(c,item,time){
   const offset=t<3?0:t<5?(t-3)*9:t<9?18:t<11?(11-t)*9:0;
   drawLivestock(c,'sheep',offset,0,t>=3&&t<5||t>=9&&t<11,time);
  }else{
-  const front=item.type==='pasture-front';c.translate(0,front?-52:52);
-  for(const [x1,y1,x2,y2] of PEN_RAILS.filter((_,i)=>front?i>=3:i<3)){
+  const front=item.type==='pasture-front',h=PASTURE.halfHeight;c.translate(0,front?-h:h);
+  for(const [x1,y1,x2,y2] of PEN_RAILS){
+   if(front!==(y1===h&&y2===h))continue;
    for(const h of [10,24]){c.beginPath();c.moveTo(x1,y1-h);c.lineTo(x2,y2-h);c.lineWidth=7;c.strokeStyle='#705b42';c.stroke();c.lineWidth=3;c.strokeStyle='#c79967';c.stroke();}
    const n=Math.ceil(Math.hypot(x2-x1,y2-y1)/45);
    for(let i=0;i<=n;i++){const x=x1+(x2-x1)*i/n,y=y1+(y2-y1)*i/n;c.fillStyle='#bd9565';c.strokeStyle='#625b41';c.lineWidth=2;c.beginPath();c.roundRect(x-3,y-31,7,33,2);c.fill();c.stroke();}

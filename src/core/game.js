@@ -1,3 +1,4 @@
+import {tradeDefeat,updateTradeEscort} from './camp-trade.js';
 import {weaponTerrainTargets} from '../combat/terrain-targets.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
 import {commitWorkshop} from './workshop.js';
@@ -50,7 +51,7 @@ import { clearingCombatActive, livingProtected, retreatLivingEnemy } from './liv
 import {bossCombatActive,updateBossEngagement} from './boss-engagement.js';
 import { riderPosition } from '../config/vehicle-rider.js';
 import {updateMainline,resetMainlineScene} from './mainline-manager.js';
-import {arrivalPending,arrivalCinematic} from '../config/ranger-arrival.js';
+import {arrivalPending,arrivalCinematic,arrivalGiftHull} from '../config/ranger-arrival.js';
 import {restoreArrival,updateArrival,advanceArrival} from './ranger-arrival.js';
 import { i18nText } from "../i18n/index.js";
 import {readyStoryExcursion} from './story-excursion.js';
@@ -212,7 +213,7 @@ export class Game {
     this.campDefense=null;
     this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
     this.ammoWarning=null;
-    this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.mineEntranceLatch=null;this.mineEntranceWait=0;this.mineEntranceKey=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
+    this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.woodPickupWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.mineEntranceLatch=null;this.mineEntranceWait=0;this.mineEntranceKey=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
     resetBattlefield(this, continuation);
@@ -336,7 +337,7 @@ export class Game {
     if(parkingFleetApplies(this)&&this.progress.campParking.owned.some(s=>s.hull===this.vehicle.index))return boardParkedVehicle(this,this.vehicle.index);
     if(this.arrivalCinematic||this.fireTransit||['football','race'].includes(this.realm?.mode))return false;
     const summoned=summonVehicle(this);
-    if(summoned&&this.vehicle.index===5&&this.progress.arrival){this.progress.arrival.parked=false;this.onEvent('vehicle-config');}
+    if(summoned&&this.progress.arrival&&this.vehicle.index===arrivalGiftHull(this.progress)){this.progress.arrival.parked=false;this.onEvent('vehicle-config');}
     return summoned;
   }
   // 主动下车保存载具耐久和弹药，不能反复上下车免费维修。
@@ -518,7 +519,7 @@ export class Game {
   }
   // 生成飘字，限制数量以避免长时间游玩堆积。
   float(x, y, text, color = '#fff8df', big = false, resources = null) {
-    this.numbers.push({
+    const number = {
       x: x + (this.random() - 0.5) * 15,
       y: y - 28,
       text,
@@ -526,8 +527,10 @@ export class Game {
       life: 0.95,
       big,
       ...(resources ? { resources } : {}),
-    });
-    if (this.numbers.length > 65) this.numbers.shift();
+    };
+    this.numbers.push(number);
+    if (this.numbers.length > 65) this.numbers.splice(this.numbers.findIndex(n => !n.vehicleLoadNotice), 1);
+    return number;
   }
   // 生成击中与破坏的碎屑反馈。
   burst(x, y, color, count = 8) {
@@ -645,6 +648,7 @@ export class Game {
     if(!this.workshopTrial&&!this.livingPreview&&!target.football)recordDefeat(this.progress,target.type,impact?.statisticsSource,target);
     // 走过死亡保护后只发一次经验；试射、预览、伐木与召唤杂兵不计入角色成长。
     if(!this.workshopTrial&&!this.livingPreview&&!target.football&&!target.bossSummon&&['enemy','boss'].includes(target.type)){const earned=awardHeroXp(this.progress,target.type==='boss'?HERO_COMBAT_XP.boss:target.tough?HERO_COMBAT_XP.tough:HERO_COMBAT_XP.enemy);if(earned.gained){this.float(target.x,target.y-75,earned.levels?`${HEROES[earned.index].name}升到${earned.level}级`:`经验 +${earned.gained}`,'#e8d69b');this.onEvent('hero-experience',earned);}}
+    tradeDefeat(this,target);
     recordMainlineVehiclePractice(this,target,impact);
     if(campDefenseKill(this,target))return;
     if(this.story){storyKill(this,target);return;}
@@ -711,27 +715,28 @@ export class Game {
   findAttackLane() {
     return piercingLane(this);
   }
-  // 手持电锯优先处理够得到的木材，其他武器只索敌。
+  // 枪械优先锁定敌人，电锯优先锁定可见且够得到的树。
   findAttackTarget() {
     // 安宁道路保护玩家免受威胁，但不关闭对道路两侧敌人的正常寻敌与攻击。
     const weapon = this.weapon();
     if(weapon.attackKind==='defense')return null;
     if (weapon.aimAssist) return this.findAttackLane()?.target || null;
     let target = null, closest = Infinity;
-    for (const tree of weaponTerrainTargets(this, weapon.id === 'chainsaw')) {
-      if (tree.equipmentObstacle || !(tree.hp > 0)) continue;
-      const distance = attackTargetDistance(this, tree, Math.min(closest, weapon.range));
-      if (distance < closest && distance < weapon.range && attackTargetVisible(this, tree)) {
-        target = tree; closest = distance;
-      }
-    }
-    if (target) return target;
-    // 单次扫描保留原稳定排序的同距优先级，只对可能胜出的射程内目标检查视野。
     for (const enemy of this.boss ? [...this.enemies, this.boss] : this.enemies) {
       if (!(enemy.hp > 0)) continue;
       const distance = attackTargetDistance(this, enemy, Math.min(closest, weapon.range + enemy.radius));
       if (distance < closest && distance < weapon.range + enemy.radius && attackTargetKnown(this, enemy)) {
         target = enemy; closest = distance;
+      }
+    }
+    if (target && weapon.id !== 'chainsaw') return target;
+    if (weapon.controller || weapon.targetTrees === false) return target;
+    closest = Infinity;
+    for (const tree of weaponTerrainTargets(this, true)) {
+      if (tree.equipmentObstacle || !(tree.hp > 0)) continue;
+      const distance = attackTargetDistance(this, tree, Math.min(closest, weapon.range));
+      if (distance < closest && distance < weapon.range && attackTargetVisible(this, tree)) {
+        target = tree; closest = distance;
       }
     }
     return target;
@@ -799,6 +804,7 @@ export class Game {
       muzzlePosition(riderPosition(this.player, this.vehicle), this.loadout.weapon),
       target,
       this.damage(),
+      true,
     );
     triggerRecoil(this.player.recoil, this.loadout.weapon);
   }
@@ -901,6 +907,7 @@ export class Game {
     this.player.legendaryBuilding=legendaryVisible(this);
     this.player.livingCollision=!this.campDefense&&!this.realm&&this.mapId==='forest'&&!this.fireActive;
     updateLivingWorld(this,dt);
+    updateTradeEscort(this,dt);
     expireWildFarms(this);
     ensureWildFarms(this);
     updateFarmDelivery(this);

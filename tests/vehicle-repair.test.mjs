@@ -9,6 +9,8 @@ import {REPAIR_CENTER,REPAIR_BAY} from '../src/config/vehicle-repair.js';
 import {economyFor} from '../src/config/economy.js';
 import {vehicleRepairQuote,requestVehicleRepair,collectRepairedVehicle,updateVehicleRepair,vehicleService} from '../src/core/vehicle-repair.js';
 import {blocked} from '../src/physics/motion.js';
+import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
+import {vehicleServiceObjects} from '../src/rendering/vehicle-repair.js';
 import {parkedOwned} from '../src/core/camp-parking.js';
 import {farmLandReason} from '../src/world/farm-land.js';
 import {startFireRescue} from '../src/core/fire-rescue.js';
@@ -18,6 +20,25 @@ function game(){const p=ownedPineProgress();p.coins=100000;const g=new Game(p);g
 function wreck(g){assert.equal(g.summonVehicle(),true);absorbVehicleHit(g,999999);return vehicleService(g,0);}
 // 模拟可见游戏时间；业务计时不读取现实时间。
 function finish(g){for(let i=0;i<2000&&vehicleService(g,0).phase;i++)updateVehicleRepair(g,.05);assert.equal(vehicleService(g,0).phase,null);assert.match(g.progress.campParking.owned.find(r=>r.hull===0).spot,/^repair-/);}
+test('救援车往返、车轮和挂钩使用显示帧，暂停直接显示实际位置',()=>{
+ const g=game(),frames=createRenderInterpolation();
+ // 两辆车同时运行，显示快照必须各自跟随其订单。
+ for(const [i,phase] of ['outbound','towing','hooking'].entries()){
+  g.progress.vehicleService[i]={phase,mapId:g.mapId,truck:{x:i*30,y:20},position:{x:100,y:20},wheel:2,timer:0};
+ }
+ frames.beforeStep(g);
+ for(const order of g.progress.vehicleService.filter(Boolean)){
+  if(order.phase==='hooking'){order.timer=.04;continue;}
+  order.truck.x+=4;order.wheel+=.5;
+ }
+ const moving=vehicleServiceObjects(frames.sample(g,.25)).filter(o=>o.type==='repair-tow');
+ assert.deepEqual(moving.map(o=>o.x),[1,31,60]);
+ assert.deepEqual(moving.map(o=>o.order.wheel),[2.125,2.125,2]);
+ assert.equal(moving[2].order.timer,.01);
+ assert.equal(g.progress.vehicleService[0].truck.x,4);
+ g.state='paused';
+ assert.equal(vehicleServiceObjects(frames.sample(g,0)).find(o=>o.type==='repair-tow').x,4);
+});
 test('报废立即下车且等待、刷新、重生均不免费恢复',()=>{
  const g=game(),hp=g.player.hp,pos={x:g.player.x,y:g.player.y};wreck(g);
  assert.equal(g.vehicle.active,false);assert.equal(g.vehicle.hp,0);assert.equal(g.player.hp,hp);assert.deepEqual(vehicleService(g,0).position,pos);

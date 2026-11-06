@@ -5,6 +5,8 @@ import {Game,freshProgress} from '../src/game.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,MONSTER_CAMP_RULES as RULES,campVisitorSite,campSignSite,campCharacterSite,campCacheSite} from '../src/config/monster-camps.js';
 import {monsterCampObjects,updateMonsterCamps,insideMonsterCamp,monsterCampLevel,monsterCampChatter,talkCampCharacter,inspectCampCache} from '../src/core/monster-camps.js';
+import {SETTLEMENT_FENCES} from '../src/world/settlements.js';
+import {planQuestRoute} from '../src/physics/quest-route.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {blocked} from '../src/physics/motion.js';
 import {forestLayout} from '../src/world/biomes.js';
@@ -97,7 +99,7 @@ test('新路边野田避开营地生活与警戒留白，不挤占居民空间',
  for(const p of g.progress.farm.plots)for(const c of MONSTER_CAMPS.filter(c=>c.mapId===p.mapId))assert.ok(worldDistance(p,c)>=310,c.id);
 });
 test('所有等级带、全部种子都有固定来源，营地和圈外点不落水或堵在树冠中',()=>{
- assert.deepEqual(MONSTER_CAMPS.filter(c=>c.mapId==='forest'&&!c.id.includes('-annex-')).map(monsterCampLevel),[2,4,7,10,13,16,20]);
+ assert.deepEqual([...new Set(MONSTER_CAMPS.filter(c=>c.mapId==='forest').map(monsterCampLevel))].sort((a,b)=>a-b),Array.from({length:20},(_,i)=>i+1));
  for(let i=0;i<17;i++)assert.ok(MONSTER_CAMPS.some(c=>c.seeds.includes(i)));
  const trees={forest:forestLayout(),jiuzhaigou:jiuzhaigouTrees()};
  for(const c of MONSTER_CAMPS){assert.equal(blocked(c.x,c.y,240,[],c),false,c.id);for(const p of [campVisitorSite(c),campCacheSite(c),campCharacterSite(c)])assert.equal(blocked(p.x,p.y,20,trees[c.mapId],p),false,c.id);assert.ok(trees[c.mapId].every(t=>worldDistance(t,c)>=310),c.id);}
@@ -148,7 +150,7 @@ test('正式插值快照复用营地居民，休闲步态不因渲染类型丢�
  const g=scene(),interpolation=createRenderInterpolation();interpolation.beforeStep(g);updateMonsterCamps(g,.04);const sample=interpolation.sample(g,.5),actors=monsterCampObjects(sample).filter(o=>o.type==='monster-camp-resident');assert.equal(actors.length,5);assert.ok(actors.every(a=>a.kind==='dumpling'&&Number.isFinite(a.gelStep)));
 });
 test('清缴选点避让常驻营地，观察期间随机遭遇不消耗倒计时',()=>{
- const g=scene(),c=MONSTER_CAMPS[0];assert.equal(clearingSiteOpen(c,[]),false);g.encounterTimer=8;updateEncounters(g,1,true);assert.equal(g.encounterTimer,8);Object.assign(g.player,{x:c.x-RULES.observe-100,y:c.y});updateEncounters(g,1,true);assert.equal(g.encounterTimer,7);
+ const g=scene(),c=MONSTER_CAMPS[0];assert.equal(clearingSiteOpen(c,[]),false);g.encounterLowRisk=true;g.encounterTimer=8;updateEncounters(g,1,true);assert.equal(g.encounterTimer,8);Object.assign(g.player,{x:c.x-RULES.observe-100,y:c.y});updateEncounters(g,1,true);assert.equal(g.encounterTimer,7);
 });
 test('另外两位人物区分昼夜和清场条件，特殊物品只能领取一次',()=>{
  for(const npc of CAMP_CHARACTERS.slice(1)){
@@ -160,4 +162,17 @@ test('另外两位人物区分昼夜和清场条件，特殊物品只能领取�
 test('定点营地找种同时推进已有找种教学，特殊场景立即撤掉营地敌人',()=>{
  const g=scene(),c=MONSTER_CAMPS[0];g.progress.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf('neighbor-seeds'));g.progress.mainline.currentId='neighbor-seeds';g.progress.mainline.phase='doing';beginGardeningLesson(g.progress);clear(g,c);assert.equal(g.progress.mainline.gardening.seedDrops,1);
  const h=scene();Object.assign(h.player,c);updateMonsterCamps(h,.04);h.story={};updateMonsterCamps(h,.04);assert.equal(h.enemies.filter(e=>e.monsterCamp).length,0);
+});
+
+// 按环面距离检查真实门洞两端，并从西门沿正式森林碰撞网走到新木牌旁。
+test('聚落门外留有缓冲，西门外可安全出发前往低级呼噜松',()=>{
+ const camp=MONSTER_CAMPS.find(c=>c.id==='snore-pine'),forest=MONSTER_CAMPS.filter(c=>c.mapId==='forest');
+ const gates=SETTLEMENT_FENCES.filter(f=>f.type==='settlement-gate');
+ for(const gate of gates)for(const c of forest)
+  assert.ok(worldDistance(gate,c)-gate.length/2-RULES.territoryRadius>=200,c.id);
+ const west=gates.find(g=>g.settlement==='sunleaf'&&!g.horizontal&&g.x<0);
+ assert.ok(worldDistance(west,camp)-RULES.warningRadius>=900);
+ assert.equal(monsterCampLevel(camp),2);
+ const route=planQuestRoute({...west,mapId:'forest',livingCollision:true,navigationRadius:18},campVisitorSite(camp),forestLayout(),24000);
+ assert.ok(route.reachable);
 });

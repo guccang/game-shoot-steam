@@ -66,3 +66,24 @@ test('主线直接读取装甲层和发动机，预算不包含旧等级升级',
 
 // 室内同样采用背包负重，避免进门后重货失去重量。
 test('屋内满载同样缓慢步行，仍保留实际负重影响',()=>{const g=scene();g.vehicle.active=false;g.cottage={kind:'vehicle'};let point;for(let y=100;y<500&&!point;y+=25)for(let x=60;x<500;x+=25)if(!cottageBlocked(x,y,g)&&!cottageBlocked(x+12,y,g)){point={x,y};break;}assert.ok(point);Object.assign(g.player,point);updateCottage(g,.1,{x:1,y:0});const normal=g.player.x-point.x;Object.assign(g.player,point);g.progress.farm.inventory[0]=1000;updateCottage(g,.1,{x:1,y:0});assert.ok(normal>0);assert.ok(g.player.x>point.x&&g.player.x-point.x<normal);});
+
+// 徒步牵引沿用真实残骸和固定步长，检查显示中间帧、存档与负重限制。
+test('猫猫能拉动电动车，绳端与残骸逐帧同步，超重后停步',async()=>{
+ const g=scene(5);wreck(g,5);const result=hookTow(g,5);
+ assert.ok(result.ok,result.message);
+ assert.deepEqual(validateProgress(g.progress).logistics.tow,{tractor:'cat',target:5});
+ assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);
+ const {createRenderInterpolation}=await import('../src/rendering/render-interpolation.js');
+ const {vehicleServiceObjects}=await import('../src/rendering/vehicle-repair.js');
+ const interpolation=createRenderInterpolation(),previous={x:g.player.x,y:g.player.y};
+ const record=g.progress.vehicleService[5],start=record.position.x;
+ interpolation.beforeStep(g);g.player.x+=80;advancePlayerTow(g,previous,.04);
+ assert.ok(record.position.x>start);
+ for(const alpha of [0,.25,.5,.75,1]){
+  const frame=interpolation.sample(g,alpha),wreck=vehicleServiceObjects(frame).find(o=>o.type==='repair-wreck');
+  assert.equal(wreck.x,start+(record.position.x-start)*alpha);assert.equal(frame.towedPosition.x,wreck.x);
+ }
+ g.progress.logistics.builds[5].wood=1000;assert.equal(movementLoadFactor(g),0);
+ assert.ok(unhookTow(g).ok);assert.match(towReason(g,5),/牵引力不足/);
+ wreck(g,0);assert.match(towReason(g,0),/牵引力不足/);
+});

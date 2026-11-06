@@ -8,7 +8,12 @@ import { updateFunnelIdle } from './funnel.js';
 
 // 战斗与波间共用飘字、光束余辉、掉落图标和碎屑的寿命更新。
 export function updateCombatTraces(game, dt) {
-  for (const n of game.numbers) { n.y -= dt * 35; n.life -= dt; }
+  for (const n of game.numbers) {
+    n.life -= dt;
+    // 货舱提示跟车停留，最后半秒随绘制器淡出。
+    if (n.vehicleLoadNotice) { n.x=game.player.x; n.y=game.player.y-148; }
+    else n.y -= dt * 35;
+  }
   for (const s of game.shots) s.life -= dt;
   for (const d of game.drops) {
     d.age=(d.age||0)+dt;

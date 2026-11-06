@@ -5,7 +5,8 @@ import { PLAYER_SCALE } from '../combat/recoil.js';
 import { drawCat } from './characters.js';
 import { drawScooterRear, drawScooterFront } from './scooter.js';
 import { box, oval, poly } from './primitives.js';
-import { RANGER } from '../config/ranger-arrival.js';
+import {drawParkedHull} from './parked-vehicles.js';
+import { RANGER,arrivalGiftHull } from '../config/ranger-arrival.js';
 import { arrivalTarget, arrivalRiders, arrivalWorkshopObjective, workshopBuildView } from '../core/ranger-arrival.js';
 import { WORKSHOP } from '../world/workshop.js';
 import { nearest } from '../world/coordinates.js';
@@ -208,8 +209,8 @@ export function arrivalObjects(game) {
     game.vehicle.active &&
     game.parking?.id === RANGER.parkingId &&
     ['align', 'reverse', 'parked'].includes(game.parking.phase);
-  if (a.keys && a.parked && !usingBay && !(game.vehicle.active && game.vehicle.index === RANGER.scooter))
-    objects.push({ ...RANGER.parking, type: 'arrival-scooter' });
+  if (a.keys && a.parked && !usingBay && !(game.vehicle.active && game.vehicle.index === arrivalGiftHull(game.progress)))
+    objects.push({ ...RANGER.parking, type: 'arrival-gift',hull:arrivalGiftHull(game.progress) });
   if (s && ['handover', 'leave', 'watch'].includes(a.phase))
     objects.push({ ...game.player, type: 'arrival-letter', depthOffset: 3 });
   return objects;
@@ -228,7 +229,8 @@ export function drawArrivalObject(c, item, game, reduced = false, winter = 0) {
     drawArrivalLetter(c, item, game, reduced);
     return;
   }
-  const s = item.elderVehicle ? game.arrivalScene : { wheelPhase: 0 },
+  if(item.type==='arrival-gift'){drawParkedHull(c,item,game,item.hull);return;}
+  const s = game.arrivalScene,
     a = game.progress.arrival;
   c.save();
   const phase = reduced ? 0 : s.wheelPhase;

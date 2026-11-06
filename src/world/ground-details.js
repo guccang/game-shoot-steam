@@ -10,6 +10,7 @@ export function* groundDetails(view,kind){
  const top=Math.max(0,Math.floor((box.y-8)/CELL)),bottom=Math.min(Math.ceil(WORLD.height/CELL)-1,Math.floor((box.y+box.h+8)/CELL));
  for(let row=top;row<=bottom;row++)for(let col=left;col<=right;col++){
   const rand=randomCell(col+(kind==='grass'?0:10000),row);
-  for(let n=0;n<count;n++){const x=col*CELL+rand()*CELL,y=row*CELL+rand()*CELL,index=(row*COLUMNS+col)*count+n;if(x>=WORLD.width||y>=WORLD.height||x<box.x-8||x>box.x+box.w+8||y<box.y-8||y>box.y+box.h+8)continue;yield {x,y,index};}
+  // 整图导出时亚像素草花只采一个样本；游戏分块仍保持原密度。
+  for(let n=0;n<(view?count:1);n++){const x=col*CELL+rand()*CELL,y=row*CELL+rand()*CELL,index=(row*COLUMNS+col)*count+n;if(x>=WORLD.width||y>=WORLD.height||x<box.x-8||x>box.x+box.w+8||y<box.y-8||y>box.y+box.h+8)continue;yield {x,y,index};}
  }
 }

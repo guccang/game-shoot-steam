@@ -70,7 +70,7 @@ export function createStoryPanel({game,root,dialogs,renderer,onChange,openWorksh
       if(game.progress.story.invalidRun)html+=`<p role="status">${i18nHtml("ui.story.16f5756af0")}</p>`;
       // 同一目录呈现三类任务，邻里只显示常驻请求，不再列一份过期的章节接取状态。
       const current=tasks.current;
-      const overview=`<section class="story-task-overview"><small>当前追踪</small><h3>${escapeText(current?.title||'自由巡林')}</h3><p>${escapeText(current?.text||'沿路看看邻居的新消息。')}</p>${current?`<button data-task-panel="${tasks.neighbors.some(q=>q.tracked)?'living':'mainline'}">查看当前任务</button>`:''}</section>`;
+      const overview=`<section class="story-task-overview"><small>当前追踪</small><h3>${escapeText(current?.title||'自由巡林')}</h3><p>${escapeText(current?.text||'沿路看看邻居的新消息。')}</p>${current?`<button data-task-panel="${current.kind==='restoration'?'restoration':tasks.neighbors.some(q=>q.tracked)?'living':'mainline'}">查看当前任务</button>`:''}</section>`;
       const mainline=`<section class="story-task-group"><h3>巡林主线</h3><p>${escapeText(tasks.mainline?.title||'巡林主线已完成')}</p><button data-task-panel="mainline">打开巡林簿</button></section>`;
       const neighbors='<section class="story-task-group"><h3>邻里委托</h3><p>已领取的请求会保留；需要时到邻里面板切换追踪。</p>'+tasks.neighbors.map(q=>`<button class="story-neighbor-row" data-task-panel="living" data-task-request="${q.id}"><b>${escapeText(q.title)}</b><small>${q.state}</small><span>${escapeText(q.text)}</span></button>`).join('')+'</section>';
       html=overview+mainline+neighbors+'<details class="story-task-group"><summary>装备故事 · 工坊购买资格</summary>'+equipmentQuestCards(game.progress)+'</details>'+'<h3 class="story-task-heading">森林故事</h3>'+html;
@@ -157,10 +157,11 @@ export function createStoryPanel({game,root,dialogs,renderer,onChange,openWorksh
     if(node.dataset.equipmentStory){selected=node.dataset.equipmentStory;postId=null;paint();root.querySelector('[data-selected-story]')?.scrollIntoView({block:'nearest'});return;}
     if(node.dataset.equipmentCurrent){selected=node.dataset.equipmentCurrent;postId=null;paint();return;}
     if(node.dataset.equipmentNavigate){const target=equipmentQuestDestination(game,node.dataset.equipmentNavigate);if(target){requestWorldNavigation(game,target,'去找'+target.name);dialogs.close('story-dialog');}return;}
+    if(node.dataset.taskPanel==='restoration'){game.requestFacility(game.progress.taskTracking?.id);return;}
     if(node.dataset.taskPanel){
       const destination=node.dataset.taskPanel==='mainline'?'mainline-dialog':'living-dialog';
       if(destination==='mainline-dialog')dialogs.open(destination);
-      else{onLiving?.();root.querySelector('[data-living-tab="board"]')?.click();}
+      else onLiving?.(node.dataset.taskRequest);
       dialogs.transferResume('story-dialog',destination);dialogs.close('story-dialog');return;
     }
     if(node.dataset.storyHelp){helpMode=node.dataset.storyHelp;dialogs.open('story-help-dialog');return;}

@@ -1,3 +1,4 @@
+import {appendRangerLetter} from './ranger-letter.js';
 import {drawPhoneResidentPortrait} from '../rendering/living-world.js';
 import {drawVehicleIcon} from '../rendering/vehicle.js';
 import {ITEM_CATEGORIES} from '../config/items.js';
@@ -22,7 +23,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 随身格子嵌入角色页，物品详情和手机使用子弹窗，逐层返回保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,savePreferences,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler}){
+export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreferences,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler}){
  const scope=createEventScope(),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -66,7 +67,8 @@ export function createKeepsakeBackpack({game,root,dialogs,savePreferences,onChan
   if(relic){const camp=MONSTER_CAMPS.find(c=>c.id===relic.camp);detail.innerHTML='<section class="ui-section"><h3>'+escape(relic.item)+'</h3><p>'+escape(relic.reply)+'</p><p>永久效果：清空'+escape(camp.name)+'时，已开放的'+FARM_CROPS[relic.seed].name+'种子额外获得一粒。</p><p>来自'+escape(relic.name)+'的怪线索。物品不会消耗。</p></section>';actions.innerHTML=button('close','收好奇物',true);return;}
   if(!ownsKeepsake(game.progress,selected)){detail.innerHTML='<p>拿到松伯留下的手机后，就能查看地图、联系邻居。</p>';actions.innerHTML=button('close','返回',true);return;}
   if(selected==='elder-letter'){
-   detail.innerHTML=`<article class="keepsake-letter"><small>一直留着的叮嘱</small><h3>${escape(RANGER_LETTER.title)}</h3>${RANGER_LETTER.paragraphs.map(p=>`<p>${escape(p)}</p>`).join('')}<p class="keepsake-signature">${escape(RANGER_LETTER.signature)}</p></article>`;
+   detail.innerHTML=`<article class="keepsake-letter"><small>一直留着的叮嘱</small><h3>${escape(RANGER_LETTER.title)}</h3></article>`;
+   appendRangerLetter(detail.querySelector('.keepsake-letter'),game.progress);
    actions.innerHTML=button('letter',game.progress.arrival?.phase==='letter'?'读完了，开始巡林':'收好来信',true);
   }else if(selected==='house-key'){
    const repaired=facilityOpen(game.progress,'cottage');
@@ -89,10 +91,10 @@ export function createKeepsakeBackpack({game,root,dialogs,savePreferences,onChan
     </button>`).join('');
    detail.innerHTML=`<section class="keepsake-phone">
     <div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div>
-    <div class="keepsake-apps">${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div>
+    <div class="keepsake-apps">${button('trade','订单与商路')}${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div>
     <h3>索敌设定</h3>
     <label class="ui-choice phone-wood"><input type="checkbox" data-target-wood aria-labelledby="phone-wood-label" aria-describedby="phone-wood-help" ${game.gameplayPreferences.targetWood?'checked':''}>
-     <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">手持电锯优先锯附近的树，远程枪械只攻击敌人。</small></span></label>
+     <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">勾选后，手持枪械优先打敌人，周围没有敌人时打树。手持电锯优先锯树。</small></span></label>
     <h3>载具定位</h3><div class="keepsake-contacts">${vehicles||'<p>还没有自有载具。</p>'}</div>
     <h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${contacts}</div>
    </section>`;
@@ -137,6 +139,7 @@ export function createKeepsakeBackpack({game,root,dialogs,savePreferences,onChan
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);show(phone);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
+  if(action==='trade'){onTrade();return;}
   if(action==='treasure'&&ownsKeepsake(game.progress,'patrol-phone')){onTreasure();return;}
   if(action==='mail'&&ownsKeepsake(game.progress,'patrol-phone')){mailbox.open();return;}
   if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}

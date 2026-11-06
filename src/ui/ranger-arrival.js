@@ -1,7 +1,8 @@
+import {appendRangerLetter} from './ranger-letter.js';
 import {constructionWood} from '../progression/resource-wallet.js';
 import {woodTaskStatus,repairWoodStatus} from '../core/wood-task-status.js';
 // 入职只在地图上显示短目标，任务工坊靠近自动修复，首枪购买从建筑页面提交。
-import {RANGER,RANGER_STAGES,RANGER_LETTER} from '../config/ranger-arrival.js';
+import {RANGER,arrivalGiftName,RANGER_STAGES,RANGER_LETTER} from '../config/ranger-arrival.js';
 import {RESTORATION_SECONDS} from '../config/building-repair-timing.js';
 import {arrivalWorkReady,arrivalSpeech,skipArrivalJourney,arrivalWorkshopObjective,completeArrivalLetter,arrivalGuidanceVisible} from '../core/ranger-arrival.js';
 import {createEventScope} from '../platform/events.js';
@@ -39,8 +40,8 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
   letter.setAttribute('aria-labelledby','arrival-letter-title');
   letter.innerHTML='<header class="ui-panel__header"><div><h2 id="arrival-letter-title"></h2><p>晴叶营地 · 入职来信</p></div><button id="arrival-letter-close" class="ui-close" aria-label="收好信件">×</button></header><div class="ui-panel__body"></div><footer class="ui-panel__footer"><button id="arrival-letter-done" class="ui-button ui-button--primary">收好信，继续任务</button></footer>';
   letter.querySelector('h2').textContent=RANGER_LETTER.title;
-  for(const paragraph of [...RANGER_LETTER.paragraphs,RANGER_LETTER.signature]){const p=root.createElement('p');p.textContent=paragraph;letter.querySelector('.ui-panel__body').append(p);}
-  root.body.append(letter);dialogs.register(letter.id,{focusId:'arrival-letter-close'});
+  const letterPaper=root.createElement('article');letter.querySelector('.ui-panel__body').append(letterPaper);
+  root.body.append(letter);dialogs.register(letter.id,{focusId:'arrival-letter-close',onOpen:()=>{letterPaper.replaceChildren();appendRangerLetter(letterPaper,game.progress);}});
   const letterFeedback=root.createElement('p');letterFeedback.setAttribute('role','status');letterFeedback.hidden=true;letter.querySelector('.ui-panel__body').append(letterFeedback);
   // 此入口只处理待阅读任务；交接后重读来信由小背包提供。
   function openLetter(){if(game.progress.arrival?.keys&&game.progress.arrival.phase==='letter'&&!game.arrivalCinematic){letterFeedback.hidden=true;$('arrival-letter-done').textContent='读完了，开始巡林';dialogs.open(letter.id);}}
@@ -56,7 +57,7 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     const cost=RANGER.repairWood,ready=arrivalWorkReady(game),wood=repairWoodStatus(game,cost),enough=wood.ready;
     $('arrival-workshop-state').textContent='重建武器工坊';
     $('arrival-workshop-description').textContent='补齐梁架和屋顶，就能在这里购买第一把手枪。';
-    $('arrival-workshop-cost').textContent=`可用木材 ${wood.progress} · ${wood.breakdown}`;
+    $('arrival-workshop-cost').textContent=`已收集 ${wood.gatherProgress} · 可施工 ${wood.progress} · ${wood.breakdown}`;
     $('arrival-workshop-feedback').textContent=game.arrivalError?'保存失败，请关闭页面后重试。':!enough?wood.hint:!ready?'请靠近工坊旁标出的修复区。':'';
     $('arrival-workshop-action').textContent='修复 · 消耗 '+cost+' 木头';
     $('arrival-workshop-action').disabled=!ready||!enough||!game.progress.arrival.keys||!['gather','repair'].includes(game.progress.arrival.phase);
@@ -70,15 +71,15 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
     // 来信和目标卡不因靠近工坊隐藏，保持任务可读、可点击。
     card.hidden=!active||(!game.arrivalError&&(a.phase==='repairing'||a.phase==='craft'&&a.elapsed<RANGER.rebuildRevealSeconds))||(game.arrivalCinematic&&!game.arrivalError&&a.phase!=='crafting')||!!root.querySelector('dialog[open]');
     if(!active){node.hidden=true;return;}
-    const titles={letter:'查看松伯的信','ride-guide':'坐上电动车',gather:'采集木料',repair:'重建武器工坊',repairing:'重建中…',craft:'购买手枪',crafting:'领取手枪…'};
+    const titles={letter:'查看松伯的信','ride-guide':'骑上'+arrivalGiftName(game.progress),gather:'采集木料',repair:'重建武器工坊',repairing:'重建中…',craft:'购买手枪',crafting:'领取手枪…'};
     title.textContent=titles[a.phase]||'林间交接';
     const objective=arrivalWorkshopObjective(game),reading=a.phase==='letter';goal.disabled=!reading&&!objective;goal.setAttribute('aria-label',reading?'查看松伯的信，打开来信':objective?objective.label+'，查看相关详情':title.textContent);
     if(reading){goal.setAttribute('aria-haspopup','dialog');goal.setAttribute('aria-controls',letter.id);}else{goal.removeAttribute('aria-haspopup');goal.removeAttribute('aria-controls');}
     // 短提示保留行动、地点和资源缺口，避免与标题重复占满窄任务卡。
     body.textContent=game.arrivalError?'保存失败，请重试。':a.phase==='gather'?`靠近树木采集 · 木材 ${constructionWood(game.progress)}/${RANGER.repairWood}`:a.phase==='repairing'?`屋顶重建 · ${Math.max(1,Math.ceil(RESTORATION_SECONDS-a.elapsed))}秒`:a.phase==='repair'?'靠近工坊，材料足够后自动修复':a.phase==='craft'?(game.progress.wood<RANGER.pistolWood?`还差 ${RANGER.pistolWood-game.progress.wood} 木材，靠近树木采集`:'靠近武器工坊，点击购买'):'稍等片刻';
-    if(!game.arrivalError&&['gather','repair','craft'].includes(a.phase)){const wood=a.phase==='craft'?woodTaskStatus(game,RANGER.pistolWood):repairWoodStatus(game,RANGER.repairWood);if(!wood.ready){title.textContent=wood.destination?(wood.destination.kind==='store'?'木材入库':'取回车载木材'):'采集木料';body.textContent='木材 '+wood.progress+' · '+wood.hint;}}
+    if(!game.arrivalError&&['gather','repair','craft'].includes(a.phase)){const wood=a.phase==='craft'?woodTaskStatus(game,RANGER.pistolWood):repairWoodStatus(game,RANGER.repairWood);if(!wood.ready){title.textContent=wood.destination?(wood.destination.kind==='store'?'木材入库':'取回车载木材'):'采集木料';body.textContent='木材 '+(wood.gatherProgress??wood.progress)+' · '+wood.hint;}}
     if(reading)body.textContent='点击任务，查看来信';
-    if(a.phase==='ride-guide')body.textContent='前往北停车场找到电动车';
+    if(a.phase==='ride-guide')body.textContent='前往北停车场找到'+arrivalGiftName(game.progress);
     retry.hidden=!game.arrivalError;card.dataset.phase=a.phase;
     if(dialog.open)renderWorkshop();
     renderFrame();

@@ -44,15 +44,15 @@ async original=>{
    const q=await page.evaluate(id=>a.game.progress.living.requests[id],id);if(q.stage!==stage+1)throw Error('单次点击未正确推进 '+id+stage+JSON.stringify(q));
    if(await page.locator('#task-reward-dialog').isVisible())await page.locator('#task-reward-close').tap();
    await inspect(`提交-${id}-${stage}`,id,q.completed);
-   if(!q.completed&&await page.locator('.living-response').getAttribute('open')!==null)throw Error('回应应默认收起');
-   if(id==='neighbors-lunch'&&stage===2){await page.screenshot({path:'output/playwright/neighbor-task-focus/next-step.png'});await page.locator('.living-response summary').tap();if(!await page.locator('.living-response p').isVisible())throw Error('无法查看回应');}
+   if(!await page.locator('.living-notice').isVisible()||await page.locator('#living-page details').count())throw Error('回应与奖励必须直接可读');
+   if(id==='neighbors-lunch'&&stage===2){await page.screenshot({path:'output/playwright/neighbor-task-focus/next-step.png'});}
   }
   await scene('neighbors-lunch',2);await page.evaluate(()=>a.game.livingPersist=()=>false);await page.locator('[data-living-do="neighbors-lunch"]').tap();
   if(await page.evaluate(()=>a.game.progress.living.requests['neighbors-lunch'].stage)!==2||!await page.locator('.living-notice').isVisible())throw Error('失败丢失进度或提示');await page.evaluate(()=>a.game.livingPersist=()=>true);
   await scene('neighbors-lunch',2);await page.locator('[data-living-do="neighbors-lunch"]').tap();await page.locator('[data-living-track="neighbors-lunch"]').tap();await page.waitForFunction(()=>a.game.state==='playing');
   if(await page.evaluate(()=>a.game.progress.taskTracking.id)!=='neighbors-lunch')throw Error('导航切换了任务');
   await page.evaluate(()=>a.living.open('bat'));if(await page.locator('[data-living-request]').count()||!await page.locator('.living-conversation').isVisible())throw Error('其他居民主动插入无关任务');await page.locator('#living-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
-  await page.evaluate(()=>a.living.open());if(await page.locator('[data-living-request]').count()<2)throw Error('目录丢失其他任务');await page.locator('#living-close').tap();
+  await page.evaluate(()=>a.living.open());await page.locator('[data-living-tab="board"]').tap();if(await page.locator('[data-living-item]').count()<2)throw Error('目录丢失其他任务');await page.locator('#living-close').tap();
   await page.evaluate(()=>a.living.open('mint'));if(!await page.locator('.living-conversation').isVisible()||await page.locator('#living-dialog').evaluate(n=>n.matches(':modal')))throw Error('闲聊未保留');await page.locator('#living-close').tap();
   // 恢复真实自动到点入口，检查其暂停归属与关闭后的单次展示。
   await scene('neighbors-lunch',2);await page.locator('#living-close').tap();await page.waitForFunction(()=>a.game.state==='playing');

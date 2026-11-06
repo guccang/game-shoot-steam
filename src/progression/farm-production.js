@@ -2,11 +2,11 @@
 import {taskResourceStock} from './task-resources.js';
 import {FARM_CROPS} from '../config/farm.js';
 import {PRODUCTION as P,productionCrop,SPRINKLER} from '../config/farm-production.js';
-import {worldDistance,nearest} from '../world/coordinates.js';
+import {WORLD,worldDistance,nearest} from '../world/coordinates.js';
 // 有界整数用于数量，浮点余量另行校验以保留真实行驶时间。
 function integer(n,max=999999){return Number.isFinite(n)?Math.max(0,Math.min(max,Math.floor(n))):0;}
 // 设施仅接受正常世界坐标，不从损坏存档创建离屏实体。
-function site(s){return s&&['forest','jiuzhaigou'].includes(s.mapId)&&Number.isFinite(s.x)&&Number.isFinite(s.y)&&s.x>=0&&s.x<10800&&s.y>=0&&s.y<8400?{mapId:s.mapId,x:s.x,y:s.y}:null;}
+function site(s){return s&&['forest','jiuzhaigou'].includes(s.mapId)&&Number.isFinite(s.x)&&Number.isFinite(s.y)&&s.x>=0&&s.x<WORLD.width&&s.y>=0&&s.y<WORLD.height?{mapId:s.mapId,x:s.x,y:s.y}:null;}
 // 首次迁移只把现存矿石计入资格，不推算历史消费或赠送材料。
 export function normalizeProduction(raw,mining){
  const s=raw||{},sprinklers=[];
@@ -47,6 +47,9 @@ export function sprinklerCovers(s,plot){
 // 所有出售入口共用一份保留配额，按背包、在场货舱顺序保护原料。
 export function productionSalePlan(progress,stocks){
  const remaining=[...(progress.production?.keep||FARM_CROPS.map(()=>0))];
+ // 预留已接邻居订单所需的三份，自动出售和商路出售均只动用余货。
+ const ordered=FARM_CROPS.findIndex(c=>c.id===progress.trade?.crop);
+ if(ordered>=0)remaining[ordered]=Math.max(remaining[ordered]||0,3);
  return stocks.map(stock=>stock.map((count,i)=>{const held=Math.min(count,remaining[i]||0);remaining[i]-=held;return count-held;}));
 }
 // 料理固定消耗两种作物；果饮由玩家选定一种已发现的水果。

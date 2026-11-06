@@ -103,22 +103,22 @@ test('首间工坊已有木料靠近自动修复，全程结束才解锁',()=>{
 });
 
 // 赠车从短剧情实体切换为持久化停车记录时仍留在北广场，导航不得回到废墟。
-test('赠送电动车停在北广场，接管与重载不重复占位',async()=>{
+test('赠送木制自行车停在北广场，接管与重载不重复占位',async()=>{
  const {adoptArrivalParking,parkingOccupied,vehicleParkingSite,boardParkedVehicle}=await import('../src/core/camp-parking.js');
  const {arrivalObjects}=await import('../src/rendering/ranger-arrival.js');
  const {skipArrivalJourney}=await import('../src/core/ranger-arrival.js');
  const g=new Game(freshRangerProgress());g.start();g.arrivalPersist=()=>true;skipArrivalJourney(g);
- const car=arrivalObjects(g).find(o=>o.type==='arrival-scooter'&&!o.elderVehicle);
- assert.equal(car.x,450);assert.equal(car.y,200);assert.equal(car.depthOffset,undefined);
+ const car=arrivalObjects(g).find(o=>o.type==='arrival-gift');
+ assert.equal(car.hull,RANGER.giftHull);assert.equal(car.x,RANGER.parking.x);assert.equal(car.y,RANGER.parking.y);assert.equal(car.depthOffset,undefined);
  assert.equal(parkingOccupied(g,RANGER.parkingId),true);assert.equal(parkingOccupied(g,'garage'),false);
  adoptArrivalParking(g);adoptArrivalParking(g);
- assert.deepEqual(g.progress.campParking.owned.map(r=>[r.hull,r.spot]),[[RANGER.scooter,RANGER.parkingId]]);
- assert.equal(arrivalObjects(g).some(o=>o.type==='arrival-scooter'&&!o.elderVehicle),false);
+ assert.deepEqual(g.progress.campParking.owned.map(r=>[r.hull,r.spot]),[[RANGER.giftHull,RANGER.parkingId]]);
+ assert.equal(arrivalObjects(g).some(o=>o.type==='arrival-gift'),false);
  const restored=new Game(validateProgress(structuredClone(g.progress)));
- assert.equal(vehicleParkingSite(restored,RANGER.scooter).id,RANGER.parkingId);
+ assert.equal(vehicleParkingSite(restored,RANGER.giftHull).id,RANGER.parkingId);
  assert.equal(restored.progress.campParking.owned.length,1);
  restored.start();Object.assign(restored.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});
- assert.equal(boardParkedVehicle(restored,RANGER.scooter),true);assert.equal(restored.vehicle.active,true);assert.equal(restored.progress.campParking.owned.length,0);
+ assert.equal(boardParkedVehicle(restored,RANGER.giftHull),true);assert.equal(restored.vehicle.active,true);assert.equal(restored.progress.campParking.owned.length,0);
 });
 
 // 正式特效每帧仅使用六个槽位，首次工坊与普通修复共用轨迹。

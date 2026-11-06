@@ -9,3 +9,8 @@
 
 /* 总览只扩展内容网格，保留统一手机底板和44px分类触控区。 */
 .codex-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.codex-stat-grid>div{margin:0;padding:10px}.codex-stat-grid dt{font-size:12px;overflow-wrap:anywhere}.codex-stat-grid dd{font-size:20px;font-weight:bold;margin:6px 0 0}.codex-tabs button{padding:8px 4px;min-width:0}.codex-row>span:nth-child(2){min-width:0;overflow-wrap:anywhere}
+/* 鱼获决定页优先展示单条售价、实测体长和入护负重，正文在短屏内滚动。 */
+.catch-species{display:flex;align-items:center;gap:12px}.catch-species canvas{width:80px;height:64px;flex:none}.catch-species h3,.catch-species p{margin:0}
+.catch-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0;padding:10px 0;border-block:1px solid var(--ui-line)}
+.catch-values dt{font-size:12px;color:var(--ui-muted)}.catch-values dd{margin:4px 0 0;font-size:15px;font-weight:bold;color:var(--ui-forest)}
+#fish-catch-error{margin:0;padding:6px 16px;color:var(--ui-forest);font-size:13px}

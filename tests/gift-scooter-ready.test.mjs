@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {skipArrivalJourney} from '../src/core/ranger-arrival.js';
+import {completeArrivalLetter,skipArrivalJourney} from '../src/core/ranger-arrival.js';
 import {adoptArrivalParking,boardParkedVehicle,parkedOwned,updateParkingVisitors} from '../src/core/camp-parking.js';
 import {facilityOpen} from '../src/config/town-restoration.js';
 // 使用正式开场或跳过入口创建尚未修复任何建筑的新档。
@@ -18,10 +18,17 @@ function arrive(skip=false){
 }
 // 上车使用真实停车坐标旁的可通行位置，不直接改变载具状态。
 function approach(g){Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});}
+test('旧档已领电动车时保留原车与木材，上车仍能完成教学',()=>{
+ const p=freshRangerProgress();Object.assign(p.arrival,{keys:true,phase:'leave',parked:true});
+ p.vehicleIndex=RANGER.scooter;p.vehicleHulls[RANGER.scooter]=1;p.logistics.builds[RANGER.scooter].wood=12;
+ const g=new Game(p);g.start();assert.ok(skipArrivalJourney(g));assert.ok(completeArrivalLetter(g));
+ assert.equal(g.progress.vehicleHulls[RANGER.giftHull],0);assert.equal(g.progress.logistics.builds[RANGER.scooter].wood,12);
+ approach(g);assert.ok(g.summonVehicle());g.update(.05);assert.equal(g.progress.arrival.phase,'gather');
+});
 test('自然交接后赠车立即成为可点击的停车实体，不等待造枪与车库',()=>{
  const g=arrive();assert.equal(parkedOwned(g).length,1);
  assert.equal(parkedOwned(g)[0].id,RANGER.parkingId);approach(g);
- assert.equal(boardParkedVehicle(g,RANGER.scooter),true);
+ assert.equal(boardParkedVehicle(g,RANGER.giftHull),true);
  assert.equal(g.vehicle.active,true);assert.equal(g.progress.arrival.phase,'letter');
  assert.equal(facilityOpen(g.progress,'garage'),false);assert.equal(parkedOwned(g).length,0);
  assert.equal(g.dismountVehicle(),true);assert.equal(g.summonVehicle(),true);
@@ -39,17 +46,17 @@ test('未交钥匙、演出和施工锁定时不能接管或上车',()=>{
  g.progress.arrival.keys=true;g.progress.arrival.phase='leave';
  adoptArrivalParking(g);assert.equal(parkedOwned(g).length,0);assert.equal(g.summonVehicle(),false);
  g.progress.arrival.phase='gather';adoptArrivalParking(g);
- g.progress.arrival.phase='repairing';assert.equal(boardParkedVehicle(g,RANGER.scooter),false);
+ g.progress.arrival.phase='repairing';assert.equal(boardParkedVehicle(g,RANGER.giftHull),false);
  assert.equal(g.summonVehicle(),false);
  g.progress.arrival.phase='repair';g.vehicle.cooldown=1;
- assert.equal(boardParkedVehicle(g,RANGER.scooter),false);
- g.vehicle.cooldown=0;assert.equal(boardParkedVehicle(g,RANGER.scooter),true);
+ assert.equal(boardParkedVehicle(g,RANGER.giftHull),false);
+ g.vehicle.cooldown=0;assert.equal(boardParkedVehicle(g,RANGER.giftHull),true);
 });
 test('入职任务中的停车记录重载后仍能使用且不会生成第二辆赠车',()=>{
  const g=arrive();const restored=new Game(JSON.parse(JSON.stringify(g.progress)));
  restored.start();updateParkingVisitors(restored,.05);adoptArrivalParking(restored);
  assert.equal(parkedOwned(restored).length,1);approach(restored);
- assert.equal(boardParkedVehicle(restored,RANGER.scooter),true);
+ assert.equal(boardParkedVehicle(restored,RANGER.giftHull),true);
  adoptArrivalParking(restored);assert.equal(parkedOwned(restored).length,0);
  assert.equal(restored.progress.arrival.parked,false);
 });

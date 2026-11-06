@@ -12,7 +12,7 @@ export function restoreTownPosition(game){
  restoreBuildingParking(game,body);
  const parkingBarriers=parkingCollisionBarriers(game);
  // 地图外原有落点规则不变，停车重叠无论位于营地内外都需要就近解困。
- if((at.x<TOWN_LAYOUT.bounds.left-40||at.x>TOWN_LAYOUT.bounds.right+50||at.y<100||at.y>2090)&&!worldBuildingBlocked(p.x,p.y,12,body)&&!parkingBarriers.some(b=>{const near=nearest(b,p);return Math.abs(p.x-near.x)<b.width/2+12&&Math.abs(p.y-near.y)<b.height/2+12;}))return false;
+ if((at.x<TOWN_LAYOUT.bounds.left-40||at.x>TOWN_LAYOUT.bounds.right+50||at.y<TOWN_LAYOUT.bounds.top-10||at.y>2090)&&!worldBuildingBlocked(p.x,p.y,12,body)&&!parkingBarriers.some(b=>{const near=nearest(b,p);return Math.abs(p.x-near.x)<b.width/2+12&&Math.abs(p.y-near.y)<b.height/2+12;}))return false;
  const point=townStandingPoint(game,p);
  if(!point||point.x===p.x&&point.y===p.y)return false;
  Object.assign(p,point,{vx:0,vy:0});game.progress.living.position=canonical(p);return true;

@@ -1,9 +1,10 @@
+import {MONSTER_CAMPS} from './monster-camps.js';
 // 固定营地名额混编：重新载入沿用原槽位，不改变已经击败的名额或种子账本。
 import {flyingIdentity} from './enemies.js';
 import {ARMORED,armoredIdentity} from './armored-enemies.js';
 import {RANGED_ENEMIES,rangedIdentity} from './ranged-enemies.js';
 
-export const CAMP_ROSTERS=Object.freeze({
+const originalRosters={
  'ember-pot':['slime','slime','acorn-slinger','spore-spitter','slime'],
  'snore-pine':['slime','leaf-bat','acorn-slinger','leaf-bat','slime'],
  'berry-rumor':['slime','spore-spitter','acorn-slinger','slime','reed-archer'],
@@ -37,7 +38,9 @@ export const CAMP_ROSTERS=Object.freeze({
 "valley-echo-annex-6":["slime","leaf-bat","acorn-slinger","reed-archer","slime"],
 "valley-stamp-annex-7":["slime","leaf-bat","acorn-slinger","reed-archer","slime"],
 "valley-star-annex-8":["slime","leaf-bat","acorn-slinger","reed-archer","slime"],
-});
+};
+// 新营地使用亲本的五个固定名额，旧档仍按各营地独立结算。
+export const CAMP_ROSTERS=Object.freeze({...originalRosters,...Object.fromEntries(MONSTER_CAMPS.filter(c=>c.parentId).map(c=>[c.id,originalRosters[c.parentId]]))});
 
 // 兵种属性直接复用正式怪物工厂；地区等级不变，不再为营地建立另一套强度。
 export function campResidentIdentity(base,camp,slot){

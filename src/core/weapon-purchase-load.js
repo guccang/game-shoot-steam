@@ -7,14 +7,13 @@ import {vehicleModel} from '../config/vehicles.js';
 export function weaponPurchaseQuote(game,plan,quote){
  if(!quote.ok||!quote.next||plan.kind!=='weapons'||plan.action!=='buy')return quote;
  const next={...quote.next},load=catLoad(Object.assign(Object.create(game),{progress:next}));
- const mass=load.weight-catLoad(game).weight;
- for(const hull of shopVehicles(game)){
-  const car=vehicleLoad(game,hull,{driver:false});
-  if(car.payload+mass>=car.capacity)continue;
-  next.shopStock={...next.shopStock,[hull]:{...next.shopStock?.[hull],['weapon:'+plan.index]:1}};
-  next.weapon=game.progress.weapon;return {...quote,next,load,place:vehicleModel(hull).name+'的载具仓库'};
- }
  if(!load.overloaded)return {...quote,next,load,place:'猫猫背包'};
+ // 用付款后的候选库存试装整枪，弹匣、弹药及已消耗的材料按实际位置计重。
+ for(const hull of shopVehicles(game)){
+  const stored={...next,weapon:game.progress.weapon,shopStock:{...next.shopStock,[hull]:{...next.shopStock?.[hull],['weapon:'+plan.index]:1}}};
+  const car=vehicleLoad(Object.assign(Object.create(game),{progress:stored}),hull,{driver:false});
+  if(!car.overloaded)return {...quote,next:stored,load,place:vehicleModel(hull).name+'的载具仓库'};
+ }
  next.warehouse={...next.warehouse,weapons:[...next.warehouse.weapons,plan.index]};
  next.weapon=game.progress.weapon;return {...quote,next,load,place:'小屋仓库'};
 }

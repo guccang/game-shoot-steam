@@ -7,7 +7,7 @@ import {mineCell,mineKey,minePoint} from '../config/mining.js';
 import {MINE_ANIMALS as A,MINE_ECOLOGY as E,MINE_ROCK,mineAnimalStats,mineThreatLimit,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
 import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {currentMineLayer} from './mine-layers.js';
-import {miningCommit,mineNotice,creditOre,oreDescription} from './mine-transactions.js';
+import {miningCommit,mineNotice,mineFreightReward,oreDescription} from './mine-transactions.js';
 import {mineOccupancy,mineLineClear} from '../physics/mine-motion.js';
 import {vehicleWeapon,vehicleDamage} from '../config/vehicles.js';
 import {consumeRound,advanceReload} from '../combat/magazine.js';
@@ -29,7 +29,8 @@ export function harvestMine(game){
  if(mineEntrancePlatform(cell,l)||!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药、山体或化石的地块采集。');
  if((l.harvested[key]||0)>l.age)return mineNotice(game,`这里正在恢复，约 ${Math.ceil(l.harvested[key]-l.age)} 秒后可再次采集。`);
  if(b.id==='stalagmite'){const rock=mineRockSite(l,cell);return rock?{ok:hitMineRock(game,rock,MINE_ROCK.hp),message:game.cottage.notice}:mineNotice(game,'这里没有可破坏的山体。');}
- const r=miningCommit(game,(m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')creditOre(p,game.cottage.depth,b.yield);},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.resource==='wood'?b.yield+' 木材':oreDescription(game.cottage.depth,b.yield)}。`);
+ const save=b.resource==='ore'?mineFreightReward.bind(null,game,b.yield):miningCommit.bind(null,game);
+ const r=save((m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.resource==='wood'?b.yield+' 木材':oreDescription(game.cottage.depth,b.yield)}。`);
  if(r.ok&&b.resource==='heal')game.player.hp=Math.min(game.maxHp(),game.player.hp+b.yield);return r;
 }
 // 扫描附近天然洞厅与已开掘区域，天然生物无需先挖出景观才出现。

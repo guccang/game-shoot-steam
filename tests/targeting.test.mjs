@@ -21,6 +21,8 @@ function arena(weapon) {
   g.progress.weapons[weapon] = 1;
   Object.assign(g.player, { x: 900, y: 600 });
   g.start();
+  // 穿透测试通过真实弹仓发射，显式装入本次测试使用的弹药。
+  g.magazines[weapon].ammo=g.weapon().magazineSize;
   g.spawnTimer = 999;
   return g;
 }

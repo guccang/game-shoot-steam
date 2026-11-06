@@ -16,7 +16,7 @@ async original=>{
    for(let y=350;y<1300&&!start;y+=52)for(let x=1300;x<2400&&!start;x+=56){
     if([0,1,2,3,4].every(i=>!farmLandReason(g,{x:x+i*56,y,mapId:g.mapId})))start={x,y};
    }
-   if(!start)throw Error('缺少可耕田段');window.fieldPoint=start;Object.assign(g.player,{x:990,y:950});a.renderer.camera.time=null;a.refresh();
+   if(!start)throw Error('缺少可耕田段');window.fieldPoint=start;Object.assign(g.player,(await import('/src/config/pasture.js')).PEN_GATE);a.renderer.camera.time=null;a.refresh();
   });
   await page.locator('#field-menu-toggle').tap();await page.locator('#production-menu').tap();await page.locator('[data-production-tab="tools"]').tap();
   // 在实际触屏上横拖动物入口，确认付款后才改变牧栏所有权。

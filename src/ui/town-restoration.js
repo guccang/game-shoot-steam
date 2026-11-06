@@ -1,9 +1,9 @@
 // 手机修复页复用公共底板；任务建筑靠近自动开工，自选建筑在门前点击确认。
 import {TOWN_RESTORATIONS,facilityOpen} from '../config/town-restoration.js';
 import {FIRST_HOUR_PLAN,forestRuleLines} from '../config/forest-rules.js';
-import {restorationStatus,repairFacility} from '../core/town-restoration.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
-import {worldDistance} from '../world/coordinates.js';
+import {restorationStatus,repairFacility,trackRestoration} from '../core/town-restoration.js';
+import {setTaskNavigationEnabled} from '../core/task-navigation.js';
+import {requestWorldNavigation,clearWorldNavigation} from '../core/world-navigation.js';
 import {createEventScope} from '../platform/events.js';
 // 标准页面只读取核心状态，不直接增减资源或改解锁。
 export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
@@ -18,11 +18,11 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
   const building=game.progress.restoration.build?.id===selected,f=s.facility;
   get('restoration-title').textContent=f.name;
   const summary=get('restoration-summary');summary.replaceChildren();
-  for(const text of [s.ready?'已修复 · 功能已开放':building?'木料已投放 · 正在修复':s.taskRequired?'当前任务 · 靠近自动修复':s.active?'可提前修复 · 不受主线顺序限制':'完成初次入营引导后可自由修复',f.benefit,building?'已投入 '+f.wood+' 木头':'可用木头 '+s.wood.progress+' · '+s.wood.breakdown,
-   s.ready?'不需要重复修复，主线会自动跳过修复步骤。':building?'返回游戏继续施工，无需再次交付木料。':!s.enough?s.wood.hint:s.taskRequired?'返回游戏并靠近修复区，自动投入 '+f.wood+' 木头开工。':'到达修复区后点击修复，投入 '+f.wood+' 木头并开始修复。']){
+  for(const text of [s.ready?'已修复 · 功能已开放':building?'木料已投放 · 正在修复':s.taskRequired?'当前任务 · 靠近自动修复':s.active?'可提前修复 · 不受主线顺序限制':'完成初次入营引导后可自由修复',f.benefit,building?'已投入 '+f.wood+' 木头':'已收集 '+s.wood.gatherProgress+' · 可施工 '+s.wood.progress+' · '+s.wood.breakdown,
+   s.ready?'不需要重复修复，主线会自动跳过修复步骤。':building?'返回游戏继续施工，无需再次交付木料。':!s.enough?'先采齐 '+f.wood+' 木头，再到'+f.name+'修复。'+s.wood.hint:s.taskRequired?'返回游戏并靠近修复区，自动投入 '+f.wood+' 木头开工。':'到达修复区后点击修复，投入 '+f.wood+' 木头并开始修复。']){
    const p=root.createElement('p');p.textContent=text;summary.append(p);
   }
-  get('restoration-message').textContent=game.restorationError||message;
+  get('restoration-message').textContent=message||game.restorationError;
   get('restoration-repair').textContent=s.ready?'使用功能':building?'正在修复':!s.active?'完成入营引导后修复':!s.near?'请先到达修复区':!s.enough?'木头不足':'修复 · 消耗 '+f.wood+' 木头';
   get('restoration-repair').disabled=!s.ready&&!s.canRepair;
   get('restoration-go').textContent=s.ready||s.enough?'前往设施':s.wood.destination?(s.wood.destination.kind==='store'?'前往仓库':'取回木材'):'前往采木';
@@ -32,6 +32,10 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
  // 已有面板转交暂停归属，返回后恢复原游玩状态。
  function open(id){
   if(!TOWN_RESTORATIONS.some(f=>f.id===id))return false;selected=id;message='';
+  if(!facilityOpen(game.progress,id)){
+   if(trackRestoration(game,id)){clearWorldNavigation(game);message='正在追踪修复'+restorationStatus(game,id).facility.name+'。';}
+   else message='修复任务未保存，请点击下方导航按钮重试。';
+  }
   const previous=[...root.querySelectorAll('dialog[open]')].map(d=>d.id).filter(id=>id!==dialog.id);
   dialogs.open(dialog.id);for(const id of previous){dialogs.transferResume(id,dialog.id);dialogs.close(id);}render();return true;
  }
@@ -39,13 +43,16 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
  // 自选修复设施有独立导航，不把玩家送回尚未推进到此处的主线建筑。
  function navigate(){
   const s=restorationStatus(game,selected),f=s.facility;
-  if(!s.ready&&!s.enough&&s.wood.destination){const d=s.wood.destination;requestWorldNavigation(game,d.site,d.label,{direct:true});return;}
-  const tree=!s.ready&&!s.enough?game.trees.filter(t=>t.hp>0).sort((a,b)=>worldDistance(game.player,a)-worldDistance(game.player,b))[0]:null;
-  requestWorldNavigation(game,tree?{x:tree.x,y:tree.y,mapId:'forest'}:{...f.site,repairArea:s.area},tree?'采集木头，修复'+f.name:'前往'+f.name,{direct:true});
+  if(s.ready)requestWorldNavigation(game,{...f.site,repairArea:s.area},'前往'+f.name,{direct:true});
+  else{
+   if(!trackRestoration(game,selected)){message='修复任务未保存，请重试。';render();return false;}
+   clearWorldNavigation(game);setTaskNavigationEnabled(game,true);
+  }
+  return true;
  }
  scope.on(get('restoration-close'),'click',()=>dialogs.close(dialog.id));
  scope.on(get('restoration-go'),'click',()=>{
-  navigate();
+  if(!navigate())return;
   dialogs.close(dialog.id);onChange();
  });
  scope.on(get('restoration-repair'),'click',()=>{

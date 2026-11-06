@@ -16,12 +16,44 @@ const DESIGNS={
  legendary:{w:214,h:158,roof:'#a96751',name:'传奇工坊'},
  construction:{w:132,h:130,roof:'#99b278',name:'森筑建筑公司'},
 };
+// 平顶储货库以宽滑门和装卸台为中心，货箱沿墙码放，通道保持开放。
+function drawStorageDepot(c,winter,night){
+ const edge='#586047';
+ c.save();
+ oval(c,4,7,93,9,'#34533d29');
+ drawStoneFoot(c,-86,86);drawHouseWall(c,-88,88,-60);
+ // 折边金属屋面为水平板，近檐压住门轨，远檐与侧墙形成俯视深度。
+ poly(c,[[-91,-57],[-79,-91],[77,-91],[91,-59],[88,-52],[-89,-50]],winter?'#e0e5d1':'#a5b79d',edge,2.4);
+ for(const x of [-61,-28,5,38,64]){
+  c.beginPath();c.moveTo(x,-87);c.lineTo(x+(x/12),-60);c.strokeStyle=winter?'#b9c7bb':'#879c88';c.lineWidth=1.7;c.stroke();
+ }
+ box(c,-91,-58,182,7,2,'#768c77',edge,2);
+ // 小型屋顶采光窗压低高度，保留平顶轮廓。
+ poly(c,[[-52,-70],[-46,-84],[-14,-84],[-17,-70]],night?'#e1c891':'#c3d5c5',edge,1.7);
+ box(c,-52,-70,35,3,1,'#849680',edge,1);
+ box(c,-68,-46,89,45,2,'#776f54',edge,2);
+ for(const x of [-65,-23]){
+  box(c,x,-44,39,42,2,'#adba91',edge,1.6);
+  for(let y=-35;y<=-10;y+=9)box(c,x+3,y,33,1,0,'#859777');
+ }
+ box(c,-26,-27,3,9,1,'#f5e4b9',edge,1);
+ box(c,-73,-49,100,4,2,'#7b8170',edge,1.4);
+ drawInsetWindow(c,36,-44,32,13,night);
+ // 三只板条箱共用木托盘，交叉封条和阴影在手机尺度仍然清楚。
+ box(c,25,-2,54,6,1,'#937955',edge,1.5);
+ for(const [x,y] of [[29,-18],[52,-18],[39,-34]]){
+  box(c,x,y,21,16,2,'#c49c6a',edge,1.7);
+  c.beginPath();c.moveTo(x+3,y+3);c.lineTo(x+18,y+13);c.moveTo(x+18,y+3);c.lineTo(x+3,y+13);c.strokeStyle='#8a744f';c.lineWidth=1.4;c.stroke();
+ }
+ box(c,-71,0,96,5,1,'#c1b898',edge,1.4);c.restore();
+}
 // 墙窗由框、玻璃与独立窗扇组成，夜间只改变窗内颜色。
 function windowFrame(c,x,y,w,h,night){
  drawInsetWindow(c,x,y,w,h,night);
 }
 // 石基和门槛明确房屋占地，通行口放在底座中央并与一秒进屋点对齐。
 export function drawBuildingArchitecture(c,kind,winter=false,night=0,extraRows=0){
+ if(kind==='warehouse-depot'){drawStorageDepot(c,winter,night);return;}
  const d=DESIGNS[kind]||DESIGNS.cottage,w=d.w,lift=kind==='cottage'?extraRows*32:0,h=d.h+lift,left=-w/2,right=w/2,wall=-d.h*.63-lift;
  c.save();oval(c,7,6,w*.51,11,'#29463826');oval(c,1,4,w*.44,5,'#29463829');
  drawStoneFoot(c,left,right);

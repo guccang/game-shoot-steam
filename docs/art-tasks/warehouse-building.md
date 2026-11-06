@@ -60,3 +60,12 @@
 - 已查看正式场景昼夜、320窄屏、844短横屏、室外入口和骑乘货舱截图，图标、数量和投放区可辨，弹窗无视口越界；其余既有手机尺寸布局检查通过。建筑碰撞与通路通过专项验证，无新增图片、图集或动画资源。
 - 证据保留在 `output/playwright/warehouse-direct/`：`outside-entry.png`、`wood-stock.png`、`mounted-storage.png`、`panel-320.png`、`panel-844.png`、昼夜外景、`result.txt` 与录像。对应 `designCriterion: warehouse-building`。
 - 旧 `workshop-entry-actions.test.mjs` 的3项失败在未修改main上同样存在：仍断言三秒进入及已移除的点击入屋。此次以当前一秒规则的 `vehicle-door-entry.test.mjs` 验证其他建筑没有回归，未更改旧测试逻辑。
+
+## 北侧储货库扩建
+目标 warehouse-depot：小屋仍作前台，后院增加矮而宽的平顶货库。参照小屋的描边与仓箱材质，以底座 (220,128) 为锚点，屋顶约 180 × 36，库墙、滑门、码垛与屋面分层。扩展北界，保持北门通车、前后绕行和原仓库交互。沿用静态建筑缓存与昼夜光照，检查手机和宽窗口。
+
+### 北侧储货库验收
+
+- 北界从 y=110 调整到 -58。库体 182×101，前库仍在 (285,300)，后库相对底座的实体墙为 [-86,-62,86,6]。正式移动碰撞已检查北门中心线（28 单位半径）、库前、侧边和库后步行位置，围栏与门洞分别阻挡和放行。
+- 已采样 390×844 白天、320×568 夜间和 950×760 宽窗口昼夜。平顶折边、天窗、宽滑门和码垛清晰，人物、怪物、车辆、停车位与两栋仓房同屏。手机点按原小屋本体打开仓库。证据位于 output/playwright/warehouse-depot/。
+- 正式入口为 src/rendering/warehouse.js#drawWarehouse 和 src/rendering/building-architecture.js#drawStorageDepot。按 warehouse-depot 复核，脚本为 tests/warehouse-depot-browser.cjs，开发阶段通过。静态库房共用营地缓存，单变体 444×282 像素，约 489 KiB；无需新图集、视频或动作时钟。

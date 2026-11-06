@@ -38,7 +38,7 @@ async page=>{
  const summary=await page.locator('#restoration-summary').textContent();if(!summary.includes('不受主线顺序限制')||!summary.includes('20 / 80')||!summary.includes('还差 60'))throw Error(summary);
  await page.screenshot({path:'output/playwright/boss-repair-flow/repair-panel-320.png'});
  await page.locator('#restoration-go').click();
- const route=await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));if(route?.key!=='visit'||!route.label.includes('采集木头'))throw Error('自选修复采木导航错误');
+ const route=await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));if(route?.restoration!=='cottage'||!route.label.includes('20/80'))throw Error('自选修复采木导航错误');
  // 由真实移动进入范围，完整施工后不重复收费，在已修复小屋门前站定能够进屋。
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(()=>{const f=facilities.find(f=>f.id==='cottage'),g=a.game;g.progress.wood=80;g.progress.weapon=0;g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.attackTimer=g.fireClock=999;Object.assign(g.player,{x:f.x-160,y:f.y+55,vx:0,vy:0});g.update=normalUpdate;a.renderer.camera.time=null;a.refresh();});

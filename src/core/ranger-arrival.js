@@ -5,7 +5,7 @@ import {freshKeepsakes} from '../progression/keepsakes.js';
 import {RESTORATION_FLIGHT} from '../config/town-restoration.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 入职导演只推进正式场景中的角色和任务检查点，不替代采集与战斗规则。
-import {RANGER,RANGER_STAGES,arrivalPending,arrivalCinematic} from '../config/ranger-arrival.js';
+import {RANGER,arrivalGiftHull,arrivalGiftName,RANGER_STAGES,arrivalPending,arrivalCinematic} from '../config/ranger-arrival.js';
 import {createCatMotion,updateCatMotion} from './cat-motion.js';
 import {createVehicle} from '../combat/vehicle.js';
 import {createMagazines} from '../combat/magazine.js';
@@ -140,23 +140,35 @@ export function advanceArrival(game) {
   if(a.phase==='craft')return false;
   return false;
 }
-// 阅读后先学习驾驶赠车；余额分流在实际骑上电动车后判断。
+// 阅读后先学习驾驶赠车；余额分流在实际骑上赠车后判断。
 export function completeArrivalLetter(game){
  const a=game.progress.arrival;
  if(a?.phase!=='letter'||!a.keys||!['playing','paused'].includes(game.state))return false;
  return phaseArrival(game,'ride-guide');
 }
+// 自然交接和跳过剧情只发一次赠品，已经交过钥匙的旧档继续使用原车。
+function handoverEquipment(game,phase){
+ const delivered=game.progress.arrival.keys;
+ if(!phaseArrival(game,phase,p=>{
+  if(phase==='letter')Object.assign(p.arrival,RANGER.doorstep);
+  if(delivered)return;
+  const hull=RANGER.giftHull;
+  Object.assign(p.arrival,{keys:true,parked:true,giftHull:hull});
+  p.weapons[RANGER.saw]=Math.max(1,p.weapons[RANGER.saw]);p.weapon=RANGER.saw;
+  p.vehicleHulls[hull]=Math.max(1,p.vehicleHulls[hull]);p.vehicleIndex=hull;p.vehicleLoadouts[hull]=null;
+ }))return false;
+ if(!delivered){
+  const hull=RANGER.giftHull;
+  game.vehicles[hull]=createVehicle(game.progress,hull);
+  game.vehicle=game.vehicles[hull];game.magazines=createMagazines(game.progress);
+ }
+ return true;
+}
 // 跳过乘车与告别仅交付原定钥匙和工具；阅读来信、采木、修复及制枪仍由玩家完成。
 export function skipArrivalJourney(game){
  const a=game.progress.arrival;
  if(game.state!=='playing'||!RANGER_STAGES[a?.phase])return false;
- if(!phaseArrival(game,'letter',p=>{
-  Object.assign(p.arrival,{keys:true,parked:true,x:RANGER.doorstep.x,y:RANGER.doorstep.y});
-  p.weapons[RANGER.saw]=Math.max(1,p.weapons[RANGER.saw]);p.weapon=RANGER.saw;
-  p.vehicleHulls[RANGER.scooter]=Math.max(1,p.vehicleHulls[RANGER.scooter]);p.vehicleIndex=RANGER.scooter;p.vehicleLoadouts[RANGER.scooter]=null;
- }))return false;
- game.vehicles[RANGER.scooter]=createVehicle(game.progress, RANGER.scooter);
- game.vehicle=game.vehicles[RANGER.scooter];game.magazines=createMagazines(game.progress);
+ if(!handoverEquipment(game,'letter'))return false;
  Object.assign(game.player,RANGER.doorstep);restoreArrival(game);return true;
 }
 // 入职未完成时冻结威胁时钟，任务采集仍走正式更新；暂停和后台不补时间。
@@ -171,7 +183,7 @@ export function updateArrival(game,dt) {
   if(game.arrivalError)return a.phase!=='repairing';
   if(game.arrivalSpeechPaused&&RANGER_STAGES[a.phase])return true;
   // 上车必须由真实操作完成；已有材料跳过采集。
-  if(a.phase==='ride-guide'&&game.vehicle.active&&game.vehicle.index===RANGER.scooter)
+  if(a.phase==='ride-guide'&&game.vehicle.active&&game.vehicle.index===arrivalGiftHull(game.progress))
     return !phaseArrival(game,constructionWood(game.progress)>=RANGER.repairWood?'repair':'gather');
   // 旧存档的下车阶段直接续到购枪，保留当前骑乘状态及保存失败重试。
   // 已有材料直接转向工坊；花掉材料后只补差额，不要求重新采满任务配额。
@@ -185,11 +197,8 @@ export function updateArrival(game,dt) {
   const stage=RANGER_STAGES[a.phase];
   if(stage&&a.elapsed+1e-9>=stage.seconds){
     const phases=Object.keys(RANGER_STAGES),next=phases[phases.indexOf(a.phase)+1]||'letter';
-    if(a.phase==='handover'){
-      if(phaseArrival(game,next,p=>{p.arrival.keys=true;p.arrival.parked=true;p.weapons[RANGER.saw]=Math.max(1,p.weapons[RANGER.saw]);p.weapon=RANGER.saw;p.vehicleHulls[RANGER.scooter]=Math.max(1,p.vehicleHulls[RANGER.scooter]);p.vehicleIndex=RANGER.scooter;p.vehicleLoadouts[RANGER.scooter]=null;})){
-        game.vehicles[RANGER.scooter]=createVehicle(game.progress, RANGER.scooter);game.vehicle=game.vehicles[RANGER.scooter];game.magazines=createMagazines(game.progress);
-      }
-    }else phaseArrival(game,next);
+    if(a.phase==='handover')handoverEquipment(game,next);
+    else phaseArrival(game,next);
     if(!game.arrivalError)poseArrival(game,0);
   }
   else if(a.phase==='repairing'&&a.elapsed+1e-9>=RANGER.rebuildSeconds+RESTORATION_FLIGHT){
@@ -207,7 +216,7 @@ export function updateArrival(game,dt) {
 export function arrivalWorkshopObjective(game) {
   const a=game.progress?.arrival;
   if(!a||!arrivalGuidanceVisible(game)||!['ride-guide','gather','repair','craft'].includes(a.phase))return null;
-  if(a.phase==='ride-guide')return {task:{id:'arrival-scooter',title:'坐上电动车'},key:'arrival-ride-guide',phase:'travel',site:{...arrivalTarget(game),mapId:'forest'},label:'前往北广场找到电动车'};
+  if(a.phase==='ride-guide')return {task:{id:'arrival-scooter',title:'骑上'+arrivalGiftName(game.progress)},key:'arrival-ride-guide',phase:'travel',site:{...arrivalTarget(game),mapId:'forest'},label:'前往北广场找到'+arrivalGiftName(game.progress)};
   const needed=a.phase==='craft'?RANGER.pistolWood:RANGER.repairWood;
   const wood=a.phase==='craft'?woodTaskStatus(game,needed):repairWoodStatus(game,needed);
   if(wood.destination){const key='arrival-wood-'+wood.destination.kind;return {task:{id:key,title:wood.destination.kind==='store'?'木材存入仓库':'取回车载木材'},key,phase:'travel',site:wood.destination.site,label:wood.destination.label};}
@@ -223,7 +232,7 @@ export function arrivalWorkshopObjective(game) {
 export function arrivalTarget(game) {
   const a=game.progress.arrival;if(!arrivalPending(game.progress))return null;
   if(a.phase==='ride-guide'){
-    const parked=parkedOwned(game).find(s=>s.record.hull===RANGER.scooter);
+    const parked=parkedOwned(game).find(s=>s.record.hull===arrivalGiftHull(game.progress));
     // 导航落在车位前的通道，不把终点放进车体碰撞内；已取出的随行车原地可上。
     return parked?vehicleBoardingPoint(parked):a.parked?{x:RANGER.parking.x,y:RANGER.parking.y+60}:{x:game.player.x,y:game.player.y};
   }

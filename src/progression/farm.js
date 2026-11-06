@@ -1,4 +1,5 @@
 // 世界农田存档：坐标、种子库存和快递均白名单校验，读档不发奖。
+import {canonical} from '../world/coordinates.js';
 import {PEN_OX} from '../config/pasture.js';
 import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_SEED_DROP,FARM_WATER} from '../config/farm.js';
 // 新档通过怪物掉落或任务奖励获得首粒种子并永久解锁购买；快递只补已解锁品种。
@@ -19,7 +20,7 @@ export function validateFarm(raw){
   const id=p?.id;if(!Number.isInteger(id)||id<0||id>1e7||seen.has(id))continue;
   if(!Number.isFinite(p.x)||!Number.isFinite(p.y))continue;
   const mapId=p.mapId;if(!['forest','jiuzhaigou'].includes(mapId))continue;
-  const x=((p.x%10800)+10800)%10800,y=((p.y%8400)+8400)%8400;
+  const {x,y}=canonical(p);
   if(plots.some(q=>q.mapId===mapId&&Math.abs(q.x-x)<1&&Math.abs(q.y-y)<1))continue;seen.add(id);
   const crop=Number.isInteger(p.crop)&&FARM_CROPS[p.crop]?p.crop:null,plantedAt=integer(p.plantedAt,8640000000000000),readyAt=integer(p.readyAt,8640000000000000);
   plots.push({id,mapId,x,y,crop,plantedAt:crop===null?0:plantedAt,readyAt:crop===null?0:Math.max(plantedAt,Math.min(readyAt,plantedAt+FARM_CROPS[crop].seconds*1000)),watered:p.watered===true,sprinklerWatered:p.watered===true&&p.sprinklerWatered===true,...(p.wild===true?{wild:true,...(Number.isFinite(p.wildSownAt)&&p.wildSownAt>=0?{wildSownAt:p.wildSownAt}:{})}:{})});

@@ -21,7 +21,7 @@ export function openingAuditProgress(config=RECOMMENDED_ECONOMY){
  const p=bindEconomy(freshRangerProgress(),config),tree=forestReward('tree',0,p),trees=Math.ceil((RANGER.repairWood+RANGER.pistolWood)/tree.wood);
  p.coins=trees*tree.coins;p.wood=trees*tree.wood-RANGER.repairWood-RANGER.pistolWood;countCampActivity(p,'trees',trees);
  Object.assign(p.arrival,{phase:'complete',keys:true,wood:trees*tree.wood});
- p.weapons[RANGER.saw]=p.weapons[0]=1;p.weapon=0;p.vehicleHulls[RANGER.scooter]=1;return p;
+ p.weapons[RANGER.saw]=p.weapons[0]=1;p.weapon=0;p.vehicleHulls[RANGER.giftHull]=1;return p;
 }
 // 上一版正式方案在当前怪数下重放，避免拿旧36只开局与当前2只开局混比。
 export function previousSourceConfig(){

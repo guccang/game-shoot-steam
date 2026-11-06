@@ -149,9 +149,11 @@ export function drawGarageGround(c) {
   for (const x of [-38, 38]) box(c, x, 12, 3, 24, 1, '#8e9c8044');
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-export function clipGarageOpening(c, g = VEHICLE_WORKSHOP) {
+export function clipGarageOpening(c, g = VEHICLE_WORKSHOP, exterior = false) {
   c.beginPath();
+  // 取门洞的补集绘制前景，两层共用门梁、立柱与门槛边界。
+  if(exterior)c.rect(g.x-190,g.y-200,380,450);
   c.rect(g.x - GARAGE.bayHalf, g.y + GARAGE.bayTop, GARAGE.bayHalf * 2, -GARAGE.bayTop + GARAGE.threshold);
   c.rect(g.x - 180, g.y + GARAGE.threshold, 360, 220);
-  c.clip();
+  c.clip(exterior?'evenodd':'nonzero');
 }

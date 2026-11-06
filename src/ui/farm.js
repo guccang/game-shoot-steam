@@ -4,7 +4,7 @@ import {createFarmRemoval} from './farm-removal.js';
 import {updateFarmCellState,farmCellView,placeFarmCell} from './farm-cell-state.js';
 import {createFarmPlacement} from './farm-placement.js';
 import {createEventScope} from '../platform/events.js';
-import {farmAction,canUseFarm,storyFarmAllowed,farmInteractionBlocked,setFarmTool,queueFarmWork} from '../core/farm.js';
+import {farmAction,canEnterFarm,canUseFarm,storyFarmAllowed,farmInteractionBlocked,setFarmTool,queueFarmWork} from '../core/farm.js';
 import {enterFarmVehicle,restoreFarmVehicle,validateFarmVehicleReturn} from '../core/farm-vehicle.js';
 import {canUseFarmDelivery,claimFarmParcel} from '../core/farm-delivery.js';
 import {FARM_CROPS,FARM_CATEGORIES,FARM_WATER,FARM_DELIVERY,FARM_SENDERS,farmSeedRequirement} from '../config/farm.js';
@@ -84,8 +84,22 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  }
  // 控件点击只排队，最终费用与收割结果以动作落点时的事务为准。
  function act(action,id){if(farmInteractionBlocked(game))return {ok:false,message:'战斗中暂不可种地'};const r=queueFarmWork(game,action,{plot:id,crop:selected});if(!r.ok){game.farmDragging=false;gesture=null;say(r.message);}render();return r;}
+ // 骑乘短按按实际距离就地提交；确认收获时还要保持同一辆车、地图和货物。
+ function mountedAction(action,id,crop=0){
+  const hull=game.vehicle.index,map=game.mapId;
+  const result=farmAction(game,action,{plot:id,crop});
+  if(result.needsLoadConfirmation){
+   harvestConfirm.show(result,allow=>{
+    if(!allow||!game.vehicle.active||game.vehicle.index!==hull||game.mapId!==map)return {ok:false,message:'已保留田里的作物。'};
+    return farmAction(game,'harvest',{plot:id,loadConfirmation:result.confirmation});
+   });
+  }else if(!result.ok)say(result.message);
+  render();
+ }
  // 拿起种子袋不自动播种，礼物种子优先消耗且可试种尚未解锁的品种。
- function chooseSeed(id){if(!enter())return;selected=id;popup=null;opened=true;setFarmTool(game,'seed');input.reset();say('拖过空田安排播种，猫猫会逐块走近撒种');render();}
+ function chooseSeed(id){
+  if(game.vehicle?.active){if(popup!=='seed')return;popup=null;mountedAction('plant',anchor,id);return;}
+  if(!enter())return;selected=id;popup=null;opened=true;setFarmTool(game,'seed');input.reset();say('拖过空田安排播种，猫猫会逐块走近撒种');render();}
  // 按田块切换工具；同类连续点击保留已有队列，跨工具时才取消原动作。
  function useTool(tool){if(!enter())return;opened=true;combat=false;popup=null;mailOpen=false;game.farmCursor=null;input.reset();if(game.farmWork?.tool!==tool)setFarmTool(game,tool);}
  // 点击和拖播共用实时库存判断，当前种子耗尽后回到选种，不再安排空种子袋的播种动作。
@@ -96,13 +110,33 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   popup=null;mailOpen=false;
   say(`${FARM_CROPS[plot.crop].name}距成熟还有 ${minutes?minutes+'分':''}${seconds%60}秒；${plot.watered?'土壤湿润，无需浇水':'选中水壶后点击可浇水'}`);
  }
- // 成熟直接收割，成长默认查看时间，只有主动拿起水壶才安排浇水。
+ // 两种操作都从有库存的种子类别打开选择器。
+ function openPlotSeeds(){
+  popup='seed';seedPage=0;signature='';
+  const seeds=game.progress.farm.seeds,available=seeds[selected]>0?selected:seeds.findIndex(n=>n>0);
+  category=FARM_CROPS[Math.max(0,available)].category;
+ }
+ // 驾驶时就地照料，步行时按当前工具安排走近和挥动。
  function tap(id){
-  const p=game.progress.farm.plots.find(p=>p.id===id&&p.mapId===game.mapId);if(combat||game.farmWork?.tool==='reaper'||!p||!enter())return;anchor=id;opened=true;
+  const p=game.progress.farm.plots.find(p=>p.id===id&&p.mapId===game.mapId);if(combat||game.farmWork?.tool==='reaper'||!p||farmInteractionBlocked(game))return;
+  if(game.vehicle?.active){
+   if(!canEnterFarm(game))return;
+   if(worldDistance(game.player,p)>78){say('请把车开到这块田边再操作。');return;}
+   anchor=id;
+   if(p.crop!==null){
+    popup=null;
+    if(farmGrowth(p)>=1)mountedAction('harvest',id);
+    else if(!p.watered)mountedAction('water',id);
+    else showGrowth(p);
+    return;
+   }
+   openPlotSeeds();render();return;
+  }
+  if(!enter())return;anchor=id;opened=true;
   if(game.farmWork?.tool==='remove'){popup=null;removalPanel.open(p);return;}
   if(p.crop===null){
    if(game.farmWork?.tool==='seed'&&hasSelectedSeed())act('plant',id);
-   else{useTool('hoe');popup='seed';seedPage=0;signature='';const f=game.progress.farm,available=f.seeds[selected]>0?selected:f.seeds.findIndex(n=>n>0);category=FARM_CROPS[available<0?selected:available].category;}
+   else{useTool('hoe');openPlotSeeds();}
   }else if(farmGrowth(p)>=1){
    useTool('harvest');if(!loaded){say('作物图片尚未加载，请稍后收割');return;}act('harvest',id);
   }else if(game.farmWork?.tool==='water'){useTool('water');act('water',id);}
@@ -170,7 +204,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   validateFarmVehicleReturn(game);
   // 小图标画布按风格失效，帧刷新不重复绘制或增加缓存。
   const style=artStyle()+':'+canvasRecoveryRevision();for(const icon of toolCanvases){if(icon.dataset.artStyle!==style){paintFarmToolIcon(icon,icon.dataset.farmToolArt);icon.dataset.artStyle=style;}}
-  const active=canUseFarm(game),blocked=farmInteractionBlocked(game),accessible=active&&!blocked&&!combat,f=game.progress.farm;
+  const active=canUseFarm(game),blocked=farmInteractionBlocked(game),accessible=canEnterFarm(game)&&game.player.hp>0&&!blocked&&!combat,f=game.progress.farm;
   oxControls.render(active&&!blocked);
   placement.render(opened&&accessible&&!game.oxArrival&&game.farmWork?.tool==='hoe'&&!popup&&!mailOpen&&!root.querySelector('dialog[open]'));
   if(game.farmWork?.tool)combat=false;
@@ -186,7 +220,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   farmProperty(get('combat').querySelector('span'),'textContent',recovering?'警戒':defending?'迎敌':'战斗');
   farmAttribute(get('combat'),'aria-label',recovering?'持枪警戒，确认安全后继续农活；点击可改为手动战斗':defending?'自动迎敌，结束后继续农活；点击可改为手动战斗':'拿起武器战斗');
   farmProperty(menu,'hidden',!!game.realm||!storyFarmAllowed(game));farmAttribute(menu,'aria-pressed',opened);farmAttribute(menu,'aria-expanded',opened);farmProperty(get('tools'),'hidden',!opened||!active||['ox','reaper'].includes(game.farmWork?.tool));
-  if(!active||blocked){releaseGesture();popup=null;}
+  if(!accessible){releaseGesture();popup=null;}
   // 当前动作算第一步，后续队列按真实执行顺序编号，完成后同步前移。
   const steps=new Map([game.farmWork?.job,...(game.farmWork?.queue||[])].filter(Boolean).map((job,index)=>[job.id,index+1]));
   const ids=new Set(f.plots.map(p=>p.id));for(const [id,b] of cells)if(!ids.has(id)){b.remove();cells.delete(id);}
@@ -196,7 +230,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
    if(b.hidden)continue;
    // 按下选中、已排队与正在操作共用同样清晰的小圆点。
    const selected=gesture?.id===p.id||!!popup&&anchor===p.id;
-   updateFarmCellState(b,p,{tool:game.farmWork?.tool,step:steps.get(p.id),selected});
+   updateFarmCellState(b,p,{tool:game.vehicle?.active&&!p.watered?'water':game.farmWork?.tool,step:steps.get(p.id),selected});
   }
   farmAttribute(get('hoe'),'aria-pressed',!defending&&['hoe','seed'].includes(game.farmWork?.tool));farmAttribute(get('sickle'),'aria-pressed',!defending&&game.farmWork?.tool==='harvest');farmAttribute(get('water'),'aria-pressed',!defending&&game.farmWork?.tool==='water');
   farmAttribute(get('remove'),'aria-pressed',!defending&&game.farmWork?.tool==='remove');
@@ -264,6 +298,9 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(e.target.closest('[data-farm-shop]')){stop();onSeedShop?.();return;}
   const parcel=e.target.closest('[data-farm-parcel]');if(parcel){const r=claimFarmParcel(game,Number(parcel.dataset.farmParcel));if(!r.ok)say(r.message);render();return;}
   if(e.target.closest('[data-farm-mail-close]')){stop();return;}if(e.target.closest('[data-farm-sell]')){say(farmAction(game,'sell').message);render();return;}
+  if(game.vehicle?.active){
+   const seed=e.target.closest('[data-farm-seed]');if(seed&&!seed.disabled){chooseSeed(Number(seed.dataset.farmSeed));return;}
+  }
   if(e.detail!==0)return;const cell=e.target.closest('[data-farm-cell]'),seed=e.target.closest('[data-farm-seed]');if(cell)tap(Number(cell.dataset.farmCell));else if(seed&&!seed.disabled)chooseSeed(Number(seed.dataset.farmSeed));else if(e.target.closest('#farm-harvest')&&loaded){popup=null;setFarmTool(game,'harvest');act('harvest',anchor);}
  });
  scope.on(menu,'click',()=>{if(farmInteractionBlocked(game)){say('战斗中暂不可种地');return;}opened&&!game.vehicle?.active?stop():open();});scope.on(get('hoe'),'click',()=>{if(!enter())return;input.reset();setFarmTool(game,'hoe');popup=null;render();});

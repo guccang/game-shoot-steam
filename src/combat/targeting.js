@@ -127,7 +127,7 @@ function followLane(game, lock, targets, context) {
 export function piercingLane(game) {
   const weapon = game.weapon();
   // 比赛空场等待补球，不自动转向外围景观采集。
-  const targets = [...(weapon.targetTrees===false||game.fireActive||game.realm?.mode==='football'?[]:weaponTerrainTargets(game)), ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
+  const targets = [...(weapon.targetTrees===false||game.fireActive||game.realm?.mode==='football'?[]:weaponTerrainTargets(game,true)), ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
     // 视野检查只用于射程内实体，避免每条瞄准查询重复投影整张地图的树木。
     (t) => t.hp > 0 && attackTargetDistance(game, t, weapon.range + t.radius) < weapon.range + t.radius && attackTargetKnown(game,t),
   );

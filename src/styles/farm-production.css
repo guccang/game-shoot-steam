@@ -36,3 +36,14 @@
 
 /* 三个操作在窄屏保持完整中文标签，沿用44px高度并缩减横向内边距。 */
 #production-placement button{padding:8px 6px;white-space:nowrap}
+/* 农具与牧栏货架让图文成组，价格和加购按钮在同一行对齐。 */
+.production-shelf {display:grid;gap:8px;margin:0 0 16px}
+.production-shelf h3,.production-shelf>p {margin:0}
+.production-product {
+  display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px 12px;align-items:center;
+  padding:10px 12px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);background:var(--ui-paper);
+}
+.production-product .cart-product-icon {width:48px;height:48px}
+.production-product p {margin:3px 0 0;font-size:13px;line-height:1.45}
+.production-product-order {grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.production-product-order button {min-height:44px}

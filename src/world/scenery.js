@@ -5,6 +5,7 @@ import { riverBeachWidth } from './natural-terrain.js';
 import { WORKSHOP, VEHICLE_WORKSHOP, RANGER_COTTAGE } from './workshop.js';
 import { canonical } from './coordinates.js';
 import { LANDSCAPES, inLandscapeBeach } from './landscape-compositions.js';
+import {BUS_STOP_PROPS} from './bus-stop-landscape.js';
 
 // 沙湾向陆地缓缓展开，首尾收回原河岸，桥头和实际可通行水界保持原状。
 export function beachWidth(y) {
@@ -51,6 +52,7 @@ export const CAMP_PROPS = [
 // 麦田逐行参与脚底排序，角色进入田内时仅被前排麦穗遮住下半身。
 export const SCENERY = [
   ...LANDSCAPES.props,
+  ...BUS_STOP_PROPS,
   ...COTTAGES,
   ...CAMP_PROPS,
   { type: 'scenery', kind: 'tent', ...TOWN_LAYOUT.tent, size: 1 },

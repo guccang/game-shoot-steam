@@ -39,3 +39,10 @@
 结论：通过本轮静态地图缓存与手机界面验收。未在真实Mate 50 Pro上复测30分钟温升。  
 长期参考：[390白天地图](../art-reference/map-preview/390-day.png)、[320夜晚滚动地图](../art-reference/map-preview/320-night.png)、[白天战场](../art-reference/map-preview/390-day-battle.png)、[夜晚战场](../art-reference/map-preview/390-night-battle.png)。  
 完整日志与其余截图：`output/playwright/map-open/`；维护步骤：[地图打开性能](../map-open-performance.md)。
+
+## 3000 米森林扩图
+沿用既有地貌与季节绘制器，按新的 48000×36000 世界范围生成 720×560 森林底图，保留湖谷图、按钮、标记锚点和各风格目录。目标是缩略图与实际导航坐标一致，草花小于一个输出像素时抽样。底图静态，关卡、怪物、等级及角色动作由游戏计算。
+
+本次复核对应 `designCriterion` 的 `map-preview-cache`。两套风格共八张森林季节底图，总计 2,604,898 字节。实际打开手机地图后可见远林营地点，目录列出 185 个森林营地的等级和距离，点击最近一项可返回战场导航。入口为 `src/ui/panels/map.js`、`src/rendering/ground-cache.js`。
+
+浏览器截图保存在 `output/playwright/forest-distance-3000/`。390 像素宽的白天场景 `near100.png` 与 320 像素宽的夜间场景 `west300.png` 同屏显示猫、车、怪物和等级。最远营地实景见 `edge-camp.png`，宽屏场景见 `edge.png`，手机总览见 `map.png`。全体营地的居民区、营牌和外围交互点已检查河道与树冠碰撞，西门至呼噜松营地的步行路线可达。本轮扩图和手机总览复核通过，设备使用浏览器触屏模拟。

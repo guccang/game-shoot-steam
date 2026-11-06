@@ -76,8 +76,8 @@ test('连续经过不同方向树木期间，狙击与脉冲只跟随玩家真�
       assert.ok(Math.abs(view.y + view.h / 2 - g.player.y - 30) < 1e-7);
       assertVisible(g.player, view);
     }
-    assert.equal(shots,0);assert.equal(targets.size,0);assert.equal(reload,false);
-    assert.equal(g.stumps.length,0);
+    assert.ok(shots>0);assert.ok(targets.size>0);assert.ok(reload);
+    assert.ok(g.stumps.length>0);
   }
 });
 

@@ -40,7 +40,7 @@ export function campaignStart(config){const p=bindEconomy(freshRangerProgress(),
  if(tree.wood<=0)throw Error('入职木材奖励不能为零');
  countCampActivity(p,'trees',trees);
  p.coins=trees*tree.coins;p.wood=trees*tree.wood-RANGER.repairWood-RANGER.pistolWood;
- Object.assign(p.arrival,{phase:'complete',keys:true,wood:trees*tree.wood});p.weapons[0]=p.weapons[RANGER.saw]=1;p.weapon=0;p.vehicleHulls[RANGER.scooter]=1;return p;}
+ Object.assign(p.arrival,{phase:'complete',keys:true,wood:trees*tree.wood});p.weapons[0]=p.weapons[RANGER.saw]=1;p.weapon=0;p.vehicleHulls[RANGER.giftHull]=1;return p;}
 // 将完整路线消耗在同一时钟上；已领取奖励不会因回访、死亡或任务切换而重复发放。
 export function simulateCampaign(seed,config,s){
  const random=seededRandom(seed);let p=s.initial?validateProgress(bindEconomy(structuredClone(s.initial),config)):campaignStart(config);
@@ -134,7 +134,7 @@ export function simulateCampaign(seed,config,s){
   // 平衡策略在成长停顿四分钟后优先支付一次可负担升级，不让教学必需消费形成长期预算欠债。
   const budget=s.strategy==='balanced'&&seconds-lastUpgrade>=240?Math.max(planned,p.coins):planned;
   const entries=[['weapons',p.weapon],['heroes',p.hero],['vehicle',p.vehicleIndex],['turret',p.vehicleLoadouts[p.vehicleIndex]]]
-   .filter(([k,i])=>Number.isInteger(i)&&p[fields[k]][i]>0&&!(k==='vehicle'&&i===RANGER.scooter));
+   .filter(([k,i])=>Number.isInteger(i)&&p[fields[k]][i]>0&&!(k==='vehicle'&&i===RANGER.giftHull));
   entries.sort((a,b)=>p[fields[a[0]]][a[1]]-p[fields[b[0]]][b[1]]||s.priority.indexOf(a[0])-s.priority.indexOf(b[0]));
   for(const [k,i] of entries)if(p[fields[k]][i]<20&&economyUpgradeCost(p,k,i,p[fields[k]][i]).coins<=budget&&transaction(k,i,'upgrade'))return true;
   for(const [k,i] of entries.filter(([k])=>k!=='heroes'))for(const spec of equipmentParts(k,i)){

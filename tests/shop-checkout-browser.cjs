@@ -61,7 +61,7 @@ async page=>{
  if(await confirm.locator('.cart-line').count()!==2||await page.evaluate(()=>a.game.progress.coins)!==wallet)throw Error('保存失败仍扣款或丢清单');
  await page.evaluate(()=>{a.game.livingPersist=window.cartPersist;});
  const sample=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectShopCart(document));
- if(!sample.iconVisible||sample.rows!==2||!sample.payVisible)throw Error('短屏清单或购物车触控区异常');
+ if(!sample.iconVisible||sample.productIcons!==2||sample.rows!==2||!sample.payVisible)throw Error('短屏清单或购物车触控区异常');
  await page.screenshot({path:'output/playwright/shop-cart/short.png'});
  if(!(await confirm.locator('[data-cart-lines]').innerText()).includes('小屋仓库'))throw Error('露营套装报价去向错误');
  await pay.tap();await page.waitForFunction(()=>a.game.progress.shopStock.home?.['outdoor:tent']===1&&a.game.progress.shopStock.home?.['outdoor:rod']===1);if(await page.evaluate(()=>a.game.progress.coins)!==wallet-total)throw Error('多件付款不匹配');

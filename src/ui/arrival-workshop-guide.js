@@ -1,5 +1,5 @@
 // 入职工坊教学直接指向真实房屋和页面按钮，文案按阶段配置，不代替实际交易。
-import {RANGER} from '../config/ranger-arrival.js';
+import {RANGER,arrivalGiftHull,arrivalGiftName} from '../config/ranger-arrival.js';
 import {arrivalWorkReady,arrivalGuidanceVisible} from '../core/ranger-arrival.js';
 import {parkedOwned} from '../core/camp-parking.js';
 import {worldDistance} from '../world/coordinates.js';
@@ -13,8 +13,8 @@ export function arrivalWorkshopGuide(game,dialogId=null){
  if(phase==='letter'&&!dialogId)return {id:'arrival-letter',source:'#arrival-goal',text:'点击任务，阅读松伯的信'};
  // 全程指向任务路线，到车旁后标明目标车辆。
  if(phase==='ride-guide'&&!dialogId){
-  const parked=parkedOwned(game).find(s=>s.record.hull===RANGER.scooter),site=parked||(game.progress.arrival.parked?RANGER.parking:null);
-  return site&&worldDistance(game.player,site)>155?{id:'arrival-scooter-route',source:'#arrival-goal',text:'沿路线前往北广场停车场'}:{id:'arrival-scooter-board',source:'#arrival-goal',text:'找到电动车'};
+  const parked=parkedOwned(game).find(s=>s.record.hull===arrivalGiftHull(game.progress)),site=parked||(game.progress.arrival.parked?RANGER.parking:null);
+  return site&&worldDistance(game.player,site)>155?{id:'arrival-scooter-route',source:'#arrival-goal',text:'沿路线前往北广场停车场'}:{id:'arrival-scooter-board',source:'#arrival-goal',text:'靠近'+arrivalGiftName(game.progress)+'，稍等片刻即可上车'};
  }
  if(!step)return null;
  // 刚建成时先看新建筑，随后再提示购买，避免提示牌盖住完成徽记。

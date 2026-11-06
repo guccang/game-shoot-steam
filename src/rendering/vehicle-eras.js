@@ -26,9 +26,37 @@ export function clipEraSeat(c,point,vehicle){
  for(let dx=28;dx>=-28;dx-=2)c.lineTo(point.x+dx*s,edge+bend*(1-(dx/28)**2));
  c.lineTo(point.x-150,edge);c.closePath();c.clip();
 }
+// 裁掉底稿左右两块旧踏板，固定车叉、前轮和挡泥板仍使用原画。
+function clipBicycleFrame(c,bike){
+ const [left,right]=bike.axles;
+ c.beginPath();c.rect(0,0,250,250);
+ c.rect(1,bike.axisY-11,left-1,23);c.rect(right,bike.axisY-11,249-right,23);
+ c.clip('evenodd');
+}
+// 从正面看到的胎纹在轮顶和接地点收窄，两端自然滚入背面。
+function drawBicycleDrive(c,bike,phase,ridden){
+ const [top,bottom]=bike.tire,cy=(top+bottom)/2,radius=(bottom-top)/2;
+ c.lineCap='round';c.lineJoin='round';
+ for(let i=0;i<12;i++){
+  const angle=phase+i*Math.PI/6,depth=Math.cos(angle);
+  if(depth<=0)continue;
+  const y=cy+Math.sin(angle)*radius,w=3+4*depth;
+  c.strokeStyle='#51483e';c.lineWidth=1.5+1.6*depth;
+  c.beginPath();c.moveTo(125-w,y-1.7*depth);c.lineTo(125,y+1.7*depth);c.lineTo(125+w,y-1.7*depth);c.stroke();
+ }
+ for(let i=0;i<2;i++){
+  const side=i===0?-1:1,angle=phase+i*Math.PI,hub=bike.axles[i];
+  const x=bike.pedals[i]+side*3*Math.cos(angle),y=bike.axisY+16*Math.sin(angle);
+  c.beginPath();c.moveTo(hub,bike.axisY);c.lineTo(x-side*7,y);
+  c.strokeStyle='#554d3c';c.lineWidth=6;c.stroke();c.strokeStyle=bike.trim;c.lineWidth=2.5;c.stroke();
+  c.beginPath();c.roundRect(x-10,y-3,20,7,2.5);c.fillStyle=bike.trim;c.fill();c.strokeStyle='#554d3c';c.lineWidth=2;c.stroke();
+  if(ridden){c.beginPath();c.ellipse(x,y-4,5.8,4.5,0,0,2*Math.PI);c.fillStyle='#efc787';c.fill();c.lineWidth=1.5;c.stroke();}
+ }
+}
 // 轮纹随路程滚动；挽马播放同源待机及步行片段，接触点独立于车厢。
 function drawRunningGear(c,m,vehicle,time,reduced){
- const phase=vehicle.wheelPhase||0,ridden=vehicle.active;
+ const phase=vehicle.wheelPhase||0;
+ if(m.bike){drawBicycleDrive(c,m.bike,phase,vehicle.active);return;}
  for(const [x,y] of m.wheels){
   c.save();c.beginPath();c.ellipse(x,y,4.2,9,0,0,Math.PI*2);c.clip();c.strokeStyle='#a89875';c.lineWidth=1.35;
   const offset=((phase*5)%6+6)%6;
@@ -39,18 +67,14 @@ function drawRunningGear(c,m,vehicle,time,reduced){
   const [w,h]=horse.cell,[ax,ay]=horse.anchor,k=m.horse.scale;
   c.drawImage(pony,frame%horse.columns*w,Math.floor(frame/horse.columns)*h,w,h,125-ax*k,m.horse.baseline-ay*k,w*k,h*k);
  }
- if(ridden&&m.feet){
-  for(let j=0;j<2;j++){const y=m.feet[2]+Math.sin(phase)*(j?-3:3),x=m.feet[j];
-   c.fillStyle='#625740';c.fillRect(x-6,y+1,12,3);
-   c.beginPath();c.ellipse(x,y,4.8,3.6,0,0,Math.PI*2);c.fillStyle='#efc787';c.fill();c.lineWidth=1.2;c.strokeStyle='#625740';c.stroke();}
- }
 }
 // 空车停驻、行驶和车库图标共用一张底稿，部件相位只来自行程。
 export function drawEraHull(c,m,vehicle,front=false,time=0,reduced=false){
  if(!atlas?.complete||!atlas.naturalWidth){loadEraAtlas();return;}
  const i=m.index-ERA_FIRST,s=eraHullScale(m);c.save();c.scale(s,s);c.translate(-125,-176);
  if(!front){
-  c.fillStyle='#384b3627';c.beginPath();c.ellipse(125,219,m.feet?44:81,12,0,0,2*Math.PI);c.fill();
+  c.fillStyle='#384b3627';c.beginPath();c.ellipse(125,219,m.bike?44:81,12,0,0,2*Math.PI);c.fill();
+  if(m.bike)clipBicycleFrame(c,m.bike);
   c.drawImage(atlas,(i%4)*320,Math.floor(i/4)*320,320,320,0,0,250,250);
  }else drawRunningGear(c,m,vehicle,time,reduced);
  c.restore();

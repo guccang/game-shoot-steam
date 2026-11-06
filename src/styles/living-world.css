@@ -2,27 +2,44 @@
 .living-dialog{width:min(560px,calc(100vw - 24px));max-height:85dvh;box-sizing:border-box;overflow:auto;padding:20px;color:#365a45;background:#fff9e6;border:2px solid #71936d;border-radius:20px}
 .living-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px}.living-dialog h2{margin:4px 0 12px}.living-dialog h3{font-size:16px;margin:0 0 8px}.living-dialog p{font-size:14px;line-height:1.75;margin:8px 0}.living-dialog small{display:block;font-size:12px;line-height:1.6;color:#5e7557}
 .living-dialog button{min-height:44px;border:1px solid #8eaa7b;border-radius:10px;background:#eaf0d5;color:#365a45;padding:9px 13px;font:inherit;cursor:pointer}.living-dialog button:disabled{opacity:.55;cursor:default}.living-dialog button:focus-visible{outline:3px solid #62844d;outline-offset:2px}.living-dialog button[aria-pressed=true]{background:#426449;color:#fff6d8}
-.living-tabs{display:flex;gap:6px;margin-bottom:12px}.living-tabs button{flex:1;padding:8px 4px}.living-request{padding:15px 0;border-bottom:1px solid #d5ddbf}.living-request button{margin-top:10px;max-width:100%}.living-dialog footer{display:flex;flex-wrap:wrap;gap:10px;padding-top:18px}.living-dialog footer small{width:100%}.living-notice,.living-conversation{padding:12px;background:#eef0d9;border-radius:12px}.living-log{padding-bottom:10px;border-bottom:1px dashed #c5d1b5}
+.living-request{padding:15px 0;border-bottom:1px solid #d5ddbf}.living-request button{margin-top:10px;max-width:100%}.living-dialog footer{display:flex;flex-wrap:wrap;gap:10px;padding-top:18px}.living-dialog footer small{width:100%}.living-notice,.living-conversation{padding:12px;background:#eef0d9;border-radius:12px}.living-log{padding-bottom:10px;border-bottom:1px dashed #c5d1b5}
 .living-interact,.living-hint{position:absolute;left:50%;transform:translateX(-50%);bottom:146px;z-index:16;max-width:calc(100% - 32px);padding:10px 16px;border:2px solid #668557;border-radius:16px;background:#fff7d9;color:#365a45;text-align:center;font:inherit;box-shadow:0 3px 0 #38583b24}.living-interact{min-height:44px;cursor:pointer}.living-hint{font-size:12px;pointer-events:none;bottom:154px;padding:7px 12px}.living-preview{display:flex;gap:8px;align-items:center;padding:12px;font-size:13px}
 @media(max-width:350px){.living-dialog{padding:14px}.living-dialog footer button{width:100%}.living-interact{font-size:13px;bottom:132px}}
 
 /* 当前行动优先，奖励与回忆各有位置；现场闲聊不遮挡点击。 */
 .living-current{background:#edf0d8;border:1px solid #a1b17c;border-radius:14px;padding:16px;margin:12px 0}
 .living-pay{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:#627354}.living-pay span{padding:4px 8px;border-radius:8px;background:#f0e8c8}
-.living-request .primary{background:#3d654c;color:#fff7dc}.living-gift,.living-archive{padding:16px 0;border-bottom:1px solid #d5ddbf}.living-dialog summary{cursor:pointer;min-height:32px;line-height:1.6}
-.living-clearing{margin-top:20px;padding:16px;border:1px dashed #8a9c70;border-radius:14px}.living-clearing button{margin:4px 4px 0 0}
+.living-request .primary{background:#3d654c;color:#fff7dc}
 /* 小气泡只承载一两行短句，不设标题、按钮或任务进度，触摸直接穿透。 */
 .compact-speech{position:absolute;z-index:14;width:max-content;max-width:168px;box-sizing:border-box;padding:6px 9px;background:#fff7dd;color:#355746;border:1px solid #708760;border-radius:10px;box-shadow:0 2px 0 #365b4218;font-size:12px;line-height:1.4;pointer-events:none;overflow-wrap:anywhere}
 .compact-speech:after{content:'';position:absolute;bottom:-4px;left:var(--tail-x,50%);width:6px;height:6px;background:#fff7dd;border-right:1px solid #708760;border-bottom:1px solid #708760;transform:rotate(45deg)}
 .compact-speech[hidden]{display:none}
 .mainline-bearing[hidden]{display:none}
 
-/* 交接只强调当前目标，回应与报酬按需展开，不和唯一行动争夺注意。 */
+/* 交接只强调当前目标，回应与报酬随当前任务显示，不和唯一行动争夺注意。 */
 .living-task-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
 .living-current h3{font-size:20px;line-height:1.4;margin-bottom:16px}
 .living-task-goal{padding:12px;background:var(--ui-paper);border-left:4px solid var(--ui-forest);border-radius:8px;margin-bottom:12px}
 .living-task-goal strong{display:block;font-size:18px;line-height:1.5;color:var(--ui-forest);margin-top:4px}
-.living-response,.living-reward-details{font-size:12px;color:var(--ui-text);border-bottom:1px solid var(--ui-line)}
-.living-dialog :is(.living-response,.living-reward-details) summary{min-height:44px;align-content:center}
-.living-response p{margin-top:0}
 .living-request .primary{display:block;width:100%;min-height:48px;margin-top:16px}
+
+/* 分类与正文分别滚动，切换条目时只替换右页。沿用手机底板和既有按钮材质。 */
+#living-dialog.living-catalog.ui-migrated { height:min(660px,calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom))); }
+#living-dialog.living-catalog #living-content { display:grid; grid-template-columns:clamp(72px,21vw,94px) minmax(0,1fr); padding:0; overflow:hidden; }
+#living-category-nav:not([hidden]) { display:flex; flex-direction:column; gap:6px; overflow-y:auto; padding:10px 5px; background:var(--ui-sage); border-right:1px solid var(--ui-line); }
+#living-category-nav button { flex:none; min-width:0; min-height:44px; padding:6px 2px; font-size:13px; box-shadow:none; border-color:transparent; background:transparent; }
+#living-category-nav button[aria-selected="true"] { color:var(--ui-paper); background:var(--ui-forest); }
+#living-page { min-width:0; overflow-wrap:anywhere; }
+.living-catalog #living-page { overflow-y:auto; overscroll-behavior:contain; padding:14px clamp(10px,3vw,18px) 18px; }
+#living-page h3 { margin:0 0 12px; }
+#living-page .living-choice { display:flex; width:100%; align-items:center; justify-content:space-between; gap:8px; min-height:48px; margin:0 0 7px; padding:8px 10px; }
+#living-page .living-choice b { font-size:14px; }
+#living-page .living-choice small { margin-top:2px; }
+#living-page .living-choice > [aria-hidden] { color:var(--ui-muted); font-size:18px; }
+#living-page .living-back { margin:0 0 12px; min-height:44px; }
+#living-page .living-request { padding:4px 0 12px; border:0; }
+#living-page .living-current { margin:0; padding:12px; }
+#living-page .living-payment h4 { margin:12px 0 6px; font-size:13px; }
+#living-page .living-payment { margin-bottom:10px; }
+#living-page > button:not(.living-choice) { max-width:100%; margin-bottom:8px; }
+#living-page .story-prizes { grid-template-columns:minmax(0,1fr); }

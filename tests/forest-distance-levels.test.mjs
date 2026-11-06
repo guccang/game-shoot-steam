@@ -31,3 +31,11 @@ test('同一地点的世界镜像、HUD等级带及路牌共享规则，固定�
  assert.equal(enemyIdentity(6000,5000,.5,'forest',1).level,1);
  const g=new Game(freshProgress(),()=>.5);g.start();Object.assign(g.player,{x:-100,y:700});const e=g.spawnEnemy(0,0,{x:-200,y:700},{ambient:true});assert.ok(e.level<=3);
 });
+
+test('营地中心到边境按界面米数分级，普通出生在100米和300米分别为1级和2级',()=>{
+ for(let i=0;i<32;i++){
+  const a=i*Math.PI/16;
+  for(const [r,level] of [[1000,1],[3000,2]])assert.equal(enemyIdentity(camp.x+Math.cos(a)*r,camp.y+Math.sin(a)*r).level,level);
+ }
+ assert.equal(enemyIdentity(camp.x+WORLD.width/2,camp.y+WORLD.height/2).level,20);
+});

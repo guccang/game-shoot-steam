@@ -9,7 +9,7 @@ import {nearest,worldDistance} from '../world/coordinates.js';
 import {canInspectBuilding} from './building-entry.js';
 import {canEnterCottage,cottageBlocked} from './cottage.js';
 import {facilityOpen} from '../config/town-restoration.js';
-import {HOME_DIRECTIONS,floorBalconies,homeExterior,HOME_ELEVATOR,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
+import {HOME_DIRECTIONS,cottageStreetExit,floorBalconies,homeExterior,HOME_ELEVATOR,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {createQuestRouteSearch} from '../physics/quest-route.js';
 import {playerNavigationBody} from './prepared-navigation.js';
 import {farmMode} from './farm.js';
@@ -25,7 +25,12 @@ export function buildingContains(building,point,game){const site=nearest(buildin
 export function buildingClickHeight(building,game){return building.id==='cottage'&&facilityOpen(game?.progress,'cottage')?homeExterior(game.progress.homeDecor).height:building.site.height;}
 // 当前楼层只暴露真实床和楼梯；阳台、死亡和睡眠不接受新的移动意图。
 export function cottageClickTargets(game){
- const room=game.cottage;if(!room||room.kind!=='cottage'||room.balcony||room.sleep||game.player.hp<=0)return [];
+ const room=game.cottage;if(!room||room.kind==='mine'||room.balcony||room.glide||room.arcade||room.sleep||game.player.hp<=0)return [];
+ // 标牌按实际绘制位置命中，落脚点留在可走的门槛内侧，让原候停规则负责离开。
+ const layout=interiorLayout(room),homeRoom=layout.id==='cottage';
+ const door=homeRoom?cottageStreetExit(game.progress.homeDecor):layout.exit;
+ const exit={id:'exit',label:'走到门口出门',x:door.x,y:homeRoom?door.y-7:layout.height-21,width:74,height:44,goal:{x:door.x,y:Math.min(door.y,layout.height-22)}};
+ if(!homeRoom)return [exit];
  const bed=COTTAGE_FURNITURE[0];
  const floor=cottageFloor(room),home=game.progress.homeDecor,transit=hasHomeElevator(home,floor)?[{...HOME_ELEVATOR,label:'走到电梯乘坐',y:425,width:84,height:170,goal:HOME_ELEVATOR.landing}]:homeStairRoutes(home,floor);
  const balcony=floorBalconies(home,floor).map(side=>{
@@ -34,7 +39,7 @@ export function cottageClickTargets(game){
  });
  const owner=roomResident(game.progress,floor);
  const resident=owner!==undefined&&owner!==game.progress.hero&&!room.arcade?[{...RESIDENT_SPOT,y:RESIDENT_SPOT.y+5,id:'resident',label:'和'+HEROES[owner].name+'聊天',width:86,height:96,goal:RESIDENT_VISITOR}]:[];
- return [...resident,...balcony,...transit,...(!floor&&home.basement?[{...MINING.hatch,label:'走到地下室梯口'}]:[]),...(!floor?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
+ return [...resident,...balcony,...transit,...(!floor&&home.basement?[{...MINING.hatch,label:'走到地下室梯口'}]:[]),...(!floor?[exit,{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
 }
 // 一个意图只属于当前角色、地图和楼层；不写入存档，不跨场景继续移动。
 function request(game,id,goal){

@@ -9,7 +9,7 @@ import {FIRE_GARAGE} from '../world/fire-navigation.js';
 import {worldDistance,nearest} from '../world/coordinates.js';
 import {blocked} from '../physics/motion.js';
 import {dismountVehicle,summonVehicle} from '../combat/vehicle.js';
-import {RANGER} from '../config/ranger-arrival.js';
+import {RANGER,arrivalGiftHull} from '../config/ranger-arrival.js';
 
 import {VISITOR_MODELS} from '../config/parking-visitors.js';
 export {VISITOR_MODELS} from '../config/parking-visitors.js';
@@ -49,12 +49,13 @@ export function storeCarriedVehicle(game,v=game.vehicle){
 export function parkingOccupied(game,id){const spot=PARKING_SPOTS.find(s=>s.id===id);return repairParkingReserved(game.progress,id)||!!spot&&game.progress.campParking.owned.some(r=>parkingRecordOccupies(r,spot))||(game.parkingVisitors||[]).some(s=>s.spot===id)||id===RANGER.parkingId&&game.progress.arrival?.parked&&!game.arrivalCinematic;}
 // 交接完成后接管北广场赠车，不移动到未修复车库，也不重复占位。
 export function adoptArrivalParking(game){
- if(!arrivalParkingAllowed(game)||!game.progress.arrival?.parked||!game.progress.vehicleHulls[RANGER.scooter])return;
+ const hull=arrivalGiftHull(game.progress);
+ if(!arrivalParkingAllowed(game)||!game.progress.arrival?.parked||!game.progress.vehicleHulls[hull])return;
  const owned=game.progress.campParking.owned;
- if(!owned.some(s=>s.hull===RANGER.scooter)){
-  const spot=!owned.some(s=>s.spot===RANGER.parkingId)?PARKING_SPOTS.find(s=>s.id===RANGER.parkingId):northParkingSpot(game.progress,RANGER.scooter);
+ if(!owned.some(s=>s.hull===hull)){
+  const spot=!owned.some(s=>s.spot===RANGER.parkingId)?PARKING_SPOTS.find(s=>s.id===RANGER.parkingId):northParkingSpot(game.progress,hull);
   if(!spot)return;
-  owned.push({hull:RANGER.scooter,spot:spot.id,hp:1,ammo:0,reload:0,wheel:0,track:0});
+  owned.push({hull,spot:spot.id,hp:1,ammo:0,reload:0,wheel:0,track:0});
  }
  game.progress.arrival.parked=false;game.onEvent('camp-parking-change');
 }

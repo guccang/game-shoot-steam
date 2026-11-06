@@ -63,7 +63,7 @@ test('跳过长途演出只发原定工具，存储失败保持原样，不绕�
  g.arrivalPersist=()=>false;assert.equal(skipArrivalJourney(g),false);assert.deepEqual(g.progress,before);
  g.arrivalPersist=()=>true;assert.ok(skipArrivalJourney(g));assert.equal(g.progress.arrival.phase,'letter');
  assert.equal(g.progress.weapons[0],0);assert.equal(g.progress.wood,0);assert.equal(g.progress.arrival.wood,0);
- assert.equal(g.progress.weapons[RANGER.saw],1);assert.equal(g.progress.vehicleHulls[RANGER.scooter],1);
+ assert.equal(g.progress.weapons[RANGER.saw],1);assert.equal(g.progress.vehicleHulls[RANGER.giftHull],1);
  const after=structuredClone(g.progress);assert.equal(skipArrivalJourney(g),false);assert.deepEqual(g.progress,after);
 });
 test('公交远离营地，短途接送沿当前道路到营门且每个采样点避开木栏和水面',()=>{

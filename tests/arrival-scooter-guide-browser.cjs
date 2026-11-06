@@ -1,10 +1,9 @@
-// 手机入职全流程：真实按钮上车、正式电锯采集及修复，保持骑乘购买手枪。
+// 手机入职全流程：靠近赠车上车、正式电锯采集及修复，保持骑乘购买手枪。
 async page=>{
  if(new URL(page.url()).port!=='4175')throw Error('游戏测试使用4175端口');
  const context=await page.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),t=await context.newPage(),errors=[],checks=[];
  t.on('pageerror',e=>errors.push(e.message));
  // 固定逻辑帧只用于稳定观察任务节点，所有按钮仍走真实触摸输入。
- async function step(){await t.evaluate(()=>{arrivalTick(.05);a.refresh();a.renderer.draw();});}
  // 同一正式场景切换手机尺寸与环境，检查任务文字、引导及真实按钮没有越界。
  async function pictures(name,expected){
   for(const [width,height]of [[320,568],[390,844],[844,390]])for(const phase of ['day','night']){
@@ -27,17 +26,19 @@ async page=>{
   await t.goto('http://localhost:4175');await t.locator('#start').tap();await t.locator('#arrival-skip').tap();
   await t.locator('#arrival-goal').tap();await t.locator('#arrival-letter-done').tap();
   await t.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;window.arrivalTick=a.game.update.bind(a.game);a.game.update=()=>{};});
-  if(await t.locator('#arrival-title').textContent()!=='坐上电动车')throw Error('读信后没有上车任务');
+  if(await t.locator('#arrival-title').textContent()!=='骑上木制自行车')throw Error('读信后没有上车任务');
   const route=await t.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));
   if(route?.task.id!=='arrival-scooter')throw Error('没有赠车路线');
-  await t.evaluate(async()=>{const {RANGER}=await import('/src/config/ranger-arrival.js');Object.assign(a.game.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});a.renderer.camera.time=null;a.refresh();a.renderer.draw();});
-  await pictures('board','骑上电动车');await t.setViewportSize({width:390,height:844});
-  await t.locator('#vehicle-button').tap();await step();
-  if(!await t.evaluate(()=>a.game.vehicle.active&&a.game.progress.arrival.phase==='gather'))throw Error('实际上车未推进采集');checks.push('读信、路线及点击上车');
-  await t.evaluate(()=>{
+  await t.evaluate(async()=>{const {RANGER}=await import('/src/config/ranger-arrival.js');Object.assign(a.game.player,{x:RANGER.parking.x+12,y:RANGER.parking.y+18});a.renderer.camera.time=null;a.refresh();a.renderer.draw();});
+  await pictures('board','靠近木制自行车');await t.setViewportSize({width:390,height:844});
+  await t.evaluate(()=>{for(let i=0;i<32&&!a.game.vehicle.active;i++)arrivalTick(.05);arrivalTick(.05);a.refresh();});
+  if(!await t.evaluate(()=>a.game.vehicle.active&&a.game.progress.arrival.phase==='gather'))throw Error('实际上车未推进采集');checks.push('读信、路线及靠近上车');
+  await t.evaluate(async()=>{
+   const {woodPickupCapacity}=await import('/src/core/wood-pickup.js'),{TREE_REWARD}=await import('/src/config/rewards.js'),{CAMP_WAREHOUSE}=await import('/src/config/wood-storage.js'),{storeWood}=await import('/src/core/wood-storage.js');
    const g=a.game;for(let n=0;n<40&&g.progress.arrival.phase==='gather';n++){
     const tree=g.trees.find(t=>t.hp>0);Object.assign(g.player,{x:tree.x-50,y:tree.y});g.player.angle=0;
     for(let i=0;i<120&&tree.hp>0&&g.progress.arrival.phase==='gather';i++)arrivalTick(.05);
+    if(woodPickupCapacity(g)<TREE_REWARD.wood){Object.assign(g.player,CAMP_WAREHOUSE);if(!storeWood(g).ok)throw Error('木材入库失败');}
    }
    if(g.progress.arrival.phase!=='repair'||!g.vehicle.active)throw Error('骑车采集失败');a.refresh();
   });

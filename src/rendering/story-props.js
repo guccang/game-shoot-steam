@@ -14,7 +14,7 @@ import {
   storySceneActive,
 } from '../core/story-definition.js';
 import { box, oval, poly } from './primitives.js';
-import { catSprites, catFrame } from './cat-animation.js';
+import { catSprites, catFrame, RESIDENT_PORTRAIT_SCALE, scaleResidentForWorld } from './cat-animation.js';
 import { HEROES } from '../config/heroes.js';
 import { nearest } from '../world/coordinates.js';
 import { blocked } from '../physics/motion.js';
@@ -116,12 +116,13 @@ export function drawStoryProp(c, item, time, night = 0, reduced = false, player 
           ? watchRenderCanvas(new OffscreenCanvas(144, 160))
           : Object.assign(createRenderCanvas(), { width: 144, height: 160 });
       const context = atlas.getContext('2d');
-      context.scale(2, 2);
-      drawStoryShape(context, { ...item, x: 36, y: 64 }, time, night, reduced);
+      // 在原缓存内扩大世界取景，完整容纳放大后的猫耳、围巾与尾巴。
+      context.scale(1.5, 1.5);
+      drawStoryShape(context, { ...item, x: 48, y: 80 }, time, night, reduced);
       if (mintFrames.size >= 40) mintFrames.delete(mintFrames.keys().next().value);
       mintFrames.set(frame, atlas);
     }
-    c.drawImage(atlas, item.x - 36, item.y - 64, 72, 80);
+    c.drawImage(atlas, item.x - 48, item.y - 80, atlas.width/1.5, atlas.height/1.5);
     return;
   }
   const key = `${item.kind}:${item.label || ''}:${!!item.restored}:${item.parts || 0}:${night > 0.5}`;
@@ -154,7 +155,8 @@ function drawStoryShape(c, item, time, night = 0, reduced = false) {
   oval(c, 5, 5, item.kind === 'relay' ? 42 : 26, 10, '#29423535');
   const actor = Number.isInteger(item.actorHero) ? { hero: item.actorHero } : null;
   if (actor) {
-    c.scale(0.7, 0.7);
+    scaleResidentForWorld(c);
+    c.scale(RESIDENT_PORTRAIT_SCALE, RESIDENT_PORTRAIT_SCALE);
     mintMotion.idleTime = time;
     if (!catSprites.draw(c, actor.hero, mintMotion, { bodyX: 0, bodyY: 0 }, reduced))
       throw Error(i18nText('rendering.story-props.55bf7840f6'));

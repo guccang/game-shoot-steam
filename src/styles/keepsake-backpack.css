@@ -47,3 +47,8 @@
 .phone-wood{display:flex;align-items:center;gap:10px;min-height:48px;text-align:left;cursor:pointer}
 .phone-wood input{flex:none;width:20px;height:20px;accent-color:var(--ui-green)}
 .phone-wood small{display:block;color:var(--ui-muted)}
+
+/* 松伯信中的折页随信纸宽度缩放，保留完整画幅与独立图注。 */
+.ranger-letter-map{margin:12px 0 16px}
+.ranger-letter-map img{display:block;width:100%;height:auto;border-radius:6px}
+.ranger-letter-map figcaption{margin-top:5px;text-align:center;color:var(--ui-muted);font-size:.85em}

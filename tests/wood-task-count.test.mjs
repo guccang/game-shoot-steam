@@ -7,7 +7,8 @@ import {woodTaskStatus} from '../src/core/wood-task-status.js';
 import {collectAutomaticWood} from '../src/core/wood-pickup.js';
 import {transferWood,storeWood} from '../src/core/wood-storage.js';
 import {mainlineSteps} from '../src/core/mainline-manager.js';
-import {restorationObjective,restorationStatus,repairFacility} from '../src/core/town-restoration.js';
+import {worldTaskObjective} from '../src/core/world-navigation.js';
+import {trackRestoration,updateRestoration,restorationObjective,restorationStatus,repairFacility} from '../src/core/town-restoration.js';
 import {arrivalWorkshopObjective,arrivalTarget} from '../src/core/ranger-arrival.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
@@ -26,11 +27,16 @@ function scene(arrival=false){
 // 拾取调用与树木死亡同源，数量必须确实进入某一实物库存才记入任务。
 function gather(g,count){return collectAutomaticWood(g,{type:'tree',x:g.player.x+80,y:g.player.y},count);}
 
-for(const driving of [false,true])test((driving?'车载':'背包')+'采集当笔更新任务进度，入库前不允许提前施工',()=>{
+for(const driving of [false,true])test((driving?'车载':'背包')+'采集当笔更新任务进度，按材料存放位置引导施工或交付',()=>{
  const g=scene();g.vehicle.active=driving;assert.ok(gather(g,8));
  assert.equal(mainlineSteps(g)[0].progress,'8/40');assert.equal(mainlineSteps(g)[0].done,false);
  assert.match(restorationObjective(g,{}).hint,/还差 32 木头/);assert.equal(g.progress.wood,0);
- assert.ok(gather(g,32));const steps=mainlineSteps(g);assert.equal(steps[0].progress,'40/40');assert.equal(steps[0].done,true);assert.equal(steps[1].done,false);
+ assert.ok(gather(g,32));const steps=mainlineSteps(g);
+ if(!driving){
+  assert.equal(steps[0].label,'修复'+facility.name);Object.assign(g.player,facility.site);
+  assert.ok(repairFacility(g,facility.id).ok);assert.equal(g.progress.logistics.bagWood,0);return;
+ }
+ assert.equal(steps[0].progress,'40/40');assert.equal(steps[0].done,true);assert.equal(steps[1].done,false);
  assert.equal(restorationObjective(g,{}).key,'store-wood-clearing');
  Object.assign(g.player,facility.site);assert.equal(repairFacility(g,facility.id).ok,false);
  Object.assign(g.player,CAMP_WAREHOUSE);assert.ok(storeWood(g).ok);assert.equal(woodTaskStatus(g,40).total,40);assert.equal(woodTaskStatus(g,40).stored,true);
@@ -59,6 +65,19 @@ test('保存失败不虚增任务，存档往返保留背包和货舱进度',()=
  g.progress=validateProgress(structuredClone(g.progress));assert.equal(mainlineSteps(g)[0].progress,'24/40');assert.equal(restorationStatus(g,facility.id).wood.total,24);
 });
 
+test('自选修复追踪实际库存，抵达树旁与读档后继续，完工清除',()=>{
+ const g=scene(),garage=TOWN_RESTORATIONS.find(f=>f.id==='garage');
+ g.progress.mainline.trackingPaused=true;g.progress.wood=20;
+ const first={...g.player,hp:1},second={x:first.x+90,y:first.y,hp:1};g.trees=[first,second];
+ assert.ok(trackRestoration(g,'garage'));assert.match(worldTaskObjective(g).label,/20\/160/);
+ first.hp=0;assert.ok(gather(g,8));
+ g.progress=validateProgress(structuredClone(g.progress));
+ const target=worldTaskObjective(g);assert.equal(target.restoration,'garage');assert.equal(target.site.x,second.x);
+ assert.ok(target.label.includes('28/160'));
+ g.progress.wood=152;assert.equal(worldTaskObjective(g).site.id,garage.site.id);
+ Object.assign(g.player,garage.site);assert.ok(repairFacility(g,garage.id).ok);updateRestoration(g,4);
+ assert.ok(g.progress.restoration.repaired.includes('garage'));assert.equal(g.progress.taskTracking,null);
+});
 test('新手工坊也识别背包与远车库存，采齐后导航取货和入库',()=>{
  const g=scene(true);g.progress.logistics.bagWood=RANGER.repairWood/2;g.progress.logistics.builds[0].wood=RANGER.repairWood/2;
  g.progress.campParking.owned=[{hull:0,mapId:'forest',x:4000,y:2000,spot:null,hp:100}];

@@ -1,7 +1,7 @@
 // 总览使用正式绘制器离线导出的底图，手机不再遍历整张世界生成缩略图。
 import {artStyle} from '../art-styles/state.js';
 export const MAP_PREVIEW_LIMIT = 2;
-export const MAP_PREVIEW_VERSION = '2026-10-29-town-west';
+export const MAP_PREVIEW_VERSION = '2026-11-06-forest-groves';
 
 // 网络读取与解码异步完成；缺失或尺寸错误明确失败，不回退到阻塞式绘制。
 async function loadPreview({ mapId, season }, signal) {

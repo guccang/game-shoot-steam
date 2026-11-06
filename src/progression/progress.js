@@ -1,3 +1,5 @@
+import {normalizeTrade} from './camp-trade.js';
+import {restoreForestExtent} from './forest-extent.js';
 import {ERA_RESOURCES} from '../config/vehicle-eras.js';
 import {normalizeProduction} from './farm-production.js';
 import {freshHomeArcade,normalizeHomeArcade} from './home-arcade.js';
@@ -33,7 +35,7 @@ import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { MASTERY_THRESHOLDS, WEAPON_MODS } from '../config/weapon-mods.js';
 import { normalizeLivingWorld } from './living-world.js';
 import {normalizeTaskTracking} from './task-tracking.js';
-import { RANGER, validateArrival, arrivalPending } from '../config/ranger-arrival.js';
+import { RANGER, validateArrival, arrivalPending, arrivalGiftHull } from '../config/ranger-arrival.js';
 import {validateMainline} from './mainline-progress.js';
 import { VEHICLE_WEAPONS } from '../config/vehicle-armaments.js';
 import { validateStory } from './story-progress.js';
@@ -58,6 +60,7 @@ import {validateFireProgress} from './fire-progress.js';
 export function freshProgress() {
   return {
     townLayoutVersion:TOWN_LAYOUT_VERSION,
+    forestExtentVersion:1,
     fireStationLayoutVersion:FIRE_STATION_LAYOUT_VERSION,
     legendaryWorkshop:normalizeLegendaryWorkshop(null),
     arrival: null,
@@ -68,6 +71,7 @@ export function freshProgress() {
     supplies:freshSupplies(),
     warehouse:normalizeWarehouse(null),
     outdoors:normalizeOutdoors(null),
+    trade:normalizeTrade(null),
     shopStock:{},
     treasure:freshTreasure(),
     npcDialogue:{},
@@ -127,7 +131,7 @@ export function freshRangerProgress() {
   p.keepsakes=freshKeepsakes();
   p.mainline=validateMainline(null);
   p.coins=0;p.wood=0;p.weapons.fill(0);p.weapon=RANGER.saw;
-  p.vehicleHulls.fill(0);p.vehicleWeapons.fill(0);p.vehicleLoadouts.fill(null);p.vehicleIndex=RANGER.scooter;
+  p.vehicleHulls.fill(0);p.vehicleWeapons.fill(0);p.vehicleLoadouts.fill(null);p.vehicleIndex=RANGER.giftHull;
   return p;
 }
 // 白名单恢复存档，缺失字段与损坏数据回退到合法默认值。
@@ -137,6 +141,7 @@ export function validateProgress(raw) {
   p.legendaryWorkshop=normalizeLegendaryWorkshop(raw.legendaryWorkshop);
   p.restoration=validateRestoration(raw.restoration);
   p.farm=validateFarm(raw.farm);
+  p.trade=normalizeTrade(raw.trade);
   p.outdoors=normalizeOutdoors(raw.outdoors);
   p.mailbox=normalizeMailbox(raw.mailbox);
   p.campLevel=validateCampLevel(raw.campLevel);
@@ -216,7 +221,7 @@ export function validateProgress(raw) {
   if(p.homeDecor.basement)openBasement(p.mining);
   initializeWildFarmAges(p.farm,p.living.calendar);
   p.monsterCamps=normalizeMonsterCamps(raw.monsterCamps);
-  p.taskTracking=normalizeTaskTracking(raw.taskTracking,p.living);
+  p.taskTracking=normalizeTaskTracking(raw.taskTracking,p.living,p.restoration);
   // 材料与首通记录只恢复明确保存的值，不根据胜场推算奖励历史。
   for (const key of [...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES)])
     if (Number.isFinite(raw.materials?.[key]))
@@ -231,11 +236,13 @@ export function validateProgress(raw) {
   if (goal && equipmentRecipe(goal.kind, goal.index) && !ownsEquipment(p, goal.kind, goal.index))
     p.equipmentGoal = { kind: goal.kind, index: goal.index };
   p.arrival=validateArrival(raw.arrival);
+  // 旧版只发电动车，保留已经交接的车型和原有货舱。
+  if(p.arrival?.keys&&p.arrival.giftHull===undefined&&raw.vehicleHulls?.[RANGER.scooter])p.arrival.giftHull=RANGER.scooter;
   p.keepsakes=normalizeKeepsakes(raw.keepsakes);
   // 入职档允许空手起步，严格保留明确的零所有权。
   if(p.arrival) {
     for(const key of ['weapons','vehicleHulls']) p[key]=p[key].map((n,i)=>Number.isFinite(raw[key]?.[i])?Math.max(0,Math.min(equipmentLevelCap(p,key),Math.floor(raw[key][i]))):0);
-    p.vehicleIndex=Number.isInteger(raw.vehicleIndex)&&COLLECTED_VEHICLES[raw.vehicleIndex]?raw.vehicleIndex:RANGER.scooter;
+    p.vehicleIndex=Number.isInteger(raw.vehicleIndex)&&COLLECTED_VEHICLES[raw.vehicleIndex]?raw.vehicleIndex:arrivalGiftHull(p);
     p.weapon=p.weapons[raw.weapon]?raw.weapon:arrivalPending(p)?RANGER.saw:0;
     p.vehicleWeapons=VEHICLE_WEAPONS.map((_,i)=>Math.max(0,Math.min(GAMEPLAY_VALUES.progress.maxEquipmentLevel,Math.floor(Number(raw.vehicleWeapons?.[i])||0))));
   }
@@ -253,6 +260,7 @@ export function validateProgress(raw) {
   p.npcDialogue=normalizeNpcDialogue(raw.npcDialogue);
   p.shopStock=normalizeShopStock(raw.shopStock,p.vehicleHulls);
   normalizeWeaponStorage(p);
+  if(!raw.forestExtentVersion)restoreForestExtent(p,raw);
   p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
   return p;
 }

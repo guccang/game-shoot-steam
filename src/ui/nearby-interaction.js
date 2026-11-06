@@ -38,7 +38,10 @@ export function createNearbyInteraction({game,renderer,root,input,activate}){
   const entry=!root.hidden&&!root.querySelector('dialog[open]')&&nearbyInteraction(game);
   // 仓库与其他建筑共用本体和门前透明入口，不再叠加文字提示按钮。
   if(entry?.type==='warehouse'){button.hidden=true;return;}
-  let anchor=entry&&nearbyInteractionAnchor(game,entry);
+  // 命中资格用真实距离，移动中按钮的位置与屏幕上的残骸同步。
+  const towing=entry?.type==='vehicle-wreck'&&game.progress.logistics?.tow?.target===entry.hull;
+  const visibleEntry=towing?{...entry,...renderer.renderGame?.towedPosition}:entry;
+  let anchor=entry&&nearbyInteractionAnchor(game,visibleEntry);
   // 短横屏中工坊本体可能被固定HUD覆盖，维修入口改为安全区内的明确按钮。
   if(entry?.type==='vehicle-repair'&&root.defaultView.innerHeight<480){anchor={...anchor,hitbox:false};entry.presentation='task-entry';}
   const point=projectInteractionAnchor(anchor,renderer.view,renderer.cottageView);

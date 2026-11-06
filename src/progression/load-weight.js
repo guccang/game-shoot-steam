@@ -38,10 +38,17 @@ export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.v
  const towCapacity=Math.max(0,spec.tow*engine.tow-payload*LOAD_RULES.towPayloadPenalty),mass=spec.mass+payload+driverMass;
  return {mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driverMass,overloaded:payload>=capacity};
 }
+// 徒步拖行按背包占用扣减牵引余量。
+export function footTowCapacity(load){return Math.max(0,LOAD_RULES.catTowCapacity-load.weight);}
 // 临时玩法不把永久货舱搬进借用车；普通探索超载停驶，牵引按实际重量减速。
 export function movementLoadFactor(game){
  if(game.realm||game.story||game.fireActive||game.campDefense||game.workshopTrial||game.arrivalCinematic)return 1;
- if(!game.vehicle.active)return catLoad(game).overloaded?LOAD_RULES.catOverloadSpeed:1;
+ if(!game.vehicle.active){
+  const load=catLoad(game),tow=game.progress.logistics?.tow;
+  if(tow?.tractor!=='cat')return load.overloaded?LOAD_RULES.catOverloadSpeed:1;
+  const mass=vehicleLoad(game,tow.target,{driver:false}).mass,capacity=footTowCapacity(load);
+  return load.overloaded||mass>capacity?0:1-.6*mass/capacity;
+ }
  const fault=vehicleFaults(game.progress,game.vehicle.index);if(fault.engine>=100)return 0;const engineSpeed=1-fault.engine*.006;
  const load=vehicleLoad(game);if(load.overloaded)return 0;
  const tow=game.progress.logistics?.tow;if(!tow)return engineSpeed;

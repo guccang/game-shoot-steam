@@ -2,6 +2,7 @@
 import { delta, WORLD } from '../world/coordinates.js';
 import {createMineCartInterpolation} from './mine-cart-interpolation.js';
 import {bindGameSource} from '../core/game-source.js';
+import {rescueTruckVisible} from '../config/vehicle-repair.js';
 
 const ROOTS = ['player', 'vehicle', 'enemies', 'boss', 'enemyBolts', 'hazards', 'projectiles',
   'shots', 'particles', 'numbers', 'drops', 'remnants', 'fx', 'realm', 'funnel', 'drone',
@@ -21,11 +22,19 @@ const QUERIES = ['weapon', 'findAttackTarget', 'findAttackLane'];
 export function createRenderInterpolation() {
   let history = new WeakMap(), mirrors = new WeakMap(), scene = null;
   const bindings = new WeakMap(), mineCart = createMineCartInterpolation();
+  const rescueHistory = new Map();
   // 状态切换和地图/会话替换必须直接显示新场景，不能跨场景拖影。
   function sceneKey(game) { return [game.state, game.mapId, game.realm, game.cottage, game.story, game.player]; }
   // 捕获连续字段，不复制静态树林或递归进入配置、存档和目标引用。
   function beforeStep(game) {
     history = new WeakMap(); scene = sceneKey(game);mineCart.beforeStep(game);
+    // 订单可能在保存时被替换，用车型记录上一模拟步的车身、轮相与挂钩进度。
+    rescueHistory.clear();
+    for (const [hull, order] of (game.progress?.vehicleService || []).entries()) {
+      if (order?.mapId === game.mapId && rescueTruckVisible(order?.phase)) {
+        rescueHistory.set(hull, {...order.truck, phase:order.phase, wheel:order.wheel, timer:order.timer});
+      }
+    }
     const seen = new WeakSet();
     // 只遍历显式列出的表现分支，并跳过共享引用形成的环。
     function visit(value, root = false) {
@@ -41,9 +50,10 @@ export function createRenderInterpolation() {
       for (const key of root ? ROOTS : CHILDREN) visit(value[key]);
     }
     visit(game, true);
+    visit(game.progress?.vehicleService?.[game.progress?.logistics?.tow?.target]?.position);
   }
   // 清理插值历史，表现对象身份仍保留，猫身体姿态匹配不会在暂停后重建轨道。
-  function reset() { history = new WeakMap(); scene = null;mineCart.reset(); }
+  function reset() { history = new WeakMap(); scene = null;mineCart.reset();rescueHistory.clear(); }
   // 同一身体动画始终使用同一表现对象；每帧只更新有界动态分支。
   function sample(game, alpha) {
     const key = sceneKey(game), continuous = scene && key.every((value, i) => value === scene[i]);
@@ -101,6 +111,10 @@ export function createRenderInterpolation() {
     // 条件解释器只读取自有字段；显式共享最新存档，让地面导航与任务栏使用同一进度。
     // 每帧更新引用以覆盖保存后的整份替换，不复制或插值任务完成条件。
     view.progress = game.progress;
+    view.rescueHistory = rescueHistory;
+    view.rescueAlpha = amount;
+    // 残骸与绳端共用镜头所在的显示帧，只投影已挂接的位置。
+    view.towedPosition=project(game.progress?.vehicleService?.[game.progress?.logistics?.tow?.target]?.position);
     // 矿车存于权威进度，另投影当前座位；镜头、车厢与猫必须使用同一时刻的位置。
     view.mineCart=mineCart.sample(game,amount);
     if(view.mineCart){view.player.x=view.mineCart.x;view.player.y=view.mineCart.y;}

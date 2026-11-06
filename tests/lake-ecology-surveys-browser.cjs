@@ -21,8 +21,8 @@ async original=>{
   await page.waitForFunction(()=>a.game.fishing?.phase==='bite',{}, {timeout:15000});await page.locator('#fishing-control').tap();await page.locator('#fishing-lean').fill('-1');await page.locator('#fishing-lean').dispatchEvent('input');
   await page.waitForTimeout(400);await shot(label+'-fight');await page.waitForTimeout(500);
   await page.evaluate(()=>{const g=a.game;for(let i=0;i<1600&&g.fishing?.phase==='fight';i++){const f=g.fishing;o.fishingControl(g,'lean',-(f.direction||1));o.fishingControl(g,f.tension>.7?'release':f.tension<.4?'press':f.reeling?'press':'release');g.update(.04);}if(g.fishing?.phase!=='landed')throw Error('正式溜鱼失败');a.refresh();});await shot(label+'-landed');
-  if(failSave){const before=await page.evaluate(()=>JSON.stringify(a.game.progress.outdoors.surveys));await page.evaluate(()=>{window.persist=a.game.livingPersist;a.game.livingPersist=()=>false;});await page.locator('[data-fish-keep]').tap();check((await page.locator('#fishing-message').innerText()).includes('保存失败'),'保存失败没有保留待收鱼');check(await page.evaluate(()=>JSON.stringify(a.game.progress.outdoors.surveys))===before,'失败提前增加调查');await page.evaluate(()=>a.game.livingPersist=persist);}
-  await page.locator('[data-fish-keep]').tap();await page.locator('#fish-discovery[open]').waitFor();await page.locator('[data-catch-close]').first().tap();await page.waitForFunction(()=>a.game.state==='playing');
+  if(failSave){const before=await page.evaluate(()=>JSON.stringify(a.game.progress.outdoors.surveys));await page.evaluate(()=>{window.persist=a.game.livingPersist;a.game.livingPersist=()=>false;});await page.locator('[data-fish-keep]').tap();check((await page.locator('#fish-catch-error').innerText()).includes('保存失败'),'保存失败没有保留待收鱼');check(await page.evaluate(()=>JSON.stringify(a.game.progress.outdoors.surveys))===before,'失败提前增加调查');await page.evaluate(()=>a.game.livingPersist=persist);}
+  await page.locator('[data-fish-keep]').tap();await page.waitForFunction(()=>a.game.state==='playing');
  }
  try{
   await page.goto(base);await page.locator('#start').tap();await page.evaluate(async()=>{

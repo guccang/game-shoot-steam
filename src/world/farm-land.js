@@ -1,6 +1,6 @@
 import {PASTURE} from '../config/pasture.js';
 import {OUTDOOR_SHOP} from '../config/outdoor-shop.js';
-import {WAREHOUSE} from '../config/warehouse.js';
+import {WAREHOUSE,WAREHOUSE_DEPOT} from '../config/warehouse.js';
 import {AMMO_SHOP} from '../config/supplies.js';
 import {CAT_HOME} from '../config/cat-home.js';
 import {CONSTRUCTION_COMPANY} from '../config/home-construction.js';
@@ -49,7 +49,7 @@ export function farmLandReason(game,point,ignorePlotId=null){
  const production=game.progress.production,devices=[...(production?.sprinklers||[]),...(production?.bench?[{...production.bench,id:'bench'}]:[])];
  if(devices.some(p=>p.id!==game.productionPlacementIgnore&&p.mapId===point.mapId&&Math.abs(delta(p.x-point.x,WORLD.width))<52&&Math.abs(delta(p.y-point.y,WORLD.height))<46))return '这里已有生产设施，请留出位置。';
  if(farmOverlapsRoad(point))return '田块会占到路面，请稍微移到旁边的草地。';
- if(game.mapId==='forest')for(const b of [...COTTAGES,...REALM_ENTRANCES,FARM_DELIVERY,FARM_SEED_SHOP,REPAIR_CENTER,FURNITURE_SHOP,CONSTRUCTION_COMPANY,WAREHOUSE,CAT_HOME,OUTDOOR_SHOP,AMMO_SHOP]){const q=nearest(b,point);if(Math.abs(q.x-point.x)<(b.width||150)/2+27&&point.y>q.y-(b.height||140)-20&&point.y<q.y+34)return '建筑与入口需要留出通路，换一处空地吧。';}
+ if(game.mapId==='forest')for(const b of [...COTTAGES,...REALM_ENTRANCES,FARM_DELIVERY,FARM_SEED_SHOP,REPAIR_CENTER,FURNITURE_SHOP,CONSTRUCTION_COMPANY,WAREHOUSE,WAREHOUSE_DEPOT,CAT_HOME,OUTDOOR_SHOP,AMMO_SHOP]){const q=nearest(b,point);if(Math.abs(q.x-point.x)<(b.width||150)/2+27&&point.y>q.y-(b.height||140)-20&&point.y<q.y+34)return '建筑与入口需要留出通路，换一处空地吧。';}
  if((game.trees||[]).some(t=>t.hp>0&&worldDistance(t,point)<(t.radius||14)+30))return '这里有树，先用电锯清理。';
  const body={...game.player,mapId:game.mapId,arena:null,flying:false,amphibious:false,treePass:false,livingCollision:game.mapId==='forest'};
  for(const [dx,dy] of [[0,0],[-22,-15],[22,-15],[-22,15],[22,15]])if(blocked(point.x+dx,point.y+dy,10,[],body))return '水面、山体和设施上不能开垦，请选择可站立的地面。';

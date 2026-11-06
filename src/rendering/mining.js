@@ -1,3 +1,4 @@
+import {oreCount,CART_CAPACITY} from '../config/mine-freight.js';
 import {clipEraSeat} from './vehicle-eras.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
 import {drawAmbientFish} from './ambient-fish.js';
@@ -54,11 +55,15 @@ function decoration(c,cell,type,night){
 // 车轮按真实行驶距离转动，车厢保持固定轮廓，驾驶员沿用原角色图集。
 function cartBody(c,cart,front=false){
  const {x,y}=cart;
- if(!front){oval(c,x+2,y+6,29,11,'#294e3a44');for(const dx of [-23,23]){c.save();c.translate(x+dx,y+3);oval(c,0,0,7,9,'#516c57','#2d5140',2);c.rotate(cart.wheel||0);c.strokeStyle='#b9c2a0';c.lineWidth=2;c.beginPath();c.moveTo(-5,0);c.lineTo(5,0);c.moveTo(0,-6);c.lineTo(0,6);c.stroke();c.restore();}box(c,x-25,y-26,50,29,5,'#7f9b80','#315b43',2);box(c,x-20,y-22,40,20,3,'#3e604b');}
+ if(!front){oval(c,x+2,y+6,29,11,'#294e3a44');for(const dx of [-23,23]){c.save();c.translate(x+dx,y+3);oval(c,0,0,7,9,'#516c57','#2d5140',2);c.rotate(cart.wheel||0);c.strokeStyle='#b9c2a0';c.lineWidth=2;c.beginPath();c.moveTo(-5,0);c.lineTo(5,0);c.moveTo(0,-6);c.lineTo(0,6);c.stroke();c.restore();}box(c,x-25,y-26,50,29,5,'#7f9b80','#315b43',2);box(c,x-20,y-22,40,20,3,'#3e604b');
+ const count=Math.ceil(oreCount(cart.cargo)*12/CART_CAPACITY);
+ for(let i=0;i<count;i++){const row=Math.floor(i/4),cx=x-15+i%4*9+(row%2)*2,cy=y-14-row*5;poly(c,[[cx-5,cy],[cx-2,cy-6],[cx+3,cy-5],[cx+5,cy+1]],row%2?'#a2a79c':'#baa488','#415448',1);}
+}
  else{poly(c,[[x-24,y-10],[x+24,y-10],[x+20,y+7],[x-20,y+7]],'#b9c497','#365e45',2);box(c,x-27,y-13,54,6,2,'#dfd6a5','#426247',1.5);oval(c,x,y-1,4,3,'#e4ca83','#5f7553',1);}
 }
 // 矿锄和手独立于身体，挥动只改变手臂与柄的角度，不变形角色图集。
-function pickaxe(c,g){
+// 地下挥镐与来信定格共用镐头、手柄和持握位置。
+export function drawMiningPickaxe(c,g){
  const room=g.cottage,p=g.player,work=room.dig?.elapsed||room.shaftWork||room.strike||0,phase=work?Math.sin(work/productionDigSeconds(g.progress,M.digSeconds)*Math.PI*2):0,d=MINE_DIRECTIONS[room.direction],side=d.x<0?-1:1;
  c.save();c.translate(p.x+side*13,p.y-17);c.rotate(side*(-.35+phase*.65));
  box(c,-2,-27,5,39,2,'#bb9767','#466448',1.5);poly(c,[[-15,-26],[-9,-33],[9,-33],[17,-25],[8,-27],[-8,-27]],'#becbb6','#3c624a',2);
@@ -94,6 +99,10 @@ export function drawMining(renderer,g=renderer.game){
  for(const stored of m.carts){const cart=stored.id===g.cottage.ride&&g.mineCart?.id===stored.id?g.mineCart:stored;if(Math.abs(cart.x-g.player.x)<w/zoom&&Math.abs(cart.y-g.player.y)<h/zoom)entities.push({y:cart.y,kind:'cart',cart});}
  for(const animal of g.cottage.ecologyActors||[])entities.push({y:animal.y,kind:'animal',animal});
  if(!g.cottage.ride)entities.push({y:g.player.y,kind:'player'});
+ const depot=minePoint(Object.fromEntries((m.entry||'0,0').split(',').map((n,i)=>[i?'y':'x',Number(n)])));
+ box(c,depot.x-30,depot.y+16,60,15,3,'#e8dcac','#53664b',1);
+ c.save();c.font='bold 10px sans-serif';c.fillStyle='#315943';c.textAlign='center';c.fillText('仓库升井',depot.x,depot.y+27);c.restore();
+ for(const cart of m.carts){const parent=cart.leader&&m.carts.find(c=>c.id===cart.leader);if(parent){c.beginPath();c.moveTo(cart.x,cart.y-6);c.lineTo(parent.x,parent.y-6);c.strokeStyle='#736c52';c.lineWidth=4;c.stroke();}}
  for(const e of entities.sort((a,b)=>a.y-b.y)){
   if(e.kind==='landscape'){
    // 高景物遮住角色时只淡化前景实体，地形、水流和真实脚底排序保持不变。
@@ -108,7 +117,7 @@ export function drawMining(renderer,g=renderer.game){
    const era=g.vehicle.active&&eraVehicle(g.vehicle.index);c.save();clipEraSeat(c,g.player,g.vehicle);
    if(!era&&!g.fishing&&g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
    c.restore();
-   if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(g.fishing)drawOutdoorFishing(c,g,rider,night?1:0);else if(!g.cottage.weaponReady||g.cottage.strike)pickaxe(c,g);
+   if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(g.fishing)drawOutdoorFishing(c,g,rider,night?1:0);else if(!g.cottage.weaponReady||g.cottage.strike)drawMiningPickaxe(c,g);
    if(era&&g.cottage.weaponReady)drawRiderWeapon(c,rider,g.progress.hero,g.loadout.weapon,{scale:PLAYER_SCALE,parts:g.weapon().parts,modChoice:g.weapon().modChoice});
   }
   else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride){
@@ -122,7 +131,12 @@ export function drawMining(renderer,g=renderer.game){
  for(const p of visibleShafts)label(c,`矿洞 ${p.number} · 地面 ↑`,p.x,p.y+38,12);
  const work=g.cottage.dig?g.cottage.dig.elapsed/productionDigSeconds(g.progress,M.digSeconds):g.cottage.shaftWork/M.shaftSeconds;
  if(work){box(c,g.player.x-23,g.player.y-66,46,6,3,'#345841');box(c,g.player.x-22,g.player.y-65,44*Math.min(1,work),4,2,'#f0d48b');}
- c.restore();renderer.mineReview={weaponReady:!!g.cottage.weaponReady,weapon:g.weapon().id,ammo:g.magazines[g.loadout.weapon].ammo,projectiles:g.cottage.combat?.projectiles.length||0,tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
+ const shipment=g.cottage.shipment;
+ if(shipment){const age=g.time-shipment.time;if(age>=0&&age<1.2){for(const q of shipment.points){for(let i=0;i<4;i++){
+  const t=Math.max(0,Math.min(1,(age-i*.08)/.9));if(t<=0||t>=1)continue;
+  oval(c,q.x+(shipment.station.x-q.x)*t+i*2,q.y+(shipment.station.y-q.y)*t-18-55*Math.sin(t*Math.PI/2),4,3,'#d7ba89','#53664b',1);
+ }}}}
+ c.restore();renderer.mineReview={freight:{loads:m.carts.map(cart=>oreCount(cart.cargo)),shipping:!!shipment&&g.time-shipment.time<1.2},weaponReady:!!g.cottage.weaponReady,weapon:g.weapon().id,ammo:g.magazines[g.loadout.weapon].ammo,projectiles:g.cottage.combat?.projectiles.length||0,tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
 }
 // 固定范围小地图显示天然洞厅、已挖区域、轨道、洞口和小屋方向，远处小屋以边缘箭头定位。
 export function drawMineMap(canvas,g){

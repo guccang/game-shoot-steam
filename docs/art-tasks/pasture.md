@@ -1,6 +1,12 @@
 # 牛羊牧栏与田边召唤
 
-依据[美术生成标准](../art-generation-standard.md)。沿用成年耕牛和现有脚底比例，羊以卷毛、短尾和深色小蹄区别；牧栏约 260×104 世界单位，正面留门，栅栏前后按深度排序。正式 Canvas、存档与移动时钟控制进场和驻留；不增加位图。设计目标 pasture-herding。
+依据[美术生成标准](../art-generation-standard.md)。沿用成年耕牛和现有脚底比例，羊以卷毛、短尾和深色小蹄区别；牧栏约 260×104 世界单位，北侧留门，栅栏前后按深度排序。正式 Canvas、存档与移动时钟控制进场和驻留；不增加位图。设计目标 pasture-herding。
+
+### 北侧出口调整
+
+参照河边牧栏截图，保留围栏尺寸、木柱、双横杆及原门宽，将开口移到北边中央，南边补齐整段木栏。以栏杆脚点划分前后层；门外互动点、步行和骑车碰撞跟随新开口。正式入口为 `drawPasture`，使用原有 Canvas 材质及昼夜光照。
+
+验收通过（pasture-herding）。浏览器手机视口中，猫徒步向北出栏，骑木制自行车从北侧返回，向南行驶受栏杆阻挡，再向北成功出栏。北门领牛、领马两项专项测试通过。昼夜及原桌面竖版取样见 [390 宽白天](../../output/playwright/pasture-north/gate-390-day.png)、[320 宽夜晚](../../output/playwright/pasture-north/gate-320-night.png)、[桌面夜晚](../../output/playwright/pasture-north/gate-1280-night.png)。新增纹理与图集为零。
 
 ## 定稿与验收
 

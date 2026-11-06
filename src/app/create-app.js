@@ -1,3 +1,4 @@
+import {createCampTradePanel} from '../ui/camp-trade.js';
 import {createCreatureCodex} from '../ui/creature-codex.js';
 import {createShopCheckout} from '../ui/shop-checkout.js';
 import {createOutdoors} from '../ui/outdoors.js';
@@ -272,7 +273,8 @@ export function createApplication({
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
   const treasure=createTreasure({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
-  const backpack=createKeepsakeBackpack({game,root,dialogs,savePreferences:store.saveGameplay,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open(),onPlaceSprinkler:()=>productionPanel?.placeStored()});
+  const tradePanel=createCampTradePanel({game,root,dialogs,renderer,onChange:refresh});
+  const backpack=createKeepsakeBackpack({onTrade:()=>tradePanel.open(),game,root,dialogs,savePreferences:store.saveGameplay,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open(),onPlaceSprinkler:()=>productionPanel?.placeStored()});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});
@@ -297,7 +299,7 @@ export function createApplication({
   game.livingPersist=store.saveProgress;
   clearingPanel=createClearingPanel({game,root,renderer,dialogs,onChange:refresh});
   livingPanel=createLivingPanel({game,root,renderer,dialogs,onTalk,onEquipmentStory:id=>storyPanel.openEquipment(id),onClearing:()=>clearingPanel.visit(),onChange:refresh,environment,onRest:()=>{projectLivingCalendar(environment,game.progress.living.calendar);environmentPanel.render();}});
-  storyPanel = createStoryPanel({game,root,dialogs,renderer,onLiving:()=>livingPanel.open(),onChange:()=>refresh(),openWorkshop:(kind,index)=>workshop.open(kind,index)});
+  storyPanel = createStoryPanel({game,root,dialogs,renderer,onLiving:requestId=>livingPanel.open(null,requestId),onChange:()=>refresh(),openWorkshop:(kind,index)=>workshop.open(kind,index)});
   monsterCampPanel=createMonsterCampPanel({game,root,renderer,dialogs,onTalk,onChange:refresh});
   seedShop=createSeedShop({game,root,renderer,dialogs,onChange:refresh});
   farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPasture:()=>productionPanel.openPasture(),onSeedShop:()=>seedShop.open()});
@@ -339,7 +341,7 @@ export function createApplication({
   const nearbyControls=createNearbyInteraction({game,renderer,root,input,activate:entry=>{
     if(entry.type==='warehouse')warehouse.open();
     else if(entry.type==='vehicle-repair')vehicleRepair.open();
-    else if(entry.type==='vehicle-wreck')toast.show('载具已损坏，需要维修。请用手机呼叫救援，或到维修中心安排拖车。');
+    else if(entry.type==='vehicle-wreck')vehicleRepair.open(false,entry.hull);
     else if(entry.type==='restoration'){
       // 自选建筑先显示修复页，扣料统一由页面修复按钮确认。
       // 已修好的球场直接查看玩法卡，进入比赛仍由卡片按钮确认。
@@ -606,7 +608,7 @@ export function createApplication({
         profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
         profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); profiler.end('render.panels.farm');
         legendaryWorkshop.renderFrame();
-        seedShop.renderFrame();
+        seedShop.renderFrame();tradePanel.renderFrame();
         outdoors.renderFrame();
         monsterCampPanel.renderFrame();
         profiler.start('render.panels.living'); livingPanel.renderFrame(); profiler.end('render.panels.living');
@@ -682,7 +684,7 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    warehouse.dispose();treasure.dispose();backpack.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();outdoors.dispose();creatureCodex.dispose();loadCleanup.dispose();
+    warehouse.dispose();treasure.dispose();backpack.dispose();tradePanel.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();outdoors.dispose();creatureCodex.dispose();loadCleanup.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();

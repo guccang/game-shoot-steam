@@ -12,7 +12,12 @@ export function createFarmHarvestConfirm({game,root,dialogs,onChange,onNotice}){
  // 动作命中前暂停队列，只在正式世界可交互且没有其他弹窗时展示。
  function render(){
   const job=game.farmWork?.job,request=job?.loadRequest;if(panel.open||pending||!request||game.state!=='playing'||game.farmWork.autoCombat||root.querySelector('dialog[open]'))return;
-  pending=job;accepted=false;const l=request.load;
+  show(request,allow=>resolveHarvestLoad(game,job,allow));
+ }
+ // 车上直接点击与步行队列共用超载提示，关闭后才重新校验并提交。
+ function show(request,resolve){
+  if(panel.open||pending)return;
+  pending=resolve;accepted=false;const l=request.load;
   panel.querySelector('[data-harvest-product]').textContent=FARM_CROPS[request.crop].name+' ×1';
   panel.querySelector('[data-harvest-destination]').textContent='存放到：'+l.name;
   panel.querySelector('[data-harvest-weight]').textContent=`${l.before.toFixed(3)} → ${l.after.toFixed(3)} / ${l.capacity.toFixed(3)} 千克`;
@@ -21,8 +26,8 @@ export function createFarmHarvestConfirm({game,root,dialogs,onChange,onNotice}){
  }
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-harvest-cancel'))dialogs.close(panel.id);else if(b.hasAttribute('data-harvest-continue')){accepted=true;dialogs.close(panel.id);}});
  // 等弹窗统一恢复游戏后授权，下一次命中再次核验距离、目标、田块与真实负重。
- scope.on(panel,'close',()=>{if(panel.open)return;const job=pending,allow=accepted;pending=null;accepted=false;if(!job)return;const result=resolveHarvestLoad(game,job,allow);if(!allow)onNotice?.(result.message);onChange();});
+ scope.on(panel,'close',()=>{if(panel.open)return;const resolve=pending,allow=accepted;pending=null;accepted=false;if(!resolve)return;const result=resolve(allow);if(!result.ok||!allow)onNotice?.(result.message);onChange();});
  // 离开页面不提交尚未确认的收获。
  function dispose(){pending=null;scope.dispose();panel.remove();}
- return {render,dispose};
+ return {render,show,dispose};
 }

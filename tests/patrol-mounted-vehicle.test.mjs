@@ -65,11 +65,11 @@ test('恢复乘坐不会回退已保存的车体升级与炮塔配置',()=>{
   assert.ok(restored.vehicle.maxHp>g.vehicle.maxHp);
 });
 
-test('刚领取赠车且工坊仍破败时，重新进入也保持骑电动车',()=>{
+test('刚领取赠车且工坊仍破败时，重新进入也保持骑木制自行车',()=>{
   const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.equal(skipArrivalJourney(g),true);
   Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});
   // 正式上车入口同时接管赠车停车记录。
-  assert.equal(g.summonVehicle(),true);assert.equal(g.vehicle.index,RANGER.scooter);
+  assert.equal(g.summonVehicle(),true);assert.equal(g.vehicle.index,RANGER.giftHull);
   const restored=reload(g,true);restored.start();assert.equal(restored.vehicle.active,true);
   assert.equal(restored.progress.arrival.phase,'letter');assert.equal(parkedOwned(restored).length,0);
 });

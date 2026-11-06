@@ -21,8 +21,8 @@ export function equipmentQuestStatus(progress,q){
 }
 
 // 简短单列目录复用邻里请求样式；查看不会自动切换当前导航。
-export function equipmentQuestCards(progress,host=null){
- return EQUIPMENT_QUESTS.filter(q=>!host||q.host===host).map(q=>{
+export function equipmentQuestCards(progress,host=null,chapter=null){
+ return EQUIPMENT_QUESTS.filter(q=>(!host||q.host===host)&&(!chapter||q.chapter===chapter)).map(q=>{
   const state=equipmentQuestStatus(progress,q),item=(q.kind==='vehicle'?COLLECTED_VEHICLES:WEAPONS).find(e=>e.id===q.equipment);
   return `<article class="living-request" data-equipment-quest="${q.chapter}"><small>${escape(item.name)} · 购买资格</small><h3>${escape(q.title)}</h3><p>${escape(state.text)}</p><button class="ui-button" data-equipment-story="${q.chapter}">查看故事</button></article>`;
  }).join('');

@@ -1,7 +1,9 @@
 // 循环世界的统一坐标：逻辑坐标可以无限延伸，地形取模，交互使用最近镜像。
-// 原生活区与湖谷保留原坐标；森林宽高各扩大三倍，物件尺寸不变。
+// 保留生活区的原始坐标与物件尺寸；大世界半对角线 30000 单位，即 3000 米。
 export const ORIGINAL_WORLD = Object.freeze({ width: 3600, height: 2800 });
-export const WORLD = Object.freeze({ width: 10800, height: 8400 });
+// 扩图前的森林范围也是地下矿区既有的面积基准。
+export const PREVIOUS_FOREST_WORLD = Object.freeze({ width: 10800, height: 8400 });
+export const WORLD = Object.freeze({ width: 48000, height: 36000 });
 // 正模支持负方向越界，不在边界处钳制或丢失移动距离。
 export function wrap(value, size) {
   return ((value % size) + size) % size;

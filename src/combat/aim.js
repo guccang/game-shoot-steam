@@ -38,7 +38,7 @@ export function sniperGuide(game) {
   const target = lane?.target || null,
     turning=lane&&game.player.aimInitialized&&Math.abs(Math.atan2(Math.sin(lane.angle-game.player.angle),Math.cos(lane.angle-game.player.angle)))>GAMEPLAY_VALUES.weaponTurn.fireTolerance,
     shot = !turning&&lane || shotSolution(riderPosition(game.player, game.vehicle), null, index);
-  const targets=liveTargets(game).filter(t=>weapon.targetTrees!==false||t.type!=='tree');
+  const targets=liveTargets(game, weapon.targetTrees !== false);
   const flightRange=weapon.gravityRadius?gravityFlightRange(game,weapon,shot.muzzle,shot.direction,targets):weapon.range;
   const end = {
     x: shot.muzzle.x + shot.direction.x * flightRange,

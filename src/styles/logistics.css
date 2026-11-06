@@ -3,3 +3,25 @@
 .logistics-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.logistics-actions button{flex:1;min-width:88px}
 .logistics select{display:block;min-height:44px;max-width:100%;width:100%;margin:8px 0;padding:8px;background:var(--ui-paper);color:var(--ui-text);border:1px solid var(--ui-line);border-radius:10px}
 .logistics .ui-section{margin:12px 0}.logistics p{overflow-wrap:anywhere;line-height:1.7}.logistics .ui-panel__footer{display:block}.logistics .ui-panel__footer>button{width:100%}#logistics-message{margin:0 0 8px;font-size:13px}
+/* 维修和挂绳共用同一车型栏，窄屏保留右侧中文换行空间。 */
+#vehicle-repair-dialog [data-repair-hull], .repair-tow-heading {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+#vehicle-repair-dialog [data-repair-hull] {
+  width: 100%;
+  min-height: 72px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 12px;
+}
+.repair-vehicle-icon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: var(--ui-paper);
+}
+.repair-vehicle-info { display: grid; gap: 2px; overflow-wrap: anywhere; }

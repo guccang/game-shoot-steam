@@ -1,4 +1,5 @@
 // 九秒入职短剧：到站、急速接送、退休出发；说明留在可反复阅读的信里。
+import {ERA_VEHICLES} from './vehicle-eras.js';
 import {townPoint} from './town-layout.js';
 import {PATHS} from '../world/paths.js';
 import {WORLD} from '../world/coordinates.js';
@@ -8,7 +9,7 @@ import {RESTORATION_SECONDS,RESTORATION_FLIGHT} from './building-repair-timing.j
 const giftParking=PARKING_SPOTS.find(s=>s.id==='north-0-2');
 // 只取当前世界北侧最后660单位，不把扩展地图的远路串入九秒接送。
 const road=[...PATHS[1].filter(p=>p.y>=WORLD.height-660).map(p=>({x:p.x,y:p.y-WORLD.height})),...PATHS[1].filter(p=>p.y>0&&p.y<=160)];
-export const RANGER = Object.freeze({scooter:5,saw:14,repairWood:80,pistolWood:8,
+export const RANGER = Object.freeze({scooter:5,giftHull:ERA_VEHICLES.find(v=>v.id==='wood-bicycle').index,saw:14,repairWood:80,pistolWood:8,
   passengerFootY:-28,rideSeconds:2.8,handoverSeconds:.3,dismountSeconds:.5,leaveSeconds:1.1,
   workSeconds:3,rebuildSeconds:RESTORATION_SECONDS-RESTORATION_FLIGHT,rebuildRevealSeconds:1.2,
   busStop:townPoint({x:490,y:-650}),bus:road[0],waiting:{x:road[0].x-42,y:road[0].y+12},
@@ -17,6 +18,12 @@ export const RANGER = Object.freeze({scooter:5,saw:14,repairWood:80,pistolWood:8
   route:road,pickupRoute:road.filter(p=>p.y<=-460).slice().reverse(),
   leaveRoute:road.filter(p=>p.y>=-360).slice().reverse(),
 });
+// 旧档已经交付的车仍在原车位，新交接统一赠送木制自行车。
+export function arrivalGiftHull(progress){
+ return progress.arrival?.giftHull??RANGER.giftHull;
+}
+// 来信和骑车任务按已交付的车型显示。
+export function arrivalGiftName(progress){return arrivalGiftHull(progress)===RANGER.scooter?'电动车':'木制自行车';}
 // 十个动作节拍组成三个场景，总长九秒；等待的一秒从双脚落地后开始。
 export const RANGER_STAGES = {
   bus:{seconds:.6,lines:[]},
@@ -31,11 +38,11 @@ export const RANGER_STAGES = {
   watch:{seconds:1,lines:['……这就上班了？']},
 };
 export const RANGER_LETTER={title:'松伯留给你的一封信',paragraphs:[
-  '小巡林员，欢迎来到晴叶营地！从今天起，这片林子就拜托你照看啦。巡路、帮帮邻居，累了就回小屋歇脚。',
+  '小巡林员，欢迎来到晴叶营地！我把最喜欢的几处地方画在信里了。等营地慢慢修好，你也挑一处自己喜欢的吧。',
   '前阵子的暴风雨掀坏了屋顶，也砸坏了工坊和路牌，幸好大家都平安。我和邻居清理了险处，可镇上的设施还用不了。地基和梁架大多完好，照着巡林簿采些木料，一处处修好，就能重新开张。',
-  '房子钥匙、这封信和巡林手机都放在小背包里。手机能看地图、打电话问问邻居，也能帮你找回家的路。电锯也交给你了，北广场停车场靠入口的小电动车送你了，走到车旁点击就能骑，不用等工坊修好。我骑的是自己的退休专车，可别等我回来！',
-  '先去北广场骑上电动车，带着电锯采些木料，修好武器工坊。到时按提示下车，再去买第一把手枪。以后换枪、升级去武器工坊，换车去载具工坊，准备好了再去探索林子。',
-  '邻居的委托办完，记得回去领谢礼。春天看花，秋天听风；别光顾着工作，也要好好过日子。',
+  '房子钥匙、这封信和巡林手机都放在小背包里。手机能看地图、打电话问问邻居，也能帮你找回家的路。电锯也交给你了，北广场停车场靠入口的木制自行车送你了，走到车旁稍等片刻就能骑上，不用等工坊修好。我骑的是自己的退休专车，可别等我回来！',
+  '先去北广场骑上木制自行车，带着电锯采些木料，修好武器工坊。到时按提示下车，再去买第一把手枪。以后换枪、升级去武器工坊，换车去载具工坊，准备好了再去探索林子。',
+  '要是在湖边找不到我，就抬头看看。谁家屋顶又加了一层，我准在底下看热闹。若是你驾着三角翼从头顶飞过，记得跟我招招手！邻居的委托办完了，也记得回去领谢礼。',
   '我先去湖边占个钓鱼位。退休第一天，忙得很！',
 ],signature:'—— 松伯（已退休）'};
 export const RANGER_PHASES=[...Object.keys(RANGER_STAGES),'letter','ride-guide','gather','repair','repairing','craft','crafting','complete'];
@@ -45,6 +52,7 @@ export function validateArrival(raw){
   if(!raw||raw.version!==3)return null;
   const phase=RANGER_PHASES.includes(raw.phase)?raw.phase:'bus';
   return {version:3,phase,elapsed:Math.max(0,Math.min(RANGER_STAGES[phase]?.seconds||30,Number(raw.elapsed)||0)),
+    ...([RANGER.scooter,RANGER.giftHull].includes(raw.giftHull)?{giftHull:raw.giftHull}:{}),
     ...(phase==='repairing'?{workWood:Number.isSafeInteger(raw.workWood)&&raw.workWood>0?raw.workWood:RANGER.repairWood}:{}),
     line:0,wood:Math.max(0,Math.min(999999,Math.floor(Number(raw.wood)||0))),keys:!!raw.keys,parked:raw.parked!==false,
     x:Number.isFinite(raw.x)?raw.x:RANGER.doorstep.x,

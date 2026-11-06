@@ -27,7 +27,14 @@ dialog[open]:has(:is([data-shop-good],[data-shop-name]):not(:disabled):not([hidd
 dialog[open]>.shop-dropzone[data-filled="true"],#outdoor-dialog[open]>.shop-dropzone[data-filled="true"],#outdoor-dialog[open]:has(details[open] [data-glider-model][data-shop-name])>.shop-dropzone{display:flex}
 #shop-checkout[open]{display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
 #shop-checkout .ui-panel__body{min-height:0;overflow-y:auto}
-.cart-line{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--ui-line)}
-.cart-line small{grid-column:1;overflow-wrap:anywhere}
-.cart-line [data-remove-line]{grid-area:1/2/3/3;min-width:44px;min-height:44px}
+.cart-line{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--ui-line)}
+.cart-line strong{grid-column:2;overflow-wrap:anywhere}
+.cart-line small{grid-column:2;overflow-wrap:anywhere}
+.cart-line [data-remove-line]{grid-area:1/3/3/4;min-width:44px;min-height:44px}
 .cart-quantities{grid-column:1/-1;display:flex;gap:6px}.cart-quantities button{min-width:44px;min-height:44px}
+
+/* 缩略图按原比例收进图框，名称和交付说明共用中栏。 */
+.cart-product-icon{grid-area:1/1/3/2;width:46px;height:46px;display:grid;place-items:center;background:var(--ui-sage);border-radius:8px}
+.cart-product-icon :is(svg,canvas,.inventory-crop){width:42px;height:42px;max-width:100%;display:block;object-fit:contain}
+.cart-product-icon .inventory-crop{position:relative}
+.cart-product-icon .inventory-crop small{position:absolute;right:0;bottom:0;font-size:10px;line-height:1.2;background:var(--ui-paper)}

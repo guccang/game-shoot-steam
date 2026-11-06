@@ -31,5 +31,21 @@ export function woodTaskStatus(game,required){
 // 房屋施工按可直接消费的两处库存展示进度，材料齐备后不再要求先回仓库。
 export function repairWoodStatus(game,required){
  const stock=woodInventory(game.progress),available=stock.warehouse+stock.bag,missing=Math.max(0,required-available),ready=missing===0;
- return {...stock,required,available,missing,stored:stock.warehouse>=required,ready,collected:ready,progress:Math.min(required,available)+'/'+required,breakdown:`仓库 ${stock.warehouse} · 背包 ${stock.bag}`,destination:null,hint:ready?'背包和仓库木材已备齐，可前往修复':`还差 ${missing} 木头，背包和仓库合计 ${available}${stock.vehicles?'；车载木材需先取回背包或存入仓库':'，靠近树木采集'}`};
+ const collected=stock.total>=required;
+ // 只有打开目标或导航时才查车辆位置，避免附近每座建筑逐帧重复寻车。
+ let delivery;
+ return {...stock,required,available,missing,stored:stock.warehouse>=required,ready,collected,
+  progress:Math.min(required,available)+'/'+required,
+  gatherProgress:Math.min(required,stock.total)+'/'+required,
+  breakdown:`仓库 ${stock.warehouse} · 背包 ${stock.bag} · 载具 ${stock.vehicles}`,
+  get destination(){
+   if(ready)return null;
+   if(delivery===undefined)delivery=woodTaskStatus(game,required).destination;
+   return delivery;
+  },
+  get hint(){
+   if(ready)return '背包和仓库木材已备齐，可前往修复';
+   if(collected)return '木材已采齐，施工还差 '+missing+' 木头。'+(this.destination?.label||'请将车载木材取回背包或存入仓库');
+   return '还差 '+(required-stock.total)+' 木头，'+(this.destination?.label||'靠近树木采集');
+  }};
 }

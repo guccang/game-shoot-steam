@@ -55,7 +55,7 @@ export function mainlineSteps(game){
   // 修复直接使用背包与仓库合计，材料齐备即可前往建筑。
   if(s.enough)return [repair];
   const wood=s.wood,resourceHint=wood.hint+' · '+wood.breakdown;
-  return [{label:'采集木头',hint:resourceHint,resourceHint,done:wood.collected,progress:wood.progress},repair];
+  return [{label:'采集木头',hint:resourceHint,resourceHint,done:wood.collected,progress:wood.gatherProgress},repair];
  }
  const conditions=task.goal.all||[task.goal];
  const steps=task.guide.steps.map((step,index)=>{
@@ -120,7 +120,7 @@ function cleanupLessonTarget(game){
 }
 // 一份目标同时驱动任务卡、地面导航和地图标记，不创建第二份坐标。
 export function mainlineObjective(game,{ignoreTracking=false}={}){
- if(!ignoreTracking&&(game.progress?.mainline?.trackingPaused||game.progress?.taskTracking?.kind==='none'))return null;
+ if(!ignoreTracking&&(game.progress?.mainline?.trackingPaused||['none','restoration'].includes(game.progress?.taskTracking?.kind)))return null;
  if(game.cottage&&cottageRestGuideActive(game))return null;
  const rest=cottageRestObjective(game,mainlineTask(game));if(rest)return rest;
  if(!ignoreTracking&&!pendingRestoration(game.progress)&&trackedLivingRequest(game))return null;

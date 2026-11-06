@@ -11,5 +11,7 @@ export function vehicleRepairRate(modelId){return MODEL_REPAIR_RATES[modelId]??V
 
 // 正面俯视救援车沿用现有载具的车头朝下比例，紧凑载台位于驾驶室后方。
 export const TOW_TRUCK=Object.freeze({width:108,height:142,wheelRadius:9,navigationRadius:34,loadX:0,loadY:-50});
+// 只有出车、挂钩和返程阶段在世界中展示救援车。
+export function rescueTruckVisible(phase){return phase==='outbound'||phase==='hooking'||phase==='towing';}
 // 装载点固定在车身后部，与路线方向无关，转弯不会让货物跳到车身另一侧。
 export function towLoadPoint(order){return {x:order.truck.x+TOW_TRUCK.loadX,y:order.truck.y+TOW_TRUCK.loadY};}

@@ -18,6 +18,8 @@ async original=>{
   if(!await page.locator('[data-can-upgrade]').isVisible())throw Error('缺少水壶改造入口');
   await page.screenshot({path:out+'/tools-390.png'});
   await page.setViewportSize({width:320,height:568});await page.locator('[data-can-upgrade]').tap();
+  if(await page.evaluate(()=>a.game.progress.mining.ore!==4||a.game.progress.farm.doubleCan))throw Error('加购时提前改造了水壶');
+  await page.locator('#production-dialog > .shop-dropzone').tap();await page.locator('#shop-checkout [data-pay]').tap();
   await page.waitForFunction(()=>a.game.progress.farm.doubleCan&&a.game.progress.mining.ore===0);
   await page.locator('[data-production-close]').last().tap();
   await page.evaluate(()=>a.farm.open());await page.locator('#farm-water').tap();await page.locator('[data-farm-cell="0"]').tap();

@@ -10,7 +10,7 @@ export const TOWN_LAYOUT = {
   race: {x:510,y:1100},
   football: {x:470,y:1350},
   travel: {x:1040,y:690},
-  bounds: {left:-480,right:1090,top:110,bottom:1400},
+  bounds: {left:-480,right:1090,top:-58,bottom:1400},
   weapons: {x:350,y:570,width:150,height:135,scale:.95},
   garage: {x:350,y:990,width:220,height:175},
   outdoor: {x:-140,y:300,width:220,height:175},
@@ -18,6 +18,7 @@ export const TOWN_LAYOUT = {
   repair: {x:-140,y:930,width:220,height:175},
   cottage: {x:850,y:300},
   construction: {x:1015,y:510},
+  warehouseDepot: {x:520,y:128,width:182,height:101},
   warehouse: {x:585,y:300,width:144,height:124},
   catHome: {x:580,y:780,width:144,height:132},
   furniture: {x:570,y:550,width:136,height:120},
@@ -55,6 +56,7 @@ export const TOWN_PATHS = [
 // 铺地只覆盖各自门前，中央纵横主路与麦田仍有连续的草地间隔。
 export const TOWN_COURTS = [
   {id:'construction-yard',x:930,y:515,w:160,h:50,material:'earth'},
+  {id:'warehouse-loading-yard',x:467,y:128,w:112,h:40,material:'earth'},
   {id:'warehouse-yard',x:520,y:305,w:140,h:75,material:'earth'},
   {id:'cat-home-yard',x:505,y:785,w:150,h:65,material:'earth'},
   {id:'furniture-yard',x:495,y:555,w:150,h:65,material:'earth'},

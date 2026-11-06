@@ -93,8 +93,10 @@ export function commitFarm(game,next,event){
 // 只提交真实发生的一格动作；所有操作再次核验地图、距离与成熟状态。
 export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,loadConfirmation,now=Date.now()}={}){
  if(action==='sell')return sellCrops(game);
- // 耕种、浇水及收割必须步行，收购通过独立事务办理。
- if(!canUseFarm(game))return {ok:false,message:'请结束当前活动并下车，再拿起农具。'};
+ // 车上只处理已有田块；开垦、移除和连续农具作业沿用步行规则。
+ const riding=game.vehicle?.active&&['plant','water','harvest'].includes(action);
+ if(riding&&(!canEnterFarm(game)||game.player.hp<=0||farmInteractionBlocked(game)))return {ok:false,message:'请在非战斗状态靠近田块再操作。'};
+ if(!riding&&!canUseFarm(game))return {ok:false,message:'请结束当前活动并下车，再拿起农具。'};
  if(!Number.isFinite(now)||now<0||!Number.isInteger(cropId)||cropId<0)return {ok:false,message:'农田操作参数无效。'};
  const next=validateProgress(structuredClone(game.progress)),f=next.farm,p=f.plots.find(p=>p.id===plotId),crop=FARM_CROPS[cropId];
  // 空田的湿度属于土壤；播种重置本茬加速状态时，保留这份已获得的水分。

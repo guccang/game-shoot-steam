@@ -2076,5 +2076,37 @@ export function inspectShopCart(root){
  const panel=root.getElementById('shop-checkout');
  const zone=[...root.querySelectorAll('dialog[open] > .shop-dropzone')].find(node=>node.getBoundingClientRect().height>0);
  const pay=panel.querySelector('[data-pay]').getBoundingClientRect();
- return {designCriterion:'shop-cart',iconVisible:!!zone?.querySelector('svg'),rows:panel.querySelectorAll('.cart-line').length,total:panel.querySelector('[data-price]').textContent,payVisible:pay.height>=44&&pay.top>=0&&pay.bottom<=root.defaultView.innerHeight+1};
+ return {designCriterion:'shop-cart',iconVisible:!!zone?.querySelector('svg'),productIcons:panel.querySelectorAll('.cart-product-icon :is(svg,canvas)').length,rows:panel.querySelectorAll('.cart-line').length,total:panel.querySelector('[data-price]').textContent,payVisible:pay.height>=44&&pay.top>=0&&pay.bottom<=root.defaultView.innerHeight+1};
+}
+
+// 读取当前正式绘制器记录的各车载量和升井飞运状态。
+export function inspectMineFreight(game,renderer){return {designCriterion:'mine-freight',...renderer.mineReview?.freight,warehouse:game.progress.mining.ore};}
+
+// 复核后库的正式世界实体、墙体、北门通道和前库入口。
+export async function inspectWarehouseDepot(game){
+ const {warehouseObjects}=await import('./warehouse.js');
+ const {WAREHOUSE_DEPOT:d,WAREHOUSE:w}=await import('../config/warehouse.js');
+ const {worldBuildingBlocked}=await import('../world/building-collision.js');
+ const body={mapId:'forest'};
+ return {designCriterion:'warehouse-depot',visible:warehouseObjects(game).some(i=>i.id===d.id),
+  wall:worldBuildingBlocked(d.x,d.y-24,12,body),
+  aisle:!worldBuildingBlocked(d.x,d.y+33,14,body),
+  gateLane:!worldBuildingBlocked(d.x+130,d.y-20,28,body),
+  front:!worldBuildingBlocked(w.x,w.y+22,12,body)};
+}
+
+// 从正式首读或重读面板采样图片解码与信纸宽度。
+export function inspectRangerLetterCamp(root=document){
+ const image=root.querySelector('dialog[open] .ranger-letter-map img');
+ return {designCriterion:'ranger-letter-camp',loaded:!!image?.naturalWidth,width:image?.clientWidth||0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+
+// 采样正式世界队列、马车动作和实际场景触控区，使用当前游戏和屏幕状态。
+export async function inspectCampTrade(game,root=document){
+ const {tradeObjects}=await import('./camp-trade.js'),objects=tradeObjects(game);
+ const board=root.querySelector('button[aria-label="营地订单板"]'),box=board?.getBoundingClientRect();
+ return {designCriterion:'camp-trade',sites:objects.filter(o=>o.type==='trade-post').length,
+  outpost:objects.some(o=>o.type==='outdoor-camp'&&o.part==='tent'),
+  cart:objects.some(o=>o.type==='trade-cart'),horseFrame:game.tradeMotion?.horseFrame,
+  wheelPhase:game.tradeMotion?.wheelPhase,boardTouch:box&&box.width>=44&&box.height>=44};
 }

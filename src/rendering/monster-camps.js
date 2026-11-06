@@ -8,7 +8,7 @@ import {canvasFont} from './text-style.js';
 import {campResidentHead} from '../config/camp-residents.js';
 const EDGE='#365b43';
 // 主体和棚各用独立深度锚点，人物绕行不会被整个营地强制盖住。
-export function campRenderObjects(game){return monsterCampObjects(game).flatMap(item=>item.type==='monster-camp-fire'?[item,{...item,type:'monster-camp-shelter',y:item.y-80*MONSTER_CAMP_RULES.scale},{...item,...campSignSite(item),id:item.id,type:'monster-camp-sign'}]:[item]);}
+export function campRenderObjects(game,view){return monsterCampObjects(game,view).flatMap(item=>item.type==='monster-camp-fire'?[item,{...item,type:'monster-camp-shelter',y:item.y-80*MONSTER_CAMP_RULES.scale},{...item,...campSignSite(item),id:item.id,type:'monster-camp-sign'}]:[item]);}
 // 地面只保留自然草土铺底，边缘由居民头顶预警表达，不绘制任何警戒圆圈。
 export function drawMonsterCampGround(c,game,night,view){
  if(!monsterCampsAvailable(game))return;c.save();

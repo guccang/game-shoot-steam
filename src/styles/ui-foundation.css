@@ -466,3 +466,19 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #field-equipment-body .ammo-offer .logistics-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
 #field-equipment-body .ammo-offer .logistics-actions button{min-width:0;padding:10px 8px;}
 #field-equipment-body .ammo-offer .logistics-actions small{display:block;font-size:12px;line-height:1.5;font-weight:normal;}
+
+/* 随身武器横向滑选，为短屏保留弹匣和属性的阅读空间。 */
+#field-equipment-dialog .field-weapon-list { display:flex; gap:8px; overflow-x:auto; padding:4px 2px 6px; }
+#field-equipment-dialog .field-weapon-list button { flex:0 0 78px; display:grid; justify-items:center; align-content:center; gap:2px; padding:4px; font-size:12px; }
+#field-equipment-dialog .field-weapon-list canvas { width:42px; height:42px; }
+#field-equipment-dialog .field-weapon-list [aria-pressed="true"] { background:var(--ui-forest); color:var(--ui-paper); }
+#field-equipment-dialog [hidden] { display:none; }
+#field-equipment-message:empty { display:none; }
+#field-equipment-dialog .field-weapon-list [aria-pressed="true"]::before { content:"✓"; position:absolute; top:3px; right:5px; font-size:12px; }
+#field-equipment-dialog .field-weapon-list button { position:relative; }
+
+/* 营地订单分区沿用手机底板，操作反馈只在有结果时占用高度。 */
+#camp-trade-dialog .ui-inset + .ui-inset { margin-top: 12px; }
+#camp-trade-dialog .ui-inset > :first-child { margin-top: 0; }
+#camp-trade-dialog .ui-panel__footer:has([role=status]:empty) { display: none; }
+#camp-trade-dialog [role=status] { margin: 0; }

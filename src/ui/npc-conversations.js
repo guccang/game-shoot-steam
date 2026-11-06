@@ -8,6 +8,7 @@ import {worldDistance} from '../world/coordinates.js';
 import {createEventScope} from '../platform/events.js';
 import {dockNpcDialogue} from './npc-dialogue-layout.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
+import {MAP_CAT_HIT} from './scene-resident.js';
 
 // 对话控制器保留服务回调，在原弹窗恢复世界之后再打开原有事务，避免暂停归属丢失。
 export function createNpcConversations({game,root,renderer,dialogs,onChange,onCampService}){
@@ -52,7 +53,7 @@ export function createNpcConversations({game,root,renderer,dialogs,onChange,onCa
      open('camp:'+actor.id,mainlineTask(game)?.npc===actor.id?()=>onCampService(actor.id):null);
     });
    }
-   placeSceneHit(node,actor,renderer,frame,{width:56,height:82});
+   placeSceneHit(node,actor,renderer,frame,MAP_CAT_HIT);
   }
  }
  // 卸载只移除本控制器的节点与监听，不触发遗留服务或改变存档。

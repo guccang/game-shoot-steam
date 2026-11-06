@@ -11,6 +11,8 @@ import {worldDistance} from '../world/coordinates.js';
 import {CLEARING_POST} from '../config/clearing.js';
 import {isClearingSite} from '../progression/clearing-site.js';
 import {arrivalWorkshopObjective} from './ranger-arrival.js';
+import {TOWN_RESTORATIONS} from '../config/town-restoration.js';
+import {restorationObjective} from './town-restoration.js';
 const intents=new WeakMap();
 // 诊断只读取临时目标，不调用会消费意图或影响优先级的正式导航入口。
 export function worldNavigationDiagnostics(game){const intent=intents.get(gameSource(game));return {enabled:taskNavigationEnabled(game),intent:intent?{label:intent.label,direct:intent.direct,site:{id:intent.site.id,mapId:intent.site.mapId,x:intent.site.x,y:intent.site.y}}:null};}
@@ -39,6 +41,9 @@ export function worldTaskObjective(game){
  if(!livingForest(game)){if(game.mapId==='jiuzhaigou'&&!game.realm&&!game.story&&intent?.direct&&intent.site.mapId===game.mapId&&worldDistance(game.player,intent.site)>visitRadius)return {task:{id:'visit',title:intent.label},key:'visit',phase:'travel',site:intent.site,label:intent.label};if(intent?.site.mapId===game.mapId&&worldDistance(game.player,intent.site)<=visitRadius)intents.delete(game);return null;}
  // 战斗 HUD 出现后仍引向场内站牌；只压住无关路线，临时访问意图继续保留。
  if(clearingCombatActive(game)){const clearing=clearingObjective(game);return clearing.navigation?{task:{id:'boss-clearing',title:'Boss 清缴任务'},phase:'travel',...clearing}:null;}
+ const tracking=game.progress.taskTracking;
+ const repair=tracking?.kind==='restoration'?TOWN_RESTORATIONS.find(f=>f.id===tracking.id):null;
+ if(repair&&!intent?.direct)return restorationObjective(game,null,repair);
  const o=mainlineObjective(game);
  // 找种任务从出发到交付都使用自己的目标，旧清缴任务不能将路线拉回清缴场。
  const seedTask=o?.task.gardening?.kind==='drop';
@@ -57,6 +62,7 @@ export function worldTaskObjective(game){
   if(game.mapId!==intent.site.mapId||worldDistance(game.player,intent.site)>visitRadius)return {task:{id:'visit',title:intent.label},key:'visit',phase:'travel',site:intent.site,label:intent.label,action:intent.action};
   intents.delete(game);
  }
+ if(repair)return restorationObjective(game,null,repair);
  if(trackedLivingRequest(game))return null;
 
  // 非主线清缴也使用同一站牌终点，进入战斗范围不视作抵达。

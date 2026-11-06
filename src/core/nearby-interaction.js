@@ -1,7 +1,8 @@
+import {LOAD_RULES} from '../config/vehicle-load.js';
 import {bossCombatActive} from './boss-engagement.js';
 import {canUseWarehouse} from './warehouse.js';
 import {personalFleet} from './vehicle-repair.js';
-import {MONSTER_CAMPS,CAMP_CHARACTERS,campSignSite,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
+import {campCandidates,CAMP_CHARACTERS,campSignSite,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {monsterCampsAvailable} from './monster-camps.js';
 import {arrivalWorkReady} from './ranger-arrival.js';
 import {RANGER} from '../config/ranger-arrival.js';
@@ -40,10 +41,14 @@ export function nearbyInteraction(game){
  if(canRequestParking(game))return {id:'parking-'+nearestParkingSpot(game).id,type:'parking',label:'停车入位'};
  const entries=[];
  if(personalFleet(game)){
-  for(const [hull,r] of (game.progress.vehicleService||[]).entries())if(r?.phase==='wrecked'&&r.mapId===game.mapId&&worldDistance(game.player,r.position)<=120)entries.push({...r.position,id:'wreck-'+hull,type:'vehicle-wreck',hull,label:'查看损坏载具',detail:'已报废 · 需要维修',distance:worldDistance(game.player,r.position)});
+  for(const [hull,r] of (game.progress.vehicleService||[]).entries()){
+   if(r?.phase!=='wrecked'||r.mapId!==game.mapId)continue;
+   const attached=game.progress.logistics?.tow?.target===hull,distance=worldDistance(game.player,r.position);
+   if(distance<=(attached?LOAD_RULES.hookDistance:120))entries.push({...r.position,id:'wreck-'+hull,type:'vehicle-wreck',hull,label:attached?'管理牵引':'牵引损坏载具',detail:attached?'已挂绳 · 可解除或交车':'已报废 · 需要维修',distance});
+  }
  }
  // 外围故事绑定真实木牌；营内居民和冷灰堆继续使用自己的现场位置。
- if(monsterCampsAvailable(game))for(const c of MONSTER_CAMPS){if(c.mapId!==game.mapId)continue;
+ if(monsterCampsAvailable(game))for(const c of campCandidates(game.mapId,game.player.x,game.player.y,620)){
   const npc=CAMP_CHARACTERS.find(n=>n.camp===c.id),cache=CAMP_CHARACTERS.some(n=>n.destination===c.id&&game.progress.monsterCamps.clues.includes(n.id));
   for(const site of [campSignSite(c),...(npc?[campCharacterSite(c)]:[]),...(cache?[campCacheSite(c)]:[])]){const distance=worldDistance(game.player,site),character=site.id.endsWith('character'),sign=site.id.endsWith('sign');if(distance<=90)entries.push({...site,id:site.id,type:'monster-camp',key:c.id,presentation:sign?'camp-sign':null,label:site.id.endsWith('cache')?'查看冷灰堆':character?'和'+npc.name+'聊聊':'阅读营地木牌',detail:character?'友善居民':c.name,distance});}
  }
@@ -61,5 +66,5 @@ export function nearbyInteraction(game){
  const entry=entries.sort((a,b)=>a.distance-b.distance)[0];if(!entry)return null;
  const id=entryFacility(entry),f=TOWN_RESTORATIONS.find(f=>f.id===id),status=f&&restorationStatus(game,id);
  return f&&!facilityOpen(game.progress,id)?{...entry,type:'restoration',key:id,label:'修复'+f.name,
-  detail:'木头 '+status.wood.progress+' · '+status.wood.hint}:entry;
+  detail:'木头 '+status.wood.gatherProgress+' · '+status.wood.hint}:entry;
 }

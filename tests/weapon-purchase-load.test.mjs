@@ -61,15 +61,36 @@ test('报价计入运行弹匣，不依赖过期的存档弹匣数量',()=>{
   assert.ok(commitWorkshop(g,plan,()=>true).ok);assert.equal(catLoad(g).weight,r.load.weight);
 });
 
-test('工坊优先把新枪交给门外车辆，读档后从同车取回才能随身装备',()=>{
+// 将同一辆可用自有车停在店外，按不同负重复核三个交付位置。
+function parkOutside(){
  const g=scene();g.cottage.outside={x:2000,y:2000};g.progress.vehicleHulls[1]=1;
  g.progress.campParking.owned=[{hull:1,mapId:'forest',spot:null,x:2010,y:2010,hp:1,ammo:0}];
+ return g;
+}
+
+test('背包有余量时即使店外有车也优先随身携带',()=>{
+ const g=parkOutside();
+ assert.equal(commitWorkshop(g,plan,()=>true).place,'猫猫背包');
+ assert.ok(carriedWeapon(g.progress,1));
+});
+
+test('背包与门外车辆都装不下时交付小屋仓库',()=>{
+ const g=parkOutside();g.progress.logistics.bagWood=100;
+ g.progress.logistics.builds[1].wood=99999;
+ assert.equal(commitWorkshop(g,plan,()=>true).place,'小屋仓库');
+ assert.deepEqual(g.progress.warehouse.weapons,[1]);
+});
+
+test('背包装不下才交付门外车辆，读档后可从同车取回',()=>{
+ const g=parkOutside();g.progress.logistics.bagWood=100;
  const before=catLoad(g).weight;let saved;
  const result=commitWorkshop(g,plan,p=>{saved=structuredClone(p);return true;});
  assert.ok(result.ok);assert.match(result.place,/载具仓库/);assert.equal(catLoad(g).weight,before);
  const restored=new Game(saved);restored.state='paused';restored.vehicle.active=false;
  restored.livingPersist=()=>true;Object.assign(restored.player,{x:2010,y:2010});
  assert.equal(carriedWeapon(restored.progress,1),false);assert.equal(restored.progress.weapon,0);
+ assert.equal(collectShopStock(restored,1,'weapon:1').ok,false);
+ restored.progress.logistics.bagWood=0;
  assert.ok(collectShopStock(restored,1,'weapon:1').ok);assert.ok(carriedWeapon(restored.progress,1));
  assert.equal(collectShopStock(restored,1,'weapon:1').ok,false);
 });

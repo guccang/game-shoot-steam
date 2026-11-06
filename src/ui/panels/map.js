@@ -62,16 +62,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       const tracked=trackedLivingRequest(game),t=tracked&&livingRequestTarget(game,tracked);
       if(t){const point=canonical(t);c.beginPath();c.arc(point.x*scaleX,point.y*scaleY,12,0,Math.PI*2);c.strokeStyle='#ad603d';c.lineWidth=2;c.stroke();}
     }
-    for (const z of game.mapId === 'jiuzhaigou' ? [] : zones) {
-      c.fillStyle = '#fff9e5ee';
-      c.fillRect(z.x * scaleX - 51, z.y * scaleY - 18, 102, 36);
-      c.fillStyle = '#36553e';
-      c.font = canvasFont(12);
-      c.textAlign = 'center';
-      c.fillText(z.name, z.x * scaleX, z.y * scaleY - 3);
-      c.font = canvasFont(11, 'normal');
-      c.fillText(i18nText("common.level", { p0: z.range }), z.x * scaleX, z.y * scaleY + 12);
-    }
+    // 扩图后森林原有林区集中在一角，名称与等级列在图例中。
     // 景点编号对应实景路牌与下方文字目录，窄屏不把十五个长地名挤在小地图上。
     if (game.mapId === 'jiuzhaigou') JIUZHAIGOU_SIGNPOSTS.forEach((sign, i) => {
       const x = sign.x * scaleX, y = sign.y * scaleY;
@@ -98,8 +89,15 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     // 已接取的随机清缴独立标记，不依赖主线当前是否正在教学。
     const clearing=livingForest(game)&&game.progress.living.patrolActive?clearingSite(game.progress):null;
     if(clearing){const p=canonical(clearing),x=p.x*scaleX,y=p.y*scaleY;c.beginPath();c.arc(x,y,13,0,Math.PI*2);c.fillStyle='#f1d678';c.fill();c.strokeStyle='#315747';c.lineWidth=2;c.stroke();c.fillStyle='#315747';c.textAlign='center';c.font=canvasFont(13);c.fillText('剿',x,y+4);}
-    // 火字标记与营地目录共用正式坐标，不烘焙进地图预览。
-    if(monsterCampsAvailable(game))for(const camp of MONSTER_CAMPS.filter(c=>c.mapId===game.mapId)){const p=canonical(camp);c.fillStyle='#f3d49a';c.strokeStyle='#365b43';c.lineWidth=2;c.beginPath();c.arc(p.x*scaleX,p.y*scaleY,10,0,Math.PI*2);c.fill();c.stroke();c.fillStyle='#365b43';c.font=canvasFont(12);c.textAlign='center';c.fillText('火',p.x*scaleX,p.y*scaleY+4);}
+    // 森林总览用小圆点标营地，目录按距玩家的直线距离排列。
+    const camps=monsterCampsAvailable(game)?MONSTER_CAMPS.filter(camp=>camp.mapId===game.mapId)
+      .map(camp=>({camp,distance:worldDistance(game.player,camp)})).sort((a,b)=>a.distance-b.distance):[];
+    for(const {camp} of camps){
+      const p=canonical(camp),forest=game.mapId==='forest',x=p.x*scaleX,y=p.y*scaleY;
+      c.fillStyle='#f3d49a';c.strokeStyle='#365b43';c.lineWidth=forest?1.5:2;
+      c.beginPath();c.arc(x,y,forest?3.5:10,0,Math.PI*2);c.fill();c.stroke();
+      if(!forest){c.fillStyle='#365b43';c.font=canvasFont(12);c.textAlign='center';c.fillText('火',x,y+4);}
+    }
     const p = canonical(game.player);
     c.beginPath();
     c.arc(p.x * scaleX, p.y * scaleY, 7, 0, Math.PI * 2);
@@ -120,7 +118,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       if(clearing){const row=root.createElement('div');row.id='map-clearing-site';row.textContent=`剿 · 本次清缴地点 · 距离 ${displayMeters(worldDistance(game.player,clearing))} 米`;$('region-legend').append(row);$('map-description').textContent+=' 剿字标记为本次清缴地点。';}
       Object.values(LIVING_PLACES).forEach((p,i)=>{const row=root.createElement('div');row.textContent=`${i+1}. ${p.name}`;$('region-legend').append(row);});
     }
-    if(monsterCampsAvailable(game))for(const camp of MONSTER_CAMPS.filter(c=>c.mapId===game.mapId)){const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small'),button=root.createElement('button');title.textContent='火 · '+camp.name+' · '+monsterCampLevel(camp)+'级';note.textContent='已清空 '+game.progress.monsterCamps.camps[camp.id].clears+' 次 · 种子：'+camp.seeds.map(i=>FARM_CROPS[i].name).join('、');button.className='ui-button';button.dataset.monsterCamp=camp.id;button.textContent='前往圈外';row.append(title,note,button);$('region-legend').append(row);}
+    for(const {camp,distance} of camps){const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small'),button=root.createElement('button');title.textContent='火 · '+camp.name+' · '+monsterCampLevel(camp)+'级';note.textContent='距你 '+displayMeters(distance)+' 米 · 已清空 '+game.progress.monsterCamps.camps[camp.id].clears+' 次 · 种子：'+camp.seeds.map(i=>FARM_CROPS[i].name).join('、');button.className='ui-button';button.dataset.monsterCamp=camp.id;button.textContent='前往圈外';row.append(title,note,button);$('region-legend').append(row);}
     // 红狼所有者在地图目录也能找到真实工坊门口，复用现有按钮与路线显示。
     if(legendaryVisible(game)){const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small'),button=root.createElement('button');title.textContent='传奇工坊';note.textContent='红狼铭牌已识别 · 门口站定1秒进入，找匠人接受传承';button.type='button';button.className='ui-button';button.dataset.legendaryRoute='';button.textContent='标记工坊路线';row.append(title,note,button);$('region-legend').append(row);}
     if(game.story)$('region-legend').innerHTML=`<div style="grid-column:1 / -1"><b>${i18nHtml("ui.panels.map.7562f827d6")}</b><small>${STORY_WORLD.legend}</small></div>`;

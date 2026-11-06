@@ -95,7 +95,7 @@ export function farmObjects(game){
  if(!farmVisible(game))return [];
  const site=game.progress.farm.oxSite;
  const parked=site?.mapId===game.mapId&&!game.cottage&&(game.farmWork?.tool!=='ox'||game.farmWork.ox?.approach||game.farmWork.autoCombat)?[{...site,...oxFoot(site),type:'parked-ox',moving:!!game.oxArrival?.moving,phase:game.oxArrival?.phase||0,unhitched:!!game.oxArrival||worldDistanceToPen(site)<65}]:[];
- const pen=game.mapId==='forest'?[{...PASTURE,y:PASTURE.y-52,type:'pasture-back'},{...PASTURE,y:PASTURE.y+52,type:'pasture-front'},...(game.progress.farm.sheep?[{x:PASTURE.x+58,y:PASTURE.y+34,type:'pasture-sheep'}]:[])]:[];
+ const pen=game.mapId==='forest'?[{...PASTURE,y:PASTURE.y-PASTURE.halfHeight,type:'pasture-back'},{...PASTURE,y:PASTURE.y+PASTURE.halfHeight,type:'pasture-front'},...(game.progress.farm.sheep?[{x:PASTURE.x+58,y:PASTURE.y+34,type:'pasture-sheep'}]:[])]:[];
  return [...pen,...parked,...productionObjects(game),...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
 }
 // 三阶段保持宽高比例和固定根部，过渡期间茎叶逐渐长成并局部轻摆。

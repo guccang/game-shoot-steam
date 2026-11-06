@@ -71,3 +71,11 @@
 `visual-contract.json` 已登记上述四项 designCriterion，`renderVisualCase` 新增六组 `landscape-group-{0..5}-winter[-night]` 并绑定正式渲染，不使用独立示意图。
 
 结论：通过。验收期间已修订麦田重复白点和山顶雪檐；当前版本无待修订项。
+
+## 扩图后的远林景观
+
+目标是在手机一屏内能辨认疏林、花地、石群或林下倒木，同时保留驾车穿行的草地。以公交亭树组和正式森林植被为参照，远林采用大小不一的树组，低景按地脚分组，沿用花、石、倒木的正式图集与四季着色。树木保持原有碰撞和采集，低景只参与脚底排序。道路、驻怪区和手工场景保留净空。检查昼夜手机和大视口、跨区连续性、局部查询及常驻树木预算。
+
+验收通过。正式入口为 `forestLayout` 和 `Renderer.draw → forestUnderstory → drawScenery`。全图树位 13,317 个。抽样 160 个 390×600 世界单位的视野，其中 150 个包含树或低景。林下摆件复用三种既有图集，按镜头取格，缓存上限 256 格。昼夜实机检查中，猫、坐骑、树干、倒木和花石按脚底落位，手机触控向右骑行约 258 世界单位。野怪驻地、木牌和候车路线的留白检查通过。两套风格的地图预览已刷新并核对依赖指纹。
+
+对应 designCriterion 为 `forest-biome-coherence` 和 `preserved-gameplay`。截图在 `output/playwright/forest-landscape-density/forest-{day,night}-{390,1100}.png`。动作与资源替换项不适用，本轮仅布置既有运行素材。

@@ -15,7 +15,6 @@ import {createCatHome} from './cat-home.js';
 import {createShopkeeperInteraction} from './shopkeeper-interaction.js';
 // 小屋操作层只处理室内服务；停驻载具由正式移动时钟自动上车。
 import {createHomeDecor} from './home-decor.js';
-import {createRoomExit} from './room-exit.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
 import {createEventScope} from '../platform/events.js';
 import {calendarView} from '../world/living-calendar.js';
@@ -29,7 +28,6 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  scope.on(glideButton,'click',()=>{input.reset();if(game.cottage?.glide)descendHomeGlider(game);else launchHomeGlider(game);render();});
  const mining=createMining({game,renderer,root,panel,input,dialogs,onCharacter,onOutdoors});
  const arcade=createHomeArcade({game,renderer,root,panel,input});
- const roomExit=createRoomExit({game,renderer,root,panel,input,onChange});
  const approach=createCottageApproach({game,renderer,root,panel});
  const chat=createResidentChat({game,root,dialogs,onChange:onDecorChange});
  const catHome=createCatHome({game,root,dialogs,input,onChange:onDecorChange});
@@ -45,7 +43,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  function openService(kind,index){if(kind==='construction')construction.open('build');else if(kind==='cat-home')catHome.open();else if(kind==='furniture')homeDecor.open();else openWorkshop(kind,index);}
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。
  function render(){
-  const room=game.cottage;mining.render();frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;storage.render();roomExit.render();homeDecor.render();catHome.render();chat.render();construction.render();shopkeeper.render();approach.render();arcade.render();
+  const room=game.cottage;mining.render();frame.classList.toggle('inside-cottage',!!room);panel.hidden=!room;storage.render();homeDecor.render();catHome.render();chat.render();construction.render();shopkeeper.render();approach.render();arcade.render();
   glideButton.hidden=!room?.balcony||!!room.arcade;
   glideButton.disabled=!!room?.glide&&(room.glide.approach||room.glide.remaining<100);
   glideButton.textContent=room?.glide?'就近降落':'起飞滑翔';
@@ -81,6 +79,6 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
 
  }
  // 卸载清理动态热点，返回首页不能遗留室内样式。
- function dispose(){arcade.dispose();mining.dispose();approach.dispose();construction.dispose();shopkeeper.dispose();storage.dispose();chat.dispose();catHome.dispose();homeDecor.dispose();roomExit.dispose();scope.dispose();renderer.interiorArt=null;panel.remove();frame.classList.remove('inside-cottage');}
+ function dispose(){arcade.dispose();mining.dispose();approach.dispose();construction.dispose();shopkeeper.dispose();storage.dispose();chat.dispose();catHome.dispose();homeDecor.dispose();scope.dispose();renderer.interiorArt=null;panel.remove();frame.classList.remove('inside-cottage');}
  return {tap,render,dispose,openService,openHomeDecor:homeDecor.open};
 }

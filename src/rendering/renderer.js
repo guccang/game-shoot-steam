@@ -1,3 +1,4 @@
+import {tradeObjects,drawTradeObject} from './camp-trade.js';
 import {clipEraSeat} from './vehicle-eras.js';
 import {drawAmbientFish} from './ambient-fish.js';
 import {drawHomeArcade} from './home-arcade.js';
@@ -89,6 +90,7 @@ import { drawLakeGusts } from './natural-terrain.js';
 import { drawHomeGlider } from './home-glider.js';
 import { drawForestTree, drawForestShadow } from './forest-art.js';
 import { SCENERY } from '../world/scenery.js';
+import { forestUnderstory } from '../world/forest-understory.js';
 import { REALM_ENTRANCES, towerRealmLandmark } from '../world/realm-entrances.js';
 import { drawRealmEntrance, drawRealmEntranceGround } from './realm-entrances.js';
 import { drawScenery, sceneryAtlasStats } from './scenery.js';
@@ -123,7 +125,7 @@ import { releaseArtCache } from '../art-styles/cache.js';
 import {watchRenderCanvas,canvasRecoveryRevision,canvasRecoveryStats} from './canvas-recovery.js';
 import {recoverSharedRenderCaches} from './render-cache-recovery.js';
 // 仅统计本轮接入缓存的七类建筑，避免把角色或施工动作归到静态立面。
-const CACHED_CAMP_BUILDINGS=new Set(['warehouse','cat-home','furniture-shop','seed-shop','legendary-workshop','ammo-shop','construction-company']);
+const CACHED_CAMP_BUILDINGS=new Set(['warehouse-depot','warehouse','cat-home','furniture-shop','seed-shop','legendary-workshop','ammo-shop','construction-company']);
 export class Renderer {
   // 初始化轻量缓存；地形位图在首次进入可见区域时才生成。
   constructor(canvas, game, environment = { time: 'day', weather: 'sun' }, profiler = null) {
@@ -425,9 +427,10 @@ export class Renderer {
       ...visibleBodies(arrivalObjects(camp),view,120),
       ...(!valley&&!source.realm&&!source.story?visibleBodies(source.fireWaters||[],view,150).map(s=>({...s,type:'fire-water'})):[]),
       ...visibleBodies(parkedVehicleObjects(camp),view,150),
+      ...visibleBodies(tradeObjects(source),view,150),
       ...visibleBodies(scenePeople,view,100),...storyPosts,
       ...visibleBodies(livingObjects(camp).filter(o=>o.type!=='living-resident'||!activeStoryResidents.has(o.id)),view,150),
-      ...visibleBodies(campRenderObjects(source),view,150),
+      ...visibleBodies(campRenderObjects(source,view),view,150),
       ...visibleBodies(settlementObjects(source),view,120),
       ...mechanicalCats,...spiders,
       ...(source.realm?.mode==='race'?visibleBodies(source.realm.features.filter(f=>f.kind==='bale').map(f=>({...f,type:'race-bale'})),view):[]),
@@ -438,6 +441,7 @@ export class Renderer {
       ...(!valley&&!source.realm&&!source.story&&source.fireStationTruck?visibleBodies([{...FIRE_GARAGE,type:'fire-truck-rear',depthOffset:-1},{...FIRE_GARAGE,type:'fire-truck-front',depthOffset:1}],view,120):[]),
       ...(source.realm ? [] : visibleBodies(valley ? JIUZHAIGOU_SIGNPOSTS : REGION_SIGNPOSTS, view, valley ? 250 : 140)),
       ...(valley ? [] : guardianScenery(visibleBodies(SCENERY, view, 340), source.realm)),
+      ...(!valley&&!source.realm?forestUnderstory(view):[]),
       ...(valley ? [] : visibleBodies(NATURAL_TERRAIN.mountains, view, 340)),
       ...(source.realm?.mode === 'guardian' ? [source.realm.goddess, ...source.realm.defenses.map(t => ({ ...guardianPads(source.realm.arena)[t.slot], type: 'defense', tower: t, flying: t.kind === 'vehicle' && t.index === 2 }))] : []),
       ...visibleBodies(legendaryObjects(source),view,220),
@@ -481,13 +485,14 @@ export class Renderer {
       if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
       else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
-      else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches);
+      else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches,g.player);
       else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
       else if(item.type==='river-dock'||item.type==='river-barrier')drawRiverCrossing(c,item,light.night,g.player);
       else if(item.type==='fire-water')drawWaterPump(c,item,g.time,source.fireActive&&source.fireRescue.filling&&Math.hypot(item.x-g.player.x,item.y-g.player.y)<48,this.reduced.matches);
       else if(item.type==='fire-station-back')drawFireStation(c,item,g.player,time,'back');
       else if(item.type==='fire-truck-rear')drawVehicleTracks(c,item,source.fireStationTruck);
       else if(item.type==='fire-truck-front')drawVehicleArmor(c,item,source.fireStationTruck,source.loadout,0,true);
+      else if(item.type==='trade-post'||item.type==='trade-cart')drawTradeObject(c,item,source,light.night,this.reduced.matches);
       else if(item.type==='parked-vehicle')drawParkedVehicle(c,item,camp);
       else if(item.type.startsWith('arrival-'))drawArrivalObject(c,item,camp,this.reduced.matches,winter);
       else if(item.type==='story-post')(item.clearing?drawClearingPost:drawStoryPost)(c,item,light.night,g.player);
@@ -536,7 +541,7 @@ export class Renderer {
       else if(item.type==='farm-delivery')drawFarmDelivery(c,item);
       else if(item.type==='outdoor-shop')drawOutdoorShop(c,item,light.night,winter);
       else if(item.type==='ammo-shop')drawAmmoShop(c,item,light.night,winter);
-      else if(item.type==='warehouse')drawWarehouse(c,item,light.night,winter);
+      else if(item.type==='warehouse'||item.type==='warehouse-depot')drawWarehouse(c,item,light.night,winter);
       else if(item.type==='cat-home')drawCatHome(c,item,light.night,winter);
       else if(item.type==='furniture-shop')drawFurnitureShop(c,item,light.night,winter);
       else if(item.type==='seed-shop')drawSeedShop(c,item);
