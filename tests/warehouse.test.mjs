@@ -26,7 +26,7 @@ test('仓库保留实体墙和通路，门前直接存取且不会进入房间',
 });
 test('木材、备用弹药和种子往返守恒、减负且持久保存',()=>{
  const g=setup();g.progress.logistics.bagWood=8;g.progress.supplies.hand.heavy=12;g.progress.farm.seeds[0]=9;
- for(const [id,n,mass] of [['material:wood',8,.5],['ammo:heavy',12,1.1],['seed:0',9,.02]]){
+ for(const [id,n,mass] of [['material:wood',8,.1],['ammo:heavy',12,1.1],['seed:0',9,.02]]){
   const before=catLoad(g).weight,snapshot=structuredClone(g.progress),result=transferWarehouse(g,'bag',id,n,'deposit');assert.ok(result.ok,result.message);assert.ok(catLoad(g).weight<before);g.progress=validateProgress(structuredClone(g.progress));assert.ok(transferWarehouse(g,'bag',id,n,'withdraw',true).ok);assert.equal(catLoad(g).weight,before);
   assert.equal(g.progress.wood,snapshot.wood);assert.deepEqual(g.progress.warehouse,snapshot.warehouse);
  }

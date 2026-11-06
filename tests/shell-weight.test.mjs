@@ -1,4 +1,5 @@
 // 炮弹重量专项：正式库存、弹仓、购买预览与移动共用同一质量，装填不增减总重。
+import {WOOD_ITEM} from '../src/config/wood-storage.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
@@ -33,6 +34,6 @@ test('备用弹装入炮膛不重复计重，开火按单发减重，保存重�
 });
 test('一批采购同时更新货舱重量，超载预览不扣款，保存失败不兑现',()=>{
  for(const hull of [1,6]){const g=scene(hull),id=hull===1?'shell':'heavy',rule=AMMO_TYPES[id];g.vehicle.active=false;const outside={x:AMMO_SHOP.x,y:AMMO_SHOP.y+80};g.cottage={kind:'ammo',outside};g.progress.campParking.owned=[{hull,spot:null,mapId:'forest',...outside,hp:1,ammo:0}];const before=vehicleLoad(g,hull,{driver:true}).payload,bag=catLoad(g).weight;assert.ok(tradeSupply(g,{kind:'ammo',id,target:'vehicle'}).ok);near(vehicleLoad(g,hull,{driver:true}).payload-before,rule.mass*rule.pack);near(catLoad(g).weight,bag);
-  const load=vehicleLoad(g,hull,{driver:true});g.progress.logistics.builds[hull].wood=Math.floor((load.capacity-load.payload-rule.mass*rule.pack/2)/.5);const original=structuredClone(g.progress),request={kind:'ammo',id,target:'vehicle'},quote=tradeSupply(g,request);assert.equal(quote.needsLoadConfirmation,true);near(quote.load.after-quote.load.before,rule.mass*rule.pack);assert.deepEqual(g.progress,original);g.livingPersist=()=>false;assert.equal(tradeSupply(g,{...request,loadConfirmation:quote.confirmation}).ok,false);assert.deepEqual(g.progress,original);
+  const load=vehicleLoad(g,hull,{driver:true});g.progress.logistics.builds[hull].wood=Math.floor((load.capacity-load.payload-rule.mass*rule.pack/2)/WOOD_ITEM.mass);const original=structuredClone(g.progress),request={kind:'ammo',id,target:'vehicle'},quote=tradeSupply(g,request);assert.equal(quote.needsLoadConfirmation,true);near(quote.load.after-quote.load.before,rule.mass*rule.pack);assert.deepEqual(g.progress,original);g.livingPersist=()=>false;assert.equal(tradeSupply(g,{...request,loadConfirmation:quote.confirmation}).ok,false);assert.deepEqual(g.progress,original);
  }
 });

@@ -1,6 +1,7 @@
 import {SUPPLY_ITEMS} from '../src/config/supplies.js';
 import {collectShopStock} from '../src/core/shop-delivery.js';
 // 实物补给、跨车换炮与特殊伤害回归，调用正式事务及战斗时钟。
+import {WOOD_ITEM} from '../src/config/wood-storage.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
@@ -61,7 +62,7 @@ test('三种补给送到店旁载具，读档后取回，重量与金币守恒',
   g.livingPersist=()=>true;assert.ok(collectShopStock(g,1,key).ok);assert.equal(g.progress.shopStock[1][key],undefined);assert.ok(Math.abs(catLoad(g).weight-bag-SUPPLY_ITEMS[id].mass)<1e-6);
  }
 });
-test('负重确认：车载制作确认只改货舱',()=>{{const craft=true;const g=scene();shop(g);const load=vehicleLoad(g,1,{driver:true});g.progress.logistics.builds[1].wood=Math.floor((load.capacity-load.payload-AMMO_TYPES.shell.pack*AMMO_TYPES.shell.mass/2)/.5);const request={kind:'ammo',id:'shell',target:'vehicle',craft},before=structuredClone(g.progress),r=tradeSupply(g,request);assert.equal(r.needsLoadConfirmation,true);assert.equal(r.load.before,vehicleLoad(g,1,{driver:true}).payload);assert.equal(r.load.after,r.load.before+AMMO_TYPES.shell.pack*AMMO_TYPES.shell.mass);assert.deepEqual(g.progress,before);assert.ok(tradeSupply(g,{...request,loadConfirmation:r.confirmation}).ok);assert.equal(vehicleLoad(g,1,{driver:true}).payload,r.load.after);assert.deepEqual(g.progress.supplies.hand,before.supplies.hand);assert.equal(g.progress.supplies.vehicles[1].shell,AMMO_TYPES.shell.pack);assert.equal(g.progress.coins,before.coins-(craft?0:100));assert.equal(g.progress.wood,before.wood-(craft?3:0));}});
+test('负重确认：车载制作确认只改货舱',()=>{{const craft=true;const g=scene();shop(g);const load=vehicleLoad(g,1,{driver:true});g.progress.logistics.builds[1].wood=Math.floor((load.capacity-load.payload-AMMO_TYPES.shell.pack*AMMO_TYPES.shell.mass/2)/WOOD_ITEM.mass);const request={kind:'ammo',id:'shell',target:'vehicle',craft},before=structuredClone(g.progress),r=tradeSupply(g,request);assert.equal(r.needsLoadConfirmation,true);assert.equal(r.load.before,vehicleLoad(g,1,{driver:true}).payload);assert.equal(r.load.after,r.load.before+AMMO_TYPES.shell.pack*AMMO_TYPES.shell.mass);assert.deepEqual(g.progress,before);assert.ok(tradeSupply(g,{...request,loadConfirmation:r.confirmation}).ok);assert.equal(vehicleLoad(g,1,{driver:true}).payload,r.load.after);assert.deepEqual(g.progress.supplies.hand,before.supplies.hand);assert.equal(g.progress.supplies.vehicles[1].shell,AMMO_TYPES.shell.pack);assert.equal(g.progress.coins,before.coins-(craft?0:100));assert.equal(g.progress.wood,before.wood-(craft?3:0));}});
 test('背包与车仓满时送到小屋，余额不足或存储失败都不会发货',()=>{
  const g=scene();shop(g);g.progress.logistics.bagWood=999;g.progress.logistics.builds[1].wood=9999;
  const request={kind:'item',id:'engineKit'},before=structuredClone(g.progress);

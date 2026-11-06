@@ -1,4 +1,5 @@
 // 下车满载回归：猫猫可负重缓行，物品和弹药守恒，载具超载仍停驶。
+import {WOOD_ITEM} from '../src/config/wood-storage.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
@@ -11,7 +12,7 @@ import {syncSupplyAmmo} from '../src/combat/supply-ammo.js';
 import {interiorLayout} from '../src/config/workshop-interiors.js';
 
 // 真实巡游状态，清空干扰物，仅停用额外刷怪和主线对白。
-function scene(hull=5){const p=freshProgress();p.arrival=null;p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[hull]=1;p.vehicleIndex=hull;p.logistics.bagWood=60;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=g.fireClock=999999;g.updateWaves=()=>{};g.trees=[];g.enemies=[];g.boss=null;Object.assign(g.player,{x:893,y:2814,vx:0,vy:0});return g;}
+function scene(hull=5){const p=freshProgress();p.arrival=null;p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[hull]=1;p.vehicleIndex=hull;p.logistics.bagWood=300;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=g.fireClock=999999;g.updateWaves=()=>{};g.trees=[];g.enemies=[];g.boss=null;Object.assign(g.player,{x:893,y:2814,vx:0,vy:0});return g;}
 // 经过正式帧更新验证实际位移，而不只检查倍率配置。
 function walk(g){const x=g.player.x;for(let i=0;i<10;i++)g.update(.05,{x:1,y:0});return Math.abs(g.player.x-x);}
 
@@ -19,7 +20,7 @@ test('猫猫带木头登上接近满载的电动车，可以正常开走，下�
  const g=scene(),bag=g.progress.logistics,car=bag.builds[5];
  bag.bagWood=20;
  const parked=vehicleLoad(g);
- car.wood=Math.floor((parked.capacity-parked.payload-1)/.5);
+ car.wood=Math.floor((parked.capacity-parked.payload-1)/WOOD_ITEM.mass);
  const cargoWood=car.wood,load=vehicleLoad(g);
  assert.equal(catLoad(g).overloaded,false);
  assert.equal(load.overloaded,false);

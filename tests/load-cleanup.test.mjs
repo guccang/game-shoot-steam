@@ -15,13 +15,13 @@ import {RANGER} from '../src/config/ranger-arrival.js';
 function scene(){const p=ownedPineProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.weapons.fill(0);p.weapons[0]=p.weapons[1]=1;p.weapon=0;const events=[],g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.spawnTimer=g.fireClock=g.mainlineTalkDelay=999;g.enemies=[];g.trees=[];g.progress.campParking.owned=[];g.vehicle.active=false;g.onEvent=(type,data)=>events.push({type,data});g.livingPersist=()=>true;Object.assign(g.player,{x:900,y:800,vx:0,vy:0});return {g,events};}
 
 test('角色满载缓行，提示节流，清理后恢复正常速度并可再次提醒',()=>{
- const {g,events}=scene();g.progress.logistics.bagWood=100;const x=g.player.x;for(let i=0;i<20;i++)g.update(.05,{x:1,y:0});assert.ok(g.player.x>x);assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);assert.equal(events.filter(e=>e.type==='story-hint').length,1);assert.match(events.find(e=>e.type==='story-hint').data.text,/载荷已满.*清理背包/);
- assert.ok(discardLoad(g,{id:'material:wood',count:100}).ok);assert.ok(movementLoadFactor(g)>0);for(let i=0;i<6;i++)g.update(.05,{x:1,y:0});assert.ok(g.player.x>x);g.progress.logistics.bagWood=100;g.update(.05);assert.equal(events.filter(e=>e.type==='story-hint').length,2);
+ const {g,events}=scene();g.progress.logistics.bagWood=500;const x=g.player.x;for(let i=0;i<20;i++)g.update(.05,{x:1,y:0});assert.ok(g.player.x>x);assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);assert.equal(events.filter(e=>e.type==='story-hint').length,1);assert.match(events.find(e=>e.type==='story-hint').data.text,/载荷已满.*清理背包/);
+ assert.ok(discardLoad(g,{id:'material:wood',count:500}).ok);assert.ok(movementLoadFactor(g)>0);for(let i=0;i<6;i++)g.update(.05,{x:1,y:0});assert.ok(g.player.x>x);g.progress.logistics.bagWood=500;g.update(.05);assert.equal(events.filter(e=>e.type==='story-hint').length,2);
  const before=events.length;g.state='paused';updateLoadWarning(g,20,{x:1,y:0});assert.equal(events.length,before);
 });
 test('背包达到上限缓行，驾驶只按车辆总载荷判断，故障不误报满载',()=>{
  const {g,events}=scene(),capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight;assert.equal(catLoad(g).overloaded,true);assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);}finally{LOAD_RULES.catCapacity=capacity;}
- g.vehicle.active=true;g.progress.logistics.builds[0].wood=4000;assert.equal(movementLoadFactor(g),0);updateLoadWarning(g,.05,{x:1,y:0});assert.match(events.at(-1).data.text,/载具载荷已满/);assert.ok(discardLoad(g,{hull:0,id:'material:wood',count:4000}).ok);assert.equal(vehicleLoad(g).overloaded,false);g.progress.supplies.engineFaults[0]=100;updateLoadWarning(g,10,{x:1,y:0});assert.equal(events.length,1);
+ g.vehicle.active=true;g.progress.logistics.builds[0].wood=20000;assert.equal(movementLoadFactor(g),0);updateLoadWarning(g,.05,{x:1,y:0});assert.match(events.at(-1).data.text,/载具载荷已满/);assert.ok(discardLoad(g,{hull:0,id:'material:wood',count:20000}).ok);assert.equal(vehicleLoad(g).overloaded,false);g.progress.supplies.engineFaults[0]=100;updateLoadWarning(g,10,{x:1,y:0});assert.equal(events.length,1);
 });
 test('数量、当前装备、农具和重要物品受保护，远车与活动不能清理',()=>{
  const {g}=scene();g.progress.farm.inventory[0]=10;const before=structuredClone(g.progress);
@@ -48,7 +48,7 @@ test('丢弃武器不能挤掉满库弹药，停驻车辆清理同步车位弹�
 
 // 快捷方案只减去恢复移动所需的整数份，严格低于边界，不整包清空。
 test('自动清理优先木材并保留余量，达到上限也会减重',()=>{
- const {g}=scene();g.progress.logistics.bagWood=100;g.progress.farm.inventory[0]=10;const plan=planLoadCleanup(g);assert.equal(plan.ok,true);assert.equal(plan.changes.length,1);assert.equal(plan.changes[0].id,'material:wood');assert.ok(plan.changes[0].count<100);assert.ok(plan.after<plan.capacity);assert.ok(plan.after+.5>=plan.capacity);assert.equal(discardForMobility(g,plan).ok,true);assert.equal(g.progress.farm.inventory[0],10);assert.ok(movementLoadFactor(g)>0);
+ const {g}=scene();g.progress.logistics.bagWood=500;g.progress.farm.inventory[0]=10;const plan=planLoadCleanup(g);assert.equal(plan.ok,true);assert.equal(plan.changes.length,1);assert.equal(plan.changes[0].id,'material:wood');assert.ok(plan.changes[0].count<500);assert.ok(plan.after<plan.capacity);assert.ok(plan.after+.1>=plan.capacity);assert.equal(discardForMobility(g,plan).ok,true);assert.equal(g.progress.farm.inventory[0],10);assert.ok(movementLoadFactor(g)>0);
  const capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight;const exact=planLoadCleanup(g);assert.equal(exact.ok,true);assert.equal(exact.changes[0].count,1);}finally{LOAD_RULES.catCapacity=capacity;}
 });
 // 整车载荷包含随身背包，清理顺序跨来源优先木头，不误清其他载具。
@@ -57,7 +57,7 @@ test('车辆快捷清理包含背包，跨物品一次保存，失败完整保�
 });
 // 确认时仍验证库存及最终重量，不根据过期预览偷偷替换待丢弃物品。
 test('快捷清理拒绝过期方案、远处车辆和不足以移动的方案',()=>{
- const {g}=scene();assert.equal(planLoadCleanup(g).ok,false);g.progress.logistics.bagWood=100;const plan=planLoadCleanup(g);g.progress.logistics.bagWood=1;const before=structuredClone(g.progress);assert.equal(discardForMobility(g,plan).ok,false);assert.deepEqual(g.progress,before);g.progress.logistics.bagWood=100;const next=planLoadCleanup(g);g.progress.farm.inventory[0]=1000;const changed=structuredClone(g.progress);assert.equal(discardForMobility(g,next).ok,false);assert.deepEqual(g.progress,changed);assert.equal(planLoadCleanup(g,1).ok,false);
+ const {g}=scene();assert.equal(planLoadCleanup(g).ok,false);g.progress.logistics.bagWood=500;const plan=planLoadCleanup(g);g.progress.logistics.bagWood=1;const before=structuredClone(g.progress);assert.equal(discardForMobility(g,plan).ok,false);assert.deepEqual(g.progress,before);g.progress.logistics.bagWood=500;const next=planLoadCleanup(g);g.progress.farm.inventory[0]=1000;const changed=structuredClone(g.progress);assert.equal(discardForMobility(g,next).ok,false);assert.deepEqual(g.progress,changed);assert.equal(planLoadCleanup(g,1).ok,false);
  const capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=.01;const blocked=planLoadCleanup(g);assert.equal(blocked.ok,false);assert.equal(blocked.changes.length,0);assert.equal(g.progress.weapons[0],1);assert.equal(g.progress.weapons[1],1);}finally{LOAD_RULES.catCapacity=capacity;}
 });
 

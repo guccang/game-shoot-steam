@@ -1,6 +1,7 @@
 // 有限弹药回归：整轮正式怪物预算、真实携重、购买去向与换弹消耗共用运行配置。
 import {enterClearing} from './helpers/clearing-scene.mjs';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
+import {WOOD_ITEM} from '../src/config/wood-storage.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
@@ -46,7 +47,7 @@ test('批量购买按整包计价、车仓及小屋入库与保存失败保持�
  g.progress.logistics.bagWood=45;
  // 背包已满后弹药转入货舱，将车辆剩余载重压到半批弹药，验证货舱无法容纳整批时转入小屋。
  const load=vehicleLoad(g,1,{driver:true}),mass=AMMO_TYPES.light.mass*AMMO_TYPES.light.pack*20;
- g.progress.logistics.builds[1].wood=Math.floor((load.capacity-load.payload-mass/2)/.5);
+ g.progress.logistics.builds[1].wood=Math.floor((load.capacity-load.payload-mass/2)/WOOD_ITEM.mass);
  const before=structuredClone(g.progress),request={kind:'ammo',id:'light',target:'hand',batches:20};g.livingPersist=()=>false;assert.equal(tradeSupply(g,request).ok,false);assert.deepEqual(g.progress,before);assert.equal(tradeSupply(g,{...request,batches:21}).ok,false);
  g.livingPersist=()=>true;assert.ok(tradeSupply(g,request).ok);assert.equal(g.progress.warehouse.ammo.light,6000);
 });
