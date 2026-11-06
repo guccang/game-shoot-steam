@@ -2,7 +2,8 @@ import {createRenderCanvas,canvasRecoveryRevision} from './canvas-recovery.js';
 import { i18nText } from "../i18n/index.js";
 // 品种毛色作用于真实视频的逐帧像素，局部头部造型单独处理，保留腿部运动与围巾。
 import {drawPoliceOutfit} from './police-patrol.js';
-import { shapeCatFrame } from './cat-breed-shapes.js';
+import { catHeadLandmarks,shapeCatFrame } from './cat-breed-shapes.js';
+import {drawScarfBib,tintScarfKnot} from './cat-scarves.js';
 const PALETTES = {
   tabby: [190, 200, 201], point: [239, 221, 188],
   bicolor: [245, 240, 224], black: [83, 94, 101],
@@ -44,16 +45,16 @@ export function recolorCatFrame(pixels, size, coat) {
 // 最多缓存四十八个当前帧，各品种共用两张原图集，避免手机多解码四套完整图集。
 export class CatCoatFrames {
   // 原始帧工作区只分配一次，成品仍受统一四十八帧缓存限制。
-  constructor() { this.frames = new Map(); this.work = null; this.revision=canvasRecoveryRevision(); }
+  constructor() { this.frames = new Map(); this.work = null; this.heads = new WeakMap(); this.revision=canvasRecoveryRevision(); }
   // 释放失效帧和读回工作区；保留原始图集与角色动作，不制造空白的ready帧。
   clear() {
     for(const canvas of [...this.frames.values(),this.work])if(canvas){canvas.width=1;canvas.height=1;}
     this.frames.clear();this.work=null;this.revision=canvasRecoveryRevision();
   }
   // 按品种与源帧创建一次画布，重复绘制和静止状态不会重复处理像素。
-  get(image, manifest, frame, breed) {
+  get(image, manifest, frame, breed, separateEars = false) {
     if(this.revision!==canvasRecoveryRevision())this.clear();
-    const key = `${manifest.atlas}:${breed.id}:${frame}`;
+    const key = `${manifest.atlas}:${breed.id}:${frame}:${Number(separateEars)}`;
     if (this.frames.has(key)) {
       const cached = this.frames.get(key); this.frames.delete(key); this.frames.set(key, cached); return cached;
     }
@@ -65,10 +66,13 @@ export class CatCoatFrames {
     work.clearRect(0, 0, size, size);
     work.drawImage(image, frame % manifest.columns * size, Math.floor(frame / manifest.columns) * size, size, size, 0, 0, size, size);
     const data = work.getImageData(0, 0, size, size), source = data.data.slice();
+    const head=catHeadLandmarks(source,size);
     if (breed.coat) recolorCatFrame(data.data, size, breed.coat);
+    tintScarfKnot(data.data,source,size,head,breed);
     work.putImageData(data, 0, 0);
-    const head=shapeCatFrame(c, source, this.work, size, breed.id);
-    if(breed.id==='police')drawPoliceOutfit(c,head);
+    shapeCatFrame(c, source, this.work, size, breed.id, separateEars,head);
+    this.heads.set(canvas, head);
+    if(breed.id==='police'){drawPoliceOutfit(c,head);drawScarfBib(c,head,breed.id);}
     if (this.frames.size >= 48) {const key=this.frames.keys().next().value,old=this.frames.get(key);old.width=old.height=1;this.frames.delete(key);}
     this.frames.set(key, canvas); return canvas;
   }

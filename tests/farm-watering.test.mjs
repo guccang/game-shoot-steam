@@ -46,3 +46,19 @@ test('走近动作落水才修改单田，移动取消不加速，队列重复�
  updateFarmWork(g,.1,{x:1,y:0});assert.equal(g.farmWork.job,null);assert.equal(g.progress.farm.plots.filter(p=>p.watered).length,0);
  queueFarmWork(g,'water',{plot:1});for(let i=0;i<20;i++)updateFarmWork(g,.05,{x:0,y:0});assert.equal(g.progress.farm.plots.filter(p=>p.watered).length,1);assert.equal(g.farmSignals.filter(s=>s.action==='water').length,1);
 });
+
+test('矿石改造原子保存，旧档单格，改造后只浇右侧有效作物',async()=>{
+ const {upgradeWateringCan}=await import('../src/core/farm-production.js');
+ const g=scene();g.vehicle={active:false};delete g.progress.farm.doubleCan;
+ assert.equal(validateProgress(g.progress).farm.doubleCan,false);
+ assert.equal(upgradeWateringCan(g).ok,false);
+ g.progress.mining.ore=5;g.livingPersist=()=>false;
+ assert.equal(upgradeWateringCan(g).ok,false);assert.equal(g.progress.mining.ore,5);
+ g.livingPersist=()=>true;assert.ok(upgradeWateringCan(g).ok);
+ g.progress=validateProgress(structuredClone(g.progress));
+ assert.equal(g.progress.mining.ore,1);assert.equal(upgradeWateringCan(g).ok,false);
+ const r=farmAction(g,'water',{plot:1,now:10000});assert.deepEqual(r.wateredPlots.map(p=>p.id),[1,2]);
+ assert.equal(g.progress.farm.watered,2);
+ g.progress.farm.plots[2].readyAt=9000;
+ assert.deepEqual(farmWaterTargets(g.progress.farm,1,'forest',10000).map(p=>p.id),[1]);
+});

@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {NPC_DIALOGUES,SHOP_DIALOGUE_ALIASES} from '../src/config/npc-dialogue.js';
+import {NPC_DIALOGUES,SHOP_DIALOGUE_ALIASES,NPC_CHAT_COOLDOWN_MS} from '../src/config/npc-dialogue.js';
 import {MAINLINE_IDS,MAINLINE_NPCS} from '../src/config/mainline.js';
 import {RESIDENTS} from '../src/config/living-world.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
@@ -32,9 +32,9 @@ test('各现场入口均可交谈，且远程、错地图、错误房间、死�
 });
 test('三层按独立次数递进，同层轮完前不重复；不断重载不会丢失交情',()=>{
  const g=scene(),id='camp:oak';approach(g,id);const lines=[];
- for(let i=0;i<12;i++){const result=converseWithNpc(g,id,()=>.3);assert.ok(result.ok);assert.equal(result.stage,Math.min(2,Math.floor(i/3)));if(i)assert.notEqual(result.line.id,lines.at(-1));lines.push(result.line.id);g.progress=validateProgress(structuredClone(g.progress));}
- for(const start of [0,3,6,9])assert.equal(new Set(lines.slice(start,start+3)).size,3);
- assert.equal(g.progress.npcDialogue[id].count,12);assert.equal(g.progress.npcDialogue['camp:mint'],undefined);
+ for(let i=0;i<9;i++){const result=converseWithNpc(g,id,()=>.3);assert.ok(result.ok);assert.equal(result.stage,Math.min(2,Math.floor(i/3)));if(i)assert.notEqual(result.line.id,lines.at(-1));lines.push(result.line.id);g.progress=validateProgress(structuredClone(g.progress));}
+ assert.equal(new Set(lines).size,9);assert.equal(converseWithNpc(g,id).ended,true);
+ assert.equal(g.progress.npcDialogue[id].count,9);assert.equal(g.progress.npcDialogue['camp:mint'],undefined);
  const npc=NPC_DIALOGUES[id],record={count:0,seen:[],last:null};assert.notEqual(chooseNpcLine(npc,record,()=>0).line.id,chooseNpcLine(npc,record,()=>.99).line.id);
 });
 test('六位邻居第七次优先透露各自真实线索，不提前发线索、不发装备、不接任务',()=>{
@@ -54,7 +54,30 @@ test('厨房与哨站分享本人交情，青芽与薄荷的同名键不串档',
  approach(g,'camp:mint');converseWithNpc(g,'camp:mint');assert.equal(g.progress.npcDialogue['resident:mint'],undefined);
 });
 test('野外秘密仅解锁灰堆线索，实际物品与时段清空条件保留',()=>{
- for(const npc of CAMP_CHARACTERS){const g=scene(),id='wild:'+npc.id;approach(g,id);for(let i=0;i<6;i++){assert.ok(converseWithNpc(g,id).ok);assert.deepEqual(g.progress.monsterCamps.clues,[]);}assert.ok(converseWithNpc(g,id).ok);assert.deepEqual(g.progress.monsterCamps.clues,[npc.id]);assert.deepEqual(g.progress.monsterCamps.items,[]);}
+ for(const npc of CAMP_CHARACTERS){const g=scene(),id='wild:'+npc.id;approach(g,id);let now=1000;
+  for(let i=0;i<7;i++){let result=converseWithNpc(g,id,()=>.3,now);if(result.ended){now+=NPC_CHAT_COOLDOWN_MS;result=converseWithNpc(g,id,()=>.3,now);}assert.ok(result.ok&&!result.ended);if(i<6)assert.deepEqual(g.progress.monsterCamps.clues,[]);}
+  assert.deepEqual(g.progress.monsterCamps.clues,[npc.id]);assert.deepEqual(g.progress.monsterCamps.items,[]);
+ }
+});
+test('柜台短对白读完即道别，冷却跨读档保留、不会续期或增加次数，期满重新开聊',()=>{
+ const g=scene(),id='shop:weapons',now=1000;approach(g,id);let saves=0;g.livingPersist=()=>{saves++;return true;};
+ const first=converseWithNpc(g,id,()=>0,now),second=converseWithNpc(g,id,()=>0,now);assert.notEqual(first.line.id,second.line.id);
+ const end=converseWithNpc(g,id,()=>0,now);assert.ok(end.ended&&end.message.includes('过会儿'));assert.equal(end.line,undefined);assert.equal(saves,3);
+ const before=structuredClone(g.progress);g.progress=validateProgress(structuredClone(g.progress));
+ for(const time of [now,now+1,now+NPC_CHAT_COOLDOWN_MS-1])assert.equal(converseWithNpc(g,id,()=>0,time).ended,true);
+ assert.deepEqual(g.progress,before);assert.equal(saves,3);assert.equal(g.progress.npcDialogue[id].count,2);
+ const resumed=converseWithNpc(g,id,()=>0,now+NPC_CHAT_COOLDOWN_MS);assert.ok(resumed.line&&!resumed.ended);assert.notEqual(resumed.line.id,second.line.id);assert.equal(resumed.count,3);assert.equal(g.progress.npcDialogue[id].resumeAt,undefined);
+ assert.equal(converseWithNpc(g,id,()=>0,now+NPC_CHAT_COOLDOWN_MS).stage,1);
+});
+test('收尾保存失败可重试，冷却只影响同一人，室内外身份共享休息时间',()=>{
+ const g=scene(),id='resident:cook';approach(g,id);for(let i=0;i<9;i++)converseWithNpc(g,id,()=>0,1000);const before=structuredClone(g.progress);
+ g.livingPersist=()=>false;assert.equal(converseWithNpc(g,id,()=>0,1000).ok,false);assert.deepEqual(g.progress,before);
+ g.livingPersist=()=>true;assert.equal(converseWithNpc(g,id,()=>0,1000).ended,true);approach(g,'shop:kitchen');assert.equal(converseWithNpc(g,'shop:kitchen',()=>0,1001).ended,true);
+ approach(g,'camp:oak');assert.ok(converseWithNpc(g,'camp:oak',()=>0,1001).line);
+});
+test('冷却记录丢弃无效时间，保留合法结束时间和未读内容',()=>{
+ for(const resumeAt of [NaN,Infinity,-1,0,'300000',1.2])assert.equal(normalizeNpcDialogue({'camp:oak':{count:1,seen:['0-0'],last:'0-0',resumeAt}})['camp:oak'].resumeAt,undefined);
+ assert.equal(normalizeNpcDialogue({'camp:oak':{count:1,seen:['0-0'],last:'0-0',resumeAt:301000}})['camp:oak'].resumeAt,301000);
 });
 test('校验丢弃伪造人物、无效计数与越层对白，保留有效记录',()=>{
  const p=normalizeNpcDialogue({'unknown':{count:99},'camp:oak':{count:1,seen:['0-0','0-0','2-0','fake'],last:'2-0'},'resident:owl':{count:Infinity}});assert.deepEqual(p,{'camp:oak':{count:1,seen:['0-0'],last:null}});

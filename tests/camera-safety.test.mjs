@@ -17,11 +17,11 @@ test('采集锁定与预览不输出镜头注视点，怪物死亡的同帧也�
     assert.ok(sniperGuide(g).focus, '怪物仍支持中点镜头');
     g.enemies[0].hp = 0;
     const guide = sniperGuide(g);
-    assert.equal(guide.target.type, 'tree');
+    assert.equal(guide.target, null);
     assert.equal(guide.focus, null, '旧战斗锁定尚未更新时，树木也不能输出焦点');
-    assert.ok(guide.hits.length > 0, '保留采集穿透预览');
+    assert.equal(guide.hits.length,0);
     updateAimLock(g);
-    assert.equal(g.aimLock.focus, null);
+    assert.equal(g.aimLock,null);
     g.trees[0].hp = 0;
     assert.equal(sniperGuide(g).focus, null);
   }
@@ -41,7 +41,7 @@ test('镜头拒绝树木、空目标和死亡目标携带的历史注视点', ()
   assert.ok(combat.x > baseline.x, '存活领主仍可驱动战斗镜头');
 });
 
-test('连续跨方向伐木、换弹和空目标期间，狙击与脉冲只跟随玩家真实位移', () => {
+test('连续经过不同方向树木期间，狙击与脉冲只跟随玩家真实位移', () => {
   for (const weapon of [8, 9]) {
     const g = new Game(freshProgress(), () => 0.5);
     g.progress.weapon = weapon;
@@ -76,8 +76,8 @@ test('连续跨方向伐木、换弹和空目标期间，狙击与脉冲只跟�
       assert.ok(Math.abs(view.y + view.h / 2 - g.player.y - 30) < 1e-7);
       assertVisible(g.player, view);
     }
-    assert.ok(shots >= 3 && targets.size >= 3 && reload, '必须实际经历攻击、多个目标和换弹');
-    assert.ok(g.stumps.length > 0, '必须实际击碎树木');
+    assert.equal(shots,0);assert.equal(targets.size,0);assert.equal(reload,false);
+    assert.equal(g.stumps.length,0);
   }
 });
 
@@ -157,8 +157,8 @@ test('狙击和脉冲真实攻击、走位、反冲与装填全程保持可见',
         {
           id: 800,
           type: 'enemy',
-          x: 1450,
-          y: 700,
+          x: g.player.x+400,
+          y: g.player.y,
           hp: 100000,
           maxHp: 100000,
           radius: 17,
@@ -166,7 +166,7 @@ test('狙击和脉冲真实攻击、走位、反冲与装填全程保持可见',
           speed: 0,
         },
       ];
-      g.magazines[weapon].ammo = 1;
+      Object.assign(g.magazines[weapon],{ammo:1,remaining:0});
       const camera = new CombatCamera();
       let shots = 0,
         reloading = false;
@@ -194,8 +194,8 @@ test('树木保持角色跟随，不缩短远程弹道；怪物仍使用安全�
     g.addTree(1550, 700);
     updateAimLock(g);
     const guide = sniperGuide(g);
-    assert.equal(guide.target.type, 'tree');
-    assert.ok(guide.hits.length > 0);
+    assert.equal(guide.target, null);
+    assert.equal(guide.hits.length,0);
     assert.equal(guide.range, WEAPONS[weapon].range);
     const camera = new CombatCamera(),
       baseline = new CombatCamera().update(g.player, 390, 844, { kind: WEAPONS[weapon].id });
@@ -203,7 +203,9 @@ test('树木保持角色跟随，不缩短远程弹道；怪物仍使用安全�
     g.enemies = [{ id: 900, type: 'enemy', x: 1000, y: 700, hp: 2000, radius: 17 }];
     updateAimLock(g);
     const combat = new CombatCamera().update(g.player, 390, 844, sniperGuide(g), 0);
-    assert.equal(combat.x + combat.w / 2, weapon === 8 ? 900 : 950, '仅脉冲保留中点');
+    const center=combat.x+combat.w/2;
+    if(weapon===8)assert.equal(center,g.player.x);
+    else assert.ok(center>g.player.x&&center<=(g.player.x+g.enemies[0].x)/2,'脉冲镜头向目标移动并保留安全边距');
     const returning = new CombatCamera();
     returning.update(g.player, 390, 844, sniperGuide(g), 0);
     for (let i = 1; i <= 360; i++) returning.update(g.player, 390, 844, guide, i / 60);

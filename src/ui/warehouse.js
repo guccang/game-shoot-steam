@@ -1,3 +1,5 @@
+import {deliveryRows} from './shop-deliveries.js';
+import {collectShopStock} from '../core/shop-delivery.js';
 // 小屋仓库双库存格子，拖拽提出存取请求，滑条确认后交给正式仓库事务。
 import {canUseWarehouse,warehouseVehicles,warehouseRows,warehouseTransferPreview,transferWarehouse} from '../core/warehouse.js';
 import {catLoad,vehicleLoad} from '../progression/load-weight.js';
@@ -27,10 +29,12 @@ export function createWarehouse({game,root,dialogs,onChange}){
   panel.querySelector('.warehouse-hint').textContent=category==='currency'?'金币与顶部钱包为同一余额，支付时直接扣除':'拖动图标到另一侧存取，也可点选';
   drag.cancel();const cars=warehouseVehicles(game);if(source!=='bag'&&!cars.includes(source))source='bag';
   get('source').innerHTML='<option value="bag">猫猫背包</option>'+cars.map(i=>`<option value="${i}">${COLLECTED_VEHICLES[i].name}货舱</option>`).join('');get('source').value=String(source);
-  const load=source==='bag'?catLoad(game):vehicleLoad(game,source,{driver:true});get('load').textContent=`${source==='bag'?'背包负重':'载具负重（含驾驶员）'} ${(load.weight??load.payload).toFixed(2)} / ${load.capacity.toFixed(2)} 千克`;
+  const load=source==='bag'?catLoad(game):vehicleLoad(game,source,{driver:true});get('load').textContent=`${source==='bag'?'背包负重':'车辆载荷'} ${(load.weight??load.payload).toFixed(2)} / ${load.capacity.toFixed(2)} 千克`;
   panel.querySelector('nav').innerHTML=[['all','全部'],['currency','金币'],['material','木材'],['weapon','武器'],['ammo','弹药'],['seed','种子']].map(([key,name])=>`<button class="ui-button" data-category="${key}" aria-pressed="${category===key}">${name}</button>`).join('');
   get('carried-title').textContent=source==='bag'?'猫猫背包':'载具货舱';get('message').textContent=message||(source!=='bag'?'种子请切换到猫猫背包存取。':'');
   renderStore(warehouseRows(game,source),'deposit');renderStore(warehouseRows(game,'bag'),'withdraw');
+  panel.querySelector('[data-shop-stock]')?.remove();
+  const stock=deliveryRows(game.progress,'home');if(stock)panel.querySelector('.ui-panel__body').insertAdjacentHTML('beforeend','<div data-shop-stock>'+stock+'</div>');
   paintInventoryIcons(panel,game.progress);
  }
  // 拖放和键盘点选共用同一确认流程，先选择数量，取消不扣物品。
@@ -40,7 +44,7 @@ export function createWarehouse({game,root,dialogs,onChange}){
  // 实时预览满载风险，确认按钮的明确文案表示玩家选择继续取出。
  function preview(){if(!selection)return;const p=warehouseTransferPreview(game,selection.source,selection.id,selection.count,selection.direction);get('count').textContent=selection.count;get('preview').textContent=p.ok?`操作后负重 ${p.weight.toFixed(2)} / ${p.capacity.toFixed(2)} 千克。${p.needsConfirmation?'载荷已满，'+(selection.source==='bag'?'猫猫只能缓慢行走。':'载具将无法行驶。')+'可减少数量，或确认继续取出。':''}`:p.message;const confirm=quantity.querySelector('[data-confirm]');confirm.disabled=!p.ok;confirm.textContent=p.needsConfirmation?'仍要取出':selection.direction==='deposit'?'确认存入':'确认取出';}
  scope.on(get('source'),'change',()=>{source=get('source').value==='bag'?'bag':Number(get('source').value);message='';render();});
- scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-close'))return dialogs.close(panel.id);if(b.hasAttribute('data-warehouse-currency')){message='金币 '+game.progress.coins+' 枚 · 与顶部钱包为同一余额，购买、修理与升级直接扣除，无需取出。';get('message').textContent=message;return;}if(b.dataset.category){category=b.dataset.category;render();}else if(b.dataset.item)choose(b.dataset.item,b.dataset.direction);});
+ scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.collectGood){message=collectShopStock(game,'home',b.dataset.collectGood).message;render();onChange();return;}if(b.hasAttribute('data-close'))return dialogs.close(panel.id);if(b.hasAttribute('data-warehouse-currency')){message='金币 '+game.progress.coins+' 枚 · 与顶部钱包为同一余额，购买、修理与升级直接扣除，无需取出。';get('message').textContent=message;return;}if(b.dataset.category){category=b.dataset.category;render();}else if(b.dataset.item)choose(b.dataset.item,b.dataset.direction);});
  scope.on(quantity,'input',e=>{if(e.target.id==='warehouse-range'&&selection){selection.count=Number(e.target.value);preview();}});
  scope.on(quantity,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-cancel'))return dialogs.close(quantity.id);if(!selection)return;if(b.dataset.amount){selection.count=Number(b.dataset.amount);get('range').value=selection.count;preview();}else if(b.hasAttribute('data-confirm')){const r=transferWarehouse(game,selection.source,selection.id,selection.count,selection.direction,true);message=r.message;selection=null;dialogs.close(quantity.id);render();onChange();}});
  scope.on(quantity,'close',()=>{if(!quantity.open)selection=null;});

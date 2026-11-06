@@ -1,3 +1,4 @@
+import {ERA_RESOURCES,eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 import {createChallengeCatalog} from './challenge-catalog.js';
 import { challengeLevelMarkup } from './challenge-feedback.js';
 import {combatHudVisible} from './task-combat-layout.js';
@@ -6,7 +7,7 @@ import {compactResource} from './resource-number.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 // 工坊需求、材料背包和战场追踪共用展示模块，不自行扣除材料。
 import { MATERIALS, MATERIAL_KEYS } from '../config/materials.js';
-import { equipmentRecipe, equipmentRequirements, canPurchaseEquipment, trackEquipment,
+import { eraCraftReason,equipmentRecipe, equipmentRequirements, canPurchaseEquipment, trackEquipment,
   ownsEquipment } from '../progression/equipment-goals.js';
 import { createEventScope } from '../platform/events.js';
 import {storyEquipmentSource} from '../progression/story-rewards.js';
@@ -14,7 +15,7 @@ import {equipmentQuestReason} from '../progression/equipment-quests.js';
 import {mainlinePurchaseReason} from '../config/mainline-gates.js';
 import { resourceIcon, resourceButton, resourceName } from '../rendering/resource-icons.js';
 
-const RESOURCE_SOURCES = { coins: '种田是主要金币来源。菜单点击种地，用锄头开田，播种成熟后挥镰收割，金币直接到账。任务和玩法奖励照常；怪物与领主不掉金币。', wood: i18nText("ui.equipment-goals.2be74c2a25") };
+const RESOURCE_SOURCES = { ...Object.fromEntries(Object.entries(ERA_RESOURCES).map(([key,r])=>[key,r.source])), coins: '种田是主要金币来源。菜单点击种地，用锄头开田，播种成熟后挥镰收割，金币直接到账。任务和玩法奖励照常；怪物与领主不掉金币。', wood: i18nText("ui.equipment-goals.2be74c2a25") };
 
 // 卡片给出已有、所需、缺口和来源；按钮只切换追踪，不自动购买。
 export function requirementsMarkup(progress, kind, index) {
@@ -27,6 +28,7 @@ export function requirementsMarkup(progress, kind, index) {
     ${storyEquipmentSource(progress,kind,index)?`<p class="story-source">${storyEquipmentSource(progress,kind,index)}</p>`:''}
     ${mainlinePurchaseReason(progress,kind,index)?`<p class="story-source">${mainlinePurchaseReason(progress,kind,index)}</p>`:''}
     ${equipmentQuestReason(progress,kind,index)?`<p class="story-source">${equipmentQuestReason(progress,kind,index)}</p>`:''}${challengeLevelMarkup(progress)}
+    ${kind==='vehicle'&&eraDonor(eraVehicle(index))?`<p>原车：${eraDonor(eraVehicle(index)).name}。请先停车下车，改造会继承货物和车位。</p>`:''}
     <div class="requirement-grid">${rows.map(row =>
       `<div class="requirement-row ${row.missing ? '' : 'met'}">${resourceButton(row.key)}<b>${row.have.toLocaleString()} / ${row.need.toLocaleString()}</b><small>${row.missing ? i18nText("ui.equipment-goals.849af1c7d1", { p0: (row.missing.toLocaleString()) }) : i18nText("ui.equipment-goals.f90a2eaac0")}</small></div>`).join('')}</div>
     <small class="resource-tap-hint">点击资源图标查看获取方式</small>
@@ -67,11 +69,12 @@ export function createEquipmentGoals({ game, root, dialogs, onChange }) {
     const clearing=clearingCombatActive(game);
     pill.hidden = !!game.campDefense || !active || !!game.realm || combatHudVisible(root)&&!clearing || !!game.story || game.state!=='playing' || !!root.querySelector('dialog[open]');
     if(pill.classList.contains('clearing-material-goal')!==clearing)pill.classList.toggle('clearing-material-goal',clearing);
-    const key = JSON.stringify([p.materials, goal, p.coins, p.wood, p.bosses, p.campLevel?.xp, !!owned, !!game.realm, clearing]);
+    const blocker=goal&&(eraCraftReason(p,goal.kind,goal.index)||equipmentQuestReason(p,goal.kind,goal.index));
+    const key = JSON.stringify([p.materials, blocker, goal, p.coins, p.wood, p.bosses, p.campLevel?.xp, !!owned, !!game.realm, clearing]);
     if (key === signature) return;
     signature = key;
     for (const node of root.querySelectorAll('[data-material-wallet]')) {
-      node.innerHTML = MATERIAL_KEYS.map(key =>
+      node.innerHTML = [...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES).filter(k=>p.materials[k]>0)].map(key =>
         `<span>${resourceButton(key)}<b>${p.materials[key].toLocaleString()}</b></span>`).join('');
     }
     for(const node of root.querySelectorAll('[data-challenge-level]'))node.innerHTML=challengeLevelMarkup(p);
@@ -83,9 +86,9 @@ export function createEquipmentGoals({ game, root, dialogs, onChange }) {
     const ready = canPurchaseEquipment(p, goal.kind, goal.index),
       missing = equipmentRequirements(p, goal.kind, goal.index).find(row => row.missing);
     pill.innerHTML = ready ? i18nText("ui.equipment-goals.c9feff255a", { p0: (recipe.name) }) :
-      `<span>◎ ${recipe.name}</span><span class="goal-shortage">${i18nHtml("ui.equipment-goals.45ac20c7c8", { p0: (resourceIcon(missing.key)), p1: (missing.missing) })}</span>`;
+      !missing ? (blocker||'材料已备齐') : `<span>◎ ${recipe.name}</span><span class="goal-shortage">${i18nHtml("ui.equipment-goals.45ac20c7c8", { p0: (resourceIcon(missing.key)), p1: (missing.missing) })}</span>`;
     pill.setAttribute('aria-label', ready ? i18nText("ui.equipment-goals.295e21ddfd", { p0: (recipe.name) }) :
-      i18nText("ui.equipment-goals.e5543dfd1c", { p0: (recipe.name), p1: (resourceName(missing.key)), p2: (missing.missing) }));
+      !missing ? (blocker||'材料已备齐') : i18nText("ui.equipment-goals.e5543dfd1c", { p0: (recipe.name), p1: (resourceName(missing.key)), p2: (missing.missing) }));
     // 清缴追踪仅保留仍有缺口的资源；全部备齐时用短提示代替已完成材料列表。
     if(clearing){
       const rows=equipmentRequirements(p,goal.kind,goal.index).filter(row=>row.missing>0);

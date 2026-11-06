@@ -1,3 +1,4 @@
+import {weaponTerrainTargets} from './terrain-targets.js';
 import {statisticsSource} from './statistics-source.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 榴弹的交火计时、抛物线与范围伤害，独立于界面与 Canvas。
@@ -62,7 +63,7 @@ export function explodeGrenade(game, grenade) {
   if (grenade.exploded) return;
   grenade.exploded = true;
   grenade.remaining = 0;
-  const targets = [...game.trees, ...game.enemies, ...(game.boss ? [game.boss] : [])];
+  const targets = [...weaponTerrainTargets(game), ...game.enemies, ...(game.boss ? [game.boss] : [])];
   for (const target of targets) {
     if (target.hp <= 0) continue;
     const center = nearest(hitCenter(target), grenade);

@@ -2,7 +2,8 @@ import { HELP_EMBLEM } from './help-emblem.js';
 import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
 import {BUILDING_ENTRIES} from '../config/building-entries.js';
 // 门口交互、单行怪潮进度、救场气泡与统一结算，UI 不直接更改成绩和钱包。
-import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade} from '../config/camp-defense.js';
+import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward} from '../config/camp-defense.js';
+import {resourceName} from '../rendering/resource-icons.js';
 import {startCampDefense,canStartCampDefense,spawnCampBoss,claimCampDefense,leaveCampDefense} from '../core/camp-defense.js';
 import {campDefenseObjects} from '../rendering/camp-defense.js';
 import {drawBossIcon} from '../rendering/enemies.js';
@@ -26,7 +27,7 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
   '<div class="camp-wave-status"><span class="camp-wave-orbit" data-camp-wave="1"><b class="camp-wave-number">1</b><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="camp-ring-track" cx="18" cy="18" r="16"/><circle class="camp-ring-track" cx="18" cy="18" r="11.5"/><circle class="camp-ring-time" cx="18" cy="18" r="16" pathLength="100"/><circle class="camp-ring-kills" cx="18" cy="18" r="11.5" pathLength="100"/></svg></span><span class="camp-wave-total" aria-hidden="true">/10</span><span class="camp-time-progress camp-ring-accessible" role="progressbar" aria-label="开波等待进度" aria-valuemin="0" aria-valuemax="100"></span><span class="camp-kill-progress camp-ring-accessible" role="progressbar" aria-label="本波清怪进度" aria-valuemin="0"></span></div>'+
   '<button id="camp-help" aria-label="守门详情">'+HELP_EMBLEM+'</button>';frame.append(hud);
  // 复用正式领主头像，屏幕画布 44 像素；保持 HP、头像、进度、详情的阅读顺序。
- drawBossIcon(hud.querySelector('#camp-boss canvas'),'boar');
+ drawBossIcon(hud.querySelector('#camp-boss canvas'),CAMP_DEFENSE.boss.kind,true);
  hud.querySelector('.camp-wave-orbit').setAttribute('role','img');
  dialog.id='camp-defense-dialog';dialog.className='camp-defense-dialog';dialog.innerHTML='<header><h2 id="camp-defense-title">怪潮来临</h2><button id="camp-close" aria-label="关闭守门面板">×</button></header><div id="camp-content"></div><p id="camp-error" role="status"></p><button id="camp-primary" class="primary">开始守门</button><p id="camp-leave-note" hidden>退出将放弃本轮未结算奖励，返回入场前的位置。</p><button id="camp-leave" hidden>退出娱乐</button>';root.body.append(dialog);
  const speech=createCompactSpeech(root,'camp-rescue-speech');
@@ -34,14 +35,18 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
  // 只显示当前行动及三档所得，详细规则折叠，不以长文替代现场选择。
  function renderDialog(){const r=game.campDefense;let html='';
   $('camp-defense-title').textContent=r?.phase==='result'?'营地守住了 · '+campDefenseGrade(r):r?'怪潮守门 · '+r.gate.name:'怪潮来临';
-  if(!r){html='<div class="camp-gates">'+CAMP_GATES.map(g=>`<button data-select-gate="${g.id}" aria-pressed="${selected.id===g.id}">${g.name}</button>`).join('')+'</div><p>守住拒马，迎战 10 波与领主。</p><p>伙伴随时接应，每次都有结算奖励。</p>';}
-  else if(r.phase==='result'){const grade=campDefenseGrade(r),reward=CAMP_DEFENSE.grades[grade];html=`<strong class="camp-grade">${grade}</strong><p>${r.reason?'伙伴已击退怪潮，谢谢你守住这段时间。':CAMP_DEFENSE.lines.victory}</p><p>守住 ${r.cleared} / 10 波 · 击败 ${r.kills} 只 · 拒马 ${Math.ceil(r.gateHp/CAMP_DEFENSE.gateHp*100)}%</p><div class="camp-rewards"><b>金币 +${reward.coins}</b><b>木材 +${reward.wood}</b><b>零件 +${reward.parts}</b></div>`;}
+  if(!r){html='<div class="camp-gates">'+CAMP_GATES.map(g=>`<button data-select-gate="${g.id}" aria-pressed="${selected.id===g.id}">${g.name}</button>`).join('')+'</div><p>守住十波，迎战巨型史莱姆「藏金团山」。击破它可获得金币和材料。</p><p>伙伴随时接应，每次都有结算奖励。</p>';}
+  else if(r.phase==='result'){
+   const grade=campDefenseGrade(r),reward=campDefenseReward(r);
+   const items=Object.entries(reward).map(([key,amount])=>`<b>${resourceName(key)} +${amount}</b>`).join('');
+   html=`<strong class="camp-grade">${grade}</strong><p>${r.reason?'伙伴已击退怪潮，谢谢你守住这段时间。':'藏金团山被击破了！战利品已收齐。'}</p><p>守住 ${r.cleared} / 10 波 · 击败 ${r.kills} 只 · 拒马 ${Math.ceil(r.gateHp/CAMP_DEFENSE.gateHp*100)}%</p><div class="camp-rewards">${items}</div>`;
+  }
   else html=`<p>第 ${r.wave} 波 · ${r.waveKills} / ${CAMP_DEFENSE.waves[r.wave-1].count}</p><p>拒马 ${Math.ceil(r.gateHp)} / ${CAMP_DEFENSE.gateHp}</p>${r.phase==='rescue'?'<p>'+r.helpers.map(h=>`${h.spec.name}：${COLLECTED_VEHICLES[h.spec.vehicle].name} + ${WEAPONS[h.spec.weapon].name}`).join('<br>')+'</p>':''}`;
   // 场次读取已保存的开场快照，领奖前不提前增加次数。
   html=(r?`<p>第 ${r.rounds+1} 次兽潮 · 已完成 ${game.progress.campDefense.runs} 次</p>`:`<p>已完成 ${game.progress.campDefense.runs} 次兽潮 · 下一次为第 ${game.progress.campDefense.runs+1} 次</p>`)+html;
   html+='<p class="camp-ring-key">波次数字外圈：金色表示开波等待进度，绿色内圈表示本波清怪进度。</p><details><summary>评分与奖励</summary><p>S：守住十波与领主，拒马至少剩一半。A：完成防守，或守住六波后获救。B：其余守门表现。救场击杀不计成绩。</p>'+Object.entries(CAMP_DEFENSE.grades).map(([grade,r])=>`<p>${grade} · 金币 ${r.coins} / 木材 ${r.wood} / 零件 ${r.parts}</p>`).join('')+'</details>';
   const blocked=!r&&worldDistance(game.player,selected)<=160&&!canStartCampDefense(game,selected);
-  const canLeave=!!r&&r.phase!=='result';$('camp-leave').hidden=!canLeave;$('camp-leave-note').hidden=!canLeave;
+  const canLeave=!!r&&r.phase!=='result'&&r.phase!=='spoils';$('camp-leave').hidden=!canLeave;$('camp-leave-note').hidden=!canLeave;
   $('camp-content').innerHTML=html;$('camp-error').textContent=r?.error||(blocked?'先完成当前清缴或活动，再来守门。':'');$('camp-primary').disabled=blocked;$('camp-primary').textContent=!r?(blocked?'当前活动进行中':canStartCampDefense(game,selected)?'开始守门':'前往'+selected.name):r.phase==='result'?'领取奖励，回到营地':'继续守门';
  }
  // 远处点盾牌只规划到候停点，现场点击仍可立即打开。

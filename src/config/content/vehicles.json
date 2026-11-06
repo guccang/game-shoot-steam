@@ -66,6 +66,78 @@
       "baseHp": 920,
       "hpGrowth": 120,
       "speed": 0.9
+    },
+    {
+      "id": "wood-barrow",
+      "baseHp": 89,
+      "hpGrowth": 9,
+      "speed": 0.88
+    },
+    {
+      "id": "copper-barrow",
+      "baseHp": 98,
+      "hpGrowth": 10,
+      "speed": 0.95
+    },
+    {
+      "id": "wood-wagon",
+      "baseHp": 116,
+      "hpGrowth": 11,
+      "speed": 1.12
+    },
+    {
+      "id": "copper-wagon",
+      "baseHp": 144,
+      "hpGrowth": 13,
+      "speed": 1.18
+    },
+    {
+      "id": "steam-freighter",
+      "baseHp": 190,
+      "hpGrowth": 16,
+      "speed": 1.21
+    },
+    {
+      "id": "combustion-freighter",
+      "baseHp": 259,
+      "hpGrowth": 20,
+      "speed": 1.38
+    },
+    {
+      "id": "electric-freighter",
+      "baseHp": 305,
+      "hpGrowth": 23,
+      "speed": 1.46
+    },
+    {
+      "id": "gravity-freighter",
+      "baseHp": 443,
+      "hpGrowth": 32,
+      "speed": 1.52
+    },
+    {
+      "id": "wood-bicycle",
+      "baseHp": 77,
+      "hpGrowth": 8,
+      "speed": 1.12
+    },
+    {
+      "id": "copper-bicycle",
+      "baseHp": 80,
+      "hpGrowth": 8,
+      "speed": 1.24
+    },
+    {
+      "id": "iron-bicycle",
+      "baseHp": 83,
+      "hpGrowth": 9,
+      "speed": 1.38
+    },
+    {
+      "id": "assist-bicycle",
+      "baseHp": 87,
+      "hpGrowth": 9,
+      "speed": 1.56
     }
   ]
 }

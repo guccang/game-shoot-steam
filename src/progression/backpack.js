@@ -1,3 +1,4 @@
+import {FORAGE_ID} from '../config/pasture.js';
 import {outdoorInventory} from './outdoors.js';
 import {carriedWeapon} from './weapon-storage.js';
 // 背包按真实持有数量聚合；载具货舱、工坊主炮和已入库建材不混入随身库存。
@@ -11,11 +12,12 @@ import {ownsKeepsake} from './keepsakes.js';
 import {finiteSupply} from '../combat/supply-ammo.js';
 // 武器等级不是物品数量；已装填子弹和备用弹药各计一次，临时活动读永久弹匣快照。
 export function backpackEntries(game){
- const p=game.progress,entries=[],loaded={},mags=finiteSupply(game)?game.magazines:p.supplies?.handMags;let magazineCount=0;
+ const p=game.progress,entries=[],loaded={},mags=(finiteSupply(game)?game.magazines:null)??p.supplies?.handMags;let magazineCount=0;
  // 空数量不占格，所有展示重量均由物品表得出。
  function add(id,count,note=''){const item=ITEM_TABLE[id];if(item&&count>0)entries.push({...item,count,weight:Math.round(item.mass*count*1e6)/1e6,note});}
  add('facility:sprinkler',p.production?.sprinklerInventory||0,'可重新放置');
  if(p.treasure?.detector)add('metal-detector',1,'永久工具');
+ add(FORAGE_ID,p.farm?.forage||0);
  add('material:wood',p.logistics?.bagWood||0,'未入库');
  for(const key of Object.keys(p.supplies?.items||{}))add('supply:'+key,p.supplies.items[key]);
  WEAPONS.forEach((w,i)=>{if(!carriedWeapon(p,i))return;add('weapon:'+i,1,i===p.weapon?'当前装备':'随身携带');const key=ammoKind(w);if(key){magazineCount++;loaded[key]=(loaded[key]||0)+Math.max(0,mags?.[i]?.ammo||0);}});

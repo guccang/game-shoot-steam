@@ -13,6 +13,7 @@ export const TOWN_LAYOUT = {
   bounds: {left:-480,right:1090,top:110,bottom:1400},
   weapons: {x:350,y:570,width:150,height:135,scale:.95},
   garage: {x:350,y:990,width:220,height:175},
+  outdoor: {x:-140,y:300,width:220,height:175},
   ammo: {x:-140,y:570,width:220,height:175},
   repair: {x:-140,y:930,width:220,height:175},
   cottage: {x:850,y:300},
@@ -35,6 +36,7 @@ for(const [id,p] of Object.entries(TOWN_LAYOUT))TOWN_LAYOUT[id]=id==='bounds'?{.
 export const TOWN_PATHS = [
   // 建筑公司支路连接小屋院前，不占用原停车位。
   [{x:1015,y:560},{x:1050,y:560},{x:1050,y:729}],
+  [{x:-140,y:365},{x:-340,y:365},{x:-340,y:729}],
   [{x:585,y:365},{x:677,y:365}],
   [{x:-140,y:635},{x:-340,y:635},{x:-340,y:729}],
   [{x:580,y:840},{x:690,y:840}],

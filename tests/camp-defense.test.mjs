@@ -7,10 +7,24 @@ import {startCampDefense,updateCampDefense,rescueCampDefense,hurtCampBarricade,s
 import {capturePatrol} from '../src/core/patrol-session.js';
 import {livingProtected,livingWaveAllowed} from '../src/core/living-safety.js';
 import {updateEnemies} from '../src/core/enemy-manager.js';
+import {updateBossHazards} from '../src/combat/bosses.js';
 // 使用正式 Game，只有入场位置与已拥有装备作为检查点。
-function setup(){const g=new Game(freshProgress(),()=>.41);g.state='playing';Object.assign(g.player,{x:120,y:729});g.mainlineTalkDelay=999;return g;}
+function setup(){const p=freshProgress();p.restoration.repaired.push('defense');const g=new Game(p,()=>.41);g.state='playing';Object.assign(g.player,CAMP_GATES.find(gate=>gate.id==='left'));g.mainlineTalkDelay=999;return g;}
 // 测试用秒表仍使用正式游戏步长，不直接替换命中或救场实现。
 function advance(g,seconds){for(let t=0;t<seconds&&g.state==='playing';t+=.05)g.update(.05);}
+
+test('巨物重砸落点先预警，拒马与圈内角色各承伤一次，离开落点可躲避',()=>{
+ for(const inside of [true,false]){
+  const g=setup();startCampDefense(g,'left');
+  const r=g.campDefense;r.phase='boss-ready';spawnCampBoss(g);
+  const h={kind:'slam',family:'dumpling',owner:g.boss.id,x:r.barrier.x-90,y:r.barrier.y,radius:136,damage:32,color:'#90a875',age:0,warmup:.3,duration:.5};
+  g.hazards=[h];g.player.x=h.x+(inside?0:180);g.player.y=h.y;g.player.invincible=0;
+  const hp=g.player.hp;
+  updateBossHazards(g,.2);assert.equal(g.player.hp,hp);assert.equal(r.gateHp,1500);
+  updateBossHazards(g,.12);assert.equal(g.player.hp<hp,inside);assert.equal(r.gateHp,1468);
+  const after=g.player.hp;updateBossHazards(g,.1);assert.equal(g.player.hp,after);assert.equal(r.gateHp,1468);
+ }
+});
 
 test('两座开阔营门各自入场，远程与其他活动拒绝，普通清缴不会启动',()=>{
  for(const gate of CAMP_GATES){const g=setup();Object.assign(g.player,{x:gate.x,y:gate.y});assert.ok(startCampDefense(g,gate.id));assert.equal(g.campDefense.gateId,gate.id);assert.equal(livingProtected(g),false);assert.equal(livingWaveAllowed(g),false);assert.equal(g.enterRealm('guardian'),false);assert.equal(g.enterStory('sunleaf-01'),false);assert.equal(startCampDefense(g,gate.id),false);}
@@ -27,9 +41,9 @@ test('固定十波后自动开启 Boss，击杀只记本局，S 资源一次领�
    updateCampDefense(g,.2);for(const e of g.enemies)if(e.hp>0)g.hit(e,100000);g.enemies=g.enemies.filter(e=>e.hp>0);
   }assert.equal(r.cleared,wave);
  }
- assert.equal(r.phase,'boss');assert.ok(g.boss);assert.equal(g.progress.coins,before.coins);assert.equal(g.progress.bosses,before.bosses);assert.equal(spawnCampBoss(g),false);g.hit(g.boss,100000);assert.equal(r.phase,'result');assert.equal(campDefenseGrade(r),'S');
+ assert.equal(r.phase,'boss');assert.ok(g.boss);assert.equal(g.progress.coins,before.coins);assert.equal(g.progress.bosses,before.bosses);assert.equal(spawnCampBoss(g),false);assert.equal(g.boss.kind,'dumpling');assert.equal(g.boss.radius,114);g.hit(g.boss,100000);assert.equal(r.phase,'spoils');assert.equal(g.progress.campDefense.run.phase,'result');assert.equal(claimCampDefense(g),false);updateCampDefense(g,2);assert.equal(r.phase,'result');assert.equal(campDefenseGrade(r),'S');
  g.campDefensePersist=()=>false;assert.equal(claimCampDefense(g),false);assert.equal(g.progress.campLevel.xp,0);assert.equal(g.progress.coins,before.coins);
- g.campDefensePersist=()=>true;assert.ok(claimCampDefense(g));assert.equal(g.progress.campLevel.xp,210);assert.equal(claimCampDefense(g),false);assert.equal(g.progress.campLevel.xp,210);assert.equal(g.progress.coins,before.coins+CAMP_DEFENSE.grades.S.coins);assert.deepEqual(g.progress.weapons,before.weapons);assert.deepEqual(g.progress.vehicleHulls,before.vehicleHulls);assert.equal(g.player,player);assert.equal(g.trees,trees);assert.equal(g.campDefense,null);assert.equal(g.progress.bosses,before.bosses);
+ g.campDefensePersist=()=>true;assert.ok(claimCampDefense(g));assert.equal(g.progress.campLevel.xp,210);assert.equal(claimCampDefense(g),false);assert.equal(g.progress.campLevel.xp,210);assert.equal(g.progress.coins,before.coins+CAMP_DEFENSE.grades.S.coins+CAMP_DEFENSE.spoils.bonus.coins);assert.equal(g.progress.materials.crystal,before.materials.crystal+6);assert.equal(g.progress.materials.core,before.materials.core+1);assert.deepEqual(g.progress.weapons,before.weapons);assert.deepEqual(g.progress.vehicleHulls,before.vehicleHulls);assert.equal(g.player,player);assert.equal(g.trees,trees);assert.equal(g.campDefense,null);assert.equal(g.progress.bosses,before.bosses);
 });
 
 test('拒马承受真实敌人扑击，被破坏后随机伙伴匹配火力实弹清场并结算 B',()=>{

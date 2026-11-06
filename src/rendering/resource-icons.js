@@ -1,3 +1,4 @@
+import {ERA_RESOURCES} from '../config/vehicle-eras.js';
 import { i18nHtml, i18nText } from "../i18n/index.js";
 // 资源美术共用矢量轮廓：DOM 输出 SVG，战场使用缓存 Path2D，无外部图片和字体图标依赖。
 import { MATERIALS } from '../config/materials.js';
@@ -7,6 +8,8 @@ function shape(d, fill, stroke = '#46604a', width = 2.5) {
   return { d, fill, stroke, width };
 }
 export const RESOURCE_ART = {
+  ...Object.fromEntries([['copper','#ca9367'],['iron','#9ba8a2'],['rareMetal','#a69bc8']].map(([key,color])=>[key,[shape('M5 39 16 23 40 16 58 28 51 43 23 50Z',color),shape('M7 39 23 43 54 29M23 43 23 49','none','#586353',2)]])),
+  draftHorse:[shape('M15 53 18 32 26 20 25 8 34 17 42 11 42 23 53 38 48 45 34 42 30 54Z','#c39463'),shape('M24 27 17 32 21 19 26 17','#785a48'),shape('M38 30h2','none','#4e503d',3)],
   coins: [
     shape('M8 34A24 24 0 1 0 56 34A24 24 0 1 0 8 34', '#c59843'),
     shape('M8 28A24 24 0 1 0 56 28A24 24 0 1 0 8 28', '#f3cf6b'),
@@ -60,7 +63,7 @@ export const RESOURCE_ART = {
 
 // 资源名称供屏幕阅读器、悬停提示和点击说明使用，避免仅靠颜色分辨。
 export function resourceName(key) {
-  return MATERIALS[key]?.name || ({ coins: i18nText("balance.app.bbece6f829"), wood: i18nText("balance.app.30a9333b4f"), bosses: i18nText("balance.app.ba2b3bd76e") })[key] || '';
+  return ERA_RESOURCES[key]?.name || MATERIALS[key]?.name || ({ coins: i18nText("balance.app.bbece6f829"), wood: i18nText("balance.app.30a9333b4f"), bosses: i18nText("balance.app.ba2b3bd76e") })[key] || '';
 }
 
 // 生成本地 SVG 图标；所有路径来自静态目录，没有用户输入或远程资源。

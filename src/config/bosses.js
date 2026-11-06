@@ -73,6 +73,13 @@ export const BOSSES = [
     color:'#90a875',windup:1.15,active:1,recovery:1.2,interval:2.8,speed:34,stop:165,
     leap:{duration:.65,height:62,range:260,radius:68}},
 ];
+// 终场团山沿用团子软体与跃砸状态机，专属体量和招式仅供守门会话读取。
+export const HORDE_GIANT = {
+  ...BOSSES.find(b => b.id === 'dumpling'),
+  name: '藏金团山', title: '沉山重砸', scale: 3, radius: 38 * 3,
+  windup: 1.55, active: 1.2, recovery: 1.6, interval: 3.1,
+  leap: { duration: .76, height: 76, range: 260, radius: 136 },
+};
 // 按永久胜场轮换，刷新与重新巡游不会总是遇到同一种领主。
 export function nextBoss(progress) {
   const count=Math.max(0,Math.floor(progress.bosses||0)),saved=progress.bossChallenge;
@@ -85,5 +92,6 @@ export function nextBoss(progress) {
 }
 // 未携带新身份的旧测试实体继续使用原苔藓巨兽规则。
 export function bossProfile(boss) {
+  if (boss?.campDefense && boss.kind === 'dumpling') return HORDE_GIANT;
   return BOSSES.find((b) => b.id === boss?.kind) || BOSSES.find(b=>b.id==='moss');
 }

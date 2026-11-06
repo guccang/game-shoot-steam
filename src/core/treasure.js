@@ -1,3 +1,4 @@
+import {shopDelivery,addShopStock} from './shop-delivery.js';
 // 探索事务集中验证距离、线索、唯一奖励和货舱载重；界面不能绕过实际权限。
 import {TREASURE_SITES,TREASURE_PARTS,DETECTOR} from '../config/treasure.js';
 import {learnTreasureClue} from '../progression/treasure.js';
@@ -6,7 +7,7 @@ import {personalFleet} from './vehicle-repair.js';
 import {canInspectBuilding} from './building-entry.js';
 import {capturePatrol} from './patrol-session.js';
 import {worldDistance,canonical} from '../world/coordinates.js';
-import {catLoad,vehicleLoad} from '../progression/load-weight.js';
+import {vehicleLoad} from '../progression/load-weight.js';
 import {cargoAccessible} from './cargo.js';
 import {vehicleLocations} from './vehicle-location.js';
 import {createVehicle} from '../combat/vehicle.js';
@@ -20,7 +21,7 @@ export function hearTreasureRumor(game,resident){const site=TREASURE_SITES.find(
 // 任务回应与线索同一事务提交，读取对话不会预先领取任何奖励。
 export function taskTreasureRumor(p,request,step){const site=TREASURE_SITES.find(s=>s.request===request&&s.step===step);if(!site||!learnTreasureClue(p,site))return '';return ` ${site.speaker}又想起：${site.clue}（已记入手机寻宝）`;}
 // 探测器从补给铺购买，工具永久保留，满载前必须先腾出空间。
-export function buyDetector(game){if(!personalFleet(game)||game.cottage?.kind!=='ammo'||!['playing','paused'].includes(game.state)||game.player.hp<=0)return {ok:false,message:'请到弹药补给铺柜台购买探测器。'};if(game.progress.treasure.detector)return {ok:false,message:'已经拥有金属探测器，无需重复购买。'};if(catLoad(game).weight+DETECTOR.mass>=catLoad(game).capacity)return {ok:false,message:'背包空间不足，探测器重1.2千克，请先清理背包。'};return commit(game,p=>{if(p.coins<DETECTOR.price)return '金币不足，需要180金币。';p.coins-=DETECTOR.price;p.treasure.detector=true;},'已获得金属探测器，可在手机寻宝页面开启探测。');}
+export function buyDetector(game){if(!personalFleet(game)||game.cottage?.kind!=='ammo'||!['playing','paused'].includes(game.state)||game.player.hp<=0)return {ok:false,message:'请到弹药补给铺柜台购买探测器。'};if(game.progress.treasure.detector)return {ok:false,message:'已经拥有金属探测器，无需重复购买。'};const delivery=shopDelivery(game,'metal-detector',1);if(!delivery.ok)return delivery;return commit(game,p=>{if(p.coins<DETECTOR.price)return '金币不足，需要180金币。';p.coins-=DETECTOR.price;addShopStock(p,'metal-detector',1,delivery.where);},delivery.message);}
 // 只感知已听过线索且未领取的点，按环绕世界距离选择最近信号。
 export function detectorSignal(game){if(!treasureAvailable(game)||!game.progress.treasure.detector||!game.detectorActive)return null;const t=game.progress.treasure,sites=TREASURE_SITES.filter(s=>t.clues.includes(s.id)&&!t.recovered.includes(s.id)).map(site=>({site,distance:worldDistance(game.player,site)})).sort((a,b)=>a.distance-b.distance),hit=sites[0];return hit&&hit.distance<=DETECTOR.radius?{...hit,strength:Math.max(1,Math.round((1-hit.distance/DETECTOR.radius)*100)),dig:hit.distance<=DETECTOR.digRadius}:{site:null,strength:0,dig:false};}
 // 挖掘不随机换点。部件先出土留在现场，满载时可稍后带车回来取。

@@ -1,6 +1,7 @@
 import { i18nText } from "../i18n/index.js";
 // 品种头部接在每张真实视频帧的颈线上；源帧眨眼、脚步、尾巴和躯干动作完整保留。
 import { CAT_APPEARANCES } from '../config/cat-appearance.js';
+import {drawScarfBib} from './cat-scarves.js';
 const OUTLINE = '#615743';
 
 // 用宽面部色带和下方围巾识别头部位置，不按时间猜测偏移，起停仍沿原视频连续运动。
@@ -64,8 +65,8 @@ function facePath(c, p) {
 }
 
 // 耳尖高度、底宽与圆角分别设置；耳内单独绘制，避免变成同一种三角贴片。
-function drawEar(c, p, side) {
-  c.save(); c.translate(side * p.earSpread, -20); c.scale(side, 1);
+function drawEar(c, p, side, gust) {
+  c.save(); c.translate(side * p.earSpread, -20); c.rotate(-gust * (side < 0 ? .42 : .29)); c.scale(side, 1);
   const h = p.earHeight, wide = p.ear === 'wide', w = wide ? 22 : 15;
   c.beginPath(); c.moveTo(-w, 6);
   if (p.ear === 'round') {
@@ -83,6 +84,14 @@ function drawEar(c, p, side) {
     c.beginPath(); c.moveTo(3, -h + 9); c.lineTo(w - 4, -h + 1); c.lineTo(w - 4, -h + 10);
     c.strokeStyle = '#f6eee1'; c.lineWidth = 2.5; c.stroke();
   }
+  c.restore();
+}
+
+// 耳根定位在当前视频帧头部，两耳有不同受风角，头脸保留原始位置。
+export function drawCatEars(c, head, id, gust) {
+  c.save(); c.translate(head.x, head.y);
+  const p = CAT_APPEARANCES[id];
+  drawEar(c, p, -1, gust); drawEar(c, p, 1, gust);
   c.restore();
 }
 
@@ -120,18 +129,18 @@ function drawRuff(c, head, p) {
 }
 
 // 替换局部头部轮廓，并从同一源帧保留眨眼和口型像素；没有静帧替代整个动作。
-export function shapeCatFrame(c, source, colored, size, id) {
+export function shapeCatFrame(c, source, colored, size, id, separateEars, head) {
   const p = CAT_APPEARANCES[id];
   if (!p) throw Error(i18nText("rendering.cat-breed-shapes.ba9ed3264b"));
-  const head = catHeadLandmarks(source, size);
   c.clearRect(0, 0, size, size);
   if (p.ruff) drawRuff(c, head, p);
   c.drawImage(colored, 0, 0);
   // 只擦掉旧头部；尾巴上扬超过颈线时仍保留，薄荷的旧帽子使用较宽清理区。
   const eraseWidth = id === 'mint' ? 55 : 46;
   c.clearRect(head.x - eraseWidth, 0, eraseWidth * 2, head.neck);
+  if(id!=='police')drawScarfBib(c,head,id);
+  if (!separateEars) drawCatEars(c, head, id, 0);
   c.save(); c.translate(head.x, head.y);
-  drawEar(c, p, -1); drawEar(c, p, 1);
   facePath(c, p); c.fillStyle = p.fur; c.strokeStyle = OUTLINE; c.lineWidth = 3; c.fill(); c.stroke();
   drawMarkings(c, p);
   // 原片腮红用柔和圆斑重绘，保持眼口提取区域不包含脸部轮廓。

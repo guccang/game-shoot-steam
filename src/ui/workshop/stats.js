@@ -1,3 +1,4 @@
+import {eraVehicle,eraDonor} from '../../config/vehicle-eras.js';
 import { i18nText, i18nHtml } from "../../i18n/index.js";
 // 工坊属性展示只读取正式装备快照，不维护交易或试射状态。
 import { isSummonEnergy, summonRegenRate } from '../../config/summon-energy.js';
@@ -37,6 +38,9 @@ export function renderWorkshopStats({root,current,after,kind,index,maxHp,draft,c
     if (Number.isFinite(b.grenade[key])) values.push({ label: {damage:i18nText("ui.workshop.stats.a5c4d9a8f0"),radius:i18nText("ui.workshop.stats.3fb033e968"),charge:i18nText("ui.workshop.stats.af59bd944c")}[key],
       old:a?.grenade?.[key] || 0, value:b.grenade[key], changed:a?.grenade?.[key] !== b.grenade[key] });
   if (kind === 'vehicle') {
+    const era=eraVehicle(index);
+    if(era){const old=(!current.progress.vehicleHulls[index]||summaryOnly)&&eraDonor(era);
+      values.unshift({label:'额定货载 / 千克',old:old?.payload??era.payload,value:era.payload,changed:!!old});}
     const hp = p => vehicleMaxHp({ ...p, vehicleIndex: index }, maxHp);
     values.unshift({label:i18nText("ui.workshop.results.6217343c91"),old:vehicleSpeed(current.progress,index),value:vehicleSpeed(after.progress,index),changed:vehicleSpeed(current.progress,index)!==vehicleSpeed(after.progress,index)});
     values.unshift({ label: i18nText("ui.workshop.stats.e689117b7c"), old: hp(current.progress), value: hp(after.progress), changed: hp(current.progress) !== hp(after.progress) });

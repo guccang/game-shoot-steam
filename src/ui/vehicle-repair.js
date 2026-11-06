@@ -7,14 +7,16 @@ import {vehicleLoad} from '../progression/load-weight.js';
 import {createEventScope} from '../platform/events.js';
 import {vehicleRepairQuote,vehicleService,requestVehicleRepair,collectRepairedVehicle,repairUnavailable} from '../core/vehicle-repair.js';
 import {vehicleModel} from '../config/vehicles.js';
-import {REPAIR_CENTER} from '../config/vehicle-repair.js';
+import {REPAIR_CENTER,VEHICLE_REPAIR,vehicleRepairRate} from '../config/vehicle-repair.js';
 import {requestWorldNavigation} from '../core/world-navigation.js';
 // 统一底板保持标题与底部操作可见，车辆列表独立滚动。
 export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
  const scope=createEventScope(),panel=root.createElement('dialog');let remote=false,selection=null;
  panel.id='vehicle-repair-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','vehicle-repair-title');
- panel.innerHTML='<header class="ui-panel__header"><div><h2 id="vehicle-repair-title">载具维修中心</h2><p>让老伙计重新上路</p></div><button type="button" id="vehicle-repair-close" class="ui-close" aria-label="关闭维修中心">×</button></header><div class="ui-panel__body"><p class="ui-inset">维修费＝损失耐久比例×基础车价×修复系数0.5，金币向上取整。报废车辆损失比例为100%，费用含拖运与维修。部件故障另计最高损坏比例×车价×10%，总费用不超过车价50%。无需木头。</p><p data-repair-balance></p><div data-repair-list></div><section class="ui-section" data-player-tow></section><p data-repair-message role="status"></p></div><footer class="ui-panel__footer"><button type="button" class="ui-button" data-repair-nav>前往维修中心</button><button type="button" class="ui-button ui-button--primary" data-repair-confirm disabled>选择车辆</button></footer>';
+ panel.innerHTML='<header class="ui-panel__header"><div><h2 id="vehicle-repair-title">载具维修中心</h2><p>让老伙计重新上路</p></div><button type="button" id="vehicle-repair-close" class="ui-close" aria-label="关闭维修中心">×</button></header><div class="ui-panel__body"><p class="ui-inset"></p><p data-repair-balance></p><div data-repair-list></div><section class="ui-section" data-player-tow></section><p data-repair-message role="status"></p></div><footer class="ui-panel__footer"><button type="button" class="ui-button" data-repair-nav>前往维修中心</button><button type="button" class="ui-button ui-button--primary" data-repair-confirm disabled>选择车辆</button></footer>';
  root.body.append(panel);
+ // 说明与正式车型费率同步，故障追加比例同样受该车型维修上限约束。
+ panel.querySelector('.ui-inset').textContent=`按损失耐久比例计费；部件故障按最高损坏比例的20%追加。红狼满损维修上限为基础车价的${vehicleRepairRate('red-wolf')*100}%，其他车型为${VEHICLE_REPAIR.repairRate*100}%。费用向上取整，含报废拖运与维修，无需木头。`;
  // 页面打开时刷新一次；游戏暂停时不伪造进度或反复重建焦点。
  function render(){
   const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=reason||'关闭页面后继续维修，修好留在维修工坊原车位；可用手机定位。';

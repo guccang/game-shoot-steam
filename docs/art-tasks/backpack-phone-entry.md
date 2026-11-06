@@ -43,3 +43,9 @@
 designCriterion：keepsake-backpack。正式验收入口：src/rendering/visual-review.js#inspectKeepsakeBackpack。
 
 本轮结构与交互调整通过，以本任务合并提交及上述实机浏览器截图为确认参考；不涉及新的美术资源精修。
+
+## 手机载具与邻居头像补充
+
+目标是在定位和拨号前认出对象。每行左侧使用 40×40 逻辑像素、80×80 透明画布；按车体编号和居民身份绘制正式车形、猫及林中伙伴，保留按钮、世界比例、通行与动作。仅打开页面时绘制，无新纹理。验收关注昼夜、窄屏换行、操作区和勾选反馈。
+
+正式入口为 `createKeepsakeBackpack`、`drawVehicleIcon`、`drawPhoneResidentPortrait`，对应 `designCriterion: keepsake-backpack`。三辆车与六位居民的实机头像均有有效像素。390 宽昼夜、320 宽短屏和既有桌面竖版容器检查通过，无横向溢出；勾选保存、拨号、挂断和载具定位已通过触控检查。复核图见 `output/playwright/phone-portraits/neighbors-390-day.png`、`neighbors-390-night.png`、`contacts-320-night.png` 与同目录设定截图。每个头像最多使用约 25 KiB 像素缓冲，随通讯录释放。本轮静态 UI 验收通过，世界遮挡、通行、动作与 PNG 替换不涉及。

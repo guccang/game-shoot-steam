@@ -18,11 +18,12 @@ export function placeFarmCell(node,plot,renderer,frame,view){
  const key=[view,plot.x,plot.y,plot.mapId,plot.id].join(':'),old=projections.get(node);
  if(view!==null&&old?.key===key&&old.hidden===node.hidden)return;
  placeSceneHit(node,farmPosition(plot),renderer,frame,{...FARM_PLOT_SHAPE,centered:true});
- if(renderer.view&&!node.hidden)for(const [name,value] of Object.entries(FARM_PLOT_SHAPE)){
+ // 镜头平移不改变地块形状；只在缩放改变时提交尺寸，避免每块田反复读取样式。
+ if(renderer.view&&!node.hidden&&old?.zoom!==renderer.view.zoom)for(const [name,value] of Object.entries(FARM_PLOT_SHAPE)){
   const property='--farm-plot-'+name,size=value*renderer.view.zoom+'px';
   if(node.style.getPropertyValue(property)!==size)node.style.setProperty(property,size);
  }
- projections.set(node,{key,hidden:node.hidden});
+ projections.set(node,{key,hidden:node.hidden,zoom:node.hidden?old?.zoom:renderer.view?.zoom});
 }
 
 // 成熟边界逐帧读取真实时间；缓存仅保存展示状态，不缓存种植、收益或任务结算。

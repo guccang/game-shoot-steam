@@ -1,3 +1,4 @@
+import {createCatMotion} from '../core/cat-motion.js';
 import {drawBuildingArchitecture} from './building-architecture.js';
 import {createRenderCanvas,watchRenderCanvas} from './canvas-recovery.js';
 import { onArtStyleChange } from '../art-styles/state.js';
@@ -294,11 +295,8 @@ function drawFacility(c, item, night) {
   }
   c.restore();
 }
-// 共用绘制与动作输入，风格差异由配置提供。
-function drawResident(c, r, game, night, reduced) {
-  c.save();
-  c.translate(r.x, r.y - (r.elevation || 0));
-  const time = reduced ? 0 : r.clock;
+// 头像和现场居民共用身份造型，只在世界层额外绘制作息道具与姓名。
+function drawResidentBody(c,r,time,reduced){
   if (Number.isInteger(r.hero)) {
     c.save();
     c.scale(0.7, 0.7);
@@ -313,6 +311,23 @@ function drawResident(c, r, game, night, reduced) {
     } else drawSlime(c, entity, time, reduced);
     c.restore();
   }
+}
+// 通讯录使用独立的待机姿态，避免采样头像时推进现场居民的动作。
+export function drawPhoneResidentPortrait(canvas,resident){
+  const c=canvas.getContext('2d');
+  c.save();
+  c.translate(canvas.width/2,canvas.height*.67);
+  const span=resident.appearance?.type==='boss'?110:62;
+  c.scale(canvas.width/span,canvas.height/span);
+  drawResidentBody(c,{...resident,motion:createCatMotion()},0,true);
+  c.restore();
+}
+// 共用绘制与动作输入，风格差异由配置提供。
+function drawResident(c, r, game, night, reduced) {
+  c.save();
+  c.translate(r.x, r.y - (r.elevation || 0));
+  const time = reduced ? 0 : r.clock;
+  drawResidentBody(c,r,time,reduced);
   if (!r.moving && !['rest', 'walk', 'flowers', 'shelter', 'chat'].includes(r.action)) {
     // 营地伙伴的手持物按身体比例缩小并放低，保留脸部和脚步的完整轮廓。
     c.save();

@@ -50,7 +50,7 @@ export function advanceFireTransit(game,dt){
  }
  r.route=m.path.slice(m.step);
  const moved=worldDistance(p,previous),walking=!game.vehicle.active&&moved>0;
- advanceVehicleWheels(game.vehicle,p,previous);updateCatMotion(p.bodyAnimation,dt,dt?moved/dt:0,walking);
+ advanceVehicleWheels(game.vehicle,p,previous);updateCatMotion(p.bodyAnimation,dt,dt?moved/dt:0,walking,game.vehicle.active);
  const rest=Math.ceil(p.walkPhase/Math.PI)*Math.PI;p.walkPhase=walking?p.walkPhase+dt*12:p.walkPhase+(rest-p.walkPhase)*Math.min(1,dt*14);
  return m.step>=m.path.length&&m.wait<=0;
 }

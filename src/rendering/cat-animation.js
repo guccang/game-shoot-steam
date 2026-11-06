@@ -2,6 +2,9 @@ import { i18nText } from "../i18n/index.js";
 // 视频抽帧主体图集：只绘制正面身体，手、枪、后坐和枪口仍由原绘制链处理。
 const MANIFEST_URL = new URL('../../assets/cat-front/animations.json', import.meta.url);
 import { HEROES } from '../config/heroes.js';
+import { CAT_SCARVES } from '../config/cat-scarves.js';
+import { drawCatEars } from './cat-breed-shapes.js';
+import { drawTitleScarf } from './title-scarf.js';
 import { CatCoatFrames } from './cat-coats.js';
 
 // 根据动作自己的帧率取帧；减少动态时固定待机，时间完全来自战斗时钟。
@@ -62,7 +65,7 @@ export class CatSpriteAtlas {
     return this.promise;
   }
   // 固定脚底锚点；切换时选择相近姿态并平滑消除位置差，始终只画一个主体。
-  draw(c, hero, state, pose, reduced = false) {
+  draw(c, hero, state, pose, reduced = false, gust = 0) {
     const breed = HEROES[hero];
     if (this.status !== 'ready' || !state || !breed || !this.manifest.heroes[breed.sprite]) return false;
     const h = this.manifest.heroes[breed.sprite], size = h.frameSize, image = this.images[breed.sprite];
@@ -91,7 +94,18 @@ export class CatSpriteAtlas {
     c.save(); c.translate(pose.bodyX, pose.bodyY + 13);
     const x = (-h.anchor[0] + track.shiftX * decay) / h.pixelsPerUnit,
       y = (-h.anchor[1] + track.shiftY * decay) / h.pixelsPerUnit, span = size / h.pixelsPerUnit;
-    c.drawImage(this.coats.get(image, h, frame, breed), 0, 0, size, size, x, y, span, span);
+    const separateEars = gust > .001 && !reduced;
+    const body = this.coats.get(image, h, frame, breed, separateEars);
+    const head=this.coats.heads.get(body);
+    drawTitleScarf(c, reduced ? 0 : state.idleTime, reduced ? 0 : Math.max(gust, state.scarfLift ?? state.moveWeight),
+      x+(head.x-25)/h.pixelsPerUnit,y+(head.neck+6)/h.pixelsPerUnit,CAT_SCARVES[breed.id]);
+    // 复用不含耳朵的身体帧，连续风角不生成新的角色位图。
+    if (separateEars) {
+      c.save(); c.translate(x, y); c.scale(1 / h.pixelsPerUnit, 1 / h.pixelsPerUnit);
+      drawCatEars(c, head, breed.id, gust);
+      c.restore();
+    }
+    c.drawImage(body, 0, 0, size, size, x, y, span, span);
     c.restore(); return true;
   }
   // 返回实际解码尺寸；姿态过渡无需额外画布，用于手机内存诊断。

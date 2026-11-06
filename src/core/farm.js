@@ -1,3 +1,6 @@
+import {oxFoot,oxSiteFromFoot} from '../config/pasture.js';
+import {movementLoadFactor} from '../progression/load-weight.js';
+import {driveReaper,releaseReaper} from './row-reaper.js';
 import {recordCodexCrop} from '../progression/codex-statistics.js';
 import {harvestDestination,harvestLoadPreview} from './farm-harvest-load.js';
 import {isRainWeather} from '../world/season-weather.js';
@@ -8,11 +11,12 @@ import {recordGardeningAction} from '../progression/mainline-gardening.js';
 import {FARM_ACTION_TIMING,FARM_COMBAT_RESUME_DELAY} from '../config/farm-tools.js';
 export {FARM_ACTION_TIMING} from '../config/farm-tools.js';
 import {validateProgress} from '../progression/progress.js';
-import {farmGrowth,grantFarmSeeds,wetFarmPlot} from '../progression/farm.js';
+import {grantSeedReward} from '../progression/seed-reward.js';
+import {farmGrowth,wetFarmPlot} from '../progression/farm.js';
 import {wildFarmTime} from '../progression/wild-farm-age.js';
-import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_WATER,farmPosition} from '../config/farm.js';
-import {worldDistance,nearest} from '../world/coordinates.js';
-import {farmLandReason,farmApproach,farmDigTarget} from '../world/farm-land.js';
+import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_WATER,OX_PLOW,farmPosition} from '../config/farm.js';
+import {worldDistance,nearest,canonical} from '../world/coordinates.js';
+import {farmLandReason,farmApproach,farmDigTarget,snapFarmPoint} from '../world/farm-land.js';
 import {mineEntranceFarmBlocked} from '../world/mine-entrances.js';
 import {naturalWaypoint} from '../physics/terrain-navigation.js';
 import {blocked} from '../physics/motion.js';
@@ -68,11 +72,17 @@ function updateFarmCombat(game,dt){
  }
  work.combatRecovery=0;return false;
 }
-// 只返回点击的有效田块；无效时不自动改浇邻田，避免误操作。
+// 双格壶只扩展到正右侧紧邻的一格；首格无效时整次操作取消。
 export function farmWaterTargets(farm,plotId,mapId,now=Date.now()){
  const center=farm.plots.find(p=>p.id===plotId),eligible=p=>p.mapId===mapId&&p.crop!==null&&farmGrowth(p,now)<1;
  if(!center||!eligible(center))return [];
- return [center];
+ if(!farm.doubleCan)return [center];
+ const right=farm.plots.find(plot=>{
+  if(!eligible(plot))return false;
+  const point=nearest(plot,center);
+  return Math.abs(point.x-center.x-56)<.01&&Math.abs(point.y-center.y)<.01;
+ });
+ return right?[center,right]:[center];
 }
 // 保存先于反馈，飞行金币只是已到账金额的表现，不承担奖励结算。
 export function commitFarm(game,next,event){
@@ -95,7 +105,7 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
  // 旧档已有的入口田可以收获或移除，但不能继续播种；提交时再次校验排队期间新增洞口。
  if(['dig','plant'].includes(action)&&mineEntranceFarmBlocked(game.progress.mining,cell))return {ok:false,message:'矿洞和入口坡道不能种植，请选择旁边的草地。'};
  if(['dig','plant','harvest','water','remove'].includes(action)&&(!cell||cell.mapId!==game.mapId||worldDistance(game.player,cell)>78))return {ok:false,message:'先走到这块田边再操作。'};
- let message='',coins=0,harvest=null,lesson=false,wateredPlots=[],destination=null;
+ let message='',coins=0,harvest=null,lesson=null,wateredPlots=[],destination=null;
  if(action==='dig'){
   const reason=farmLandReason(game,cell);if(reason)return {ok:false,message:reason};
   if(f.plots.length>=FARM_MAX_PLOTS)return {ok:false,message:'已达到可保存的田块数量上限。'};
@@ -132,29 +142,34 @@ export function farmAction(game,action,{plot:plotId,point,crop:cropId=0,removal,
   message='地块已移除，可在原地重新开垦';
  }else return {ok:false,message:'未知农田操作。'};
  // 首次照料就给下一次种植的种子；旧档直接收获也能领取，二者共用一次性标记。
- if(['water','harvest'].includes(action)&&!f.lessonRewarded&&f.dug>0&&f.planted>0){f.lessonRewarded=true;grantFarmSeeds(f,1,2);lesson=true;message+=' · 园艺入门完成，胡萝卜种子 +2';}
+ if(['water','harvest'].includes(action))lesson=gardeningSeedReward(game,next);
  recordGardeningAction(next,action,{crop:action==='harvest'?harvest:action==='water'?p?.crop:cropId,plot:plotId});
  if(isRainWeather(game.livingWeather)){
   const rain=wetPlots(next,f.plots.filter(p=>p.mapId===game.mapId&&!p.watered),now);
+  if(rain.some(p=>p.crop!==null))lesson??=gardeningSeedReward(game,next);
   if(rain.length)message+=' · 雨水已润湿田地，无需浇水';
  }else if(plantedInWetSoil){
   // 雨停或天气切换后，新作物也继承湿土；只处理本田，不浇湿附近干田。
-  wetPlots(next,[p],now);message+=' · 土壤保持湿润，无需浇水';
+  wetPlots(next,[p],now);lesson??=gardeningSeedReward(game,next);message+=' · 土壤保持湿润，无需浇水';
  }
  if(plantedInSprinklerSoil)p.sprinklerWatered=true;
- if(!game.progress.farm.lessonRewarded&&next.farm.lessonRewarded&&!lesson){lesson=true;message+=' · 园艺入门完成，胡萝卜种子 +2';}
+ if(lesson)message+=' · '+(lesson.count?'园艺入门完成，':'')+lesson.message;
  // 收获、经验与奖励种子同一候选进度预演，拒绝时不修改田块或任何库存。
  if(action==='harvest'){
   const load=harvestLoadPreview(game,next,destination),original=game.progress.farm.plots.find(p=>p.id===plotId);
   const confirmation=JSON.stringify({plot:plotId,mapId:game.mapId,crop:harvest,plantedAt:original.plantedAt,...load});
   if(load.overloaded&&loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,crop:harvest,message:'收获后载荷将满，请确认是否继续收获。'};
  }
- return commitFarm(game,next,{action,plot:plotId,point:cell,coins,harvest,destination,lesson,wateredPlots,message});
+ return commitFarm(game,next,{action,plot:plotId,point:cell,coins,harvest,destination,lesson:!!lesson?.count,wateredPlots,message});
 }
 // 非空田必须确认同一茬作物，排队期间换种不能沿用旧确认。
 function farmRemovalAllowed(plot,removal){return plot.crop===null||removal?.crop===plot.crop&&removal?.plantedAt===plot.plantedAt;}
 // 换工具取消待办，不回滚已成功完成的单格动作。
-export function setFarmTool(game,tool){game.farmWork=tool&&canUseFarm(game)?{tool,job:null,queue:[],autoCombat:false,combatRecovery:0}:null;}
+export function setFarmTool(game,tool){
+ releaseReaper(game);
+ game.farmWork=tool&&canUseFarm(game)?{tool,job:null,queue:[],autoCombat:false,combatRecovery:0}:null;
+ if(game.farmWork&&tool==='reaper')game.farmWork.reaper={facing:1,held:false,line:[],travel:0};
+}
 // 拖过多个地块只安排队列，排队时不提前扣费或发奖。
 export function queueFarmWork(game,action,{plot,point,crop=0,tree,view,removal}={}){
  if(!canUseFarm(game))return {ok:false,message:'请下车后操作农具。'};
@@ -182,10 +197,111 @@ export function resolveHarvestLoad(game,job,accepted){
  job.loadConfirmation=job.loadRequest.confirmation;job.loadRequest=null;return {ok:true,message:'已确认本次收获。'};
 }
 // 迎敌冻结农活但允许走位，受伤不丢队列；普通农活中主动走位仍取消待办，切图退出模式。
+// 作业预览与正式落点共用田垄起点和间距。
+export function oxTarget(game,index=1){
+ const ox=game.farmWork?.ox;
+ let origin=ox?.row;
+ if(!origin){
+  let best=null,distance=300;
+  for(const plot of game.progress.farm.plots){
+   if(plot.mapId!==game.mapId)continue;
+   const d=worldDistance(game.player,plot);if(d<distance){best=plot;distance=d;}
+  }
+  origin=snapFarmPoint(game.player,game.mapId,best);
+ }
+ return {...canonical({x:origin.x+(ox?.facing||1)*OX_PLOW.spacing*index,y:origin.y}),mapId:game.mapId};
+}
+// 松手或中断立即抬犁，重新按住时从当前脚底起垄。
+export function liftOxPlow(game){
+ const ox=game.farmWork?.ox;if(ox){ox.held=false;ox.row=null;}
+}
+// 作业中的世界锚点在牛蹄，两侧牛身及后方犁铧均须能够通行。
+export function oxRigClear(game,foot,yaw){
+ const body={...game.player,mapId:game.mapId,livingCollision:game.mapId==='forest'},trees=game.trees||[];
+ return !blocked(foot.x,foot.y,28,trees,body)&&!blocked(foot.x-18*Math.cos(yaw),foot.y-15,10,trees,body);
+}
+// 按弧长推进共同落地点，半圈结束正好移到相邻田垄。
+function oxTurnStep(foot,from,to,sign){
+ const radius=sign*OX_PLOW.turnRadius;
+ return {x:foot.x+radius*(Math.sin(to)-Math.sin(from)),y:foot.y+radius*(Math.cos(from)-Math.cos(to))};
+}
+// 左右两条弧分别试走；空间不足时原地保留整组姿态。
+export function turnOx(game,direction){
+ const work=game.farmWork,ox=work?.ox;if(!ox||ox.approach||ox.turn)return;
+ const start=ox.yaw??(ox.facing===1?0:Math.PI),end=direction===1?0:Math.PI;
+ const shortest=Math.atan2(Math.sin(end-start),Math.cos(end-start));
+ if(Math.abs(shortest)<.001)return;
+ const first=Math.abs(Math.abs(shortest)-Math.PI)<.001?Math.PI:shortest;
+ for(const sweep of [first,first-Math.sign(first)*2*Math.PI]){
+  const sign=Math.sign(sweep);
+  let clear=true;
+  for(let i=1;i<=32;i++){
+   const angle=start+sweep*i/32;
+   if(!oxRigClear(game,oxTurnStep(game.player,start,angle,sign),angle)){clear=false;break;}
+  }
+  if(clear){liftOxPlow(game);ox.turn={start,sign,sweep,elapsed:0,direction};return;}
+ }
+ if(work.result?.message!=='附近空间不足，请牵到开阔处掉头。')work.result={ok:false,message:'附近空间不足，请牵到开阔处掉头。'};
+}
+// 移动受同一组牛蹄与犁铧碰撞点约束。
+function driveOxPlow(game,work,input,dt){
+ if(!game.progress.farm.oxPlow){setFarmTool(game,null);return input;}
+ const ox=work.ox??={phase:0,facing:game.progress.farm.oxSite?.facing||1,row:null,held:false};
+ const player=game.player;
+ if(ox.approach){
+  const site=nearest(ox.approach,player),dist=worldDistance(player,site);
+  if(dist>5){
+   if(Math.hypot(input.x,input.y)>.1){setFarmTool(game,null);return input;}
+   const guide=naturalWaypoint(player,site),angle=Math.atan2(guide.y-player.y,guide.x-player.x);
+   return {x:Math.cos(angle)*Math.min(.8,dist/18),y:Math.sin(angle)*Math.min(.8,dist/18)};
+  }
+  ox.approach=null;
+ }
+ ox.yaw??=ox.facing===1?0:Math.PI;
+ if(!ox.held&&Math.abs(input.x)>.1)turnOx(game,Math.sign(input.x));
+ if(ox.turn){
+  const t=ox.turn;
+  t.elapsed=Math.min(1,t.elapsed+dt*movementLoadFactor(game)*Math.PI/(OX_PLOW.turnSeconds*Math.abs(t.sweep)));
+  const angle=t.start+t.sweep*t.elapsed,foot=oxTurnStep(player,ox.yaw,angle,t.sign);
+  if(oxRigClear(game,foot,angle)){
+   Object.assign(player,foot);ox.yaw=angle;
+   if(t.elapsed>=1){ox.facing=t.direction;ox.turn=null;}
+  }else{
+   ox.facing=Math.cos(ox.yaw)<0?-1:1;ox.turn=null;
+   work.result={ok:false,message:'掉头路径被挡住了，已停牛。'};
+  }
+  player.vx=player.vy=0;
+  return {x:0,y:0};
+ }
+
+ if(!ox.held)return {x:input.x*OX_PLOW.speed,y:input.y*OX_PLOW.speed};
+ ox.row??=oxTarget(game,0);
+ const target=oxTarget(game);
+ if((nearest(player,ox.row).x-ox.row.x)*ox.facing>=OX_PLOW.spacing){
+  work.result=farmAction(game,'dig',{point:target});
+  if(!work.result.ok){liftOxPlow(game);return {x:0,y:0};}
+  ox.row=target;
+ }
+ return {x:ox.facing*OX_PLOW.speed,y:0};
+}
+// 实际位移和碰撞结算后才更新蹄步与停车坐标，松手立刻停车也能在同地再牵。
+export function syncOxFoot(game,previous){
+ const work=game.farmWork,ox=work?.ox;
+ if(!ox||ox.approach||work.autoCombat)return;
+ const distance=worldDistance(game.player,previous);
+ ox.moving=distance>.03;ox.phase+=distance*.16;
+ game.progress.farm.oxSite={...canonical(oxSiteFromFoot(game.player,ox.yaw)),mapId:game.mapId,facing:ox.facing,yaw:ox.yaw};
+}
+// 原有自动走近、战斗暂停和输入取消共用农活更新入口。
 export function updateFarmWork(game,dt,input){
  const work=game.farmWork;if(!work)return input;if(!canUseFarm(game)){game.farmWork=null;return input;}
  const wasCombat=work.autoCombat;work.autoCombat=updateFarmCombat(game,dt);
- if(work.autoCombat)return input;
+ if(work.autoCombat){releaseReaper(game);if(work.ox){liftOxPlow(game);work.ox.turn=null;work.ox.moving=false;}return input;}
+ if(work.tool==='reaper')return driveReaper(game,input,farmAction);
+ if(work.tool==='ox'){
+  if(wasCombat&&work.ox&&game.progress.farm.oxSite)work.ox.approach=oxFoot(game.progress.farm.oxSite);
+  return driveOxPlow(game,work,input,dt);
+ }
  // 战斗后可能发生击退或闪避：未命中的动作重新走近挥动，已结算动作只完成收势，不重复扣费发奖。
  if(wasCombat&&work.job&&!work.job.hit){work.job.approach=null;work.job.elapsed=0;work.job.farmPoseTime=0;work.job.travel=0;}
  if(Math.hypot(input.x,input.y)>.05){work.job=null;work.queue=[];game.farmCursor=null;return input;}
@@ -221,9 +337,15 @@ export function updateFarmWork(game,dt,input){
 // 降雨和湿土播种共用照料结算，加速、委托事实与入门赠种在同一次保存中提交。
 function wetPlots(progress,plots,now){
  for(const plot of plots){wetFarmPlot(progress.farm,plot,now);if(plot.crop!==null)recordGardeningAction(progress,'water',{crop:plot.crop,plot:plot.id});}
- const f=progress.farm;
- if(plots.some(p=>p.crop!==null)&&!f.lessonRewarded&&f.dug>0&&f.planted>0){f.lessonRewarded=true;grantFarmSeeds(f,1,2);}
  return plots;
+}
+// 首次照料的奖励在同一候选存档结算；未收到任何种子时保留领取机会。
+function gardeningSeedReward(game,progress){
+ const f=progress.farm;
+ if(f.lessonRewarded||!f.dug||!f.planted)return null;
+ const reward=grantSeedReward(game,progress,1,2);
+ f.lessonRewarded=reward.count>0;
+ return reward;
 }
 const rainRetries=new WeakMap();
 // 不依赖拿起水壶或靠近田地；无变化不写盘，保存失败至多每秒重试一次。
@@ -231,8 +353,8 @@ export function updateFarmRain(game,now=Date.now()){
  if(game.state!=='playing'||game.realm||game.workshopTrial||!['forest','jiuzhaigou'].includes(game.mapId)||!isRainWeather(game.livingWeather)||!Number.isFinite(now)||now<(rainRetries.get(game)||0))return false;
  if(!game.progress.farm.plots.some(p=>p.mapId===game.mapId&&!p.watered))return false;
  const next=validateProgress(structuredClone(game.progress)),plots=wetPlots(next,next.farm.plots.filter(p=>p.mapId===game.mapId&&!p.watered),now);
- const lesson=!game.progress.farm.lessonRewarded&&next.farm.lessonRewarded;
- const result=commitFarm(game,next,{action:'rain',plots:plots.map(p=>p.id),lesson,message:'雨水已浸润田地，无需再浇水。'+(lesson?'园艺入门完成，胡萝卜种子 +2':'')});
+ const lesson=plots.some(p=>p.crop!==null)?gardeningSeedReward(game,next):null;
+ const result=commitFarm(game,next,{action:'rain',plots:plots.map(p=>p.id),lesson:!!lesson?.count,message:'雨水已浸润田地，无需再浇水。'+(lesson?(lesson.count?'园艺入门完成，':'')+lesson.message:'')});
  if(!result.ok)rainRetries.set(game,now+1000);else rainRetries.delete(game);
  return result.ok;
 }

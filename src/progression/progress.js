@@ -1,8 +1,10 @@
+import {ERA_RESOURCES} from '../config/vehicle-eras.js';
 import {normalizeProduction} from './farm-production.js';
 import {freshHomeArcade,normalizeHomeArcade} from './home-arcade.js';
 import {freshMining,normalizeMining,openBasement} from './mining.js';
 import {normalizeNpcDialogue} from './npc-dialogue.js';
 import {normalizeOutdoors} from './outdoors.js';
+import {normalizeShopStock} from './shop-stock.js';
 import {freshTreasure,normalizeTreasure} from './treasure.js';
 import {normalizeWarehouse} from './warehouse.js';
 import {normalizeWeaponStorage} from './weapon-storage.js';
@@ -12,6 +14,7 @@ import {freshMailbox,normalizeMailbox} from './mailbox.js';
 import {freshLogistics,normalizeLogistics} from './vehicle-build.js';
 import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
 import {normalizeVehicleService} from './vehicle-repair.js';
+import {residentRoster} from '../config/cottage-residents.js';
 import {freshHome,normalizeHome} from './home-decor.js';
 import {equipmentLevelCap,normalizeLegendaryWorkshop} from '../config/legendary-workshop.js';
 import {normalizeMonsterCamps} from './monster-camps.js';
@@ -65,9 +68,11 @@ export function freshProgress() {
     supplies:freshSupplies(),
     warehouse:normalizeWarehouse(null),
     outdoors:normalizeOutdoors(null),
+    shopStock:{},
     treasure:freshTreasure(),
     npcDialogue:{},
     homeDecor:freshHome(),
+    residentCats:[0],
     mining:freshMining(),
     homeArcade:freshHomeArcade(),
     monsterCamps:normalizeMonsterCamps(null),
@@ -90,7 +95,7 @@ export function freshProgress() {
     statistics:validateGameStatistics(null),
     mapId: 'forest',
     realms: validateRealms(null),
-    materials: { parts: 0, crystal: 0, core: 0 },
+    materials: Object.fromEntries([...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES)].map(key=>[key,0])),
     materialPity: { parts: 0, crystal: 0 },
     materialBosses: [],
     equipmentGoal: null,
@@ -202,6 +207,9 @@ export function validateProgress(raw) {
   p.story = validateStory(raw.story);
   p.living=normalizeLivingWorld(raw.living);
   p.homeDecor=normalizeHome(raw.homeDecor,p.living.calendar);
+  // 旧档可能先获得了伙伴才引入住宿，补足其楼层，不动原有设施与家具。
+  p.residentCats=residentRoster(p.heroes,raw.residentCats);
+  p.homeDecor.floors=Math.max(p.homeDecor.floors,p.residentCats.length+1);
   p.mining=normalizeMining(raw.mining);
   p.homeArcade=normalizeHomeArcade(raw.homeArcade);
   p.production=normalizeProduction(raw.production,p.mining);
@@ -210,7 +218,7 @@ export function validateProgress(raw) {
   p.monsterCamps=normalizeMonsterCamps(raw.monsterCamps);
   p.taskTracking=normalizeTaskTracking(raw.taskTracking,p.living);
   // 材料与首通记录只恢复明确保存的值，不根据胜场推算奖励历史。
-  for (const key of MATERIAL_KEYS)
+  for (const key of [...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES)])
     if (Number.isFinite(raw.materials?.[key]))
       p.materials[key] = clamp(Math.floor(raw.materials[key]), 0, MATERIAL_CAP);
   for (const key of ['parts', 'crystal'])
@@ -239,8 +247,11 @@ export function validateProgress(raw) {
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);
   p.logistics=normalizeLogistics(raw.logistics,p);
+  // 旧档或已失效的货舱归属恢复到背包，保留购买过的唯一套装。
+  if(!p.vehicleHulls[p.outdoors.tentHull])p.outdoors.tentHull=null;
   p.treasure=normalizeTreasure(raw.treasure,p);
   p.npcDialogue=normalizeNpcDialogue(raw.npcDialogue);
+  p.shopStock=normalizeShopStock(raw.shopStock,p.vehicleHulls);
   normalizeWeaponStorage(p);
   p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
   return p;

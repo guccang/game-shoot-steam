@@ -107,3 +107,10 @@
   .hud-resources .resource-pill { padding-right:1px; }
   .hud-resources .utility-buttons { gap:1px; }
 }
+
+/* 主天气选项在短屏也保留两行等宽触控区。 */
+.environment-options:has(button[data-weather]) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.environment-options button[data-weather] { min-height: 44px; min-width: 0; }

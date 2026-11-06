@@ -1,4 +1,5 @@
 import { i18nText } from "../../i18n/index.js";
+import { WEATHER_NAMES } from '../../world/play-chronicle.js';
 import { chooseSeasonWeather } from '../../world/season-weather.js';
 import { DEFAULT_TIMINGS, durationFor } from '../../world/environment-timing.js';
 import { livingSeasonDays } from '../../world/living-calendar.js';
@@ -38,7 +39,7 @@ export function createEnvironmentPanel({ environment, root, dialogs, onSave, onC
     }
     $('weather-picture-progress').style.strokeDashoffset=String(100*(1-weatherLeft/durationFor(environment,'weather')));
     $('weather-picture').dataset.running=String(environment.autoWeather);
-    const weatherName={sun:i18nText("ui.panels.environment.749c359ed0"),cloud:i18nText("ui.panels.environment.30c379777e"),rain:i18nText("ui.panels.environment.570764f969"),thunder:i18nText("ui.panels.environment.9ddc77d893"),snow:i18nText("ui.panels.environment.bc4e5aec66")}[environment.weather];
+    const weatherName=WEATHER_NAMES[environment.weather];
     const weatherDescription=i18nText("ui.panels.environment.a8aa8e8b69", { p0: (weatherName), p1: (environment.autoWeather?i18nText("ui.panels.environment.2bc01ddeb8"):i18nText("ui.panels.environment.95997adbf1")) });
     $('weather-picture').setAttribute('aria-label',weatherDescription);$('weather-picture').title=weatherDescription;
     $('environment-countdown').textContent=i18nText("ui.panels.environment.0c9eb6148e", { p0: (SEASON_NAMES[season]), p1: (countdown(remaining)), p2: (TIME_NAMES[environment.time]), p3: (environment.autoTime?i18nText("ui.panels.environment.c2793f9086", { p0: (countdown(timeLeft)) }):i18nText("ui.panels.environment.eb0c326b60")), p4: (environment.autoWeather?i18nText("ui.panels.environment.c2793f9086", { p0: (countdown(weatherLeft)) }):i18nText("ui.panels.environment.eb0c326b60")) });
@@ -46,7 +47,7 @@ export function createEnvironmentPanel({ environment, root, dialogs, onSave, onC
   // 同步环境按钮、过滤色与表单选项。
   function renderEnvironment() {
     const times = TIME_NAMES,
-      weathers = { sun: i18nText("ui.panels.environment.749c359ed0"), cloud: i18nText("ui.panels.environment.30c379777e"), rain: i18nText("ui.panels.environment.570764f969"), thunder: i18nText("ui.panels.environment.9ddc77d893"), snow: i18nText("ui.panels.environment.bc4e5aec66") };
+      weathers = WEATHER_NAMES;
     $('game-frame').dataset.time = environment.time;
     const locked=environment.calendarActive&&!environment.livingPreview;
     root.querySelectorAll('[data-time],[data-forest-season],#auto-time,#timing-save,#timing-defaults,#environment-timings input').forEach(n=>{if('disabled' in n)n.disabled=locked;});
@@ -81,6 +82,7 @@ export function createEnvironmentPanel({ environment, root, dialogs, onSave, onC
       }
     }
     renderClock();
+    $('random-gusts').checked = environment.randomGusts !== false;
     $('auto-weather').checked = environment.autoWeather;
     $('auto-time').checked = environment.calendarActive&&!environment.livingPreview?true:environment.autoTime;
     if(!timingsDirty)for(const key of Object.keys(DEFAULT_TIMINGS))$(`timing-${key}`).value=String(durationFor(environment,key)/60000);
@@ -158,6 +160,7 @@ export function createEnvironmentPanel({ environment, root, dialogs, onSave, onC
     onSave();
   });
   scope.on($('environment-dialog'), 'change', (event) => {
+    if (event.target.id === 'random-gusts') environment.randomGusts = event.target.checked;
     if (event.target.id === 'auto-weather') {
       environment.autoWeather = event.target.checked;
       environment.weatherAt = Date.now();

@@ -25,7 +25,7 @@ function win(g,gate='left'){
   for(let i=0;r.cleared<wave&&i<500;i++){updateCampDefense(g,.2);for(const e of g.enemies)if(e.hp>0)g.hit(e,1e9);g.enemies=g.enemies.filter(e=>e.hp>0);}
   assert.equal(r.cleared,wave);
  }
- assert.ok(g.boss);g.hit(g.boss,1e9);assert.equal(r.phase,'result');
+ assert.ok(g.boss);g.hit(g.boss,1e9);updateCampDefense(g,2);assert.equal(r.phase,'result');
 }
 
 for(const id of ['hover-horde','controller-horde'])for(const mode of ['walk','pine-tank','switch-before-claim'])test(id+' '+mode+'胜利结算立即转为交付且不再指向营门',()=>{

@@ -5,7 +5,7 @@ import {setMineCartDirection,steerStoppedMineCart,mineInputDirection} from './mi
 // 地下玩法独立处理挖掘、铺轨和驾驶；复用正式输入、角色时钟与存档事务。
 import {PRODUCTION as PRODUCTION_RULES,productionDigSeconds} from '../config/farm-production.js';
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint,mineOre} from '../config/mining.js';
-import {miningCommit as commit,mineNotice as notice} from './mine-transactions.js';
+import {miningCommit as commit,mineNotice as notice,creditOre,oreDescription} from './mine-transactions.js';
 import {currentMineLayer,travelMineLayer} from './mine-layers.js';
 import {mineOccupancy,mineBodyRadius} from '../physics/mine-motion.js';
 import {mineCellArea,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
@@ -102,7 +102,8 @@ function digStep(game,dt){
  if(game.vehicle.active||!room.autoDig||mineCellOpen(target,currentMineLayer(game))||mineCellArea(target,currentMineLayer(game))<=0||Math.hypot(point.x-game.player.x,point.y-game.player.y)>M.tile+8){room.dig=null;return;}
  if(room.dig?.key!==key)room.dig={key,elapsed:0};room.dig.elapsed+=dt;
  if(room.dig.elapsed<productionDigSeconds(game.progress,M.digSeconds))return;
- const amount=mineOre(target),r=commit(game,(m,p,l)=>{l.dug[key]=true;m.ore+=amount;p.production.minedOre+=amount;if(p.production.effects.meal>0){p.production.effects.meal--;p.production.mealDigs++;}},`挖通矿道，获得 ${amount} 矿石。`);room.dig=null;if(!r.ok){room.autoDig=false;room.tool=null;}
+
+  const amount=mineOre(target),r=commit(game,(m,p,l)=>{l.dug[key]=true;creditOre(p,room.depth,amount);p.production.minedOre+=amount;if(p.production.effects.meal>0){p.production.effects.meal--;p.production.mealDigs++;}},`挖通矿道，获得 ${oreDescription(room.depth,amount)}。`);room.dig=null;if(!r.ok){room.autoDig=false;room.tool=null;}
 }
 // 所有设施报价来自同一配置，矿石为矿区建造材料，木材沿用正式仓库。
 function afford(game,kind){const price=M.prices[kind];return game.progress.mining.ore>=price.ore&&game.progress.wood>=price.wood;}
@@ -180,9 +181,10 @@ export function updateMining(game,dt,input){
  }
  if(!room.ride&&!game.vehicle.active&&Math.hypot(p.x-before.x,p.y-before.y)>.001)game.progress.production.effects.juice=Math.max(0,game.progress.production.effects.juice-dt);
  p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);if(!game.fishing&&(!room.weaponTarget||room.tool||room.autoDig))p.angle=room.direction*Math.PI/2-Math.PI/2;
- if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
+ if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before,dt);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
  updateMineEcology(game,dt);
- updateCatMotion(p.bodyAnimation,dt,room.ride?0:Math.hypot(p.vx,p.vy),!room.ride);game.time+=dt;return true;
+ const riding = Boolean(room.ride || game.vehicle.active);
+ updateCatMotion(p.bodyAnimation,dt,Math.hypot(p.vx,p.vy),!riding,riding);game.time+=dt;return true;
 }
 // 地表洞口按原世界最近镜像候停进入；离开后需先移开，避免反复进出。
 export function updateMineEntrance(game,dt,input){

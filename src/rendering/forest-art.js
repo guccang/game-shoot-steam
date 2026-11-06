@@ -66,12 +66,15 @@ export function drawForestTree(
   winter = false,
   season = 'summer',
   transition = null,
+  gust = 0,
 ) {
   c.save();
   c.globalAlpha *= campCanopyAlpha(tree, player);
   c.translate(tree.x, tree.y);
   c.scale(tree.size, tree.size);
   c.rotate(reduced ? 0 : treeSway(tree, time));
+  // 以树根为原点逐高偏移，树顶承风，接地位置稳定。
+  if (gust && !reduced) c.transform(1, 0, gust * .115, 1, 0, 0);
   drawTreeSprite(c, tree, night, warmth, winter, season, transition);
   if (tree.flash) {
     c.globalAlpha = (tree.flash / 0.13) * 0.45;

@@ -24,12 +24,12 @@ export function wateringDrop(mouth,end,direction,u){
  return {x:v*v*v*mouth.x+3*v*v*u*a.x+3*v*u*u*b.x+u*u*u*end.x,
   y:v*v*v*mouth.y+3*v*v*u*a.y+3*v*u*u*b.y+u*u*u*end.y,angle:Math.atan2(dy,dx)-Math.PI/2};
 }
-// 小手提起壶身、倾倒再收回；单股水流，最多八滴，暂停沿用冻结后的表现时钟。
+// 小手提起壶身、倾倒再收回；按命中田块分流，每格最多八滴，暂停沿用冻结后的表现时钟。
 export function drawWatering(c,game,player,target,job,t){
  const pose=wateringPose(player,target,t),{hand,facing,angle,mouth,direction}=pose;
  c.save();c.translate(hand.x,hand.y);c.scale(facing,1);c.rotate(angle);drawWaterCan(c);
  c.fillStyle='#f0cfa0';c.strokeStyle='#775e42';c.lineWidth=1.2;c.beginPath();c.ellipse(-5,-10,4,3,0,0,Math.PI*2);c.fill();c.stroke();c.restore();
  if(!job||!pose.pouring)return;
  c.lineWidth=1.6;c.strokeStyle='#c7eff1';c.fillStyle='#75c7d3';
- for(const site of (job.waterTargets||[]).slice(0,1)){const end=nearest(site,player),count=game.reducedMotion?3:8;for(let i=0;i<count;i++){const u=((t-.18)*2.8+i/count)%1,p=wateringDrop(mouth,end,direction,u);if(!p)continue;c.beginPath();c.ellipse(p.x,p.y,1.7,3.2,p.angle,0,Math.PI*2);c.fill();c.stroke();}}
+ for(const site of (job.waterTargets||[])){const end=nearest(site,player),count=game.reducedMotion?3:8;for(let i=0;i<count;i++){const u=((t-.18)*2.8+i/count)%1,p=wateringDrop(mouth,end,direction,u);if(!p)continue;c.beginPath();c.ellipse(p.x,p.y,1.7,3.2,p.angle,0,Math.PI*2);c.fill();c.stroke();}}
 }

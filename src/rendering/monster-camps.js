@@ -12,7 +12,7 @@ export function campRenderObjects(game){return monsterCampObjects(game).flatMap(
 // 地面只保留自然草土铺底，边缘由居民头顶预警表达，不绘制任何警戒圆圈。
 export function drawMonsterCampGround(c,game,night,view){
  if(!monsterCampsAvailable(game))return;c.save();
- for(const camp of visibleBodies(MONSTER_CAMPS.filter(c=>c.mapId===game.mapId),view,200)){
+ for(const camp of visibleBodies(MONSTER_CAMPS.filter(c=>c.mapId===game.mapId),view,400)){
   oval(c,camp.x,camp.y+5,115*MONSTER_CAMP_RULES.scale,82*MONSTER_CAMP_RULES.scale,night>.5?'#727b59':'#bfca8e');
  }
  c.restore();
@@ -25,6 +25,7 @@ export function drawMonsterCampObject(c,item,game,night,reduced,deferHealthBar=f
   if(item.campState==='alert'){const head=campResidentHead(item);c.save();box(c,item.x-10,item.y-head,20,23,7,'#f4d681',EDGE,1.7);c.font=canvasFont(17);c.textAlign='center';c.fillStyle=EDGE;c.fillText('!',item.x,item.y-head+17);c.restore();}
   if(item.type==='monster-camp-npc'){c.save();c.font=canvasFont(12);c.textAlign='center';box(c,item.x-30,item.y-69,60,19,6,'#fff1c9',EDGE,1.5);c.fillStyle=EDGE;c.fillText(item.name,item.x,item.y-55);c.restore();}return;
  }
+ // 场地用世界坐标拉开间距，摆件在各自锚点按原尺寸绘制。
  c.save();c.translate(item.x,item.y);c.lineJoin='round';c.lineCap='round';
  if(item.type==='monster-camp-sign'){
   // 单根歪木桩撑起有缺口的旧木板，低矮小巧；褪色牌面只写名称与等级。

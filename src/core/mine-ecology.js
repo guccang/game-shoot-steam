@@ -7,11 +7,12 @@ import {mineCell,mineKey,minePoint} from '../config/mining.js';
 import {MINE_ANIMALS as A,MINE_ECOLOGY as E,MINE_ROCK,mineAnimalStats,mineThreatLimit,mineTerrain,mineCellOpen,mineInsideBounds} from '../config/mine-ecology.js';
 import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {currentMineLayer} from './mine-layers.js';
-import {miningCommit,mineNotice} from './mine-transactions.js';
+import {miningCommit,mineNotice,creditOre,oreDescription} from './mine-transactions.js';
 import {mineOccupancy,mineLineClear} from '../physics/mine-motion.js';
 import {vehicleWeapon,vehicleDamage} from '../config/vehicles.js';
 import {consumeRound,advanceReload} from '../combat/magazine.js';
 import {takeSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
+import {updateAmmoWarning} from '../combat/ammo-warning.js';
 import {triggerRecoil,updateRecoil} from '../combat/recoil.js';
 // 天然水面无需挖掘即可铺桥，脚下和前方均可施工，桥面支持轨道与战车。
 export function buildMineBridge(game,ahead=true){
@@ -28,7 +29,7 @@ export function harvestMine(game){
  if(mineEntrancePlatform(cell,l)||!mineCellOpen(cell,l)||!b.resource||t.safe||t.water||!t.prop)return mineNotice(game,'请站到有菌木、晶簇、草药、山体或化石的地块采集。');
  if((l.harvested[key]||0)>l.age)return mineNotice(game,`这里正在恢复，约 ${Math.ceil(l.harvested[key]-l.age)} 秒后可再次采集。`);
  if(b.id==='stalagmite'){const rock=mineRockSite(l,cell);return rock?{ok:hitMineRock(game,rock,MINE_ROCK.hp),message:game.cottage.notice}:mineNotice(game,'这里没有可破坏的山体。');}
- const r=miningCommit(game,(m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')m.ore+=b.yield;},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.yield} ${b.resource==='wood'?'木材':'矿石'}。`);
+ const r=miningCommit(game,(m,p,layer)=>{layer.dug[key]=true;layer.harvested[key]=layer.age+b.regrow;if(b.resource==='wood')p.wood+=b.yield;else if(b.resource==='ore')creditOre(p,game.cottage.depth,b.yield);},b.resource==='heal'?`采集恢复草药，恢复 ${b.yield} 生命。`:`采集${b.name}，获得 ${b.resource==='wood'?b.yield+' 木材':oreDescription(game.cottage.depth,b.yield)}。`);
  if(r.ok&&b.resource==='heal')game.player.hp=Math.min(game.maxHp(),game.player.hp+b.yield);return r;
 }
 // 扫描附近天然洞厅与已开掘区域，天然生物无需先挖出景观才出现。
@@ -59,11 +60,13 @@ function advanceBolts(game,dt){
 }
 // 矿锄自动近身防卫，战车使用实际主炮伤害、余弹、装填和独立后坐，未开掘岩壁阻断索敌。
 function defendExplorer(game,dt,actors){
- if(game.fishing)return;
+ if(game.fishing){updateAmmoWarning(game,dt,false);return;}
  const room=game.cottage,p=game.player,v=game.vehicle;room.attackWait=Math.max(0,(room.attackWait||0)-dt);room.strike=Math.max(0,(room.strike||0)-dt);
  const weapon=v.active?vehicleWeapon(game.progress,v.weaponIndex):null,module=v.module;
  if(v.active&&weapon&&module){advanceReload(module.magazine,weapon,dt,game.onEvent,n=>takeSupplyAmmo(game,weapon,n,v.index),supplyAmmoCount(game,weapon,v.index));updateRecoil(v.recoil,v.weaponIndex,dt);}
  const range=v.active?Math.min(340,weapon?.range||260):64,target=actors.filter(a=>a.hp>0&&Math.hypot(a.x-p.x,a.y-p.y)<range&&mineLineClear(game,p,a)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
+ // 矿镐作业和打岩壁不报缺弹；地下枪械和主炮沿用地表的库存与去重规则。
+ updateAmmoWarning(game,dt,v.active?!!target:room.weaponReady&&room.weaponTarget!=null&&room.combat.enemies.some(a=>a.key===room.weaponTarget));
  if(weapon?.id==='vehicle-vulcan'){v.rotorSpeed+=((target&&module?.magazine.ammo>0?38:0)-v.rotorSpeed)*Math.min(1,dt*7);v.rotor=(v.rotor+v.rotorSpeed*dt)%(Math.PI*2);}
  if(!target){room.charge=0;return;}if(room.attackWait>0)return;
  if(!v.active){const w=game.weapon(),mag=game.magazines[game.loadout.weapon];if(room.weaponReady&&(w.controller||w.attackKind==='defense'||mag.ammo>0||mag.remaining>0||supplyAmmoCount(game,w)>0))return;room.strike=.3;room.attackWait=.65;hitMineAnimal(game,target,24);return;}

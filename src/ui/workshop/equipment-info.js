@@ -1,3 +1,4 @@
+import {eraVehicle,eraDonor,ERA_RESOURCES} from '../../config/vehicle-eras.js';
 // 工坊装备档案只读正式目录与拥有状态，不参与购买、试装和属性计算。
 import {equipmentQuestReason,equipmentQuest} from '../../progression/equipment-quests.js';
 import {WEAPONS} from '../../config/weapons.js';
@@ -13,6 +14,11 @@ export function workshopEquipmentInfo(progress,{kind,index,turret=null}){
  const native=hull?VEHICLE_ARMAMENTS.find(w=>w.weaponIndex===progress.vehicleLoadouts[index]):null;
  const armament=native&&turret===native.weaponIndex?native:null;
  const equipment=armament||catalog[index];
+ const era=hull&&!armament&&eraVehicle(index);
+ if(era){
+  const original=eraDonor(era),metal=Object.keys(era.cost).filter(key=>ERA_RESOURCES[key]).map(key=>ERA_RESOURCES[key].source);
+  return {id:era.id,name:era.name,description:era.description,category:'载具档案',owned:!!progress.vehicleHulls[index],maker:'营地载具工坊',title:'制造与运载',story:[original?'使用'+original.name+'改造，沿用原车货舱和车位。':'缴交木材即可打造。','原厂额定货载 '+era.payload+' 千克。'],source:metal.join(' ')||'收集木材送入仓库，在载具工坊打造。'};
+ }
  const lore=(armament?ARMAMENT_STORIES:hull?VEHICLE_STORIES:WEAPON_STORIES)[equipment.id];
  const owned=!!(hull?progress.vehicleHulls:progress.weapons)?.[index];
  const quest=!armament&&equipmentQuest(kind,index);

@@ -43,12 +43,14 @@ test('车体天赋只改耐久或速度，远征百级装备不把角色天赋�
  const local=expeditionEquipment(p,{weapon:2,vehicle:2,turret:2,modules:[0,0,0]},100);assert.equal(heroTalent(local).level,10);
 });
 
-test('角色切换和升级即时作用，车体保持受损比例，损毁冷却和弹药不被刷新',()=>{
+test('角色切换和升级即时作用，车体保持受损比例，损毁冷却和弹药不被刷新',async()=>{
  const p=progress();p.coins=p.wood=100000;const g=new Game(p,()=>.5);g.start();const hull=g.vehicle;
+ g.livingPersist=()=>true;g.cottage={kind:'cottage',floor:3,residentTalk:2,outside:{x:g.player.x,y:g.player.y}};
+ Object.assign(g.player,(await import('../src/config/cottage-residents.js')).RESIDENT_VISITOR);
  hull.hp=hull.maxHp*.4;hull.module.magazine.ammo=7;hull.module.magazine.remaining=1.2;
  assert.ok(g.transact('heroes',2,'equip'));assert.equal(hull.maxHp,vehicleMaxHp(g.progress,g.maxHp()));assert.ok(Math.abs(hull.hp/hull.maxHp-.4)<1e-9);
- assert.ok(g.transact('heroes',2,'upgrade'));assert.equal(hull.maxHp,vehicleMaxHp(g.progress,g.maxHp()));assert.ok(Math.abs(hull.hp/hull.maxHp-.4)<1e-9);
- hull.hp=0;hull.cooldown=21;assert.ok(g.transact('heroes',0,'equip'));assert.equal(hull.hp,0);assert.equal(hull.cooldown,21);assert.equal(hull.module.magazine.ammo,7);assert.equal(hull.module.magazine.remaining,1.2);
+ assert.equal(g.transact('heroes',2,'upgrade'),false);assert.equal(hull.maxHp,vehicleMaxHp(g.progress,g.maxHp()));assert.ok(Math.abs(hull.hp/hull.maxHp-.4)<1e-9);
+ g.cottage.floor=1;g.cottage.residentTalk=0;hull.hp=0;hull.cooldown=21;assert.ok(g.transact('heroes',0,'equip'));assert.equal(hull.hp,0);assert.equal(hull.cooldown,21);assert.equal(hull.module.magazine.ammo,7);assert.equal(hull.module.magazine.remaining,1.2);
 });
 
 test('卡片仅按武器与载具列最终加成，伤害天赋合并，未购买展示一级预览',()=>{

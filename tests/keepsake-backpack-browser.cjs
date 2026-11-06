@@ -30,6 +30,16 @@ async original=>{
   await page.evaluate(async()=>{const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.phase='doing';p.mainline.currentId='first-map';p.restoration.repaired=['cottage','neighbors','travel'];g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.vehicle.active=false;a.refresh();});
   await page.locator('#mainline-hud').tap();await page.locator('#phone-dialog').waitFor({state:'visible'});
   if(await page.evaluate(()=>a.game.progress.mainline.seen.map!==0||document.getElementById('map-dialog').open))throw Error('手机首页提前完成地图教学');
+  // 验证正式绘制器有输出，装饰头像仍由原按钮处理触控。
+  const portraits=await page.locator('#phone-dialog [data-call],#phone-dialog [data-locate-vehicle]').evaluateAll(rows=>rows.map(row=>{
+   const canvas=row.querySelector('canvas');
+   return canvas&&canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((value,i)=>i%4===3&&value>0);
+  }));
+  if(!portraits.length||portraits.includes(false))throw Error('手机头像缺失');
+  const wood=page.getByRole('checkbox',{name:'木材',exact:true});
+  if(!await wood.isChecked())throw Error('木材应默认勾选');
+  await wood.uncheck();
+  if(await page.evaluate(()=>a.game.gameplayPreferences.targetWood))throw Error('关闭木材未生效');
   await page.waitForFunction(()=>document.querySelector('#phone-dialog [data-pack-action=map]').classList.contains('operation-source'));
   await page.screenshot({path:output+'task-phone.png'});
   await page.locator('#phone-dialog [data-pack-action=map]').tap();await page.locator('#map-dialog').waitFor({state:'visible'});
@@ -39,7 +49,8 @@ async original=>{
   await page.locator('#phone-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
   // 已完成主线的正式存档用于通话、旅行和昼夜检查，不干扰任务气泡。
   await page.evaluate(async()=>{const g=a.game;g.progress.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];g.progress.mainline.phase='complete';g.progress.mainline.currentId=null;g.mainlineSpeech=null;g.enemies=[];a.environment.autoWeather=false;a.environment.weather='sun';g.livingWeather='sun';Object.assign(g.player,{x:610,y:280});a.refresh();});
-  await open('phone-button');await page.locator('[data-pack-action=map]').tap();
+  await open('phone-button');if(await wood.isChecked())throw Error('重开手机未保留木材设定');
+  await page.locator('[data-pack-action=map]').tap();
   await page.locator('[data-map=jiuzhaigou]').tap();await page.waitForFunction(()=>a.game.mapId==='jiuzhaigou');
   await page.locator('[data-map=forest]').tap();await page.waitForFunction(()=>a.game.mapId==='forest');
   await page.locator('#map-done').tap();await page.locator('[data-call=cook]').tap();

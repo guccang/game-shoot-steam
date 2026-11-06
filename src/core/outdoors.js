@@ -1,3 +1,5 @@
+import {GLIDERS} from '../config/gliders.js';
+import {shopDelivery,addShopStock} from './shop-delivery.js';
 import {fishingCastPoint,lakeFishingContext,fishingPreview} from './lake-fishing.js';
 import {fishStruggle} from '../config/fish-struggles.js';
 import {fishingSurveyDefinition,fishingSurveyProgress,creditFishingSurvey} from '../progression/fishing-surveys.js';
@@ -20,12 +22,14 @@ import {campPlacement,fishingShores} from '../world/outdoor-sites.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 import {cargoAccessible} from './cargo.js';
 import {cottageSleepTarget} from './cottage.js';
-import {catLoad} from '../progression/load-weight.js';
+import {catLoad,vehicleLoad} from '../progression/load-weight.js';
+import {parkedOwned} from './camp-parking.js';
+import {storedShopGood} from '../progression/shop-stock.js';
 
 // 明确拒绝战斗、室内和借用活动；普通暂停菜单允许查看与提交事务。
 export function outdoorReason(game,{shop=false,fishing=false}={}){
  if(!['playing','paused'].includes(game.state)||game.player.hp<=0||game.arrivalPending||game.story||game.realm||game.fireActive||game.campDefense||game.workshopTrial)return '请在自由巡林时使用野外装备。';
- if(shop)return game.cottage?.kind==='ammo'?'':'请到弹药补给铺找售货员购买野外装备。';
+ if(shop)return game.cottage?.kind==='outdoor'?'':'请到户外用品店找售货员购买野外装备。';
  if(farmWorking(game))return '请先完成手上的农活。';
  // 地下只开放垂钓，露营与采购仍遵循原有场所规则；地表敌人不影响地下湖岸。
  if(fishing&&game.cottage?.kind==='mine'){
@@ -48,16 +52,25 @@ function commit(game,next,message,hp=game.player.hp){
  if(!saved)return {ok:false,message:'保存失败，物品和金币未改变，请重试。'};
  game.progress=next;game.player.hp=hp;game.outdoorNotice=message;game.onEvent('outdoor-change');return {ok:true,message};
 }
+// 型号在户外店购置并装到阳台，切换已有型号免费。一次存档同时更新钱包和装备。
+export function selectOutdoorGlider(game,id){
+ if(!Object.hasOwn(GLIDERS,id))return {ok:false,message:'没有这款滑翔伞。'};
+ const reason=outdoorReason(game,{shop:true});if(reason)return {ok:false,message:reason};
+ const next=validateProgress(structuredClone(game.progress)),p=next.outdoors,model=GLIDERS[id];
+ if(!p.gliders.includes(id)){
+  if(next.coins<model.price)return {ok:false,message:'金币不足，需要 '+model.price+' 金币。'};
+  next.coins-=model.price;p.gliders.push(id);
+ }
+ p.selectedGlider=id;return commit(game,next,'已装备'+model.name+'，可从小屋阳台起飞。');
+}
 // 商店统一出售永久套装和成包鱼饵；满背包时先整理，不隐式丢物品。
 export function buyOutdoorGear(game,id){
  const reason=outdoorReason(game,{shop:true}),gear=Object.hasOwn(OUTDOOR_GEAR,id)?OUTDOOR_GEAR[id]:null;if(reason||!gear)return {ok:false,message:reason||'没有这件装备。'};
  if(gear.kind==='tent'&&game.progress.outdoors.tent||gear.kind==='rod'&&rodOwned(game.progress.outdoors,gear.tackleId))return {ok:false,message:'已经拥有这套装备。'};
  if(game.progress.coins<gear.coins)return {ok:false,message:`金币不足，需要 ${gear.coins} 金币。`};
- const next=validateProgress(structuredClone(game.progress)),p=next.outdoors;
- if(gear.kind==='bait'){if(baitCount(p,gear.tackleId)+gear.pack>999)return {ok:false,message:'这种鱼饵已满。'};if(gear.tackleId==='bait')p.bait+=gear.pack;else p.baits[gear.tackleId]+=gear.pack;}
- else if(gear.kind==='rod'){const hadRod=rodOwned(p,p.selectedRod);if(gear.tackleId==='rod')p.rod=true;else p.rods[gear.tackleId]=true;if(!hadRod)p.selectedRod=gear.tackleId;}else p.tent=true;
- const snapshot=Object.assign(Object.create(game),{progress:next});if(catLoad(snapshot).overloaded)return {ok:false,message:'背包空间不足，先整理物品再购买。'};
- next.coins-=gear.coins;return commit(game,next,`已购入${gear.name}，打开「野外」开始使用。`);
+ const count=gear.pack||1,delivery=shopDelivery(game,'outdoor:'+id,count);if(!delivery.ok)return delivery;
+ const next=validateProgress(structuredClone(game.progress));addShopStock(next,'outdoor:'+id,count,delivery.where);
+ next.coins-=gear.coins;return commit(game,next,delivery.message);
 }
 // 钓具切换先落盘，进行中的抛竿不会被临时换饵或换竿改变概率。
 export function equipFishingTackle(game,kind,id){
@@ -75,17 +88,35 @@ export function sellOutdoorFish(game){
  if(next.coins+coins>RESOURCE_CAP)return {ok:false,message:'金币接近上限，请先使用部分金币。'};
  next.coins+=coins;return commit(game,next,`鱼获已售出，获得 ${coins} 金币。`);
 }
-// 战车驻营不要求购买帐篷；套装可在车旁展开，步行露营则需要自有帐篷。
+// 只从实际停在本地图的自有车和正在驾驶的车中挑选，按玩家到车辆的距离装卸。
+function nearbyCampHulls(game){
+ const parked=parkedOwned(game).map(site=>({hull:site.record.hull,distance:worldDistance(site,game.player)}));
+ if(game.vehicle.active)parked.unshift({hull:game.vehicle.index,distance:0});
+ return parked.filter(({hull})=>!game.progress.vehicleService[hull]?.phase&&cargoAccessible(game,hull))
+  .sort((a,b)=>a.distance-b.distance).map(site=>site.hull);
+}
+// 在仓库主动取出套装，之后可以步行携往其他营地。
+export function unloadCampKit(game,hull){
+ if(!Number.isInteger(hull)||game.progress.outdoors.tentHull!==hull||!cargoAccessible(game,hull))return {ok:false,message:'请到存放露营套装的载具旁取出。'};
+ const next=validateProgress(structuredClone(game.progress));next.outdoors.tentHull=null;
+ if(catLoad(Object.assign(Object.create(game),{progress:next})).overloaded)return {ok:false,message:'背包装不下露营套装，请先清理背包。'};
+ return commit(game,next,'露营套装已放入背包。');
+}
+// 战车驻营不要求购买帐篷；套装可从身边的货舱直接展开。
 export function deployCamp(game,mode='tent'){
  const reason=outdoorReason(game);if(reason)return {ok:false,message:reason};
  if(outdoorBusy(game)||game.progress.outdoors.camp)return {ok:false,message:'请先结束动作或收回原营地。'};
  if(!['tent','vehicle'].includes(mode))return {ok:false,message:'请选择帐篷或战车驻营。'};
- if(mode==='tent'&&!game.progress.outdoors.tent)return {ok:false,message:'先到弹药补给铺购买露营套装。'};
+ if(mode==='tent'&&!game.progress.outdoors.tent)return {ok:false,message:storedShopGood(game.progress,'outdoor:tent')?'露营套装已送到小屋仓库，请先去取回。':'先到户外用品店购买露营套装。'};
+ const stored=game.progress.outdoors.tentHull;
+ const kit=game.progress.outdoors.tent&&(stored==null||nearbyCampHulls(game).includes(stored));
+ if(mode==='tent'&&!kit)return {ok:false,message:'露营套装在'+vehicleModel(stored).name+'的仓库中，请到车旁展开或取回。'};
  const hull=game.vehicle.index;
  if(mode==='vehicle'&&(!cargoAccessible(game,hull)||vehicleModel(hull).flying||game.vehicle.hp<=0||game.progress.vehicleService[hull]?.phase))return {ok:false,message:'请在完好的自有地面载具旁驻营。'};
  const site=campPlacement(game);if(!site)return {ok:false,message:'这里放不下营地，请找远离城镇、田块和水面的开阔草地。'};
  if(game.vehicle.active&&!game.dismountVehicle())return {ok:false,message:'附近无法安全下车，请移到空地。'};
- const next=validateProgress(structuredClone(game.progress));next.outdoors.camp={...site,mode,hull:mode==='vehicle'?hull:null,kit:next.outdoors.tent};
+ const next=validateProgress(structuredClone(game.progress));next.outdoors.camp={...site,mode,hull:mode==='vehicle'?hull:null,kit};
+ if(kit)next.outdoors.tentHull=null;
  return commit(game,next,mode==='vehicle'?'战车已停稳，野外营地搭好了。':'帐篷与天幕已展开，可以在营地休息。');
 }
 // 营地只允许在现场收回，拆营不会删除车辆或产生第二份装备。
@@ -93,8 +124,15 @@ export function packCamp(game){
  const reason=outdoorReason(game),camp=game.progress.outdoors.camp;if(reason)return {ok:false,message:reason};
  if(outdoorBusy(game)||!camp||camp.mapId!==game.mapId||worldDistance(camp,game.player)>R.campReach)return {ok:false,message:'请回到自己的营地旁，结束动作后再收营。'};
  const next=validateProgress(structuredClone(game.progress));next.outdoors.camp=null;
- if(catLoad(Object.assign(Object.create(game),{progress:next})).overloaded)return {ok:false,message:'背包装不下露营套装，请先清理物品。'};
- return commit(game,next,'营地已收好，装备放回背包。');
+ if(!camp.kit)return commit(game,next,'战车营地已收好。');
+ for(const hull of nearbyCampHulls(game)){
+  const load=vehicleLoad(game,hull,{driver:false});
+  if(load.payload+OUTDOOR_GEAR.tent.mass>=load.capacity)continue;
+  next.outdoors.tentHull=hull;
+  return commit(game,next,'营地已收好，露营套装已放入'+vehicleModel(hull).name+'的仓库。');
+ }
+ if(catLoad(Object.assign(Object.create(game),{progress:next})).overloaded)return {ok:false,message:'露营套装需要 '+OUTDOOR_GEAR.tent.mass+' 千克空间。请先清理背包或附近载具仓库，再来收营。营地已保留。'};
+ return commit(game,next,'营地已收好，露营套装已放入背包。');
 }
 // 睡眠目标在点击时锁定，离开或受威胁会中断，不能远程回血。
 export function sleepAtCamp(game,mode='morning'){

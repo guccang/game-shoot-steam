@@ -1,4 +1,6 @@
 // 场景短按只安排真实行走；抵达后的入屋、上楼和睡眠仍由正式候停规则提交。
+import {roomResident,RESIDENT_SPOT,RESIDENT_VISITOR} from '../config/cottage-residents.js';
+import {HEROES} from '../config/heroes.js';
 import {MINING} from '../config/mining.js';
 import {COTTAGE,COTTAGE_FURNITURE,cottageFloor} from '../config/cottage.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
@@ -7,7 +9,7 @@ import {nearest,worldDistance} from '../world/coordinates.js';
 import {canInspectBuilding} from './building-entry.js';
 import {canEnterCottage,cottageBlocked} from './cottage.js';
 import {facilityOpen} from '../config/town-restoration.js';
-import {homeExterior,HOME_ELEVATOR,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
+import {HOME_DIRECTIONS,floorBalconies,homeExterior,HOME_ELEVATOR,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {createQuestRouteSearch} from '../physics/quest-route.js';
 import {playerNavigationBody} from './prepared-navigation.js';
 import {farmMode} from './farm.js';
@@ -26,7 +28,13 @@ export function cottageClickTargets(game){
  const room=game.cottage;if(!room||room.kind!=='cottage'||room.balcony||room.sleep||game.player.hp<=0)return [];
  const bed=COTTAGE_FURNITURE[0];
  const floor=cottageFloor(room),home=game.progress.homeDecor,transit=hasHomeElevator(home,floor)?[{...HOME_ELEVATOR,label:'走到电梯乘坐',y:425,width:84,height:170,goal:HOME_ELEVATOR.landing}]:homeStairRoutes(home,floor);
- return [...transit,...(!floor&&home.basement?[{...MINING.hatch,label:'走到地下室梯口'}]:[]),...(!floor?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
+ const balcony=floorBalconies(home,floor).map(side=>{
+  const {name,door,frame,dx}=HOME_DIRECTIONS[side];
+  return {id:'balcony-'+side,label:'走到'+name+'阳台门',x:frame.x-dx*26,y:frame.y-(dx?15:34),width:dx?92:72,height:78,goal:door};
+ });
+ const owner=roomResident(game.progress,floor);
+ const resident=owner!==undefined&&owner!==game.progress.hero&&!room.arcade?[{...RESIDENT_SPOT,y:RESIDENT_SPOT.y+5,id:'resident',label:'和'+HEROES[owner].name+'聊天',width:86,height:96,goal:RESIDENT_VISITOR}]:[];
+ return [...resident,...balcony,...transit,...(!floor&&home.basement?[{...MINING.hatch,label:'走到地下室梯口'}]:[]),...(!floor?[{...bed,id:'bed',label:'走到床边睡觉',height:A.bedHeight,goal:COTTAGE.bed}]:[])];
 }
 // 一个意图只属于当前角色、地图和楼层；不写入存档，不跨场景继续移动。
 function request(game,id,goal){
@@ -53,10 +61,11 @@ export function approachCottageTarget(game,id){
  if(id==='stairs'){const targets=cottageClickTargets(game);id=targets.find(t=>t.id==='stairs-up')?.id||'stairs-down';}
  const item=cottageClickTargets(game).find(item=>item.id===id);if(!item||!request(game,id,item.goal))return false;
  game.cottage.storageNotice='';game.cottage.restResult='';
- if(id==='basement'){game.cottage.basementLatch=false;game.cottage.basementElapsed=0;}
+ if(id.startsWith('balcony-')){game.cottage.balconyLatch=false;game.cottage.balconyElapsed=0;}
+ else if(id==='basement'){game.cottage.basementLatch=false;game.cottage.basementElapsed=0;}
  else if(id.startsWith('stairs-')){game.cottage.stairsLatch=false;game.cottage.stairsElapsed=null;game.cottage.stairsTarget=item.target;}
  else if(id==='elevator'){game.cottage.elevatorLatch=false;game.cottage.elevatorElapsed=null;game.cottage.elevatorRequest=false;}
- else {game.cottage.bedLatch=false;game.cottage.restElapsed=null;}
+ else if(id==='bed'){game.cottage.bedLatch=false;game.cottage.restElapsed=null;}
  return true;
 }
 // 手动方向立即接管，暂停冻结；搜索和跟随均有限，受阻时停止而不穿透家具或墙体。
@@ -66,7 +75,8 @@ export function updateSceneApproach(game,dt,input){
  if(invalid||Math.hypot(input.x,input.y)>.01){game.sceneApproach=null;return input;}
  if(game.state!=='playing')return input;
  const p=game.player,goal=walk.goal,distance=worldDistance(p,goal);
- if(distance<=A.arrivalRadius){game.sceneApproach=null;if(walk.id==='warehouse')game.onEvent('scene-warehouse');return {x:0,y:0};}
+ if(distance<=A.arrivalRadius){game.sceneApproach=null;if(walk.id==='warehouse')game.onEvent('scene-warehouse');
+  if(walk.id==='resident')game.cottage.residentTalk=roomResident(game.progress,walk.floor);return {x:0,y:0};}
  walk.elapsed+=dt;walk.still=worldDistance(p,walk.last)<.05?walk.still+dt:0;walk.last={x:p.x,y:p.y};
  if(walk.elapsed>A.maxTravel||walk.still>A.blockedWait){game.sceneApproach=null;return {x:0,y:0};}
  if(!walk.search){

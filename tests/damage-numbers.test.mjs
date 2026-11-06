@@ -5,7 +5,7 @@ import {Game,freshProgress} from '../src/game.js';
 import {showDamageNumber} from '../src/combat/damage-numbers.js';
 import {updateCombatTraces} from '../src/combat/transient-effects.js';
 // 正式散弹枪与无障碍测试位置，不替换命中或伤害实现。
-function setup(){const p=freshProgress();p.weapons[3]=1;p.weapon=3;const g=new Game(p,()=>.5);g.start();Object.assign(g.player,{x:1600,y:400});g.trees=[];g.enemies=[];g.numbers=[];return g;}
+function setup(){const p=freshProgress();p.weapons[3]=1;p.weapon=3;const g=new Game(p,()=>.5);g.state='playing';g.magazines[3]={ammo:1,remaining:0};Object.assign(g.player,{x:1600,y:400});g.trees=[];g.enemies=[];g.numbers=[];return g;}
 test('同一枪实弹命中累计为一个数，数值严格等于实际扣血',()=>{
  const g=setup();g.spawnEnemy(0,80);const e=g.enemies[0];e.hp=e.maxHp=10000;g.attack();
  assert.ok(g.projectiles.length>1);const group=g.projectiles[0].damageGroup;assert.ok(group);assert.ok(g.projectiles.every(p=>p.damageGroup===group));

@@ -3,6 +3,8 @@ export const FARM_ACTION_TIMING=Object.freeze({dig:{hit:.38,end:.72},remove:{hit
 // 最后一个交战目标消失后继续持枪警戒，使用有效游玩秒数，避免击杀后立即闪回农具。
 export const FARM_COMBAT_RESUME_DELAY=1.05;
 export const FARM_TOOL_CONTACT=Object.freeze({dig:{x:36,y:12},harvest:{x:36,y:0}});
+// 推镰的刃口偏移同时用于绘制和命中，锁行容差小于两条相邻田垄的间距。
+export const ROW_REAPER=Object.freeze({reach:26,startRange:76,rowTolerance:5,maxGap:113,speed:.62});
 export const FARM_CROP_SIZE=Object.freeze([{width:18,height:14},{width:32,height:40},{width:49,height:67}]);
 
 // 有界缓动只改变工具关节，不缩放身体或修改实际动作时间。

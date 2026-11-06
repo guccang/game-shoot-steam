@@ -1,0 +1,54 @@
+{
+  "id": 24149,
+  "media_type": "video",
+  "request_id": "vid-ztj-forest-harness-pony-20261106-01",
+  "input": {
+    "mode": "first_frame",
+    "model": "seedance-2.5",
+    "ratio": "adaptive",
+    "inputs": [
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-ztj-forest-harness-pony-20261106-01/432eaeb8ee7e5bc2-horse-reference.png",
+        "role": "first_frame",
+        "type": "image"
+      }
+    ],
+    "prompt": "Animate exactly this little front-facing forest-game draft pony on solid chroma-key blue. Locked camera, fixed scale, fixed head-on direction and fixed hoof baseline. Keep the two compact front legs and tiny rear hooves and leaf harness, same flat colors and outlines. From 0 to 3 seconds stand in place, blink once and gently breathe. From 3 to 9 seconds walk IN PLACE facing straight at camera with a clear repeating alternating gait, legs articulate in turn, left hoof rises and plants then right hoof rises and plants, slight natural forelock and ear movement. Keep center and size steady, no turns, no zoom, no cart, no people, no shadows, no additional objects. Finish standing still.",
+    "duration": 10,
+    "request_id": "vid-ztj-forest-harness-pony-20261106-01",
+    "resolution": "720p",
+    "generate_audio": false,
+    "execution_expires_after": 10800
+  },
+  "output": {
+    "usage": {
+      "total_tokens": 216900,
+      "completion_tokens": 216900
+    },
+    "video": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-harness-pony-20261106-01/video/video-19bfc07266b409bb.mp4",
+      "mime_type": "video/mp4",
+      "size_bytes": 3402744
+    },
+    "last_frame": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-harness-pony-20261106-01/video/last-frame-f3c52c0e2694f43e.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 136657
+    },
+    "media_type": "video",
+    "properties": {
+      "fps": 24,
+      "seed": 39267,
+      "ratio": "1:1",
+      "duration": 10,
+      "resolution": "720p",
+      "output_format": "mp4",
+      "generate_audio": false
+    },
+    "request_id": "vid-ztj-forest-harness-pony-20261106-01",
+    "provider_task_id": "cgt-20261106001622-2ww2b"
+  },
+  "created_at": "2026-11-05T16:18:35.525379Z",
+  "updated_at": "2026-11-05T16:18:35.525379Z",
+  "auth_mode": "compatibility"
+}

@@ -86,6 +86,7 @@ export function createSaveStore(getStorage = () => globalThis.localStorage) {
         'seasonAt',
         'autoTime',
         'autoWeather',
+        'randomGusts',
         'dayCycleAt',
         'weatherAt',
         'cycleVersion',
@@ -106,11 +107,11 @@ export function createSaveStore(getStorage = () => globalThis.localStorage) {
   // 未设置或非法值默认不自动暂停，保留玩家明确开启的选择。
   function loadGameplay() {
     const saved=read(STORAGE_KEYS.gameplay);
-    return { pauseOnBlur: saved?.pauseOnBlur === true, showFps: saved?.showFps === true };
+    return { targetWood: saved?.targetWood !== false, pauseOnBlur: saved?.pauseOnBlur === true, showFps: saved?.showFps === true };
   }
   // 操作偏好独立于成长存档，清空游戏进度时仍保留玩家选择。
   function saveGameplay(preferences) {
-    return write(STORAGE_KEYS.gameplay, { pauseOnBlur: preferences.pauseOnBlur === true, showFps: preferences.showFps === true });
+    return write(STORAGE_KEYS.gameplay, { targetWood: preferences.targetWood !== false, pauseOnBlur: preferences.pauseOnBlur === true, showFps: preferences.showFps === true });
   }
   return {
     // 应用初始化后绑定日志，避免存储模块依赖页面或诊断实现。

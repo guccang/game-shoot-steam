@@ -7,6 +7,7 @@ export function normalizeNpcDialogue(raw){
   const value=raw?.[id];if(!value||!Number.isSafeInteger(value.count)||value.count<=0)continue;
   const count=Math.min(1000000,value.count),valid=npc.lines.filter(l=>NPC_DIALOGUE_STAGES[l.stage].at<count).map(l=>l.id);
   records[id]={count,seen:[...new Set((Array.isArray(value.seen)?value.seen:[]).filter(key=>valid.includes(key)))],last:valid.includes(value.last)?value.last:null};
+  if(Number.isSafeInteger(value.resumeAt)&&value.resumeAt>0)records[id].resumeAt=value.resumeAt;
  }
  return records;
 }

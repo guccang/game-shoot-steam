@@ -1,3 +1,4 @@
+import {weaponTerrainTargets} from './terrain-targets.js';
 import {heldChainsawSegment} from './chainsaw-geometry.js';
 import {riderPosition} from '../config/vehicle-rider.js';
 import {statisticsSource} from './statistics-source.js';
@@ -18,7 +19,7 @@ export function cutWithChainsaw(game, weapon, muzzle, direction, amount, critica
   }:heldChainsawSegment(riderPosition(game.player,game.vehicle),weapon.range,game.reducedMotion);
   const {start,end}=segment;
   if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(start,end));
-  const targets = [...game.trees, ...game.enemies, ...(game.boss ? [game.boss] : [])];
+  const targets = [...weaponTerrainTargets(game, !independent && weapon.id === 'chainsaw'), ...game.enemies, ...(game.boss ? [game.boss] : [])];
   const hit = traceTargets(start, end, targets, segment.radius)[0];
   if (!hit) return;
   // 接触事件只驱动锯链负载音色，手持、载具和浮游炮共用真实命中结果。

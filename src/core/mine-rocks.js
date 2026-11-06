@@ -4,7 +4,7 @@ import {mineTerrain,mineInsideBounds,MINE_ROCK} from '../config/mine-ecology.js'
 import {mineLandscapeAnchor} from '../world/mine-surface.js';
 import {mineEntrancePlatform} from '../world/mine-entrances.js';
 import {currentMineLayer} from './mine-layers.js';
-import {miningCommit} from './mine-transactions.js';
+import {miningCommit,creditOre,oreDescription} from './mine-transactions.js';
 import {mineLineClear} from '../physics/mine-motion.js';
 import {productionDigSeconds} from '../config/farm-production.js';
 // 与正式绘制器采用相同显隐条件，已移除、施工覆盖及层边界外不会产生幽灵资源。
@@ -28,7 +28,7 @@ export function hitMineRock(game,target,damage){
  if(Object.keys(states).length>=64&&!states[id])delete states[Object.keys(states)[0]];
  states[id]={hp:Math.max(1,hp),cycle:layer.harvested[site.key]||0,hit:layer.age};
  if(hp>0)return true;
- const result=miningCommit(game,(m,p,l)=>{l.dug[site.key]=true;l.harvested[site.key]=l.age+site.biome.regrow;m.ore+=site.biome.yield;p.production.minedOre+=site.biome.yield;},'山体已敲碎，获得 '+site.biome.yield+' 矿石。');
+ const result=miningCommit(game,(m,p,l)=>{l.dug[site.key]=true;l.harvested[site.key]=l.age+site.biome.regrow;creditOre(p,room.depth,site.biome.yield);p.production.minedOre+=site.biome.yield;},'山体已敲碎，获得 '+oreDescription(room.depth,site.biome.yield)+'。');
  if(result.ok)delete states[id];return result.ok;
 }
 // 邻近实体最多扫描十五格见方，稳定位置300毫秒复用候选，避免逐帧扫整层。

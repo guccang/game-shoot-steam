@@ -1,3 +1,4 @@
+import {FORAGE_ID} from './pasture.js';
 import {DETECTOR,TREASURE_PARTS} from './treasure.js';
 import {WOOD_ITEM} from './wood-storage.js';
 // 统一物品目录：身份、分类、图标、说明、用途和千克重量供背包与负重计算共用。
@@ -14,6 +15,7 @@ const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'
 // 每件可堆叠物品只定义单位重量，数量由实际存档读取。
 const entries=[
  WOOD_ITEM,
+ {id:FORAGE_ID,name:'甜穗草',category:'material',mass:.1,icon:{kind:'forage'},description:'一束带着甜香的金穗牧草，常长在营地牧栏东南的草地上。',use:'走近野牛，喂它一束就能领回牧栏。也可以留给栏里的耕牛吃。'},
  // 收纳设施沿用生产库存，不新增负重规则；放置后从背包清单移除。
  {id:'facility:sprinkler',name:'简易洒水器',category:'facility',mass:0,icon:{kind:'production',key:'sprinkler'},description:'收回的洒水器，可带到新的地面位置重新布置。',use:'在地面下车后选择放置；无需再支付材料，取消选址仍留在背包。设施收纳暂不计重。'},
  {id:'currency:coins',name:'金币',category:'currency',mass:0,icon:{kind:'resource',key:'coins'},description:'小屋仓库保管的通用货币，与界面顶部的金币余额一致。',use:'购买装备、补给、修理和升级时直接支付，无需取出。'},
@@ -23,7 +25,7 @@ const entries=[
  ...WEAPONS.map((w,index)=>({id:'weapon:'+index,category:'weapon',index,name:w.name,mass:WEAPON_MASSES[index]||4,icon:{kind:'weapon',index},description:w.desc||w.description||'猫猫使用的手持装备。',use:'在武器工坊装备或改装；可存入小屋仓库或巡林小屋武器架，取出后随身携带。'})),
  ...Object.entries(AMMO_TYPES).map(([key,r])=>({id:'ammo:'+key,category:'ammo',key,name:r.name,mass:r.mass,icon:{kind:'ammo',key},description:'弹药铺可购买或制作的实体弹药。',use:ammoUses[key]})),
  {id:'magazine',category:'ammo',name:'弹匣',mass:LOAD_RULES.magazineMass,icon:{kind:'magazine'},description:'每把使用实物弹药的随身武器配有一个弹匣。',use:'自动换弹时装填背包中的对应弹药；弹药重量单独计算。'},
- ...FARM_CROPS.flatMap((crop,index)=>[{id:'crop:'+index,category:'crop',index,name:crop.name,mass:CROP_MASSES[crop.category]||1,icon:{kind:'crop',index},description:'已经收获的'+crop.name+'。',use:'收获优先进入附近载具，附近无车时放入背包；靠近小屋仓库自动兑换金币；也可手动出售、交付订单或装入载具货舱。'},{id:'seed:'+index,category:'seed',index,name:crop.name+'种子',mass:.02,icon:{kind:'seed',index},description:'用于种植'+crop.name+'的种子。',use:'选择空田播种；收获物优先放入附近载具，无车时进入背包。'}]),
+ ...FARM_CROPS.flatMap((crop,index)=>[{id:'crop:'+index,category:'crop',index,name:crop.name,mass:CROP_MASSES[crop.category]||1,icon:{kind:'crop',index},description:'已经收获的'+crop.name+'。',use:'收获优先进入附近载具，附近无车时放入背包；靠近小屋仓库自动兑换金币；也可手动出售、交付订单或装入载具货舱。'},{id:'seed:'+index,category:'seed',index,name:crop.name+'种子',mass:.002,icon:{kind:'seed',index},description:'用于种植'+crop.name+'的种子。',use:'选择空田播种；收获物优先放入附近载具，无车时进入背包。'}]),
  ...Object.entries(FARM_ITEMS).map(([key,r])=>({...r,id:'tool:'+key,key,category:'tool',icon:{kind:'tool',key}})),
  ...KEEPSAKES.map(r=>({id:r.id,name:r.name,category:'keepsake',mass:({'elder-letter':.02,'house-key':.05,'patrol-phone':.2})[r.id],icon:{kind:'keepsake',key:r.id},description:r.note,use:r.action+'；永久保留，不会消耗。'})),
  ...CAMP_CHARACTERS.map(r=>({id:'camp-relic-'+r.id,name:r.item,category:'relic',mass:.1,icon:{kind:'relic'},description:r.reply,use:'清空'+MONSTER_CAMPS.find(c=>c.id===r.camp).name+'时，已开放的'+FARM_CROPS[r.seed].name+'种子额外获得一粒。'})),

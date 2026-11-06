@@ -1,3 +1,4 @@
+import {FORAGE_ID} from '../config/pasture.js';
 import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 import {catLoad,vehicleLoad} from '../progression/load-weight.js';
 import {carriedWeapon} from '../progression/weapon-storage.js';
@@ -48,6 +49,7 @@ function removeEntry(snapshot,{hull=null,id,count}={}){
  if(!item||!Number.isSafeInteger(count)||count<1||count>item.count)return {ok:false,message:'物品不可清理或数量已变化，请重新选择。'};
  const next=snapshot.progress;
  if(id==='material:wood'){if(hull===null)next.logistics.bagWood-=count;else next.logistics.builds[hull].wood-=count;}
+ else if(id===FORAGE_ID)next.farm.forage-=count;
  else if(item.category==='crop')(hull===null?next.farm.inventory:next.logistics.builds[hull].cargo)[item.index]-=count;
  else if(item.category==='seed')next.farm.seeds[item.index]-=count;
  else if(item.category==='supply')next.supplies.items[item.key]-=count;
@@ -58,7 +60,7 @@ function removeEntry(snapshot,{hull=null,id,count}={}){
  }
  return {ok:true,item};
 }
-// 正式事务与预览共用重量；车旁整理也预留驾驶员及随身包的载重。
+// 正式事务与预览共用重量；车旁整理只统计车内货物与装配。
 export function cleanupLoad(game,hull=null){const load=hull===null?catLoad(game):vehicleLoad(game,hull,{driver:true});return {weight:load.weight??load.payload,capacity:load.capacity};}
 // 原子提交候选快照，任何失败均保持库存和弹匣原状。
 function commitCleanup(game,snapshot,message){

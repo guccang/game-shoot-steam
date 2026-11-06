@@ -1,3 +1,4 @@
+import {eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 import {arrivalPistolPurchase} from '../config/ranger-arrival.js';
 import {createMagazines} from '../combat/magazine.js';
 import { i18nText } from "../i18n/index.js";
@@ -16,14 +17,22 @@ export function commitWorkshop(game, plan, persist) {
   if(game.fireActive)return {ok:false,reason:i18nText("core.map-travel.c5d64346b5")};
   if (game.story) return {ok:false,reason:i18nText("core.workshop.f30c3779f7")};
   const firstPistol=arrivalPistolPurchase(game.progress,plan.kind,plan.index,plan.action);
-  const quote = weaponPurchaseQuote(game,plan,quoteWorkshop(game.progress, plan, !!game.realm));
-  if (!quote.ok) return quote;
-  // 快照也在副本上同步位置和耐久，保存失败不能提前改动正式进度。
-  const snapshot=Object.create(game);snapshot.progress=structuredClone(game.progress);
-  quote.next.patrol = capturePatrol(snapshot);
+  const era=plan.kind==='vehicle'&&plan.action==='buy'&&eraVehicle(plan.index);
+  const donor=eraDonor(era);
+  if(donor&&game.vehicles[donor.index]?.active)return {ok:false,reason:'请先将原车停好并下车。'};
+  const snapshot=Object.create(game);
+  // 改造前先在副本记录原车实况，普通订单只在报价成功后构建快照。
+  function patrolSnapshot(){
+    snapshot.progress=structuredClone(game.progress);
+    return capturePatrol(snapshot);
+  }
+  const originalPatrol=era?patrolSnapshot():null;
+  const quote=weaponPurchaseQuote(game,plan,quoteWorkshop(era?snapshot.progress:game.progress,plan,!!game.realm));
+  if(!quote.ok)return quote;
+  quote.next.patrol=era?originalPatrol:patrolSnapshot();
   quote.next.living.position=snapshot.progress.living.position;
-  quote.next.vehicleService=snapshot.progress.vehicleService;
-  quote.next.supplies=snapshot.progress.supplies;
+  if(!era)quote.next.vehicleService=snapshot.progress.vehicleService;
+  if(!era)quote.next.supplies=snapshot.progress.supplies;
   let saved = false;
   try { saved = persist(quote.next) === true; } catch { saved = false; }
   if (!saved) return { ...quote, ok: false, reason: i18nText("core.workshop.7d32e8a05c") };
@@ -38,6 +47,11 @@ export function commitWorkshop(game, plan, persist) {
     if(firstPistol){game.arrivalScene=null;game.arrivalError=false;game.magazines=createMagazines(game.progress);game.aimLock=null;}
     if (plan.kind === 'vehicle' && plan.action === 'buy')
       game.vehicles[plan.index] = createVehicle(game.progress, plan.index);
+    if(era){
+      const v=game.vehicles[plan.index],parked=game.progress.campParking.owned.find(r=>r.hull===plan.index);
+      v.hp=v.maxHp*(parked?.hp??1);
+      if(donor&&game.vehicle.index===donor.index)game.vehicle=v;
+    }
     if (plan.kind === 'vehicle' && (plan.action === 'upgrade' || plan.action === 'part' && plan.part === 'armor')) {
       const vehicle = game.vehicles[plan.index], ratio = vehicle.maxHp ? vehicle.hp / vehicle.maxHp : 0;
       vehicle.maxHp = vehicleMaxHp({...game.progress,vehicleIndex:plan.index},game.maxHp());

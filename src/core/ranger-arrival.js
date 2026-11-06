@@ -100,7 +100,7 @@ function poseArrival(game,dt){
   // 老人始终坐车；上下车沿真实步态，风中停留沿用同源待机，不旋转或拉伸身体。
   updateCatMotion(s.elder.bodyAnimation,dt,0,false);
   if(arrivalCinematic(game.progress)){
-    updateCatMotion(p.bodyAnimation,dt,dt?Math.hypot(p.x-before.x,p.y-before.y)/dt:0,['alight','board','dismount'].includes(a.phase));
+    updateCatMotion(p.bodyAnimation,dt,dt?Math.hypot(p.x-before.x,p.y-before.y)/dt:0,['alight','board','dismount'].includes(a.phase),s.riding||a.phase==='bus');
     p.vx=0;p.vy=0;a.x=p.x;a.y=p.y;
   }
 }

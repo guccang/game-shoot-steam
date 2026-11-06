@@ -1,9 +1,10 @@
+import {updateHomeGlider} from './home-glider.js';
 import {townStandingPoint} from './town-layout.js';
 import {updateHomeArcade} from './home-arcade.js';
 import {MINING} from '../config/mining.js';
 import {updateMining,enterMine,updateMineEntrance} from './mining.js';
 import {travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from './home-construction.js';
-import {HOME_BALCONY,HOME_DIRECTIONS,HOME_ELEVATOR,floorBalconies,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
+import {cottageStreetExit,HOME_BALCONY,HOME_DIRECTIONS,HOME_ELEVATOR,floorBalconies,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
 import {bossCombatActive} from './boss-engagement.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {dismountVehicle} from '../combat/vehicle.js';
@@ -69,6 +70,7 @@ export function updateCottage(game,dt,input){
  if(game.cottage){
   if(game.state!=='playing')return true;
   const room=game.cottage,p=game.player,layout=interiorLayout(room);
+  if(room.glide){updateHomeGlider(game,dt,input?.x);return true;}
   if(room.sleep){room.stairsElapsed=null;room.elevatorElapsed=null;room.elevatorRequest=false;room.sleep.elapsed+=dt;if(room.sleep.elapsed>=1.2){finishCottageSleep(game);room.sleep=null;}updateCatMotion(p.bodyAnimation,dt,0,false);return true;}
   const before={x:p.x,y:p.y},length=Math.max(1,Math.hypot(input.x,input.y)),speed=115*movementLoadFactor(game),dx=input.x/length*speed*dt,dy=input.y/length*speed*dt;
   if(!cottageBlocked(p.x+dx,p.y,game))p.x+=dx;if(!cottageBlocked(p.x,p.y+dy,game))p.y+=dy;
@@ -97,7 +99,8 @@ export function updateCottage(game,dt,input){
   if(!nearBed)room.bedLatch=false;
   if(!nearBed||room.bedLatch||p.hp<=0||Math.hypot(input.x,input.y)>.01)room.restElapsed=null;
   else {const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.restElapsed=room.restElapsed==null?0:room.restElapsed+tick;if(room.restElapsed+1e-9>=C.bedWait){sleepInCottage(game);return true;}}
-  room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)>0)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-layout.exit.x,p.y-layout.exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
+  const exit=room.kind==='cottage'?cottageStreetExit(game.progress.homeDecor):layout.exit;
+  room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)>0)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-exit.x,p.y-exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
   if(room.exitElapsed+1e-9>=layout.exitWait)leaveCottage(game);
   return true;
  }

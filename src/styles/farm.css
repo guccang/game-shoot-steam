@@ -18,10 +18,14 @@
 #game-frame #farm-world-layer:has(#farm-picker:not([hidden]))>.scene-hit{z-index:6;}
 #farm-world-layer [hidden]{display:none!important}
 #farm-tools,#farm-picker,#farm-harvest-pop,#farm-mail{position:absolute;pointer-events:auto;color:#304b37;background:#fff5d9;border:2px solid #697c50;border-radius:14px;box-shadow:0 3px 0 #38574055;padding:6px;max-width:calc(100% - 16px);}
-/* 六个农具在底部安全区单行居中，窄屏仍保证每个按钮至少44像素宽。 */
-#farm-tools{z-index:6;bottom:max(20px,env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));margin-inline:auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;width:auto;max-width:440px;padding:5px;box-sizing:border-box;}
+/* 工具区沿用底部安全区，保留至少 44 像素触区。 */
+#farm-tools{z-index:6;bottom:max(20px,env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));margin-inline:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:3px;width:auto;max-width:440px;padding:5px;box-sizing:border-box;}
 #farm-tools button{width:100%;min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;}
-/* 移除和退出沿用单格入口，整栏不换行遮挡田地。 */
+/* 窄屏将八个工具均分两行，菜单按钮让出两行工具的高度。 */
+@media(max-width:412px){
+ #farm-tools{grid-template-columns:repeat(4,minmax(0,1fr));}
+ #game-frame:has(#farm-tools:not([hidden])) .field-menu{--field-menu-lift:146px;}
+}
 #farm-tools #farm-exit{grid-column:auto;}
 #farm-tools .farm-remove-symbol{font-size:28px;line-height:28px;height:28px;}
 #farm-tools button,#farm-picker button:not(.ui-close),#farm-harvest,#farm-mail button{min-height:44px;min-width:44px;border:1px solid #95a37e;border-radius:9px;padding:5px;background:#f9edc8;color:#304b37;font-size:12px;touch-action:none;cursor:pointer;}
@@ -105,13 +109,22 @@
 #farm-picker>.farm-seed-pages button{min-height:44px;justify-content:center;}
 #farm-picker>[data-farm-shop]{width:100%;height:44px;min-height:44px;margin-top:6px;font-size:12px;}
 
-/* 种地作为右下一级入口，与菜单并排；农具展开时共用菜单抬升和安全区。 */
-.game-frame .field-menu:has(#farm-menu:not([hidden])){width:106px;height:54px;gap:8px;align-items:center;flex-direction:row;}
-#farm-menu{display:flex;align-items:center;justify-content:center;flex-direction:column;width:54px;height:54px;min-width:54px;min-height:44px;padding:3px;border:2px solid var(--ui-line);border-radius:12px;background:var(--ui-paper);color:var(--ui-forest);font-size:11px;gap:1px;touch-action:manipulation;}
+/* 一级入口按种地、手机、菜单排列，种地隐藏后由其余按钮自然收拢。 */
+.game-frame:not(.realm-active) .field-menu{width:max-content;height:54px;gap:8px;align-items:center;flex-direction:row;}
+#farm-menu,#phone-button{display:flex;align-items:center;justify-content:center;flex-direction:column;width:54px;height:54px;min-width:54px;min-height:44px;padding:3px;border:2px solid var(--ui-line);border-radius:12px;background:var(--ui-paper);color:var(--ui-forest);font-size:11px;gap:1px;touch-action:manipulation;}
+#phone-button .phone-symbol svg{width:28px;height:28px;}
 #farm-menu canvas{width:28px;height:28px;pointer-events:none;}#farm-menu[aria-pressed=true]{background:var(--ui-sage);outline:2px solid var(--ui-forest);outline-offset:-3px;}
 #farm-menu[hidden]{display:none!important;}
 .game-frame[data-page=title] #farm-menu{display:none;}
 
-/* 展开菜单避开同排的种地按钮，横屏向左展开时让出两个常驻按钮的宽度。 */
-.game-frame .field-menu:has(#farm-menu:not([hidden])) .field-menu-items{bottom:64px;}
-@media(max-height:500px){.game-frame .field-menu:has(#farm-menu:not([hidden])) .field-menu-items{right:116px;bottom:0;}}
+/* 横持时从整排按钮左侧展开，兼容种地入口按场景隐藏。 */
+.game-frame:not(.realm-active) .field-menu-items{bottom:64px;}
+@media(max-height:500px){.game-frame:not(.realm-active) .field-menu-items{right:calc(100% + 8px);bottom:0;}}
+
+/* 牛犁专属操作栏；田格提示允许手指穿过，牛身热点供近身交互。 */
+#farm-ox-controls:not([hidden]){position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px;background:var(--ui-paper,#fff5d9);border:2px solid var(--ui-forest,#35583e);border-radius:12px;pointer-events:auto;white-space:nowrap;z-index:9}
+#farm-ox-controls button{min-height:44px;min-width:48px;touch-action:none;user-select:none}
+#farm-ox-controls [aria-pressed=true]{outline:3px solid #9bb67e}
+#farm-ox-hit{pointer-events:auto}
+.farm-meadow-action{position:absolute;pointer-events:auto;white-space:nowrap;min-width:76px;min-height:44px;padding:4px}
+#game-frame:has(#farm-ox-controls:not([hidden])) .field-menu{visibility:hidden}

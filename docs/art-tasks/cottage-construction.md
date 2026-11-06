@@ -143,3 +143,13 @@
 - 本次仅修改落点与碰撞查询，未修改美术资源、角色/载具动作或场景绘制；正式入口 `src/core/cottage.js`、`src/core/town-layout.js`、`src/core/camp-parking.js`。浏览器复现脚本 `tests/cottage-vehicle-reload-browser.cjs`，默认4175；本次原服务占用4175，使用独立4187。
 - 正式浏览器完整流程通过：实际按方向驾驶到门前候停入屋、屋内走到出口、设置返回首页、刷新并开始；读档落点(632,342)无碰撞，自动上车后可继续驾驶。模拟旧档固定落点(600,342)同样就近修正32单位，恢复上车与驾驶，车体耐久比仍为0.65、没有重复停车记录，页面异常0。
 - 证据 `output/playwright/cottage-vehicle-reload/` 中 `browser-result.txt`、`inside.png`、`normal-reload-mounted.png`、`legacy-reload-mounted.png`、`outside-day.png`、`outside-night.png` 及连续录制；人工查看正式昼夜场景与载具位置。使用390×844触控浏览器环境，非实体手机；原调试 `failure.png` 不代表最终结果。浏览器断言按实际位移等待，避免低帧率及自动上车重置输入造成固定时长误判。未改动用户存档。
+
+## 阳台门贴墙修订
+目标为已建阳台在对应墙面中点有真实门框、玻璃门扇、把手与门槛。保留原 480×560 房间、方向标识、付费楼层、角色脚底与候停时间，门内落脚点与门框分层；首层南阳台与出屋通道分开。开发阶段沿用 Canvas 与已有触控热点。
+
+验收通过。正式入口为 src/rendering/cottage.js 的 drawBalconyDoor 与 drawCottageRoom；cottageClickTargets 由同一方位配置生成触控区和走近目标，对应 designCriterion 为 cottage-construction。门框为 66×75 逻辑单位，侧门按墙体投影；门槛与墙脚相接，猫与家具按原脚底分层。新增运行位图、离屏画布均为零，未修改室外战斗资源。首层建南阳台时，室外出口地垫移到右侧；挡住已建阳台门的地面家具按现有收纳规则保留实例。已在 4175 以真实触屏短按四扇门、站定进入并返回，另验证首层南阳台与出屋落点。画面记录为 output/balcony-doors/north-390.png（昼）、east-320.png（夜间短屏）、west-580.png（既有桌面竖版容器）与 south-390.png（首层双出口）。家具碰撞、旧档、候停与阳台楼层检查通过；本次范围为室内门，不涉及室外角色、怪物或车辆绘制。
+
+## 东西阳台门的室内朝向
+对照上次实机画面中的东西侧门和墙脚，本次修正侧门的透视方向。东墙门从左往右下降，西墙门从右往左下降，两扇门的正面朝向室内。沿用 66×75 门框、墙中点和室内落脚点。玻璃、把手、门槛共用同一投影，继续在猫和家具之前绘制。使用原 Canvas 绘制器，按昼夜同屏和点击进出验收。
+
+验收通过。正式入口为 `src/rendering/cottage.js` 的 `drawBalconyDoor`，对应 `designCriterion` 为 `cottage-construction`。在 4175 运行 `tests/balcony-wall-doors-browser.cjs`，触控模拟点门后猫能走到东西两侧各自的门前，进入对应阳台并回到屋内。查看 `output/balcony-doors/east-320.png`（320×568 夜晚）、`north-390.png`（390×844 白天）和 `west-580.png`（580×844 既有竖版容器），两扇门同屏可辨，窗格在上，门槛在下，门框均在侧墙中点。此项仅调整静态室内门的 Canvas 投影，新增位图、画布和缓存均为零；战斗、载具动画和 PNG 替换不适用。

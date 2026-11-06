@@ -68,7 +68,7 @@ export function updateCampAllies(game,dt){
   if(distance>stop){const step=Math.min(distance-stop,cfg.speed*dt);p.x+=(goal.x-p.x)/distance*step;p.y+=(goal.y-p.y)/distance*step;}
   if(!helper.outside&&worldDistance(p,exit)<2)helper.outside=true;
   if(helper.outside&&!helper.ready&&worldDistance(p,rally)<2)helper.ready=true;
-  const movement=worldDistance(p,previous);advanceVehicleWheels(local.vehicle,p,previous);p.walkPhase+=movement/12;updateCatMotion(p.bodyAnimation,dt,movement/Math.max(.001,dt),false);
+  const movement=worldDistance(p,previous);advanceVehicleWheels(local.vehicle,p,previous);p.walkPhase+=movement/12;updateCatMotion(p.bodyAnimation,dt,movement/Math.max(.001,dt),false,true);
   p.flash=Math.max(0,(p.flash||0)-dt);updateRecoil(p.recoil,local.progress.weapon,dt);
   if(!helper.ready){local.enemies=[];local.boss=null;updateVehicle(local,dt);continue;}
   if(target)p.angle=shotSolution(p,target,local.progress.weapon,local.aimLock).angle;

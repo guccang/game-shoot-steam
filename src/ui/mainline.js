@@ -43,7 +43,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  // 手册明确当前为什么行动、如何操作和交付所得；未来章节折叠，避免任务墙。
  function renderBook(){
   const lesson=farmLesson(game.progress.farm),done=lesson.every(s=>s.done);
-  $('farm-lesson').innerHTML='<summary>种田备忘'+(done?' · 已完成':'')+'</summary><p>种田是主要金币来源，任务和玩法奖励照常。收成放入附近载具货舱或背包，运回小屋仓库后自动结算金币。</p><ol>'+lesson.map(s=>'<li class="'+(s.done?'done':'')+'">'+(s.done?'✓ ':'')+s.label+(!s.done?'<small> · '+s.hint+'</small>':'')+'</li>').join('')+'</ol><p>水壶每次浇灌选中的一块田，每茬一次，生长时长最多缩短25%。首次播种并浇水：胡萝卜种子 ×2，之后可继续其他委托，成熟后再收。快递站只会补充已经解锁的种子。</p><button id="farm-lesson-go">'+(done?'继续种田':'去种田')+'</button>';
+  $('farm-lesson').innerHTML='<summary>种田备忘'+(done?' · 已完成':'')+'</summary><p>种田是主要金币来源，任务和玩法奖励照常。收成放入附近载具货舱或背包，运回小屋仓库后自动结算金币。</p><ol>'+lesson.map(s=>'<li class="'+(s.done?'done':'')+'">'+(s.done?'✓ ':'')+s.label+(!s.done?'<small> · '+s.hint+'</small>':'')+'</li>').join('')+'</ol><p>基础水壶浇一格；在农矿生产的农具页改造后，也能浇到右邻一格，每茬一次，生长时长最多缩短25%。首次播种并浇水：胡萝卜种子 ×2，之后可继续其他委托，成熟后再收。快递站只会补充已经解锁的种子。</p><button id="farm-lesson-go">'+(done?'继续种田':'去种田')+'</button>';
 
   const task=mainlineTask(game),run=game.progress.mainline,o=mainlineObjective(game,{ignoreTracking:true});
   $('farm-lesson').hidden=task?.id==='first-farm';

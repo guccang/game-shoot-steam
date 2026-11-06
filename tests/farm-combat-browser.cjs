@@ -21,7 +21,7 @@ async original=>{
   for(const [width,height] of [[320,568],[390,844],[844,390]]){
    await page.setViewportSize({width,height});await page.waitForTimeout(150);
    const boxes=await page.locator('#farm-tools button').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};}));
-   if(boxes.length!==6||boxes.some(r=>r.w<44||r.h<44||r.x<0||r.right>width||r.y<0||r.bottom>height))throw Error('小屏工具按钮不可用 '+JSON.stringify(boxes));
+   if(boxes.length!==8||boxes.some(r=>r.w<44||r.h<44||r.x<0||r.right>width||r.y<0||r.bottom>height))throw Error('小屏工具按钮不可用 '+JSON.stringify(boxes));
    for(const time of ['day','night']){await page.evaluate(time=>light(time),time);await page.waitForTimeout(100);await page.screenshot({path:`output/playwright/farm-combat/toolbar-${width}-${time}.png`});}
   }
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);

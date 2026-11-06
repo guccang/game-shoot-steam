@@ -18,7 +18,9 @@ async function startApplication() {
     await loadGameFont();
     // 小屋精修图为必需资源，加载完成后再允许进入正式场景。
     const { loadCozyCottage } = await import('./rendering/cozy-cottage.js');
-    await loadCozyCottage();
+    const {loadLivestockArt}=await import('./rendering/livestock-atlas.js');
+    const {loadEraAtlas}=await import('./rendering/vehicle-eras.js');
+    await Promise.all([loadCozyCottage(),loadLivestockArt(),loadEraAtlas()]);
     const { createApplication } = await import('./app/create-app.js');
     // 美术试玩只在明确指定参数时使用隔离内存档，普通入口继续使用原存档。
     if(new URLSearchParams(location.search).get('artPreview')==='idle-cat-pine'){

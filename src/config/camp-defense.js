@@ -16,7 +16,8 @@ export const CAMP_DEFENSE={gateHp:1500,limit:56,rest:3,spawnInterval:.17,radius:
  rescue:{firstDelay:.8,stagger:2.8,inside:85,queueGap:65,outside:75,spread:48,speed:82,attackDistance:135,combatSeconds:14,bubbleSeconds:4},
   // 兽潮使用独立生命曲线：首场每波18+波次索引×3，不随野外等级属性变化。
  waves:Array.from({length:10},(_,i)=>({level:i+1,count:18+i*5,hp:18+i*3,damage:2+i/3,speed:34+i*2,spawnInterval:.36-i*.018})),
- boss:{kind:'boar',hp:1900,damage:32,blastDamage:60,speed:45},
+ boss:{kind:'dumpling',hp:1900,damage:32,blastDamage:60,speed:45},
+ spoils:{duration:1.8,bonus:{coins:3000,wood:300,parts:12,crystal:6,core:1}},
  allies:[{hero:1,name:'薄荷',vehicle:1,weapon:10},{hero:2,name:'栗子',vehicle:2,weapon:8},{hero:4,name:'雪团',vehicle:3,weapon:6}],
  grades:{S:{coins:1200,wood:400,parts:8},A:{coins:750,wood:250,parts:5},B:{coins:300,wood:100,parts:2}},
  lines:{death:'歇一歇，换我来！',barricade:'稳住，我们来了！',victory:'十波怪潮和领主都退了，今晚一起吃顿热饭。'},
@@ -24,6 +25,15 @@ export const CAMP_DEFENSE={gateHp:1500,limit:56,rest:3,spawnInterval:.17,radius:
 // 援军出场前冻结成绩，救场击杀不得反过来抬高评分。
 export function campDefenseGrade({cleared,gateHp,bossDefeated,reason}){
  return bossDefeated&&!reason?(gateHp>=CAMP_DEFENSE.gateHp*.5?'S':'A'):cleared>=6?'A':'B';
+}
+
+// 守门报酬与巨物掉落组成一张结算单，预览和实际入账使用同一份金额。
+export function campDefenseReward(run){
+ const reward={...CAMP_DEFENSE.grades[campDefenseGrade(run)]};
+ if(run.cleared===10 && run.bossDefeated && !run.reason){
+   for(const [key,amount] of Object.entries(CAMP_DEFENSE.spoils.bonus))reward[key]=(reward[key]||0)+amount;
+ }
+ return reward;
 }
 
 // 兽潮独立版本用于旧在途领主按剩余比例迁移，不改变已结算次数。

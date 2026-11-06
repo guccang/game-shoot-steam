@@ -1,5 +1,6 @@
 // 普通场景与守护默认使用同一基础倍率；守护保留手动全景与缩放。
 import { cameraOffsetLimits } from './view-safety.js';
+import {nearest} from '../world/coordinates.js';
 import { clamp } from '../core/math.js';
 import { CAMERA_VIEW, HORDE_CAMERA, DEFAULT_CAMERA_Y, defaultCombatZoom } from '../config/camera.js';
 
@@ -97,6 +98,19 @@ export class CombatCamera {
     if(guide?.kind==='funnel')guide=null;
     // 跑步与肉鸽远征使用默认战斗镜头，不随携带或抽取的武器切换广角与注视点。
     if(framing?.mode==='race'||framing?.mode==='rogue')guide=null;
+    // 团山独占终场构图。固定倍率为冠顶、跃砸和顶栏留白，镜头随脚底移动，爆散时沿用同一锚点。
+    const giant=framing?.horde?.spoils||framing?.giant;
+    if(giant){
+      const anchor=nearest(giant,player);
+      const top=Math.min(172,height*.30), bottom=Math.min(62,height*.12);
+      const zoom=Math.min(defaultCombatZoom(width),(width-20)/456,(height-top-bottom)/565);
+      const w=width/zoom,h=height/zoom;
+      const left=Math.min(anchor.x-182,player.x-55),right=Math.max(anchor.x+182,player.x+55);
+      const high=Math.min(anchor.y-420,player.y-85),low=Math.max(anchor.y+68,player.y+42);
+      const x=clamp((left+right-w)/2,player.x-w+55,player.x-55);
+      const y=clamp((high+low-h-(top-bottom)/zoom)/2,player.y-h+bottom/zoom+42,player.y-top/zoom-65);
+      return {x,y,w,h,width,height,zoom};
+    }
     // 球场始终同屏，上方目标区与下方走位区不随自动瞄准来回晃动。
     if(framing?.mode==='football'){
       this.hordeTransition = false;

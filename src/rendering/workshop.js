@@ -1,6 +1,7 @@
+import {clipEraSeat} from './vehicle-eras.js';
 import {drawEnergyShield} from './energy-shield.js';
 import {drawGravityFields} from './gravity-gun.js';
-import { riderPosition } from '../config/vehicle-rider.js';
+import { riderPosition,frontRider } from '../config/vehicle-rider.js';
 import { PLAYER_SCALE } from '../combat/recoil.js';
 import { isVehicleArmament } from '../config/vehicle-armaments.js';
 import { drawVehicleArmament } from './vehicle-armaments.js';
@@ -97,11 +98,13 @@ export function drawWorkshopTrial(c, session, reduced = false) {
 export function drawTrialPlayer(c,g,reduced=false){
     drawEnergyShield(c,g,g.player,reduced,'back');
   if (g.vehicle.active) drawVehicleTracks(c, g.player, g.vehicle, reduced, g.time,g.progress);
-  drawCat(c, g.player.x, riderPosition(g.player, g.vehicle).y, g.progress.hero, g.player.angle, g.progress.weapon===14 || g.vehicle.active && g.vehicle.index === 5 ? PLAYER_SCALE : 0.8, g.player.walkPhase,
+  c.save();clipEraSeat(c,g.player,g.vehicle);
+  drawCat(c, g.player.x, riderPosition(g.player, g.vehicle).y, g.progress.hero, g.player.angle, g.progress.weapon===14 || frontRider(g.vehicle) ? PLAYER_SCALE : 0.8, g.player.walkPhase,
     g.progress.weapon, g.player.recoil, reduced ? 0.35 : 1, null, 0, true,
-    g.vehicle.active && g.vehicle.index !== 5, g.player.bodyAnimation, g.weapon().modChoice, g.weapon().parts,reduced?0:g.magazines[g.progress.weapon]?.rotor||0, g.vehicle.active && g.vehicle.index === 5);
+    g.vehicle.active && !frontRider(g.vehicle), g.player.bodyAnimation, g.weapon().modChoice, g.weapon().parts,reduced?0:g.magazines[g.progress.weapon]?.rotor||0, frontRider(g.vehicle));
+  c.restore();
   if (g.vehicle.active) drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, reduced);
-  if (g.vehicle.active && g.vehicle.index === 5)
+  if (frontRider(g.vehicle))
     drawRiderWeapon(c, riderPosition(g.player, g.vehicle), g.progress.hero, g.progress.weapon, {
       scale: PLAYER_SCALE, motionScale: reduced ? 0.35 : 1, sample: true, modChoice: g.weapon().modChoice,
       parts: g.weapon().parts, rotor: reduced ? 0 : g.magazines[g.progress.weapon]?.rotor || 0,

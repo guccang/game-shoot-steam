@@ -5,7 +5,8 @@ import { creditResource } from '../progression/resource-wallet.js';
 import {recordActivity} from '../progression/game-statistics.js';
 import {rewardReceipt} from '../progression/reward-receipt.js';
 // 营地守门会话：原森林整体冻结，独立怪潮与救场仅在本局结算资源。
-import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseWave,campDefenseBoss,CAMP_DEFENSE_GROWTH_VERSION} from '../config/camp-defense.js';
+import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward,campDefenseWave,campDefenseBoss,CAMP_DEFENSE_GROWTH_VERSION} from '../config/camp-defense.js';
+import {HORDE_GIANT} from '../config/bosses.js';
 import {validateProgress} from '../progression/progress.js';
 import {validateCampDefense} from '../progression/camp-defense.js';
 import {capturePatrol} from './patrol-session.js';
@@ -57,19 +58,35 @@ export function hurtCampBarricade(game,amount){const r=game.campDefense;if(!r||!
 // 十波完成后自动开启本轮领主，结算后仍需重新接取。
 export function spawnCampBoss(game){const r=game.campDefense;if(!r||!['boss-ready','boss'].includes(r.phase)||game.boss)return false;
  const b=campDefenseBoss(r.rounds);r.phase='boss';r.timer=0;
- game.boss={id:game.nextId++,type:'boss',mapId:'forest',kind:b.kind,campDefense:true,x:r.barrier.x+r.gate.nx*300,y:r.barrier.y+r.gate.ny*300,hp:r.bossHp||b.hp,maxHp:b.hp,radius:38,mass:8,flash:0,attack:2,speed:b.speed,damage:b.damage,blastDamage:b.blastDamage,ai:{phase:'chase',elapsed:0},arena:r.arena};
+ game.boss={id:game.nextId++,type:'boss',mapId:'forest',kind:b.kind,campDefense:true,x:r.barrier.x+r.gate.nx*300,y:r.barrier.y+r.gate.ny*300,hp:r.bossHp||b.hp,maxHp:b.hp,radius:HORDE_GIANT.radius,mass:24,flash:0,attack:2,speed:b.speed,damage:b.damage,blastDamage:b.blastDamage,ai:{phase:'chase',elapsed:0},arena:r.arena};
  syncCampDefense(game);game.onEvent('camp-defense-change');return true;}
 // 击杀保留正式死亡残块；救场期间冻结玩家成绩，原清缴配额与掉落不增加。
 export function campDefenseKill(game,target){const r=game.campDefense;if(!r||!target.campDefense)return false;
+ if(r.phase==='spoils'||r.phase==='result')return true;
+ if(target.type==='boss' && r.phase==='boss'){
+   game.boss=null;
+   game.hazards=[];
+   r.bossDefeated=true;
+   r.phase='spoils';
+   r.spoils={x:target.x,y:target.y,elapsed:0};
+   syncCampDefense(game);
+   game.onEvent('camp-defense-change');
+   return true;
+ }
  game.remnants.push({...target,flash:0,life:.6,duration:.6,burst:true,burstDelay:0,reactionTime:0});if(game.remnants.length>20)game.remnants.shift();
  if(target.type==='boss'){game.boss=null;game.hazards=[];if(r.phase!=='rescue'){r.bossDefeated=true;finishCampDefense(game);}}
  else if(r.phase!=='rescue'){r.kills++;r.waveKills++;}return true;}
 // 旁白与援军出营同时开始；救场不跳过实际射击，也不把敌人直接清空。
-export function rescueCampDefense(game,reason){const r=game.campDefense;if(!r||!['death','barricade'].includes(reason)||['rescue','result'].includes(r.phase))return false;r.reason=reason;r.phase='rescue';r.rescueTime=0;prepareCampAllies(game);syncCampDefense(game);game.onEvent('camp-defense-change');return true;}
+export function rescueCampDefense(game,reason){const r=game.campDefense;if(!r||!['death','barricade'].includes(reason)||['rescue','spoils','result'].includes(r.phase))return false;r.reason=reason;r.phase='rescue';r.rescueTime=0;prepareCampAllies(game);syncCampDefense(game);game.onEvent('camp-defense-change');return true;}
 // 完成仅进入结算，领取按钮负责一次性资源事务。
 function finishCampDefense(game){const r=game.campDefense;r.phase='result';game.state='paused';syncCampDefense(game);game.onEvent('camp-defense-change');}
 // 普通波次与拒马耐久共享时钟；场外保存/暂停不推进，击退也不能把怪物推出战区。
 export function updateCampDefense(game,dt){const r=game.campDefense;if(!r||game.state!=='playing')return;r.barrier.flash=Math.max(0,(r.barrier.flash||0)-dt);
+ if(r.phase==='spoils'){
+   r.spoils.elapsed+=dt;
+   if(r.spoils.elapsed>=CAMP_DEFENSE.spoils.duration)finishCampDefense(game);
+   return;
+ }
  if(r.phase==='rescue'){if(updateCampAllies(game,dt))finishCampDefense(game);return;}r.elapsed+=dt;
  for(const e of [...game.enemies,...(game.boss?[game.boss]:[])])if(e.hp>0){const p=nearest(e,r.barrier),front=(p.x-r.barrier.x)*r.gate.nx+(p.y-r.barrier.y)*r.gate.ny;if(front<28){e.x+=r.gate.nx*(28-front);e.y+=r.gate.ny*(28-front);}}
  if(r.phase!=='waves')return;
@@ -90,8 +107,8 @@ export function updateCampDefense(game,dt){const r=game.campDefense;if(!r||game.
 export function syncCampDefense(game){const r=game.campDefense;if(!r)return;const {gateId,rounds,wave,cleared,waveKills,kills,gateHp,elapsed,phase,reason,bossDefeated,allies,rescueRoll,forestVehicles}=r;game.progress.campDefense.run=validateCampDefense({run:{growthVersion:CAMP_DEFENSE_GROWTH_VERSION,gateId,rounds,wave,cleared,waveKills,kills,gateHp,elapsed,phase,reason,bossDefeated,allies,rescueRoll,forestVehicles,vehicles:captureRealmVehicles(game),bossHp:game.boss?.hp??r.bossHp}}).run;}
 // 成绩和钱包一次提交，保存失败留在结算页；成功才归还原森林与装备。
 export function claimCampDefense(game){const r=game.campDefense;if(!r||r.phase!=='result')return false;
- const before=game.progress,grade=campDefenseGrade(r),reward={...CAMP_DEFENSE.grades[grade]},next=validateProgress(structuredClone(game.progress));
- reward.coins=creditResource(next,'coins',reward.coins);reward.wood=creditResource(next,'wood',reward.wood);reward.parts=creditResource(next,'parts',reward.parts);
+ const before=game.progress,grade=campDefenseGrade(r),reward=campDefenseReward(r),next=validateProgress(structuredClone(game.progress));
+ for(const [key,amount] of Object.entries(reward))reward[key]=creditResource(next,key,amount);
  if(r.cleared===10&&r.bossDefeated&&!r.reason)awardCampXp(next,'horde');
  next.campDefense.runs++;next.campDefense.run=null;if(!next.campDefense.best||['B','A','S'].indexOf(grade)>['B','A','S'].indexOf(next.campDefense.best))next.campDefense.best=grade;
  // 当前主线只认指定营门的真实结算；和奖励一起保存，失败或重复领取都不会推进。
@@ -109,7 +126,7 @@ export function claimCampDefense(game){const r=game.campDefense;if(!r||r.phase!=
 
 // 主动退出放弃本轮未结算奖励，先保存取消记录，再归还完整森林现场。
 export function leaveCampDefense(game){
- const r=game.campDefense;if(!r||r.phase==='result')return false;
+ const r=game.campDefense;if(!r||r.phase==='result'||r.phase==='spoils')return false;
  const next=validateProgress(structuredClone(game.progress));next.campDefense.run=null;next.patrol=r.patrol;
  // 取消同样恢复入场前的车型选择，保存失败时不修改当前现场。
  next.vehicleIndex=r.forest.vehicle.index;next.vehicleLoadouts=r.forest.vehicles.map(v=>v.weaponIndex);

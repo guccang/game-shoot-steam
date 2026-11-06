@@ -11,6 +11,7 @@
 .realm-active .story-experience,
 .realm-active .world-workshop-entry,
 .realm-active .world-realm-entrances,
+.realm-active #phone-button,
 .realm-active #field-menu-toggle,
 .realm-active #field-menu-items > button:not(#realm-button) { display:none !important; }
 

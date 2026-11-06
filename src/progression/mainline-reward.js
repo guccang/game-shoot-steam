@@ -6,12 +6,12 @@ import {currentMainlineTask} from '../config/mainline.js';
 import {mainlineReward} from '../config/economy.js';
 import {recordEconomy} from './economy-ledger.js';
 // 只提交当前任务；存储失败的正式入口会丢弃整个候选进度。
-export function awardMainline(progress,id){
+export function awardMainline(progress,id,game={progress}){
  const task=currentMainlineTask(progress.mainline);if(!task||task.id!==id)return null;
  awardCampXp(progress,'mainline',null,task.title);
  const reward={};
  for(const [key,n] of Object.entries(mainlineReward(task,progress)))reward[key]=creditResource(progress,key,n);
- grantMainlineSeeds(progress,task);
+ grantMainlineSeeds(progress,task,game);
  progress.mainline.completed.push(id);delete progress.mainline.suspended?.[id];progress.mainline.currentId=null;
  // 交接时确定下一项，随后成熟的作物不会把已经接上的委托挤走。
  progress.mainline.currentId=currentMainlineTask(progress.mainline)?.id||null;

@@ -1,3 +1,4 @@
+import {eraCraftReason} from './equipment-goals.js';
 import {storedWeaponRack,storedWarehouseWeapon} from './weapon-storage.js';
 import {equipmentLevelCap} from '../config/legendary-workshop.js';
 import {equipmentQuestReason} from './equipment-quests.js';
@@ -59,7 +60,8 @@ export function quoteWorkshop(progress, plan, realm = false) {
     key, need, have: progress[key] || 0, missing: Math.max(0, need - (progress[key] || 0)),
   }));
   if(kind==='turret'&&!isVehicleArmament(index))return {ok:false,reason:'载具只能使用自己的主武器',rows,next:null};
-  if(kind==='vehicle'&&catalog[index].rewardOnly&&!level)reason=i18nText("progression.workshop.b5135712d3");
+  if(action==='buy'&&eraCraftReason(progress,kind,index)){reason=eraCraftReason(progress,kind,index);rows=equipmentRequirements(progress,kind,index);}
+  else if(kind==='vehicle'&&catalog[index].rewardOnly&&!level)reason=i18nText("progression.workshop.b5135712d3");
   else if (action==='buy'&&!level&&mainlinePurchaseReason(progress,kind,index)){reason=mainlinePurchaseReason(progress,kind,index);rows=equipmentRequirements(progress,kind,index);}
   else if(action==='buy'&&!level&&equipmentQuestReason(progress,kind,index)){reason=equipmentQuestReason(progress,kind,index);rows=equipmentRequirements(progress,kind,index);}
   else if (realm) reason = i18nText("progression.workshop.d6c72c52df");

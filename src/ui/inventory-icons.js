@@ -8,6 +8,7 @@ import {paintFarmToolIcon} from '../rendering/farm-tools.js';
 import {drawWorkshopEquipment} from '../rendering/workshop.js';
 import {itemDefinition} from '../config/items.js';
 const drawings={
+ forage:'<path fill="#86ac68" d="M30 55Q10 50 8 30q15 3 24 20 8-19 25-24-4 19-25 29Z"/><path d="M31 55 19 25m12 30 3-38m-2 37 14-27"/><g fill="#e5c773"><ellipse cx="17" cy="21" rx="5" ry="10" transform="rotate(-22 17 21)"/><ellipse cx="34" cy="15" rx="5" ry="10"/><ellipse cx="48" cy="24" rx="5" ry="9" transform="rotate(28 48 24)"/></g>',
  tent:'<path fill="#c8d39b" d="M4 53 30 10 59 53Z"/><path fill="#f6e6b6" d="m18 53 12-27 14 27Z"/>',
  rod:'<path d="M10 55 42 8q15 19 12 35"/><circle cx="22" cy="42" r="6" fill="#c6aa76"/><path stroke="#d58d68" d="M54 40v12"/>',
  bait:'<rect x="11" y="24" width="42" height="32" rx="8" fill="#e1ca91"/><path d="M16 24v-7h32v7m-27 16q7-13 13 0t10 0"/>',

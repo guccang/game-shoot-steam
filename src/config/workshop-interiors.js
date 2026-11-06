@@ -1,3 +1,4 @@
+import {OUTDOOR_SHOP} from './outdoor-shop.js';
 import {CONSTRUCTION_COMPANY} from './home-construction.js';
 import {WAREHOUSE} from './warehouse.js';
 import {AMMO_SHOP} from './supplies.js';
@@ -28,6 +29,7 @@ export const VEHICLE_DISPLAYS=purchasableVehicles.map((index,slot)=>({id:'showro
 function serviceRoom(id,name,site,door={x:site.x,y:site.y+22}){return {...WORKSHOP_ROOM,id,name,site,door,outside:{x:door.x,y:door.y+52},service:true};}
 export const WORKSHOP_INTERIORS={
  warehouse:serviceRoom('warehouse','小屋仓库',WAREHOUSE),
+ outdoor:serviceRoom('outdoor','户外用品店',OUTDOOR_SHOP),
  ammo:serviceRoom('ammo','弹药补给铺',AMMO_SHOP),
  'cat-home':serviceRoom('cat-home','猫窝',CAT_HOME),
  furniture:serviceRoom('furniture','家具小铺',FURNITURE_SHOP),

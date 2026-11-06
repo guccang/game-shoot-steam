@@ -49,6 +49,7 @@ test('主体动画不改变八方向实际枪口与射击后坐', () => {
     updateCatMotion(g.player.bodyAnimation, 0.05, 150, true);
     assert.deepEqual(muzzlePosition(g.player, 0), before);
     g.spawnEnemy(g.player.angle, 150); g.enemies[0].hp = g.enemies[0].maxHp = 10000;
+    g.magazines[g.loadout.weapon].ammo = 1; // 射击验收显式装填一发。
     assert.ok(g.attack()); assert.ok(g.player.recoil.kick > 0);
   }
 });
@@ -74,12 +75,13 @@ test('起停衔接始终绘制一个主体，重复绘制不会推进动作或�
   atlas.status = 'ready'; atlas.images = [{}, {}];
   // 本用例隔离动作时钟；真实画布的品种几何与像素在浏览器验收中覆盖。
   atlas.coats.get = (image, manifest, frame, breed) => `${breed.id}:${frame}`;
+  atlas.coats.heads = {get: () => ({x:81,neck:102})};
   const state = createCatMotion(); let calls = [];
-  const c = { save() {}, restore() {}, translate() {}, drawImage(...args) { calls.push(args); } };
+  const c = { beginPath() {}, moveTo() {}, lineTo() {}, closePath() {}, fill() {}, stroke() {}, save() {}, restore() {}, translate() {}, drawImage(...args) { calls.push(args); } };
   for (const walking of [false, true, false, true]) for (let step = 0; step < 12; step++) {
     updateCatMotion(state, 1 / 24, walking ? 150 : 0, walking);
     const before = structuredClone(state);
-    for (const hero of [0, 1, 2, 3, 4, 5]) {
+    for (const hero of [0, 1, 2, 3, 4, 5, 6]) {
       calls = []; atlas.draw(c, hero, state, { bodyX: 0, bodyY: 0 });
       assert.equal(calls.length, 1); const first = calls[0];
       calls = []; atlas.draw(c, hero, state, { bodyX: 0, bodyY: 0 });
@@ -113,4 +115,18 @@ test('真实 PNG 图集与原视频哈希对应，只有正面待机/移动且�
     assert.throws(() => validateCatManifest(invalid));
   }
   assert.ok(bytes < 20 * 1024 * 1024, '主体图集必须保持手机内存预算');
+});
+
+// 乘车的抬升阈值独立于步态；停车、慢速挪车和高速滑行分别验收。
+test('驾驶围巾按实速展开，停车缓落且脚步始终保持坐姿', () => {
+  const motion = createCatMotion();
+  for (const [speed, expected] of [[60, 0], [110, .5], [180, 1]]) {
+    for (let i = 0; i < 60; i++) updateCatMotion(motion, 1 / 60, speed, false, true);
+    assert.ok(Math.abs(motion.scarfLift - expected) < .001);
+    assert.equal(motion.moveWeight, 0);
+  }
+  updateCatMotion(motion, 1 / 60, 0, false, true);
+  assert.ok(motion.scarfLift > .8 && motion.scarfLift < 1);
+  for (let i = 0; i < 60; i++) updateCatMotion(motion, 1 / 60, 0, false, true);
+  assert.ok(motion.scarfLift < .001);
 });

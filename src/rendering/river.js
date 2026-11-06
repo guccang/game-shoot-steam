@@ -1,3 +1,5 @@
+import { gustStrength } from '../world/gust.js';
+import { drawWindRipple } from './wind-ripple.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
@@ -5,7 +7,7 @@ import { consumeDrawSteps } from './draw-steps.js';
 import { oval, box } from './primitives.js';
 import { WORLD } from '../world/coordinates.js';
 import { drawAlignedTile } from './tile-blit.js';
-import { WATERFALL, BRIDGE, riverPoint, riverSamples, riverHalfWidth } from '../world/river-geometry.js';
+import { WATERFALL, BRIDGE, riverPoint, riverXAt, riverSamples, riverHalfWidth } from '../world/river-geometry.js';
 import { drawShoreGroundSteps, drawShoreWaterSteps, drawShoreDetails } from './shore-art.js';
 
 // 河流、瀑布与夜色纹理的 Canvas 表现，使用共享地形几何。
@@ -276,7 +278,7 @@ export class RiverRenderer {
   }
 
   // 八像素条带保留原始小幅正弦扰动，减少四分之三采样调用；边缘遮罩仍精确裁切。
-  updateTile(layer, region, time, rain, mask) {
+  updateTile(layer, region, time, rain, mask, wind, windTime) {
     const c = layer.ctx,
       pad = RIVER_PAD,
       width = layer.canvas.width;
@@ -290,7 +292,7 @@ export class RiverRenderer {
     }
     c.save();
     c.translate(pad, pad);
-    this.streamHighlights(c, region, time, rain);
+    this.streamHighlights(c, region, time, rain, wind, windTime);
     if (region.y < WATERFALL.y + 180 && region.y + region.h > WATERFALL.y) this.waterfall(c, region, time);
     c.restore();
     c.globalCompositeOperation = 'destination-in';
@@ -300,7 +302,7 @@ export class RiverRenderer {
   }
 
   // 稀疏圆头波纹沿河道缓慢下移，避免密集反光和写实折射纹理。
-  streamHighlights(ctx, region, time, rain) {
+  streamHighlights(ctx, region, time, rain, wind, windTime) {
     ctx.save();
     ctx.translate(-region.x, -region.y);
     ctx.lineCap = 'round';
@@ -315,6 +317,11 @@ export class RiverRenderer {
       ctx.moveTo(x - 7, p.y);
       ctx.quadraticCurveTo(x, p.y + 4, x + 8, p.y + 1);
       ctx.stroke();
+    }
+    // 定距采样真实河心线，长河段也有风纹，并由原水域遮罩裁去桥面。
+    if (wind) for (let y = Math.ceil((region.y - 8) / 37) * 37; y < region.y + region.h + 8; y += 37) {
+      const x = riverXAt(y) + Math.sin(y * .17) * 22;
+      drawWindRipple(ctx, x, y, windTime, gustStrength(windTime - .32, x, wind), y / 37);
     }
     if (rain > 0.01)
       for (let i = 0; i < 12; i++) {
@@ -369,7 +376,7 @@ export class RiverRenderer {
   }
 
   // 可见块使用统一 24 FPS 相位，同帧移动与世界镜像只更新一次。
-  draw(ctx, time, night, rain, reduced, viewport) {
+  draw(ctx, time, night, rain, reduced, viewport, wind = 0, windTime = time) {
     if (reduced) return;
     const frame = Math.floor(time * 24);
     if (frame !== this.lastFrame) {
@@ -388,8 +395,9 @@ export class RiverRenderer {
       const tile = this.getTile(region, night);
       for (let index = night >= 1 ? 1 : 0; index < (night > 0 ? 2 : 1); index++) {
         const layer = tile.layers[index];
-        if (layer.frame !== frame || layer.rain !== rain) {
-          this.updateTile(layer, region, this.frameTime, rain, tile.mask);
+        if (layer.frame !== frame || layer.rain !== rain || layer.wind !== wind) {
+          this.updateTile(layer, region, this.frameTime, rain, tile.mask, wind, windTime);
+          layer.wind = wind;
           layer.frame = frame;
           layer.rain = rain;
         }

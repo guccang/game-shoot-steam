@@ -51,7 +51,7 @@ test('所有正式购入类别使用折后价格，无等级和主线门槛，�
  }
 });
 test('猫窝获取享折扣，不重复购入且不能付费升级',()=>{
- const p=funded(),cost=campPurchasePrice(p,HEROES[1]),before=p.coins;assert.ok(transactProgress(p,'heroes',1,'buy',{catHome:true}));assert.equal(before-p.coins,cost.coins);
+ const p=funded(),cost=campPurchasePrice(p,HEROES[1]),before=p.coins;p.homeDecor.floors=3;assert.ok(transactProgress(p,'heroes',1,'buy',{catHome:true}));assert.equal(before-p.coins,cost.coins);
  const saved=JSON.stringify(p);assert.equal(transactProgress(p,'heroes',1,'buy',{catHome:true}),false);assert.equal(transactProgress(p,'heroes',1,'upgrade'),false);assert.equal(JSON.stringify(p),saved);
 });
 test('主线经验和收据只在首次交付发放，完整旧候选补齐新增车型',()=>{

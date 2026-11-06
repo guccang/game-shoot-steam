@@ -44,3 +44,6 @@
 #home-construction-dialog .home-balcony-directions button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:64px;min-width:0}
 #home-construction-dialog .home-balcony-directions small{font-size:12px;font-weight:500}
 #home-construction-dialog .home-balcony-directions [aria-pressed=true]{background:var(--ui-forest);color:var(--ui-paper)}
+
+/* 空中仅保留降落和航程，避免室内服务抢占飞行操作。 */
+#cottage-controls[data-gliding="true"] > footer button:not(#home-glider){display:none}

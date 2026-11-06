@@ -3,7 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {workshopCatalog} from '../src/progression/workshop-catalog.js';
 import {WEAPON_DISPLAY_ORDER} from '../src/config/weapons.js';
-import {VEHICLE_DISPLAY_ORDER} from '../src/config/vehicles.js';
+import {COLLECTED_VEHICLES,VEHICLE_DISPLAY_ORDER} from '../src/config/vehicles.js';
+import {ERA_VEHICLES,eraDonor} from '../src/config/vehicle-eras.js';
+import {interiorVehicleDisplays} from '../src/config/workshop-interiors.js';
 import {freshProgress} from '../src/progression/progress.js';
 
 test('购买仅显示未拥有，升级改装成长共用已拥有目录且不改变存档',()=>{
@@ -27,4 +29,18 @@ test('未拥有和全拥有均可返回空目录，载具同样按归属分区',
  assert.deepEqual(workshopCatalog(p,'vehicle','buy'),VEHICLE_DISPLAY_ORDER.filter(i=>i!==0));
  for(const page of ['upgrade','modify','unlock'])assert.deepEqual(workshopCatalog(p,'vehicle',page),[0]);
  p.vehicleHulls.fill(1);assert.deepEqual(workshopCatalog(p,'vehicle','buy'),[]);
+});
+
+test('新档先展示木作车辆，改造原车在后继车型前，展厅与货架共用成长顺序',()=>{
+ const p=freshProgress(),order=VEHICLE_DISPLAY_ORDER;
+ assert.deepEqual([...order].sort((a,b)=>a-b),COLLECTED_VEHICLES.map((_,i)=>i));
+ const shelf=workshopCatalog(p,'vehicle','buy');
+ assert.deepEqual(shelf.slice(0,3).map(i=>COLLECTED_VEHICLES[i].id),['wood-bicycle','wood-barrow','pine-tank']);
+ for(const model of ERA_VEHICLES){
+   const donor=eraDonor(model);
+   if(donor)assert.ok(order.indexOf(donor.index)<order.indexOf(model.index),model.name);
+ }
+ const display=interiorVehicleDisplays().map(item=>item.index);
+ assert.deepEqual(display,order.filter(i=>!COLLECTED_VEHICLES[i].rewardOnly));
+ assert.ok(order.slice(display.length).every(i=>COLLECTED_VEHICLES[i].rewardOnly));
 });

@@ -1,3 +1,4 @@
+import {upgradeCost} from '../src/progression/progress.js';
 import { equipmentRecipe } from '../src/progression/equipment-goals.js';
 import { WORLD } from '../src/world/coordinates.js';
 // 验证重型脉冲的蓄能、贯穿、反冲碰撞、成长兼容与缓冲镜头。
@@ -27,6 +28,8 @@ function arena() {
   g.progress.weapons[index] = 1;
   Object.assign(g.player, { x: 200, y: 600 });
   g.spawnTimer = 999;
+  // 靶场从已装填的弹匣开始，保留正式开火与换弹计时。
+  Object.assign(g.magazines[index],{ammo:weapon.magazineSize,remaining:0});
   g.start();
   return g;
 }
@@ -66,19 +69,22 @@ test('脉冲必须蓄满才射击，丢失目标散能，暂停冻结，换装�
 test('脉冲真实飞行并贯穿十二个目标，宽弹道预览匹配命中且不重复发奖', () => {
   const g = arena();
   const targets = Array.from({ length: 13 }, (_, i) =>
-    target(i + 1, 300 + i * 42, i % 2 ? 'enemy' : 'tree'),
+    target(i + 1, 300 + i * 42, 'enemy'),
   );
-  g.trees = targets.filter((t) => t.type === 'tree');
-  g.enemies = targets.filter((t) => t.type === 'enemy');
+  const trunk={...targets[0],id:100,type:'tree',x:275};
+  g.trees=[trunk];
+  g.enemies=targets;
   const guide = sniperGuide(g);
   assert.equal(guide.range, 820);
   assert.equal(guide.hits.length, 12);
+  Object.assign(g.magazines[index],{ammo:1,remaining:0});
   g.pulse.charge = 1.2;
   assert.ok(g.attack());
   assert.equal(targets[0].hp, 2000);
   updateBallistics(g, 0.5);
   assert.equal(targets.filter((t) => t.hp < 2000).length, 12);
-  assert.equal(targets[0].hp, 1760);
+  assert.equal(targets[0].hp, targets[0].maxHp-Math.round(g.damage()));
+  assert.equal(trunk.hp,trunk.maxHp);
   assert.ok(targets[11].hp < 1880);
   assert.equal(targets[12].hp, 2000);
   assert.equal(g.projectiles.length, 0);
@@ -153,7 +159,7 @@ test('重脉冲致命冲量强于狙击，粒子有界且回收，领主仍受�
   assert.equal(fx.items.length, 0);
 });
 
-test('旧档新增锁定槽位且保留狙击枪，购买十领主门槛及升级刷新正确', () => {
+test('旧档保留已有武器，脉冲枪按工坊报价购买、升级后可读档', () => {
   const old = validateProgress({
     ...freshProgress(),
     weapons: [1, 0, 0, 0, 0, 0, 0, 0, 3],
@@ -162,19 +168,32 @@ test('旧档新增锁定槽位且保留狙击枪，购买十领主门槛及升�
   assert.equal(old.weapon, 8);
   assert.equal(old.weapons[8], 3);
   assert.equal(old.weapons[index], 0);
-  const g = new Game(old);
-  const price=equipmentRecipe('weapons',index);
-  g.progress.materials={parts:price.parts,crystal:price.crystal,core:price.core};
-  Object.assign(g.progress, { coins: 20000, wood: 8000, bosses: 9 });
-  const before = structuredClone(g.progress);
-  assert.equal(g.transact('weapons', index, 'buy'), false);
-  assert.deepEqual(g.progress, before);
-  g.progress.bosses = 10;
-  assert.ok(g.transact('weapons', index, 'buy'));
-  assert.ok(g.transact('weapons', index, 'upgrade'));
-  const saved = new Game(JSON.parse(JSON.stringify(g.progress)));
-  assert.equal(saved.progress.weapon, index);
-  assert.equal(saved.damage(), 293);
+  // 保留当前装备，其余旧枪放入仓库，给新枪留出随身空间。
+  old.warehouse.weapons=old.weapons.flatMap((level,i)=>level&&i!==old.weapon?[i]:[]);
+  const g=new Game(old),p=g.progress;
+  g.cottage={kind:'weapons'};
+  const price=equipmentRecipe('weapons',index,p),upgrade=upgradeCost(1,p,'weapons',index);
+  p.coins=price.coins-1;
+  p.wood=price.wood+upgrade.wood;
+  Object.assign(p.materials,{parts:price.parts,crystal:price.crystal,core:price.core});
+  const before=structuredClone(p);
+  assert.equal(g.transact('weapons',index,'buy'),false);
+  assert.deepEqual(p,before);
+  p.coins=price.coins+upgrade.coins;
+  assert.equal(p.bosses,0);
+  assert.ok(g.transact('weapons',index,'buy'));
+  assert.equal(p.coins,upgrade.coins);
+  assert.equal(p.wood,upgrade.wood);
+  assert.equal(p.weapon,index);
+  const beforeUpgrade=g.damage();
+  assert.ok(g.transact('weapons',index,'upgrade'));
+  const restored=new Game(JSON.parse(JSON.stringify(p)));
+  assert.equal(restored.progress.weapon,index);
+  assert.equal(restored.progress.weapons[index],2);
+  assert.equal(restored.progress.coins,0);
+  assert.equal(restored.progress.wood,0);
+  assert.ok(restored.damage()>beforeUpgrade);
+  assert.equal(restored.damage(),g.damage());
 });
 
 test('无锁定注视点时，镜头忽略蓄能和候选目标，真实退步仍正确跟随', () => {
@@ -202,8 +221,9 @@ test('粗能量束只延伸至真实弹头，换枪不追踪枪口，暂停冻�
   const g = arena(),
     victim = target(1, 600);
   g.enemies = [victim];
-  g.pulse.charge = 1.2;
-  g.attack();
+  const expectedHp = victim.hp - g.damage();
+  g.pulse.charge = g.weapon().chargeTime;
+  assert.ok(g.attack());
   const beam = g.shots[0],
     start = { x: beam.x, y: beam.y };
   assert.equal(beam.kind, 'pulse-beam');
@@ -224,5 +244,5 @@ test('粗能量束只延伸至真实弹头，换枪不追踪枪口，暂停冻�
   for (let i = 0; i < 30; i++) g.update(0.05);
   assert.equal(g.shots.length, 0);
   assert.equal(g.projectiles.length, 0);
-  assert.equal(victim.hp, 1760);
+  assert.equal(victim.hp, expectedHp);
 });

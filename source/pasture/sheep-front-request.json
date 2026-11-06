@@ -1,0 +1,22 @@
+{
+  "dry_run": true,
+  "method": "POST",
+  "url": "http://10.1.9.154:8091/v1/video-generations",
+  "body": {
+    "request_id": "vid-ztj-forest-pasture-front-20261105-sheep-v1",
+    "model": "seedance-2.5",
+    "mode": "first_frame",
+    "prompt": "This is a strictly FRONT VIEW ONLY game sprite of the pictured sheep. Maintain EXACTLY THIS front-facing centered symmetrical head-on orientation of face and shoulders in EVERY frame, both eyes visible, both ears symmetrical. NO turn, NO looking to either side, no side views. Fixed camera, stable foot baseline, entire animal visible, same scale and same character, warm flat hand-drawn game art. Perfectly flat BLUE #0000FF background, no shadow, text or props. First 0-3 seconds: front-facing idle, soft breath and a blink, planted hooves. From 3 to 9 seconds: clear slow quadruped WALK IN PLACE facing directly toward the camera, alternate forelegs and opposite hind legs in perspective, hooves lift clearly and touch down, tiny weight shift and ear bounce. No forward drift, no growth in size. Last second settle to standing in front view. Preserve the exact reference collar, face, fur and outline.",
+    "inputs": [
+      {
+        "type": "image",
+        "role": "first_frame",
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261105-185550-3lfzyt/329d44ec231ece45-sheep-front-reference.png"
+      }
+    ],
+    "resolution": "720p",
+    "ratio": "adaptive",
+    "duration": 10,
+    "generate_audio": false
+  }
+}

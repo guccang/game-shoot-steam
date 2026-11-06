@@ -12,7 +12,7 @@ import {sceneHit,placeSceneHit} from './scene-hit.js';
 // 对话控制器保留服务回调，在原弹窗恢复世界之后再打开原有事务，避免暂停归属丢失。
 export function createNpcConversations({game,root,renderer,dialogs,onChange,onCampService}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),dialog=root.createElement('dialog'),nodes=new Map();
- let source=null,service=null,pendingService=null;
+ let source=null,service=null,pendingService=null,ended=false;
  dialog.id='npc-conversation-dialog';dialog.className='ui-dialogue';dialog.setAttribute('aria-labelledby','npc-conversation-title');
  dialog.innerHTML='<div class="camp-story-heading"><div><small data-npc-job></small><h2 id="npc-conversation-title" tabindex="-1"></h2></div><button class="ui-close" data-npc-close aria-label="结束交谈">×</button></div><div class="story-speech-copy" aria-live="polite" aria-atomic="true"><small data-npc-stage></small><p data-npc-text></p><small data-npc-note></small></div><div class="story-speech-actions"><button class="ui-button" data-npc-next>再聊聊</button><button class="ui-button" data-npc-service>说说正事</button></div>';
  root.body.append(dialog);const $=selector=>dialog.querySelector(selector);
@@ -20,7 +20,8 @@ export function createNpcConversations({game,root,renderer,dialogs,onChange,onCa
  function advance(){
   const result=converseWithNpc(game,source);
   $('[data-npc-text]').textContent=result.message;$('[data-npc-note]').textContent=result.note||'';
-  $('[data-npc-next]').textContent=result.ok?'再聊聊':'再试一次';
+  ended=!!result.ended;
+  $('[data-npc-next]').textContent=ended?'下次再聊':result.ok?'再聊聊':'再试一次';
   if(result.ok){$('h2').textContent=result.npc.name;$('[data-npc-job]').textContent=result.npc.job;$('[data-npc-stage]').textContent=NPC_DIALOGUE_STAGES[result.stage].label;}
   dialog.querySelector('.story-speech-copy').scrollTop=0;onChange();
  }
@@ -31,7 +32,7 @@ export function createNpcConversations({game,root,renderer,dialogs,onChange,onCa
   $('[data-npc-service]').hidden=!service;advance();dockNpcDialogue(root,dialog);dialogs.open(dialog.id,{modal:false});
  }
  dialogs.register(dialog.id,{focusId:'npc-conversation-title'});
- scope.on($('[data-npc-next]'),'click',advance);
+ scope.on($('[data-npc-next]'),'click',()=>{if(ended)dialogs.close(dialog.id);else advance();});
  scope.on($('[data-npc-close]'),'click',()=>dialogs.close(dialog.id));
  scope.on($('[data-npc-service]'),'click',()=>{pendingService=service;dialogs.close(dialog.id);});
  scope.on(dialog,'close',()=>{const action=pendingService;pendingService=null;action?.();});

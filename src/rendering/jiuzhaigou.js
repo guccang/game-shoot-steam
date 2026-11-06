@@ -1,3 +1,5 @@
+import { gustStrength } from '../world/gust.js';
+import { drawWindRipple } from './wind-ripple.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { consumeDrawSteps } from './draw-steps.js';
@@ -210,7 +212,7 @@ export function* paintJiuzhaigouSteps(c, view = { x: 0, y: 0, w: WORLD.width, h:
   }
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-export function drawJiuzhaigouWater(c, view, time, night = 0, reduced = false) {
+export function drawJiuzhaigouWater(c, view, time, night = 0, reduced = false, wind = 0, windTime = time) {
   const color = (hex) => (night > 0 ? nightColor(hex, night) : hex);
   const t = reduced ? 0 : time;
   for (let wy = Math.floor(view.y / WORLD.height); wy <= Math.floor((view.y + view.h) / WORLD.height); wy++)
@@ -236,6 +238,7 @@ export function drawJiuzhaigouWater(c, view, time, night = 0, reduced = false) {
         for (let i = 0; i < 13; i++) {
           const px = lake.x + (valleyNoise(i + 2, lake.x) - 0.5) * lake.rx * 1.7;
           const py = lake.y + (valleyNoise(i + 7, lake.y) - 0.5) * lake.ry * 1.7;
+          if (wind && !reduced) drawWindRipple(c, px, py, windTime, gustStrength(windTime - .32, px, wind), i);
           const drift = Math.sin(t * 0.65 + i) * 5;
           c.beginPath();
           c.ellipse(px + drift, py, 12 + (i % 4) * 5, 2, 0, 0.15, 2.8);

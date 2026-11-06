@@ -9,6 +9,8 @@ import {catLoad,movementLoadFactor} from '../src/progression/load-weight.js';
 import {quoteWorkshop} from '../src/progression/workshop.js';
 import {weaponPurchaseQuote} from '../src/core/weapon-purchase-load.js';
 import {commitWorkshop} from '../src/core/workshop.js';
+import {collectShopStock} from '../src/core/shop-delivery.js';
+import {carriedWeapon} from '../src/progression/weapon-storage.js';
 import {discardLoad} from '../src/core/load-cleanup.js';
 import {AMMO_TYPES} from '../src/config/supplies.js';
 
@@ -33,16 +35,16 @@ function fillAfterPurchase(g,weight){
   assert.equal(weaponPurchaseQuote(g,plan,quoteWorkshop(g.progress,plan)).load.weight,weight);
 }
 
-for(const weight of [30,30.002])test(`购买后 ${weight}kg 在保存前拒绝且不扣资源`,()=>{
+for(const weight of [30,30.002])test(`购买后 ${weight}kg 整件入库，保存失败可重试`,()=>{
   const g=scene();
   // 50 克钥匙会留下 2 克余数；精确 30kg 场景不携带钥匙，其余场景保留正常随身物品。
   if(weight===30)g.progress.keepsakes.items=g.progress.keepsakes.items.filter(id=>id!=='house-key');
   fillAfterPurchase(g,weight);assert.ok(!catLoad(g).overloaded);
   const before=JSON.stringify(g.progress),mags=JSON.stringify(g.magazines);let writes=0;
+  assert.equal(commitWorkshop(g,plan,()=>false).ok,false);assert.equal(JSON.stringify(g.progress),before);
   const r=commitWorkshop(g,plan,()=>{writes++;return true;});
-  assert.equal(r.ok,false);assert.equal(r.loadBlocked,true);assert.equal(r.load.weight,weight);assert.match(r.reason,/整理背包/);
-  assert.equal(writes,0);assert.equal(JSON.stringify(g.progress),before);assert.equal(JSON.stringify(g.magazines),mags);
-  assert.equal(g.transact('weapons',1,'buy'),false);assert.equal(JSON.stringify(g.progress),before);
+  assert.ok(r.ok);assert.equal(r.place,'小屋仓库');assert.equal(r.load.weight,weight);assert.deepEqual(g.progress.warehouse.weapons,[1]);
+  assert.equal(writes,1);assert.equal(JSON.stringify(g.magazines),mags);assert.equal(g.transact('weapons',1,'buy'),false);
 });
 
 test('略低于上限可购买，报价与购买、读档后的真实负重一致',()=>{
@@ -59,11 +61,24 @@ test('报价计入运行弹匣，不依赖过期的存档弹匣数量',()=>{
   assert.ok(commitWorkshop(g,plan,()=>true).ok);assert.equal(catLoad(g).weight,r.load.weight);
 });
 
+test('工坊优先把新枪交给门外车辆，读档后从同车取回才能随身装备',()=>{
+ const g=scene();g.cottage.outside={x:2000,y:2000};g.progress.vehicleHulls[1]=1;
+ g.progress.campParking.owned=[{hull:1,mapId:'forest',spot:null,x:2010,y:2010,hp:1,ammo:0}];
+ const before=catLoad(g).weight;let saved;
+ const result=commitWorkshop(g,plan,p=>{saved=structuredClone(p);return true;});
+ assert.ok(result.ok);assert.match(result.place,/载具仓库/);assert.equal(catLoad(g).weight,before);
+ const restored=new Game(saved);restored.state='paused';restored.vehicle.active=false;
+ restored.livingPersist=()=>true;Object.assign(restored.player,{x:2010,y:2010});
+ assert.equal(carriedWeapon(restored.progress,1),false);assert.equal(restored.progress.weapon,0);
+ assert.ok(collectShopStock(restored,1,'weapon:1').ok);assert.ok(carriedWeapon(restored.progress,1));
+ assert.equal(collectShopStock(restored,1,'weapon:1').ok,false);
+});
+
 test('已经满载可在工坊原地整理，清理后重算购枪资格并恢复移动',()=>{
   const g=scene();g.progress.logistics.bagWood=100;assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);
-  assert.equal(commitWorkshop(g,plan,()=>true).loadBlocked,true);
+  assert.equal(commitWorkshop(g,plan,()=>true).place,'小屋仓库');
   assert.ok(discardLoad(g,{id:'material:wood',count:100}).ok);assert.ok(movementLoadFactor(g)>0);
-  assert.ok(commitWorkshop(g,plan,()=>true).ok);assert.ok(movementLoadFactor(g)>0);
+  assert.equal(commitWorkshop(g,plan,()=>true).ok,false);assert.ok(movementLoadFactor(g)>0);
 });
 
 test('负重限制不干扰已拥有武器的换装与升级',()=>{

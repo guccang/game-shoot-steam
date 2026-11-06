@@ -1,3 +1,4 @@
+import {ERA_RESOURCES,eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 import {equipmentQuestReason} from './equipment-quests.js';
 import {sendMail,resourceMailText} from './mailbox.js';
 import {RANGER,arrivalPistolPurchase} from '../config/ranger-arrival.js';
@@ -15,6 +16,8 @@ export function equipmentRecipe(kind, index, progress) {
   if (!Number.isInteger(index) || index < 0 || kind==='turret'&&index>=17) return null;
   const item = kind === 'vehicle' ? COLLECTED_VEHICLES[index] : WEAPONS[index];
   if (!item || item.rewardOnly || !['weapons', 'vehicle', 'turret'].includes(kind)) return null;
+  const era=kind==='vehicle'&&eraVehicle(index);
+  if(era)return campPurchasePrice(progress,{name:era.name,coins:0,wood:0,parts:0,crystal:0,core:0,...era.cost});
   const base = kind === 'vehicle' ? VEHICLE_RECIPES[index] : WEAPON_RECIPES[index];
   if (!base) return null;
   const recipe = { ...base, coins: item.coins, wood: item.wood, bosses: item.bosses || 0,
@@ -42,15 +45,15 @@ export function ownsEquipment(progress, kind, index) {
 export function equipmentRequirements(progress, kind, index) {
   const recipe = equipmentRecipe(kind, index, progress);
   if (!recipe) return [];
-  return ['coins', 'wood', ...MATERIAL_KEYS].filter(key => recipe[key] > 0).map(key => {
-    const need=recipe[key],have=MATERIAL_KEYS.includes(key)?progress.materials?.[key]||0:progress[key]||0;
+  return ['coins', 'wood', ...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES)].filter(key => recipe[key] > 0).map(key => {
+    const need=recipe[key],have=key!=='coins'&&key!=='wood'?progress.materials?.[key]||0:progress[key]||0;
     return {key,have,need,missing:Math.max(0,need-have)};
   });
 }
 
 // 材料缺失等价于余额为零，旧档已有装备仍可装备和升级。
 export function canPurchaseEquipment(progress, kind, index) {
-  return !!equipmentRecipe(kind, index, progress) && !ownsEquipment(progress, kind, index) && !equipmentQuestReason(progress,kind,index) &&
+  return !!equipmentRecipe(kind, index, progress) && !ownsEquipment(progress, kind, index) && !eraCraftReason(progress,kind,index) && !equipmentQuestReason(progress,kind,index) &&
     equipmentRequirements(progress, kind, index).every(row => row.missing === 0);
 }
 
@@ -60,10 +63,11 @@ export function payEquipment(progress, kind, index) {
   const cost = equipmentRecipe(kind, index, progress);
   recordEconomy(progress,'expense','buy:'+kind+':'+index,cost);
   // 手续与所有权处于同一候选事务；报价预览不会向真实邮箱寄信。
-  sendMail(progress,{key:`purchase:${kind}:${index}`,sender:kind==='vehicle'?'载具工坊':'武器工坊',title:`${cost.name}购买合同`,body:`${cost.name}的购买手续已办妥。\n实际支付：${resourceMailText(cost)}。\n${kind==='vehicle'?'车辆已登记到你的名下，并停入停车场，可通过手机定位。':'装备已登记到你的名下，可以在工坊查看和装备。'}\n此邮件为购买合同，无需再次付款。`});
+  const donor=kind==='vehicle'&&eraDonor(eraVehicle(index));
+  sendMail(progress,{key:`purchase:${kind}:${index}`,sender:kind==='vehicle'?'载具工坊':'武器工坊',title:`${cost.name}购买合同`,body:`${cost.name}的购买手续已办妥。\n实际支付：${resourceMailText(cost)}。\n${donor?'已用'+donor.name+'改造，车上货物一同移交，仍停在原车位置。':kind==='vehicle'?'车辆已登记到你的名下，并停入停车场，可通过手机定位。':'装备已登记到你的名下，可以在工坊查看和装备。'}\n此邮件为购买合同，无需再次付款。`});
   progress.coins -= cost.coins;
   progress.wood -= cost.wood;
-  for (const key of MATERIAL_KEYS) progress.materials[key] -= cost[key];
+  for (const key of [...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES)]) if(cost[key])progress.materials[key] -= cost[key];
   if (progress.equipmentGoal?.kind === kind && progress.equipmentGoal.index === index)
     progress.equipmentGoal = null;
   return true;
@@ -75,4 +79,15 @@ export function trackEquipment(progress, kind, index) {
   const same = progress.equipmentGoal?.kind === kind && progress.equipmentGoal.index === index;
   progress.equipmentGoal = same ? null : { kind, index };
   return true;
+}
+
+// 升阶只能接收已停稳且可用的原车；交车前把独立主炮留在工坊。
+export function eraCraftReason(p,kind,index){
+  const donor=kind==='vehicle'&&eraDonor(eraVehicle(index));if(!donor)return '';
+  if(!p.vehicleHulls[donor.index])return '先打造'+donor.name+'，升阶时使用这辆原车。';
+  if(p.vehicleService?.[donor.index]?.phase)return '先到维修中心取回可用的'+donor.name+'。';
+  if(!p.campParking?.owned.some(r=>r.hull===donor.index&&r.hp>0))return '请先把'+donor.name+'停好并下车。';
+  if([p.logistics?.tow?.tractor,p.logistics?.tow?.target].includes(donor.index))return '请先解除原车的牵引。';
+  if(p.vehicleLoadouts[donor.index]!=null)return '请先卸下原车的主炮。';
+  return '';
 }

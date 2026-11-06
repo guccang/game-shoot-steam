@@ -1,3 +1,4 @@
+import {vehicleMotorSound} from '../config/vehicle-eras.js';
 // 分轨音频服务：缓存原创音色、限制并发，并管理音乐与载具的循环生命周期。
 import { renderSound, renderEngine, SOUND_PROFILES, WEAPON_SOUNDS, RELOAD_SOUNDS } from './audio-sounds.js';
 import {FIRE_LOOPS} from './audio-fire.js';
@@ -131,7 +132,7 @@ export function createAudio(
       musicOffset += context.currentTime - musicStarted;
       stopVoice(music); music = null;
     }
-    const index = active && preferences.effects > 0 ? scene.vehicle : -1;
+    const index = active && preferences.effects > 0 ? vehicleMotorSound(scene.vehicle) : -1;
     if (engineIndex !== index || (!engine && index >= 0)) {
       stopVoice(engine); engine = null; engineIndex = index;
       if (index >= 0) {

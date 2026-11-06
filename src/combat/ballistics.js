@@ -1,3 +1,4 @@
+import {weaponTerrainTargets} from './terrain-targets.js';
 import {statisticsSource} from './statistics-source.js';
 import {landGravityField,explodeHeavyShell,gravityPointSafe,gravityFlightRange} from './gravity-field.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -9,9 +10,9 @@ import { stepGrenade } from './grenades.js';
 import { fireArc } from './elemental.js';
 import { SpatialGrid } from '../world/spatial-grid.js';
 
-// 获取本帧有效碰撞目标；AI 选择怪物优先，实际子弹仍会撞上挡路树木。
+// 获取本帧有效碰撞目标；远程火力只命中敌人和参与采矿的岩壁。
 export function liveTargets(game) {
-  return [...game.trees, ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
+  return [...weaponTerrainTargets(game), ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
     (t) => t.hp > 0,
   );
 }
@@ -203,13 +204,13 @@ function resolveHit(game, b, hit) {
   impact(game, hit, b);
   landGravityField(game,b);explodeHeavyShell(game,b,hit.target);
   b.hitIds.push(hit.target.id);
-  // 穿甲弹保留原方向与帧内剩余行程，树干也消耗一次穿透；去重表跨帧保留。
+  // 穿甲弹保留原方向与帧内剩余行程，每个有效命中消耗一次穿透；去重表跨帧保留。
   if (b.pierce > 1) {
     b.pierce--;
     b.amount = Math.max(Math.round(b.initialAmount * GAMEPLAY_VALUES.projectile.pierceDamageFloor), Math.round(b.amount * b.pierceDecay));
     return;
   }
-  // 同一束火焰穿过怪物但不会重复灼烧同一目标，树干会挡住后方火流。
+  // 同一束火焰穿过怪物但不会重复灼烧同一目标，矿井岩壁仍可截断火流。
   if (b.kind === 'flame' && hit.target.type !== 'tree') return;
   if (b.bounces <= 0) {
     b.remaining = 0;

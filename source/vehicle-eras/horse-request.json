@@ -1,0 +1,17 @@
+{
+  "mode": "first_frame",
+  "duration": 10,
+  "generate_audio": false,
+  "ratio": "adaptive",
+  "prompt": "Animate exactly this little front-facing forest-game draft pony on solid chroma-key blue. Locked camera, fixed scale, fixed head-on direction and fixed hoof baseline. Keep the two compact front legs and tiny rear hooves and leaf harness, same flat colors and outlines. From 0 to 3 seconds stand in place, blink once and gently breathe. From 3 to 9 seconds walk IN PLACE facing straight at camera with a clear repeating alternating gait, legs articulate in turn, left hoof rises and plants then right hoof rises and plants, slight natural forelock and ear movement. Keep center and size steady, no turns, no zoom, no cart, no people, no shadows, no additional objects. Finish standing still.",
+  "model": "seedance-2.5",
+  "request_id": "vid-ztj-forest-harness-pony-20261106-01",
+  "resolution": "720p",
+  "inputs": [
+    {
+      "type": "image",
+      "role": "first_frame",
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-ztj-forest-harness-pony-20261106-01/432eaeb8ee7e5bc2-horse-reference.png"
+    }
+  ]
+}

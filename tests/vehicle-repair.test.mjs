@@ -25,10 +25,10 @@ test('报废立即下车且等待、刷新、重生均不免费恢复',()=>{
  const loaded=new Game(structuredClone(g.progress));loaded.state='playing';assert.equal(loaded.vehicle.hp,0);assert.equal(loaded.summonVehicle(),false);
  g.reset();assert.equal(g.vehicle.hp,0);
 });
-test('保养与报废统一按损失耐久比例乘车价和修复系数0.5报价',()=>{
+test('保养与报废按车型费率报价，红狼5%而其他车型50%，低损伤仍向上取整',()=>{
  const g=game();g.progress.vehicleHulls.fill(1);
  for(const v of g.vehicles){
-  const base=economyFor(g.progress).vehicles[v.index].coins;
+  const base=economyFor(g.progress).vehicles[v.index].coins*(v.index===6?.1:1);
   for(const [hpRatio,costRatio] of [[1,0],[.8,.1],[.5,.25],[0,.5]]){
    v.hp=v.maxHp*hpRatio;assert.equal(vehicleRepairQuote(g,v.index),Math.ceil(base*costRatio),`车型${v.index} 耐久比例${hpRatio}`);
   }

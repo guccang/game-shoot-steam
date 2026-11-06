@@ -1,4 +1,5 @@
 import {monsterDeathPose} from '../config/monster-death.js';
+import {bossProfile} from '../config/bosses.js';
 import {campResidentHead} from '../config/camp-residents.js';
 import {isDumpling} from '../combat/dumpling-motion.js';
 import {dumplingSizeName} from '../config/monster-families.js';
@@ -255,14 +256,15 @@ export function drawBoss(c, b, time, reduced = false) {
   drawBossSkillCue(c,b);
 }
 // 波次栏头像复用领主原画，固定姿态与构图，不驱动战斗动画。
-export function drawBossIcon(canvas, kind) {
+export function drawBossIcon(canvas, kind, campDefense=false) {
   const c = canvas.getContext('2d');
   c.clearRect(0, 0, canvas.width, canvas.height);
   c.save();
   c.translate(canvas.width / 2, canvas.height * 0.81);
-  const scale = Math.min(canvas.width / 180, canvas.height / 180);
+  const actor={kind,campDefense,x:0,y:0};
+  const scale = Math.min(canvas.width / 180, canvas.height / 180)/(bossProfile(actor).scale||1);
   c.scale(scale, scale);
-  drawBoss(c, { kind, x: 0, y: 0 }, 0, true);
+  drawBoss(c, actor, 0, true);
   c.restore();
 }
 // 休养使用实际生命进度；血条高于各兵种预警，满血与死亡不留下空底框。

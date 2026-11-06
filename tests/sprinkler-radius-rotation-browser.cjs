@@ -18,7 +18,7 @@ async original=>{
    for(let y=2000;y<5000&&!point;y+=104)for(let x=2000;x<5000&&!point;x+=112){const q={x,y,mapId:'forest'};Object.assign(g.player,q);if(offsets.every(([dx,dy])=>!land.farmLandReason(g,{...q,x:x+dx,y:y+dy})))point=q;}
    if(!point)throw Error('无合法二格区域');window.site=point;const now=Date.now();g.progress.farm.plots=offsets.slice(1).map(([dx,dy],i)=>({id:i+1,mapId:'forest',x:point.x+dx,y:point.y+dy,crop:i%2===0?null:1,plantedAt:i%2===0?0:now,readyAt:i%2===0?0:now+120000,watered:false}));g.progress.farm.nextId=27;g.progress.farm.dug=26;g.progress.farm.planted=13;Object.assign(g.player,{x:point.x-60,y:point.y});a.renderer.camera.time=null;a.refresh();
   });
-  await phase('day');await page.locator('#production-menu').tap();await page.locator('[data-production-tab="build"]').tap();await shot('build-description');
+  await phase('day');await page.locator('#field-menu-toggle').tap();await page.locator('#production-menu').tap();await page.locator('[data-production-tab="build"]').tap();await shot('build-description');
   await page.locator('[data-production-build="sprinkler"]').tap();await page.waitForFunction(()=>a.game.productionCursor);await shot('coverage-preview');
   await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.productionSpray?.devices?.length);
   for(let i=0;i<3;i++){await shot('live-'+i);await page.waitForTimeout(120);}
@@ -27,7 +27,7 @@ async original=>{
   // 混合空田与作物必须同时润湿，空田保持零生长时间并持久保存供水来源。
   await page.evaluate(async()=>{const plots=a.game.progress.farm.plots.slice(0,24),empty=plots.filter(p=>p.crop===null);if(empty.length!==12||!empty.every(p=>p.watered&&p.sprinklerWatered&&p.readyAt===0)||!plots.every(p=>p.watered))throw Error('空田未正常润湿');const restored=(await import('/src/progression/progress.js')).validateProgress(a.game.progress);if(!restored.farm.plots.slice(0,24).every(p=>p.watered&&p.sprinklerWatered))throw Error('读档丢失湿度');});
   const watered=await page.evaluate(()=>a.game.progress.farm.plots.map(p=>!!p.sprinklerWatered));if(!watered.slice(0,24).every(Boolean)||watered.slice(24).some(Boolean))throw Error('浇水范围错误：'+watered);
-  await page.locator('#production-menu').tap();const paused=await page.evaluate(()=>a.game.time);await page.waitForTimeout(250);if(await page.evaluate(()=>a.game.time)!==paused)throw Error('暂停时钟仍在前进');await page.locator('[data-production-close]').first().tap();
+  await page.locator('#field-menu-toggle').tap();await page.locator('#production-menu').tap();const paused=await page.evaluate(()=>a.game.time);await page.waitForTimeout(250);if(await page.evaluate(()=>a.game.time)!==paused)throw Error('暂停时钟仍在前进');await page.locator('[data-production-close]').first().tap();
   await page.waitForFunction(async()=>!(await import('/src/rendering/farm-production.js')).sprinklerPose(a.game.progress.production.sprinklers[0],a.game.time,a.game.productionSpray).active);await shot('finished');
   for(const time of ['day','night']){
    await page.evaluate(()=>a.game.state='playing');await phase(time);

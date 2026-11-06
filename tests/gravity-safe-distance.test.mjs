@@ -64,17 +64,17 @@ test('循环地图边缘按最近镜像拒绝贴身落场，远处落点保留',
  assert.equal(gravityPointSafe(g,b),false);landGravityField(g,b);assert.equal(g.gravityFields.length,0);
  landGravityField(g,{...b,x:300,fieldCreated:false});assert.equal(g.gravityFields.length,1);
 });
-test('仅有树木不锁定、不射击、不耗弹；换普通枪后仍可伐木',()=>{
+test('仅有树木不锁定、不射击、不耗弹；换普通枪也不伐木',()=>{
  const g=scene();target(g,1200,'tree');assert.equal(g.findAttackTarget(),null);assert.equal(sniperGuide(g).target,null);
  const ammo=g.magazines[17].ammo;assert.equal(g.attack(),false);assert.equal(g.magazines[17].ammo,ammo);
  assert.deepEqual(summonTargetPool(g,g.player,400,{targetTrees:g.weapon().targetTrees}),[]);
- assert.equal(summonTargetPool(g,g.player,400).length,1);
- g.progress.weapon=0;g.trees[0].x=1000;assert.equal(g.findAttackTarget()?.type,'tree');
+ assert.equal(summonTargetPool(g,g.player,400).length,0);
+ g.progress.weapon=0;g.trees[0].x=1000;assert.equal(g.findAttackTarget(),null);
 });
-test('近敌预览终点与实际场一致，远敌仍标记命中，普通弹丸仍被树挡住',()=>{
+test('近敌预览终点与实际场一致，远敌仍标记命中，普通弹丸掠过树木',()=>{
  const g=scene();target(g,940);const tree=target(g,1200,'tree'),far=target(g,1230);
  const guide=sniperGuide(g);assert.equal(guide.hits.length,0);assert.ok(worldDistance(guide.end,g.player)>=150&&worldDistance(guide.end,g.player)<165);
  fireBallistics(g,g.weapon(),guide.muzzle,guide.direction,12,false);finish(g);assert.ok(worldDistance(g.gravityFields[0],guide.end)<.01);
  g.enemies=[far];const distant=sniperGuide(g);assert.equal(distant.target,far);assert.equal(distant.hits.length,1);
- g.enemies=[];fire(g,{...g.weapon(0),range:400,speed:650});finish(g);assert.ok(tree.hp<10000);assert.equal(far.hp,10000);
+ g.enemies=[];fire(g,{...g.weapon(0),range:400,speed:650});finish(g);assert.equal(tree.hp,10000);assert.equal(far.hp,10000);
 });

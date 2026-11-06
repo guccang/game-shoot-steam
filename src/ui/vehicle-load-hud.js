@@ -4,7 +4,7 @@ import {personalFleet} from '../core/vehicle-repair.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {statusIcon} from './status-rings.js';
 import {isSummonEnergy} from '../config/summon-energy.js';
-// 驾驶时包含猫猫和背包，停驻时读取真实货舱；借用玩法不冒用永久车队负重。
+// 驾驶与停驻共用车辆载荷；借用玩法不冒用永久车队负重。
 export function vehicleLoadHudState(game){
  if(!personalFleet(game))return {available:false,fill:0,percent:0,tone:'borrowed'};
  const load=vehicleLoad(game),ratio=load.capacity>0?load.payload/load.capacity:0;

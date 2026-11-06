@@ -19,10 +19,10 @@ export function restoreTownPosition(game){
 }
 
 // 按正式步行碰撞就近寻找落脚点；优先保留原位，车辆与建筑都不可重叠。
-export function townStandingPoint(game,origin){
+export function townStandingPoint(game,origin,maxRadius=256){
  const body={...game.player,mapId:game.mapId,flying:false,amphibious:false,treePass:false,livingCollision:true,legendaryBuilding:!!game.progress.vehicleHulls[6],parkingBarriers:parkingCollisionBarriers(game)};
  if(!blocked(origin.x,origin.y,12,game.trees,body))return {x:origin.x,y:origin.y};
- for(let radius=16;radius<=256;radius+=16)for(let i=0;i<24;i++){
+ for(let radius=16;radius<=maxRadius;radius+=16)for(let i=0;i<24;i++){
   const x=origin.x+Math.cos(i*Math.PI/12)*radius,y=origin.y+Math.sin(i*Math.PI/12)*radius;
   if(!blocked(x,y,12,game.trees,body))return {x,y};
  }

@@ -254,6 +254,8 @@ export function drawNewBoss(c, b, time, reduced = false) {
     motion = reduced || b.kind==='dumpling' ? 0 : Math.sin(time * 4);
   c.save();
   c.translate(b.x, b.y);
+  const scale=bossProfile(b).scale||1;
+  c.scale(scale,scale);
   oval(c, 0, 9, 60, 20, '#30463235');
   c.translate(0, reduced ? 0 : motion * 2 - (b.z || 0));
   if (phase === 'recover' && !reduced && b.kind!=='dumpling') {
@@ -273,9 +275,10 @@ export function drawNewBoss(c, b, time, reduced = false) {
     c.lineWidth = 4;
     c.strokeStyle = '#fff9e5';
     const label = phase === 'windup' ? `${bossProfile(b).title} !` : i18nText("rendering.bosses.3666e8b383");
-    c.strokeText(label, b.x, b.y - 142);
+    const labelY=b.y-(scale>1?24:142);
+    c.strokeText(label, b.x, labelY);
     c.fillStyle = phase === 'windup' ? '#b15346' : '#417e70';
-    c.fillText(label, b.x, b.y - 142);
+    c.fillText(label, b.x, labelY);
     c.restore();
   }
 }
@@ -288,7 +291,7 @@ export function drawBossHazard(c, h, reduced = false) {
   c.save();
   c.translate(h.x, h.y);
   c.lineCap = 'round';
-  const color = h.family==='dumpling'?'#62844c':
+  const color = h.giant?'#ac643f':h.family==='dumpling'?'#62844c':
     h.kind === 'spore'
       ? '#995783'
       : h.kind === 'wave'
@@ -389,6 +392,7 @@ export function drawBossHazard(c, h, reduced = false) {
     }
   } else {
     const radius = h.radius + 12;
+    if(h.giant)oval(c,0,0,radius,radius,'#ffffff00','#fff0c3',5);
     if (warning) c.setLineDash([6, 4]);
     oval(c, 0, 0, radius, radius, warning ? color + '29' : color + '60', color, 2);
     c.setLineDash([]);

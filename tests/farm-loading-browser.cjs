@@ -7,7 +7,7 @@ async page=>{
   if(!failed?.includes('图集加载失败'))throw Error('缺失作物资源没有明确失败');
   await page.unroute(pattern);
   const recovered=await page.evaluate(async pattern=>{const art=await import('/src/rendering/farm.js?failure-review='+encodeURIComponent(pattern));await art.loadFarmArt();return art.farmArtBudget();},pattern);
-  if(recovered.sheets!==3)throw Error('图集恢复重试失败');results.push({failed,recovered});
+  if(recovered.sheets!==recovered.maxSheets)throw Error('图集恢复重试失败');results.push({failed,recovered});
  }
  return results;
 }

@@ -33,9 +33,9 @@ async original=>{
    const bench=document.createElement('canvas');bench.width=600;bench.height=200;const ctx=bench.getContext('2d'),times=[];for(let frame=0;frame<60;frame++){const start=performance.now();ctx.clearRect(0,0,600,200);for(let i=0;i<16;i++)drawFarmCrop(ctx,{x:i%8*65+30,y:80+Math.floor(i/8)*90,plot:{...p,id:i,crop:i%8}},frame/60,false,now+36000);times.push(performance.now()-start);}times.sort((a,b)=>a-b);
    return {budget:farmArtBudget(),sixteenCropsP95:times[56]};
   });await page.setViewportSize({width:1100,height:900});await page.locator('#growth-review').screenshot({path:'output/playwright/farm-growth/growth-and-sway.png'});
-  // 收获断言读取当前价格表，避免经济数值调整后仍等待旧的60金币。
-  const expectedCoins=await page.evaluate(async()=>a.game.progress.coins+(await import('/src/config/farm.js')).FARM_CROPS[a.game.progress.farm.plots[0].crop].value);
-  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:390,height:844});await page.evaluate(()=>a.farm.open());await page.locator('[data-farm-cell="0"]').tap();await page.waitForFunction(expected=>a.game.progress.coins===expected&&!a.game.farmWork.job,expectedCoins);
+  // 收获进入背包，出售才产生金币；验证当前规则下真实点击仍完成收割。
+  const expectedHarvest=await page.evaluate(()=>{const crop=a.game.progress.farm.plots[0].crop;return {crop,count:a.game.progress.farm.inventory[crop]+1};});
+  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:390,height:844});await page.evaluate(()=>a.farm.open());await page.locator('[data-farm-cell="0"]').tap();await page.waitForFunction(expected=>a.game.progress.farm.inventory[expected.crop]===expected.count&&a.game.progress.farm.plots[0].crop===null&&!a.game.farmWork.job,expectedHarvest);
   if(evidence.budget.sheets!==evidence.budget.maxSheets||errors.length)throw Error(JSON.stringify({evidence,errors}));return {...evidence,paused:frozen,boosted,coins:await page.evaluate(()=>a.game.progress.coins),video:await page.video().path(),errors};
  }finally{await context.close();}
 }

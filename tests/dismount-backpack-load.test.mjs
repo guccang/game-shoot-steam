@@ -15,6 +15,24 @@ function scene(hull=5){const p=freshProgress();p.arrival=null;p.mainline.complet
 // 经过正式帧更新验证实际位移，而不只检查倍率配置。
 function walk(g){const x=g.player.x;for(let i=0;i<10;i++)g.update(.05,{x:1,y:0});return Math.abs(g.player.x-x);}
 
+test('猫猫带木头登上接近满载的电动车，可以正常开走，下车后两份库存各归原处',()=>{
+ const g=scene(),bag=g.progress.logistics,car=bag.builds[5];
+ bag.bagWood=20;
+ const parked=vehicleLoad(g);
+ car.wood=Math.floor((parked.capacity-parked.payload-1)/.5);
+ const cargoWood=car.wood,load=vehicleLoad(g);
+ assert.equal(catLoad(g).overloaded,false);
+ assert.equal(load.overloaded,false);
+ assert.ok(load.payload+catLoad(g).weight>=load.capacity);
+ assert.ok(summonVehicle(g));
+ assert.equal(vehicleLoad(g).payload,load.payload);
+ assert.equal(movementLoadFactor(g),1);
+ assert.ok(walk(g)>1);
+ assert.ok(dismountVehicle(g));
+ assert.equal(g.progress.logistics.bagWood,20);
+ assert.equal(g.progress.logistics.builds[5].wood,cargoWood);
+});
+
 for(const hull of [0,5,6])test(`车型${hull}下车后背包满载仍能行走，不清空背包或货舱`,()=>{
  const g=scene(hull);assert.ok(summonVehicle(g));assert.ok(catLoad(g).overloaded);assert.equal(vehicleLoad(g).overloaded,false);assert.ok(dismountVehicle(g));
  const wood=g.progress.logistics.bagWood,stock=structuredClone(g.progress.supplies.vehicles[hull]);assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);assert.ok(walk(g)>1);assert.equal(g.progress.logistics.bagWood,wood);assert.deepEqual(g.progress.supplies.vehicles[hull],stock);

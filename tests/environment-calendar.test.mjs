@@ -42,10 +42,10 @@ test('天气时长不再折算历法，旧档保留天气并迁移真实轮转�
 });
 
 test('时长与累计档案独立保存恢复，离线读取不增加游玩统计',()=>{
-  const memory=new Map(),store=createSaveStore(()=>({getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v)}));
+  const memory=new Map(),store=createSaveStore(()=>({getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)}));
   const env=normalizeEnvironment({timings:{day:240000,weather:300000}},Date.now());store.saveEnvironment(env);
   assert.equal(store.loadEnvironment().timings.day,240000);
-  const record=normalizeChronicle(null);recordPlayTime(record,1000,{weather:'rain'});store.saveChronicle(record);
+  const record=normalizeChronicle(null);recordPlayTime(record,1000,{weather:'rain'});recordPlayTime(record,800,{weather:'gust'});assert.ok(store.saveChronicle(record));
   assert.deepEqual(store.loadChronicle(),record);assert.deepEqual(store.loadChronicle(),record);
 });
 

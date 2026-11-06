@@ -6,7 +6,8 @@ import { waveDifficulty } from '../src/config/waves.js';
 import { sniperGuide } from '../src/combat/aim.js';
 import { CombatCamera } from '../src/rendering/camera.js';
 import { visibleBodies, WORLD } from '../src/world/coordinates.js';
-import { BIOMES, biomeAt, enemyIdentity } from '../src/world/biomes.js';
+import {FOREST_LEVEL_ORIGIN, FOREST_LEVEL_BANDS} from '../src/world/forest-levels.js';
+import { biomeAt, enemyIdentity } from '../src/world/biomes.js';
 import { updateAimLock } from '../src/combat/targeting.js';
 
 test('狙击固定广角不追随目标，切换自脉冲也不残留镜头缓动', () => {
@@ -135,8 +136,9 @@ test('瞄准预览与实际枪口及穿透顺序相同，预览不会改变战�
   assert.equal(guide.target.id, 2);
   assert.deepEqual(
     guide.hits.map((h) => h.target.id),
-    [1, 2, 3, 4, 5, 6],
+    [2, 4, 6],
   );
+  Object.assign(g.magazines[8],{ammo:1,remaining:0});
   g.attack();
   const b = g.projectiles[0];
   assert.equal(b.originX, guide.muzzle.x);
@@ -175,7 +177,7 @@ test('跨边界瞄准选择近方向，放大视野补齐同一地形实体的�
   );
 });
 
-test('营地第一波全为本区基础怪，初始手枪两次非暴击即可击败', () => {
+test('营地第一波全为本区基础怪，初始手枪至多两次非暴击即可击败', () => {
   for (const roll of [0.01, 0.5, 0.999]) {
     const g = new Game(freshProgress(), () => roll);
     assert.ok(
@@ -189,17 +191,20 @@ test('营地第一波全为本区基础怪，初始手枪两次非暴击即可�
       assert.equal(e.biome, 'meadow');
       assert.equal(biomeAt(e.x, e.y).id, 'meadow');
       assert.equal(e.rank, 0);
+      assert.ok(e.level<=3 && e.maxHp>0 && e.maxHp<=28);
     }
     const e = g.enemies[0];
     e.x = g.player.x + 160;
     e.y = g.player.y;
     g.enemies = [e];
     g.random = () => 0.5;
-    g.attack();
-    g.updateProjectiles(0.3);
-    assert.ok(e.hp > 0 && e.hp <= 10);
-    g.attack();
-    g.updateProjectiles(0.3);
+    Object.assign(g.magazines[0],{ammo:2,remaining:0});
+    for(let shot=0;shot<2&&e.hp>0;shot++){
+      const hp=e.hp;
+      assert.ok(g.attack());
+      g.updateProjectiles(.3);
+      assert.ok(e.hp<hp);
+    }
     assert.ok(e.hp <= 0);
     assert.equal(g.kills, 1);
   }
@@ -221,10 +226,14 @@ test('前三波减免逐步退出，第四波使用线性血量；高等级区�
   assert.equal(g.spawnEnemy(0, 100).rank, 1);
   g.wave = 3;
   assert.equal(g.spawnEnemy(0, 100).rank, 2);
-  g.player.x = BIOMES[3].x;
-  g.player.y = BIOMES[3].y;
-  g.wave = 1;
-  const e = g.spawnEnemy(0, 100);
-  assert.ok(e.level >= 10 && e.hp > 28);
-  assert.equal(e.maxHp, Math.round(enemyIdentity(e.x, e.y, 0.76).hp * waveDifficulty(1).health));
+  // 清缴固定轮次等级，野外遭遇按出生点距营地的距离生成。
+  const band=FOREST_LEVEL_BANDS.find(b=>b.min===10);
+  g.player.x=FOREST_LEVEL_ORIGIN.x+band.from;
+  g.player.y=FOREST_LEVEL_ORIGIN.y;
+  g.wave=1;
+  const e=g.spawnEnemy(0,100,null,{ambient:true,ordinaryDumpling:true});
+  const expected=enemyIdentity(e.x,e.y,0);
+  assert.ok(e.level>=band.min && e.hp>28);
+  assert.equal(e.level,expected.level);
+  assert.equal(e.maxHp,expected.hp);
 });

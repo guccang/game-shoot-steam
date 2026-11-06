@@ -12,7 +12,8 @@ export function validateCampDefense(raw){
   const wave=Math.max(1,count(r.wave,10)),total=CAMP_DEFENSE.waves[wave-1].count;
   run={growthVersion:CAMP_DEFENSE_GROWTH_VERSION,gateId:r.gateId,rounds,wave,cleared:count(r.cleared,10),waveKills:count(r.waveKills,total),kills:count(r.kills,590),
    gateHp:count(r.gateHp,CAMP_DEFENSE.gateHp),elapsed:count(r.elapsed,86400),
-   phase:['waves','boss-ready','boss','rescue','result'].includes(r.phase)?r.phase:'waves',
+   // 爆散演出中关页，续档直接领取已经打出的战利品。
+   phase:r.phase==='spoils'&&r.bossDefeated?'result':['waves','boss-ready','boss','rescue','result'].includes(r.phase)?r.phase:'waves',
    rescueRoll:Number.isFinite(r.rescueRoll)?Math.max(.9,Math.min(1.1,r.rescueRoll)):undefined,
    reason:['death','barricade'].includes(r.reason)?r.reason:null,bossDefeated:!!r.bossDefeated,
    bossHp,allies:Array.isArray(r.allies)?r.allies.filter(i=>Number.isInteger(i)&&CAMP_DEFENSE.allies[i]).slice(0,2):[],

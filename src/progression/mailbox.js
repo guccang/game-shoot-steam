@@ -1,6 +1,7 @@
+import {ERA_RESOURCES} from '../config/vehicle-eras.js';
 // 邮箱只保存载具与武器购买合同，其他业务通知不进入收件箱。
 const LIMIT=600;
-const RESOURCES={coins:'金币',wood:'木头',parts:'零件',crystal:'晶石',core:'核心'};
+const RESOURCES={...Object.fromEntries(Object.entries(ERA_RESOURCES).map(([key,r])=>[key,r.name])),coins:'金币',wood:'木头',parts:'零件',crystal:'晶石',core:'核心'};
 // 新旧存档均使用独立邮箱实例。
 export function freshMailbox(){return {serial:0,items:[]};}
 // 存档文本只保留有限长度，显示层仍需转义。

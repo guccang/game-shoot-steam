@@ -24,7 +24,7 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   if(mode==='build'){
    const price=kind=>`${HOME_BUILD_PRICES[kind].coins} 金币 + ${HOME_BUILD_PRICES[kind].wood} 木材`;
    const {lifts,installFloor,removeFloor:highest}=homeElevatorPlan(h);
-   get('content').innerHTML=`<section class="ui-section"><h3>地下室与矿道</h3><p>小屋一楼接通地下室，自带矿锄。可持续挖矿、开地表洞口、铺轨与驾驶矿车。</p><button class="ui-button" data-build="basement" ${h.basement?'disabled':''}>${h.basement?'地下室已建成':'创建地下室 · '+price('basement')}</button></section><section class="ui-section"><h3>向上加盖</h3><p>每次增加一整层，默认接通上下楼梯。</p><button class="ui-button" data-build="floor">加盖第 ${floors+1} 楼 · ${price('floor')}</button></section>
+   get('content').innerHTML=`<section class="ui-section"><h3>地下室与矿道</h3><p>小屋一楼接通地下室，自带矿锄。可持续挖矿、开地表洞口、铺轨与驾驶矿车。</p><button class="ui-button" data-build="basement" ${h.basement?'disabled':''}>${h.basement?'地下室已建成':'创建地下室 · '+price('basement')}</button></section><section class="ui-section"><h3>向上加盖</h3><p>一、二楼留给栗子。三楼起，每位新伙伴需要一层房间。加盖后可到猫窝招募。</p><button class="ui-button" data-build="floor">加盖第 ${floors+1} 楼 · ${price('floor')}</button></section>
     <section class="ui-section" id="home-elevator-section"><h3>电梯施工</h3><p>每次安装一层，从最高已装电梯层继续向上；拆除从最高已装层向下进行。每层单独付费，安装后替换该层楼梯，可直达全部已建楼层。</p><p id="home-elevator-status">${installFloor!==null?`下一层施工：第 ${installFloor+1} 楼`:'电梯已装至最高楼层，继续施工请先加盖楼层。'}</p>
     <button class="ui-button" data-build="elevator" ${installFloor===null?'disabled':''}>${installFloor===null?'已装至最高楼层':`安装第 ${installFloor+1} 楼电梯 · ${price('elevator')}`}</button>
     <button class="ui-button" data-remove-elevator ${highest===null?'disabled':''}>${highest===null?'暂无电梯可拆除':`拆除第 ${highest+1} 楼电梯`}</button>

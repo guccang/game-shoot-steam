@@ -1,9 +1,12 @@
+import {HORSE_PRICE} from '../config/vehicle-eras.js';
 // 农矿配合事务：设施、配方和补给只在保存成功后生效。
+import {PASTURE,PEN_OX,PEN_GATE,oxFoot} from '../config/pasture.js';
 import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES,productionCrop,SPRINKLER} from '../config/farm-production.js';
 import {productionUnlocked,productionIngredients,sprinklerCovers,productionCropStock,consumeProductionCrop} from '../progression/farm-production.js';
-import {FARM_CROPS,FARM_STOCK_CAP} from '../config/farm.js';
+import {FARM_CROPS,FARM_WATER} from '../config/farm.js';
 import {sprinklerHitDelay,sameSprinklerPlot} from '../progression/sprinkler-sweep.js';
-import {farmGrowth,wetFarmPlot,grantFarmSeeds} from '../progression/farm.js';
+import {grantSeedReward} from '../progression/seed-reward.js';
+import {farmGrowth,wetFarmPlot} from '../progression/farm.js';
 import {recordGardeningAction} from '../progression/mainline-gardening.js';
 import {validateProgress} from '../progression/progress.js';
 import {commitFarm} from './farm.js';
@@ -18,6 +21,49 @@ export function nearProductionBench(game){const b=game.progress.production.bench
 function candidate(game){const next=validateProgress(structuredClone(game.progress));next.mining=structuredClone(game.progress.mining);return next;}
 // 生产反馈沿用正式农田事件与原子存档机制。
 function commit(game,next,message){return commitFarm(game,next,{action:'production',message});}
+// 在地面改造随身水壶，扣矿与所有权使用同一次存档提交。
+export function upgradeWateringCan(game){
+ if(!productionAvailable(game)||game.cottage||game.vehicle.active)return {ok:false,message:'请回到地面下车改造。'};
+ if(game.progress.farm.doubleCan)return {ok:false,message:'双格水壶已改造。'};
+ if(game.progress.mining.ore<FARM_WATER.upgradeOre)return {ok:false,message:'矿石不足，请到地下开掘岩壁。'};
+ const next=candidate(game);
+ next.mining.ore-=FARM_WATER.upgradeOre;
+ next.farm.doubleCan=true;
+ return commit(game,next,'双格水壶已装好，回到田边点击左边的作物即可。');
+}
+// 在栏门现场领养或喂养，金币和动物归属一起保存。
+export function tendPasture(game,action,crop){
+ if(!productionAvailable(game)||game.mapId!=='forest'||game.cottage||game.vehicle.active||worldDistance(game.player,PEN_GATE)>145)return {ok:false,message:'请先走到营地牧栏门口。'};
+ const next=candidate(game),farm=next.farm;
+ if(action==='adopt-horse'){
+  if(next.materials.draftHorse)return {ok:false,message:'已有一匹挽马在等候套车。'};
+  if(next.coins<HORSE_PRICE)return {ok:false,message:'领养挽马需要 '+HORSE_PRICE+' 金币。'};
+  next.coins-=HORSE_PRICE;next.materials.draftHorse=1;
+  return commit(game,next,'已领养挽马，打造木马车时工坊会来套车。');
+ }
+ if(action==='adopt-ox'){
+  if(farm.oxPlow)return {ok:false,message:'你已经有一头耕牛了。'};
+  if(next.coins<PASTURE.oxPrice)return {ok:false,message:'领养耕牛需要 '+PASTURE.oxPrice+' 金币。'};
+  next.coins-=PASTURE.oxPrice;
+  farm.oxPlow=true;
+  farm.oxSite={...PEN_OX};
+  return commit(game,next,'耕牛已住进牧栏。走近点它，就能牵去犁地。');
+ }
+ if(action==='adopt'){
+  if(farm.sheep||next.coins<PASTURE.sheepPrice)return {ok:false,message:'请确认金币足够且羊栏空闲。'};
+  next.coins-=PASTURE.sheepPrice;farm.sheep=true;
+  return commit(game,next,'绵羊已住进牧栏。');
+ }
+ if(!['ox','sheep'].includes(action)||!(action==='ox'?farm.oxPlow:farm.sheep))return {ok:false,message:'请先领养这只动物。'};
+ if(action==='ox'&&(farm.oxSite?.mapId!=='forest'||worldDistance(oxFoot(farm.oxSite),PASTURE)>140))return {ok:false,message:'请先把耕牛牵回牧栏。'};
+ if(action==='ox'&&crop==='forage'){
+  if(!farm.forage)return {ok:false,message:'背包里没有甜穗草。'};
+  farm.forage--;farm.oxFeeds++;return commit(game,next,'耕牛吃下了一束甜穗草。');
+ }
+ if(!FARM_CROPS[crop]||FARM_CROPS[crop].category==='ornamental'||!farm.inventory[crop])return {ok:false,message:'请带一份可食用的收成到牧栏。'};
+ farm.inventory[crop]--;farm[action==='ox'?'oxFeeds':'sheepFeeds']++;
+ return commit(game,next,(action==='ox'?'耕牛':'绵羊')+'吃下了'+FARM_CROPS[crop].name+'。');
+}
 // 搬移状态仅保存在运行时；原存档位置保留，取消或刷新不会丢失设备。
 export function carriedSprinkler(game){
  const carry=game.productionCarry;if(!carry||!productionAvailable(game)||game.cottage||game.vehicle.active||carry.mapId!==game.mapId)return null;
@@ -60,11 +106,16 @@ export function placeProduction(game,kind,point,moving=null,fromBag=false){
  if(kind==='bench')n.bench=check.point;
  else if(moving!==null)Object.assign(n.sprinklers.find(p=>p.id===moving),check.point);
  else n.sprinklers.push({...check.point,id:Math.max(0,...n.sprinklers.map(p=>p.id))+1});
+ const gifts=[];
  if(kind==='bench'&&!n.seedGift){
-  for(const id of ['wheat','carrot'])if(next.farm.seeds[productionCrop(id)]>FARM_STOCK_CAP-2)return {ok:false,message:'请先为教学种子腾出库存。'};
-  n.seedGift=true;for(const id of ['wheat','carrot'])grantFarmSeeds(next.farm,productionCrop(id),2);
+  for(const id of ['wheat','carrot']){
+   const reward=grantSeedReward(game,next,productionCrop(id),2);
+   if(reward.count!==2)return {ok:false,message:'请先为教学种子腾出库存。'};
+   gifts.push(reward.message);
+  }
+  n.seedGift=true;
  }
- const result=commit(game,next,`${price.name}已${fromBag?'从背包放置':moving===null?'建好':kind==='sprinkler'?'放下':'移动'}。${kind==='bench'&&!s.seedGift?'获得小麦、胡萝卜种子各2粒；可在种子小屋继续购买。':''}`);
+ const result=commit(game,next,`${price.name}已${fromBag?'从背包放置':moving===null?'建好':kind==='sprinkler'?'放下':'移动'}。${gifts.join('；')}`);
  if(result.ok&&kind==='sprinkler'&&game.productionCarry?.id===moving)game.productionCarry=null;return result;
 }
 // 拆除只删除指定设施，保留种子领取记录、补给和原料；保存失败不丢设备。

@@ -1,0 +1,22 @@
+{
+  "dry_run": true,
+  "method": "POST",
+  "url": "http://10.1.9.154:8091/v1/video-generations",
+  "body": {
+    "request_id": "vid-ztj-forest-pasture-front-20261105-ox-v2",
+    "model": "seedance-2.5",
+    "mode": "first_frame",
+    "prompt": "Animate ONLY the EXACT supplied simple flat ox mascot from our cat game. Keep permanently front-facing with symmetrical eyes, completely fixed framing, exact flat colors, round thick cocoa outlines, pink cheeks, sage scarf, proportions and dot eyes. Do not add texture, rendering, realistic anatomy, fingers, accessories or fur detail. Solid key blue #0000ff background throughout, no shadows, effects, scenery or text. In the first 3 seconds stay still at planted foot baseline, slowly blink and breathe softly. Then 3-9 seconds perform a clearly readable WALK CYCLE IN PLACE using its original tiny hooves alternately lifting and planting, mild natural weight transfer. Keep feet distinct on every step. Never turn, never grow or move across the frame, maintain leg length and closed smile. Finish settled in the original still pose. Front-facing BODY animation only; camera locked and frontal.",
+    "inputs": [
+      {
+        "type": "image",
+        "role": "first_frame",
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261105-190856-re7nau/76835f87a32389ae-ox-front-v2-reference.png"
+      }
+    ],
+    "resolution": "720p",
+    "ratio": "adaptive",
+    "duration": 10,
+    "generate_audio": false
+  }
+}

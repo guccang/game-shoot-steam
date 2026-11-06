@@ -6,7 +6,7 @@ import {createEventScope} from '../platform/events.js';
 // 按当前室内镜头投影，短屏裁切热点，不把画外家具变成固定屏幕按钮。
 export function createCottageApproach({game,renderer,root,panel}){
  const scope=createEventScope(),buttons=new Map();
- for(const id of ['stairs-up','stairs-down','elevator','bed','basement']){const button=root.createElement('button');sceneHit(button,'室内设施');button.dataset.cottageTarget=id;button.hidden=true;scope.on(button,'click',event=>{if(event.detail===0)activate(id);});panel.append(button);buttons.set(id,button);}
+ for(const id of ['resident','stairs-up','stairs-down','elevator','bed','basement','balcony-north','balcony-east','balcony-south','balcony-west']){const button=root.createElement('button');sceneHit(button,'室内设施');button.dataset.cottageTarget=id;button.hidden=true;scope.on(button,'click',event=>{if(event.detail===0)activate(id);});panel.append(button);buttons.set(id,button);}
  // 原输入确认短按后才提交；暂停与弹窗不会产生潜伏的移动指令。
  function activate(id){return !root.hidden&&!root.querySelector('dialog[open]')&&approachCottageTarget(game,id);}
  // 同一矩形服务画布短按与DOM热点，最小44像素并裁切到房间视窗。

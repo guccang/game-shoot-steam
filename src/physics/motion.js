@@ -1,3 +1,4 @@
+import {PASTURE,PEN_RAILS} from '../config/pasture.js';
 import {worldBuildingBlocked} from '../world/building-collision.js';
 import {monsterHitProfile} from '../config/monster-hit-reactions.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -21,6 +22,10 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
   // 建筑墙体连低空载具也不能穿过；飞行仍可跨越水面、树木与普通围栏。
   if(worldBuildingBlocked(x,y,radius,body||{}))return true;
   if(body?.flying)return false;
+  if(body?.mapId==='forest'&&!body.arena){
+    const dx=delta(x-PASTURE.x,WORLD.width),dy=delta(y-PASTURE.y,WORLD.height);
+    if(Math.abs(dx)<=130+radius&&Math.abs(dy)<=52+radius&&PEN_RAILS.some(([x1,y1,x2,y2])=>dx>=x1-radius&&dx<=x2+radius&&dy>=y1-radius&&dy<=y2+radius))return true;
+  }
   // 停驻车体的边界跟随正式泊位；上车后记录移除，正常驾驶立即恢复通行。
   if(!body?.flying&&(body?.parkingBarriers||[]).some(b=>Math.abs(delta(x-b.x,WORLD.width))<b.width/2+radius&&Math.abs(delta(y-b.y,WORLD.height))<b.height/2+radius))return true;
   // 维修护栏只阻挡地面实体，位置与地图镜像一致，气垫船也不能穿过木栏。

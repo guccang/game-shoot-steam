@@ -39,15 +39,16 @@ test('第1至31轮抽样：按成长整备与车内备弹，携带整轮弹药�
  }
  console.log(JSON.stringify({budgetCases:rows.length,lateRound:rows.filter(r=>r.round===31)}));
 });
-test('批量购买按整包计价、车辆弹药不进背包，超载确认与保存失败保持事务性',()=>{
+test('批量购买按整包计价、车仓及小屋入库与保存失败保持事务性',()=>{
  const g=setup(0,1);g.state='playing';g.vehicle.active=false;g.livingPersist=()=>true;g.progress.coins=100000;g.cottage={kind:'ammo',outside:{x:AMMO_SHOP.x,y:AMMO_SHOP.y+80}};g.progress.campParking.owned=[{hull:1,spot:null,mapId:'forest',...g.cottage.outside,hp:1,ammo:0}];
  const hand=g.progress.supplies.hand.light,coins=g.progress.coins;assert.ok(tradeSupply(g,{kind:'ammo',id:'shell',target:'vehicle',batches:20}).ok);assert.equal(g.progress.supplies.vehicles[1].shell,1000);assert.equal(g.progress.coins,coins-2000);assert.equal(g.progress.supplies.hand.light,hand);assert.equal(vehicleLoad(g,1,{driver:true}).overloaded,false);
- assert.ok(tradeSupply(g,{kind:'ammo',id:'light',target:'hand',batches:5}).ok);assert.equal(g.progress.supplies.hand.light,hand+1500);
+ assert.ok(tradeSupply(g,{kind:'ammo',id:'light',target:'hand',batches:5}).ok);assert.equal(g.progress.supplies.hand.light,hand);assert.equal(g.progress.supplies.vehicles[1].light,1500);
  g.progress.logistics.bagWood=45;
- // 背包已满后弹药转入货舱，将车辆剩余载重压到半批弹药，验证真实的超载确认。
+ // 背包已满后弹药转入货舱，将车辆剩余载重压到半批弹药，验证货舱无法容纳整批时转入小屋。
  const load=vehicleLoad(g,1,{driver:true}),mass=AMMO_TYPES.light.mass*AMMO_TYPES.light.pack*20;
  g.progress.logistics.builds[1].wood=Math.floor((load.capacity-load.payload-mass/2)/.5);
- const before=structuredClone(g.progress),request={kind:'ammo',id:'light',target:'hand',batches:20},r=tradeSupply(g,request);assert.ok(r.needsLoadConfirmation);assert.equal(r.amount,6000);assert.equal(r.load.target,'vehicle');assert.equal(r.storage.hand,0);assert.equal(r.storage.vehicle,6000);assert.deepEqual(g.progress,before);g.livingPersist=()=>false;assert.equal(tradeSupply(g,{...request,loadConfirmation:r.confirmation}).ok,false);assert.deepEqual(g.progress,before);assert.equal(tradeSupply(g,{...request,batches:21}).ok,false);
+ const before=structuredClone(g.progress),request={kind:'ammo',id:'light',target:'hand',batches:20};g.livingPersist=()=>false;assert.equal(tradeSupply(g,request).ok,false);assert.deepEqual(g.progress,before);assert.equal(tradeSupply(g,{...request,batches:21}).ok,false);
+ g.livingPersist=()=>true;assert.ok(tradeSupply(g,request).ok);assert.equal(g.progress.warehouse.ammo.light,6000);
 });
 
 // 固定站位隔离走位损耗，五波、索敌、弹道、命中、换弹和领主结算走正式帧循环。

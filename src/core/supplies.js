@@ -1,3 +1,5 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
+import {shopDelivery,addShopStock} from './shop-delivery.js';
 import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 import {treasurePartReason} from './treasure.js';
 // 补给购买、制作、道具使用与主炮转移均先保存候选快照，再更新实际状态。
@@ -37,27 +39,34 @@ export function tradeSupply(game,{kind,id,batches=1,craft=false,target,loadConfi
  if(!Number.isInteger(batches)||batches<1||batches>20||!['ammo','item'].includes(kind)||!['hand','vehicle'].includes(target))return {ok:false,message:'无效补给数量。'};
  const rule=(kind==='ammo'?AMMO_TYPES:SUPPLY_ITEMS)[id];if(!rule||kind==='item'&&craft)return {ok:false,message:'该补给不能制作。'};
  if(kind==='ammo'&&!rule.targets.includes(target))return {ok:false,message:'这是载具弹药，请在载具弹药页补给到货舱。'};
- if(target==='vehicle'&&(kind!=='ammo'||!supplyVehicleNearby(game)))return {ok:false,message:'请把当前载具停到弹药铺门前再装载。'};
- const next=candidate(game),stock=kind==='item'?next.supplies.items:target==='hand'?next.supplies.hand:next.supplies.vehicles[game.vehicle.index],amount=(rule.pack||1)*batches;
+ if(!craft){
+  const itemId=(kind==='ammo'?'ammo:':'supply:')+id,count=(rule.pack||1)*batches,cost=rule.coins*batches;
+  if(game.progress.coins<cost)return {ok:false,message:'金币不足。'};
+  const delivery=shopDelivery(game,itemId,count);if(!delivery.ok)return delivery;
+  const next=candidate(game);addShopStock(next,itemId,count,delivery.where);next.coins-=cost;
+  if(id==='light'&&target==='hand')recordLogisticsLesson(next,'ammoPurchased');
+  return commit(game,next,delivery.message);
+ }
+ if(target==='vehicle'&&!supplyVehicleNearby(game))return {ok:false,message:'请把当前载具停到弹药铺门前再装载。'};
+ const next=candidate(game),stock=target==='hand'?next.supplies.hand:next.supplies.vehicles[game.vehicle.index],amount=(rule.pack||1)*batches;
  // 猫猫弹药按背包可用负荷拆分，多出的部分直接存入当前自有载具，制作同样遵守此规则。
- const storage=kind==='ammo'&&target==='hand'&&catAmmoWarehouse(game)?{hand:Math.min(amount,catAmmoRoom(game,id),100000-stock[id]),vehicle:0,hull:game.vehicle.index}:null;
+ const storage=target==='hand'&&catAmmoWarehouse(game)?{hand:Math.min(amount,catAmmoRoom(game,id),100000-stock[id]),vehicle:0,hull:game.vehicle.index}:null;
  if(storage)storage.vehicle=amount-storage.hand;
- if(stock[id]+(storage?storage.hand:amount)>(kind==='item'?999:100000)||storage&&next.supplies.vehicles[storage.hull][id]+storage.vehicle>100000)return {ok:false,message:'库存已满。'};
- const coins=craft?0:rule.coins*batches,wood=craft?rule.wood*batches:0,parts=craft?rule.parts*batches:0;
- if(next.coins<coins||next.wood<wood||next.materials.parts<parts)return {ok:false,message:'金币或制作材料不足。'};
- next.coins-=coins;next.wood-=wood;next.materials.parts-=parts;stock[id]+=storage?storage.hand:amount;
+ if(stock[id]+(storage?storage.hand:amount)>100000||storage&&next.supplies.vehicles[storage.hull][id]+storage.vehicle>100000)return {ok:false,message:'库存已满。'};
+ const wood=rule.wood*batches,parts=rule.parts*batches;
+ if(next.wood<wood||next.materials.parts<parts)return {ok:false,message:'金币或制作材料不足。'};
+ next.wood-=wood;next.materials.parts-=parts;stock[id]+=storage?storage.hand:amount;
  if(storage)next.supplies.vehicles[storage.hull][id]+=storage.vehicle;
- // 使用候选库存和真实弹匣计算负重；停在店旁的车辆也预留驾驶员与背包。
+ // 使用候选库存和真实弹匣计算负重；补给按实际去向计重。
  const snapshot=Object.create(game);snapshot.progress=next;
  const loadTarget=storage?.vehicle>0?'vehicle':target;
  const before=loadTarget==='vehicle'?vehicleLoad(game,game.vehicle.index,{driver:true}):catLoad(game),after=loadTarget==='vehicle'?vehicleLoad(snapshot,game.vehicle.index,{driver:true}):catLoad(snapshot);
  const load={target:loadTarget,hull:loadTarget==='vehicle'?game.vehicle.index:null,before:before.weight??before.payload,after:after.weight??after.payload,capacity:after.capacity};
  if(load.after>=load.capacity){
   // 确认只适用于这一商品、价格、去向及重量，库存变化后不能沿用旧确认。
-  const confirmation=JSON.stringify({kind,id,batches,craft,amount,coins,wood,parts,storage,...load});
-  if(loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,storage,name:rule.name,amount,unit:kind==='ammo'?'发':'个',message:'补给后载荷将满，确认后才能继续。'};
+  const confirmation=JSON.stringify({kind,id,batches,craft,amount,wood,parts,storage,...load});
+  if(loadConfirmation!==confirmation)return {ok:false,needsLoadConfirmation:true,confirmation,load,storage,name:rule.name,amount,unit:'发',message:'补给后载荷将满，确认后才能继续。'};
  }
- if(kind==='ammo'&&!craft&&id==='light'&&target==='hand')recordLogisticsLesson(next,'ammoPurchased');
  const destination=storage?.vehicle>0?`猫猫背包 ${storage.hand} 发、当前载具仓库 ${storage.vehicle} 发`:(target==='vehicle'?'当前载具货舱':'猫猫背包');
  return commit(game,next,`${rule.name} +${amount}，已放入${destination}并计入对应负重。`);
 }
@@ -76,6 +85,7 @@ export function useSupplyItem(game,id){
 }
 // 主炮来源唯一，允许跨车型安装；卸下的主炮返回工坊，枪内弹药退回原车备用库。
 export function mountMainGun(game,hull,gun){
+ if(eraVehicle(hull)&&gun!==null)return {ok:false,message:'这款车使用骑手的手持武器。'};
  if(!Number.isInteger(hull)||!supplyAvailable(game)||game.cottage?.kind!=='vehicle'||!game.progress.vehicleHulls[hull])return {ok:false,message:'请进入载具工坊拆装已拥有车辆的主炮。'};
  if(gun!==null&&(!VEHICLE_ARMAMENTS.some(w=>w.weaponIndex===gun)||!game.progress.vehicleWeapons[gun]))return {ok:false,message:'尚未拥有这门主炮。'};
  const old=game.progress.vehicleLoadouts[hull],donor=gun===null?-1:game.progress.vehicleLoadouts.indexOf(gun);
@@ -89,7 +99,7 @@ export function mountMainGun(game,hull,gun){
  if(VEHICLE_WEAPONS[gun]?.treasure)next.treasure.parts['gun:'+gun]={place:'installed',hull};
  for(const i of changed){const w=VEHICLE_WEAPONS[next.vehicleLoadouts[i]],key=ammoKind(w),m=next.supplies.vehicleMags[i];if(key){if(next.supplies.vehicles[i][key]+(m?.ammo||0)>100000)return {ok:false,message:'原车备用库存已满，请先卸下部分弹药再换炮。'};next.supplies.vehicles[i][key]+=m?.ammo||0;}next.supplies.vehicleMags[i]={weapon:null,ammo:0,remaining:0};next.vehicleLoadouts[i]=null;}
  next.vehicleLoadouts[hull]=gun;
- // 计入主炮自身、备用弹药、装甲和驾驶员，不附加车型白名单。
+ // 计入主炮自身、备用弹药、装甲，不附加车型白名单。
  if(gun!==null&&vehicleLoad(game,hull,{progress:next,driver:true}).overloaded)return {ok:false,message:`装上这门主炮（${GUN_MASSES[gun]} kg）后会超载，请卸货、减装甲或换发动机。`};
  const result=commit(game,next,'主炮换装完成，弹药和故障均已保留。');if(!result.ok)return result;
  for(const i of changed){const v=game.vehicles[i],replacement=createVehicle(next, i);Object.assign(v,{weaponIndex:replacement.weaponIndex,module:replacement.module,modules:replacement.modules,targetId:null,recoil:replacement.recoil});}

@@ -1,4 +1,13 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
 import {outdoorObjects} from './outdoors.js';
+// 验收读取正式缓存与连续帧统计，不另画一套建筑预览。
+export function inspectCampBuildingCache(renderer,root=document){
+ return {designCriterion:'camp-building-static-cache',time:renderer.environment.time,visible:renderer.visibleStats?.campBuildings||0,cache:renderer.diagnosticInfo().campBuildings,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+// 房屋体积审美仍由实际截图复核，此入口只记录正式场景、动作时钟及静态缓存证据。
+export function inspectCampHouseDepth(game,renderer,root=document){
+ return {...inspectCampBuildingCache(renderer,root),designCriterion:'camp-house-depth',actors:renderer.visibleStats,gameTime:game.time,walkingPhase:game.player.walkPhase,parked:game.progress.campParking.owned.length,exterior:homeExterior(game.progress.homeDecor)};
+}
 import {homeExterior,elevatorFloors,homeStairRoutes} from '../config/home-construction.js';
 // 野外验收只读取正式营地、动作条与钓鱼状态，不提供另一套预览绘制。
 export function inspectOutdoors(renderer,root){
@@ -591,6 +600,15 @@ export function inspectStoryReturn(game) {
 
 // 按案例动态加载，未选择的武器、怪潮和领主不因验收入口进入运行依赖图。
 export async function renderVisualCase(c,id,phase){
+  // 工作台逐帧复用实战翼面与驾驶员，观察下降时地影收近及翼布抖动。
+  if(id==='balcony-glider'){
+    const {drawHomeGlider}=await import('./home-glider.js');
+    if(!await catSprites.load())throw Error('滑翔角色图集加载失败');
+    const f={height:18,distance:1080,remaining:1080*(1-(phase%10)/10)};
+    const p={x:c.canvas.width/2,y:c.canvas.height*.8,angle:0,bodyAnimation:{idleTime:phase,moveTime:0,moveWeight:0,scarfLift:.65}};
+    c.save();c.resetTransform();c.clearRect(0,0,c.canvas.width,c.canvas.height);
+    drawHomeGlider(c,p,0,f,phase,false);c.restore();return;
+  }
   // 载具结构案例复用正式工坊，主案例轮换六车型，编号案例便于逐相位采样。
   if(id==='vehicle-upgrade-structures'||id.startsWith('vehicle-upgrade-structures-')){
     const {drawWorkshopEquipment}=await import('./workshop.js');
@@ -811,6 +829,29 @@ export async function renderVisualCase(c,id,phase){
   // 中央展示空间沿用实际无人机与部件绘制，响应画布宽高而不另画示意模型。
   if (id === 'workshop-stage-space') {
     await renderVisualCase(c,'workshop-components-weapons-13-rate',phase);
+    return;
+  }
+  // 阵风采样沿用正式湖岸、树体和连续帧角色绘制器，共享同一列世界坐标。
+  if (id === 'weather-gust' || id === 'weather-gust-night') {
+    const { gustStrength } = await import('../world/gust.js');
+    const { NATURAL_TERRAIN } = await import('../world/natural-terrain.js');
+    const { drawNaturalGround, drawLakeGusts } = await import('./natural-terrain.js');
+    const { drawForestTree } = await import('./forest-art.js');
+    const { SceneTone } = await import('./scene-tone.js');
+    if (!await catSprites.load()) throw Error('阵风工作台缺少角色连续帧');
+    const night = id.endsWith('night'), lake = NATURAL_TERRAIN.lakes[0];
+    const w = c.canvas.width, h = c.canvas.height, zoom = Math.min(w / 330, h / 240);
+    const view = {x:lake.x - lake.rx - w / zoom / 2, y:lake.y - h / zoom / 2, w:w / zoom, h:h / zoom};
+    const x = lake.x - lake.rx - 35, y = lake.y + 20;
+    c.save(); c.resetTransform(); c.fillStyle = '#b4cb83'; c.fillRect(0, 0, w, h);
+    c.scale(zoom, zoom); c.translate(-view.x, -view.y);
+    const wind={start:0,originX:x,duration:3.7,peak:.9};
+    drawNaturalGround(c, view); drawLakeGusts(c, view, phase, wind);
+    const tree = {x:x-50,y:y+5,id:3,size:.85,variant:'round',hp:60,maxHp:60,sway:0};
+    drawForestTree(c, tree, phase, Number(night), false, 0, null, false, 'summer', null, gustStrength(phase - .18, tree.x, wind));
+    drawCat(c,x,y,0,0,1,0,0,null,1,null,0,false,false,{moveWeight:0,moveTime:0,idleTime:phase},0,null,0,false,gustStrength(phase,x,wind));
+    c.restore();
+    if (night) new SceneTone({time:'night',weather:'cloud'}).draw(c,w,h,{time:'night',weather:'cloud'},0,true);
     return;
   }
   // 大雪工作台复用真实景观和飘雪绘制器，连续时间采样不会伪造静态降雪图。
@@ -1634,7 +1675,7 @@ export function inspectTaskNavigation(game,root){
 // 小背包读取正式DOM和物品状态，检查手机滚动、触控与嵌套地图，不另造预览。
 export function inspectKeepsakeBackpack(game,root){
  const dialog=[...root.querySelectorAll('#current-cat-dialog[open],#keepsake-dialog[open],#phone-dialog[open]')].at(-1)||root.getElementById('current-cat-dialog'),body=dialog.querySelector('.ui-panel__body'),box=dialog.getBoundingClientRect();
- return {designCriterion:'keepsake-backpack',open:dialog.open,state:game.state,items:game.progress.keepsakes?.items,
+ return {designCriterion:'keepsake-backpack',phonePortraits:dialog.querySelectorAll('.phone-avatar').length,targetWood:dialog.querySelector('[data-target-wood]')?.checked,open:dialog.open,state:game.state,items:game.progress.keepsakes?.items,
   panel:dialog.id,gridSlots:root.querySelectorAll('.keepsake-pockets > *').length,hasStandaloneMap:!!root.getElementById('map-button'),box:box.toJSON(),overflow:body.scrollWidth>body.clientWidth+1,
   text:dialog.textContent,controls:[...dialog.querySelectorAll('button')].filter(b=>!b.hidden&&b.getBoundingClientRect().height).map(b=>({label:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height,disabled:b.disabled}))};
 }
@@ -1702,7 +1743,7 @@ export async function inspectFarmWaterStream(renderer){
  const game=renderer.renderGame||renderer.game,job=game.farmWork?.job;
  if(job?.action!=='water')return {designCriterion:'farm-water-stream',active:false};
  const target=nearest(job.point,game.player),t=job.farmPoseTime??job.elapsed,pose=wateringPose(game.player,target,t);
- return {designCriterion:'farm-water-stream',active:true,time:t,player:{x:game.player.x,y:game.player.y},target,pose,
+ return {designCriterion:'farm-water-stream',active:true,time:t,waterTargets:job.waterTargets,player:{x:game.player.x,y:game.player.y},target,pose,
   samples:Array.from({length:9},(_,i)=>wateringDrop(pose.mouth,target,pose.direction,i/8))};
 }
 // 读取正式说明按钮的图案加载、命中范围和无障碍名称，不生成替代预览。
@@ -1760,6 +1801,12 @@ export async function inspectShopkeeperCounters(game){
 export async function inspectCatHome(game,root){
  const {heroExperience}=await import('../progression/hero-experience.js');
  return {designCriterion:'cat-home-progression',room:game.cottage?.kind,hero:game.progress.hero,experience:heroExperience(game.progress),owned:game.progress.heroes.filter(level=>level>0).length,oldHeroTab:!!root.getElementById('tab-heroes'),dialog:!!root.getElementById('cat-home-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+
+// 入住名册、可点的住户及交接对话取自运行中的小屋。
+export function inspectCottageResidents(game,root){
+ return {designCriterion:'cottage-cat-residents',floor:game.cottage?.floor,rooms:game.progress.residentCats,hero:game.progress.hero,
+  resident:root.querySelector('[data-cottage-target="resident"]:not([hidden])')?.getAttribute('aria-label'),talk:!!root.getElementById('resident-chat')?.open};
 }
 
 // 邮箱验收读取实际合同与正式页面，核对未读、独立快递包裹和触控边界。
@@ -1996,4 +2043,38 @@ export async function inspectHundredFishTackle(game,renderer,root=document){
 export async function inspectLakeEcologySurveys(game,renderer,root=document){
  const {fishingPreview}=await import('../core/lake-fishing.js'),preview=fishingPreview(game),f=game.fishing;
  return {designCriterion:'lake-ecology-surveys',lake:preview.lake,odds:(f?.odds||preview.odds).map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],behavior:f?.behavior,phase:f?.phase,surveys:structuredClone(game.progress.outdoors.surveys),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}
+
+// 读取与正式场景共用的觅食地、草丛和牧栏状态。
+export async function inspectWildPasture(renderer){
+ const game=renderer.game,{wildPastureObjects}=await import('../core/wild-pasture.js');
+ return {designCriterion:'wild-ox-forage',sites:wildPastureObjects(game),forage:game.progress.farm.forage,owned:game.progress.farm.oxPlow};
+}
+
+// 读取正式场景的推镰方向、刀片行程与收割结果，供昼夜连续采样。
+export function inspectRowReaper(renderer){
+ const game=renderer.renderGame||renderer.game,r=game.farmWork?.reaper;
+ return {designCriterion:'row-reaper-harvest',held:!!r?.held,facing:r?.facing,travel:r?.travel,targets:r?.preview,harvested:game.progress.farm.harvested};
+}
+import {oxHandler} from '../config/pasture.js';
+// 取正式绘制器的牛犁步态及田块数，供连续帧和停止状态对照。
+export function inspectOxPlow(renderer){
+ const game=renderer.renderGame||renderer.game,work=game.farmWork;
+ const ox=work?.ox,hitched=!!ox&&!ox.approach&&!work.autoCombat;
+ return {designCriterion:'ox-plow-row',foot:hitched?{x:game.player.x,y:game.player.y}:null,handler:hitched?oxHandler(game.player,ox.yaw):null,active:work?.tool==='ox'&&!work.autoCombat,yaw:work?.ox?.yaw,turn:work?.ox?.turn?.elapsed,targets:work?.ox?.preview,phase:work?.ox?.phase??0,facing:work?.ox?.facing??1,dug:game.progress.farm.dug};
+}
+
+// 连续采样正式座位、轮相和手持弹匣，图稿预览不能代替真实驾驶。
+export function inspectVehicleEras(renderer){
+ const game=renderer.game,car=game.vehicle,model=eraVehicle(car.index);
+ return {designCriterion:'vehicle-era-front',model:model?.id,capacity:model?.payload,active:car.active,
+   wheel:car.wheelPhase,seat:riderPosition(game.player,car).y,ammo:game.magazines[game.loadout.weapon]?.ammo};
+}
+
+// 从正式商店 DOM 采样清单行、购物车图标和付款按钮的可见范围。
+export function inspectShopCart(root){
+ const panel=root.getElementById('shop-checkout');
+ const zone=[...root.querySelectorAll('dialog[open] > .shop-dropzone')].find(node=>node.getBoundingClientRect().height>0);
+ const pay=panel.querySelector('[data-pay]').getBoundingClientRect();
+ return {designCriterion:'shop-cart',iconVisible:!!zone?.querySelector('svg'),rows:panel.querySelectorAll('.cart-line').length,total:panel.querySelector('[data-price]').textContent,payVisible:pay.height>=44&&pay.top>=0&&pay.bottom<=root.defaultView.innerHeight+1};
 }

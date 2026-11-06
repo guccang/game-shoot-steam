@@ -1,7 +1,7 @@
 // 小屋共用解码与绘制流程，风格目录仅存放图片和尺寸清单。
 import {drawBuildingArchitecture} from './building-architecture.js';
 import {homeExterior} from '../config/home-construction.js';
-import {box,poly} from './primitives.js';
+import {drawInsetWindow,drawRoofSnow} from './building-materials.js';
 import { artStyle, ART_STYLES } from '../art-styles/state.js';
 import classic from '../../assets/art-styles/classic/cozy-cottage/manifest.json' with { type: 'json' };
 import clear from '../../assets/art-styles/clear/cozy-cottage/manifest.json' with { type: 'json' };
@@ -58,14 +58,14 @@ export function drawCozyCottage(c, winter=false, floors=2) {
 // 窗光继续跟随正式昼夜图集。
 export function drawCozyCottageWarmth(c, floors=2) {
   const {rows,lift}=homeExterior({floors});
-  for(const x of [-52,21])box(c,x,-54,22,27,2,'#f2d88f','#607d61',1.2);
-  // 新楼层的暖光仅填窗格，窗框和十字窗棂继续可辨。
-  for(let row=0;row<rows;row++)for(const x of [-52,22])for(const dx of [1,12])for(const dy of [1,10])box(c,x+dx,-135*.63-row*32-25+dy,9,6,0,'#f2d88f');
-  if(lift)for(const dx of [1,11])for(const dy of [1,10])box(c,-10+dx,-135*.63-lift-27+dy,8,6,0,'#f2d88f');
+  for(const x of [-52,22])drawInsetWindow(c,x,-54,22,27,true);
+  // 暖窗与白天使用相同的窗洞及窗台，避免夜间矩形灯片盖住嵌入结构。
+  for(let row=0;row<rows;row++)for(const x of [-52,22])drawInsetWindow(c,x,-135*.63-row*32-25,22,17,true);
+  drawInsetWindow(c,-10,-135*.63-lift-27,20,17,true);
 }
 // 积雪继续跟随正式季节图集。
 export function drawCozyCottageSnow(c, floors=2) {
   c.save();c.translate(0,-homeExterior({floors}).lift);
-  poly(c,[[-71,-87],[-10,-136],[62,-111],[67,-102],[-9,-127],[-63,-84]],'#edf1dc','#c3d0b7',1.2);
+  drawRoofSnow(c,[[-73,-86.05],[-10,-135],[62,-110],[73,-80.05]]);
   c.restore();
 }

@@ -1,4 +1,5 @@
 import {createCreatureCodex} from '../ui/creature-codex.js';
+import {createShopCheckout} from '../ui/shop-checkout.js';
 import {createOutdoors} from '../ui/outdoors.js';
 import {createTreasure} from '../ui/treasure.js';
 import {createLoadCleanup} from '../ui/load-cleanup.js';
@@ -130,6 +131,7 @@ export function createApplication({
   game.profiler = profiler;
   profiler.start('init.renderer');
   const gameplayPreferences = store.loadGameplay();
+  game.gameplayPreferences = gameplayPreferences;
   const chronicle=store.loadChronicle();
   const environment = beginEnvironmentVisit(store.loadEnvironment(),Date.now(),Math.random,chronicle.cycles.season?.phase);
   let naturalClock=createNaturalClock(environment,chronicle);
@@ -150,8 +152,9 @@ export function createApplication({
   const onTalk=(id,service)=>npcConversations.open(id,service);
   let worldRealms, worldWorkshop, worldVehicleWorkshop, guardianBuild, cameraControls;
   const input = createInput({ game, root, host, enabled:()=>shell.page==='game', onChange: () => refresh(),
-    onTap: event => { if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
-  const dialogs = createDialogs({ game, root, isGameplayActive:()=>shell.page==='game', resetInput: input.reset, onChange: () => { refresh(); syncAudio(); },onEvent:(type,data)=>diagnostics.gameplay.event(type,data) });
+    onTap: event => { if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event)||outdoors.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
+  const dialogs = createDialogs({ game, root, isGameplayActive:()=>shell.page==='game', resetInput: input.reset, onChange: () => { refresh(); syncAudio(); },onEvent:(type,data)=>{if(type==='dialog-open')checkout.prepare(data.id);diagnostics.gameplay.event(type,data);} });
+  const checkout=createShopCheckout({game,root,dialogs,onNotice:toast.show});
   const inventory = createInventory({ game, root, dialogs, onChange: () => refresh(), onInventoryRender:()=>backpack.render(), onCleanup:()=>loadCleanup.open(null) });
   const updateHud = createHud({ game, root, inventory, dialogs, getView: () => renderer.view });
   let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, productionPanel, seedShop, monsterCampPanel;
@@ -252,7 +255,7 @@ export function createApplication({
   game.requestFacility=id=>restorationPanel.open(id);
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const creatureCodex=createCreatureCodex({game,root,dialogs});
-  const outdoors=createOutdoors({game,root,dialogs,onChange:refresh,onFishCaught:creatureCodex.showCatch});
+  const outdoors=createOutdoors({game,root,renderer,dialogs,onChange:refresh,onFishCaught:creatureCodex.showCatch,onNotice:toast.show});
   const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onOutdoor:()=>outdoors.open(),onCargo:()=>logistics.open('cargo',game.vehicle.index),onCleanup:()=>loadCleanup.open(game.vehicle.index)});
   const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
   const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
@@ -269,7 +272,7 @@ export function createApplication({
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
   const treasure=createTreasure({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
-  const backpack=createKeepsakeBackpack({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open(),onPlaceSprinkler:()=>productionPanel?.placeStored()});
+  const backpack=createKeepsakeBackpack({game,root,dialogs,savePreferences:store.saveGameplay,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open(),onPlaceSprinkler:()=>productionPanel?.placeStored()});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});
@@ -297,7 +300,7 @@ export function createApplication({
   storyPanel = createStoryPanel({game,root,dialogs,renderer,onLiving:()=>livingPanel.open(),onChange:()=>refresh(),openWorkshop:(kind,index)=>workshop.open(kind,index)});
   monsterCampPanel=createMonsterCampPanel({game,root,renderer,dialogs,onTalk,onChange:refresh});
   seedShop=createSeedShop({game,root,renderer,dialogs,onChange:refresh});
-  farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onSeedShop:()=>seedShop.open()});
+  farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPasture:()=>productionPanel.openPasture(),onSeedShop:()=>seedShop.open()});
   productionPanel=createFarmProduction({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPlacementStart:()=>farmPanel.close(false)});
   game.mainlinePersist=store.saveProgress;
   game.campDefensePersist=store.saveProgress;
@@ -322,6 +325,7 @@ export function createApplication({
   function openRoomService(kind,index){
     if(kind==='construction')return campHome.openService(kind,index);
     if(kind==='warehouse')return warehouse.open();
+    if(kind==='outdoor')return outdoors.open();
     if(kind==='ammo')return fieldEquipment.open('ammo');
     if(kind==='seed')return seedShop.open();
     if(kind==='repair')return vehicleRepair.open();
@@ -637,6 +641,9 @@ export function createApplication({
         seasonPrewarm.record(renderer.ground.backgroundMs,host.performance.now());
         navigationWarmup.advance(Math.min(1, Math.max(0, 12 - (host.performance.now() - frameStart))));
         mapPanel.advance();
+        profiler.start('cache.campBuildings');
+        renderer.advanceCampBuildings();
+        profiler.end('cache.campBuildings');
         profiler.end('cache.warmup');
       } catch (error) {
         profiler.event('frame-error', { phase: [...profiler.active.keys()],
@@ -706,7 +713,7 @@ export function createApplication({
     settingsPanel.dispose();
     audioControls.dispose();
     taskReward.dispose();
-    dialogs.dispose();
+    checkout.dispose();dialogs.dispose();
     toast.dispose();
     audio.dispose();
     diagnostics.dispose();

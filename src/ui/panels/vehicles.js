@@ -1,3 +1,5 @@
+import {eraVehicle,eraDonor} from '../../config/vehicle-eras.js';
+import {eraCraftReason} from '../../progression/equipment-goals.js';
 import {vehicleBuild,installedEngine} from '../../config/vehicle-load.js';
 import {vehicleLoad} from '../../progression/load-weight.js';
 import {vehicleService,personalFleet} from '../../core/vehicle-repair.js';
@@ -90,6 +92,8 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
     if(!level&&vehicle.rewardOnly)$('vehicle-collection-hint').textContent=vehicle.index>=9?'听邻居线索，用金属探测器探索；出土后需要修复。':i18nText("ui.panels.vehicles.3e9b593498");
     $('vehicle-material-requirements').innerHTML = game.realm?.loadout ? '' : requirementsMarkup(p, 'vehicle', viewed);
     const action = $('vehicle-board');
+    if(!level)Object.assign(action.dataset,{shopKind:'vehicle',shopIndex:viewed,shopName:vehicle.name,shopInfo:vehicle.description});
+    else for(const key of ['shopKind','shopIndex','shopName','shopInfo'])delete action.dataset[key];
     action.textContent = !level
       ? vehicle.rewardOnly ? i18nText("ui.panels.vehicles.18fc7d0bec") : game.realm?.loadout ? i18nText("ui.panels.vehicles.f390250699") : game.realm ? i18nText("ui.panels.vehicles.3100ff0ae3") : i18nText("ui.panels.vehicles.6a0b8701a9")
       : !selected
@@ -118,6 +122,15 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
     if(level&&personalFleet(game)&&(v.hp<=0||vehicleService(game,viewed)?.phase))$('vehicle-collection-status').textContent=v.hp<=0?'报废 · 需要维修':'维修中心待取车';
     // 永久车辆展示装甲、动力与载荷，隐藏已经停用的等级购买入口。
     if(!game.realm?.loadout){$('vehicle-upgrade').parentElement.hidden=true;$('vehicle-upgrade').disabled=true;$('vehicle-collection-name').textContent=vehicle.name;for(const node of $('vehicle-roster').children){const i=Number(node.dataset.vehiclePreview);node.querySelector('small').textContent=p.vehicleHulls[i]?(p.vehicleIndex===i?'已选用 · ':'')+vehicleBuild(p,i).plates+'层装甲':'未拥有';}const weight=vehicleLoad(game,viewed,{driver:true});$('vehicle-upgrade-preview').textContent='';$('vehicle-collection-description').textContent=vehicle.description+' · '+installedEngine(p,viewed).name+' · '+vehicleBuild(p,viewed).plates+'层附加装甲 · 载荷 '+weight.payload.toFixed(1)+' / '+weight.capacity+' kg。前往载具工坊换装发动机或增减装甲。';}
+    if(eraVehicle(viewed)&&!game.realm){
+      const donor=eraDonor(vehicle);
+      $('vehicle-collection-description').textContent=vehicle.description;
+      if(!level){
+        action.textContent=donor?'改造原车':'打造载具';
+        const reason=eraCraftReason(p,'vehicle',viewed);
+        $('vehicle-collection-hint').textContent=reason||(donor?'改造'+donor.name+'，货物与车位一起继承。':'使用仓库材料打造，完成后可在营地停车位取车。');
+      }
+    }
     $('vehicle-collection-image').setAttribute('aria-label', vehicle.name);
     drawVehicleIcon($('vehicle-collection-image').getContext('2d'), viewed);
     $('vehicle-turret-owner').textContent = i18nText("ui.panels.vehicles.c1bd9db13e", { p0: (vehicleModel(p.vehicleIndex).name) });
@@ -196,7 +209,7 @@ export function createVehiclePanel({ game, root, dialogs, onChange }) {
   scope.on($('vehicle-board'), 'click', () => {
     if (!game.loadout.vehicleHulls[viewed]) {
       if (game.buyVehicle(viewed))
-        finish('购买完成，车辆已送到营地停车位。', '#vehicle-board');
+        finish(eraVehicle(viewed)?(eraDonor(eraVehicle(viewed))?'改造完成，可在原车停放处取车。':'打造完成，请到营地车位取车。'):'购买完成，车辆已送到营地停车位。', '#vehicle-board');
       return;
     }
     if(parkingFleetApplies(game)){

@@ -1,6 +1,6 @@
 // 小屋家具存档与摆放几何共用规则；非法位置转入收纳，不丢失已购家具。
 import {MINING} from '../config/mining.js';
-import {homeFloors,HOME_ELEVATOR,HOME_DIRECTIONS,elevatorFloors,hasHomeElevator} from '../config/home-construction.js';
+import {floorBalconies,cottageStreetExit,homeFloors,HOME_ELEVATOR,HOME_DIRECTIONS,elevatorFloors,hasHomeElevator} from '../config/home-construction.js';
 import {HOME_STARTERS,HOME_LIMIT,HOME_PLANTS,decorDefinition} from '../config/home-decor.js';
 import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS} from '../config/cottage.js';
 import {LIVING_DAY_MS} from '../config/living-world.js';
@@ -14,15 +14,21 @@ export function homeFurniture(home,floor=0){return [...(floor===0?[COTTAGE_FURNI
 // 家具碰撞与正式室内行走一致，给猫身体预留十个逻辑单位。
 function blocked(x,y,furniture){return x<22||x>COTTAGE.width-22||y<76||y>COTTAGE.height-20||furniture.some(f=>Math.abs(x-f.x)<f.width/2+10&&Math.abs(y-f.y)<f.height/2+10);}
 // 从门内落点寻路到床边和出口，拒绝把小屋隔成无法通行的区域。
-function hasPath(furniture,player,floor){
+function hasPath(furniture,player,floor,home){
  const start=COTTAGE.spawn,queue=[[start.x,start.y]],seen=new Set([start.x+','+start.y]);let bed=floor>0,exit=floor>0,stairs=false,reachable=!player;
- const access=[COTTAGE_STAIRS.downLanding,...Object.values(HOME_DIRECTIONS).map(d=>d.door)],reached=new Set();
+ const access=[COTTAGE_STAIRS.downLanding,...floorBalconies(home,floor).map(s=>HOME_DIRECTIONS[s].door)],reached=new Set();
+ const street=cottageStreetExit(home);
  if(blocked(start.x,start.y,furniture))return false;
  for(let n=0;n<queue.length;n++){
-  const [x,y]=queue[n];for(let i=0;i<access.length;i++)if(Math.hypot(x-access[i].x,y-access[i].y)<=28)reached.add(i);if(Math.hypot(x-119,y-158)<18)bed=true;if(Math.hypot(x-COTTAGE.exit.x,y-COTTAGE.exit.y)<18)exit=true;if(Math.hypot(x-COTTAGE_STAIRS.landing.x,y-COTTAGE_STAIRS.landing.y)<18)stairs=true;if(player&&Math.hypot(x-player.x,y-player.y)<18)reachable=true;if(bed&&exit&&stairs&&reachable&&reached.size===access.length)return true;
+  const [x,y]=queue[n];for(let i=0;i<access.length;i++)if(Math.hypot(x-access[i].x,y-access[i].y)<=28)reached.add(i);if(Math.hypot(x-119,y-158)<18)bed=true;if(Math.hypot(x-street.x,y-street.y)<18)exit=true;if(Math.hypot(x-COTTAGE_STAIRS.landing.x,y-COTTAGE_STAIRS.landing.y)<18)stairs=true;if(player&&Math.hypot(x-player.x,y-player.y)<18)reachable=true;if(bed&&exit&&stairs&&reachable&&reached.size===access.length)return true;
   for(const [dx,dy] of [[12,0],[-12,0],[0,12],[0,-12]]){const xx=x+dx,yy=y+dy,key=xx+','+yy;if(!seen.has(key)&&!blocked(xx,yy,furniture)){seen.add(key);queue.push([xx,yy]);}}
  }
  return false;
+}
+// 门前必须留够角色脚底与点击走近的余量，施工和存档恢复共用此几何。
+export function blocksBalconyDoor(item,x,y,side){
+ const door=HOME_DIRECTIONS[side].door;
+ return Math.abs(x-door.x)<item.width/2+24&&Math.abs(y-door.y)<item.height/2+24;
 }
 // 返回中文失败原因，供预览、提交及存档修复共同使用。
 export function placementError(home,uid,x,y,player,floor=0){
@@ -41,8 +47,8 @@ export function placementError(home,uid,x,y,player,floor=0){
   if(player&&blocked(player.x,player.y,[f]))return '这里是猫猫站的位置，请先挪开家具。';
   if(Math.abs(x-stairs.x)<(d.width+stairs.width)/2+8&&Math.abs(y-stairs.y)<(d.height+stairs.height)/2+28)return '请留出楼梯和楼梯前的通道。';
   // 电梯共用梯位，北侧下楼落点与四向阳台门都须保持可达。
-  if(Object.values(HOME_DIRECTIONS).some(({door})=>Math.abs(x-door.x)<d.width/2+30&&Math.abs(y-door.y)<d.height/2+30))return '请留出阳台门通道。';
-  if(!hasPath([...(floor===0?[bed]:[]),hasHomeElevator(home,floor)?HOME_ELEVATOR:stairs,...other.filter(i=>i.layer==='floor'),f],player,floor))return '请留出通往床边、楼梯和门口的路。';
+  if(floorBalconies(home,floor).some(side=>blocksBalconyDoor(d,x,y,side)))return '请留出阳台门通道。';
+  if(!hasPath([...(floor===0?[bed]:[]),hasHomeElevator(home,floor)?HOME_ELEVATOR:stairs,...other.filter(i=>i.layer==='floor'),f],player,floor,home))return '请留出通往床边、楼梯和门口的路。';
  }
  return '';
 }

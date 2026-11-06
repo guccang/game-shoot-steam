@@ -1,6 +1,6 @@
 import {constructionWood,spendConstructionWood} from '../progression/resource-wallet.js';
 import {MINING} from '../config/mining.js';
-import {placedDecor} from '../progression/home-decor.js';
+import {blocksBalconyDoor,placedDecor} from '../progression/home-decor.js';
 // 加盖事务先保存再扣款，通行只访问已建楼层和已装设施。
 import {openBasement,freshMining} from '../progression/mining.js';
 import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeFloors,floorBalconies,elevatorFloors,homeElevatorPlan,hasHomeElevator,homeStairRoutes} from '../config/home-construction.js';
@@ -33,7 +33,11 @@ export function buildHome(game,kind,{floor,side='south'}={}){
  }
  if(kind==='floor')h.floors=homeFloors(h)+1;
  if(kind==='elevator'||removing){h.elevators=removing?elevatorFloors(h).filter(f=>f!==floor):[...elevatorFloors(h),floor].sort((a,b)=>a-b);h.version=2;delete h.elevator;}
- if(kind==='balcony'){h.balconies??={};h.balconies[floor]=[...floorBalconies(h,floor),side];}
+ if(kind==='balcony'){
+  h.balconies??={};h.balconies[floor]=[...floorBalconies(h,floor),side];
+  const occupied=new Set(placedDecor(h,floor).filter(i=>i.layer==='floor'&&blocksBalconyDoor(i,i.x,i.y,side)).map(i=>i.uid));
+  for(const item of h.items)if(occupied.has(item.uid)){item.x=null;item.y=null;}
+ }
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  try{if(game.livingPersist&&game.livingPersist(next)!==true)return {ok:false,message:'保存失败，费用与设施均未改变。'};}catch{return {ok:false,message:'保存失败，费用与设施均未改变。'};}
  game.progress=next;game.onEvent?.('home-construction');return {ok:true,message:kind==='basement'?'地下室已建好，矿锄已备齐。回小屋一楼点击梯口下矿；梯口原有家具保留在收纳。':kind==='floor'?`已加盖第 ${h.floors} 楼，楼梯已接通。`:kind==='elevator'?`第 ${floor+1} 楼电梯已安装。`:removing?`第 ${floor+1} 楼电梯已拆除，楼梯已恢复。`:`第 ${floor+1} 楼${HOME_DIRECTIONS[side].name}侧大阳台已建好。`};
@@ -43,7 +47,7 @@ export function travelHomeFloor(game,target,mode='stairs'){
  const room=game.cottage,home=game.progress.homeDecor,from=cottageFloor(room),lift=mode==='elevator',route=homeStairRoutes(home,from).find(r=>r.target===target),goal=lift?HOME_ELEVATOR.landing:route?.goal;
  if(room?.kind!=='cottage'||room.balcony||room.sleep||!['playing','paused'].includes(game.state)||game.player.hp<=0||!Number.isSafeInteger(target)||target<0||target>=homeFloors(home)||target===from)return false;
  if(!['stairs','elevator'].includes(mode)||lift&&!hasHomeElevator(home,from)||!goal||Math.hypot(game.player.x-goal.x,game.player.y-goal.y)>COTTAGE_STAIRS.radius)return false;
- room.floor=target;room.stairsElapsed=null;room.stairsTarget=null;room.stairsLatch=true;room.elevatorElapsed=null;room.elevatorLatch=true;room.elevatorRequest=false;room.exitElapsed=0;room.restElapsed=null;room.restResult='';room.storageNotice='';room.notice=`已到第 ${target+1} 楼。`;game.sceneApproach=null;
+ delete room.residentTalk;room.floor=target;room.stairsElapsed=null;room.stairsTarget=null;room.stairsLatch=true;room.elevatorElapsed=null;room.elevatorLatch=true;room.elevatorRequest=false;room.exitElapsed=0;room.restElapsed=null;room.restResult='';room.storageNotice='';room.notice=`已到第 ${target+1} 楼。`;game.sceneApproach=null;
  // 上楼从目标层北侧下行口落地，下楼从南侧上行口落地；已装层统一落在电梯门前。
  const landing=hasHomeElevator(home,target)?HOME_ELEVATOR.landing:target>from?COTTAGE_STAIRS.downLanding:COTTAGE_STAIRS.landing;
  Object.assign(game.player,landing,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
@@ -56,6 +60,6 @@ export function enterHomeBalcony(game,side){
 }
 // 阳台门槛返回当前楼层，退出闩锁防止在原门口反复进出。
 export function leaveHomeBalcony(game){
- const room=game.cottage;if(!room?.balcony||game.state!=='playing'||Math.hypot(game.player.x-HOME_BALCONY.exit.x,game.player.y-HOME_BALCONY.exit.y)>HOME_BALCONY.radius)return false;
+ const room=game.cottage;if(!room?.balcony||room.glide||game.state!=='playing'||Math.hypot(game.player.x-HOME_BALCONY.exit.x,game.player.y-HOME_BALCONY.exit.y)>HOME_BALCONY.radius)return false;
  const door=HOME_DIRECTIONS[room.balcony].door;room.balcony=null;room.balconyLatch=true;room.balconyExitElapsed=0;room.exitElapsed=0;Object.assign(game.player,door,{vx:0,vy:0});game.onEvent?.('cottage-change');return true;
 }

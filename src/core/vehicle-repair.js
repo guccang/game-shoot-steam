@@ -1,3 +1,4 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
 import {recordLogisticsLesson} from '../progression/mainline-logistics.js';
 import {assignRepairParking} from './repair-parking.js';
 import {vehicleFaults} from '../config/supplies.js';
@@ -5,7 +6,7 @@ import {repairParkingSpot} from '../config/repair-parking.js';
 import {parkingRecordSite} from '../progression/roadside-parking.js';
 // 自有车辆报废、救援和维修的唯一业务入口；临时活动装备继续由各自会话管理。
 import {blocked} from '../physics/motion.js';
-import {REPAIR_CENTER,REPAIR_BAY,REPAIR_LAYOUT_VERSION,TOW_TRUCK,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
+import {REPAIR_CENTER,REPAIR_BAY,REPAIR_LAYOUT_VERSION,TOW_TRUCK,vehicleRepairRate,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
 import {economyFor} from '../config/economy.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {worldDistance,canonical,nearest} from '../world/coordinates.js';
@@ -47,12 +48,12 @@ export function markVehicleWreck(game,position){
  game.progress.campParking.owned=game.progress.campParking.owned.filter(p=>p.hull!==v.index);
  return true;
 }
-// 保养与报废统一按损失耐久比例 × 基础车价 × 修复系数计算，金币向上取整。
+// 保养与报废统一按损失耐久及故障比例乘车型维修费率，金币向上取整。
 export function vehicleRepairQuote(game,index){
- const v=game.vehicles[index],price=economyFor(game.progress).vehicles[index]?.coins||0;
+ const v=game.vehicles[index],price=economyFor(game.progress).vehicles[index]?.coins??(eraVehicle(index)?.payload||0)*4;
  if(!v||!game.progress.vehicleHulls[index])return 0;
  const f=vehicleFaults(game.progress,index),loss=Math.min(1,(1-Math.max(0,v.hp)/v.maxHp)+Math.max(f.gun,f.engine)/100*.2);
- return loss<=0?0:Math.max(1,Math.ceil(price*C.repairRate*loss));
+ return loss<=0?0:Math.max(1,Math.ceil(price*vehicleRepairRate(vehicleModel(index).id)*loss));
 }
 // 手机只提供救援；现场检查真实位置，禁用按钮不是业务权限边界。
 export function repairUnavailable(game,remote=false){

@@ -11,5 +11,5 @@ export function updateLoadWarning(game,dt,input){
  game.loadWarning={key,remaining};
  if(previous?.key===key&&(remaining>0||Math.hypot(input.x,input.y)<.01))return;
  game.loadWarning.remaining=4;
- game.onEvent('story-hint',{text:game.vehicle.active?'载具载荷已满，无法移动。请打开载具页面清理货舱，或清理随身背包。':'背包载荷已满，只能缓慢行走。请到仓库存放物品或清理背包，减重后恢复正常速度。'});
+ game.onEvent('story-hint',{text:game.vehicle.active?'载具载荷已满，无法移动。请打开载具页面清理货舱。':'背包载荷已满，只能缓慢行走。请到仓库存放物品或清理背包，减重后恢复正常速度。'});
 }

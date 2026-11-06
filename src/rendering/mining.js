@@ -1,3 +1,5 @@
+import {clipEraSeat} from './vehicle-eras.js';
+import {eraVehicle} from '../config/vehicle-eras.js';
 import {drawAmbientFish} from './ambient-fish.js';
 import {mineRockDamage} from '../core/mine-rocks.js';
 import {drawOutdoorFishing,outdoorFishingView} from './outdoors.js';
@@ -8,7 +10,7 @@ import {productionDigSeconds} from '../config/farm-production.js';
 import {MINING as M,MINE_DIRECTIONS,mineCell,mineKey,minePoint} from '../config/mining.js';
 import {mineTarget,parseKey} from '../core/mining.js';
 import {box,oval,poly} from './primitives.js';
-import {drawCat} from './characters.js';
+import {drawCat,drawRiderWeapon} from './characters.js';
 import {PLAYER_SCALE} from '../combat/recoil.js';
 import {currentMineLayer} from '../core/mine-layers.js';
 import {mineInsideBounds,mineCellArea,mineTerrain,mineCellOpen} from '../config/mine-ecology.js';
@@ -103,8 +105,11 @@ export function drawMining(renderer,g=renderer.game){
   else if(e.kind==='player'){
    if(g.vehicle.active)drawVehicleTracks(c,g.player,g.vehicle,renderer.reduced.matches,g.time,g.progress);
    const rider=g.vehicle.active?riderPosition(g.player,g.vehicle):g.player;
-   if(!g.fishing&&g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   const era=g.vehicle.active&&eraVehicle(g.vehicle.index);c.save();clipEraSeat(c,g.player,g.vehicle);
+   if(!era&&!g.fishing&&g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   c.restore();
    if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(g.fishing)drawOutdoorFishing(c,g,rider,night?1:0);else if(!g.cottage.weaponReady||g.cottage.strike)pickaxe(c,g);
+   if(era&&g.cottage.weaponReady)drawRiderWeapon(c,rider,g.progress.hero,g.loadout.weapon,{scale:PLAYER_SCALE,parts:g.weapon().parts,modChoice:g.weapon().modChoice});
   }
   else{cartBody(c,e.cart);if(e.cart.id===g.cottage.ride){
    if(g.cottage.weaponReady)drawMineArmedCat(c,g,e.cart.x,e.cart.y-8);else drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);

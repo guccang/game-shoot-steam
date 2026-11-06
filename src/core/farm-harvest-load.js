@@ -20,7 +20,7 @@ export function harvestDestination(game){
  sites.sort((a,b)=>worldDistance(a,game.player)-worldDistance(b,game.player)||(a.hull===game.vehicle.index?-1:b.hull===game.vehicle.index?1:a.hull-b.hull));
  const hull=sites[0]?.hull??null;return {hull,name:hull===null?'猫猫背包':vehicleModel(hull).name+'货舱'};
 }
-// 同时计入本次奖励种子；车辆按含驾驶员及背包的口径提示，避免装完上车才超载。
+// 同时计入本次奖励种子；按实际收货位置提示重量。
 export function harvestLoadPreview(game,next,destination){
  const hull=destination.hull,snapshot=Object.assign(Object.create(game),{progress:next});
  const before=hull===null?catLoad(game):vehicleLoad(game,hull,{driver:true});

@@ -1,3 +1,4 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
 // 停驻车体不绘制驾驶员；访客样车与玩家装备目录完全分离。
 import {parkedOwned,campParkingVisible,VISITOR_MODELS} from '../core/camp-parking.js';
 import {PARKING_SPOTS} from '../config/parking.js';
@@ -30,7 +31,9 @@ function visitorPreview(game,hull){
 export function drawParkedHull(c,point,game,hull,record=null,visitor=false){
  const view=visitor?visitorPreview(game,hull):{vehicle:game.vehicles[hull],progress:game.progress},base=view.vehicle;
  const vehicle={...base,active:false,flash:0,angle:-Math.PI/2,wheelPhase:record?.wheel||0,recoil:{...base.recoil,kick:0,flash:0}};
- const at={...point,walkPhase:record?.track||0};drawVehicleTracks(c,at,vehicle,true,0,view.progress);drawVehicleArmor(c,at,vehicle,view.progress,0,true);
+ const at={...point,walkPhase:record?.track||0}, horse=eraVehicle(hull)?.horse;
+ drawVehicleTracks(c,at,vehicle,true,0,view.progress);
+ drawVehicleArmor(c,at,vehicle,view.progress,horse?game.time||0:0,horse?(game.reducedMotion??true):true);
 }
 // 复用原车轮、履带、装甲与独立炮塔，只有科幻样车使用自己的停机结构。
 export function drawParkedVehicle(c,item,game){

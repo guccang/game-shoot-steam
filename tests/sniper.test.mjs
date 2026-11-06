@@ -1,3 +1,4 @@
+import {upgradeCost} from '../src/progression/progress.js';
 import { equipmentRecipe } from '../src/progression/equipment-goals.js';
 import { WORLD } from '../src/world/coordinates.js';
 // 狙击枪验证实际远射、贯穿去重、存档兼容、重击物理与暂停清理。
@@ -18,6 +19,8 @@ function arena() {
   g.progress.weapon = index;
   g.progress.weapons[index] = 1;
   Object.assign(g.player, { x: 200, y: 600 });
+  // 靶场从已装填的弹匣开始，保留正式开火与换弹计时。
+  Object.assign(g.magazines[index],{ammo:weapon.magazineSize,remaining:0});
   g.start();
   g.attackTimer = g.spawnTimer = 999;
   return g;
@@ -41,29 +44,39 @@ function target(id, x, type = 'enemy', mass = 1) {
   };
 }
 
-test('狙击枪扩容旧档并保持购买门槛，升级和刷新后仍可装备', () => {
+test('旧档保留已有武器，狙击枪按工坊报价购买、升级后可读档', () => {
   const old = validateProgress({
     ...freshProgress(),
     weapons: [3, 2, 1, 1, 1, 1, 2, 2],
     weapon: 7,
   });
   assert.deepEqual(old.weapons, [3, 2, 1, 1, 1, 1, 2, 2, ...Array(WEAPONS.length - 8).fill(0)]);
-  const g = new Game(old);
-  const price=equipmentRecipe('weapons',index);
-  g.progress.materials={parts:price.parts,crystal:price.crystal,core:price.core};
-  g.progress.coins = 20000;
-  g.progress.wood = 6000;
-  g.progress.bosses = 5;
-  const before = structuredClone(g.progress);
-  assert.equal(g.transact('weapons', index, 'buy'), false);
-  assert.deepEqual(g.progress, before);
-  g.progress.bosses = 6;
-  assert.ok(g.transact('weapons', index, 'buy'));
-  assert.equal(g.progress.coins, 20000 - weapon.coins);
-  assert.ok(g.transact('weapons', index, 'upgrade'));
-  const restored = new Game(JSON.parse(JSON.stringify(g.progress)));
-  assert.equal(restored.progress.weapon, index);
-  assert.equal(restored.damage(), 112);
+  // 保留当前装备，其余旧枪放入仓库，给新枪留出随身空间。
+  old.warehouse.weapons=old.weapons.flatMap((level,i)=>level&&i!==old.weapon?[i]:[]);
+  const g=new Game(old),p=g.progress;
+  g.cottage={kind:'weapons'};
+  const price=equipmentRecipe('weapons',index,p),upgrade=upgradeCost(1,p,'weapons',index);
+  p.coins=price.coins-1;
+  p.wood=price.wood+upgrade.wood;
+  Object.assign(p.materials,{parts:price.parts,crystal:price.crystal,core:price.core});
+  const before=structuredClone(p);
+  assert.equal(g.transact('weapons',index,'buy'),false);
+  assert.deepEqual(p,before);
+  p.coins=price.coins+upgrade.coins;
+  assert.equal(p.bosses,0);
+  assert.ok(g.transact('weapons',index,'buy'));
+  assert.equal(p.coins,upgrade.coins);
+  assert.equal(p.wood,upgrade.wood);
+  assert.equal(p.weapon,index);
+  const beforeUpgrade=g.damage();
+  assert.ok(g.transact('weapons',index,'upgrade'));
+  const restored=new Game(JSON.parse(JSON.stringify(p)));
+  assert.equal(restored.progress.weapon,index);
+  assert.equal(restored.progress.weapons[index],2);
+  assert.equal(restored.progress.coins,0);
+  assert.equal(restored.progress.wood,0);
+  assert.ok(restored.damage()>beforeUpgrade);
+  assert.equal(restored.damage(),g.damage());
 });
 
 test('远处怪物优先于近树，子弹真实飞行到远处才结算伤害且射程外不瞄准', () => {
@@ -73,12 +86,13 @@ test('远处怪物优先于近树，子弹真实飞行到远处才结算伤害�
   g.trees = [target(2, 260, 'tree')];
   g.trees[0].y = 680;
   assert.equal(g.findAttackTarget(), enemy);
+  const shotDamage=g.damage();
   assert.ok(g.attack());
   assert.equal(enemy.hp, 1000);
   updateBallistics(g, 0.15);
   assert.equal(enemy.hp, 1000);
   updateBallistics(g, 0.22);
-  assert.equal(enemy.hp, 908);
+  assert.equal(enemy.hp, 1000-shotDamage);
   updateBallistics(g, 1);
   assert.equal(g.projectiles.length, 0);
   enemy.x = 1000;
@@ -86,13 +100,14 @@ test('远处怪物优先于近树，子弹真实飞行到远处才结算伤害�
   assert.equal(g.findAttackTarget(), null);
 });
 
-test('一颗狙击弹贯穿六个树怪，逐次衰减、同一目标只伤一次并停止在第六个', () => {
+test('一颗狙击弹穿过树木并贯穿六个敌人，逐次衰减、同一目标只伤一次并停止在第六个', () => {
   const g = arena();
   const targets = Array.from({ length: 7 }, (_, i) =>
-    target(i + 1, 300 + i * 65, i % 2 ? 'enemy' : 'tree'),
+    target(i + 1, 300 + i * 65, 'enemy'),
   );
-  g.trees = targets.filter((t) => t.type === 'tree');
-  g.enemies = targets.filter((t) => t.type === 'enemy');
+  const trunk={...targets[0],id:100,type:'tree',x:275};
+  g.trees=[trunk];
+  g.enemies=targets;
   fireBallistics(g, weapon, { x: 230, y: 592 }, { x: 1, y: 0 }, 92, false);
   updateBallistics(g, 0.5);
   assert.deepEqual(
@@ -102,6 +117,7 @@ test('一颗狙击弹贯穿六个树怪，逐次衰减、同一目标只伤一�
   assert.equal(g.projectiles.length, 0);
   updateBallistics(g, 1);
   assert.equal(targets[0].hp, 908);
+  assert.equal(trunk.hp,trunk.maxHp);
 });
 
 test('贴身重叠贯穿与循环边界不漏伤，30帧和120帧结果相同', () => {
@@ -132,7 +148,8 @@ test('贴身重叠贯穿与循环边界不漏伤，30帧和120帧结果相同', 
 test('换枪升级不改变在途穿甲弹，暂停冻结弹丸、后坐、碎块和镜头冲量', () => {
   const g = arena();
   g.enemies = [target(1, 850)];
-  g.attack();
+  const shotDamage=g.damage();
+  assert.ok(g.attack());
   g.pause();
   const before = structuredClone({
     b: g.projectiles,
@@ -149,7 +166,7 @@ test('换枪升级不改变在途穿甲弹，暂停冻结弹丸、后坐、碎�
   g.transact('weapons', 0, 'equip');
   g.pause();
   updateBallistics(g, 0.5);
-  assert.equal(g.enemies[0].hp, 908);
+  assert.equal(g.enemies[0].hp, 1000-shotDamage);
   g.reset();
   assert.equal(g.projectiles.length, 0);
   assert.equal(g.remnants.length, 0);

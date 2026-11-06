@@ -10,6 +10,7 @@ import { workshopPart } from '../config/workshop-parts.js';
 // 角色与武器画像，战场和营地共用，调用方提供画布上下文。
 import { catSprites } from './cat-animation.js';
 import { HEROES } from '../config/heroes.js';
+import { CAT_SCARVES } from '../config/cat-scarves.js';
 // 静态头像也使用同一主体资源，避免营地与战场显示不同品种。
 const portraitMotion = { idleTime: 0, moveTime: 0, moveWeight: 0 };
 import { GUN_SCALE, PLAYER_SCALE, RECOIL_PROFILES, weaponPose } from '../combat/recoil.js';
@@ -279,6 +280,8 @@ export function drawCat(
   parts = null,
   rotor = 0,
   unarmed = false, // 驾驶与交接隐藏手持武器，身体仍使用原连续帧。
+  gust = 0,
+  airborne = false,
 ) {
   c.save();
   c.translate(x, y);
@@ -289,9 +292,9 @@ export function drawCat(
     bob = Math.sin(walk) * 1.5;
   const pose = weaponPose(angle, weapon, recoil, motionScale);
   // 导出视频参考首帧时仅保留主体，不把影子、小手或枪械烘焙进素材。
-  if (!bodyOnly) oval(c, 0, 9, 22, 8, '#30492b25');
-  if (sample && !bodyOnly) oval(c, 1, 10, 14, 4, '#2d46373b');
-  const animated = !bodyOnly && catSprites.draw(c, hero, animation || portraitMotion, pose, motionScale < 1);
+  if (!bodyOnly && !airborne) oval(c, 0, 9, 22, 8, '#30492b25');
+  if (sample && !bodyOnly && !airborne) oval(c, 1, 10, 14, 4, '#2d46373b');
+  const animated = !bodyOnly && catSprites.draw(c, hero, animation || portraitMotion, pose, motionScale < 1, gust);
   c.translate(0, bob);
   if (!animated) {
     c.save();
@@ -364,6 +367,7 @@ export function drawCat(
         c.stroke();
       }
     }
+    const scarfColor = bodyOnly ? (mint ? '#dac47d' : '#6d9675') : CAT_SCARVES[HEROES[hero].id].cloth;
     const facing = Math.cos(angle) * 2;
     oval(c, -7 + facing, -25, 2, 2.8, dark);
     oval(c, 8 + facing, -25, 2, 2.8, dark);
@@ -385,7 +389,7 @@ export function drawCat(
         [8, -5],
         [-10, -6],
       ],
-      mint ? '#dac47d' : '#6d9675',
+      scarfColor,
       dark,
       1.5,
     );
@@ -396,7 +400,7 @@ export function drawCat(
         [-16, 4],
         [-4, 0],
       ],
-      mint ? '#dac47d' : '#6d9675',
+      scarfColor,
       dark,
       1.5,
     );

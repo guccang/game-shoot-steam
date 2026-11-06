@@ -54,13 +54,13 @@ test('B、A、S领取成功各记一次，保存失败与重复领取均不增�
  }
 });
 
-test('旧在途领主按剩余比例迁移，既有次数不清零，不重复回血',()=>{
+test('在途守门领主恢复为团山，保留已存生命数值与守门次数',()=>{
  const g=scene(5);g.campDefense.phase='boss-ready';spawnCampBoss(g);syncCampDefense(g);
  const raw=structuredClone(g.progress);delete raw.campDefense.run.growthVersion;raw.campDefense.run.bossHp=1140;
- const saved=validateProgress(raw);assert.equal(saved.campDefense.runs,5);assert.equal(saved.campDefense.run.bossHp,Math.round(campDefenseBoss(5).hp*.5));assert.equal(saved.campDefense.run.growthVersion,CAMP_DEFENSE_GROWTH_VERSION);
+ const saved=validateProgress(raw);assert.equal(saved.campDefense.runs,5);assert.equal(saved.campDefense.run.bossHp,1140);assert.equal(saved.campDefense.run.growthVersion,CAMP_DEFENSE_GROWTH_VERSION);
  assert.deepEqual(validateProgress(structuredClone(saved)),saved);
  const restored=new Game(saved,()=>.41);assert.equal(restored.boss.maxHp,campDefenseBoss(5).hp);assert.equal(restored.boss.hp,saved.campDefense.run.bossHp);assert.equal(restored.boss.speed,45);
- const ongoing=validateCampDefense({runs:5,run:{...raw.campDefense.run,phase:'waves',wave:6}});assert.equal(ongoing.run.bossHp,campDefenseBoss(5).hp);
+ assert.equal(restored.boss.kind,'dumpling');assert.equal(restored.boss.radius,114);
 });
 
 test('损坏或极大次数保持有限整数属性，避免指数溢出破坏存档',()=>{

@@ -1,3 +1,5 @@
+import {drawPhoneResidentPortrait} from '../rendering/living-world.js';
+import {drawVehicleIcon} from '../rendering/vehicle.js';
 import {ITEM_CATEGORIES} from '../config/items.js';
 import {backpackEntries} from '../progression/backpack.js';
 import {catLoad} from '../progression/load-weight.js';
@@ -20,7 +22,7 @@ import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 随身格子嵌入角色页，物品详情和手机使用子弹窗，逐层返回保留暂停归属。
-export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler}){
+export function createKeepsakeBackpack({game,root,dialogs,savePreferences,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler}){
  const scope=createEventScope(),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -75,7 +77,27 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
    actions.innerHTML=button('hangup','挂断')+button('visit','去找'+call.name,true);
   }else{
    const calendar=calendarView(game.progress.living.calendar),reason=phoneUnavailable(game);
-   detail.innerHTML=`<section class="keepsake-phone"><div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div><div class="keepsake-apps">${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div><h3>载具定位</h3><div class="keepsake-contacts">${vehicleLocations(game).map(v=>`<button type="button" class="ui-choice" data-locate-vehicle="${v.hull}"><span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span></button>`).join('')||'<p>还没有自有载具。</p>'}</div><h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${phoneContacts(game).map(r=>`<button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}><span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span></button>`).join('')}</div></section>`;
+   const residents=phoneContacts(game);
+   const avatar='<canvas class="phone-avatar" width="80" height="80" aria-hidden="true"></canvas>';
+   const vehicles=vehicleLocations(game).map(v=>`
+    <button type="button" class="ui-choice" data-locate-vehicle="${v.hull}">${avatar}
+     <span><b>${escape(v.name)}</b><small>${escape(v.status)} · ${v.mapId==='forest'?'晴叶森林':'九寨沟'} (${Math.round(v.x)}, ${Math.round(v.y)})</small></span><span>定位</span>
+    </button>`).join('');
+   const contacts=residents.map(r=>`
+    <button type="button" class="ui-choice" data-call="${r.id}" ${reason?'disabled':''}>${avatar}
+     <span><b>${escape(r.name)}</b><small>${escape(r.job)}</small></span><span>打电话</span>
+    </button>`).join('');
+   detail.innerHTML=`<section class="keepsake-phone">
+    <div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div>
+    <div class="keepsake-apps">${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div>
+    <h3>索敌设定</h3>
+    <label class="ui-choice phone-wood"><input type="checkbox" data-target-wood aria-labelledby="phone-wood-label" aria-describedby="phone-wood-help" ${game.gameplayPreferences.targetWood?'checked':''}>
+     <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">手持电锯优先锯附近的树，远程枪械只攻击敌人。</small></span></label>
+    <h3>载具定位</h3><div class="keepsake-contacts">${vehicles||'<p>还没有自有载具。</p>'}</div>
+    <h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${contacts}</div>
+   </section>`;
+   for(const row of detail.querySelectorAll('[data-locate-vehicle]'))drawVehicleIcon(row.querySelector('canvas').getContext('2d'),Number(row.dataset.locateVehicle));
+   for(const resident of residents)drawPhoneResidentPortrait(detail.querySelector(`[data-call="${resident.id}"] canvas`),resident);
    detail.querySelector('.keepsake-apps').insertAdjacentHTML('afterbegin',button('mail',`邮件${unreadMailCount(game.progress)?' · '+unreadMailCount(game.progress)+' 未读':''}`));
    actions.innerHTML=button('close',bag.open?'返回随身物品':'收好手机',true);
   }
@@ -89,6 +111,13 @@ export function createKeepsakeBackpack({game,root,dialogs,onChange,onNotice,onRe
  dialogs.register(phone.id,{focusId:'phone-close',onOpen:()=>{selected='patrol-phone';call=null;inventoryView=false;resetView();}});
  // 子页移到父页之后，触控焦点与暂停层级按打开顺序管理。
  function show(panel){if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
+ // 成功保存后立即更新战斗偏好，失败则恢复勾选。
+ scope.on(phone,'change',event=>{
+  const input=event.target;if(!input.matches('[data-target-wood]'))return;
+  if(savePreferences({...game.gameplayPreferences,targetWood:input.checked})){
+   game.gameplayPreferences.targetWood=input.checked;
+  }else{input.checked=game.gameplayPreferences.targetWood;onNotice('索敌设定保存失败，请重试。');}
+ });
  scope.on(phoneTrigger,'click',()=>{if(!game.arrivalCinematic)show(phone);});
  // 格子打开真实弹窗；返回后原背包的滚动与焦点由原生dialog保留。
  scope.on(bag,'click',event=>{

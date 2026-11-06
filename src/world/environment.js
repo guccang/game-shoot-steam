@@ -42,6 +42,7 @@ export function normalizeEnvironment(state, now = Date.now()) {
   state.timings = normalizeTimings(state.timings);
   state.forestSeason = normalizeSeason(state.forestSeason);
   if (!Number.isFinite(state.seasonAt)) restartSeasonCycle(state,state.forestSeason,now);
+  if (typeof state.randomGusts !== 'boolean') state.randomGusts = true;
   if (!WEATHER_TYPES.includes(state.weather)) state.weather = 'sun';
   if (!DAY_PHASES.some((phase) => phase.id === state.time)) state.time = 'day';
   if (typeof state.autoTime !== 'boolean') state.autoTime = true;

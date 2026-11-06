@@ -1,4 +1,6 @@
 import {treasureCargoMass} from './treasure.js';
+import {OUTDOOR_GEAR} from '../config/outdoors.js';
+import {shopCargoMass} from './shop-stock.js';
 import {backpackEntries} from './backpack.js';
 import {itemDefinition} from '../config/items.js';
 // 同一重量计算供背包、工坊、行驶与牵引使用，不根据界面缓存判断能否移动。
@@ -24,14 +26,17 @@ export function catAmmoRoom(game,key){
  const mass=AMMO_TYPES[key]?.mass;if(!mass)return 0;
  const load=catLoad(game);return Math.max(0,Math.floor((load.capacity-load.weight-1e-6)/mass));
 }
-// 车辆自重包含底盘、发动机增重、附加装甲和车内货物；载荷含驾驶员及背包。
+// 额定载荷计算车上货物与装配。驾驶员与背包单独计入整车总重。
 export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.vehicle.index&&game.vehicle.active,progress=game.progress}={}){
- const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cat=catLoad(progress===game.progress?game:Object.assign(Object.create(game),{progress})),cargo=treasureCargoMass(progress,index)+cropInventoryMass(b.cargo)+(b.wood||0)*itemDefinition('material:wood').mass,armor=b.plates*armorPlateMass(index),engineMass=engine.fixedMass??spec.mass*engine.mass;
+ const storedGearMass=(progress.outdoors?.tentHull===index?OUTDOOR_GEAR.tent.mass:0)+shopCargoMass(progress,index,progress===game.progress?game.magazines:progress.supplies?.handMags);
+ const spec=VEHICLE_LOADS[index],b=vehicleBuild(progress,index),engine=installedEngine(progress,index),cargo=storedGearMass+treasureCargoMass(progress,index)+cropInventoryMass(b.cargo)+(b.wood||0)*itemDefinition('material:wood').mass,armor=b.plates*armorPlateMass(index),engineMass=engine.fixedMass??spec.mass*engine.mass;
  const gun=progress.vehicleLoadouts[index],key=ammoKind(VEHICLE_WEAPONS[gun]),loaded=progress===game.progress?game.vehicles?.[index]?.module?.magazine?.ammo:progress.supplies?.vehicleMags?.[index]?.ammo;
  const ammo=ammunitionMass(progress.supplies?.vehicles[index])+Math.max(0,loaded||0)*(AMMO_TYPES[key]?.mass||0),gunMass=GUN_MASSES[gun]||0;
- const payload=cargo+armor+engineMass+ammo+gunMass+(driver?cat.body+cat.weight:0),capacity=spec.payload*engine.payload;
- const towCapacity=Math.max(0,spec.tow*engine.tow-payload*LOAD_RULES.towPayloadPenalty),mass=spec.mass+payload;
- return {mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driver?cat.body+cat.weight:0,overloaded:payload>=capacity};
+ const payload=cargo+armor+engineMass+ammo+gunMass,capacity=spec.payload*engine.payload;
+ const cat=driver?catLoad(progress===game.progress?game:Object.assign(Object.create(game),{progress})):null;
+ const driverMass=cat?cat.body+cat.weight:0;
+ const towCapacity=Math.max(0,spec.tow*engine.tow-payload*LOAD_RULES.towPayloadPenalty),mass=spec.mass+payload+driverMass;
+ return {mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driverMass,overloaded:payload>=capacity};
 }
 // 临时玩法不把永久货舱搬进借用车；普通探索超载停驶，牵引按实际重量减速。
 export function movementLoadFactor(game){

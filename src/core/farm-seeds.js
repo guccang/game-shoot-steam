@@ -1,7 +1,8 @@
+import {shopDelivery,addShopStock} from './shop-delivery.js';
 // 种子屋购买与野外掉落共用库存；购买先保存，掉落并入已有击杀奖励存档。
+import {grantSeedReward} from '../progression/seed-reward.js';
 import {recordGardeningAction} from '../progression/mainline-gardening.js';
-import {FARM_CROPS,FARM_STOCK_CAP,FARM_SEED_DROP,FARM_SEED_DOOR,farmSeedPool} from '../config/farm.js';
-import {grantFarmSeeds} from '../progression/farm.js';
+import {FARM_CROPS,FARM_SEED_DROP,FARM_SEED_DOOR,farmSeedPool} from '../config/farm.js';
 import {validateProgress} from '../progression/progress.js';
 import {commitFarm,storyFarmAllowed} from './farm.js';
 import {recordEconomy} from '../progression/economy-ledger.js';
@@ -15,10 +16,10 @@ export function buyFarmSeeds(game,cropId,count=1){
  if(!canBuyFarmSeeds(game))return {ok:false,message:'请进种子小屋与售货员交谈购买。'};
  const next=validateProgress(structuredClone(game.progress)),f=next.farm,cost=crop.cost*count;
  if(!f.unlocked[cropId])return {ok:false,message:'先获得一粒'+crop.name+'种子，即可永久解锁购买。'};
- if(f.seeds[cropId]+count>FARM_STOCK_CAP)return {ok:false,message:'种子库存已满，先使用一些再购买。'};
+ const delivery=shopDelivery(game,'seed:'+cropId,count);if(!delivery.ok)return delivery;
  if(next.coins<cost)return {ok:false,message:'金币不足，需要 '+cost+' 金币。'};
- next.coins-=cost;grantFarmSeeds(f,cropId,count);recordGardeningAction(next,'purchase',{crop:cropId,count});recordEconomy(next,'expense','farm:seed-shop',{coins:cost});
- return commitFarm(game,next,{action:'seed-purchased',message:crop.name+'种子 +'+count+' · 花费 '+cost+' 金币'});
+ next.coins-=cost;addShopStock(next,'seed:'+cropId,count,delivery.where);recordGardeningAction(next,'purchase',{crop:cropId,count});recordEconomy(next,'expense','farm:seed-shop',{coins:cost});
+ return commitFarm(game,next,{action:'seed-purchased',message:delivery.message});
 }
 // 仅正式森林/湖谷击杀掉落；试射、预览、副本、活动和树木不会刷出永久种子。
 export function awardFarmSeedDrop(game,target){
@@ -29,6 +30,5 @@ export function awardFarmSeedDrop(game,target){
  // 普通掉落、领主与保底共用阶段池，尚未开放的稀有品种不会被随机数抽中。
  f.seedDryKills=0;const pool=farmSeedPool(game.progress);let roll=game.random()*pool.reduce((sum,c)=>sum+c.weight,0),crop=pool.at(-1).index;
  for(const candidate of pool){roll-=candidate.weight;if(roll<0){crop=candidate.index;break;}}
- const unlocked=!f.unlocked[crop],count=grantFarmSeeds(f,crop,boss?FARM_SEED_DROP.bossCount:1);
- return {crop,count,unlocked,message:FARM_CROPS[crop].name+'种子 +'+count+(unlocked?' · 已解锁购买':'')};
+ return grantSeedReward(game,game.progress,crop,boss?FARM_SEED_DROP.bossCount:1);
 }

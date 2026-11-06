@@ -1,3 +1,4 @@
+import {vehicleMotorSound} from '../src/config/vehicle-eras.js';
 // 音频回归：缓存与限流、手机手势、循环生命周期、事件路由与独立偏好存档。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -108,7 +109,9 @@ test('所有枪械、载具动作与猫叫均有非静音有限音色，输出�
   assert.equal(signatures.size, sounds.length, '音色不共用同一段蜂鸣');
   // 新车型可共用同类发动机，但目录中的每辆车都必须有有效、未削波的循环。
   for(const [index,vehicle] of COLLECTED_VEHICLES.entries()){
-    const samples=renderEngine(context,index).getChannelData(0);
+    const sound=vehicleMotorSound(index);
+    if(sound===-1)continue; // 人力和畜力车没有发动机。
+    const samples=renderEngine(context,sound).getChannelData(0);
     assert.ok(samples.every(s=>Number.isFinite(s)&&Math.abs(s)<1),vehicle.id);
     assert.ok(samples.some(s=>Math.abs(s)>.01),`${vehicle.id} 发动机静音`);
   }
@@ -245,8 +248,9 @@ test('专属主炮、召唤动作与各车型启停路由完整，双喷口不�
   handle('weapon-sound',{kind:'cat-crew-deploy',source:'companion'});handle('shot',{kind:'cat-crew-hit',source:'companion'});
   assert.deepEqual(sounds.slice(-2),['cat-crew-deploy','cat-crew-hit']);
   for(let index=0;index<COLLECTED_VEHICLES.length;index++){
+    const count=sounds.length,sound=vehicleMotorSound(index);
     handle('vehicle-summon',{index});handle('vehicle-dismount',{index});
-    assert.deepEqual(sounds.slice(-2),[`vehicle-start-${index}`,`vehicle-stop-${index}`]);
+    assert.deepEqual(sounds.slice(count),sound===-1?[]:['vehicle-start-'+sound,'vehicle-stop-'+sound]);
   }
 });
 

@@ -1,3 +1,4 @@
+import {eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 import {storedWeaponRack,storedWarehouseWeapon} from '../progression/weapon-storage.js';
 import {catLoad} from '../progression/load-weight.js';
 import {weaponPurchaseQuote} from '../core/weapon-purchase-load.js';
@@ -177,8 +178,16 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     if(plan.action==='inspect') $('ws-cost-title').textContent=i18nText("ui.workshop.5ff8b327f0");
     $('ws-confirm').textContent = draft && quote.purchase ? i18nText("ui.workshop.f753a207c3") : i18nText("ui.workshop.markup.40e7d0db20");
     const owned = (kind === 'weapons' ? game.progress.weapons : game.progress.vehicleHulls)[index];
+    const product=(kind==='weapons'?WEAPONS:COLLECTED_VEHICLES)[index];
+    Object.assign($('ws-purchase').dataset,{shopKind:kind,shopIndex:index,shopName:product.name,shopInfo:product.description||''});
     $('ws-purchase').hidden = !!owned;
-    $('ws-purchase').textContent = !owned&&kind==='vehicle'&&COLLECTED_VEHICLES[index].rewardOnly?i18nText("ui.panels.vehicles.18fc7d0bec"):owned ? i18nText("balance.app.94996ca622") : kind === 'weapons' ? i18nText("ui.inventory.99be99bf93") : i18nText("ui.panels.vehicles.6a0b8701a9");
+    $('ws-purchase').textContent = !owned&&kind==='vehicle'&&COLLECTED_VEHICLES[index].rewardOnly?i18nText("ui.panels.vehicles.18fc7d0bec"):owned ? i18nText("balance.app.94996ca622") : '加入购物车';
+    const era=kind==='vehicle'&&eraVehicle(index);
+    if(era&&!owned){
+      const original=eraDonor(era);
+      $('ws-purpose').textContent=original?'使用'+original.name+'改造，继承货物与车位。':'使用仓库材料打造新车。';
+      $('ws-purchase').textContent='加入购物车';
+    }
     $('ws-purchase').disabled = !!draft || !!payment || plan.action!=='buy' || !quote.ok;
     $('ws-cleanup').hidden = !cleanupNeeded;
     const quest=equipmentQuest(kind,index),questState=quest&&equipmentQuestStatus(game.progress,quest);
@@ -345,7 +354,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     if(kind==='vehicle'&&editingTurret===null&&shownLevel)$('ws-level').textContent=vehicleBuild(p,index).plates+'层装甲 · '+installedEngine(p,index).name;
     // 武器与载具各页共用纯图标侧栏，完整名称和状态通过无障碍标签提供。
     $('ws-shelf').innerHTML = order.map(i =>
-      `<button type="button" data-ws-item="${i}" aria-pressed="${i === index}" aria-label="${catalog[i].name}，${levels[i] ? i18nHtml("common.level", { p0: levels[i] }) : i18nText("ui.inventory.2f0baebfe7")}"><canvas width="150" height="100" aria-hidden="true"></canvas></button>`).join('');
+      `<button type="button" data-ws-item="${i}" ${functionPage==='buy'&&!levels[i]?'data-shop-shelf':''} aria-pressed="${i === index}" aria-label="${catalog[i].name}，${levels[i] ? i18nHtml("common.level", { p0: levels[i] }) : i18nText("ui.inventory.2f0baebfe7")}"><canvas width="150" height="100" aria-hidden="true"></canvas></button>`).join('');
     for (const button of $('ws-shelf').children) {
       const i = Number(button.dataset.wsItem);
       drawWorkshopEquipment(button.querySelector('canvas').getContext('2d'), previewWorkshop(p, kind, i).progress, kind, i);
@@ -380,7 +389,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     if(kind==='vehicle'){
       const transfer=vehicleTransferState(game,index);$('ws-equip').textContent=transfer.label;
       $('ws-equip').disabled=!!draft||!levels[index];
-      $('ws-vehicle-parking').textContent=functionPage==='buy'?'购买后送至北停车场，前往换乘。':transfer.description+(index===5?' 骑乘特性：弹夹容量 +30%。':'');
+      $('ws-vehicle-parking').textContent=functionPage==='buy'?(eraDonor(eraVehicle(index))?'改造完成后，在原车停放处取车。':'完成后送至营地车位，前往换乘。'):transfer.description+(index===5?' 骑乘特性：弹夹容量 +30%。':'');
     }
     $('ws-test').disabled = kind === 'vehicle' && !COLLECTED_VEHICLES[index].unarmed && !snapshot(true).weapon;
     $('ws-funnel').disabled = !!draft;
@@ -446,7 +455,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
         :['modify','mount'].includes(plan.action)?workshopDraft(game.progress,plan.kind,plan.index,plan.choice):null;
       onChange();
     }
-    render(); $('ws-feedback').textContent = result.ok ? plan.kind==='vehicle'&&plan.action==='buy'?'购买完成，车辆已送到营地停车位。':i18nText("ui.workshop.f6b435718a") : result.reason;
+    render(); $('ws-feedback').textContent = result.ok ? result.place?'已购买，武器已放入'+result.place+'。':plan.kind==='vehicle'&&plan.action==='buy'?(eraDonor(eraVehicle(plan.index))?'改造完成，车辆留在原车位。':'办理完成，车辆已送至营地车位。'):i18nText("ui.workshop.f6b435718a") : result.reason;
     // 续接升级保持初始报价布局，不添加成功提示行；缺料或满级仍展示真实原因。
     if(result.ok&&draft){const quote=quoteWorkshop(game.progress,draft,!!game.realm);$('ws-feedback').textContent=quote.ok?'':quote.reason;}
   }

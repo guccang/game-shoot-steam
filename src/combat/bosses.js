@@ -66,7 +66,9 @@ function beginAttack(game, b, profile) {
     hit: false,
   };
   if(profile.id==='dumpling'){
-    const distance=Math.min(profile.leap.range,worldDistance(b,p));
+    // 团山的前沿在拒马外落地，冲击圈仍会打到拒马和未撤出的角色。
+    const standOff=b.campDefense?b.radius*.8:0;
+    const distance=Math.min(profile.leap.range,Math.max(0,worldDistance(b,p)-standOff));
     let length=0;
     // 用原地形规则截断跃迁；不穿河岸、不跳出秘境，也不改变碰撞体。
     for(let d=4;d<=distance;d+=4){
@@ -76,7 +78,7 @@ function beginAttack(game, b, profile) {
     }
     const target={x:b.x+Math.cos(angle)*length,y:b.y+Math.sin(angle)*length};
     Object.assign(b.ai,{leapFrom:{x:b.x,y:b.y},leapTo:target});
-    game.hazards.push({...base,...target,kind:'slam',family:'dumpling',radius:profile.leap.radius,
+    game.hazards.push({...base,...target,kind:'slam',family:'dumpling',giant:!!b.campDefense,radius:profile.leap.radius,
       warmup:profile.windup+profile.leap.duration,duration:profile.active-profile.leap.duration});
   } else if (profile.id === 'boar') {
     // 冲锋路径遇河岸提前截止，预警不会承诺一条实际无法通过的路线。
@@ -233,6 +235,11 @@ export function updateBossHazards(game, dt, previousPlayer = game.player) {
     h.age = before + dt;
     if (before >= h.warmup + h.duration) continue;
     if (h.age < h.warmup || h.kind === 'charge' || h.kind === 'summon') continue;
+    if(h.kind==='slam'&&h.family==='dumpling'&&game.boss?.campDefense&&!h.hitDefender
+      &&game.campDefense?.phase==='boss'&&worldDistance(game.player,h)<=h.radius+PLAYER_RADIUS){
+      h.hitDefender=true;
+      game.hurt(h.damage,{...h,damageType:'explosion'});
+    }
     const active = Math.min(h.duration, h.age - h.warmup),
       prev = Math.max(0, before - h.warmup);
     const point = nearest(target, h);

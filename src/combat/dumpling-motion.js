@@ -16,7 +16,8 @@ export function advanceDumplingMotion(actor,from,dt){
  if(Number.isFinite(actor.gelHitAge))actor.gelHitAge=Math.min(.6,actor.gelHitAge+dt);
  const distance=worldDistance(from,actor),moving=Math.min(1,distance/Math.max(1,(actor.speed||34)*dt));
  actor.gelMove=(actor.gelMove||0)+(moving-(actor.gelMove||0))*(1-Math.exp(-dt*12));
- actor.gelStep=((actor.gelStep||0)+distance/5)%(Math.PI*2);
+ const stride=actor.campDefense&&actor.kind==='dumpling'?15:5;
+ actor.gelStep=((actor.gelStep||0)+distance/stride)%(Math.PI*2);
 }
 // 胶体轮廓使用压缩、腾起、偏摆三个参数；车轮与武器不接受整体缩放。
 export function dumplingPose(actor,reduced=false){

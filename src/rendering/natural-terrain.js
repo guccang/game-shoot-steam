@@ -1,3 +1,5 @@
+import { gustStrength } from '../world/gust.js';
+import { drawWindRipple } from './wind-ripple.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
@@ -341,4 +343,22 @@ export function naturalAtlasStats() {
 // 共用绘制与动作输入，风格差异由配置提供。
 export function clearArtStyleCache() {
   releaseArtCache(mountainAtlas);
+}
+
+// 湖泊底图继续缓存；只在可见湖面裁切、叠画阵风经过的细纹。
+export function drawLakeGusts(c, view, time, wind) {
+  for (const lake of NATURAL_TERRAIN.lakes) {
+    if (lake.x + lake.rx * 1.3 < view.x || lake.x - lake.rx * 1.3 > view.x + view.w ||
+        lake.y + lake.ry * 1.3 < view.y || lake.y - lake.ry * 1.3 > view.y + view.h) continue;
+    c.save();
+    c.translate(lake.x, lake.y);
+    outlinePath(c, lake.outline);
+    c.clip();
+    for (let i = 0; i < 21; i++) {
+      const x = Math.cos(i * 2.4) * lake.rx * Math.sqrt(i / 21);
+      const y = Math.sin(i * 2.4) * lake.ry * Math.sqrt(i / 21);
+      drawWindRipple(c, x, y, time, gustStrength(time - .32, lake.x + x, wind), i);
+    }
+    c.restore();
+  }
 }

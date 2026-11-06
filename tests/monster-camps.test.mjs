@@ -31,7 +31,7 @@ function clear(g,c){Object.assign(g.player,{x:c.x,y:c.y+110});updateMonsterCamps
 
 // 对照旧半径外的新增区域，森林与湖谷均从正式战斗入口激活五个原名额。
 test('全部营地交战距离增加30%，新边界外只预警，新增范围内即可交战',()=>{
- const previous=150*Math.sqrt(1.3);assert.equal(RULES.radius,previous*1.3);assert.equal(RULES.scale,Math.sqrt(1.3));assert.equal(RULES.warningRadius,RULES.radius+35);
+ const previous=150*Math.sqrt(1.3)*2;assert.equal(RULES.radius,previous*1.3);assert.equal(RULES.scale,Math.sqrt(1.3)*2);assert.equal(RULES.warningRadius,RULES.radius+35);
  for(const [index,camp] of MONSTER_CAMPS.entries()){
   const g=scene(index);Object.assign(g.player,{x:camp.x,y:camp.y-RULES.radius-1});assert.equal(insideMonsterCamp(g,camp),false);updateMonsterCamps(g,.04);assert.equal(g.enemies.length,0);
   assert.equal(monsterCampObjects(g).filter(e=>e.monsterCamp===camp.id&&e.campState==='alert').length,5);
@@ -97,8 +97,8 @@ test('新路边野田避开营地生活与警戒留白，不挤占居民空间',
  for(const p of g.progress.farm.plots)for(const c of MONSTER_CAMPS.filter(c=>c.mapId===p.mapId))assert.ok(worldDistance(p,c)>=310,c.id);
 });
 test('所有等级带、全部种子都有固定来源，营地和圈外点不落水或堵在树冠中',()=>{
- assert.deepEqual(MONSTER_CAMPS.filter(c=>c.mapId==='forest').map(monsterCampLevel),[2,4,7,10,13,16,20]);
- for(let i=0;i<FARM_CROPS.length;i++)assert.ok(MONSTER_CAMPS.some(c=>c.seeds.includes(i)));
+ assert.deepEqual(MONSTER_CAMPS.filter(c=>c.mapId==='forest'&&!c.id.includes('-annex-')).map(monsterCampLevel),[2,4,7,10,13,16,20]);
+ for(let i=0;i<17;i++)assert.ok(MONSTER_CAMPS.some(c=>c.seeds.includes(i)));
  const trees={forest:forestLayout(),jiuzhaigou:jiuzhaigouTrees()};
  for(const c of MONSTER_CAMPS){assert.equal(blocked(c.x,c.y,240,[],c),false,c.id);for(const p of [campVisitorSite(c),campCacheSite(c),campCharacterSite(c)])assert.equal(blocked(p.x,p.y,20,trees[c.mapId],p),false,c.id);assert.ok(trees[c.mapId].every(t=>worldDistance(t,c)>=310),c.id);}
 });
@@ -111,11 +111,11 @@ test('可见追兵远离出生营地仍保留，脱离视野后实际返营而�
 });
 test('边缘预警只注视，进入攻击、越界继续追、单只离开视野才返营',()=>{
  const g=scene(),c=MONSTER_CAMPS[0];assert.equal(g.enemies.length,0);assert.equal(monsterCampObjects(g).filter(o=>o.type==='monster-camp-resident').length,5);assert.ok(monsterCampChatter(g));
- assert.ok(Math.abs(RULES.radius/(150*Math.sqrt(1.3))-1.3)<1e-9);g.viewport={width:390,height:844};g.arrivalView={...g.viewport,left:-195,right:195,top:-422,bottom:422};
+ assert.ok(Math.abs(RULES.radius/(300*Math.sqrt(1.3))-1.3)<1e-9);g.viewport={width:390,height:844};g.arrivalView={...g.viewport,left:-195,right:195,top:-422,bottom:422};
  Object.assign(g.player,{x:c.x,y:c.y-RULES.radius-10});updateMonsterCamps(g,.04);const alerts=monsterCampObjects(g).filter(o=>o.campState==='alert');assert.equal(alerts.length,5);assert.equal(g.enemies.length,0);assert.ok(alerts.every(e=>e.campLookY<0));updateMonsterCamps(g,.5);assert.deepEqual(monsterCampObjects(g).filter(o=>o.campState==='alert').map(e=>[e.x,e.y]),alerts.map(e=>[e.x,e.y]));
  Object.assign(g.player,{x:c.x,y:c.y+RULES.radius-1});updateMonsterCamps(g,.04);assert.equal(g.enemies.length,5);assert.ok(g.enemies.every(e=>e.level===2));
  const e=g.enemies[0],hp=e.hp;Object.assign(g.player,{x:c.x,y:c.y+RULES.radius+20});updateMonsterCamps(g,.04);g.hit(e,1);assert.ok(e.hp<hp);assert.equal(g.enemies.length,5);
- e.x=g.player.x-300;e.y=g.player.y;updateMonsterCamps(g,.4);assert.ok(g.enemies.includes(e));updateMonsterCamps(g,.5);assert.equal(e.campState,'returning');assert.equal(g.enemies.length,4);const retained=e.hp;g.hit(e,99999);assert.equal(e.hp,retained);
+ for(const other of g.enemies)if(other!==e){other.x=g.player.x;other.y=g.player.y;}e.x=g.player.x-300;e.y=g.player.y;updateMonsterCamps(g,.4);assert.ok(g.enemies.includes(e));updateMonsterCamps(g,.5);assert.equal(e.campState,'returning');assert.equal(g.enemies.length,4);const retained=e.hp;g.hit(e,99999);assert.equal(e.hp,retained);
  assert.ok(monsterCampObjects(g).some(a=>a.id===e.id&&a.campState==='returning'));assert.equal(g.progress.monsterCamps.camps[c.id].clears,0);
 });
 test('完整清场才计次和发种，存档恢复部分名额，重复结算不多领',()=>{
@@ -131,7 +131,7 @@ test('保存失败不发奖励，稍后重试恰好提交一次；远处回收�
 });
 test('冷却不在暂停推进，原地不重刷，离场后下一轮有新名额并记忆闲聊',()=>{
  const g=scene(),c=MONSTER_CAMPS[0];clear(g,c);const cool=g.progress.monsterCamps.camps[c.id].cooldown;g.state='paused';updateMonsterCamps(g,100);assert.equal(g.progress.monsterCamps.camps[c.id].cooldown,cool);
- g.state='playing';updateMonsterCamps(g,100);assert.equal(g.progress.monsterCamps.camps[c.id].mask,31);Object.assign(g.player,{x:c.x+400,y:c.y});updateMonsterCamps(g,.1);Object.assign(g.player,campVisitorSite(c),{y:c.y-RULES.warningRadius-20});updateMonsterCamps(g,.1);assert.equal(monsterCampObjects(g).filter(o=>o.type==='monster-camp-resident').length,5);g.time=0;assert.match(monsterCampChatter(g).text,/1回/);
+ g.state='playing';updateMonsterCamps(g,100);assert.equal(g.progress.monsterCamps.camps[c.id].mask,31);Object.assign(g.player,{x:c.x+RULES.observe+100,y:c.y});updateMonsterCamps(g,.1);Object.assign(g.player,campVisitorSite(c),{y:c.y-RULES.warningRadius-20});updateMonsterCamps(g,.1);assert.equal(monsterCampObjects(g).filter(o=>o.type==='monster-camp-resident').length,5);g.time=0;assert.match(monsterCampChatter(g).text,/1回/);
 });
 test('品种门槛保留，具名人物安全交谈、夜间线索、永久特殊物品及加种奖励',()=>{
  const locked=scene(1),c1=MONSTER_CAMPS[1];clear(locked,c1);for(const i of c1.seeds)assert.equal(locked.progress.farm.seeds[i],0);
@@ -148,7 +148,7 @@ test('正式插值快照复用营地居民，休闲步态不因渲染类型丢�
  const g=scene(),interpolation=createRenderInterpolation();interpolation.beforeStep(g);updateMonsterCamps(g,.04);const sample=interpolation.sample(g,.5),actors=monsterCampObjects(sample).filter(o=>o.type==='monster-camp-resident');assert.equal(actors.length,5);assert.ok(actors.every(a=>a.kind==='dumpling'&&Number.isFinite(a.gelStep)));
 });
 test('清缴选点避让常驻营地，观察期间随机遭遇不消耗倒计时',()=>{
- const g=scene(),c=MONSTER_CAMPS[0];assert.equal(clearingSiteOpen(c,[]),false);g.encounterTimer=8;updateEncounters(g,1,true);assert.equal(g.encounterTimer,8);Object.assign(g.player,{x:c.x-600,y:c.y});updateEncounters(g,1,true);assert.equal(g.encounterTimer,7);
+ const g=scene(),c=MONSTER_CAMPS[0];assert.equal(clearingSiteOpen(c,[]),false);g.encounterTimer=8;updateEncounters(g,1,true);assert.equal(g.encounterTimer,8);Object.assign(g.player,{x:c.x-RULES.observe-100,y:c.y});updateEncounters(g,1,true);assert.equal(g.encounterTimer,7);
 });
 test('另外两位人物区分昼夜和清场条件，特殊物品只能领取一次',()=>{
  for(const npc of CAMP_CHARACTERS.slice(1)){

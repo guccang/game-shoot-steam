@@ -1,0 +1,22 @@
+{
+  "dry_run": true,
+  "method": "POST",
+  "url": "http://10.1.9.154:8091/v1/video-generations",
+  "body": {
+    "request_id": "vid-ztj-forest-pasture-20261105-sheep-v1",
+    "model": "seedance-2.5",
+    "mode": "first_frame",
+    "prompt": "Precisely animate this single sheep as a clean 2D game sprite. Orthographic fixed camera, perfectly still centered body in frame, fixed scale and stable feet baseline. Preserve identical design, colours, horns or ears, face, proportions and collar. Preserve four legs, coherent weight transfer with hooves alternately lifting and planting. Pure perfectly flat blue #0000FF backdrop, no shadows, camera motion, scenery, equipment or text. Single continuous 10 seconds: first 0-2.5s right-facing side idle breathing blink, ear flick, tail. 2.5-6.5s right-facing walking in place, several steady quadruped walk cycles, four legs distinct, no translation. 6.5-9.5s execute a half-turn in place from facing right THROUGH camera-facing front to facing LEFT with small alternating turning steps and visible head rotation, no instantaneous flip. End holding left profile for half a second. Entire animal fully in frame throughout.",
+    "inputs": [
+      {
+        "type": "image",
+        "role": "first_frame",
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261105-183811-bxneki/c5d614fb1d22241d-sheep-reference.png"
+      }
+    ],
+    "resolution": "720p",
+    "ratio": "adaptive",
+    "duration": 10,
+    "generate_audio": false
+  }
+}

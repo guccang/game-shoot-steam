@@ -1,7 +1,8 @@
 // 世界农田存档：坐标、种子库存和快递均白名单校验，读档不发奖。
+import {PEN_OX} from '../config/pasture.js';
 import {FARM_CROPS,FARM_MAX_PLOTS,FARM_STOCK_CAP,FARM_SEED_DROP,FARM_WATER} from '../config/farm.js';
 // 新档通过怪物掉落或任务奖励获得首粒种子并永久解锁购买；快递只补已解锁品种。
-export function freshFarm(){return {version:6,xp:0,harvested:0,watered:0,planted:0,dug:0,lessonRewarded:false,nextId:0,wildMaps:[],wildScatterVersion:0,seeds:FARM_CROPS.map(()=>0),unlocked:FARM_CROPS.map(()=>false),seedDryKills:0,inventory:FARM_CROPS.map(()=>0),plots:[],delivery:{nextAt:0,serial:0,claimed:0,parcels:[]}};}
+export function freshFarm(){return {version:6,forage:0,forageDay:null,sheep:false,oxFeeds:0,sheepFeeds:0,oxSite:null,oxPlow:false,doubleCan:false,xp:0,harvested:0,watered:0,planted:0,dug:0,lessonRewarded:false,nextId:0,wildMaps:[],wildScatterVersion:0,seeds:FARM_CROPS.map(()=>0),unlocked:FARM_CROPS.map(()=>false),seedDryKills:0,inventory:FARM_CROPS.map(()=>0),plots:[],delivery:{nextAt:0,serial:0,claimed:0,parcels:[]}};}
 // 所有种子来源共用入库与解锁；库存满时不丢失已发现品种。
 export function grantFarmSeeds(farm,crop,count){
  if(!Number.isInteger(crop)||!FARM_CROPS[crop]||!Number.isSafeInteger(count)||count<=0)return 0;
@@ -33,7 +34,9 @@ export function validateFarm(raw){
  // 野外田不计入玩家开垦或播种数量。
  const wildMaps=['forest','jiuzhaigou'].filter(id=>Array.isArray(raw.wildMaps)&&raw.wildMaps.includes(id));
  // 品种权限只来自明确解锁记录或现有种子。
- return {version:6,xp,harvested,watered:Math.max(integer(raw.watered),plots.filter(p=>!p.wild&&p.crop!==null&&p.watered).length),unlocked:FARM_CROPS.map((crop,i)=>raw.unlocked?.[i]===true||integer(raw.seeds?.[i])>0),seedDryKills:integer(raw.seedDryKills,FARM_SEED_DROP.pity-1),dug:Math.max(integer(raw.dug),plots.filter(p=>!p.wild).length),planted:Math.max(integer(raw.planted),plots.filter(p=>!p.wild&&p.crop!==null).length),lessonRewarded:raw.lessonRewarded===true,nextId:Math.max(integer(raw.nextId,1e7),...plots.map(p=>p.id+1),0),wildMaps,wildScatterVersion:integer(raw.wildScatterVersion,1),seeds:FARM_CROPS.map((_,i)=>integer(raw.seeds?.[i])),inventory:FARM_CROPS.map((_,i)=>integer(raw.inventory?.[i])),plots,delivery:{nextAt:integer(d.nextAt,8640000000000000),serial:Math.max(integer(d.serial,1e7),...parcels.map(p=>p.id),0),claimed:integer(d.claimed),parcels}};
+ const site=raw.oxSite;
+ const oxSite=raw.oxPlow===true&&site&&['forest','jiuzhaigou'].includes(site.mapId)&&Number.isFinite(site.x)&&Number.isFinite(site.y)?{mapId:site.mapId,x:site.x,y:site.y,...(Number.isFinite(site.yaw)?{yaw:site.yaw}:{}),facing:site.facing===-1?-1:1}:null;
+ return {version:6,forage:integer(raw.forage,999),forageDay:Number.isSafeInteger(raw.forageDay)&&raw.forageDay>=0?integer(raw.forageDay,999999):null,sheep:raw.sheep===true,oxFeeds:integer(raw.oxFeeds),sheepFeeds:integer(raw.sheepFeeds),oxSite:oxSite||(raw.oxPlow===true?{...PEN_OX}:null),oxPlow:raw.oxPlow===true,doubleCan:raw.doubleCan===true,xp,harvested,watered:Math.max(integer(raw.watered),plots.filter(p=>!p.wild&&p.crop!==null&&p.watered).length),unlocked:FARM_CROPS.map((crop,i)=>raw.unlocked?.[i]===true||integer(raw.seeds?.[i])>0),seedDryKills:integer(raw.seedDryKills,FARM_SEED_DROP.pity-1),dug:Math.max(integer(raw.dug),plots.filter(p=>!p.wild).length),planted:Math.max(integer(raw.planted),plots.filter(p=>!p.wild&&p.crop!==null).length),lessonRewarded:raw.lessonRewarded===true,nextId:Math.max(integer(raw.nextId,1e7),...plots.map(p=>p.id+1),0),wildMaps,wildScatterVersion:integer(raw.wildScatterVersion,1),seeds:FARM_CROPS.map((_,i)=>integer(raw.seeds?.[i])),inventory:FARM_CROPS.map((_,i)=>integer(raw.inventory?.[i])),plots,delivery:{nextAt:integer(d.nextAt,8640000000000000),serial:Math.max(integer(d.serial,1e7),...parcels.map(p=>p.id),0),claimed:integer(d.claimed),parcels}};
 }
 // 离线只成熟当前一茬，不自动种植或结算。
 export function farmGrowth(plot,now=Date.now()){if(plot.crop===null)return 0;if(now>=plot.readyAt)return 1;return Math.max(0,Math.min(1,(now-plot.plantedAt)/Math.max(1,plot.readyAt-plot.plantedAt)));}

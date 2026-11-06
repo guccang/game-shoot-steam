@@ -34,8 +34,9 @@ export const FARM_CROPS=Object.freeze([
 export const FARM_LEVEL_XP=Object.freeze([0,30,150,330,660,1200,2100,3300]);
 export const FARM_MAX_PLOTS=512;
 export const FARM_STOCK_CAP=999999;
-// 水壶每次只浇选中的一块田；湿田可重复浇水，每茬只缩短一次原始生长时长的四分之一。
-export const FARM_WATER=Object.freeze({maxPlots:1,reduction:.25});
+// 基础水壶照顾一格，改造后增加右侧相邻一格；湿田可重复浇水，每茬只缩短一次原始生长时长的四分之一。
+export const OX_PLOW=Object.freeze({spacing:56,speed:.65,turnRadius:26,turnSeconds:.95});
+export const FARM_WATER=Object.freeze({maxPlots:2,upgradeOre:4,reduction:.25});
 // 固定营地采样点供经济模拟使用，正常开垦不再限制在这里。
 export const FARM_GARDEN=Object.freeze({id:'camp-farm',mapId:'forest',x:865+TOWN_SHIFT_X,y:672,radius:240});
 // 经济模拟的十二块采样田坐标；正式农田直接保存世界坐标。

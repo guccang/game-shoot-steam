@@ -1,12 +1,15 @@
+import {clipEraSeat} from './vehicle-eras.js';
 import {drawAmbientFish} from './ambient-fish.js';
 import {drawHomeArcade} from './home-arcade.js';
 import {drawHomeBalcony,balconyProject,balconyWorldTransform,balconyUpright,balconyObjectVisible} from './home-balcony.js';
 import {drawMining,drawMineShaft} from './mining.js';
 import {mineShaftObjects} from '../core/mining.js';
 import {constructionObjects,drawConstructionCompany} from './construction-company.js';
+import {campBuildingCache} from './camp-building-cache.js';
 import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
 import {outdoorBusy} from '../core/outdoors.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from './scene-npc-continuity.js';
+import {outdoorShopObjects,drawOutdoorShop} from './outdoor-shop.js';
 import {ammoShopObjects,drawAmmoShop} from './ammo-shop.js';
 import {warehouseObjects,drawWarehouse} from './warehouse.js';
 import {catHomeObjects,drawCatHome} from './cat-home.js';
@@ -15,7 +18,11 @@ import {furnitureShopObjects,drawFurnitureShop} from './furniture-shop.js';
 import {vehicleServiceObjects,drawVehicleServiceObject} from './vehicle-repair.js';
 import {storyCampScene} from './story-camp.js';
 import {drawProductionDevice} from './farm-production.js';
-import {drawFarmGround,farmObjects,drawFarmCrop,drawFarmTool,drawFarmDelivery,drawCampFarmSign} from './farm.js';
+import {wildPastureObjects} from '../core/wild-pasture.js';
+import {drawPasture} from './pasture.js';
+import {oxHandler} from '../config/pasture.js';
+import {drawOxPlow} from './ox-plow.js';
+import {drawFarmGround,farmObjects,drawFarmCrop,drawFarmTool,drawFarmDelivery,drawCampFarmSign,farmArtBudget} from './farm.js';
 import {drawSeedShop} from './seed-shop.js';
 import {cropGrowthBoosts} from './farm-growth.js';
 import {farmWorking} from '../core/farm.js';
@@ -31,7 +38,8 @@ import {drawCottage} from './cottage.js';
 import {drawPlayerActionCountdown} from './player-action-countdown.js';
 import {parkedVehicleObjects,drawParkedVehicle} from './parked-vehicles.js';
 import {campDefenseObjects,drawCampDefense,drawCampDefenseGround} from './camp-defense.js';
-import { riderPosition } from '../config/vehicle-rider.js';
+import {drawGiantSpoils} from './horde-giant.js';
+import { riderPosition,frontRider } from '../config/vehicle-rider.js';
 import { canvasFont } from './text-style.js';
 import {arrivalObjects,drawArrivalObject,drawArrivalGuidance,drawWorkshopBuildCountdown} from './ranger-arrival.js';
 import {clearingPostObjects,drawClearingPost} from './clearing-post.js';
@@ -76,6 +84,9 @@ import { drawJiuzhaigouWater } from './jiuzhaigou.js';
 import { SceneTone } from './scene-tone.js';
 import { PLAYER_SCALE } from '../combat/recoil.js';
 import { drawBallistics, drawArcLink } from './projectiles.js';
+import { GustCycle, gustStrength } from '../world/gust.js';
+import { drawLakeGusts } from './natural-terrain.js';
+import { drawHomeGlider } from './home-glider.js';
 import { drawForestTree, drawForestShadow } from './forest-art.js';
 import { SCENERY } from '../world/scenery.js';
 import { REALM_ENTRANCES, towerRealmLandmark } from '../world/realm-entrances.js';
@@ -111,6 +122,8 @@ import { artSampleWeight } from './art-sample.js';
 import { releaseArtCache } from '../art-styles/cache.js';
 import {watchRenderCanvas,canvasRecoveryRevision,canvasRecoveryStats} from './canvas-recovery.js';
 import {recoverSharedRenderCaches} from './render-cache-recovery.js';
+// 仅统计本轮接入缓存的七类建筑，避免把角色或施工动作归到静态立面。
+const CACHED_CAMP_BUILDINGS=new Set(['warehouse','cat-home','furniture-shop','seed-shop','legendary-workshop','ammo-shop','construction-company']);
 export class Renderer {
   // 初始化轻量缓存；地形位图在首次进入可见区域时才生成。
   constructor(canvas, game, environment = { time: 'day', weather: 'sun' }, profiler = null) {
@@ -126,6 +139,7 @@ export class Renderer {
     this.environment = environment;
     this.light = new EnvironmentTransition(environment, performance.now());
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    this.gusts = new GustCycle();
     this.river = new RiverRenderer();
     this.rain = new RainRenderer();
     this.snow = new SnowRenderer();
@@ -139,6 +153,7 @@ export class Renderer {
   }
   // 风格切换只重建派生画布；镜头、季节/天气过渡和游戏对象保持原实例。
   refreshArtStyle() {
+    campBuildingCache.clear();
     this.ground.refreshArtStyle();
     releaseArtCache(this.river.tiles);this.river=new RiverRenderer();
     if(this.interiorArt)releaseArtCache(this.interiorArt.images);
@@ -164,14 +179,16 @@ export class Renderer {
       contextRecovery:{...canvasRecoveryStats(),rebuilds:this.contextRecoveries},
       view: this.view, frameTiming: this.frameTiming,
       seasonTransition: this.seasonVisual, seasonScratch: seasonRasterStats(),
-      groundCache: this.ground.stats(), navigationCache: this.navigationWarmup?.stats(), riverCache: this.river.stats(),
+      groundCache: this.ground.stats(), navigationCache: this.navigationWarmup?.stats(), riverCache: this.river.stats(), campBuildings: campBuildingCache.stats(),
       backgroundBytes: this.ground.stats().bytes + this.ground.stats().pendingBytes + this.river.stats().bytes
         + this.ground.mapPreview.stats().bytes + this.ground.mapPreview.stats().pendingBytes,
       canvasCommands: this.commands.report(),
       monsters: monsterAtlasStats(), trees: treeAtlasStats(), scenery: sceneryAtlasStats(),
-      naturalTerrain: naturalAtlasStats(), catAnimation: catSprites.stats(),
+      naturalTerrain: naturalAtlasStats(), catAnimation: catSprites.stats(), farmArt: farmArtBudget(),
       snow: this.snow.stats(), fallingLeaves: this.fallingLeaves.stats(), rainCache: this.rain.surfaces.terrain.size, visible: this.visibleStats };
   }
+  // 帧尾最多生成一张已入镜建筑，不让新区域一次触发全部静态立面生成。
+  advanceCampBuildings(){return campBuildingCache.advance();}
   // 按设备像素比调整画布，限制倍率以兼顾移动设备性能。
   resize() {
     const rect = this.canvas.getBoundingClientRect();
@@ -191,7 +208,7 @@ export class Renderer {
     const speech=storySpeechInfo(g);
     const guide = speech?null:['funnel', 'drone'].includes(g.weapon().controller) ? { kind: g.weapon().controller } : sniperGuide(g);
     const normal = camera.update(g.player, this.width, this.height, guide, g.time, this.reduced.matches,
-      { arena: g.realm?.arena, mode: g.realm?.mode, session: g.realm, horde: g.campDefense });
+      { arena: g.realm?.arena, mode: g.realm?.mode, session: g.realm, horde: g.campDefense, giant:g.boss?.campDefense&&g.boss.kind==='dumpling'?g.boss:null });
     const view=outdoorFishingView(g,Object.assign(new StoryCamera(),this.storyCamera).update(normal,speech,now/1000,this.reduced.matches,g.story||null),this.width,this.height);
     this.ground.update(this.environment,view,now); return view;
   }
@@ -202,7 +219,9 @@ export class Renderer {
     const profiler = this.profiler;
     profiler?.start('render.prepare');
     const c = this.c,
-      source = renderGame,
+      flight = renderGame.cottage?.glide,
+      // 滑翔从室外视角读取停驻车辆和建筑，房间事务仍保留安全存档落点。
+      source = flight ? Object.assign(Object.create(renderGame), {cottage:null}) : renderGame,
       camp = this.campScene = storyCampScene(source),
       w = this.width,
       h = this.height,
@@ -223,7 +242,7 @@ export class Renderer {
     }
     // 相邻镜像共用同一对象和存档，画面跨边界时不瞬移、不复制伤害。
     // 秘境休整沿用连续表现时钟；暂停不增加偏移，战斗逻辑仍使用 source.time。
-    const g = { ...this.game, ...source, time: source.time + (source.realm?.idleTime || 0), progress: source.loadout || source.progress };
+    const g = { ...this.game, ...renderGame, cottage: source.cottage, time: source.time + (source.realm?.idleTime || 0), progress: source.loadout || source.progress };
     // 暂停冻结作物视觉时间；恢复后按存档真实时间显示当前成长，不补播离线特效。
     if(source.state==='playing'||!Number.isFinite(this.farmVisualNow))this.farmVisualNow=Date.now();
     const cropBoosts=cropGrowthBoosts(this.farmGrowthEffects??={},source,g.time);
@@ -245,8 +264,8 @@ export class Renderer {
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     c.clearRect(0, 0, w, h);
     const speech=storySpeechInfo(source);
-    const guide = speech||source.balconyScene?null:sniperGuide(source);
-    const funnel = !source.balconyScene&&!speech&&['funnel', 'drone'].includes(source.weapon().controller);
+    const guide = speech||source.balconyScene||flight?null:sniperGuide(source);
+    const funnel = !flight&&!source.balconyScene&&!speech&&['funnel', 'drone'].includes(source.weapon().controller);
     const normal = this.camera.update(
       g.player,
       w,
@@ -254,13 +273,14 @@ export class Renderer {
       funnel ? { kind: source.weapon().controller } : guide,
       g.time,
       this.reduced.matches,
-      { arena: source.realm?.arena, mode: source.realm?.mode, session: source.realm, horde: source.campDefense },
+      { arena: source.realm?.arena, mode: source.realm?.mode, session: source.realm, horde: source.campDefense, giant:g.boss?.campDefense&&g.boss.kind==='dumpling'?g.boss:null },
     );
     if(source.realm)this.storyCamera.reset();
     const view=source.balconyScene?.view||outdoorFishingView(source,this.storyCamera.update(normal,speech,performance.now()/1000,this.reduced.matches,source.story||null),w,h);
     // 建筑提示只调整DOM布局，不再叠加镜头平移或缩放。
     // 地块准备好后才推进统一外观时钟，树木与地面使用同一组季节权重。
     const seasonVisual=this.seasonVisual=this.ground.update(this.environment,view,seasonNow,light.night);
+    const wind = this.gusts.sample(g.time, g.player.x, !this.reduced.matches && this.environment.randomGusts !== false);
     const winter=valley?0:seasonVisual.weights.winter;
     if(!seasonVisual.active||valley)seasonRasterStats(true);
     const zoom = view.zoom;
@@ -290,7 +310,7 @@ export class Renderer {
       g[key] = visibleBodies(source[key], view);
     if (guide || funnel) g.hazards = visibleBodies(source.hazards, view);
     this.visibleStats = { trees: g.trees.length, enemies: g.enemies.length,
-      fx: source.fx.items.length, zoom };
+      fx: source.fx.items.length, crops: 0, campBuildings: 0, zoom };
     profiler?.end('render.prepare');
     profiler?.start('render.rainPrepare');
     this.rain.prepare(time, view, g.trees, light.rain, light.storm, this.reduced.matches);
@@ -321,7 +341,8 @@ export class Renderer {
           y: cameraY - y,
           w: view.w,
           h: view.h,
-        });
+        }, wind, g.time);
+        if (wind) drawLakeGusts(c, {x:cameraX-x,y:cameraY-y,w:view.w,h:view.h}, g.time, wind);
         c.restore();
       }
     drawLivingGround(c,camp,light.night,view);
@@ -332,7 +353,7 @@ export class Renderer {
     drawCampDefenseGround(c,camp);
     if (source.realm) drawRealmGround(c, view, source.realm, g.time, this.reduced.matches);
     if(source.realm?.mode==='race')drawRaceTrackEffects(c,source.realm,g.player,this.reduced.matches);
-    if (valley) drawJiuzhaigouWater(c, view, time, light.night, this.reduced.matches);
+    if (valley) drawJiuzhaigouWater(c, view, time, light.night, this.reduced.matches, wind, g.time);
     this.ambientFishReview=drawAmbientFish(c,source,view,this.reduced.matches,light.night);
     profiler?.end('render.river');
     profiler?.start('render.lighting');
@@ -353,7 +374,7 @@ export class Renderer {
     const lamps = valley ? [] : visibleLights(view, time, light, this.reduced.matches).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
     drawLampGround(c, lamps, [...g.trees, ...g.enemies, ...(g.boss ? [g.boss] : []), g.player]);
     // 赛跑不显示自动攻击范围。
-    if(!source.balconyScene&&source.realm?.mode!=='race'&&!farmWorking(source)){
+    if(!flight&&!source.balconyScene&&source.realm?.mode!=='race'&&!farmWorking(source)){
     // 淡淡的射程圈帮助理解自动攻击距离。
     c.beginPath();
     c.ellipse(
@@ -395,8 +416,8 @@ export class Renderer {
       ...visibleBodies(mineShaftObjects(source),view,100),
       ...visibleBodies(constructionObjects(camp),view,160),
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
-      ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
-      ...visibleBodies(farmObjects(camp),view,90),
+      ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(outdoorShopObjects(camp),view,200),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
+      ...visibleBodies(farmObjects(camp),view,190),...visibleBodies(wildPastureObjects(source),view,150),
       ...visibleBodies(outdoorObjects(source),view,200),
       ...visibleBodies(restorationObjects(camp),view,150),
       ...visibleBodies(campDefenseObjects(camp),view,160),
@@ -424,7 +445,7 @@ export class Renderer {
       ...g.enemies,
       ...g.remnants,
       ...(g.boss ? [g.boss] : []),
-      { type: 'player', x: g.player.x, y: g.player.y, flying: g.player.flying,
+      { type: 'player', x: g.player.x, y: g.player.y, flying: g.player.flying||!!flight,
         depthOffset:parkingGaragePose(g.player,g.vehicle)?parkingGaragePose(g.player,g.vehicle).y+3-g.player.y:0 },
     ].filter(item=>!source.balconyScene||balconyObjectVisible(view,item)).sort((a, b) =>
       // 空中单位及其预警在树冠上方，避免飞行近战从完全遮挡的位置突然命中。
@@ -455,6 +476,8 @@ export class Renderer {
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
       if(source.balconyScene){c.save();balconyUpright(c,view,item);}
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();continue;}
+      const cachedBuilding=CACHED_CAMP_BUILDINGS.has(item.type);
+      if(cachedBuilding){this.visibleStats.campBuildings++;profiler?.start('render.campBuildings');}
       if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
       else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
@@ -499,6 +522,7 @@ export class Renderer {
           winter,
           valley ? 'original' : this.ground.season,
           valley ? null : seasonVisual,
+          gustStrength(g.time - .18, item.x, wind),
         );
         drawBurningTree(c,item,g.time,this.reduced.matches);
       }
@@ -510,6 +534,7 @@ export class Renderer {
         profiler?.end('render.monsters');
       }
       else if(item.type==='farm-delivery')drawFarmDelivery(c,item);
+      else if(item.type==='outdoor-shop')drawOutdoorShop(c,item,light.night,winter);
       else if(item.type==='ammo-shop')drawAmmoShop(c,item,light.night,winter);
       else if(item.type==='warehouse')drawWarehouse(c,item,light.night,winter);
       else if(item.type==='cat-home')drawCatHome(c,item,light.night,winter);
@@ -517,11 +542,19 @@ export class Renderer {
       else if(item.type==='seed-shop')drawSeedShop(c,item);
       else if(item.type==='farm-sign')drawCampFarmSign(c,item);
       else if(item.type==='farm-production')drawProductionDevice(c,item,g.time,this.reduced.matches,camp.productionSpray);
-      else if(item.type==='farm-crop')drawFarmCrop(c,item,g.time,this.reduced.matches,this.farmVisualNow,cropBoosts,zoom);
+      else if(item.type==='wild-ox'||item.type==='sweet-grass'||item.type==='pasture-front'||item.type==='pasture-back'||item.type==='pasture-sheep')drawPasture(c,item,g.time);
+      else if(item.type==='parked-ox')drawOxPlow(c,item,item,g.time);
+      else if(item.type==='farm-crop'){
+        this.visibleStats.crops++;
+        profiler?.start('render.crops');
+        drawFarmCrop(c,item,g.time,this.reduced.matches,this.farmVisualNow,cropBoosts,zoom);
+        profiler?.end('render.crops');
+      }
       else if(item.type==='race-bale')drawRaceBale(c,item);
       else if (item.type === 'race-runner')drawRaceRunner(c,item,this.reduced.matches);
       else if (item.type === 'boss') drawBoss(c, item, time, this.reduced.matches);
       else {
+        if(flight){drawHomeGlider(c,g.player,playerHero,flight,g.time,this.reduced.matches);continue;}
         if((source.arrivalScene?.riding||source.arrivalScene?.playerOnBus)&&source.arrivalPending){if(source.balconyScene)c.restore();continue;}
         c.save();
         const garage=parkingGaragePose(g.player,g.vehicle);if(garage)clipGarageOpening(c,garage);
@@ -529,10 +562,13 @@ export class Renderer {
         drawEnergyShield(c,source,g.player,this.reduced.matches,'back');
         if (g.vehicle.active)
           drawVehicleTracks(c, g.player, g.vehicle, this.reduced.matches, g.time,g.progress);
+        const ox=farmWorking(source)&&source.farmWork.ox;
+        c.save();clipEraSeat(c,item,g.vehicle);
+        const handler=ox&&!ox.approach?oxHandler(item,ox.yaw):riderPosition(item,g.vehicle);
         drawCat(
           c,
-          item.x,
-          riderPosition(item, g.vehicle).y,
+          handler.x,
+          handler.y,
           playerHero,
           g.player.angle,
           PLAYER_SCALE,
@@ -548,14 +584,16 @@ export class Renderer {
           source.weapon().modChoice,
           source.weapon().parts,
           this.reduced.matches?0:source.magazines[(source.loadout||source.progress).weapon]?.rotor||0,
-          outdoorBusy(source)||farmWorking(source)||source.realm?.mode==='race'||source.arrivalCinematic||g.vehicle.active&&g.vehicle.index===5,
+          outdoorBusy(source)||farmWorking(source)||source.realm?.mode==='race'||source.arrivalCinematic||frontRider(g.vehicle),
+          gustStrength(g.time, item.x, wind),
         );
+        c.restore();
         drawFarmTool(c,source,g.player);
         drawOutdoorFishing(c,source,g.player,light.night);
         if(source.fireActive||g.vehicle.active&&g.vehicle.index===4)drawFireHelmet(c,g.player);
         if (g.vehicle.active)
           drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, this.reduced.matches);
-        if (g.vehicle.active && g.vehicle.index === 5 && !source.arrivalCinematic)
+        if (frontRider(g.vehicle) && !source.arrivalCinematic)
           drawRiderWeapon(c, riderPosition(g.player, g.vehicle), playerHero, g.progress.weapon, {
             scale: PLAYER_SCALE, motionScale: this.reduced.matches ? 0.35 : 1, chargePose,
             heat: gatlingHeat(source.weapon(), source.magazines[(source.loadout || source.progress).weapon]),
@@ -566,6 +604,7 @@ export class Renderer {
         drawEnergyShield(c,source,g.player,this.reduced.matches);
         c.restore();
       }
+      if(cachedBuilding)profiler?.end('render.campBuildings');
       drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();
     }
     // 营地居民血条在实体之后绘制，避免被相邻盾卫或棚子盖住，只绘制一次。
@@ -630,6 +669,7 @@ export class Renderer {
     }
     c.globalAlpha = 1;
     drawResourcePickups(c,g.drops,riderPosition(g.player,g.vehicle),this.reduced.matches);
+    if(source.campDefense?.phase==='spoils')drawGiantSpoils(c,viewBody(source.campDefense.spoils,source.player),this.reduced.matches);
     c.globalAlpha = 1;
     for (const n of g.numbers) {
       c.globalAlpha = Math.min(1, n.life * 2);
@@ -689,7 +729,7 @@ export class Renderer {
     drawPlayerActionCountdown(this);
     // 用屏幕坐标贴在角色头顶，装填环不参与世界光照、后坐震动或树冠排序。
     if (
-      !source.balconyScene && !this.actionCountdownView && !source.weapon().independentSupply &&
+      !flight && !source.balconyScene && !this.actionCountdownView && !source.weapon().independentSupply &&
       (source.state === 'playing' || source.state === 'paused')
     )
       drawReloadIndicator(

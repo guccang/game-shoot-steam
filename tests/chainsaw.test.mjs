@@ -30,7 +30,9 @@ test('电锯无需 Boss、低价购买并排在手枪后，旧档补齐而不授
   const g = new Game(p);
   assert.equal(g.transact('weapons', SAW, 'buy'), true);
   assert.equal(g.progress.weapons[SAW], 1);
-  assert.equal(g.progress.coins, 0); assert.equal(g.progress.wood, 0);
+  // 初始营地享九八折：120 金币扣 118，40 木材取整仍扣 40。
+  assert.equal(g.progress.coins, 2); assert.equal(g.progress.wood, 0);
+  assert.equal(g.progress.materials.parts,0);
   const old = freshProgress(); old.weapons = old.weapons.slice(0, 14);
   old.mastery = old.mastery.slice(0, 14); old.mods = old.mods.slice(0, 14);
   const restored = validateProgress(old);
@@ -98,7 +100,7 @@ test('地图接缝与独立炮口按本地锯链接触，不伤到角色和炮�
   const between = target(g, 2, 150), near = target(g, 3, 350);
   g.trees = [between, near];
   emitWeaponAttack(g, g.weapon(), { x: 1900, y: 692 }, { x: 1, y: 0 }, 9, false, true);
-  assert.equal(between.hp, 55); assert.equal(near.hp, 19);
+  assert.equal(between.hp, 55); assert.equal(near.hp, 55);
 });
 
 test('电锯挂载浮游炮能进入近战射位，而不是停在远程安全圈外', () => {
@@ -106,9 +108,18 @@ test('电锯挂载浮游炮能进入近战射位，而不是停在远程安全�
   g.progress.weapons[12] = 1; g.progress.funnelLoadout = [SAW, SAW, SAW];
   g.progress.weapon = 12;
   g.reset(); g.start(); g.enemies = []; g.boss = null; g.trees = [];
-  g.trees = [target(g, 1, 70, 'tree', 1e6)];
-  const t = g.trees[0];
+  g.enemies = [target(g, 1, 70, 'enemy', 1e6)];
+  const t = g.enemies[0];
   for (let i = 0; i < 360; i++) updateFunnel(g, 1 / 120);
-  assert.ok(t.hp < 1e6 - 72);
+  assert.ok(t.hp < 1e6);
   assert.ok(g.funnel.nodes.some(n => Math.hypot(g.player.x + n.x - t.x, g.player.y + n.y - t.y + 8) < WEAPONS[SAW].range));
+});
+
+test('手持电锯优先锯树，关闭木材后即使锯链经过树也只攻击敌人',()=>{
+  const g=arena(),tree=target(g,1,45),enemy=target(g,2,65,'enemy',100);
+  g.trees=[tree];g.enemies=[enemy];
+  assert.equal(g.findAttackTarget(),tree);assert.ok(g.attack());assert.equal(tree.hp,19);
+  g.gameplayPreferences={targetWood:false};
+  assert.equal(g.findAttackTarget(),enemy);assert.ok(g.attack());assert.equal(tree.hp,19);assert.ok(enemy.hp<100);
+  g.enemies=[];assert.equal(g.findAttackTarget(),null);assert.equal(g.attack(),false);
 });

@@ -15,9 +15,7 @@
 #production-placement button{flex:1;min-height:44px}
 @media(max-height:450px){#production-placement{bottom:64px}#production-dialog .ui-panel__header p{display:none}}
 
-/* 三个地面入口保持同一排；地下补给使用现有矿道操作条。 */
-.game-frame .field-menu:has(#production-menu:not([hidden])){width:168px;gap:8px;flex-direction:row;align-items:center}
-#production-menu{width:54px;height:54px;min-width:54px;min-height:44px;justify-content:center;padding:3px;border:2px solid var(--ui-line);border-radius:12px;background:var(--ui-paper);color:var(--ui-forest)}
+/* 生产入口使用折叠菜单的格子尺寸，四字标签保持单行。 */
 #production-menu span{font-size:10px}
 #production-menu[hidden]{display:none!important}
 .game-frame[data-page=title] #production-menu{display:none}

@@ -202,7 +202,7 @@ export function completeMainline(game){
  if(delivery)next.farm.seeds[delivery.crop]-=delivery.count;
  // 巡游快照会更新生活位置，必须写入候选进度，保存失败时不污染正式对象。
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
- const reward=awardMainline(next,task.id);if(!reward)return false;
+ const reward=awardMainline(next,task.id,snapshot);if(!reward)return false;
  let saved=false;try{saved=(game.mainlinePersist?.(next)??true)===true;}catch{}
  if(!saved){game.mainlineError='进度未保存，请在原地重试交付。';return false;}
  game.progress=next;game.mainlineError='';game.mainlineSpeech=null;game.onEvent('mainline-complete',rewardReceipt(before,next,task.title));return true;

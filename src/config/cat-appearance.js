@@ -1,7 +1,7 @@
 // 各品种轮廓合同：只控制局部头部与毛发，不改变脚底、动作时钟或枪械锚点。
 export const CAT_APPEARANCES = {
-  chestnut: { face: 'oval', width: 40, cheek: 28, ear: 'point', earHeight: 24, earSpread: 29,
-    fur: '#f3d398', shade: '#dfb778', earFur: '#f3d398', inner: '#dca184', eyes: '#65523e', mouth: '#65523e', markings: 'orange', features: 1 },
+  chestnut: { face: 'oval', width: 39, cheek: 27, ear: 'point', earHeight: 25, earSpread: 27,
+    fur: '#f0c887', shade: '#dfb778', earFur: '#f0c887', inner: '#dca184', eyes: '#65523e', mouth: '#65523e', markings: 'orange', features: 1 },
   mint: { face: 'round', width: 47, cheek: 31, ear: 'round', earHeight: 17, earSpread: 30,
     fur: '#e0e8df', shade: '#b8c9c3', earFur: '#bacbc5', inner: '#d7b6ae', eyes: '#708c76', mouth: '#55645b', markings: 'silver', features: 0.94 },
   silver: { face: 'square', width: 43, cheek: 28, ear: 'point', earHeight: 23, earSpread: 31,

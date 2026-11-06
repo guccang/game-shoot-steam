@@ -10,7 +10,7 @@ import {nearest,worldDistance,WORLD} from '../world/coordinates.js';
 import {moveBody} from '../physics/motion.js';
 import {advanceDumplingMotion} from '../combat/dumpling-motion.js';
 import {createEnemyAttack} from '../combat/enemy-attack.js';
-import {grantFarmSeeds} from '../progression/farm.js';
+import {grantSeedReward} from '../progression/seed-reward.js';
 import {FARM_CROPS} from '../config/farm.js';
 import {validateProgress} from '../progression/progress.js';
 import {calendarView} from '../world/living-calendar.js';
@@ -42,7 +42,7 @@ export function settleMonsterCampKill(game,enemy){
  if(before.mask&bit)return true;
  const complete=(before.mask|bit)===31,rewards=[];
  const ok=commit(game,p=>{const r=p.monsterCamps.camps[camp.id];r.mask|=bit;if(!complete)return;r.clears=Math.min(999999,r.clears+1);r.cooldown=RULES.respawn;
-  for(const crop of camp.seeds){if(FARM_CROPS[crop].rounds>p.bosses)continue;const bonus=CAMP_CHARACTERS.some(n=>n.camp===camp.id&&n.seed===crop&&p.monsterCamps.items.includes(n.id));const count=grantFarmSeeds(p.farm,crop,bonus?2:1);if(count){rewards.push(FARM_CROPS[crop].name+'种子 +'+count);const wanted=currentMainlineTask(p.mainline)?.gardening?.crop,lesson=activeGardeningLesson(p,'drop',wanted);if(lesson&&wanted===crop)lesson.seedDrops=1;}}
+  for(const crop of camp.seeds){if(FARM_CROPS[crop].rounds>p.bosses)continue;const bonus=CAMP_CHARACTERS.some(n=>n.camp===camp.id&&n.seed===crop&&p.monsterCamps.items.includes(n.id));const reward=grantSeedReward(game,p,crop,bonus?2:1);rewards.push(reward.message);if(reward.count){const wanted=currentMainlineTask(p.mainline)?.gardening?.crop,lesson=activeGardeningLesson(p,'drop',wanted);if(lesson&&wanted===crop)lesson.seedDrops=1;}}
  });
  session(game).error=ok?'':'营地记录保存失败，正在重试；本轮种子尚未领取。';
  if(ok&&complete){game.float?.(camp.x,camp.y-60,'营地清空 · '+(rewards.join('、')||(camp.seeds.some(i=>FARM_CROPS[i].rounds<=game.progress.bosses)?'种子库存已满':'种子品种尚未开放')),'#f5e6b5');game.onEvent?.('monster-camp-cleared',{name:camp.name,rewards});}
@@ -60,7 +60,7 @@ export function updateMonsterCamps(game,dt){
   if(record.cooldown>0)record.cooldown=Math.max(0,record.cooldown-dt);
   if(record.mask===31&&record.cooldown<=0&&distance>RULES.observe){record.mask=0;s.runs.delete(camp.id);}
   let run=s.runs.get(camp.id);
-  if(!run&&distance>650)continue;
+  if(!run&&distance>RULES.observe+200)continue;
   if(!run){run={actors:[],active:false};s.runs.set(camp.id,run);for(let slot=0;slot<RULES.count;slot++){if(record.mask&(1<<slot))continue;const identity=campResidentIdentity(enemyIdentity(camp.x,camp.y,0,camp.mapId),camp,slot);run.actors.push({...identity,...home(camp,slot),id:game.nextId++,type:'enemy',mapId:camp.mapId,monsterCamp:camp.id,campSlot:slot,campState:'idle',campUnseen:0,maxHp:identity.hp,wave:0,ambient:true,reward:0,phase:slot*1.3,flash:0,assault:createEnemyAttack()});}}
   const inside=insideMonsterCamp(game,camp),alert=distance<=RULES.warningRadius;
   for(const actor of run.actors){
@@ -97,7 +97,7 @@ export function updateMonsterCamps(game,dt){
   const settled=run.actors.every(e=>e.hp>0||game.progress.monsterCamps.camps[camp.id].mask&(1<<e.campSlot));
   // 受伤居民必须保留到自然回满，避免离屏销毁后再次靠近直接刷新成满血。
   const recovered=run.actors.every(e=>e.hp<=0||e.hp>=e.maxHp);
-  if(settled&&recovered&&(camp.mapId!==game.mapId||distance>650&&run.actors.every(e=>e.hp<=0||e.campState==='idle'&&!campActorVisible(game,e))))s.runs.delete(camp.id);
+  if(settled&&recovered&&(camp.mapId!==game.mapId||distance>RULES.observe+200&&run.actors.every(e=>e.hp<=0||e.campState==='idle'&&!campActorVisible(game,e))))s.runs.delete(camp.id);
  }
 }
 // 正式绘制器只取得附近的非战斗居民与营地摆件；具名人物永不登记敌人。

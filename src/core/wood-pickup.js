@@ -10,7 +10,7 @@ import {recordArrivalWood} from './ranger-arrival.js';
 import {recordRestorationWood} from './town-restoration.js';
 import {capturePatrol} from './patrol-session.js';
 import {createResourceDrop} from '../combat/resource-pickup.js';
-// 达到上限会停驶，因此接收后必须严格低于上限，驾驶时包含驾驶员背包。
+// 达到上限会停驶，因此接收后必须严格低于上限，驾驶时检查收货的车舱。
 export function woodPickupCapacity(game){
  const driving=personalFleet(game)&&game.vehicle.active&&game.progress.vehicleHulls[game.vehicle.index],load=driving?vehicleLoad(game):catLoad(game),weight=driving?load.payload:load.weight;
  const stock=driving?game.progress.logistics.builds[game.vehicle.index].wood:game.progress.logistics.bagWood;

@@ -2,7 +2,6 @@ import {CREW_ITEMS} from '../config/cat-crew-items.js';
 // 邻里猫沿用真实猫身体图集，五种日常用品和手臂按近战状态单独绘制。
 import {catSprites} from './cat-animation.js';
 import {box,oval,poly,outline} from './primitives.js';
-const SCARVES=['#b86650','#6c8395','#b99b55','#75966d'];
 // 握把位于原点，用品通过开口、勺碗、叉齿和枝杈区分轮廓。
 export function drawCrewWeapon(c,variant){
  const id=CREW_ITEMS[variant]?.id||CREW_ITEMS[0].id,metal='#c5d0c3';
@@ -30,7 +29,6 @@ export function drawCrewCat(c,node,weapon,reduced=false){
  oval(c,1,1,13,5,'#29433338');c.scale(.65,.65);
  const state=node.bodyAnimation||{idleTime:0,moveTime:0,moveWeight:0};
  if(!catSprites.draw(c,[0,1,3,4][node.variant??node.index%4],state,{bodyX:0,bodyY:-13+(dead?4:0)},reduced))throw Error('邻里猫身体图集尚未就绪');
- const scarf=SCARVES[node.variant??node.index%4];poly(c,[[-12,-24],[11,-24],[7,-17],[-8,-18]],scarf,outline,1.3);poly(c,[[7,-22],[17,-16],[8,-13]],scarf,outline,1.2);
  if(!dead){const facing=node.angle||0,side=Math.cos(facing)<0?-1:1;
   const swing=Math.max(0,Math.min(1,(node.swing||0)/(weapon.swingTime||.24))),wind=Math.min(1,(node.windup||0)/(weapon.windupTime||.18));
   const turn=reduced?(swing>0?.25:0):swing>0?-.9+1.8*(1-swing):-wind*.75;

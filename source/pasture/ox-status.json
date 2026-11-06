@@ -1,0 +1,55 @@
+{
+  "id": 24113,
+  "media_type": "video",
+  "request_id": "vid-ztj-forest-pasture-20261105-ox-v1",
+  "input": {
+    "mode": "first_frame",
+    "model": "seedance-2.5",
+    "ratio": "adaptive",
+    "inputs": [
+      {
+        "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/uploads/img-20261105-183809-n07tjt/54e869262ec25de3-ox-reference.png",
+        "role": "first_frame",
+        "type": "image"
+      }
+    ],
+    "prompt": "Precisely animate this single ox as a clean 2D game sprite. Orthographic fixed camera, perfectly still centered body in frame, fixed scale and stable feet baseline. Preserve identical design, colours, horns or ears, face, proportions and collar. Preserve four legs, coherent weight transfer with hooves alternately lifting and planting. Pure perfectly flat blue #0000FF backdrop, no shadows, camera motion, scenery, equipment or text. Single continuous 10 seconds: first 0-2.5s right-facing side idle breathing blink, ear flick, tail. 2.5-6.5s right-facing walking in place, several steady quadruped walk cycles, four legs distinct, no translation. 6.5-9.5s execute a half-turn in place from facing right THROUGH camera-facing front to facing LEFT with small alternating turning steps and visible head rotation, no instantaneous flip. End holding left profile for half a second. Entire animal fully in frame throughout.",
+    "duration": 10,
+    "request_id": "vid-ztj-forest-pasture-20261105-ox-v1",
+    "resolution": "720p",
+    "generate_audio": false,
+    "execution_expires_after": 10800
+  },
+  "output": {
+    "usage": {
+      "total_tokens": 217976,
+      "completion_tokens": 217976
+    },
+    "video": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-pasture-20261105-ox-v1/video/video-efa665b5a8b09d0f.mp4",
+      "mime_type": "video/mp4",
+      "size_bytes": 6981613
+    },
+    "last_frame": {
+      "url": "https://custom-tool-1251125656.cos.ap-beijing.myqcloud.com/generation/vid-ztj-forest-pasture-20261105-ox-v1/video/last-frame-96ac5e0fa5dc1ddc.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 136419
+    },
+    "media_type": "video",
+    "properties": {
+      "fps": 24,
+      "seed": 70750,
+      "ratio": "281:206",
+      "duration": 10,
+      "resolution": "720p",
+      "output_format": "mp4",
+      "generate_audio": false
+    },
+    "request_id": "vid-ztj-forest-pasture-20261105-ox-v1",
+    "provider_task_id": "cgt-20261105183812-whdzt"
+  },
+  "created_at": "2026-11-05T10:41:58.649055Z",
+  "updated_at": "2026-11-05T10:41:58.649055Z",
+  "auth_mode": "compatibility"
+}
+

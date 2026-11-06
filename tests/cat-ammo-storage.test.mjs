@@ -22,28 +22,23 @@ function withRoom(g,room,run){const original=LOAD_RULES.catCapacity;try{LOAD_RUL
 // 走正式换弹时钟与库存查询，不能绕过空仓时的提前返回分支。
 function reload(g){const w=g.weapon(),m=g.magazines[0];advanceReload(m,w,w.reloadTime+1,null,n=>takeSupplyAmmo(g,w,n),supplyAmmoCount(g,w));return m;}
 
-test('购买和制作按整发分流，含已装填重量，远处当前货舱收余量且保存重建守恒',()=>{
- for(const craft of [false,true]){const g=scene();g.magazines[0].ammo=7;const hand=g.progress.supplies.hand.light,car=vehicleLoad(g).payload,coins=g.progress.coins,wood=g.progress.wood;
+test('制作按整发分流，含已装填重量，远处当前货舱收余量且保存重建守恒',()=>{
+ {const craft=true;const g=scene();g.magazines[0].ammo=7;const hand=g.progress.supplies.hand.light,car=vehicleLoad(g).payload,coins=g.progress.coins,wood=g.progress.wood;
   withRoom(g,.101,()=>{const r=tradeSupply(g,{kind:'ammo',id:'light',target:'hand',craft});assert.ok(r.ok,r.message);assert.match(r.message,/背包 25 发、当前载具仓库 275 发/);assert.equal(g.progress.supplies.hand.light,hand+25);assert.equal(g.progress.supplies.vehicles[1].light,275);assert.equal(catLoad(g).overloaded,false);assert.ok(Math.abs(vehicleLoad(g).payload-car-1.1)<1e-6);assert.equal(g.progress.coins,coins-(craft?0:30));assert.equal(g.progress.wood,wood-(craft?2:0));
    const restored=new Game(structuredClone(g.progress));assert.equal(restored.progress.supplies.hand.light,hand+25);assert.equal(restored.progress.supplies.vehicles[1].light,275);assert.equal(restored.magazines[0].ammo,7);
   });
  }
 });
-test('恰好到满载边界时留出移动余量，背包已经超载时整批进入载具',()=>{
- for(const room of [.6,0,-1]){const g=scene(),hand=g.progress.supplies.hand.light;withRoom(g,room,()=>{const r=tradeSupply(g,{kind:'ammo',id:'light',target:'hand',batches:20});assert.ok(r.ok,r.message);const bag=room>0?149:0;assert.equal(g.progress.supplies.hand.light,hand+bag);assert.equal(g.progress.supplies.vehicles[1].light,6000-bag);if(room>0)assert.equal(catLoad(g).overloaded,false);});}
+test('购买按整批交付，远车不能代收，背包不足时进小屋仓库',()=>{
+ for(const room of [.6,0,-1]){const g=scene(),hand=g.progress.supplies.hand.light;
+  withRoom(g,room,()=>{const r=tradeSupply(g,{kind:'ammo',id:'light',target:'hand',batches:20});assert.ok(r.ok,r.message);assert.match(r.message,/小屋仓库/);assert.equal(g.progress.warehouse.ammo.light,6000);assert.equal(g.progress.supplies.hand.light,hand);assert.equal(g.progress.supplies.vehicles[1].light,0);});
+ }
 });
-test('无自有载具保留背包确认，不往未拥有车辆写库存',()=>{
- const g=scene();g.progress.vehicleHulls.fill(0);withRoom(g,.1,()=>{const before=structuredClone(g.progress),request={kind:'ammo',id:'light',target:'hand'},r=tradeSupply(g,request);assert.equal(r.needsLoadConfirmation,true);assert.equal(r.load.target,'hand');assert.deepEqual(g.progress,before);assert.ok(tradeSupply(g,{...request,loadConfirmation:r.confirmation}).ok);assert.equal(g.progress.supplies.hand.light,before.supplies.hand.light+300);assert.deepEqual(g.progress.supplies.vehicles,before.supplies.vehicles);});
-});
-test('载具超载确认绑定拆分发数，相同总重下分配改变也须重新确认',()=>{
- const g=scene();g.progress.logistics.builds[1].wood=10000;
- withRoom(g,.101,()=>{const request={kind:'ammo',id:'light',target:'hand'},before=structuredClone(g.progress),r=tradeSupply(g,request);assert.equal(r.needsLoadConfirmation,true);assert.equal(r.load.target,'vehicle');assert.deepEqual(r.storage,{hand:25,vehicle:275,hull:1});assert.deepEqual(g.progress,before);
-  g.progress.supplies.hand.light-=10;g.progress.supplies.vehicles[1].light+=10;
-  const changed=tradeSupply(g,{...request,loadConfirmation:r.confirmation});assert.equal(changed.load.after,r.load.after);assert.equal(changed.needsLoadConfirmation,true);assert.notEqual(changed.confirmation,r.confirmation);assert.equal(changed.storage.hand,35);assert.ok(tradeSupply(g,{...request,loadConfirmation:changed.confirmation}).ok);
- });
+test('无自有载具且背包已满时不写入未拥有车辆',()=>{
+ const g=scene();g.progress.vehicleHulls.fill(0);withRoom(g,.1,()=>{const before=structuredClone(g.progress);assert.ok(tradeSupply(g,{kind:'ammo',id:'light',target:'hand'}).ok);assert.equal(g.progress.supplies.hand.light,before.supplies.hand.light);assert.equal(g.progress.warehouse.ammo.light,300);assert.deepEqual(g.progress.supplies.vehicles,before.supplies.vehicles);});
 });
 test('库存上限、费用不足和保存失败均不扣费、不产生部分入库',()=>{
- for(const mode of ['stock','coins','save','throw']){const g=scene();if(mode==='stock')g.progress.supplies.vehicles[1].light=100000;if(mode==='coins')g.progress.coins=0;if(mode==='save')g.livingPersist=()=>false;if(mode==='throw')g.livingPersist=()=>{throw Error('保存失败');};
+ for(const mode of ['stock','coins','save','throw']){const g=scene();if(mode==='stock')g.progress.warehouse.ammo.light=100000;if(mode==='coins')g.progress.coins=0;if(mode==='save')g.livingPersist=()=>false;if(mode==='throw')g.livingPersist=()=>{throw Error('保存失败');};
   withRoom(g,.101,()=>{const before=structuredClone(g.progress);assert.equal(tradeSupply(g,{kind:'ammo',id:'light',target:'hand'}).ok,false);assert.deepEqual(g.progress,before);});
  }
 });

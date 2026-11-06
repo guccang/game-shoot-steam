@@ -1,3 +1,4 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
 import {treasurePartReason} from './treasure.js';
 import {vehicleLoad} from '../progression/load-weight.js';
 // 车体装配仅在工坊办理，保存成功后更新同一辆车，保留损耗比例及弹药。
@@ -9,7 +10,7 @@ import {personalFleet} from './vehicle-repair.js';
 import {capturePatrol} from './patrol-session.js';
 // 不同底盘使用对应价格；已买发动机免费换装，拆下装甲保管在工坊。
 export function vehicleBuildPrice(progress,index,action,choice=0){
- const b=vehicleBuild(progress,index),price=economyFor(progress).vehicles[index]?.coins||0;
+ const b=vehicleBuild(progress,index),price=economyFor(progress).vehicles[index]?.coins??(eraVehicle(index)?.payload||0)*4;
  if(action==='engine')return b.engines.includes(choice)?0:Math.ceil(price*(VEHICLE_ENGINES[choice]?.price||0));
  return action==='add-armor'&&!b.spares?Math.max(1,Math.ceil(price*LOAD_RULES.platePriceRate)):0;
 }
@@ -25,6 +26,7 @@ export function vehicleBuildReason(game,index){
 export function configureVehicleBuild(game,index,action,choice=0){
  const reason=vehicleBuildReason(game,index);if(reason)return {ok:false,message:reason};
  const next=validateProgress(structuredClone(game.progress)),b=vehicleBuild(next,index),v=game.vehicles[index];let label;
+ if(action==='engine'&&eraVehicle(index))return {ok:false,message:'此车的动力随车型升阶，请在车库选择下一代车型。'};
  if(action==='engine'){
   if(!Number.isInteger(choice)||!VEHICLE_ENGINES[choice]||choice===b.engine)return {ok:false,message:'请选择另一款发动机。'};
   if(VEHICLE_ENGINES[choice].treasure){const missing=treasurePartReason(game,'engine:'+choice,index);if(missing)return {ok:false,message:missing};}

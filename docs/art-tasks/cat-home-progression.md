@@ -33,3 +33,11 @@ Canvas 原生扩展猫耳、爪印和软垫，不需要生成位图；界面复�
 - 完整证据：`output/playwright/cat-home-progression/`；成功实测录像 `video/page@97561b0967e515fcabc44b7c322d99a0.webm`。长期参考：[昼景](../art-reference/cat-home-day.png)、[夜景](../art-reference/cat-home-night.png)、[角色页面](../art-reference/cat-home-roster.png)、[屋内](../art-reference/cat-home-inside.png)。
 - 资源预算：新增运行位图与解码缓存0，角色卡片复用原画像画布，关闭时不重绘；猫身体连续帧、独立手持武器与动作时钟保留，建筑与猫床无需新动画。
 - 开发阶段结论：通过。PNG精修未开展，属于后续阶段。
+
+## 巡林小屋住宿与换班
+
+目标为让玩家在伙伴房间见到实际居住的猫，短按走近聊天后交接出战。沿用正式角色尺寸、固定脚底与原片待机帧，NPC 与玩家按脚底排序。宿舍位于二楼起的木地板南侧，避开家具可放区、楼梯、电梯、南侧阳台门与出口，地垫使用现有 Canvas 绘制。房间名称及聊天采用已有手机底板。以 cottage-cat-residents 为验收目标，检查分房、旧档、昼夜显示、手机和桌面竖版的换班。
+
+动态实现通过。先加盖一层才能招募下一只猫，入住与扣款一起保存，旧档按已有名册补齐楼层。已在正式场景验证两层时招募按钮锁定、付费加盖三楼后名册可用、确认框标出三楼、购买后仍操控栗子。手机短按楼梯到三楼，点薄荷走近交谈，可以取消，也可以确认换班，再下二楼找栗子换回。保存失败保留原角色。住户用现有角色连续帧与同一脚底绘制，无新增位图或昼夜图集。
+
+正式绘制入口为 drawCottageRoom，交互为 createResidentChat 和 approachCottageTarget，验收项为 cottage-cat-residents。[390 宽白天](../../output/playwright/cottage-residents/390-day.png)、[320 宽夜间](../../output/playwright/cottage-residents/320-night.png)、[桌面白天](../../output/playwright/cottage-residents/1280-day.png)、[桌面夜间](../../output/playwright/cottage-residents/1280-night.png)与[交接对话](../../output/playwright/cottage-residents/chat.png)均来自正式渲染。房间不生成怪物或载具，本轮只改室内角色与交接。手机交互使用浏览器触控模拟。

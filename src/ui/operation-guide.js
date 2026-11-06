@@ -107,10 +107,11 @@ export function createOperationGuide({game,root,workshop}){
    if(result&&result.source==='#ws-purchase'&&!state.affordable)return cue('purchase-short',visible(root.getElementById('ws-track'))?'#ws-track':'#ws-resources','条件未齐，追踪配方再准备');
    return result;
   }
-  if(dialog?.id==='cat-home-dialog'&&operation?.type==='hero-experience'){
-   const selector=`[data-cat-equip="${operation.index}"]`,button=dialog.querySelector(selector);
-   if(button&&!button.disabled)return cue('hero-select',selector,'选择任务需要的出战猫');
-   return closeCue(dialog,'出门战斗或完成任务，积累经验自动升级');
+  if(operation?.type==='hero-experience'){
+   const index=operation.index;
+   if(dialog?.id==='resident-chat'&&game.cottage?.residentTalk===index)return cue('hero-select','[data-resident-switch]','请伙伴接班出战');
+   if(dialog?.id==='current-cat-dialog'&&game.progress.hero!==index)return cue('hero-home','[data-cat-go-home]','去巡林小屋找伙伴换班');
+   if(dialog?.id==='cat-home-dialog')return closeCue(dialog,game.progress.hero===index?'出门巡林积累经验':'回巡林小屋，到伙伴房间聊天');
   }
   if(dialog?.id==='story-dialog'&&operation?.type==='story'){
    const selector=`[data-story-chapter="${operation.chapter}"]`,node=dialog.querySelector(selector);

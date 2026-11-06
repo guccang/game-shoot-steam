@@ -1,4 +1,7 @@
 // 新武器、河道通行与轻量物理回归，检查可玩行为而非只验证配置值。
+import {equipmentRecipe} from '../src/progression/equipment-goals.js';
+import {equipmentQuest} from '../src/progression/equipment-quests.js';
+import {upgradeCost} from '../src/progression/progress.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, freshProgress, validateProgress, WEAPONS, WORLD } from '../src/game.js';
@@ -10,16 +13,47 @@ import { RECOIL_PROFILES } from '../src/combat/recoil.js';
 import { CombatFX } from '../src/combat/effects.js';
 
 // 隔离自动生成内容，使每个测试仅包含所需交互。
-function arena(weapon = 0) { const g = new Game(freshProgress(), () => .5); g.trees = []; g.enemies = []; g.progress.weapon = weapon; g.progress.weapons[weapon] = 1; g.start(); g.attackTimer = 999; g.spawnTimer = 999; return g; }
+function arena(weapon = 0) {
+  const progress = freshProgress();
+  progress.weapon = weapon;
+  progress.weapons[weapon] = 1;
+  progress.supplies.handMags[weapon] = {ammo:WEAPONS[weapon].magazineSize, remaining:0, weapon};
+  const g = new Game(progress, () => .5);
+  g.trees = []; g.enemies = [];
+  Object.assign(g.player,{x:900,y:700});
+  g.start();
+  g.attackTimer = g.spawnTimer = 999;
+  return g;
+}
 // 构建高生命测试怪，避免死亡干扰弹道和受击状态的检查。
 function mob(id, x, y) { return { id, type: 'enemy', x, y, radius: 17, hp: 1000, maxHp: 1000, speed: 48, assault: createEnemyAttack(), flash: 0 }; }
 
 test('旧存档补齐新增锁定武器，所有新枪都能购买装备升级并保存', () => {
   const old = validateProgress({ version: 1, coins: 234, wood: 56, heroes: [3, 2], hero: 1, weapons: [4, 5], weapon: 1, bosses: 2 });
   assert.deepEqual(old.weapons, [4,5,...Array(WEAPONS.length-2).fill(0)]); assert.equal(old.coins,234); assert.equal(old.hero,1);
-  const g = arena(); g.progress.materials = { parts: 10000, crystal: 10000, core: 100 }; g.progress.coins = WEAPONS.reduce((sum, w) => sum + w.coins + 35, 0); g.progress.wood = WEAPONS.reduce((sum, w) => sum + w.wood + 15, 0); g.progress.bosses = Math.max(...WEAPONS.map(w => w.bosses || 0));
-  for (let i = 2; i < WEAPONS.length; i++) { assert.ok(g.transact('weapons',i,'buy')); assert.equal(g.progress.weapon,i); assert.ok(g.transact('weapons',i,'upgrade')); assert.equal(g.progress.weapons[i],2); assert.ok(RECOIL_PROFILES[i]); }
-  assert.deepEqual(validateProgress(JSON.parse(JSON.stringify(g.progress))),g.progress);
+  // 每把武器单独购物，避免前一把武器的重量改变下一把的交付位置。
+  for (let i=2; i<WEAPONS.length; i++) {
+    const g=arena(), p=g.progress;
+    const price=equipmentRecipe('weapons',i,p), upgrade=upgradeCost(1,p,'weapons',i);
+    const quest=equipmentQuest('weapons',i);
+    p.coins=price.coins+upgrade.coins;
+    p.wood=price.wood+upgrade.wood;
+    Object.assign(p.materials,{parts:price.parts,crystal:price.crystal,core:price.core});
+    if(quest){
+      assert.equal(g.transact('weapons',i,'buy'),false,quest.title);
+      p.story.chapters[quest.chapter]={completed:true};
+    }
+    assert.ok(g.transact('weapons',i,'buy'),WEAPONS[i].id);
+    assert.equal(p.weapon,i);
+    assert.equal(g.transact('weapons',i,'upgrade'),false);
+    g.cottage={kind:'weapons'};
+    assert.ok(g.transact('weapons',i,'upgrade'),WEAPONS[i].id);
+    const restored=validateProgress(JSON.parse(JSON.stringify(p)));
+    assert.equal(restored.weapons[i],2);
+    assert.equal(restored.weapon,i);
+    assert.ok(RECOIL_PROFILES[i]);
+  }
+  const g=arena();
   assert.equal(g.transact('weapons',WEAPONS.length,'buy'),false); assert.equal(g.transact('weapons',-1,'buy'),false);
 });
 test('河岸双向阻挡且高速运动不穿河，桥面双向可通行', () => {
@@ -28,7 +62,14 @@ test('河岸双向阻挡且高速运动不穿河，桥面双向可通行', () =>
     moveBody(b,-sign*300,0,WORLD); assert.ok(sign*(b.x-x)>40); assert.equal(isWaterBlocked(b.x,b.y),false);
   }
   for (const sign of [-1,1]) { const y=BRIDGE.y+BRIDGE.height/2, x=riverXAt(y), b={x:x+sign*170,y}; moveBody(b,-sign*340,0,WORLD); assert.ok(sign*(b.x-x)<-150); }
-  const b={x:riverXAt(BRIDGE.y+30),y:BRIDGE.y+30};moveBody(b,0,-150,WORLD);assert.ok(b.y>=BRIDGE.y+12);
+  for(const sign of [-1,1]){
+    const y=BRIDGE.y+BRIDGE.height/2,b={x:riverXAt(y),y};
+    moveBody(b,0,sign*150,WORLD);
+    const edge=sign<0?BRIDGE.y:BRIDGE.y+BRIDGE.height;
+    assert.ok(sign*(b.y-y)>0 && sign*(edge-b.y)>=4);
+    assert.equal(isWaterBlocked(b.x,b.y),false);
+    assert.equal(isWaterBlocked(b.x,edge+sign,12),true);
+  }
 });
 test('怪物从两岸绕桥追击，不能隔河扑击或造成伤害', () => {
   for (const sign of [-1,1]) {
@@ -61,10 +102,10 @@ test('加特林持续射击更快，换枪不改变在途弹丸，所有弹体�
   assert.ok(counts[1]>counts[0]*3);
   const g=arena(5);g.enemies=[mob(1,1080,700)];g.attack();const bullet=g.projectiles[0];g.progress.weapon=3;assert.equal(bullet.kind,'water');g.enemies=[];for(let i=0;i<120;i++)g.updateProjectiles(1/60);assert.equal(g.projectiles.length,0);
 });
-test('怪物在树木更近时仍被优先瞄准，最后才采集树木', () => {
-  const g=arena();g.addTree(920,790);g.enemies=[mob(1,1090,700)];g.attack();assert.equal(g.player.angle,0);
+test('远程枪械只瞄准怪物，没有怪物时保留树木', () => {
+  const g=arena();Object.assign(g.player,{x:900,y:700});Object.assign(g.magazines[0],{ammo:1,remaining:0});g.addTree(920,790);g.enemies=[mob(1,1090,700)];g.attack();assert.equal(g.player.angle,0);
   for(let i=0;i<30;i++)g.updateProjectiles(1/60);assert.ok(g.enemies[0].hp<1000);assert.equal(g.trees[0].hp,55);
-  g.enemies=[];assert.equal(g.attack(),false);for(let i=0;i<5;i++)g.update(.05);assert.ok(g.player.angle>1);
+  g.enemies=[];assert.equal(g.attack(),false);for(let i=0;i<5;i++)g.update(.05);assert.equal(g.findAttackTarget(),null);
 });
 test('推力不能把怪物推进河中；碎片重力独立于水平弹道并在地面收敛', () => {
   // 起点位于新河湾的干岸外侧，验证冲量从合法陆地不能穿入水中。

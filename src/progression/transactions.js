@@ -6,13 +6,15 @@ import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import {arrivalPistolPurchase} from '../config/ranger-arrival.js';
 import { recordEconomy } from './economy-ledger.js';
 // 购买、装备与升级事务：只修改进度数据，界面和战斗副作用由调用方处理。
+import {residentRoster} from '../config/cottage-residents.js';
+import {homeFloors} from '../config/home-construction.js';
 import { HEROES } from '../config/heroes.js';
 import { WEAPONS, isWeaponUnlocked } from '../config/weapons.js';
 import { upgradeCost } from './progress.js';
 import { payEquipment } from './equipment-goals.js';
 // 所有条件先校验再扣费，失败保持原进度不变；已有旧枪不重复检查购买门槛。
 export function transactProgress(progress, kind, index, action, context={}) {
-  // 角色等级只由经验成长；获取仅允许猫窝事务，切换已有猫仍兼容原接口。
+  // 角色等级只由经验成长；获取仅允许猫窝事务，换班通过小屋住户对话调用装备事务。
   if(kind==='heroes'&&(action==='upgrade'||action==='buy'&&!context.catHome))return false;
   if(kind!=='heroes'&&action!=='equip'&&!facilityOpen(progress,'weapons'))return false;
   if (
@@ -39,6 +41,7 @@ export function transactProgress(progress, kind, index, action, context={}) {
       progress.weapon = index;
       return true;
     }
+    if(homeFloors(progress.homeDecor)<residentRoster(progress.heroes,progress.residentCats).length+2)return false;
     cost = campPurchasePrice(progress,list[index]);
   } else if (action === 'upgrade' && level && level < equipmentLevelCap(progress,kind)) cost = upgradeCost(level,progress,kind,index);
   else if (action !== 'equip' || !level) return false;
@@ -48,7 +51,8 @@ export function transactProgress(progress, kind, index, action, context={}) {
   progress.wood -= cost.wood;
   if (action === 'buy') {
     progress[kind][index] = 1;
-    progress[selected] = index;
+    if(kind==='heroes')progress.residentCats=residentRoster(progress.heroes,progress.residentCats);
+    else progress[selected] = index;
   }
   if (action === 'upgrade') progress[kind][index]++;
   if (action === 'equip') progress[selected] = index;

@@ -39,3 +39,11 @@
 #current-cat-dialog > .logistics-actions{flex:none;margin:0;padding:8px var(--ui-space);background:var(--ui-sage)}
 #current-cat-dialog > .ui-panel__footer{flex-wrap:wrap}
 #current-cat-dialog > .ui-panel__footer button{flex:1;min-width:72px}
+
+/* 头像与行文字分别占位，窄屏坐标允许换行，整行保留触控。 */
+.keepsake-contacts .phone-avatar{width:40px;height:40px;flex:none;background:var(--ui-sage);border-radius:10px}
+.keepsake-contacts .phone-avatar+span{flex:1;min-width:0;overflow-wrap:anywhere}
+.keepsake-contacts .ui-choice>span:last-child{flex:none}
+.phone-wood{display:flex;align-items:center;gap:10px;min-height:48px;text-align:left;cursor:pointer}
+.phone-wood input{flex:none;width:20px;height:20px;accent-color:var(--ui-green)}
+.phone-wood small{display:block;color:var(--ui-muted)}

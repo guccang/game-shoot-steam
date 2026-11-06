@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 奶油色风线与翻起的嫩叶，共用环境面板图标尺寸。 -->
+  <g fill="none" stroke="#47694f" stroke-width="3.4" stroke-linecap="round">
+    <path d="M55 19H25c-12 0-10-14-2-13 5 0 6 5 3 7M59 29H14c-8 0-9-8-4-10M50 40H26c-9 0-9 11-2 11"/>
+    <path fill="#aac97e" d="M35 51q9-13 23-7-4 14-23 7Z"/>
+  </g>
+</svg>

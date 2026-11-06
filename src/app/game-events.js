@@ -1,3 +1,4 @@
+import {vehicleMotorSound} from '../config/vehicle-eras.js';
 import { challengeVictoryText } from '../ui/challenge-feedback.js';
 import { i18nText } from "../i18n/index.js";
 // 游戏事件到声音、提示和保存的应用适配，不反向改变战斗规则。
@@ -64,9 +65,12 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
     if (type === 'equipment-goal') save();
     if (type === 'vehicle-summon') {
       toast.show(i18nText("app.game-events.9fd3483305", { p0: (data?.name || i18nText("app.game-events.8f9f50d425")) }));
-      audio.play(Number.isInteger(data?.index)?`vehicle-start-${data.index}`:'vehicle-start');
+
     }
-    if (type === 'vehicle-dismount') audio.play(Number.isInteger(data?.index)?`vehicle-stop-${data.index}`:'vehicle-stop');
+    if(type==='vehicle-summon'||type==='vehicle-dismount'){
+      const sound=vehicleMotorSound(data?.index), action=type==='vehicle-summon'?'start':'stop';
+      if(sound!==-1)audio.play(Number.isInteger(sound)?'vehicle-'+action+'-'+sound:'vehicle-'+action);
+    }
     if (type === 'vehicle-destroyed') {
       toast.show(data?.permanent?`${data.name}已报废，请用手机呼叫救援或前往维修中心。`:i18nText("app.game-events.d290571244", { p0: (data?.name || i18nText("app.game-events.8f9f50d425")) }));
       audio.play('explosion');

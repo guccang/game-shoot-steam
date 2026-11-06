@@ -1,3 +1,4 @@
+import {weaponTerrainTargets} from './terrain-targets.js';
 import {applyVehicleFault} from './vehicle-faults.js';
 import {takeSupplyAmmo,finiteSupply,supplyAmmoCount} from './supply-ammo.js';
 import {ammoKind,vehicleFaults} from '../config/supplies.js';
@@ -210,7 +211,7 @@ function vehicleTarget(game, weapon) {
   const valid = (t) => !t.equipmentObstacle && t.hp > 0 && attackTargetKnown(game,t) && worldDistance(t, game.player) <= weapon.range;
   if (game.boss && valid(game.boss)) return game.boss;
   const enemies = game.enemies.filter(valid),
-    pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : game.trees.filter(valid);
+    pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : weaponTerrainTargets(game).filter(valid);
   return (
     pool.find((t) => t.id === game.vehicle.targetId) ||
     pool.sort(

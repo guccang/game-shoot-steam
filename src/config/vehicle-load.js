@@ -1,3 +1,4 @@
+import {ERA_VEHICLES} from './vehicle-eras.js';
 import {TREASURE_ENGINES} from './treasure.js';
 // 所有重量采用千克；不同底盘限制牵引级别，换发动机不会把电动车变成坦克拖车。
 export const VEHICLE_LOADS=[
@@ -7,6 +8,7 @@ export const VEHICLE_LOADS=[
  {mass:9000,payload:2200,tow:16000},{mass:1600,payload:1200,tow:3800},
  {mass:1300,payload:650,tow:2100},
  {mass:3800,payload:1500,tow:6500},{mass:7600,payload:2400,tow:13000},
+ ...ERA_VEHICLES.map(({mass,payload,tow})=>({mass,payload,tow})),
 ];
 export const VEHICLE_ENGINES=[
  {id:'standard',name:'原厂发动机',payload:1,tow:1,speed:1,mass:0,price:0},

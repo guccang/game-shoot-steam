@@ -1,7 +1,14 @@
+import {weaponTerrainTargets} from '../combat/terrain-targets.js';
+import {eraVehicle} from '../config/vehicle-eras.js';
+import {commitWorkshop} from './workshop.js';
+import {commitResidentRelief} from './cat-home.js';
+import {oxRigClear,liftOxPlow,syncOxFoot} from './farm.js';
+import {updateOxArrival} from './pasture.js';
 import {updateSceneApproach} from './scene-approach.js';
 import {updateWarehouseHarvest} from './warehouse-harvest.js';
 import {updateOutdoors,outdoorBusy} from './outdoors.js';
 import {updateLoadWarning} from './load-warning.js';
+import {updateAmmoWarning} from '../combat/ammo-warning.js';
 import {updateWarehouseWood} from './warehouse.js';
 import {collectAutomaticWood} from './wood-pickup.js';
 import {updateVehicleBoarding} from './vehicle-boarding.js';
@@ -39,7 +46,7 @@ import {updateCampRoutines} from './camp-routines.js';
 import { updateLivingWorld, acceptLivingRequest } from './living-world.js';
 import {syncStoryWorld} from './story-world.js';
 import {storyDeliveryReady} from './story-definition.js';
-import { livingProtected, retreatLivingEnemy } from './living-safety.js';
+import { clearingCombatActive, livingProtected, retreatLivingEnemy } from './living-safety.js';
 import {bossCombatActive,updateBossEngagement} from './boss-engagement.js';
 import { riderPosition } from '../config/vehicle-rider.js';
 import {updateMainline,resetMainlineScene} from './mainline-manager.js';
@@ -204,6 +211,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
+    this.ammoWarning=null;
     this.fishing=null;this.campSleep=null;this.outdoorNotice='';this.loadWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.mineEntranceLatch=null;this.mineEntranceWait=0;this.mineEntranceKey=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
@@ -357,6 +365,11 @@ export class Game {
   // 购买车体不自动驾驶，首次拥有按车型独立基础 HP 与车体等级建立耐久。
   buyVehicle(index) {
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
+    if(eraVehicle(index)){
+      const result=commitWorkshop(this,{kind:'vehicle',index,action:'buy'},this.livingPersist);
+      if(result.ok)this.onEvent('purchase',{name:vehicleModel(index).name,action:'buy'});
+      return result.ok;
+    }
     if (!transactVehicle(this.progress, 'vehicle', index, 'buy')) return false;
     this.vehicles[index] = createVehicle(this.progress, index);
     this.onEvent('purchase', { name: vehicleModel(index).name, action: 'buy' });
@@ -419,13 +432,17 @@ export class Game {
     if(action==='upgrade'&&this.cottage?.kind!==(kind==='weapons'?'weapons':'vehicle'))return false;
     if (this.arrivalCinematic || this.realm || this.story || this.fireActive) return false;
     // 非工坊入口同样先校验购枪后的负重，拒绝时不扣资源、不改变装备。
+    let purchase;
     if(kind==='weapons'&&action==='buy'&&Number.isInteger(index)&&WEAPONS[index]&&!this.progress.weapons[index]){
       const next={...this.progress,weapons:this.progress.weapons.slice(),weapon:index};
       next.weapons[index]=1;
-      if(!weaponPurchaseQuote(this,{kind,index,action},{ok:true,next}).ok)return false;
+      purchase=weaponPurchaseQuote(this,{kind,index,action},{ok:true,next});
     }
     const oldWeapon = this.progress.weapon;
-    if (!transactProgress(this.progress, kind, index, action)) return false;
+    if(kind==='heroes'&&action==='equip'){
+      if(!commitResidentRelief(this,index))return false;
+    }else if(!transactProgress(this.progress,kind,index,action))return false;
+    if(purchase){this.progress.weapon=purchase.next.weapon;this.progress.warehouse=purchase.next.warehouse;this.progress.shopStock=purchase.next.shopStock;}
     if (oldWeapon !== this.progress.weapon) {
       resetFunnelFormation(this.funnel);
       resetFunnelFormation(this.drone);
@@ -651,7 +668,7 @@ export class Game {
     const rewardIndex=this.waveKills,share=waveReward?clearingKillReward(this.wave,rewardIndex,this.progress):null;
     const materials = awardMaterials(this.progress, target, this.random,share?share.attempts:1);
     const seed=awardFarmSeedDrop(this,target);
-    if(seed&&(seed.count||seed.unlocked))this.float(target.x,target.y-65,seed.message,'#e2f3ce');
+    if(seed)this.float(target.x,target.y-65,seed.message,'#e2f3ce');
     if (MATERIAL_KEYS.some(key => materials[key]))
       this.float(target.x, target.y - 40, '', '#e2f3ce', false, materials);
     awardAttackMastery(this.progress, impact, target.type);
@@ -694,27 +711,27 @@ export class Game {
   findAttackLane() {
     return piercingLane(this);
   }
-  // 自动优先攻击怪物，其次采集范围内树木。
+  // 手持电锯优先处理够得到的木材，其他武器只索敌。
   findAttackTarget() {
     // 安宁道路保护玩家免受威胁，但不关闭对道路两侧敌人的正常寻敌与攻击。
     const weapon = this.weapon();
     if(weapon.attackKind==='defense')return null;
     if (weapon.aimAssist) return this.findAttackLane()?.target || null;
     let target = null, closest = Infinity;
+    for (const tree of weaponTerrainTargets(this, weapon.id === 'chainsaw')) {
+      if (tree.equipmentObstacle || !(tree.hp > 0)) continue;
+      const distance = attackTargetDistance(this, tree, Math.min(closest, weapon.range));
+      if (distance < closest && distance < weapon.range && attackTargetVisible(this, tree)) {
+        target = tree; closest = distance;
+      }
+    }
+    if (target) return target;
     // 单次扫描保留原稳定排序的同距优先级，只对可能胜出的射程内目标检查视野。
     for (const enemy of this.boss ? [...this.enemies, this.boss] : this.enemies) {
       if (!(enemy.hp > 0)) continue;
       const distance = attackTargetDistance(this, enemy, Math.min(closest, weapon.range + enemy.radius));
       if (distance < closest && distance < weapon.range + enemy.radius && attackTargetKnown(this, enemy)) {
         target = enemy; closest = distance;
-      }
-    }
-    if (target || weapon.targetTrees === false || this.fireActive || ['football', 'race'].includes(this.realm?.mode)) return target;
-    for (const tree of this.trees) {
-      if (!(tree.hp > 0)) continue;
-      const distance = attackTargetDistance(this, tree, Math.min(closest, weapon.range));
-      if (distance < closest && distance < weapon.range && attackTargetVisible(this, tree)) {
-        target = tree; closest = distance;
       }
     }
     return target;
@@ -791,7 +808,7 @@ export class Game {
   }
   // 护盾逐次承伤；只有穿透护盾的角色或车体伤害受原有无敌时间保护。
   hurt(amount, source=null) {
-    if(livingProtected(this)||['rescue','result'].includes(this.campDefense?.phase))return;
+    if(livingProtected(this)||['rescue','spoils','result'].includes(this.campDefense?.phase))return;
     if(this.state!=='playing')return;
     if (this.realm) amount = Math.max(1, amount * Math.max(GAMEPLAY_VALUES.blessings.armorFloor, 1 - (this.realm.buffs.armor || 0) * GAMEPLAY_VALUES.blessings.armorPerStack));
     // 格挡不产生或刷新无敌时间，已有的身体保护也不能免除护盾消耗。
@@ -816,6 +833,16 @@ export class Game {
   update(dt, input = { x: 0, y: 0 }) {
     dt = clamp(dt, 0, 0.05);
     this.previewTime += dt;
+    // 巨物已击破的短暂演出独占时钟，暂停或离页不会继续消耗弹药与耐久。
+    if(this.campDefense?.phase==='spoils'){
+      if(this.state==='playing'){
+        this.time+=dt;
+        this.fx.update(dt);
+        updateCombatTraces(this,dt);
+        updateCampDefense(this,dt);
+      }
+      return;
+    }
     updateBossEngagement(this);
     updateOutdoors(this,dt);
     updateProduction(this);
@@ -858,8 +885,8 @@ export class Game {
       const p = this.player, x = p.x, y = p.y, length = Math.hypot(input.x, input.y);
       driveBody(p, input, HEROES[this.progress.hero].speed * (this.vehicle.active ? vehicleSpeed(this.loadout, this.vehicle.index) : 1), dt, WORLD, this.trees);
       crushVehicleTrees(this, {x,y});
-      advanceVehicleWheels(this.vehicle, p, { x, y });
-      updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - x, p.y - y) / dt : 0, length > 0 && !this.vehicle.active);
+      advanceVehicleWheels(this.vehicle, p, { x, y }, dt);
+      updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - x, p.y - y) / dt : 0, length > 0 && !this.vehicle.active, this.vehicle.active);
       if (length > 0) p.angle = Math.atan2(input.y, input.x);
       updateRealmIntermissionEffects(this, dt);
       const rest = Math.ceil(p.walkPhase / Math.PI) * Math.PI;
@@ -885,6 +912,7 @@ export class Game {
     this.fx.update(dt);
     profiler?.end('logic.effects');
     profiler?.start('logic.movement');
+    updateOxArrival(this,dt);
     input=outdoorBusy(this)?{x:0,y:0}:updateFarmWork(this,dt,input);
     updateRecoil(p.recoil, this.loadout.weapon, dt);
     p.aimHold = Math.max(0, p.aimHold - dt);
@@ -894,13 +922,18 @@ export class Game {
         (this.vehicle.active ? vehicleSpeed(this.loadout, this.vehicle.index) : 1)*movementLoadFactor(this);
     if(speed===0)p.vx=p.vy=0;
     driveBody(p, input, speed, dt, WORLD, this.trees);
+    if(this.farmWork?.tool==='ox'&&!this.farmWork.autoCombat&&!this.farmWork.ox?.approach&&!oxRigClear(this,p,this.farmWork.ox?.yaw??0)){
+      p.x=previousPlayer.x;p.y=previousPlayer.y;p.vx=p.vy=0;
+      if(this.farmWork.ox?.held){liftOxPlow(this);this.farmWork.result={ok:false,message:'前方无法通行，已抬犁。'};}
+    }
     advancePlayerTow(this,previousPlayer,dt);
     crushVehicleTrees(this, previousPlayer);
     // 只记录主动移动，后坐与敌人击退不触发地图遭遇。
     const exploringMove = length > 0 && worldDistance(p, previousPlayer) > .01;
-    advanceVehicleWheels(this.vehicle, p, previousPlayer);
+    advanceVehicleWheels(this.vehicle, p, previousPlayer, dt);
     if(this.arrivalPending&&this.mapId==='forest'&&!this.realm&&!this.story&&!this.fireActive&&!this.campDefense){this.progress.arrival.x=p.x;this.progress.arrival.y=p.y;}
-    updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - previousPlayer.x, p.y - previousPlayer.y) / dt : 0, length > 0 && !this.vehicle.active);
+    syncOxFoot(this,previousPlayer);
+    updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - previousPlayer.x, p.y - previousPlayer.y) / dt : 0, (length > 0 || !!this.farmWork?.ox?.moving) && !this.vehicle.active, this.vehicle.active);
     const beforeKick = {x:p.x,y:p.y};
     if(speed!==0)updateHolderKick(p, dt, this.trees);
     else p.pushX=p.pushY=0;
@@ -961,6 +994,14 @@ export class Game {
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
     updateVehicle(this, dt, !!this.parking?.idle);
+    // 进入清缴范围即可检查；自由探索只认真实敌人，树木采集不算开战。
+    const gunTarget=this.vehicle.active?this.vehicle.targetId:null;
+    const engaged=!this.parking?.idle&&!farmWorking(this)&&!outdoorBusy(this)&&(
+      aimTarget?.type==='enemy'||aimTarget?.type==='boss'||this.livingBattle||
+      (this.progress.living.patrolActive&&clearingCombatActive(this))||
+      (gunTarget!=null&&(gunTarget===this.boss?.id||this.enemies.some(e=>e.id===gunTarget)))
+    );
+    updateAmmoWarning(this,dt,engaged);
     syncSupplyAmmo(this);
     updateVehicleRepair(this,dt);
     updateGuardianDefenses(this, dt);

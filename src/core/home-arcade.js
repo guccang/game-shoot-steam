@@ -9,7 +9,7 @@ import {updateCatMotion} from './cat-motion.js';
 // 解锁检查以玩家实际所在阳台和已建楼层为准；地下从第一层开始开放。
 export function homeArcadeAccess(game,kind){
  const r=game.cottage,h=game.progress.homeDecor;
- if(!r||game.player.hp<=0||r.sleep)return {ok:false,message:'请先进入对应场所。'};
+ if(!r||game.player.hp<=0||r.sleep||r.glide)return {ok:false,message:'请先进入对应场所。'};
  if(kind==='birds'&&(r.kind!=='cottage'||!r.balcony||r.floor<HOME_ARCADE.birds.unlockFloor||r.floor>=homeFloors(h)||!floorBalconies(h,r.floor).includes(r.balcony)))return {ok:false,message:'建到第10楼，并在第10楼或更高楼层的阳台玩打飞鸟。'};
  if(kind==='gold'&&(r.kind!=='mine'||!h.basement))return {ok:false,message:'建好地下室后，从地下一层即可玩黄金矿工。'};
  if(!Object.hasOwn(HOME_ARCADE,kind))return {ok:false,message:'请选择有效小游戏。'};

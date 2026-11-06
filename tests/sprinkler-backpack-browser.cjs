@@ -22,11 +22,11 @@ async original=>{
   });
 
   await page.evaluate(async()=>{window.persist=(await import('/src/platform/storage.js')).createSaveStore().saveProgress;a.game.livingPersist=window.persist;});
-  await phase('day');await page.locator('#production-menu').tap();await page.locator('[data-production-tab=build]').tap();await page.locator('[data-production-build=sprinkler]').tap();await page.waitForFunction(()=>a.game.productionCursor);
+  await phase('day');await page.locator('#field-menu-toggle').tap();await page.locator('#production-menu').tap();await page.locator('[data-production-tab=build]').tap();await page.locator('[data-production-build=sprinkler]').tap();await page.waitForFunction(()=>a.game.productionCursor);
   await shot('coverage-24');await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.productionSpray?.devices?.length);
   await page.waitForFunction(()=>a.game.progress.farm.plots.filter(p=>p.sprinklerWatered).length===24);
   if(await page.evaluate(()=>a.game.progress.farm.plots.filter(p=>p.sprinklerWatered).length)!==24)throw Error('不是24块田');
-  await page.locator('#production-menu').tap();await page.locator('[data-production-store]').scrollIntoViewIfNeeded();await shot('store-action');
+  await page.locator('#field-menu-toggle').tap();await page.locator('#production-menu').tap();await page.locator('[data-production-store]').scrollIntoViewIfNeeded();await shot('store-action');
   await page.evaluate(()=>a.game.livingPersist=()=>false);await page.locator('[data-production-store]').tap();if(await page.evaluate(()=>a.game.progress.production.sprinklerInventory)!==0)throw Error('失败仍收回');await shot('store-failure');
   await page.evaluate(()=>a.game.livingPersist=window.persist);await page.locator('[data-production-store]').tap();await page.waitForFunction(()=>a.game.progress.production.sprinklerInventory===1&&!a.game.progress.production.sprinklers.length);
   await page.locator('[data-production-close]').first().tap();await shot('stored-scene');
@@ -36,7 +36,7 @@ async original=>{
   for(const size of [{width:320,height:568},{width:844,height:390},{width:390,height:844}]){await page.setViewportSize(size);await shot('detail-'+size.width);const bad=await page.locator('#keepsake-dialog button').evaluateAll(bs=>bs.filter(b=>b.getClientRects().length).some(b=>b.getBoundingClientRect().height<44||b.getBoundingClientRect().width<44));if(bad)throw Error('触控不足44px');}
   await page.locator('[data-pack-action=place-sprinkler]').tap();await page.waitForFunction(()=>!!a.game.productionCursor&&a.game.state==='playing');await page.locator('[data-production-cancel]').tap();if(await page.evaluate(()=>a.game.progress.production.sprinklerInventory)!==1)throw Error('取消丢设备');
   await page.evaluate(async()=>{const g=a.game,c=await import('/src/core/farm-production.js');let q=null;for(let y=2500;y<4500&&!q;y+=104)for(let x=2500;x<4500&&!q;x+=112){Object.assign(g.player,{x:x-60,y});const check=c.productionPlacement(g,{x,y},'sprinkler');if(!check.reason)q=check.point;}if(!q)throw Error('无新位置');window.newSite=q;Object.assign(g.player,{x:q.x-60,y:q.y});g.progress.wood=g.progress.mining.ore=0;a.renderer.camera.time=null;a.refresh();});
-  await page.locator('#production-menu').tap();await page.locator('[data-production-from-bag]').tap();await page.waitForFunction(()=>a.game.productionCursor);await phase('night');await shot('new-position-night');
+  await page.locator('#field-menu-toggle').tap();await page.locator('#production-menu').tap();await page.locator('[data-production-from-bag]').tap();await page.waitForFunction(()=>a.game.productionCursor);await phase('night');await shot('new-position-night');
   await page.evaluate(()=>a.game.livingPersist=()=>false);await page.locator('[data-production-place]').tap();if(await page.evaluate(()=>a.game.progress.production.sprinklerInventory)!==1)throw Error('放置失败丢库存');await shot('place-failure');
   await page.evaluate(()=>a.game.livingPersist=window.persist);await page.locator('[data-production-place]').tap();await page.waitForFunction(()=>a.game.progress.production.sprinklers.length===1&&a.game.progress.production.sprinklerInventory===0);
   const end=await page.evaluate(()=>({d:a.game.progress.production.sprinklers[0],ore:a.game.progress.mining.ore,wood:a.game.progress.wood,newSite,site}));if(end.ore||end.wood||Math.hypot(end.d.x-end.site.x,end.d.y-end.site.y)<150)throw Error('没有免费异地放置');await shot('placed-night');

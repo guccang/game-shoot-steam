@@ -84,7 +84,7 @@ test('失焦暂停默认关闭，显式选择可持久化且独立于成长存�
   store.saveProgress(freshProgress());
   assert.equal(store.loadGameplay().pauseOnBlur, true);
   store.saveGameplay({ showFps: true });
-  assert.deepEqual(store.loadGameplay(), { pauseOnBlur: false, showFps: true });
+  assert.deepEqual(store.loadGameplay(), { targetWood: true, pauseOnBlur: false, showFps: true });
 });
 
 test('事件与动画循环可重复销毁，重新挂载不会遗留监听或多条动画循环', () => {

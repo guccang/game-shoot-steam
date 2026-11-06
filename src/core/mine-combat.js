@@ -1,3 +1,5 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
+import {riderPosition} from '../config/vehicle-rider.js';
 import {recordDefeat} from '../progression/game-statistics.js';
 import {MINING} from '../config/mining.js';
 import {mineRockTargets,hitMineRock} from './mine-rocks.js';
@@ -125,7 +127,7 @@ export function updateMineCombat(game,dt){
  const room=game.cottage,b=combatContext(game),w=game.weapon(),index=game.loadout.weapon,mag=game.magazines[index];
  b.enemies=Object.keys(currentMineLayer(game).animals).filter(key=>{const a=currentMineLayer(game).animals[key];return a.hp>0&&Math.hypot(a.x-game.player.x,a.y-game.player.y)<650;}).map(key=>mineTargetProxy(game,key,Number(key.split(',')[0])*10000+Number(key.split(',')[1])+10000000));
  b.trees.splice(0,b.trees.length,...mineRockTargets(game));
- const armed=!game.fishing&&!game.vehicle.active&&!room.tool&&!room.autoDig&&!room.shaftWork;
+ const armed=!game.fishing&&(!game.vehicle.active||eraVehicle(game.vehicle.index))&&!room.tool&&!room.autoDig&&!room.shaftWork;
  room.weaponReady=armed;room.weaponTarget=null;
  b.fx.update(dt);for(const n of b.numbers){n.life-=dt;n.y-=dt*35;}b.numbers=b.numbers.filter(n=>n.life>0);for(const s of b.shots)s.life-=dt;b.shots=b.shots.filter(s=>s.life>0);
  updateRecoil(game.player.recoil,index,dt);
@@ -135,13 +137,14 @@ export function updateMineCombat(game,dt){
   const target=b.findAttackTarget();room.weaponTarget=target?.key||null;
   if(w.controller){if(['funnel','drone'].includes(w.controller))updateFunnel(b,dt);else if(w.controller==='mechanical')updateMechanical(b,dt);else if(w.controller==='spider')updateSpider(b,dt);}
   else if(w.attackKind!=='defense'){
-   const shot=target?shotSolution({...game.player,y:game.player.y-(room.ride?8:0)},target,index):null;
+   const origin=room.ride?{...game.player,y:game.player.y-8}:riderPosition(game.player,game.vehicle);
+   const shot=target?shotSolution(origin,target,index):null;
    const aligned=shot&&turnWeapon(game.player,shot.angle,dt,weaponTurnRate(w));
    b.attackTimer=Math.max(-fireTime,b.attackTimer-fireTime);
    const charged=w.chargeTime?advancePulse(b.pulse,w,fireTime,!!target):true;
    for(let burst=0;burst<8&&target?.hp>0&&aligned&&charged&&b.attackTimer<=1e-8&&mag.remaining===0&&mag.ammo>0;burst++){
     // 枪口伸进岩壁时不扣弹；贴身目标仍由共用枪口碰撞处理。
-    if(b.combatLineClear({x:game.player.x,y:game.player.y-8},shot.muzzle)){
+    if(b.combatLineClear({x:origin.x,y:origin.y-8},shot.muzzle)){
      const critical=game.random()<GAMEPLAY_VALUES.combat.criticalChance,amount=Math.round(game.damage()*(critical?GAMEPLAY_VALUES.combat.criticalMultiplier:1));
      consumeRound(mag,w);emitWeaponAttack(b,w,shot.muzzle,shot.direction,amount,critical,false,mag);triggerRecoil(game.player.recoil,index);
      b.attackTimer+=w.interval;b.weaponCycle.firing=mag.remaining===0;game.onEvent('shot',{kind:w.id,laser:w.id==='laser'});

@@ -1,6 +1,6 @@
 // 农具主体与菜单图标共用绘制，电锯直接复用正式武器与独立操枪接口。
 import {drawWeapon,drawRiderWeapon} from './characters.js';
-import {farmToolPose,FARM_ACTION_TIMING} from '../config/farm-tools.js';
+import {farmToolPose,FARM_ACTION_TIMING,ROW_REAPER} from '../config/farm-tools.js';
 import {farmWorking} from '../core/farm.js';
 import {nearest} from '../world/coordinates.js';
 import {effectiveWeapon} from '../config/weapon-mods.js';
@@ -30,10 +30,29 @@ export function drawFarmSickle(c){
  box(c,24,-3,8,9,2,'#b5a56c',edge,1.6);oval(c,28,1,1.3,1.3,'#efe0ad');c.restore();
 }
 
+// 木柄、导轮和往复齿刃各自绘制；轮辐和刀片按走过的距离推进。
+function drawRowReaper(c,travel,cutting){
+ c.save();c.translate(ROW_REAPER.reach,0);c.lineCap='round';c.lineJoin='round';
+ oval(c,-3,3,18,5,'#40553c38');
+ for(const side of [-1,1]){
+  const y=side*8-2;
+  c.strokeStyle=edge;c.lineWidth=5;c.beginPath();c.moveTo(-18,-18+side*2);c.lineTo(-7,y);c.stroke();
+  c.strokeStyle=wood;c.lineWidth=2.5;c.stroke();
+  oval(c,-7,y,7,7,'#7e8c6d',edge,1.8);
+  c.save();c.translate(-7,y);c.rotate(travel/7);c.strokeStyle='#e4d3a3';c.lineWidth=1.6;
+  c.beginPath();c.moveTo(-5,0);c.lineTo(5,0);c.moveTo(0,-5);c.lineTo(0,5);c.stroke();c.restore();
+ }
+ box(c,-6,-12,12,20,3,'#b39a66',edge,1.8);
+ c.translate(0,cutting?Math.sin(travel*.45)*2:-2);
+ for(let y=-12;y<=12;y+=6)poly(c,[[2,y-2],[12,y],[2,y+3]],metal,edge,1.4);
+ c.restore();
+}
+
 // 图标只在初始化和风格切换时绘制，始终调用与手持相同的主体。
 export function paintFarmToolIcon(canvas,tool){
  const c=canvas.getContext('2d');c.clearRect(0,0,canvas.width,canvas.height);c.save();c.scale(canvas.width/44,canvas.height/44);
  if(tool==='water'){c.translate(17,23);c.scale(.85,.85);drawWaterCan(c);}
+ else if(tool==='reaper'){c.translate(0,26);c.scale(.94,.94);drawRowReaper(c,0,false);}
  else if(tool==='saw'){c.translate(15,26);c.rotate(-.38);drawWeapon(c,14,0,0,.34);}
  else if(tool==='sickle'){c.translate(10,33);c.rotate(-.35);c.scale(.66,.66);drawFarmSickle(c);}
  else{c.translate(12,33);c.rotate(-1);c.scale(.82,.82);drawFarmHoe(c);}c.restore();
@@ -73,8 +92,14 @@ function drawSowing(c,player,target,t,active){
 }
 
 // 农活只提供持握姿态和动作时钟，电锯沿用正式武器14及其范围升级部件。
+import {drawOxPlow} from './ox-plow.js';
 export function drawFarmTool(c,game,player){
  if(!farmWorking(game))return;const work=game.farmWork,job=work.job,t=job?.farmPoseTime??job?.elapsed??0,active=!!job&&t>0;
+ if(work.tool==='ox'){if(work.ox&&!work.ox.approach)drawOxPlow(c,player,work.ox,game.time);return;}
+ if(work.reaper){
+  const r=work.reaper;c.save();c.translate(player.x,player.y);c.scale(r.facing,1);
+  drawRowReaper(c,r.travel,r.held);oval(c,9,-19,4,3.5,'#f0cfa0',edge,1.2);c.restore();return;
+ }
  // 平整土地复用锄头关节和接触点，作物移除仍由独立事务命中时提交。
  const action=(job?.action==='remove'?'dig':job?.action)||({seed:'plant',harvest:'harvest',saw:'saw',water:'water'}[work.tool]||'dig'),target=job?nearest(job.point,player):{x:player.x+40,y:player.y-10};
  c.save();

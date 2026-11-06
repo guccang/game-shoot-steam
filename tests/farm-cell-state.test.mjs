@@ -30,7 +30,7 @@ test('静止投影不重复访问样式，走位、缩放、滚动和重新显�
  const style={getPropertyValue(key){reads++;return this[key]||'';},setProperty(key,value){this[key]=value;}},node={style},plot={id:1,x:100,y:200,mapId:'forest'};
  const place=()=>placeFarmCell(node,plot,renderer,frame,farmCellView(renderer,frame));
  place();const first=node.style.left;reads=0;for(let i=0;i<100;i++)place();assert.equal(reads,0);
- renderer.view.x=10;place();assert.equal(parseFloat(node.style.left),parseFloat(first)-10);
+ renderer.view.x=10;place();assert.equal(parseFloat(node.style.left),parseFloat(first)-10);assert.equal(reads,0,'平移不应重新读取地块形状样式');
  renderer.view.zoom=.5;place();assert.equal(node.style.width,'44px');assert.equal(node.style['--farm-plot-width'],'25px');
  const moved=parseFloat(node.style.left);offset=30;place();assert.equal(parseFloat(node.style.left),moved+30);
  node.hidden=true;place();assert.equal(node.hidden,false);

@@ -1,3 +1,5 @@
+import {eraVehicle} from '../config/vehicle-eras.js';
+import {drawEraHull,drawEraIcon} from './vehicle-eras.js';
 import {drawTreasureRear,drawTreasureFront} from './treasure-equipment.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import {tankPaintContext,drawTankBadge} from './tank-paint.js';
@@ -36,6 +38,7 @@ export function drawVehicleTracks(c, player, vehicle, reduced = false, time = 0,
   c=tankPaintContext(c,progress,vehicle.index,'rear');
   c.save();
   c.translate(player.x, player.y);
+  if(eraVehicle(vehicle.index)){drawEraHull(c,eraVehicle(vehicle.index),vehicle);c.restore();return;}
   if (vehicle.index >= 9) {drawTreasureRear(c,vehicle.index,reduced?0:vehicle.wheelPhase||player.walkPhase||0);c.restore();return;}
   if (vehicle.index === 8) {
     drawPoliceRear(c, vehicle.wheelPhase || 0, time, reduced);
@@ -95,6 +98,7 @@ export function drawVehicleArmor(c, player, vehicle, progress, time, reduced = f
   c.translate(player.x, player.y);
   const hull = tankHullPose(vehicle, reduced);
   c.translate(hull.x, hull.y);
+  if(eraVehicle(vehicle.index)){drawEraHull(c,eraVehicle(vehicle.index),vehicle,true,time,reduced);c.restore();return;}
   if (vehicle.index >= 9) drawTreasureFront(c,vehicle.index,vehicle.flash>0);
   else if (vehicle.index === 5) drawScooterFront(c,reduced?0:vehicle.wheelPhase||0);
   else if (vehicle.index === 8) drawPoliceFront(c);
@@ -179,6 +183,8 @@ export function drawVehicleArmor(c, player, vehicle, progress, time, reduced = f
 export function drawVehicleIcon(c, index = 0) {
   c.clearRect(0, 0, c.canvas.width, c.canvas.height);
   c.save();
+  const era=eraVehicle(index);if(c.canvas.dataset)c.canvas.dataset.eraIcon=era?.id||'';
+  if(era){drawEraIcon(c,era);c.restore();return;}
   // 小导航图标和大收藏画像按同一包围盒缩放，耳朵及行走部件都不裁切。
   const scale = Math.min(
     c.canvas.width / ([6, 7].includes(index) ? 175 : 155),

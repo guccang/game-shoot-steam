@@ -12,6 +12,7 @@ import {mainlineConditionCost} from '../src/progression/mainline-cost.js';
 import {transactProgress} from '../src/progression/transactions.js';
 import {Game} from '../src/core/game.js';
 import {adoptCat} from '../src/core/cat-home.js';
+import {RESIDENT_VISITOR} from '../src/config/cottage-residents.js';
 import {CAT_HOME} from '../src/config/cat-home.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WORKSHOP_INTERIORS,interiorShopkeeper,interiorFurniture} from '../src/config/workshop-interiors.js';
@@ -37,11 +38,23 @@ test('真实击杀只发一次经验，升级不治疗、不改变车辆耐久�
  const g=setup();g.progress.heroXp[0]=95;g.player.hp=40;const hulls=JSON.stringify(g.vehicles);const enemy=g.spawnEnemy(0,0,{x:1500,y:900});enemy.tough=false;g.hit(enemy,1e6);assert.equal(g.progress.heroes[0],2);assert.equal(g.progress.heroXp[0],5);assert.equal(g.player.hp,40);assert.equal(JSON.stringify(g.vehicles),hulls);g.hit(enemy,1e6);assert.equal(g.progress.heroXp[0],5);const dummy=g.spawnEnemy(0,0,{x:1510,y:900});dummy.workshopTarget=true;g.hit(dummy,1e6);assert.equal(g.progress.heroXp[0],5);
 });
 test('手动升级被拒绝，获取只在猫窝，保存失败及重复获取不扣款',()=>{
- const g=setup();assert.equal(g.transact('heroes',0,'upgrade'),false);assert.equal(transactProgress(g.progress,'heroes',1,'buy'),false);assert.equal(adoptCat(g,1).ok,false);g.cottage={kind:'cat-home',outside:{x:280,y:854,mapId:'forest'}};g.state='paused';const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(adoptCat(g,1).ok,false);assert.deepEqual(g.progress,before);g.livingPersist=()=>true;assert.ok(adoptCat(g,1).ok);assert.equal(g.progress.heroes[1],1);assert.equal(g.progress.hero,0);assert.equal(g.progress.heroXp[1],0);const coins=g.progress.coins;assert.equal(adoptCat(g,1).ok,false);assert.equal(g.progress.coins,coins);assert.ok(g.transact('heroes',1,'equip'));assert.equal(g.progress.hero,1);
+ const g=setup();assert.equal(g.transact('heroes',0,'upgrade'),false);assert.equal(transactProgress(g.progress,'heroes',1,'buy'),false);assert.equal(adoptCat(g,1).ok,false);g.cottage={kind:'cat-home',outside:{x:280,y:854,mapId:'forest'}};g.state='paused';assert.match(adoptCat(g,1).message,/加盖第 3 楼/);g.progress.homeDecor.floors=3;const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(adoptCat(g,1).ok,false);assert.deepEqual(g.progress,before);g.livingPersist=()=>true;assert.ok(adoptCat(g,1).ok);assert.equal(g.progress.heroes[1],1);assert.equal(g.progress.hero,0);assert.equal(g.progress.heroXp[1],0);const coins=g.progress.coins;assert.equal(adoptCat(g,1).ok,false);assert.equal(g.progress.coins,coins);assert.equal(g.transact('heroes',1,'equip'),false);
+ assert.deepEqual(g.progress.residentCats,[0,1]);assert.match(adoptCat(g,4).message,/加盖第 4 楼/);
+ g.cottage={kind:'cottage',floor:2,residentTalk:1,outside:{x:280,y:854}};Object.assign(g.player,RESIDENT_VISITOR);
+ g.livingPersist=()=>false;assert.equal(g.transact('heroes',1,'equip'),false);assert.equal(g.progress.hero,0);
+ g.livingPersist=()=>true;assert.ok(g.transact('heroes',1,'equip'));assert.equal(g.progress.hero,1);
+ g.cottage.floor=1;g.cottage.residentTalk=0;assert.ok(g.transact('heroes',0,'equip'));
 });
 test('角色经验目标不再要求金币，主线没有角色付费升级入口',()=>{
  const p=freshProgress();assert.deepEqual(mainlineConditionCost(p,{path:'progress.heroes.0',min:5}),{coins:0,wood:0,parts:0,crystal:0,core:0});for(const task of MAINLINE_TASKS)for(const step of task.guide.steps)assert.notEqual(step.operation?.type,'hero');
 });
 test('猫窝墙体、入口通路、柜台和一秒进出使用正式系统',()=>{
  const g=setup(),room=WORKSHOP_INTERIORS['cat-home'],body={mapId:'forest',livingCollision:true};assert.ok(planQuestRoute({...body,x:390,y:700},room.door,g.trees,24000).reachable);assert.ok(blocked(CAT_HOME.x,CAT_HOME.y-40,12,g.trees,body));for(const p of [room.door,room.outside])assert.equal(blocked(p.x,p.y,12,g.trees,body),false);assert.match(farmLandReason(g,CAT_HOME),/建筑|路面/);Object.assign(g.player,room.door,{vx:0,vy:0});for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage?.kind,'cat-home');assert.equal(interiorShopkeeper(g.cottage).label,'猫窝管理员');assert.equal(interiorFurniture(g).filter(f=>f.type==='counter').length,1);Object.assign(g.player,room.exit);for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage,null);
+});
+
+test('房间沿用获得次序，旧档补房且不覆盖已加盖楼层',()=>{
+ const p=freshProgress();p.heroes[5]=p.heroes[2]=1;p.residentCats=[0,5,5,99,2];p.homeDecor.floors=7;
+ assert.deepEqual(validateProgress(p).residentCats,[0,5,2]);assert.equal(validateProgress(p).homeDecor.floors,7);
+ delete p.residentCats;p.homeDecor.floors=2;
+ const old=validateProgress(p);assert.deepEqual(old.residentCats,[0,2,5]);assert.equal(old.homeDecor.floors,4);
 });

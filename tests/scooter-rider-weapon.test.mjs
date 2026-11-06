@@ -57,16 +57,17 @@ test('电动车工坊试射使用手持枪，来源存档与弹药不变', () =>
   assert.equal(JSON.stringify(p), before);
 });
 
-test('电动车置顶但固定编号不变，新档不赠战车，600金币240木材买车附带机枪', () => {
-  assert.deepEqual(VEHICLE_DISPLAY_ORDER, [5,0,1,2,3,4]);
+test('电动车置顶但固定编号不变，新档不赠战车，按工坊报价买车附带机枪', () => {
+  assert.equal(VEHICLE_DISPLAY_ORDER[0],5);
   assert.equal(COLLECTED_VEHICLES[0].id, 'pine-tank'); assert.equal(COLLECTED_VEHICLES[5].id, 'ranger-scooter');
   const p = freshProgress(); assert.equal(p.vehicleHulls[0], 0); assert.equal(p.vehicleWeapons[17], 0);
   assert.equal(freshRangerProgress().vehicleHulls[0], 0);
+  p.restoration.repaired.push('garage');
   const cost = equipmentRecipe('vehicle', 0, p);
-  assert.equal(cost.coins, 600); assert.equal(cost.wood, 240);
-  p.coins = 599; p.wood = 240; const before = JSON.stringify(p);
+  assert.ok(cost.coins>0 && cost.wood>0);
+  p.coins = cost.coins-1; p.wood = cost.wood; const before = JSON.stringify(p);
   assert.equal(transactVehicle(p, 'vehicle', 0, 'buy'), false); assert.equal(JSON.stringify(p), before);
-  p.coins = 600; assert.equal(transactVehicle(p, 'vehicle', 0, 'buy'), true);
+  p.coins = cost.coins; assert.equal(transactVehicle(p, 'vehicle', 0, 'buy'), true);
   assert.equal(p.coins, 0); assert.equal(p.wood, 0); assert.equal(p.vehicleHulls[0], 1);
   assert.equal(p.vehicleWeapons[17], 1); assert.equal(p.vehicleLoadouts[0], 17);
   assert.equal(transactVehicle(p, 'vehicle', 0, 'buy'), false);

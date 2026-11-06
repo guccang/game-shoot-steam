@@ -5,12 +5,14 @@ export {drawFarmTool} from './farm-tools.js';
 import {FARM_CROP_SIZE} from '../config/farm-tools.js';
 import {sampleCropGrowth,drawGrowingCrop,drawCropChange} from './farm-growth.js';
 import manifest from '../../assets/farm/manifest.json' with {type:'json'};
+import {loadFarmSheet} from './farm-atlas.js';
 const sheets=new Map();let pending=null,cropMarkupId=0;
 // 只解码清单中的共享图集，缺失明确抛错，不能以占位植物掩盖加载错误。
 export function loadFarmArt(){
- return pending??=Promise.all(manifest.runtimeFiles.map(file=>new Promise((resolve,reject)=>{
-  const image=new Image();image.onload=()=>{sheets.set(file,image);resolve();};image.onerror=()=>{pending=null;reject(Error('农田作物图集加载失败：'+file));};image.src='/assets/farm/'+file;
- })));
+ // 所有必需图集成功后再发布，失败可重试，不把半套资源当成加载完成。
+ return pending??=Promise.all(manifest.runtimeFiles.map(async file=>[file,await loadFarmSheet(file)]))
+  .then(entries=>{for(const [file,image] of entries)sheets.set(file,image);})
+  .catch(error=>{pending=null;throw error;});
 }
 // 控件与世界作物共用清单；显式裁切单株，横持短图标留白处也不会露出相邻图集格。
 export function farmCropMarkup(index,stage=2){const a=manifest.crops[`crop-${index}-${stage}`];if(!a)throw Error('未知作物图片');const id='farm-crop-clip-'+cropMarkupId++,[x,y,width,height]=a.rect;return `<svg viewBox="${a.rect.join(' ')}" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><defs><clipPath id="${id}" clipPathUnits="userSpaceOnUse"><rect x="${x}" y="${y}" width="${width}" height="${height}"/></clipPath></defs><image href="/assets/farm/${a.file}" width="${a.sheet[0]}" height="${a.sheet[1]}" clip-path="url(#${id})"/></svg>`;}
@@ -30,7 +32,8 @@ export function drawNaturalFarmCrop(c,index,x,y,time,phase,night=false,reduced=f
 // 实景土地、作物、快递站与独立农具共享正式世界镜头。
 import {FARM_DELIVERY,FARM_SEED_SHOP,FARM_GARDEN,FARM_PLOT_SHAPE,farmPosition} from '../config/farm.js';
 import {farmWorking} from '../core/farm.js';
-import {nearest,visibleBodies} from '../world/coordinates.js';
+import {PASTURE,oxFoot} from '../config/pasture.js';
+import {nearest,visibleBodies,worldDistance} from '../world/coordinates.js';
 // 两个世界与其故事现场共用永久田块，仅独立副本隔离土地。
 export function farmVisible(game){return ['forest','jiuzhaigou'].includes(game.mapId)&&!game.realm;}
 // 土壤跟随地图镜像，未开垦位置显示小圆点；已有田块的选择提示由上层热点负责。
@@ -44,6 +47,30 @@ export function drawFarmGround(c,game,view){
   for(let n=0;n<3;n++){c.beginPath();c.moveTo(p.x-18,p.y-10+n*10);c.lineTo(p.x+18,p.y-10+n*10);c.stroke();}
  }
  const reference={x:view.x+view.w/2,y:view.y+view.h/2};
+ // 将田垄预览铺在地面层，角色、牛身与犁铧始终画在预览之上。
+ if(['reaper','ox'].includes(game.farmWork?.tool)&&!game.farmWork.autoCombat){
+  c.save();c.setLineDash([5,3]);c.lineWidth=2;
+  for(const [i,cell] of (game.farmWork.reaper?.preview||game.farmWork.ox?.preview||[]).entries()){
+   const p=nearest(cell,reference);
+   const reaper=game.farmWork.reaper;
+   if(reaper){
+    // 奶油色实线托住深绿虚线，田边和朝向在成熟作物遮住田心时仍可辨认。
+    c.save();c.setLineDash([]);c.beginPath();c.roundRect(p.x-26,p.y-20,52,40,5);
+    c.lineWidth=3.5;c.strokeStyle='#fff2ba';c.stroke();
+    c.setLineDash([6,3]);c.lineWidth=2;c.strokeStyle=cell.valid?'#30573e':'#887754';c.stroke();
+    if(i===0){
+     c.setLineDash([]);c.translate(p.x,p.y+17);c.scale(reaper.facing,1);
+     c.beginPath();c.moveTo(-7,-3);c.lineTo(1,-3);c.lineTo(1,-6);c.lineTo(9,0);c.lineTo(1,6);c.lineTo(1,3);c.lineTo(-7,3);c.closePath();
+     c.fillStyle='#fff2ba';c.fill();c.strokeStyle='#30573e';c.stroke();
+    }
+    c.restore();continue;
+   }
+   c.strokeStyle=cell.valid?'#467351':'#a04739';c.fillStyle=cell.valid?'#bada7d55':'#d2726266';
+   c.beginPath();c.roundRect(p.x-25,p.y-18,50,36,5);c.fill();c.stroke();
+   c.fillStyle=c.strokeStyle;c.font='bold 13px sans-serif';c.fillText(cell.valid?(i===0?'✓':''):'×',p.x-21,p.y+13);
+  }
+  c.restore();
+ }
  const pending=[game.farmWork?.job,...(game.farmWork?.queue||[])].filter(j=>j?.point?.mapId===game.mapId);
  if(farmWorking(game)&&game.farmCursor&&game.farmWork.tool==='hoe'&&!pending.some(j=>j.action==='dig'))pending.push({point:game.farmCursor});
  // 开垦目标尚无地块热点，直接画清楚的圆点；已有田格的排队圆点在作物上层显示。
@@ -62,9 +89,14 @@ export function drawCampFarmSign(c,item){
  c.save();c.translate(item.x,item.y);c.lineWidth=1.5;c.fillStyle='#715b43';c.fillRect(-3,-74,6,74);c.fillStyle='#eee2ae';c.strokeStyle='#715b43';c.beginPath();c.roundRect(-58,-91,116,24,5);c.fill();c.stroke();c.fillStyle='#34543b';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText('营地小田 · 锄地',0,-74);c.restore();
 }
 // 作物、田牌和快递柜台都按脚底排序，允许人物走到前后形成真实遮挡。
+function worldDistanceToPen(site){return worldDistance(oxFoot(site),PASTURE);}
+// 栏杆、羊和停放的牛按各自脚底生成排序对象。
 export function farmObjects(game){
  if(!farmVisible(game))return [];
- return [...productionObjects(game),...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
+ const site=game.progress.farm.oxSite;
+ const parked=site?.mapId===game.mapId&&!game.cottage&&(game.farmWork?.tool!=='ox'||game.farmWork.ox?.approach||game.farmWork.autoCombat)?[{...site,...oxFoot(site),type:'parked-ox',moving:!!game.oxArrival?.moving,phase:game.oxArrival?.phase||0,unhitched:!!game.oxArrival||worldDistanceToPen(site)<65}]:[];
+ const pen=game.mapId==='forest'?[{...PASTURE,y:PASTURE.y-52,type:'pasture-back'},{...PASTURE,y:PASTURE.y+52,type:'pasture-front'},...(game.progress.farm.sheep?[{x:PASTURE.x+58,y:PASTURE.y+34,type:'pasture-sheep'}]:[])]:[];
+ return [...pen,...parked,...productionObjects(game),...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
 }
 // 三阶段保持宽高比例和固定根部，过渡期间茎叶逐渐长成并局部轻摆。
 export function drawFarmCrop(c,item,time=0,reduced=false,now=Date.now(),boosts=[],zoom=1){
