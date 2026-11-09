@@ -8,11 +8,11 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {PARKING_SPOTS} from '../src/config/parking.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {requestParking,updateParking} from '../src/core/parking.js';
-import {enterParkedWorkshop,enterWorkshop,leaveCottage} from '../src/core/cottage.js';
-import {vehicleBoardingPoint} from '../src/core/vehicle-boarding.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {requestVehicleRepair} from '../src/core/vehicle-repair.js';
+import {requestParking,updateParking} from '../src/core/vehicles/parking.js';
+import {enterParkedWorkshop,enterWorkshop,leaveCottage} from '../src/core/home/cottage.js';
+import {vehicleBoardingPoint} from '../src/core/vehicles/vehicle-boarding.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {requestVehicleRepair} from '../src/core/vehicles/vehicle-repair.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
 // 完成营地修复与主线，关闭随机事件，车辆从真实车库入口驶入。
 function scene(id='garage',shift=0){const p=ownedPineProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(s=>s.id);p.coins=10000;const events=[],g=new Game(p,()=>.5);g.onEvent=(type,data)=>events.push({type,data});g.state='playing';g.mainlineSpeech=null;g.spawnTimer=g.fireClock=g.mainlineTalkDelay=999;g.enemies=[];g.parkingVisitors=[];g.progress.campParking.owned=[];const spot=PARKING_SPOTS.find(s=>s.id===id);Object.assign(g.player,{x:spot.x+shift,y:spot.approachY,vx:0,vy:0});assert.ok(g.summonVehicle());g.vehicle.hp*=.65;return {g,spot,events};}
@@ -26,4 +26,4 @@ test('入屋保存只记录安全屋外位置和实际车位，出门后可按�
 test('停入维修中心后直接使用屋内维修服务，交车不要求再次走到门前',()=>{const {g}=scene('repair-garage');assert.ok(requestParking(g));finish(g);assert.equal(g.cottage.kind,'repair');const room=g.cottage,coins=g.progress.coins;assert.ok(requestVehicleRepair(g,0).ok);assert.equal(g.cottage,room);assert.ok(g.progress.coins<coins);assert.equal(g.progress.vehicleService[0].phase,'repairing');});
 
 // 停入补给铺后可直接给停驻车装弹，不需要出门重新定位车辆。
-test('弹药铺停车入屋后可装填货舱，左右与背墙阻挡而门洞开放',async()=>{const {g,spot}=scene('ammo-garage');const {worldBuildingBlocked}=await import('../src/world/building-collision.js');const {tradeSupply,supplyVehicleNearby}=await import('../src/core/supplies.js');const body={mapId:'forest'};for(const dx of [-85,85])assert.equal(worldBuildingBlocked(spot.x+dx,spot.garageY-40,12,body),true);assert.equal(worldBuildingBlocked(spot.x,spot.garageY-110,12,body),true);assert.equal(worldBuildingBlocked(spot.x,spot.y,12,body),false);assert.ok(requestParking(g));finish(g);assert.equal(g.cottage.kind,'ammo');assert.ok(supplyVehicleNearby(g));g.livingPersist=()=>true;const before=g.progress.supplies.vehicles[0].light;assert.ok(tradeSupply(g,{kind:'ammo',id:'light',target:'vehicle'}).ok);assert.equal(g.progress.supplies.vehicles[0].light,before+30);});
+test('弹药铺停车入屋后可装填货舱，左右与背墙阻挡而门洞开放',async()=>{const {g,spot}=scene('ammo-garage');const {worldBuildingBlocked}=await import('../src/world/building-collision.js');const {tradeSupply,supplyVehicleNearby}=await import('../src/core/vehicles/supplies.js');const body={mapId:'forest'};for(const dx of [-85,85])assert.equal(worldBuildingBlocked(spot.x+dx,spot.garageY-40,12,body),true);assert.equal(worldBuildingBlocked(spot.x,spot.garageY-110,12,body),true);assert.equal(worldBuildingBlocked(spot.x,spot.y,12,body),false);assert.ok(requestParking(g));finish(g);assert.equal(g.cottage.kind,'ammo');assert.ok(supplyVehicleNearby(g));g.livingPersist=()=>true;const before=g.progress.supplies.vehicles[0].light;assert.ok(tradeSupply(g,{kind:'ammo',id:'light',target:'vehicle'}).ok);assert.equal(g.progress.supplies.vehicles[0].light,before+30);});

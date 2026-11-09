@@ -4,8 +4,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {RACE,RACE_TURN,racePoint,raceReward} from '../src/config/forest-race.js';
-import {finishRace} from '../src/core/forest-race.js';
-import {syncRealm} from '../src/core/realm-manager.js';
+import {finishRace} from '../src/core/activities/forest-race.js';
+import {syncRealm} from '../src/core/realms/realm-manager.js';
 // 跳过与比赛无关的入职对白，保留正式装备和森林对象。
 function create(){const p=freshProgress();p.arrival=null;const g=new Game(p,()=>.5);g.state='playing';assert.ok((g.progress.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id),g.enterRealm('race')));return g;}
 // 固定六十帧推进，暂停、倒计时与比赛共用公开更新方法。

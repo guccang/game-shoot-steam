@@ -5,7 +5,7 @@ import {clearingArena as arena,summonClearingBossAtNode as summonBossAtNode} fro
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, freshProgress, validateProgress } from '../src/game.js';
-import { capturePatrol } from '../src/core/patrol-session.js';
+import { capturePatrol } from '../src/core/battle/patrol-session.js';
 import { waveDifficulty } from '../src/config/waves.js';
 import { createSaveStore } from '../src/platform/storage.js';
 import { createProgressController } from '../src/app/progress-controller.js';

@@ -2,8 +2,8 @@
 async page=>{
  await page.keyboard.press('Escape');
  await page.evaluate(async()=>{
-  const g=a.game;g.state='playing';if(g.fireRescue)(await import('/src/core/fire-rescue.js')).dismissFireRescue(g,{silent:true});
-  if(g.cottage)(await import('/src/core/cottage.js')).leaveCottage(g);g.vehicle.active=false;g.parking=null;g.enemies=[];
+  const g=a.game;g.state='playing';if(g.fireRescue)(await import('/src/core/activities/fire-rescue.js')).dismissFireRescue(g,{silent:true});
+  if(g.cottage)(await import('/src/core/home/cottage.js')).leaveCottage(g);g.vehicle.active=false;g.parking=null;g.enemies=[];
   Object.assign(g.player,(await import('/src/world/fire-navigation.js')).FIRE_EXIT,{vx:0,vy:0});
   if(!g.fireActive){g.requestFireRescue();if(!g.startFireRescue())throw Error('接警失败');}
   for(let i=0;i<3000&&g.fireTransit;i++)buildingTick(.04);

@@ -8,7 +8,7 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
    const p=(await import('/src/progression/progress.js')).freshRangerProgress();p.arrival=null;p.farm.wildMaps=['forest','jiuzhaigou'];p.vehicleIndex=0;p.vehicleHulls[0]=1;p.campParking.owned=[];
    const g=a.game;g.progress=p;g.mapId='forest';g.reset();g.state='playing';g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=g.spawnTimer=999999;g.enemies=[];g.wildFarmRetryAt=0;
-   (await import('/src/core/wild-farm.js')).ensureWildFarms(g);window.site={...g.progress.farm.plots[0]};window.plotId=site.id;
+   (await import('/src/core/farming/wild-farm.js')).ensureWildFarms(g);window.site={...g.progress.farm.plots[0]};window.plotId=site.id;
    Object.assign(g.player,(await import('/src/world/farm-land.js')).farmApproach(g,site),{vx:0,vy:0});if(!g.summonVehicle())throw Error('载具出场失败');
    await (await import('/src/rendering/farm.js')).loadFarmArt();a.renderer.camera.time=null;a.refresh();
    // 同步正式环境按钮、作物表现和夜色，保留游戏动作及镜头。

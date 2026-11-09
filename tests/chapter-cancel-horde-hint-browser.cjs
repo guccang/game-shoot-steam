@@ -15,7 +15,7 @@ async original=>{
   await page.reload();await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game;
-   const {STORY_POSTS}=await import('/src/config/story-posts.js'),{storyPostApproach}=await import('/src/core/story-posts.js');
+   const {STORY_POSTS}=await import('/src/config/story-posts.js'),{storyPostApproach}=await import('/src/core/story/story-posts.js');
    Object.assign(g.player,storyPostApproach(STORY_POSTS[0]));g.enemies=[];g.boss=null;g.state='playing';
    if(!g.enterStory('sunleaf-01'))throw Error('章节接取失败');g.advanceStoryDialogue(true);g.chooseStoryLoadout('tide-arc');g.startStoryStage();
    Object.assign(g.player,storyPostApproach(STORY_POSTS[0]));a.refresh();

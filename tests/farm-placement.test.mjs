@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {farmLandReason,farmDigPoint,snapFarmPoint,farmApproach} from '../src/world/farm-land.js';
-import {queueFarmWork,farmAction,setFarmTool,updateFarmWork} from '../src/core/farm.js';
+import {queueFarmWork,farmAction,setFarmTool,updateFarmWork} from '../src/core/farming/farm.js';
 import {JIUZHAIGOU_PATHS} from '../src/world/jiuzhaigou.js';
 
 // 使用正式地图和角色，关闭额外示范田，避免把碰撞替换成测试专用实现。

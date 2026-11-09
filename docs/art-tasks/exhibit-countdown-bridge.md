@@ -20,7 +20,7 @@
 - 分层透明：原场景→实体→头顶徽记；无新位图，图标由独立 Canvas 几何生成。
 - 碰撞：展品仍用正式底座，靠近距离由底座外缘计算，候停不改变碰撞。桥面不扩大到可见木板之外，镜像地图一致。
 - 昼夜/多端：武器、展车、桥头在 1280/390/320 白天夜晚检查；实际走桥含上下边、双向和斜向。
-- 文件：core/workshop-display-entry.js，config/workshop-interiors.js，rendering/player-action-countdown.js、action-countdown.js，world/river-geometry.js，UI/app 接入。
+- 文件：core/workshop/workshop-display-entry.js，config/workshop-interiors.js，rendering/player-action-countdown.js、action-countdown.js，world/river-geometry.js，UI/app 接入。
 - 预算：无新贴图、图集或缓存；每帧仅遍历当前房间展品小目录。
 
 ## 4 动画任务补充

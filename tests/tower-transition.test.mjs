@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
 import { freshProgress } from '../src/progression/progress.js';
-import { updateRealm } from '../src/core/realm-manager.js';
+import { updateRealm } from '../src/core/realms/realm-manager.js';
 import { towerRealmLandmark } from '../src/world/realm-entrances.js';
 import { triggerRecoil } from '../src/combat/recoil.js';
 import { blocked } from '../src/physics/motion.js';

@@ -1,23 +1,23 @@
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 // 巡林主线专项：配置、真实操作判定、交付原子性与购买资格，不运行无关战斗回归。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {validateMainline} from '../src/progression/mainline-progress.js';
+import {validateMainline} from '../src/progression/story/mainline-progress.js';
 import {MAINLINE_TASKS,MAINLINE_IDS,MAINLINE_SITES,MAINLINE_NPCS} from '../src/config/mainline.js';
 import {MAINLINE_GATES,mainlinePurchaseReason} from '../src/config/mainline-gates.js';
-import {mainlineTask,mainlineCondition,mainlineObjective,updateMainline,completeMainline,markMainline,recordMainlineEvent,canTalkMainline,mainlineSteps,mainlineStep,mainlineAction,advanceMainlineSpeech} from '../src/core/mainline-manager.js';
-import {storyRouteState} from '../src/core/story-route.js';
+import {mainlineTask,mainlineCondition,mainlineObjective,updateMainline,completeMainline,markMainline,recordMainlineEvent,canTalkMainline,mainlineSteps,mainlineStep,mainlineAction,advanceMainlineSpeech} from '../src/core/story/mainline-manager.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
 import {blocked} from '../src/physics/motion.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
-import {commitWorkshop} from '../src/core/workshop.js';
-import {canPurchaseEquipment} from '../src/progression/equipment-goals.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
+import {canPurchaseEquipment} from '../src/progression/workshop/equipment-goals.js';
 import {nativeVehicleWeapon} from '../src/config/vehicle-armaments.js';
-import {setLivingPatrol} from '../src/core/living-world.js';
-import {livingWaveAllowed} from '../src/core/living-safety.js';
-import {createWorkshopTrial} from '../src/core/workshop-trial.js';
+import {setLivingPatrol} from '../src/core/camp/living-world.js';
+import {livingWaveAllowed} from '../src/core/camp/living-safety.js';
+import {createWorkshopTrial} from '../src/core/workshop/workshop-trial.js';
 
 // 隔离场景从真实Game初始化，只跳过入职，不伪造购买或交付函数。
 function setup(id=MAINLINE_IDS[0]){

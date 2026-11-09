@@ -13,14 +13,14 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
    const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.bosses=4;p.living.patrolActive=true;p.equipmentGoal={kind:'weapons',index:6};p.weapons[6]=0;p.farm.wildMaps=['forest','jiuzhaigou'];p.farm.wildScatterVersion=1;p.vehicleHulls[0]=1;p.vehicleIndex=0;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.update=()=>{};g.spawnTimer=999;g.enemies=[];
-   const site=(await import('/src/progression/clearing-site.js')).clearingSite(p);Object.assign(g.player,site);g.wave=21;g.summonVehicle();a.renderer.camera.time=null;a.refresh();
+   const site=(await import('/src/progression/story/clearing-site.js')).clearingSite(p);Object.assign(g.player,site);g.wave=21;g.summonVehicle();a.renderer.camera.time=null;a.refresh();
   });
   // 沿同一场地边缘往返，检查波次、标题、材料样式同步保留或退出。
   for(const [width,height] of [[320,568],[390,844],[1280,900]])for(const time of ['day','night']){
    await page.setViewportSize({width,height});
    await page.evaluate(async time=>{const e=a.environment;Object.assign(e,{time,autoTime:false,autoWeather:false,weather:'sun',livingPreview:true});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(e,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(e,0);},time);
    for(const distance of [300,301,375,450,451,375]){
-    await page.evaluate(async distance=>{const s=(await import('/src/progression/clearing-site.js')).clearingSite(a.game.progress);Object.assign(a.game.player,{x:s.x+distance,y:s.y});a.refresh();},distance);
+    await page.evaluate(async distance=>{const s=(await import('/src/progression/story/clearing-site.js')).clearingSite(a.game.progress);Object.assign(a.game.player,{x:s.x+distance,y:s.y});a.refresh();},distance);
     await page.waitForTimeout(100);
     const r=await page.evaluate(()=>({quest:!document.getElementById('quest').hidden,track:!document.getElementById('wave-track').hidden,focused:document.getElementById('quest').classList.contains('clearing-focused'),material:document.getElementById('equipment-goal').classList.contains('clearing-material-goal')}));
     for(const [key,value] of Object.entries(r))if(value!==(distance<=450))throw Error(`${width}-${time}-${distance}-${key}: ${value}`);

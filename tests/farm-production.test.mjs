@@ -7,15 +7,15 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {PRODUCTION as P,productionCrop} from '../src/config/farm-production.js';
 import {FARM_CROPS,FARM_SEED_DOOR} from '../src/config/farm.js';
 import {WAREHOUSE} from '../src/config/warehouse.js';
-import {productionUnlocked,productionSalePlan,productionGoal,productionCropStock} from '../src/progression/farm-production.js';
-import {placeProduction,productionPlacement,updateProduction,setProductionKeep,craftProduction,useProduction} from '../src/core/farm-production.js';
-import {farmAction} from '../src/core/farm.js';
-import {updateWarehouseHarvest} from '../src/core/warehouse-harvest.js';
-import {sellCrops} from '../src/core/cargo.js';
-import {openBasement} from '../src/progression/mining.js';
+import {productionUnlocked,productionSalePlan,productionGoal,productionCropStock} from '../src/progression/farming/farm-production.js';
+import {placeProduction,productionPlacement,updateProduction,setProductionKeep,craftProduction,useProduction} from '../src/core/farming/farm-production.js';
+import {farmAction} from '../src/core/farming/farm.js';
+import {updateWarehouseHarvest} from '../src/core/inventory/warehouse-harvest.js';
+import {sellCrops} from '../src/core/inventory/cargo.js';
+import {openBasement} from '../src/progression/mining/mining.js';
 import {MINING as M,minePoint} from '../src/config/mining.js';
 import {mineTerrain} from '../src/config/mine-ecology.js';
-import {enterMine,updateMining,toggleMineDig,rideMineCart,toggleMineCart,buildMine} from '../src/core/mining.js';
+import {enterMine,updateMining,toggleMineDig,rideMineCart,toggleMineCart,buildMine} from '../src/core/mining/mining.js';
 // 隔离存档与车队，收割目的地明确落在背包，避免旧测试夹具的在场载具干扰。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.wood=1000;p.mining.ore=200;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.vehicles=[];g.trees=[];g.enemies=[];g.mainlineSpeech=null;g.livingPersist=()=>true;g.progress.production.returned=true;g.progress.production.minedOre=12;return g;}
 // 搜索真实合法地形，并预留四向农田与加工台的位置。

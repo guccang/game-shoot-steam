@@ -1,3 +1,4 @@
+import {INDUSTRY_GOODS} from './industry.js';
 import {ORE_KEYS,ORE_NAMES,ORE_MASS} from './mine-freight.js';
 import {FORAGE_ID} from './pasture.js';
 import {DETECTOR,TREASURE_PARTS} from './treasure.js';
@@ -12,12 +13,13 @@ import {WEAPON_MASSES,CROP_MASSES,LOAD_RULES} from './vehicle-load.js';
 export const ITEM_CATEGORIES={facility:'设施',currency:'金币',outdoor:'野外装备与鱼获',supply:'道具',weapon:'武器',ammo:'弹药与弹匣',crop:'农作物',seed:'种子',tool:'农具',keepsake:'重要物品',relic:'奇物',material:'采集材料',equipment:'载具部件',exploration:'探索工具'};
 export const FARM_ITEMS={hoe:{name:'锄头',mass:1.5,description:'结实的木柄锄头。',use:'打开种地工具，点击空地开垦。'},sickle:{name:'镰刀',mass:.6,description:'用于收割的弧刃镰刀。',use:'打开种地工具，长按拖过成熟作物收割。'},water:{name:'水壶',mass:1.2,description:'随身浇灌工具。',use:'打开种地工具，选择水壶并点击成长中的田块。'}};
 const supplyUses={medkit:`使用后回复猫猫${SUPPLY_ITEMS.medkit.heal} HP。`,gunKit:`降低当前主炮${SUPPLY_ITEMS.gunKit.repair}%损坏；100%损坏必须回厂。`,engineKit:`降低当前发动机${SUPPLY_ITEMS.engineKit.repair}%损坏；100%损坏必须回厂。`};
-const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'供标准坦克主炮装填。',heavy:'供红狼重炮装填。',water:'供潮汐主炮装填。'};
+const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'供标准坦克主炮装填。',heavy:'供红狼重炮装填。',water:'供潮汐水枪与潮汐主炮补水装填。'};
 // 每件可堆叠物品只定义单位重量，数量由实际存档读取。
 const entries=[
  WOOD_ITEM,
+ ...Object.entries(INDUSTRY_GOODS).filter(([key])=>key!=='wood').map(([key,r])=>({id:'industry:'+key,name:r.name,key,category:'material',mass:.5,icon:{kind:'resource',key},description:'工业生产实物。',use:'进入提炼厂或加工厂可直接使用小屋仓库原料，也可用停靠载具供料；制品装车运回仓库供工坊和农具使用。'})),
  {id:'trade:cargo-tag',name:'遗失的货签',category:'keepsake',mass:0,icon:{kind:'keepsake',key:'elder-letter'},description:'商队托你找回的货物标签。',use:'集齐三张后，回营地订单板交还商队领取报酬。'},
- ...ORE_KEYS.map(key=>({id:'ore:'+key,name:ORE_NAMES[key],category:'material',mass:ORE_MASS,icon:{kind:'resource',key},description:'地下开采的原矿。',use:'带回矿层入口自动运至小屋仓库，分出矿石与金属。'})),
+ ...ORE_KEYS.map(key=>({id:'ore:'+key,name:ORE_NAMES[key],category:'material',mass:ORE_MASS,icon:{kind:'resource',key},description:'地下开采的原矿。',use:'可在库存矿石不足时铺轨或造矿车。到仓库升井卸下后，石矿用于施工或切制石块，金属原矿用于提炼。'})),
  {id:FORAGE_ID,name:'甜穗草',category:'material',mass:.1,icon:{kind:'forage'},description:'一束带着甜香的金穗牧草，常长在营地牧栏东南的草地上。',use:'走近野牛，喂它一束就能领回牧栏。也可以留给栏里的耕牛吃。'},
  // 收纳设施沿用生产库存，不新增负重规则；放置后从背包清单移除。
  {id:'facility:sprinkler',name:'简易洒水器',category:'facility',mass:0,icon:{kind:'production',key:'sprinkler'},description:'收回的洒水器，可带到新的地面位置重新布置。',use:'在地面下车后选择放置；无需再支付材料，取消选址仍留在背包。设施收纳暂不计重。'},

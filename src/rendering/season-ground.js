@@ -6,8 +6,20 @@ import { excludesNaturalScenery } from '../world/natural-terrain.js';
 import { COTTAGES, WHEAT_FIELDS, SCENERY, isBeachScenery } from '../world/scenery.js';
 import { coversRealmEntrance } from '../world/realm-entrances.js';
 import { WORLD } from '../world/coordinates.js';
+import { SpatialGrid } from '../world/spatial-grid.js';
 import { oval } from './primitives.js';
-let patches, patchWork;
+let patches, trees, treeIndex;
+const treePatches=new Map();
+// 原点缀距树心最远55单位，另留20单位图元边缘，索引不裁掉跨块花叶。
+const PATCH_REACH=75;
+// 只保存只读坐标与原序号，避免查询顺序改变颜色、密度或重叠绘制顺序。
+function patchTrees(view){
+  if(!trees){trees=forestLayout().map(({x,y,variant},index)=>({x,y,variant,index}));treeIndex=new SpatialGrid(trees,{cellSize:384});}
+  if(!view)return trees;
+  return treeIndex.query(view.x,view.y,view.x+view.w,view.y+view.h,PATCH_REACH)
+    .filter(t=>t.x>=view.x-PATCH_REACH&&t.x<=view.x+view.w+PATCH_REACH&&t.y>=view.y-PATCH_REACH&&t.y<=view.y+view.h+PATCH_REACH)
+    .sort((a,b)=>a.index-b.index);
+}
 // 按整个装饰的包围范围避让，不能只检查花茎或落叶中心。
 export function seasonalPatchAllowed(x,y) {
   const pad=20;
@@ -23,28 +35,23 @@ export function seasonalPatchAllowed(x,y) {
   return true;
 }
 // 布局只生成一次，季节共享位置，禁止随切换增加树木或消耗战斗随机数。
-export function seasonGroundPatches() {
-  consumeDrawSteps(prepareSeasonGroundSteps()); // 同步入口不发布未完成布局。
-  return patches;
+export function seasonGroundPatches(view=null) {
+  consumeDrawSteps(prepareSeasonGroundSteps(view)); // 同步入口不发布未完成布局。
+  if(!view)return patches??=trees.flatMap(t=>treePatches.get(t.index));
+  return patchTrees(view).flatMap(t=>treePatches.get(t.index));
 }
-// 所有地块共用一次季节布局任务，每棵树让出执行权，临时结果完成后才发布。
-function* buildSeasonPatches() {
-  const result = [];
-  for (const [index, tree] of forestLayout().entries()) {
+// 地块只准备可能进入当前裁切范围的树下点缀，每棵树完成后原子发布并共享。
+export function* prepareSeasonGroundSteps(view=null) {
+  for (const tree of patchTrees(view)) {
+    const index=tree.index;if(treePatches.has(index))continue;
+    const result=[];
     for(let n=0;n<5;n++) {
       const a=index*2.399+n*1.71,r=23+(index+n*7)%33;
       const x=tree.x+Math.cos(a)*r,y=tree.y+Math.sin(a)*r*.55+9;
       if(seasonalPatchAllowed(x,y))result.push({x,y,index:index*5+n,conifer:['pine','cypress'].includes(tree.variant)});
     }
-    yield;
+    treePatches.set(index,result);yield;
   }
-  patches = result;
-}
-// 取消某块不取消全局静态布局；下一块接续未完成批次，避免重做整张森林。
-export function* prepareSeasonGroundSteps() {
-  if (!patches) patchWork ||= buildSeasonPatches();
-  while (!patches) { patchWork.next(); yield; }
-  patchWork = null;
 }
 // 粉白花只有少量两朵一簇，大小仍低于脚踝，花心降低对比。
 function flowers(c,x,y,index) {
@@ -76,7 +83,7 @@ function leaves(c,x,y,index) {
 // 冬季完全跳过，保持原雪地像素；夜色由所属地块统一转换。
 export function drawSeasonGround(c,view,season) {
   if(!['spring','summer','autumn'].includes(season))return;
-  for(const p of seasonGroundPatches()) {
+  for(const p of seasonGroundPatches(view)) {
     if(view&&(p.x<view.x-20||p.x>view.x+view.w+20||p.y<view.y-20||p.y>view.y+view.h+20))continue;
     if(season==='spring'&&p.index%4===0)flowers(c,p.x,p.y,p.index);
     if(season==='summer'&&p.index%2===0)foliage(c,p.x,p.y,p.index);

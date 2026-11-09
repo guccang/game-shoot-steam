@@ -1,10 +1,10 @@
 // 任务目录投影主线、修复和邻里进度，不复制接取状态、目标坐标或奖励账本。
 import {LIVING_REQUESTS} from '../config/living-world.js';
-import {trackedLivingId} from '../progression/task-tracking.js';
-import {mainlineTask,mainlineObjective} from '../core/mainline-manager.js';
-import {livingRequestTarget} from '../core/living-world.js';
+import {trackedLivingId} from '../progression/navigation/task-tracking.js';
+import {mainlineTask,mainlineObjective} from '../core/story/mainline-manager.js';
+import {livingRequestTarget} from '../core/camp/living-world.js';
 import {TOWN_RESTORATIONS} from '../config/town-restoration.js';
-import {restorationStatus} from '../core/town-restoration.js';
+import {restorationStatus} from '../core/camp/town-restoration.js';
 // 待办与完成状态均由同一请求记录计算，旧已完成故事迁移后不会又显示为可接取。
 export function taskCatalog(game){
  const tracking=trackedLivingId(game.progress),task=mainlineTask(game);

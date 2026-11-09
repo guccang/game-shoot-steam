@@ -18,7 +18,9 @@ test('日志视野四周一屏连同斜角完整覆盖，48块仍在64块容量�
   assert.equal(expected.size,48);assert.deepEqual(cache.desired,expected);assert.equal(cache.limit,64);
   for(const dx of [-view.w,0,view.w])for(const dy of [-view.h,0,view.h])
     for(const s of groundTiles({...view,x:view.x+dx,y:view.y+dy}))assert.ok(cache.desired.has(s.key));
-  assert.equal(cache.stats().warmCoverage.dayBytes*2,56914944);
+  // 扩大地图后的最后一行不足384单位，按真实尾块尺寸核对昼夜预算。
+  const expectedBytes=[...new Map(groundTiles(groundWarmView(view)).map(s=>[s.key,s])).values()].reduce((n,s)=>n+(s.w+4)*(s.h+4)*4*2,0);
+  assert.equal(cache.stats().warmCoverage.dayBytes*2,expectedBytes);
   assert.equal(new Set(cache.pending.map(s=>s.key)).size,cache.pending.length);
 });
 

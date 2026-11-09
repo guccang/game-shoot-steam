@@ -3,15 +3,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
-import {failStory,enterStory} from '../src/core/story-manager.js';
-import {beginStoryWave,spawnStoryEnemy,updateStoryWave} from '../src/core/story-encounters.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
+import {failStory,enterStory} from '../src/core/story/story-manager.js';
+import {beginStoryWave,spawnStoryEnemy,updateStoryWave} from '../src/core/story/story-encounters.js';
 import {storyGuidanceState} from '../src/rendering/story-guidance.js';
 import {moveBody,applyImpulse,stepBodies,blocked} from '../src/physics/motion.js';
 import {terrainBlocked,terrainLineClear,naturalWaypoint} from '../src/physics/terrain-navigation.js';
 import {walkNode,groundDestination} from '../src/combat/summons/ground-motion.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 // 设置指定阶段用于独立边界回归；整章自然战斗另由浏览器实际输入完成。
 function setup(id='sunleaf-06',stage='DEFEND'){
  const p=freshProgress();for(const required of STORY_CAMPAIGN[id].requires||[])p.story.chapters[required].completed=true;

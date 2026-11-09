@@ -1,7 +1,7 @@
-import {availableWood,storeWood} from '../src/core/wood-storage.js';
+import {availableWood,storeWood} from '../src/core/inventory/wood-storage.js';
 import {CAMP_WAREHOUSE} from '../src/config/wood-storage.js';
 import {terrainLineClear} from '../src/physics/terrain-navigation.js';
-import {commitWorkshop} from '../src/core/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
 import {RESTORATION_FLIGHT} from '../src/config/town-restoration.js';
 // 首次入职专项：真实战斗结算、恢复、保存失败和无武器车型边界。
 import test from 'node:test';
@@ -10,8 +10,8 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,freshRangerProgress,validateProgress} from '../src/progression/progress.js';
 import {parkedVehicleObjects} from '../src/rendering/parked-vehicles.js';
 import {RANGER,RANGER_STAGES} from '../src/config/ranger-arrival.js';
-import {advanceArrival,arrivalWorkReady,completeArrivalLetter} from '../src/core/ranger-arrival.js';
-import {quoteWorkshop,previewWorkshop} from '../src/progression/workshop.js';
+import {advanceArrival,arrivalWorkReady,completeArrivalLetter} from '../src/core/camp/ranger-arrival.js';
+import {quoteWorkshop,previewWorkshop} from '../src/progression/workshop/workshop.js';
 import {createVehicle,configureVehicle} from '../src/combat/vehicle.js';
 import {WORKSHOP,VEHICLE_WORKSHOP,workshopAt} from '../src/world/workshop.js';
 // 固定步长推进正式更新，避免大时间步跳过动作或保护逻辑。
@@ -47,7 +47,7 @@ test('武器与载具工坊独立命中并给人物和车体留通路',async()=>
 
 // 九秒必须呈现三场景和一秒落地等待；北广场赠车与老人专车互不替代。
 test('公交下车站定一秒，急速接送到北门，老人骑走后持信交回操控',async()=>{
- const {arrivalSpeech}=await import('../src/core/ranger-arrival.js');const {arrivalObjects}=await import('../src/rendering/ranger-arrival.js');
+ const {arrivalSpeech}=await import('../src/core/camp/ranger-arrival.js');const {arrivalObjects}=await import('../src/rendering/ranger-arrival.js');
  const g=new Game(freshRangerProgress());g.start();let elapsed=0,previous='',seen=[],wait=0,watchPosition=null;
  while(g.progress.arrival.phase!=='letter'&&elapsed<10){
   const a=g.progress.arrival,s=g.arrivalScene;
@@ -86,14 +86,14 @@ test('全阶段刷新续接与两代旧入职存档兼容',()=>{
 });
 // 真实地形和植被检查：公交站前、接送和导览路线不穿树干、不驶进湖中。
 test('公交站与接送路线留白且可通行',async()=>{
- const {worldDistance}=await import('../src/world/coordinates.js');const {terrainBlocked}=await import('../src/physics/terrain-navigation.js');const {forestLayout}=await import('../src/world/biomes.js');const {sampleArrivalRoute}=await import('../src/core/ranger-arrival.js');const trees=forestLayout();
+ const {worldDistance}=await import('../src/world/coordinates.js');const {terrainBlocked}=await import('../src/physics/terrain-navigation.js');const {forestLayout}=await import('../src/world/biomes.js');const {sampleArrivalRoute}=await import('../src/core/camp/ranger-arrival.js');const trees=forestLayout();
  for(const stage of [...Object.values(RANGER_STAGES),{route:RANGER.leaveRoute}]){if(!stage.route)continue;for(let i=0;i<=80;i++){const p=sampleArrivalRoute(stage.route,i/80);assert.equal(terrainBlocked(p.x,p.y,24),false);assert.ok(!trees.some(t=>worldDistance(t,p)<30));}}
  const {nearest}=await import('../src/world/coordinates.js');const b=RANGER.busStop;assert.ok(!trees.some(tree=>{const t=nearest(tree,b);return t.x+56>b.x-60&&t.x-56<b.x+75&&t.y+12>b.y-105&&t.y-140<b.y+35;}));
 });
 
 // 无对白阶段跳句也不能产生非数值时间或越过任务。
 test('空白节拍不能跳句，暂停冻结同一时钟，跳过演出仍不赠枪和木材',async()=>{
- const {nextArrivalSpeech,skipArrivalJourney}=await import('../src/core/ranger-arrival.js');
+ const {nextArrivalSpeech,skipArrivalJourney}=await import('../src/core/camp/ranger-arrival.js');
  const g=new Game(freshRangerProgress());g.start();assert.equal(nextArrivalSpeech(g),false);
  tick(g,1.4);const elapsed=g.progress.arrival.elapsed,x=g.player.x;
  g.arrivalSpeechPaused=true;tick(g,2);assert.equal(g.progress.arrival.elapsed,elapsed);assert.equal(g.player.x,x);
@@ -104,7 +104,7 @@ test('空白节拍不能跳句，暂停冻结同一时钟，跳过演出仍不�
 
 // 营地空旷横向通道放置采集树，排除自动测试直走穿墙的旧夹具问题；使用真实电锯与负重。
 test('建造武器工坊采集80木料即可，初始两秒仍展示采集过程',async()=>{
- const {skipArrivalJourney}=await import('../src/core/ranger-arrival.js');
+ const {skipArrivalJourney}=await import('../src/core/camp/ranger-arrival.js');
  const {worldDistance,nearest}=await import('../src/world/coordinates.js');
  const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);completeArrivalLetter(g);board(g);g.dismountVehicle();
  g.trees=[];for(let i=0;i<10;i++)g.addTree(-250+i*100,820);

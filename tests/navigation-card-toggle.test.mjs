@@ -2,12 +2,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {worldTaskObjective,worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
-import {toggleTaskNavigation} from '../src/core/task-navigation.js';
-import {storyRouteState} from '../src/core/story-route.js';
+import {worldTaskObjective,worldNavigationObjective,requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {toggleTaskNavigation} from '../src/core/navigation/task-navigation.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
 import {storyGuidanceState} from '../src/rendering/story-guidance.js';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
-import {clearingSite,clearingNavigationSite} from '../src/progression/clearing-site.js';
+import {clearingSite,clearingNavigationSite} from '../src/progression/story/clearing-site.js';
 import {MAINLINE_SITES} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 // 自由探索没有主线卡兜底，才能复现关闭清缴或访问路点后整张卡消失的问题。

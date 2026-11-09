@@ -5,7 +5,7 @@ async original=>{
  async function inspect(label){const r=await page.evaluate(async()=>{
   const r=(await import('/src/rendering/visual-review.js')).inspectClearingMaterialTracking(a.game,document),frame=document.getElementById('game-frame').getBoundingClientRect();
   const cards=['quest','boss-hud'].map(id=>document.getElementById(id)).filter(n=>!n.hidden&&n.offsetHeight),bottom=Math.max(...cards.map(n=>n.getBoundingClientRect().bottom));
-  const g=a.game,expected=(await import('/src/progression/equipment-goals.js')).equipmentRequirements(g.progress,g.progress.equipmentGoal.kind,g.progress.equipmentGoal.index).filter(row=>row.missing>0).map(row=>row.key);
+  const g=a.game,expected=(await import('/src/progression/workshop/equipment-goals.js')).equipmentRequirements(g.progress,g.progress.equipmentGoal.kind,g.progress.equipmentGoal.index).filter(row=>row.missing>0).map(row=>row.key);
   return {...r,expected,bottom,frame:{left:frame.left,right:frame.right},clipped:[...document.querySelectorAll('.clearing-goal-resource')].some(n=>n.scrollWidth>n.clientWidth+1)};
  });if(JSON.stringify(r.resources.map(row=>row.key))!==JSON.stringify(r.expected)||r.resources.some(row=>row.met))throw Error('资源筛选错误 '+JSON.stringify(r));if(!r.visible||!r.clearing||r.box.height<44||r.box.top<r.bottom+5||r.box.left<r.frame.left||r.box.right>r.frame.right||r.overflow||r.clipped)throw Error(label+JSON.stringify(r));samples.push({label,...r});return r;}
  try{
@@ -14,7 +14,7 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
    const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.bosses=4;p.living.patrolActive=true;p.equipmentGoal={kind:'weapons',index:6};p.weapons[6]=0;p.farm.wildMaps=['forest','jiuzhaigou'];p.farm.wildScatterVersion=1;p.vehicleHulls[0]=1;p.vehicleIndex=0;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.update=()=>{};g.spawnTimer=999;g.enemies=[];
-   const site=(await import('/src/progression/clearing-site.js')).clearingSite(p);Object.assign(g.player,site);g.wave=21;g.summonVehicle();a.renderer.camera.time=null;a.refresh();
+   const site=(await import('/src/progression/story/clearing-site.js')).clearingSite(p);Object.assign(g.player,site);g.wave=21;g.summonVehicle();a.renderer.camera.time=null;a.refresh();
   });
   await inspect('怪潮初始');
   // 实际击杀精英触发材料结算，观察应用正常刷新，不由测试替换HUD文字。
@@ -31,7 +31,7 @@ async original=>{
   }
   await page.setViewportSize({width:320,height:568});await page.evaluate(()=>{a.game.boss={type:'boss',kind:'boar',name:'铁牙野猪王',x:a.game.player.x+130,y:a.game.player.y+80,hp:900,maxHp:1200,radius:45,phase:'walk',flash:0};a.refresh();});await inspect('领主战');await page.screenshot({path:dir+'/boss-320.png'});
   // 精确达成后移除该项，尚缺的资源继续显示；详情仍能查看已完成的完整需求。
-  await page.evaluate(async()=>{const g=a.game,rows=(await import('/src/progression/equipment-goals.js')).equipmentRequirements(g.progress,'weapons',6);g.progress.materials.parts=rows.find(r=>r.key==='parts').need;a.refresh();});
+  await page.evaluate(async()=>{const g=a.game,rows=(await import('/src/progression/workshop/equipment-goals.js')).equipmentRequirements(g.progress,'weapons',6);g.progress.materials.parts=rows.find(r=>r.key==='parts').need;a.refresh();});
   const partial=await inspect('零件精确达成');if(partial.resources.some(r=>r.key==='parts'))throw Error('达成项未移除');await page.screenshot({path:dir+'/missing-only-320.png'});
   await page.locator('#equipment-goal').tap();if(!await page.locator('#goal-details .requirement-row.met').count())throw Error('完整需求缺少已完成资源');await page.locator('#close-goal').tap();
   await page.evaluate(()=>{a.game.progress.materials={parts:9999999,crystal:9999999,core:9999999};a.refresh();});const met=await inspect('材料齐备但金币木材不足');if(met.resources.some(r=>!['coins','wood'].includes(r.key)))throw Error('齐备材料仍显示');await page.screenshot({path:dir+'/met-320.png'});

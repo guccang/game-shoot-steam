@@ -1,7 +1,7 @@
 // 货架按真实拥有状态筛选，保留排序与存档，购买后及时重新归类。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workshopCatalog} from '../src/progression/workshop-catalog.js';
+import {workshopCatalog} from '../src/progression/workshop/workshop-catalog.js';
 import {WEAPON_DISPLAY_ORDER} from '../src/config/weapons.js';
 import {COLLECTED_VEHICLES,VEHICLE_DISPLAY_ORDER} from '../src/config/vehicles.js';
 import {ERA_VEHICLES,eraDonor} from '../src/config/vehicle-eras.js';

@@ -11,7 +11,7 @@ async page=>{
  await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;});
  await page.waitForFunction(()=>a.menu.page==='game'&&a.game.state==='playing');
  await page.evaluate(async()=>{
-  const {acceptClearingPost}=await import('/src/core/clearing-guide.js'),{CLEARING_APPROACH}=await import('/src/config/clearing.js');
+  const {acceptClearingPost}=await import('/src/core/story/clearing-guide.js'),{CLEARING_APPROACH}=await import('/src/config/clearing.js');
   const g=a.game;g.mainlineSpeech=null;Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});
   const accepted=acceptClearingPost(g);if(!accepted.ok)throw Error(JSON.stringify({accepted,state:g.state,x:g.player.x,y:g.player.y,arrival:g.arrivalPending,map:g.mapId,arena:g.player.arena}));
   const site=g.progress.living.clearingSite;Object.assign(g.player,{x:site.x,y:site.y});g.random=()=>.5;

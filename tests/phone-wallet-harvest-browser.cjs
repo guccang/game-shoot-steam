@@ -12,7 +12,7 @@ async original=>{
   });await page.waitForTimeout(150);
   const result=await page.evaluate(async()=>{
    const g=a.game,now=Date.now(),before=g.progress.coins;g.progress.farm.plots=[{...site,id:0,mapId:'forest',crop:0,plantedAt:now-500000,readyAt:now-1000,watered:false}];g.progress.farm.nextId=1;
-   const harvested=(await import('/src/core/farm.js')).farmAction(g,'harvest',{plot:0});if(!harvested.ok)throw Error(harvested.message);a.farm.render();
+   const harvested=(await import('/src/core/farming/farm.js')).farmAction(g,'harvest',{plot:0});if(!harvested.ok)throw Error(harvested.message);a.farm.render();
    const animation=document.querySelector('.farm-coin-flight').getAnimations()[0],end=animation.effect.getKeyframes().at(-1).transform,match=end.match(/translate\(([-\d.e]+)px,\s*([-\d.e]+)px\)/);
    animation.playbackRate=0;animation.currentTime=120;
    return {coins:g.progress.coins-before,reward:harvested.coins,duration:animation.effect.getTiming().duration,dx:Number(match?.[1]),dy:Number(match?.[2]),expectedDy:50*a.renderer.view.zoom,walletHidden:document.querySelector('[data-coins]').getBoundingClientRect().width===0};

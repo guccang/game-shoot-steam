@@ -2,8 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {WORKSHOP_INTERIORS,interiorFurniture,interiorCounter,interiorShopkeeper,VEHICLE_BAY} from '../src/config/workshop-interiors.js';
-import {cottageBlocked,updateCottage} from '../src/core/cottage.js';
-import {createCatMotion} from '../src/core/cat-motion.js';
+import {cottageBlocked,updateCottage} from '../src/core/home/cottage.js';
+import {createCatMotion} from '../src/core/battle/cat-motion.js';
 import {freshProgress} from '../src/progression/progress.js';
 // 网格搜索只使用正式碰撞，覆盖柜台左右和柜后相连的可走区域。
 function reachable(g,start,target){const step=5,queue=[start],seen=new Set([start.x+','+start.y]);for(let n=0;n<queue.length;n++){const p=queue[n];if(Math.hypot(p.x-target.x,p.y-target.y)<step*1.5)return true;for(const [dx,dy] of [[step,0],[-step,0],[0,step],[0,-step]]){const q={x:p.x+dx,y:p.y+dy},key=q.x+','+q.y;if(seen.has(key)||cottageBlocked(q.x,q.y,g))continue;seen.add(key);queue.push(q);}}return false;}

@@ -43,3 +43,9 @@ body:has(.game-frame[data-page="title"]) #settings-advanced { display:none; }
 
 /* 字体和模块尚未就绪时也保留固定中文入口，不留下空心按钮。 */
 html:not([data-font-status="ready"]) .title-menu,html:not([data-font-status="ready"]) .title-menu h1,html:not([data-font-status="ready"]) .title-menu button{font-family:system-ui,"Microsoft YaHei",sans-serif}
+
+/* 首页取名复用标准按钮，窄屏优先收缩输入框。 */
+.title-player { display:flex; align-items:center; gap:6px; }
+.title-player button { flex:none; }
+.title-player input { width:0; flex:1; min-width:0; min-height:44px; box-sizing:border-box; padding:0 8px; border:2px solid var(--ink); border-radius:10px; background:#fff4d7; color:var(--ink); font:inherit; font-size:16px; }
+.title-player button.ui-button { min-height:44px; padding-inline:8px; }

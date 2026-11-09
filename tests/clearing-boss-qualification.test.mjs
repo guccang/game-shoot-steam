@@ -1,16 +1,16 @@
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 // 清缴资格专项：真实接取/击杀/保存链路与玩家看到的进度反馈保持一致。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
 import {waveDifficulty} from '../src/config/waves.js';
 import {challengeProgress,challengeTier,RECOMMENDED_ECONOMY} from '../src/config/economy.js';
 import {createGameEventHandler} from '../src/app/game-events.js';
 import {challengeLevelMarkup,challengeVictoryText} from '../src/ui/challenge-feedback.js';
-import {equipmentRequirements} from '../src/progression/equipment-goals.js';
+import {equipmentRequirements} from '../src/progression/workshop/equipment-goals.js';
 // 仅略过已覆盖的波次战斗时间，资格必须通过正式告示牌和 Boss 致命命中结算。
 function win(g){Object.assign(g.player,CLEARING_APPROACH);assert.ok(acceptClearingPost(g).ok);Object.assign(g.player,{x:clearingSite(g.progress).x,y:clearingSite(g.progress).y});g.wave=g.bossWave;g.waveKills=g.waveSpawned=waveDifficulty(g.wave).total;g.bossReady=true;assert.ok(g.summonBoss());const boss=g.boss;g.hit(boss,1e9);return boss;}
 test('完整清缴每次180，四次升级且重复致命命中不发奖，资源满额不阻止成长',()=>{

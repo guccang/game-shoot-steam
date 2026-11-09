@@ -6,7 +6,7 @@ import { TIDE_DELAY,tideKick,validateTideState } from '../config/tide-cannon.js'
 function fireNozzle(game,state,shot,muzzle,direction) {
   const side=shot.side===0?-1:1,kick=tideKick(state.ages[shot.side],game.reducedMotion)*.75;
   const tip={x:muzzle.x-direction.x*kick-direction.y*side*5.25,y:muzzle.y-direction.y*kick+direction.x*side*5.25};
-  fireBallistics(game,{...shot.weapon,id:'water',pellets:1,effectKind:'hover-tide'},tip,direction,shot.amount,shot.critical,true);
+  fireBallistics(game,{...shot.weapon,vehicleMounted:true,id:'water',pellets:1,effectKind:'hover-tide'},tip,direction,shot.amount,shot.critical,true);
   state.ages[shot.side]=0;
   game.onEvent('weapon-sound',{kind:'hover-tide'});
   game.fx.add('tide-muzzle',tip.x,tip.y,.16,{angle:Math.atan2(direction.y,direction.x),size:14,color:'#d8fff2'});

@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, freshProgress, validateProgress } from '../src/game.js';
 import { vehicleModel } from '../src/config/vehicles.js';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 import { moveBody, blocked } from '../src/physics/motion.js';
 import { groundPursuit, hoveringOverWater } from '../src/physics/ground-pursuit.js';
 import { NATURAL_TERRAIN, isMountainBlocked } from '../src/world/natural-terrain.js';

@@ -7,12 +7,12 @@ import {FARM_CROPS} from '../src/config/farm.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {backpackEntries} from '../src/progression/backpack.js';
-import {tradeAction,tradeStock,updateTradeEscort} from '../src/core/camp-trade.js';
+import {backpackEntries} from '../src/progression/inventory/backpack.js';
+import {tradeAction,tradeStock,updateTradeEscort} from '../src/core/camp/camp-trade.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {WAREHOUSE} from '../src/config/warehouse.js';
-import {updateWarehouseHarvest} from '../src/core/warehouse-harvest.js';
+import {updateWarehouseHarvest} from '../src/core/inventory/warehouse-harvest.js';
 
 // 用同一份地图恢复现场，保留真实森林碰撞和可交互的车辆。
 function scene(raw){
@@ -39,6 +39,7 @@ test('订单预留三份，按原价加三成，保存失败和重复提交均�
  const before=structuredClone(g.progress);g.livingPersist=()=>false;
  assert.equal(tradeAction(g,'give-crop').ok,false);assert.deepEqual(g.progress,before);
  g.livingPersist=()=>true;assert.equal(tradeAction(g,'give-crop').ok,true);
+ assert.deepEqual(g.progress.trade.completed,['crop']);
  assert.equal(g.progress.coins,initial+crop.value*2+Math.round(crop.value*3*1.3));
  assert.equal(tradeAction(g,'give-crop').ok,false);assert.equal(tradeStock(g,TRADE_BOARD)[0].count,0);
 });
@@ -59,6 +60,7 @@ test('货签只在接单后由森林地面怪掉落，背包与交还数量一�
  g.progress.living.patrolActive=true;for(let i=0;i<4;i++)defeat(g);assert.equal(tags(),3);g.progress.living.patrolActive=false;
  const before=g.progress.coins;assert.equal(tradeAction(g,'give-relic').ok,true);assert.equal(g.progress.coins,before+90);
  defeat(g);assert.equal(tags(),0);assert.equal(tradeAction(g,'give-relic').ok,false);
+ assert.deepEqual(g.progress.trade.completed,['relic']);
 });
 
 for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、读档再到站且只领一次佣金',()=>{
@@ -80,6 +82,21 @@ for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、�
  assert.equal(reloaded,true);assert.equal(g.progress.trade.escort.cleared,station.guards);
  const before=g.progress.coins;assert.equal(tradeAction(g,'finish-escort').ok,true,JSON.stringify(g.progress.trade.escort));
  assert.equal(g.progress.coins,before+station.commission);assert.equal(tradeAction(g,'finish-escort').ok,false);
+ assert.deepEqual(validateProgress(g.progress).trade.completed,[station.id]);
+});
+
+test('同一订单重复结算只标记一次，旧档从成功交付记录找回进度',()=>{
+ const g=scene();g.progress.farm.inventory[0]=6;
+ for(let i=0;i<2;i++){
+  assert.ok(tradeAction(g,'take-crop').ok);
+  assert.ok(tradeAction(g,'give-crop').ok);
+ }
+ assert.deepEqual(g.progress.trade.completed,['crop']);
+ const old=structuredClone(g.progress);
+ delete old.trade.completed;
+ old.economyLog.income['trade:give-relic:coins']=90;
+ old.economyLog.income['trade:finish-escort:coins']=380;
+ assert.deepEqual(validateProgress(old).trade.completed,['crop','relic',...TRADE_STATIONS.map(s=>s.id)]);
 });
 
 // 只在路障现场累计损伤，失败不会发放佣金，重新接单也不会把旧怪算入新单。

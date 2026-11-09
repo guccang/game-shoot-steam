@@ -47,7 +47,7 @@ async original=>{
    for(const d of document.querySelectorAll('dialog[open]'))d.close();
    const room=(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.vehicle;
    Object.assign(g.player,room.door);
-   if(!(await import('/src/core/cottage.js')).enterWorkshop(g,'vehicle'))throw Error('进入载具工坊失败');
+   if(!(await import('/src/core/home/cottage.js')).enterWorkshop(g,'vehicle'))throw Error('进入载具工坊失败');
    a.workshop.open('vehicle',19);
   });
   await pay();await page.waitForFunction(()=>a.game.progress.vehicleHulls[19]===1);
@@ -68,7 +68,7 @@ async original=>{
   await page.waitForFunction(()=>a.game.magazines[0].ammo<a.game.weapon().magazineSize);
   await page.screenshot({path:out+'bike-day.png'});
   await page.evaluate(async()=>{const g=a.game;g.dismountVehicle();Object.assign(g.player,{x:704,y:2750});
-   parkForReview(21,980,2950);parkForReview(14,718,2740);if(!(await import('/src/core/camp-parking.js')).boardParkedVehicle(g,14))throw Error('马车取车失败');});
+   parkForReview(21,980,2950);parkForReview(14,718,2740);if(!(await import('/src/core/vehicles/camp-parking.js')).boardParkedVehicle(g,14))throw Error('马车取车失败');});
   await page.evaluate(async()=>{
    const {inspectVehicleEras}=await import('/src/rendering/visual-review.js');
    window.sampleWagon=()=>inspectVehicleEras(a.renderer);
@@ -81,7 +81,7 @@ async original=>{
   await page.evaluate(async()=>{const g=a.game;g.dismountVehicle();
    for(const i of [15,16,17,18])if(!g.buyVehicle(i))throw Error('改造失败 '+i);
    Object.assign(g.player,{x:704,y:2750});parkForReview(18,718,2740);
-   if(!(await import('/src/core/camp-parking.js')).boardParkedVehicle(g,18))throw Error('运输平台取车失败');});
+   if(!(await import('/src/core/vehicles/camp-parking.js')).boardParkedVehicle(g,18))throw Error('运输平台取车失败');});
   await page.setViewportSize({width:320,height:568});await light('night');await page.waitForTimeout(220);
   await page.screenshot({path:out+'hover-night.png'});
   await page.setViewportSize({width:950,height:760});await page.waitForTimeout(120);await page.screenshot({path:out+'hover-wide.png'});

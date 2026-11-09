@@ -5,10 +5,10 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {completeMainline} from '../src/core/mainline-manager.js';
-import {recordMainlineVehiclePractice,recordMainlineCombat} from '../src/progression/mainline-combat.js';
+import {completeMainline} from '../src/core/story/mainline-manager.js';
+import {recordMainlineVehiclePractice,recordMainlineCombat} from '../src/progression/story/mainline-combat.js';
 import {nativeVehicleWeapon} from '../src/config/vehicle-armaments.js';
-import {grantMainlineSeeds} from '../src/progression/mainline-seeds.js';
+import {grantMainlineSeeds} from '../src/progression/story/mainline-seeds.js';
 import {FARM_STOCK_CAP} from '../src/config/farm.js';
 // 只准备当前任务和已修复设施，击杀或交付由正式逻辑执行。
 function scene(id){const p=freshProgress();p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf(id));p.mainline.phase='doing';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);const g=new Game(p,()=>.5);g.state='playing';g.enemies=[];g.trees=[];Object.assign(g.player,MAINLINE_SITES.camp);return g;}

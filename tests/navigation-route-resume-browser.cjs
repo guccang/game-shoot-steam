@@ -15,7 +15,7 @@ async original=>{
   (await import('/src/config/vehicle-armaments.js')).grantVehicleArmament(p,0);
   localStorage.setItem('forest-patrol-v1',JSON.stringify(p));localStorage.setItem('forest-patrol-audio-v1',JSON.stringify({enabled:false}));localStorage.setItem('forest-patrol-gameplay-v1',JSON.stringify({pauseOnBlur:false}));
   let seed=6;window.a=(await import('/src/app/create-app.js')).createApplication({random:()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32)});
-  window.nav=await import('/src/core/story-route.js');window.review=await import('/src/rendering/visual-review.js');
+  window.nav=await import('/src/core/navigation/story-route.js');window.review=await import('/src/rendering/visual-review.js');
  });
  await page.locator('#start').click();await page.waitForFunction(()=>a.menu.page==='game');
  await page.evaluate(async()=>{

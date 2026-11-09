@@ -19,7 +19,9 @@ export function cutWithChainsaw(game, weapon, muzzle, direction, amount, critica
   }:heldChainsawSegment(riderPosition(game.player,game.vehicle),weapon.range,game.reducedMotion);
   const {start,end}=segment;
   if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(start,end));
-  const targets = [...weaponTerrainTargets(game, !independent && weapon.id === 'chainsaw'), ...game.enemies, ...(game.boss ? [game.boss] : [])];
+  const vehicleMounted = !!(weapon.vehicleMounted || game.vehicleMounted);
+  const terrain = weaponTerrainTargets(game, (!independent || vehicleMounted) && weapon.id === 'chainsaw', vehicleMounted);
+  const targets = [...terrain, ...game.enemies, ...(game.boss ? [game.boss] : [])];
   const hit = traceTargets(start, end, targets, segment.radius)[0];
   if (!hit) return;
   // 接触事件只驱动锯链负载音色，手持、载具和浮游炮共用真实命中结果。

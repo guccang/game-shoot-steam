@@ -37,7 +37,7 @@ async(page)=>{
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(async()=>{
   const a=window.simpleApp,g=a.game,p=(await import('/src/config/story-posts.js')).STORY_POSTS[0];
-  Object.assign(g.player,(await import('/src/core/story-posts.js')).storyPostApproach(p));
+  Object.assign(g.player,(await import('/src/core/story/story-posts.js')).storyPostApproach(p));
   for(const id of p.chapters)Object.assign(g.progress.story.chapters[id],{completed:true,rewardClaimed:true});
   g.state='playing';a.refresh();
  });

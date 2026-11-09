@@ -1,7 +1,7 @@
 import {enemyMass} from './enemy-mass.js';
 import content from './content/monsters.json' with {type:'json'};
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
-import { i18nText } from "../i18n/index.js";
+
 // 远程名额仍少于近战；提高可见威胁，同时限制全场弹量和齐射间隔。
 export const RANGED_LIMITS = Object.freeze(content.rangedLimits);
 // 名称与枪口锚点保留展示绑定，战斗属性只从怪物表读取。

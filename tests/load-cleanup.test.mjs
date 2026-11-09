@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {ownedPineProgress} from './helpers/owned-pine-progress.mjs';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {cleanupEntries,discardLoad,planLoadCleanup,discardForMobility,cleanupLoad,cleanupUnitMass} from '../src/core/load-cleanup.js';
-import {updateLoadWarning} from '../src/core/load-warning.js';
-import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/load-weight.js';
+import {cleanupEntries,discardLoad,planLoadCleanup,discardForMobility,cleanupLoad,cleanupUnitMass} from '../src/core/inventory/load-cleanup.js';
+import {updateLoadWarning} from '../src/core/inventory/load-warning.js';
+import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
 import {LOAD_RULES} from '../src/config/vehicle-load.js';
 import {AMMO_TYPES} from '../src/config/supplies.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
@@ -21,7 +21,7 @@ test('角色满载缓行，提示节流，清理后恢复正常速度并可再�
 });
 test('背包达到上限缓行，驾驶只按车辆总载荷判断，故障不误报满载',()=>{
  const {g,events}=scene(),capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight;assert.equal(catLoad(g).overloaded,true);assert.equal(movementLoadFactor(g),LOAD_RULES.catOverloadSpeed);}finally{LOAD_RULES.catCapacity=capacity;}
- g.vehicle.active=true;g.progress.logistics.builds[0].wood=20000;assert.equal(movementLoadFactor(g),0);updateLoadWarning(g,.05,{x:1,y:0});assert.match(events.at(-1).data.text,/载具载荷已满/);assert.ok(discardLoad(g,{hull:0,id:'material:wood',count:20000}).ok);assert.equal(vehicleLoad(g).overloaded,false);g.progress.supplies.engineFaults[0]=100;updateLoadWarning(g,10,{x:1,y:0});assert.equal(events.length,1);
+ g.vehicle.active=true;g.progress.logistics.builds[0].wood=40000;assert.equal(movementLoadFactor(g),0);updateLoadWarning(g,.05,{x:1,y:0});assert.match(events.at(-1).data.text,/载具载荷已满/);assert.ok(discardLoad(g,{hull:0,id:'material:wood',count:40000}).ok);assert.equal(vehicleLoad(g).overloaded,false);g.progress.supplies.engineFaults[0]=100;updateLoadWarning(g,10,{x:1,y:0});assert.equal(events.length,1);
 });
 test('数量、当前装备、农具和重要物品受保护，远车与活动不能清理',()=>{
  const {g}=scene();g.progress.farm.inventory[0]=10;const before=structuredClone(g.progress);
@@ -52,8 +52,8 @@ test('自动清理优先木材并保留余量，达到上限也会减重',()=>{
  const capacity=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight;const exact=planLoadCleanup(g);assert.equal(exact.ok,true);assert.equal(exact.changes[0].count,1);}finally{LOAD_RULES.catCapacity=capacity;}
 });
 // 整车载荷包含随身背包，清理顺序跨来源优先木头，不误清其他载具。
-test('车辆快捷清理包含背包，跨物品一次保存，失败完整保留',()=>{
- const {g}=scene();g.vehicle.active=true;g.progress.logistics.builds[0].wood=100;g.progress.logistics.bagWood=1500;g.progress.farm.inventory[0]=5;const before=structuredClone(g.progress),mags=g.magazines.map(m=>m.ammo),plan=planLoadCleanup(g,0);assert.equal(plan.ok,true);assert.ok(plan.changes.some(c=>c.hull===0));assert.ok(plan.changes.some(c=>c.hull===null));let calls=0;g.livingPersist=()=>{calls++;return false;};assert.equal(discardForMobility(g,plan).ok,false);assert.deepEqual(g.progress,before);assert.deepEqual(g.magazines.map(m=>m.ammo),mags);assert.equal(calls,1);g.livingPersist=()=>{calls++;return true;};assert.equal(discardForMobility(g,plan).ok,true);assert.equal(calls,2);assert.ok(cleanupLoad(g,0).weight<cleanupLoad(g,0).capacity);assert.ok(movementLoadFactor(g)>0);
+test('车辆快捷清理仅扣货舱，一次保存，失败完整保留',()=>{
+ const {g}=scene();g.vehicle.active=true;g.progress.logistics.builds[0].wood=40000;g.progress.logistics.bagWood=1500;g.progress.farm.inventory[0]=5;const before=structuredClone(g.progress),mags=g.magazines.map(m=>m.ammo),plan=planLoadCleanup(g,0);assert.equal(plan.ok,true);assert.ok(plan.changes.some(c=>c.hull===0));assert.ok(plan.changes.every(c=>c.hull===0));let calls=0;g.livingPersist=()=>{calls++;return false;};assert.equal(discardForMobility(g,plan).ok,false);assert.deepEqual(g.progress,before);assert.deepEqual(g.magazines.map(m=>m.ammo),mags);assert.equal(calls,1);g.livingPersist=()=>{calls++;return true;};assert.equal(discardForMobility(g,plan).ok,true);assert.equal(calls,2);assert.ok(cleanupLoad(g,0).weight<cleanupLoad(g,0).capacity);assert.ok(movementLoadFactor(g)>0);
 });
 // 确认时仍验证库存及最终重量，不根据过期预览偷偷替换待丢弃物品。
 test('快捷清理拒绝过期方案、远处车辆和不足以移动的方案',()=>{

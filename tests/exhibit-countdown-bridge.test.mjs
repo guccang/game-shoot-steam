@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {WORKSHOP_INTERIORS,interiorLayout,interiorCounter,interiorShopkeeper,SHOPKEEPER_ENTRY} from '../src/config/workshop-interiors.js';
-import {shopkeeperApproach,updateWorkshopDisplayEntry,requestShopkeeperService} from '../src/core/workshop-display-entry.js';
-import {cottageBlocked,updateCottage} from '../src/core/cottage.js';
+import {shopkeeperApproach,updateWorkshopDisplayEntry,requestShopkeeperService} from '../src/core/workshop/workshop-display-entry.js';
+import {cottageBlocked,updateCottage} from '../src/core/home/cottage.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 // 仅设置营业房场景，计时由正式控制器推进。
 function scene(kind){const g=new Game(freshProgress(),()=>.5);g.state='playing';g.cottage={kind,floor:0};Object.assign(g.player,shopkeeperApproach(g.cottage),{vx:0,vy:0});return g;}

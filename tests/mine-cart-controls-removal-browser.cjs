@@ -26,19 +26,20 @@ async original=>{
  try{
   await page.goto(base);await page.locator('#start').tap();
   await page.evaluate(async()=>{
-   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.mi=await import('/src/core/mining.js');
-   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining.js')).openBasement(p.mining);p.wood=200;p.mining.ore=100;
+   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.mi=await import('/src/core/mining/mining.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining/mining.js')).openBasement(p.mining);p.wood=200;p.mining.ore=100;
    for(let i=-4;i<=4;i++)for(const cell of [{x:i,y:0},{x:0,y:i}]){const key=mc.mineKey(cell);p.mining.dug[key]=true;p.mining.bridges[key]=true;p.mining.rails[key]=true;}
    p.mining.carts=[{id:1,...mc.MINING.home,heading:1,departure:null,previous:null,wheel:0}];p.mining.nextCart=2;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);g.cottage.scanWait=99999;window.saves=0;g.livingPersist=()=>{saves++;return true;};a.refresh();
   });
   await page.locator('#mine-tools-toggle').tap();await page.locator('#mine-board').tap();await page.waitForTimeout(150);
   const origin=await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y}));
-  await page.keyboard.down('ArrowUp');await page.waitForTimeout(500);await page.keyboard.up('ArrowUp');await heading(0);
-  const saves=await page.evaluate(()=>saves);await page.keyboard.down('a');await page.waitForTimeout(500);await page.keyboard.up('a');await heading(3);
+  // 方向页仍可只预选方向；场景方向直接起步由mine-work-controls-browser覆盖。
+  await page.locator('#mine-route').tap();await page.keyboard.press('ArrowUp');await heading(0);
+  const saves=await page.evaluate(()=>saves);await page.locator('#mine-route').tap();await page.keyboard.press('a');await heading(3);
   if(await page.evaluate(()=>saves)!==saves+1)throw Error('长按重复保存');
-  await drag(195,320,75,0);await heading(1);
-  if(await page.evaluate(o=>a.game.player.x!==o.x||a.game.player.y!==o.y,origin))throw Error('选向自动开车');
+  await page.locator('#mine-route').tap();const initialStick=await page.locator('#mine-direction-stick').boundingBox();await drag(initialStick.x+initialStick.width/2,initialStick.y+initialStick.height/2,32,0);await heading(1);
+  if(await page.evaluate(o=>a.game.player.x!==o.x||a.game.player.y!==o.y,origin))throw Error('方向页预选意外开车');
   for(const time of ['day','night']){
    await phase(time);await shot('world-'+time);await page.locator('#mine-route').tap();await shot('direction-'+time);
    if(await page.evaluate(()=>a.game.state)!=='paused')throw Error('页面未暂停');

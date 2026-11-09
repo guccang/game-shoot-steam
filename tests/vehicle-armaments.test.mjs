@@ -3,16 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
 import { freshProgress, validateProgress } from '../src/progression/progress.js';
-import { transactProgress } from '../src/progression/transactions.js';
-import { transactVehicle } from '../src/progression/vehicles.js';
+import { transactProgress } from '../src/progression/economy/transactions.js';
+import { transactVehicle } from '../src/progression/vehicles/vehicles.js';
 import { VEHICLE_ARMAMENTS, nativeVehicleWeapon } from '../src/config/vehicle-armaments.js';
 import { vehicleWeapon, vehicleDamage } from '../src/config/vehicles.js';
-import { workshopUpgrade, workshopDraft, quoteWorkshop } from '../src/progression/workshop.js';
-import { commitWorkshop } from '../src/core/workshop.js';
+import { workshopUpgrade, workshopDraft, quoteWorkshop } from '../src/progression/workshop/workshop.js';
+import { commitWorkshop } from '../src/core/workshop/workshop.js';
 import { updateVehicle, vehicleMuzzle } from '../src/combat/vehicle.js';
 import { updateRecoil } from '../src/combat/recoil.js';
-import { createWorkshopTrial } from '../src/core/workshop-trial.js';
-import { captureRealmVehicles, restoreRealmVehicles } from '../src/core/realm-vehicles.js';
+import { createWorkshopTrial } from '../src/core/workshop/workshop-trial.js';
+import { captureRealmVehicles, restoreRealmVehicles } from '../src/core/realms/realm-vehicles.js';
 
 // 使用无波次开放场地，不读取正式用户存档。
 function arena(hull=0) {

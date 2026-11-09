@@ -1,112 +1,117 @@
-import {tradeDefeat,updateTradeEscort} from './camp-trade.js';
+import {activateCampLayout} from '../world/camp-layout-bindings.js';
+import {updateIndustry} from './industry/industry.js';
+import {tradeDefeat,updateTradeEscort} from './camp/camp-trade.js';
 import {weaponTerrainTargets} from '../combat/terrain-targets.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
-import {commitWorkshop} from './workshop.js';
-import {commitResidentRelief} from './cat-home.js';
-import {oxRigClear,liftOxPlow,syncOxFoot} from './farm.js';
-import {updateOxArrival} from './pasture.js';
-import {updateSceneApproach} from './scene-approach.js';
-import {updateWarehouseHarvest} from './warehouse-harvest.js';
-import {updateOutdoors,outdoorBusy} from './outdoors.js';
-import {updateLoadWarning} from './load-warning.js';
+import {commitWorkshop} from './workshop/workshop.js';
+import {commitResidentRelief} from './home/cat-home.js';
+import {oxRigClear,liftOxPlow,syncOxFoot} from './farming/farm.js';
+import {updateOxArrival} from './farming/pasture.js';
+import {updateSceneApproach} from './navigation/scene-approach.js';
+import {updateWaystationTravel} from './navigation/waystations.js';
+import {updateWarehouseHarvest} from './inventory/warehouse-harvest.js';
+import {updateOutdoors,outdoorBusy} from './activities/outdoors.js';
+import {updateLoadWarning} from './inventory/load-warning.js';
 import {updateAmmoWarning} from '../combat/ammo-warning.js';
-import {updateWarehouseWood} from './warehouse.js';
-import {collectAutomaticWood} from './wood-pickup.js';
-import {updateVehicleBoarding} from './vehicle-boarding.js';
+import {updateWarehouseWood} from './inventory/warehouse.js';
+import {collectAutomaticWood} from './inventory/wood-pickup.js';
+import {updateVehicleBoarding} from './vehicles/vehicle-boarding.js';
 import {takeSupplyAmmo,syncSupplyAmmo,supplyAmmoCount} from '../combat/supply-ammo.js';
 import {HERO_COMBAT_XP} from '../config/hero-experience.js';
-import {movementLoadFactor} from '../progression/load-weight.js';
-import {weaponPurchaseQuote} from './weapon-purchase-load.js';
-import {maintainPlayerTow,advancePlayerTow} from './player-towing.js';
-import {awardHeroXp} from '../progression/hero-experience.js';
-import {legendaryVisible} from './legendary-workshop.js';
-import {updateVehicleRepair,vehicleRequiresService,vehicleService,syncVehicleService} from "./vehicle-repair.js";
+import {movementLoadFactor} from '../progression/inventory/load-weight.js';
+import {weaponPurchaseQuote} from './inventory/weapon-purchase-load.js';
+import {maintainPlayerTow,advancePlayerTow} from './vehicles/player-towing.js';
+import {awardHeroXp} from '../progression/player/hero-experience.js';
+import {legendaryVisible} from './workshop/legendary-workshop.js';
+import {updateVehicleRepair,vehicleRequiresService,vehicleService,syncVehicleService} from "./vehicles/vehicle-repair.js";
 import {absorbEnergyShield} from '../combat/energy-shield.js';
-import {updateFarmDelivery} from './farm-delivery.js';
-import {recordMainlineVehiclePractice} from '../progression/mainline-combat.js';
-import {updateMonsterCamps,canHitCampActor,settleMonsterCampKill} from './monster-camps.js';
-import {awardFarmSeedDrop} from './farm-seeds.js';
-import {ensureWildFarms,expireWildFarms} from './wild-farm.js';
-import {updateProduction} from './farm-production.js';
-import {farmWorking,updateFarmWork,updateFarmRain} from './farm.js';
+import {updateFarmDelivery} from './farming/farm-delivery.js';
+import {recordMainlineVehiclePractice} from '../progression/story/mainline-combat.js';
+import {updateMonsterCamps,canHitCampActor,settleMonsterCampKill} from './battle/monster-camps.js';
+import {awardFarmSeedDrop} from './farming/farm-seeds.js';
+import {ensureWildFarms,expireWildFarms} from './farming/wild-farm.js';
+import {updateProduction} from './farming/farm-production.js';
+import {farmWorking,updateFarmWork,updateFarmRain} from './farming/farm.js';
 import {createResourceDrop} from '../combat/resource-pickup.js';
-import {updateRestoration} from './town-restoration.js';
+import {updateRestoration} from './camp/town-restoration.js';
 import {updateGravityFields} from '../combat/gravity-field.js';
-import {countCampActivity} from '../progression/camp-level.js';
-import { creditResource } from '../progression/resource-wallet.js';
-import {recordDefeat} from '../progression/game-statistics.js';
+import {countCampActivity} from '../progression/camp/camp-level.js';
+import { creditResource } from '../progression/economy/resource-wallet.js';
+import {recordDefeat} from '../progression/player/game-statistics.js';
 import {markDumplingHit} from '../combat/dumpling-motion.js';
-import {updateCottage} from './cottage.js';
+import {updateCottage} from './home/cottage.js';
 import {scooterCapacity} from '../config/scooter-capacity.js';
-import {updateParkingVisitors,boardParkedVehicle,parkingFleetApplies,canSelectParkingVehicle,storeCarriedVehicle,adoptArrivalParking} from "./camp-parking.js";
-import {updateParking} from './parking.js';
+import {updateParkingVisitors,boardParkedVehicle,parkingFleetApplies,canSelectParkingVehicle,storeCarriedVehicle,adoptArrivalParking} from "./vehicles/camp-parking.js";
+import {updateParking} from './vehicles/parking.js';
 import {showDamageNumber} from '../combat/damage-numbers.js';
-import {startCampDefense,updateCampDefense,campDefenseKill,rescueCampDefense} from './camp-defense.js';
+import {startCampDefense,updateCampDefense,campDefenseKill,rescueCampDefense} from './camp/camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
-import {updateCampRoutines} from './camp-routines.js';
-import { updateLivingWorld, acceptLivingRequest } from './living-world.js';
-import {syncStoryWorld} from './story-world.js';
-import {storyDeliveryReady} from './story-definition.js';
-import { clearingCombatActive, livingProtected, retreatLivingEnemy } from './living-safety.js';
-import {bossCombatActive,updateBossEngagement} from './boss-engagement.js';
+import {updateCampRoutines} from './camp/camp-routines.js';
+import { updateLivingWorld, acceptLivingRequest } from './camp/living-world.js';
+import {syncStoryWorld} from './story/story-world.js';
+import {storyDeliveryReady} from './story/story-definition.js';
+import { clearingCombatActive, livingProtected, retreatLivingEnemy } from './camp/living-safety.js';
+import {bossCombatActive,updateBossEngagement} from './battle/boss-engagement.js';
 import { riderPosition } from '../config/vehicle-rider.js';
-import {updateMainline,resetMainlineScene} from './mainline-manager.js';
+import {updateMainline,resetMainlineScene} from './story/mainline-manager.js';
 import {arrivalPending,arrivalCinematic,arrivalGiftHull} from '../config/ranger-arrival.js';
-import {restoreArrival,updateArrival,advanceArrival} from './ranger-arrival.js';
+import {restoreArrival,updateArrival,advanceArrival} from './camp/ranger-arrival.js';
 import { i18nText } from "../i18n/index.js";
-import {readyStoryExcursion} from './story-excursion.js';
-import {recordStoryEvent} from './story-journey.js';
+import {readyStoryExcursion} from './story/story-excursion.js';
+import {recordStoryEvent} from './story/story-journey.js';
 import { turnWeapon,weaponTurnRate } from '../combat/weapon-turn.js';
-import { returnStoryExcursion, chooseStoryOption, startStoryExcursion, enterStory, leaveStory, syncStory, chooseStoryLoadout, chooseStoryRoute, startStoryStage, advanceStoryDialogue, storyObjective, interactStory, failStory, hurtStoryTarget, storyKill, retryStory, claimStory, updateStory, startStoryTrial, stopStoryTrial } from './story-manager.js';
+import { returnStoryExcursion, chooseStoryOption, startStoryExcursion, enterStory, leaveStory, syncStory, chooseStoryLoadout, chooseStoryRoute, startStoryStage, advanceStoryDialogue, storyObjective, interactStory, failStory, hurtStoryTarget, storyKill, retryStory, claimStory, updateStory, startStoryTrial, stopStoryTrial } from './story/story-manager.js';
 import { advanceVehicleWheels } from '../combat/vehicle-motion.js';
 import { VEHICLE_WEAPONS } from '../config/vehicle-armaments.js';
 import { heroHealth, forestReward } from '../config/economy.js';
-import { recordEconomy } from '../progression/economy-ledger.js';
+import { recordEconomy } from '../progression/economy/economy-ledger.js';
 import { updateSpider, resetSpiderFormation } from '../combat/spider.js';
 import {FIRE_TRANSIT_PHASES} from '../config/fire-rescue.js';
-import { startFireRescue,requestFireRescue,dismissFireRescue,guideFireWater,restoreFireRescue,updateFireRescue,syncFireRescue,boardFireGarage } from './fire-rescue.js';
-import {startRace,updateRace} from './forest-race.js';
+import { startFireRescue,requestFireRescue,dismissFireRescue,guideFireWater,restoreFireRescue,updateFireRescue,syncFireRescue,boardFireGarage } from './activities/fire-rescue.js';
+import {startRace,updateRace} from './activities/forest-race.js';
 import { footballEquipment } from '../config/slime-football.js';
-import { chooseFootballGun, startFootball, updateFootball } from './slime-football.js';
+import { chooseFootballGun, startFootball, updateFootball } from './activities/slime-football.js';
 // 装配层通过核心入口管理静态导航预热，不把异步任务带入战斗更新函数。
 export { NavigationWarmup } from '../physics/terrain-navigation.js';
 import { resetMechanicalGunCharge } from '../combat/mechanical-gun.js';
 import { resetMechanicalFormation, updateMechanical } from '../combat/mechanical.js';
-import { changeGuardianDefense, updateGuardianDefenses } from './guardian-defense.js';
-import { travelMap, mapTravelReason } from './map-travel.js';
+import { changeGuardianDefense, updateGuardianDefenses } from './battle/guardian-defense.js';
+import { travelMap, mapTravelReason } from './navigation/map-travel.js';
 import { updateCombatTraces, updateRealmIntermissionEffects } from '../combat/transient-effects.js';
-import { syncRealm } from './realm-manager.js';
-import { updateCatMotion } from './cat-motion.js';
+import { syncRealm } from './realms/realm-manager.js';
+import { updateCatMotion } from './battle/cat-motion.js';
 import { expeditionEquipment } from '../config/expedition.js';
 import { realmWeapon } from '../config/realms.js';
-import { enterRealm, leaveRealm, chooseRealmBlessing, continueRealm, rollRealmEquipment, readyRealm, updateRealm, realmKill, finishRealm, hurtGoddess } from './realm-manager.js';
+import { enterRealm, leaveRealm, chooseRealmBlessing, continueRealm, rollRealmEquipment, readyRealm, updateRealm, realmKill, finishRealm, hurtGoddess } from './realms/realm-manager.js';
 // 游戏规则与画面分离，统一管理战斗、资源、成长和存档校验。
-import { resetBattlefield, addTree } from './battlefield.js';
+import { resetBattlefield, populateBattlefieldSteps, addTree } from './battlefield.js';
 import { createRecoil, triggerRecoil, updateRecoil, muzzlePosition } from '../combat/recoil.js';
 import { shotSolution } from '../combat/aim.js';
 import { piercingLane, updateAimLock } from '../combat/targeting.js';
 import {attackTargetDistance,attackTargetVisible,attackTargetKnown,rememberCombatTarget,updateCombatPerception} from '../combat/perception.js';
+import {treesInBounds} from '../world/spatial-grid.js';
 import { createPulseState, advancePulse, kickHolder, updateHolderKick } from '../combat/pulse.js';
+import {updateWaterBag} from './fishing/water-bag.js';
 import { consumeRound, advanceReload } from '../combat/magazine.js';
 import { resetFunnelFormation, updateFunnel, updateFunnelIdle } from '../combat/funnel.js';
 import { constrainFunnelViewport } from '../combat/funnel-movement.js';
-import { updateEncounters } from './encounter-manager.js';
-import { updateWaves,waveKillEligible } from './wave-manager.js';
-import { spawnEnemy, updateEnemies, defeatEnemy, recycleEnemies, leaveEnemyRemnant } from './enemy-manager.js';
-import { summonBoss, defeatBoss } from './boss-manager.js';
-import { restorePatrol, restartPatrol } from './patrol-session.js';
-import {settleDeathPenalty} from './death-penalty.js';
-import { updateBossSupport, dismissBossSummons } from './boss-reinforcements.js';
+import { updateEncounters } from './battle/encounter-manager.js';
+import { updateWaves,waveKillEligible } from './battle/wave-manager.js';
+import { spawnEnemy, updateEnemies, defeatEnemy, recycleEnemies, leaveEnemyRemnant } from './battle/enemy-manager.js';
+import { summonBoss, defeatBoss } from './battle/boss-manager.js';
+import { restorePatrol, restartPatrol } from './battle/patrol-session.js';
+import {settleDeathPenalty} from './battle/death-penalty.js';
+import { updateBossSupport, dismissBossSummons } from './battle/boss-reinforcements.js';
 import { bossImpactProfile } from '../config/boss-combat.js';
 import { updateBoss, updateBossHazards } from '../combat/bosses.js';
 import { WEAPONS } from '../config/weapons.js';
 import { TREE_REWARD, enemyWoodReward } from '../config/rewards.js';
-import { awardMaterials } from '../progression/material-loot.js';
+import { awardMaterials } from '../progression/economy/material-loot.js';
 import { clearingKillReward } from '../config/waves.js';
 import { MATERIAL_KEYS } from '../config/materials.js';
 import { vehicleSpeed, vehicleMaxHp } from '../config/vehicles.js';
 import { effectiveWeapon, weaponDamage } from '../config/weapon-mods.js';
-import { awardAttackMastery, changeWeaponMod } from '../progression/mastery.js';
+import { awardAttackMastery, changeWeaponMod } from '../progression/player/mastery.js';
 import { emitWeaponAttack } from '../combat/weapon-fire.js';
 import {
   createVehicle,
@@ -126,11 +131,11 @@ import {WORLD,worldDistance} from "../world/coordinates.js";
 import { clamp } from './math.js';
 import { freshProgress, freshRangerProgress, validateProgress } from '../progression/progress.js';
 import { vehicleModel } from '../config/vehicles.js';
-import { transactVehicle } from '../progression/vehicles.js';
-import { transactProgress } from '../progression/transactions.js';
+import { transactVehicle } from '../progression/vehicles/vehicles.js';
+import { transactProgress } from '../progression/economy/transactions.js';
 import { createWeaponCycle, advanceGrenadeCharge, launchGrenade } from '../combat/grenades.js';
 
-import {restoreTownPosition} from './town-layout.js';
+import {restoreTownPosition} from './camp/town-layout.js';
 
 export class Game {
   // 注入随机数和事件回调，便于验证关键玩法。
@@ -147,10 +152,18 @@ export class Game {
   }
   // 首页只建立界面需要的轻量状态，点击进入后才生成地图并恢复现场。
   initializeWorld() {
+    const steps=this.initializeWorldSteps();let part;
+    do{part=steps.next();}while(!part.done);return part.value;
+  }
+  // 加载入口逐帧消费同一初始化序列；部分树木或未恢复的存档不得作为就绪世界发布。
+  *initializeWorldSteps() {
     if (!this.worldPending) return false;
-    this.worldPending = false;
     this.reset();
-    this.restoreWorld();
+    yield .03;
+    yield* populateBattlefieldSteps(this);
+    this.worldPending = false;
+    try{this.restoreWorld();}catch(error){this.worldPending=true;throw error;}
+    yield 1;
     return true;
   }
   // 新旧入口共用恢复顺序，避免延后加载遗漏剧情、入职或特殊战斗。
@@ -204,11 +217,12 @@ export class Game {
   stopStoryTrial() { return stopStoryTrial(this); }
   // 重建战场，可接收死亡续游统计；仅显式清档和首次进入使用默认初始值。
   reset(continuation = null) {
+    activateCampLayout(this.progress);
     // 只清空本次死亡收据，永久金币已在死亡结算时扣除。
     this.deathPenaltyCoins=null;
     // 观察记录只属于当前战场，不写进存档或继承到重开后的同编号怪物。
     this.combatSight=new WeakMap();
-    this.farmWork=null;this.farmVehicleReturn=null;this.farmSignals=[];this.farmDragging=false;this.farmCursor=null;this.farmDeliveryCheck=0;
+    this.farmWork=null;this.oxIdleRetry=0;this.farmVehicleReturn=null;this.farmSignals=[];this.farmDragging=false;this.farmCursor=null;this.farmDeliveryCheck=0;
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
@@ -709,6 +723,7 @@ export class Game {
       variant: tree.variant,
       palette: tree.palette,
       size: tree.size,
+      woodland: tree.woodland,
     });
   }
   // 只读射线同时供预览、能力和开火使用，避免目标已变化而仍沿用旧方向。
@@ -732,7 +747,8 @@ export class Game {
     if (target && weapon.id !== 'chainsaw') return target;
     if (weapon.controller || weapon.targetTrees === false) return target;
     closest = Infinity;
-    for (const tree of weaponTerrainTargets(this, true)) {
+    const {x,y} = this.player;
+    for (const tree of treesInBounds(weaponTerrainTargets(this, true), x, y, x, y, weapon.range)) {
       if (tree.equipmentObstacle || !(tree.hp > 0)) continue;
       const distance = attackTargetDistance(this, tree, Math.min(closest, weapon.range));
       if (distance < closest && distance < weapon.range && attackTargetVisible(this, tree)) {
@@ -852,6 +868,7 @@ export class Game {
     updateBossEngagement(this);
     updateOutdoors(this,dt);
     updateProduction(this);
+    updateIndustry(this);
     updateFarmRain(this);
     updateWarehouseWood(this,dt);
     updateWarehouseHarvest(this,dt);
@@ -859,10 +876,12 @@ export class Game {
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
     updateLoadWarning(this,dt,input);
+    input=updateWaystationTravel(this,dt,input);
     input=updateSceneApproach(this,dt,input);
     if(outdoorBusy(this))input={x:0,y:0};
     if(!outdoorBusy(this))updateVehicleBoarding(this,dt,input);
     maintainPlayerTow(this);
+    if(this.cottage)for(const m of this.magazines){m.waterFilling=false;m.waterComplete=0;m.waterFraction=0;}
     // 屋内等待仍推进已付费维修，弹窗暂停由业务状态统一冻结。
     if(this.cottage)updateVehicleRepair(this,dt);
     if(updateCottage(this,dt,input)){
@@ -904,6 +923,8 @@ export class Game {
     if (this.state !== 'playing') return;
     syncStoryWorld(this);
     // 营地实体在章节全程可见，底座碰撞同样不随任务节点开关。
+    activateCampLayout(this.progress);
+    this.player.campProgress=this.progress;
     this.player.legendaryBuilding=legendaryVisible(this);
     this.player.livingCollision=!this.campDefense&&!this.realm&&this.mapId==='forest'&&!this.fireActive;
     updateLivingWorld(this,dt);
@@ -940,7 +961,9 @@ export class Game {
     advanceVehicleWheels(this.vehicle, p, previousPlayer, dt);
     if(this.arrivalPending&&this.mapId==='forest'&&!this.realm&&!this.story&&!this.fireActive&&!this.campDefense){this.progress.arrival.x=p.x;this.progress.arrival.y=p.y;}
     syncOxFoot(this,previousPlayer);
-    updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - previousPlayer.x, p.y - previousPlayer.y) / dt : 0, (length > 0 || !!this.farmWork?.ox?.moving) && !this.vehicle.active, this.vehicle.active);
+    // 牛背骑乘沿用载具的坐姿时钟，牛自行迈步，猫不会在背上跑腿。
+    const ridingOx=!!this.farmWork?.ox&&!this.farmWork.ox.approach&&!this.farmWork.autoCombat;
+    updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - previousPlayer.x, p.y - previousPlayer.y) / dt : 0, length > 0 && !this.vehicle.active&&!ridingOx, this.vehicle.active||ridingOx);
     const beforeKick = {x:p.x,y:p.y};
     if(speed!==0)updateHolderKick(p, dt, this.trees);
     else p.pushX=p.pushY=0;
@@ -955,9 +978,9 @@ export class Game {
     p.invincible = Math.max(0, p.invincible - dt);
     profiler?.end('logic.movement');
     profiler?.start('logic.trees');
-    // 树干阻挡移动，树冠允许经过，保留自然的俯视层次。
+    // 常态树冠由绘制时钟驱动，仅受击树需要回写摇摆和闪光倒计时。
     for (const tree of this.trees)
-      if (tree.hp > 0) {
+      if ((tree.sway > 0 || tree.flash > 0) && tree.hp > 0) {
         tree.sway = Math.max(0, (tree.sway || 0) - dt);
         tree.flash = Math.max(0, tree.flash - dt);
       }
@@ -973,6 +996,7 @@ export class Game {
     profiler?.start('logic.weapons');
     const weapon = this.weapon();
     const magazine = this.magazines[this.loadout.weapon];
+    updateWaterBag(this,dt);
     const wasReloading = magazine.remaining > 0;
     const fireTime = advanceReload(magazine, weapon, dt, this.onEvent,n=>takeSupplyAmmo(this,weapon,n),supplyAmmoCount(this,weapon));
     if (!this.parking?.idle&&!outdoorBusy(this)&&['funnel', 'drone'].includes(weapon.controller)) {
@@ -1044,7 +1068,7 @@ export class Game {
     for (const s of this.stumps) {
       s.life -= dt;
       if (s.life <= 0 && worldDistance(s, p) > GAMEPLAY_VALUES.forest.treeRegrowSafeDistance) {
-        this.addTree(s.x, s.y, { variant: s.variant, palette: s.palette, size: s.size });
+        this.addTree(s.x, s.y, { variant: s.variant, palette: s.palette, size: s.size, woodland:s.woodland });
         s.regrown = true;
       }
     }

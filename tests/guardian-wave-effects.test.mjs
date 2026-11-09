@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
-import { updateRealm } from '../src/core/realm-manager.js';
+import { updateRealm } from '../src/core/realms/realm-manager.js';
 import { triggerRecoil } from '../src/combat/recoil.js';
 
 // 经过正式击杀和清波入口，保留死亡残影以及最后一击的视觉反馈。

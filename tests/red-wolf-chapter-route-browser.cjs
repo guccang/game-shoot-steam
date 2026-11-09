@@ -8,7 +8,7 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
    const p=(await import('/src/game.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.restoration.repaired=['story','garage','neighbors'];
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999999;
-   const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'equipment-red-wolf')));
+   const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'equipment-red-wolf')));
    a.living.open();a.refresh();
   });
   await page.locator('[data-living-tab="equipment"]').tap();
@@ -20,7 +20,7 @@ async original=>{
   if(!await page.evaluate(()=>a.game.story?.stageId==='VISIT'&&a.game.vehicle.active))throw Error('接取或借装失败');
   // 只缩短长途距离；现场交谈和驾驶碾树均走正式状态机。
   async function arrive(){await page.evaluate(async()=>{
-   const g=a.game,def=(await import('/src/core/story-definition.js')).storyDefinition(g),p=def.world.sites[g.storyObjective().site];
+   const g=a.game,def=(await import('/src/core/story/story-definition.js')).storyDefinition(g),p=def.world.sites[g.storyObjective().site];
    Object.assign(g.player,{x:p.x,y:p.y+35});a.refresh();
   });}
   await arrive();

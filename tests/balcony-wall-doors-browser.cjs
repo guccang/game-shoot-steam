@@ -6,10 +6,10 @@ async page=>{
   const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();
   p.arrival={version:3,phase:'complete',keys:true};p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(v=>v.id);
   p.homeDecor.balconies[0]=p.homeDecor.balconies[1]=['north','south','east','west'];
-  p.homeDecor=(await import('/src/progression/home-decor.js')).normalizeHome(p.homeDecor,p.living.calendar);
+  p.homeDecor=(await import('/src/progression/home/home-decor.js')).normalizeHome(p.homeDecor,p.living.calendar);
   g.progress=p;g.reset();g.start();g.mainlineSpeech=null;g.vehicle.active=false;
   Object.assign(g.player,(await import('/src/config/cottage.js')).COTTAGE.door);
-  if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('入屋失败');
+  if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('入屋失败');
   g.cottage.floor=1;a.refresh();
  });
  for(const [side,width,height,time] of [['north',390,844,'day'],['east',320,568,'night'],['west',580,844,'day'],['south',390,844,'day']]){

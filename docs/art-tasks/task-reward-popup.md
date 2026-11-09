@@ -16,7 +16,7 @@
 
 宽度最多340像素，窄屏两侧各留16像素；高度不超过视口减40像素，必要时内部滚动。锚点为原生弹窗视口中心，图标40×40像素、关闭按钮44×44像素。原生顶层弹窗在正式世界与HUD上方，半透明绿色遮罩；面板背景不透明，图标外部透明。无新位图、源片、解码缓存或昼夜副本；只有当前收据的DOM节点与待展示数据队列。
 
-逻辑：`src/progression/reward-receipt.js` 读取结算前后差额；界面：`src/ui/task-reward.js`；样式：`src/styles/task-reward.css`。收据不发奖、不修改存档；事务失败和重复领取不产生通知。
+逻辑：`src/progression/economy/reward-receipt.js` 读取结算前后差额；界面：`src/ui/task-reward.js`；样式：`src/styles/task-reward.css`。收据不发奖、不修改存档；事务失败和重复领取不产生通知。
 
 ## 4 动画与保留项
 

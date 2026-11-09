@@ -23,7 +23,7 @@ src/ui/camp-home.js、src/ui/keepsake-backpack.js、src/app/create-app.js；desi
 - 目标：购买新枪前按实际随身枪械、空弹匣、运行弹匣子弹及库存预演负重，达到30kg即拦截，不扣款、不保存候选；保留现有满载停止移动规则。
 - 结构：工坊购买页显示购买后的重量与处理方式，新增“整理背包”复用现有清理底板；已拥有武器的升级页在满载时也显示入口。清理后立即刷新报价，关闭清理返回工坊，关闭工坊恢复移动。丢弃仍需明确确认。
 - 参考与保留：沿用本任务的森林绿、奶油黄、手机底板和44px触控标准。负重提示独占结算区一行，避免320宽屏被两个按钮挤成窄列；无新图片、图标、Canvas、动画、世界坐标或碰撞修改，PNG精修不适用。
-- 正式入口：src/core/weapon-purchase-load.js、src/core/workshop.js、src/ui/workshop.js、src/styles/workshop-focus.css；沿用designCriterion：indoor-backpack-cleanup。
+- 正式入口：src/core/inventory/weapon-purchase-load.js、src/core/workshop/workshop.js、src/ui/workshop.js、src/styles/workshop-focus.css；沿用designCriterion：indoor-backpack-cleanup。
 - 验证：tests/weapon-purchase-load.test.mjs与tests/load-cleanup.test.mjs共18项通过，覆盖30kg临界、略低上限、存档恢复、运行弹匣、直接交易入口、原地清理、首次手枪以及换装升级。
 - 已有回归情况：workshop.test.mjs与ranger-arrival.test.mjs中12项旧测试失败，在未修改主分支同样复现；本次未修改这些旧用例和对应无关玩法。
 - 手机验收：tests/weapon-purchase-load-browser.cjs检查320×568、390×844的昼夜四组，正式工坊进入→满载拦截→确认清理→购枪→关闭后真实移动；检查已购枪升级页整理入口、暂停归属、按钮尺寸和页面越界。截图与结果保存于output/playwright/weapon-purchase-load/及output/weapon-purchase-browser-result.txt。

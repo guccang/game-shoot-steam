@@ -1,10 +1,11 @@
+import {escapeHtml as escape} from './shared/html.js';
 // 手机邮箱使用统一底板，仅展示载具和武器购买合同。
 import {createEventScope} from '../platform/events.js';
-import {readMail,mailboxAvailable} from '../core/mailbox.js';
-import {unreadMailCount,isPurchaseContract} from '../progression/mailbox.js';
+import {readMail,mailboxAvailable} from '../core/camp/mailbox.js';
+import {unreadMailCount,isPurchaseContract} from '../progression/camp/mailbox.js';
 import {keepsakeIcon} from './keepsake-icons.js';
 // 存档文字只能显示为正文，不能构造页面标签或属性。
-const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 一次只创建二十个列表项，历史记录不增加每帧绘制负担。
 export function createMailbox({game,root,dialogs,onChange,onClose}){
  const scope=createEventScope(),dialog=root.createElement('dialog');dialog.id='mailbox-dialog';dialog.className='ui-panel ui-page mailbox';dialog.setAttribute('aria-labelledby','mailbox-title');

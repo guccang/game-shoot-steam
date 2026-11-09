@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {waveDifficulty,rollWaveGroup} from '../src/config/waves.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {findArrivalSpot,arrivalRecycleRadius} from '../src/core/enemy-arrival.js';
-import {recycleEnemies} from '../src/core/enemy-manager.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {findArrivalSpot,arrivalRecycleRadius} from '../src/core/battle/enemy-arrival.js';
+import {recycleEnemies} from '../src/core/battle/enemy-manager.js';
 import {terrainBlocked} from '../src/physics/terrain-navigation.js';
 import {worldDistance} from '../src/world/coordinates.js';
 // 固定种子仅控制地点抽样，正式游戏负责出生、命中、结算和存档。

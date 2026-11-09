@@ -45,7 +45,7 @@ async page=>{
  await page.evaluate(()=>{a.environment.livingPreview=false;a.game.livingPreview=false;});
  for(let stage=0;stage<4;stage++){
   await page.evaluate(async()=>{
-   const spec=(await import('/src/config/living-world.js')).LIVING_REQUESTS[0],t=(await import('/src/core/living-world.js')).livingRequestTarget(a.game,spec);
+   const spec=(await import('/src/config/living-world.js')).LIVING_REQUESTS[0],t=(await import('/src/core/camp/living-world.js')).livingRequestTarget(a.game,spec);
    Object.assign(a.game.player,{x:t.x,y:t.y});a.game.time+=1;a.refresh();
   });
   await page.waitForTimeout(120);await page.keyboard.press('e');await page.locator('#living-dialog').waitFor({state:'visible'});

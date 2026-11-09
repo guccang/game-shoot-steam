@@ -24,7 +24,7 @@
 
 本局击杀不掉常规资源，不累计普通清缴配额或领主胜场；领奖一次性入账，保存失败可重试。结束恢复原森林、角色和装备。重新打开游戏会恢复本波剩余配额、拒马耐久、Boss 生命和已确定的救场阵容；离线不推进。
 
-数值和对白集中在 `src/config/camp-defense.js`，运行流程在 `src/core/camp-defense.js`，持久化校验在 `src/progression/camp-defense.js`，交互与绘制分别在 `src/ui/camp-defense.js`、`src/rendering/camp-defense.js`。调整怪潮不改清缴数值。
+数值和对白集中在 `src/config/camp-defense.js`，运行流程在 `src/core/camp/camp-defense.js`，持久化校验在 `src/progression/camp/camp-defense.js`，交互与绘制分别在 `src/ui/camp-defense.js`、`src/rendering/camp-defense.js`。调整怪潮不改清缴数值。
 
 验收见 [美术与交互记录](art-tasks/camp-horde-defense.md)。针对性命令：`node --test tests/camp-defense.test.mjs`；正式战斗模拟：`node scripts/camp-defense-timing.mjs`。浏览器脚本 `tests/camp-defense-browser.cjs` 通过 Playwright CLI 在隔离端口 4268 执行。
 

@@ -7,7 +7,7 @@ export const MINE_SURFACE_STEP=16;
 // 只缓存稳定地理，不缓存开掘状态；同一对象直接开格也会立即反映到碰撞。
 function terrain(layer,x,y){
  let cache=terrains.get(layer);const b=mineBounds(layer);
- if(!cache||cache.seed!==layer.seed||cache.entry!==layer.entry||cache.left!==b.left||cache.top!==b.top||cache.right!==b.right||cache.bottom!==b.bottom){cache={seed:layer.seed,entry:layer.entry,...b,cells:new Map()};terrains.set(layer,cache);}
+ if(!cache||cache.seed!==layer.seed||cache.entry!==layer.entry||cache.depotRow!==layer.depotRow||cache.left!==b.left||cache.top!==b.top||cache.right!==b.right||cache.bottom!==b.bottom){cache={seed:layer.seed,entry:layer.entry,depotRow:layer.depotRow,...b,cells:new Map()};terrains.set(layer,cache);}
  const key=`${x},${y}`;let t=cache.cells.get(key);
  if(!t){if(cache.cells.size>=4096)cache.cells.clear();t={...mineTerrain({x,y},layer),area:mineCellArea({x,y},layer)>0};cache.cells.set(key,t);}
  return {open:t.area&&(t.natural||!!layer.dug?.[key])?1:0,water:t.area&&t.water?1:0};

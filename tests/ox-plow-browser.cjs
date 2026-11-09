@@ -47,7 +47,7 @@ async original=>{
   await page.locator('[data-ox-park]').tap();
 
   await page.evaluate(()=>{const g=a.game;Object.assign(g.player,fieldPoint);g.progress.farm.plots.push({id:92,mapId:'forest',x:fieldPoint.x-56,y:fieldPoint.y,crop:null,plantedAt:0,readyAt:0,watered:false});g.progress.farm.nextId=93;a.renderer.camera.time=null;a.refresh();});
-  await page.waitForTimeout(350);await page.locator('#farm-menu').tap();await page.locator('#farm-summon-ox').tap();
+  await page.waitForTimeout(350);await page.locator('#farm-menu').tap();await page.locator('#farm-hoe').press('ArrowDown');await page.locator('#farm-summon-ox').tap();
   await page.waitForFunction(()=>a.game.oxArrival?.moving);
   if(!await page.locator('#farm-summon-ox').isDisabled())throw Error('赶来途中应阻止重复召唤');
   await page.waitForFunction(()=>!a.game.oxArrival);
@@ -82,7 +82,7 @@ async original=>{
   await page.waitForFunction(()=>a.game.farmWork?.tool==='ox');
   await page.evaluate(async()=>{
    // 使用正式转弯校验寻找有完整半圈空间的位置。
-   const g=a.game,{turnOx}=await import('/src/core/farm.js');
+   const g=a.game,{turnOx}=await import('/src/core/farming/farm.js');
    let found=false;
    for(let y=1100;y<1800&&!found;y+=60)for(let x=1400;x<2600&&!found;x+=60){
     Object.assign(g.player,{x,y,vx:0,vy:0});

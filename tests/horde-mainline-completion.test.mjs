@@ -5,10 +5,10 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {MAINLINE_IDS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {CAMP_GATES} from '../src/config/camp-defense.js';
-import {startCampDefense,updateCampDefense,claimCampDefense,syncCampDefense} from '../src/core/camp-defense.js';
-import {worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
-import {completeMainline} from '../src/core/mainline-manager.js';
-import {recordMainlineCombat} from '../src/progression/mainline-combat.js';
+import {startCampDefense,updateCampDefense,claimCampDefense,syncCampDefense} from '../src/core/camp/camp-defense.js';
+import {worldNavigationObjective,requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {completeMainline} from '../src/core/story/mainline-manager.js';
+import {recordMainlineCombat} from '../src/progression/story/mainline-combat.js';
 
 // 只准备已接取任务和开放建筑，不伪造主线战绩或主炮使用记录。
 function scene(id,gate='left'){
@@ -17,10 +17,10 @@ function scene(id,gate='left'){
  const g=new Game(p,()=>.5);g.start();g.mainlineSpeech=null;g.mainlineTalkDelay=99999;
  Object.assign(g.player,CAMP_GATES.find(v=>v.id===gate));return g;
 }
-// 正式生成并清完十波，再击败真实领主；大伤害仅缩短测试，不代替自然战斗难度验收。
+// 正式生成并清完五波，再击败真实领主；大伤害仅缩短测试，不代替自然战斗难度验收。
 function win(g,gate='left'){
  assert.ok(startCampDefense(g,gate));const r=g.campDefense;
- for(let wave=1;wave<=10;wave++){
+ for(let wave=1;wave<=5;wave++){
   r.timer=0;
   for(let i=0;r.cleared<wave&&i<500;i++){updateCampDefense(g,.2);for(const e of g.enemies)if(e.hp>0)g.hit(e,1e9);g.enemies=g.enemies.filter(e=>e.hp>0);}
   assert.equal(r.cleared,wave);

@@ -2,14 +2,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {cancelStory} from '../src/core/story-manager.js';
+import {cancelStory} from '../src/core/story/story-manager.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {storyPostApproach,worldStoryPosts,canUseStoryPost,canManageStoryPost} from '../src/core/story-posts.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {storyPostApproach,worldStoryPosts,canUseStoryPost,canManageStoryPost} from '../src/core/story/story-posts.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 import {nearbyInteractionAnchor} from '../src/world/interaction-anchors.js';
 import {BUILDING_ENTRIES} from '../src/config/building-entries.js';
 import {CAMP_GATES} from '../src/config/camp-defense.js';
-import {canStartCampDefense} from '../src/core/camp-defense.js';
+import {canStartCampDefense} from '../src/core/camp/camp-defense.js';
 // 仅补齐设施权限与入职状态，不改章节配置或战斗判定。
 function setup(){
  const p=freshProgress();p.restoration.repaired.push('story','defense');

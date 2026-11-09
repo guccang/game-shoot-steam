@@ -14,7 +14,7 @@ import { CAT_SCARVES } from '../config/cat-scarves.js';
 // 静态头像也使用同一主体资源，避免营地与战场显示不同品种。
 const portraitMotion = { idleTime: 0, moveTime: 0, moveWeight: 0 };
 import { GUN_SCALE, PLAYER_SCALE, RECOIL_PROFILES, weaponPose } from '../combat/recoil.js';
-import { heatColor } from '../combat/weapon-heat.js';
+
 import { drawFunnelController } from './controller.js';
 import { box, oval, poly, outline } from './primitives.js';
 // 枪械使用独立轮廓、材料和枪口尺寸，营地与实战共用绘制。

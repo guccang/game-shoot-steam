@@ -11,7 +11,7 @@ async original=>{
    p.vehicleIndex=0;p.vehicleHulls[0]=1;(await import('/src/config/vehicle-armaments.js')).grantVehicleArmament(p,0);
    g.progress=p;g.reset();g.state='playing';g.update=()=>{};g.vehicle.active=false;g.trees=[];g.enemies=[];g.boss=null;g.mainlineSpeech=null;
    Object.assign(g.player,{x:893,y:2814});if(!g.summonVehicle())throw Error('上车失败');g.vehicle.hp=73;
-   window.farmCore=await import('/src/core/farm.js');a.refresh();a.renderer.draw();
+   window.farmCore=await import('/src/core/farming/farm.js');a.refresh();a.renderer.draw();
   });
   const cdp=await context.newCDPSession(page);let menuCalls=0;
   // 从田地中心开始拖动，必须进入统一摇杆，不能开始农活或下车。

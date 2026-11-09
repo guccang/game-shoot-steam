@@ -3,14 +3,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
-import {normalizeKeepsakes,ownsKeepsake} from '../src/progression/keepsakes.js';
+import {normalizeKeepsakes,ownsKeepsake} from '../src/progression/inventory/keepsakes.js';
 import {KEEPSAKES} from '../src/config/keepsakes.js';
-import {skipArrivalJourney,updateArrival,completeArrivalLetter} from '../src/core/ranger-arrival.js';
+import {skipArrivalJourney,updateArrival,completeArrivalLetter} from '../src/core/camp/ranger-arrival.js';
 import {RANGER_STAGES} from '../src/config/ranger-arrival.js';
-import {phoneContacts,callNeighbor,navigatePhone} from '../src/core/patrol-phone.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {phoneContacts,callNeighbor,navigatePhone} from '../src/core/battle/patrol-phone.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {LIVING_PHASES} from '../src/config/living-world.js';
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 const ids=KEEPSAKES.map(item=>item.id);
 // 仅初始化正式场景；电话和导航仍调用生产入口，不替换业务函数。
 function scene(progress=freshProgress()){const g=new Game(progress,()=>.5);g.start();g.mainlineSpeech=null;return g;}

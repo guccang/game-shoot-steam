@@ -9,8 +9,8 @@ async original=>{
   await page.evaluate(async()=>{
    const {freshProgress,validateProgress}=await import('/src/progression/progress.js'),{MAINLINE_IDS}=await import('/src/config/mainline.js');
    const {TOWN_RESTORATIONS}=await import('/src/config/town-restoration.js'),{farmCell}=await import('/src/config/farm.js');
-   window.hg=await import('/src/core/harvest-guide.js');window.mm=await import('/src/core/mainline-manager.js');
-   window.farm=await import('/src/core/farm.js');window.wild=await import('/src/core/wild-farm.js');
+   window.hg=await import('/src/core/farming/harvest-guide.js');window.mm=await import('/src/core/story/mainline-manager.js');
+   window.farm=await import('/src/core/farming/farm.js');window.wild=await import('/src/core/farming/wild-farm.js');
    // 由九版缺金币升级存档进入真实迁移；作物使用普通存档结构，野田由正式生成器生成。
    window.setupHarvest=mature=>{
     const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;

@@ -3,28 +3,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {catLoad,vehicleLoad,movementLoadFactor,cropMass} from '../src/progression/load-weight.js';
+import {catLoad,vehicleLoad,movementLoadFactor,cropMass} from '../src/progression/inventory/load-weight.js';
 import {vehicleMaxHp} from '../src/config/vehicles.js';
-import {configureVehicleBuild,vehicleBuildPrice} from '../src/core/vehicle-build.js';
-import {transferCargo,sellCrops} from '../src/core/cargo.js';
-import {hookTow,unhookTow,advancePlayerTow,towReason,selfTowRepairQuote,deliverTowedVehicle} from '../src/core/player-towing.js';
-import {vehicleRepairQuote,updateVehicleRepair} from '../src/core/vehicle-repair.js';
+import {configureVehicleBuild,vehicleBuildPrice} from '../src/core/vehicles/vehicle-build.js';
+import {transferCargo,sellCrops} from '../src/core/inventory/cargo.js';
+import {hookTow,unhookTow,advancePlayerTow,towReason,selfTowRepairQuote,deliverTowedVehicle} from '../src/core/vehicles/player-towing.js';
+import {vehicleRepairQuote,updateVehicleRepair} from '../src/core/vehicles/vehicle-repair.js';
 import {REPAIR_BAY} from '../src/config/vehicle-repair.js';
 import {repairParkingSpot} from '../src/config/repair-parking.js';
 import {canonical} from '../src/world/coordinates.js';
 import {FARM_DELIVERY,FARM_CROPS} from '../src/config/farm.js';
-import {farmAction} from '../src/core/farm.js';
-import {updateCottage,cottageBlocked} from '../src/core/cottage.js';
-import {parkingAvailable} from '../src/core/parking.js';
+import {farmAction} from '../src/core/farming/farm.js';
+import {updateCottage,cottageBlocked} from '../src/core/home/cottage.js';
+import {parkingAvailable} from '../src/core/vehicles/parking.js';
 import {MAINLINE_IDS,MAINLINE_TASKS} from '../src/config/mainline.js';
-import {mainlineConditionCost} from '../src/progression/mainline-cost.js';
+import {mainlineConditionCost} from '../src/progression/story/mainline-cost.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 // 使用完成入职的正式存档，隔离随机战斗，保留地图碰撞和车辆运行时。
 function scene(index=0){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.vehicleHulls.fill(0);p.vehicleHulls[0]=p.vehicleHulls[index]=1;p.vehicleIndex=index;p.coins=100000;const g=new Game(p);g.state='playing';g.trees=[];g.enemies=[];g.boss=null;g.spawnTimer=999;g.fireClock=999;g.livingPersist=()=>true;g.progress.campParking.owned=[];g.vehicle.active=true;Object.assign(g.player,{x:220,y:835,vx:0,vy:0});return g;}
 // 残骸位置直接设置为正式维修订单，测试不使用替代拖车实现。
 function wreck(g,index=0){g.vehicles[index].hp=0;g.vehicles[index].active=false;g.progress.vehicleService[index]={hp:0,phase:'wrecked',mapId:'forest',position:{x:g.player.x-100,y:g.player.y},wheel:0};}
 test('新结构独立保存且不迁移旧等级，损坏计数不能抵消负重',()=>{const p=freshProgress();p.vehicleHulls[0]=20;p.vehicleParts[0].engine=20;delete p.logistics;const n=validateProgress(p);assert.equal(n.logistics.builds[0].plates,0);assert.equal(n.logistics.builds[0].engine,0);n.logistics.builds[0].cargo[0]=-100;assert.equal(validateProgress(n).logistics.builds[0].cargo[0],0);});
-test('猫体、枪械弹药和作物计重；超载真实驾驶及自动停车停止，卸货恢复',()=>{const g=scene(5),b=g.progress.logistics.builds[5];assert.ok(catLoad(g).body>0);assert.ok(catLoad(g).weapon>0);const empty=vehicleLoad(g);g.progress.farm.inventory[0]=10;assert.equal(vehicleLoad(g).payload,empty.payload);assert.equal(vehicleLoad(g).mass-empty.mass,10*cropMass(0));assert.ok(transferCargo(g,5,0,10,'load').ok);assert.equal(g.progress.farm.inventory[0],0);assert.equal(g.progress.logistics.builds[5].cargo[0],10);assert.equal(vehicleLoad(g).payload-empty.payload,10*cropMass(0));g.progress.logistics.builds[5].cargo[0]=1000;assert.equal(movementLoadFactor(g),0);assert.equal(parkingAvailable(g),false);const before={x:g.player.x,y:g.player.y};for(let i=0;i<5;i++)g.update(.04,{x:1,y:0});assert.equal(g.player.x,before.x);assert.equal(g.player.y,before.y);g.progress.logistics.builds[5].cargo[0]=0;for(let i=0;i<5;i++)g.update(.04,{x:1,y:0});assert.ok(g.player.x>before.x);g.vehicle.active=false;g.progress.farm.inventory[0]=1000;assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);});
+test('猫体、枪械弹药和作物计重；超载真实驾驶及自动停车停止，卸货恢复',()=>{const g=scene(5),b=g.progress.logistics.builds[5];assert.ok(catLoad(g).body>0);assert.ok(catLoad(g).weapon>0);const empty=vehicleLoad(g);g.progress.farm.inventory[0]=10;assert.equal(vehicleLoad(g).payload,empty.payload);assert.equal(vehicleLoad(g).mass-empty.mass,10*cropMass(0));assert.ok(transferCargo(g,5,0,10,'load').ok);assert.equal(g.progress.farm.inventory[0],0);assert.equal(g.progress.logistics.builds[5].cargo[0],10);assert.equal(vehicleLoad(g).payload-empty.payload,10*cropMass(0));g.progress.logistics.builds[5].cargo[0]=Math.ceil(empty.capacity/cropMass(0))+1;assert.equal(movementLoadFactor(g),0);assert.equal(parkingAvailable(g),false);const before={x:g.player.x,y:g.player.y};for(let i=0;i<5;i++)g.update(.04,{x:1,y:0});assert.equal(g.player.x,before.x);assert.equal(g.player.y,before.y);g.progress.logistics.builds[5].cargo[0]=0;for(let i=0;i<5;i++)g.update(.04,{x:1,y:0});assert.ok(g.player.x>before.x);g.vehicle.active=false;g.progress.farm.inventory[0]=1000;assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);});
 test('装配保留损耗、发动机买一次免费切换，装甲拆存复用；失败不扣费',()=>{const g=scene();g.vehicle.active=false;g.cottage={kind:'vehicle'};g.vehicle.hp=g.vehicle.maxHp*.4;const oldMax=g.vehicle.maxHp;assert.ok(configureVehicleBuild(g,0,'add-armor').ok);assert.ok(g.vehicle.maxHp>oldMax);assert.equal(g.vehicle.hp/g.vehicle.maxHp,.4);assert.equal(g.progress.vehicleHulls[0],1);assert.ok(configureVehicleBuild(g,0,'remove-armor').ok);assert.equal(vehicleBuildPrice(g.progress,0,'add-armor'),0);const coins=g.progress.coins;assert.ok(configureVehicleBuild(g,0,'add-armor').ok);assert.equal(g.progress.coins,coins);const capacity=vehicleLoad(g).capacity;assert.ok(configureVehicleBuild(g,0,'engine',2).ok);assert.ok(vehicleLoad(g).capacity>capacity);assert.ok(configureVehicleBuild(g,0,'engine',0).ok);const paid=g.progress.coins;assert.ok(configureVehicleBuild(g,0,'engine',2).ok);assert.equal(g.progress.coins,paid);const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(configureVehicleBuild(g,0,'add-armor').ok,false);assert.deepEqual(g.progress,before);assert.equal(new Game(g.progress).vehicles[0].maxHp,vehicleMaxHp(g.progress));});
 test('货舱独立且装卸/出售保存失败无损失，在场收购不会重复发钱',()=>{const g=scene();g.progress.farm.inventory[0]=20;const before=structuredClone(g.progress);g.livingPersist=()=>false;assert.equal(transferCargo(g,0,0,10,'load').ok,false);assert.deepEqual(g.progress,before);g.livingPersist=()=>true;assert.ok(transferCargo(g,0,0,10,'load').ok);assert.equal(g.progress.logistics.builds[1].cargo[0],0);assert.equal(sellCrops(g).ok,false);Object.assign(g.player,FARM_DELIVERY);g.livingPersist=()=>false;assert.equal(sellCrops(g).ok,false);assert.equal(g.progress.farm.inventory[0],10);g.livingPersist=()=>true;const coins=g.progress.coins;assert.ok(sellCrops(g).ok);assert.equal(g.progress.coins,coins+20*FARM_CROPS[0].value);assert.equal(sellCrops(g).ok,false);assert.equal(g.progress.logistics.builds[0].cargo[0],0);});
 // 显式设置有车与无车两种收货场景，收获只增加实物，出售前不发金币。

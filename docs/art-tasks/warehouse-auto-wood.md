@@ -16,7 +16,7 @@
 
 正式木材图标逻辑尺寸 17，既有短弧线和拖尾，不拉伸图标。每个来源最多 3 枚图标，沿用全局 96 枚绘制上限和 0.7 秒生命周期。图标和飘字属于瞬态效果，不写存档；库存事务成功即到账，飞行结束不再结算。减少动态模式沿用低密度轨迹。无新增位图、下载资源或解码缓存。
 
-入口：`src/core/warehouse.js#updateWarehouseWood`、`src/combat/resource-pickup.js#resourcePickupPoses`、`src/rendering/resource-pickup.js#drawResourcePickups`。手机界面只更新提示文案，沿用统一底板。
+入口：`src/core/inventory/warehouse.js#updateWarehouseWood`、`src/combat/resource-pickup.js#resourcePickupPoses`、`src/rendering/resource-pickup.js#drawResourcePickups`。手机界面只更新提示文案，沿用统一底板。
 
 ## 4 动作与交互
 
@@ -41,7 +41,7 @@
 
 证据位于主工作区 `output/playwright/warehouse-auto-wood/`：`walk-390-day.png`、`drive-390-night.png`、`walk-320-night.png`、`drive-844-day.png`、`manual-return-before.png`；完整录制为 `video/warehouse-auto-wood.webm`。
 
-正式绘制器和来源：`src/rendering/resource-pickup.js#drawResourcePickups`、`src/rendering/resource-icons.js#drawResourceIcon`、`src/core/warehouse.js#updateWarehouseWood`。
+正式绘制器和来源：`src/rendering/resource-pickup.js#drawResourcePickups`、`src/rendering/resource-icons.js#drawResourceIcon`、`src/core/inventory/warehouse.js#updateWarehouseWood`。
 
 检查器：`src/rendering/visual-review.js#inspectWarehouseAutoWood`。designCriterion：`warehouse-auto-wood`。
 

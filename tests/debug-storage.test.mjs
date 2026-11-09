@@ -3,16 +3,16 @@ import {AMMO_TYPES} from '../src/config/supplies.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
-import {unlockedWeaponProgress} from '../src/progression/unlock-weapons.js';
-import {debugGrantProgress,debugVehiclesUnlocked} from '../src/progression/debug-grants.js';
+import {unlockedWeaponProgress} from '../src/progression/workshop/unlock-weapons.js';
+import {debugGrantProgress,debugVehiclesUnlocked} from '../src/progression/player/debug-grants.js';
 import {createProgressController} from '../src/app/progress-controller.js';
-import {catLoad,movementLoadFactor} from '../src/progression/load-weight.js';
-import {carriedWeapon} from '../src/progression/weapon-storage.js';
-import {warehouseRows,transferWarehouse,warehouseTransferPreview} from '../src/core/warehouse.js';
+import {catLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
+import {carriedWeapon} from '../src/progression/inventory/weapon-storage.js';
+import {warehouseRows,transferWarehouse,warehouseTransferPreview} from '../src/core/inventory/warehouse.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
 import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
-import {boardParkedVehicle,vehicleParkingSite} from '../src/core/camp-parking.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
+import {boardParkedVehicle,vehicleParkingSite} from '../src/core/vehicles/camp-parking.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 // 准备正式仓库位置，不改写负重、装备或移动计算。
 function setup(){const g=new Game(validateProgress(freshProgress()));g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.livingPersist=()=>true;Object.assign(g.player,WORKSHOP_INTERIORS.warehouse.door);return g;}
 for(const kind of ['unlock','max-weapons'])test(`${kind} 全部发放后仍可移动，新武器整批入库且读档稳定`,()=>{

@@ -8,7 +8,7 @@
 沿用现有楼梯、双层房间、真实角色动画与家具碰撞。复用森林绿／奶油色倒计时徽记，屏幕68×34，阶梯图标与上下方向箭头，文字1s。锚点为室内楼梯落脚点左前方，使用正式室内镜头投影，最终屏幕层绘制。无新的位图、字体、图集、碰撞或动画计时器。既有武器架点击存取、床边休息和房门进出保持原操作。
 
 ## 技术交付
-配置src/config/cottage.js，逻辑src/core/cottage.js，渲染src/rendering/player-action-countdown.js和action-countdown.js，楼梯热点移除src/ui/cottage-storage.js。无需生成图像或视频素材；精修PNG为后续可选阶段。
+配置src/config/cottage.js，逻辑src/core/home/cottage.js，渲染src/rendering/player-action-countdown.js和action-countdown.js，楼梯热点移除src/ui/cottage-storage.js。无需生成图像或视频素材；精修PNG为后续可选阶段。
 
 ## 验收
 通过。5项定向逻辑检查通过：楼梯距离与一秒等待、移动取消、暂停冻结、落脚后防重复、二楼无出口与床、家具跨层与室外返回位置不变。只运行受影响测试，没有运行全量套件。

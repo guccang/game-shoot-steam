@@ -1,17 +1,17 @@
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 // 表驱动专项：对照重构前轨迹，并证明修改数据即可改变流程、出场和清理规则。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {STORY_CHAPTER as def} from '../src/config/story.js';
 import {Game,freshProgress} from '../src/game.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
 import {storyObjects,storyCast} from '../src/rendering/story-props.js';
 import {storySpeechInfo} from '../src/rendering/story-guidance.js';
 import {storyTrace} from './helpers/story-trace.mjs';
-import {storyTarget} from '../src/core/story-definition.js';
-import {validateStory} from '../src/progression/story-progress.js';
-import {updateEnemies} from '../src/core/enemy-manager.js';
+import {storyTarget} from '../src/core/story/story-definition.js';
+import {validateStory} from '../src/progression/story/story-progress.js';
+import {updateEnemies} from '../src/core/battle/enemy-manager.js';
 
 test('三套装备的自动道路及旧短路续档使用新生命预算并保留道具和奖励，远行坐标与清树量由新地图专项验证',()=>{
   const baseline=JSON.parse(readFileSync(new URL('./fixtures/story-chapter-baseline.json',import.meta.url)));

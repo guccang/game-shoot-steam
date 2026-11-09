@@ -14,7 +14,7 @@ async page=>{
  await page.reload();await page.locator('#start').click();
  await page.evaluate(async()=>{
   window.warApp=(await import('/src/main.js')).application;const g=warApp.game;
-  const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');
+  const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');
   Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-06')));g.state='playing';g.mainlineSpeech=null;warApp.refresh();
  });
  if(!await page.locator('#story-button').isVisible())await page.getByRole('button',{name:'展开功能菜单'}).click();
@@ -27,7 +27,7 @@ async page=>{
  await page.locator('#story-speech-skip').click();
  checks.push('正式目录与开场显示反攻目标');
  // 将已接取的章节移到决战准备点，开战仍点击正式按钮。
- await page.evaluate(async()=>{const {runStoryActions}=await import('/src/core/story-manager.js');runStoryActions(warApp.game,[{type:'stage',id:'COMMAND',phase:'prepare'}]);warApp.refresh();});
+ await page.evaluate(async()=>{const {runStoryActions}=await import('/src/core/story/story-manager.js');runStoryActions(warApp.game,[{type:'stage',id:'COMMAND',phase:'prepare'}]);warApp.refresh();});
  await page.locator('[data-story-loadout="line-patrol"]').click();
  await page.locator('[data-story-command="start"]').click();
  await page.waitForFunction(()=>warApp.game.boss?.name==='铁棘统领');
@@ -51,13 +51,13 @@ async page=>{
  }
  checks.push('390与320宽度昼夜决战场景，无横向溢出');
  await page.evaluate(async()=>{
-  warApp.game.update=window.warUpdate;const {failStory}=await import('/src/core/story-manager.js');failStory(warApp.game,'决战重试验收');warApp.refresh();
+  warApp.game.update=window.warUpdate;const {failStory}=await import('/src/core/story/story-manager.js');failStory(warApp.game,'决战重试验收');warApp.refresh();
  });
  await page.locator('[data-story-command="retry"]').click();await page.locator('[data-story-command="start"]').click();
  await page.waitForFunction(()=>warApp.game.boss?.hp===2530);
  checks.push('失败页真实重试按钮重开统领战');
  await page.evaluate(async()=>{
-  const g=warApp.game,{updateStory}=await import('/src/core/story-manager.js');g.hit(g.boss,1e6);
+  const g=warApp.game,{updateStory}=await import('/src/core/story/story-manager.js');g.hit(g.boss,1e6);
   for(let i=0;i<1000&&g.story.stageId==='COMMAND';i++){
    for(const e of [...g.enemies])if(e.hp>0)g.hit(e,1e6);g.enemies=g.enemies.filter(e=>e.hp>0);updateStory(g,.1);
   }
@@ -66,7 +66,7 @@ async page=>{
  });
  await page.locator('#story-interact').click();await page.locator('#story-speech-skip').waitFor({state:'visible'});await page.locator('#story-speech-skip').click();
  await page.evaluate(async()=>{
-  const g=warApp.game,{STORY_CAMPAIGN}=await import('/src/config/story-campaign.js'),{updateStory}=await import('/src/core/story-manager.js');
+  const g=warApp.game,{STORY_CAMPAIGN}=await import('/src/config/story-campaign.js'),{updateStory}=await import('/src/core/story/story-manager.js');
   if(!g.story.flags.coreBroken)throw Error('核心未切断');Object.assign(g.player,STORY_CAMPAIGN['sunleaf-06'].world.sites.CAMP);updateStory(g,.1);updateStory(g,.1);warApp.refresh();
  });
  await page.locator('#story-speech-skip').waitFor({state:'visible'});await page.locator('#story-speech-skip').click();

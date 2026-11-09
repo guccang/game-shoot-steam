@@ -3,12 +3,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {validateMainline} from '../src/progression/mainline-progress.js';
+import {validateMainline} from '../src/progression/story/mainline-progress.js';
 import {MAINLINE_IDS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
-import {mainlineSteps,mainlineAction,mainlineObjective,updateMainline,completeMainline} from '../src/core/mainline-manager.js';
-import {farmAction} from '../src/core/farm.js';
+import {mainlineSteps,mainlineAction,mainlineObjective,updateMainline,completeMainline} from '../src/core/story/mainline-manager.js';
+import {farmAction} from '../src/core/farming/farm.js';
 import {farmCell} from '../src/config/farm.js';
-import {mainlineResourceHint} from '../src/progression/mainline-cost.js';
+import {mainlineResourceHint} from '../src/progression/story/mainline-cost.js';
 import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
 // 准备已完成找种和购种前置的新手，确认首次种田继续沿用真实收成与奖励。
 function scene(){const p=freshProgress();p.farm.seeds[0]=1;p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf('first-farm'));p.restoration.repaired.push('clearing');p.mainline.phase='doing';p.coins=0;p.wood=0;const g=new Game(p,()=>.5);g.state='playing';g.enemies=[];g.trees=[];Object.assign(g.player,farmCell(0));return g;}

@@ -38,7 +38,7 @@ async page=>{
   checks.push({width,phase,panels:4});
  }
  // 通过正式接取、召唤和致命命中验证清缴只发整次经验。
- await page.evaluate(async()=>{const g=a.game;g.progress.campLevel.xp=500;g.enemies=[];g.state='playing';Object.assign(g.player,(await import('/src/config/clearing.js')).CLEARING_APPROACH);if(!(await import('/src/core/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/clearing-site.js')).clearingSite(g.progress)));g.wave=g.bossWave;g.waveKills=g.waveSpawned=(await import('/src/config/waves.js')).waveDifficulty(g.wave).total;g.bossReady=true;if(!g.summonBoss())throw Error('召唤失败');const boss=g.boss;g.hit(boss,1e9);g.hit(boss,1e9);});
+ await page.evaluate(async()=>{const g=a.game;g.progress.campLevel.xp=500;g.enemies=[];g.state='playing';Object.assign(g.player,(await import('/src/config/clearing.js')).CLEARING_APPROACH);if(!(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/story/clearing-site.js')).clearingSite(g.progress)));g.wave=g.bossWave;g.waveKills=g.waveSpawned=(await import('/src/config/waves.js')).waveDifficulty(g.wave).total;g.bossReady=true;if(!g.summonBoss())throw Error('召唤失败');const boss=g.boss;g.hit(boss,1e9);g.hit(boss,1e9);});
  await page.locator('#task-reward-dialog').waitFor({state:'visible'});const receipt=await page.locator('#task-reward-challenge').innerText();if(!receipt.includes('1 级 → 2 级')||!receipt.includes('9.5折'))throw Error('升级结算缺失');
  if(await page.evaluate(()=>a.game.progress.campLevel.xp)!==680)throw Error('清缴经验重复');
  await page.screenshot({path:'output/playwright/camp-discounts/level-up-320.png'});

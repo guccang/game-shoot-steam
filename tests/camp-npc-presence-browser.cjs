@@ -8,7 +8,7 @@ async page=>{
   Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);g.player.x+=70;
   g.progress.mainline.currentId='first-map';g.progress.mainline.phase='report';g.progress.mainline.seen.map=1;g.progress.mainline.distance=80;
   window.originalUpdate=g.update.bind(g);g.update=()=>{};
-  const main=await import('/src/core/mainline-manager.js');main.updateMainline(g,0);a.refresh();
+  const main=await import('/src/core/story/mainline-manager.js');main.updateMainline(g,0);a.refresh();
  });
  // 对白首触先展示全文，第二次才真正交付；按实际按钮状态继续。
  for(let i=0;i<3&&!await page.evaluate(()=>a.game.progress.mainline.completed.includes('first-map'));i++)await page.locator('.mainline-begin').click();
@@ -18,7 +18,7 @@ async page=>{
  for(const width of [320,390])for(const time of ['day','night'])for(const id of ['mint','oak','wheel','lumi']){
   await page.setViewportSize({width,height:width===320?568:844});
   const result=await page.evaluate(async({id,time})=>{
-   const g=a.game,main=await import('/src/core/mainline-manager.js'),person=main.mainlineActors(g).find(p=>p.sceneNpcId==='mainline:'+id);
+   const g=a.game,main=await import('/src/core/story/mainline-manager.js'),person=main.mainlineActors(g).find(p=>p.sceneNpcId==='mainline:'+id);
    if(!person)throw Error('伙伴缺席：'+id);
    Object.assign(g.player,{x:person.x+65,y:person.y+55,vx:0,vy:0});g.cottage=null;g.time+=.3;g.enemies=[];
    Object.assign(a.environment,{livingPreview:true,autoSeason:false,autoTime:false,autoWeather:false,time,weather:'sun',forestSeason:'summer'});
@@ -37,7 +37,7 @@ async page=>{
  await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);a.game.player.x+=65;a.renderer.camera.time=null;a.refresh();a.save();});
  await page.reload();await page.locator('#start').click();
  await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;});
- const refreshed=await page.evaluate(async()=>({people:(await import('/src/core/mainline-manager.js')).mainlineActors(a.game).length,paused:a.game.progress.mainline.trackingPaused}));
+ const refreshed=await page.evaluate(async()=>({people:(await import('/src/core/story/mainline-manager.js')).mainlineActors(a.game).length,paused:a.game.progress.mainline.trackingPaused}));
  if(refreshed.people!==4||!refreshed.paused)throw Error('刷新后人物或自由探索状态丢失');
  // 恢复实时模拟，取样真实待机帧和常驻居民时钟，不使用静态预览替代运行时。
  const first=await page.evaluate(async()=>({time:a.game.time,frames:(await import('/src/rendering/story-props.js')).storyArtStats().npcFrames}));

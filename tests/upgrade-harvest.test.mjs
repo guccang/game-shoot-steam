@@ -5,12 +5,12 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS,MAINLINE_TASKS,currentMainlineTask} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {harvestBudget,harvestGuidePlot,harvestGuideHint} from '../src/core/harvest-guide.js';
-import {mainlineObjective,mainlineSteps,updateMainline} from '../src/core/mainline-manager.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
-import {farmAction} from '../src/core/farm.js';
+import {harvestBudget,harvestGuidePlot,harvestGuideHint} from '../src/core/farming/harvest-guide.js';
+import {mainlineObjective,mainlineSteps,updateMainline} from '../src/core/story/mainline-manager.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
+import {farmAction} from '../src/core/farming/farm.js';
 import {FARM_CROPS} from '../src/config/farm.js';
-import {mainlineConditionCost} from '../src/progression/mainline-cost.js';
+import {mainlineConditionCost} from '../src/progression/story/mainline-cost.js';
 const task=MAINLINE_TASKS.find(t=>t.id==='upgrade-harvest');
 // 固定使用森林南侧合法野田附近，清空战斗与树木以隔离收割事务。
 function scene(){

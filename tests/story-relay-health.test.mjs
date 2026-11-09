@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_CHAPTER,STORY_SITES,STORY_DEFENSE} from '../src/config/story.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
-import {beginStoryWave,spawnStoryEnemy,updateStoryWave} from '../src/core/story-encounters.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
+import {beginStoryWave,spawnStoryEnemy,updateStoryWave} from '../src/core/story/story-encounters.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
 
 // 隔离存档只开放相关设施，通过正式章节入口和借装进入守点。
 function relay(){

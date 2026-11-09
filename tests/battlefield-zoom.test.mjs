@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { CombatCamera } from '../src/rendering/camera.js';
 import { REALM_RADIUS } from '../src/config/realms.js';
 import { Game, freshProgress } from '../src/game.js';
-import { findArrivalSpot } from '../src/core/enemy-arrival.js';
+import { findArrivalSpot } from '../src/core/battle/enemy-arrival.js';
 import { CAMERA_VIEW } from '../src/config/camera.js';
 
 test('全景在横竖屏完整包含秘境，移动角色不拖走场地，缩放后能准确还原', () => {

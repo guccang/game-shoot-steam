@@ -7,12 +7,12 @@ import {LIVING_DAY_MS,LIVING_ROADS,LIVING_PLACES,LIVING_REQUESTS} from '../src/c
 import {calendarView,advanceLivingCalendar,projectLivingCalendar} from '../src/world/living-calendar.js';
 import {durationFor} from '../src/world/environment-timing.js';
 import {seasonRemaining} from '../src/world/seasons.js';
-import {livingResidents,residentSchedule,updateLivingWorld,acceptLivingRequest,interactLivingRequest,livingRequestTarget,restLivingWorld,setLivingPatrol} from '../src/core/living-world.js';
+import {livingResidents,residentSchedule,updateLivingWorld,acceptLivingRequest,interactLivingRequest,livingRequestTarget,restLivingWorld,setLivingPatrol} from '../src/core/camp/living-world.js';
 import {livingSafePoint,livingBoltBlocked,livingFacilityBlocked} from '../src/world/living-spaces.js';
 import {terrainLineClear} from '../src/physics/terrain-navigation.js';
 import {worldDistance} from '../src/world/coordinates.js';
-import {updateWaves} from '../src/core/wave-manager.js';
-import {updateEncounters} from '../src/core/encounter-manager.js';
+import {updateWaves} from '../src/core/battle/wave-manager.js';
+import {updateEncounters} from '../src/core/battle/encounter-manager.js';
 import {normalizeChronicle} from '../src/world/play-chronicle.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {livingObjects} from '../src/rendering/living-world.js';

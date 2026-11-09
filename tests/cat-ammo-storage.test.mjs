@@ -6,8 +6,8 @@ import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {LOAD_RULES} from '../src/config/vehicle-load.js';
-import {tradeSupply} from '../src/core/supplies.js';
-import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
+import {tradeSupply} from '../src/core/vehicles/supplies.js';
+import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {supplyAmmoCount,takeSupplyAmmo,syncSupplyAmmo} from '../src/combat/supply-ammo.js';
 import {advanceReload,consumeRound} from '../src/combat/magazine.js';
 

@@ -18,7 +18,7 @@
 
 ## 实现分层
 
-数值及格位：`src/config/guardian.js`；随机入场：`src/core/guardian-spawns.js`；选区和树木清理：`src/core/realm-region.js`；部署事务及火力：`src/core/guardian-defense.js`；建造栏：`src/ui/panels/guardian.js`；地面点击、镜头投影和收起状态：`src/ui/guardian-build.js`；正式绘制：`src/rendering/guardian.js`。
+数值及格位：`src/config/guardian.js`；随机入场：`src/core/battle/guardian-spawns.js`；选区和树木清理：`src/core/realms/realm-region.js`；部署事务及火力：`src/core/battle/guardian-defense.js`；建造栏：`src/ui/panels/guardian.js`；地面点击、镜头投影和收起状态：`src/ui/guardian-build.js`；正式绘制：`src/rendering/guardian.js`。
 
 `visual-contract.json` 与 `src/rendering/visual-review.js` 使用 `guardian-field-day/night` 案例，调用正式绘制器采样。角色视频帧、武器弹道、载具旋翼与履带、浮游炮及无人机动作不变。
 

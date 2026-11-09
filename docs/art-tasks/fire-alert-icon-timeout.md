@@ -12,7 +12,7 @@
 
 ## 3 技术交付
 
-SVG viewBox 0 0 48 48、显示 40×40；按钮 60×72，外框随 DOM 定位，无像素图集、解码和缓存副本。倒计时从正式 offerRemaining 读取，暂停/详情/其他场景不倒计时，保存刷新续接；过期静默调用原清理与冷却流程。源文件 src/ui/fire-rescue.js、src/styles/fire-rescue.css、src/core/fire-rescue.js 和 src/progression/fire-progress.js。中文可访问名称包含查看火情与关闭剩余时间。
+SVG viewBox 0 0 48 48、显示 40×40；按钮 60×72，外框随 DOM 定位，无像素图集、解码和缓存副本。倒计时从正式 offerRemaining 读取，暂停/详情/其他场景不倒计时，保存刷新续接；过期静默调用原清理与冷却流程。源文件 src/ui/fire-rescue.js、src/styles/fire-rescue.css、src/core/activities/fire-rescue.js 和 src/progression/activities/fire-progress.js。中文可访问名称包含查看火情与关闭剩余时间。
 
 ## 4 动画与保留项
 
@@ -39,6 +39,6 @@ SVG viewBox 0 0 48 48、显示 40×40；按钮 60×72，外框随 DOM 定位，�
 | 活动空间、动画与资源预算 | 本次仅邀请UI，不改实体位置、碰撞、路径、角色和车辆绘制；专项实体绕行与新动画检查不适用。SVG在阶段切换时构建，倒计时只更新文字，不新增图片、图集缓存或资源请求；正式消防行驶及入库规则仍通过 |
 | 针对性检查 | 16项通过：tests/fire-alert-timeout.test.mjs + tests/fire-rescue.test.mjs，含完整驾驶、补水、归还借车与入库；浏览器0个pageerror，10张截图；变更脚本语法、JSON和diff空白检查通过，无全量测试 |
 
-正式入口：`src/ui/fire-rescue.js#fireAlertIcon / createFirePanel`；计时与清理入口 `src/core/fire-rescue.js#updateFireRescue`；正式检查 `src/rendering/visual-review.js#inspectFireAlert`；`designCriterion: fire-alert-icon-timeout`。
+正式入口：`src/ui/fire-rescue.js#fireAlertIcon / createFirePanel`；计时与清理入口 `src/core/activities/fire-rescue.js#updateFireRescue`；正式检查 `src/rendering/visual-review.js#inspectFireAlert`；`designCriterion: fire-alert-icon-timeout`。
 
 证据：`output/playwright/fire-alert-icon-timeout/`。结论：通过，v1。初次浏览器脚本将测试人物放到围栏内，接警通行无法完成；已将测试起点移至正式 FIRE_PARKING 后重新完成全部检查，没有为测试改变通行逻辑。

@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {WORKSHOP_INTERIORS,interiorLayout} from '../src/config/workshop-interiors.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
-import {updateCottage,leaveCottage} from '../src/core/cottage.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
+import {updateCottage,leaveCottage} from '../src/core/home/cottage.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 // 门前中线避开车位，所有修复状态在用例中明确配置。
 function scene(kind){const g=new Game(freshProgress(),()=>.5);g.start();g.vehicle.active=false;g.enemies=[];g.mainlineSpeech=null;g.progress.restoration.repaired=['garage','cottage'];const door=interiorLayout({kind}).door;Object.assign(g.player,{x:door.x,y:door.y+20,vx:0,vy:0});return g;}

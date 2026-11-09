@@ -7,19 +7,19 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {BOSS_ENGAGEMENT} from '../src/config/boss-combat.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {bossCombatActive,updateBossEngagement} from '../src/core/boss-engagement.js';
+import {bossCombatActive,updateBossEngagement} from '../src/core/battle/boss-engagement.js';
 import {updateBoss,updateBossHazards} from '../src/combat/bosses.js';
-import {beginBossSupport} from '../src/core/boss-reinforcements.js';
+import {beginBossSupport} from '../src/core/battle/boss-reinforcements.js';
 import {prepareBossNode} from './helpers/boss-node.mjs';
-import {canEnterCottage,enterWorkshop} from '../src/core/cottage.js';
-import {canInspectBuilding} from '../src/core/building-entry.js';
-import {tradeSupply} from '../src/core/supplies.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {canTalkMainline,mainlineTask} from '../src/core/mainline-manager.js';
-import {campTalkSite} from '../src/core/camp-routines.js';
+import {canEnterCottage,enterWorkshop} from '../src/core/home/cottage.js';
+import {canInspectBuilding} from '../src/core/camp/building-entry.js';
+import {tradeSupply} from '../src/core/vehicles/supplies.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {canTalkMainline,mainlineTask} from '../src/core/story/mainline-manager.js';
+import {campTalkSite} from '../src/core/camp/camp-routines.js';
 import {attackTargetKnown} from '../src/combat/perception.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
-import {residentFor,acceptLivingRequest,interactLivingRequest,livingRequestTarget} from '../src/core/living-world.js';
+import {residentFor,acceptLivingRequest,interactLivingRequest,livingRequestTarget} from '../src/core/camp/living-world.js';
 import {LIVING_REQUESTS} from '../src/config/living-world.js';
 
 // 已接取并清空波次的普通森林，明确使用野外落点，不把营地安全区当交战区域。

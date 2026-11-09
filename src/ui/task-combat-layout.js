@@ -6,7 +6,9 @@ export function combatHudVisible(root){
 export function taskCombatHudTop(root){
  const frame=root.getElementById('game-frame'),r=frame.getBoundingClientRect(),resources=root.querySelector('.hud-resources').getBoundingClientRect();
  const compact=frame.matches('.story-active,.task-combat-active'),health=root.querySelector('.bottom-info'),panel=health?.querySelector('.player-hud');
- let top=resources.height?resources.top-r.top:12;
+ const minimap=frame.classList.contains('has-local-minimap')&&root.getElementById('local-minimap')?.getBoundingClientRect();
+ // 设置跟随圆形小地图右下角时，生命卡仍固定在地图顶边，不跟着设置下移。
+ let top=minimap?minimap.top-r.top:resources.height?resources.top-r.top:12;
  // 帧率只占右侧设置按钮下方，不再无条件推低整条左侧生命卡。
  const fps=root.getElementById('fps-display'),fpsBox=fps?.getBoundingClientRect(),healthBox=health?.getBoundingClientRect();
  if(!compact&&fpsBox?.height&&healthBox&&fpsBox.left<healthBox.right&&fpsBox.right>healthBox.left)
@@ -16,7 +18,9 @@ export function taskCombatHudTop(root){
  const visible=panel?.getBoundingClientRect().height>0&&getComputedStyle(panel).visibility!=='hidden';
  // 高塔、守护和远征使用 CSS 安全区定位，以真实生命卡底边接续进度，兼容刘海与独立弹药高度。
  if(frame.matches('.tower-active,.guardian-active,.rogue-active'))return health.getBoundingClientRect().top-r.top+(visible?panel.getBoundingClientRect().height+6:0);
- return top+(visible?panel.getBoundingClientRect().height+6:0);
+ const next=top+(visible?panel.getBoundingClientRect().height+6:0);
+ // 战斗条横向内容较宽，排到地图和设置下方，避免右端详情入口被圆盘挡住。
+ return minimap&&combatHudVisible(root)?Math.max(next,minimap.bottom-r.top+8,resources.bottom-r.top+8):next;
 }
 // 相同位置不重复写入样式；空值只在从任务堆叠切回 CSS 布局时移除。
 function setTop(node, top){

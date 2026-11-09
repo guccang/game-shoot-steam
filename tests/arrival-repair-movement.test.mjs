@@ -6,7 +6,7 @@ import {freshRangerProgress,validateProgress} from '../src/progression/progress.
 import {RANGER,arrivalCinematic} from '../src/config/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 import {RESTORATION_SECONDS,facilityOpen} from '../src/config/town-restoration.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {worldDistance} from '../src/world/coordinates.js';
 // 人物放在工坊前的通路，保留正式建筑碰撞；以存档拥有的赠车准备骑乘状态。
 function scene(mounted=false){

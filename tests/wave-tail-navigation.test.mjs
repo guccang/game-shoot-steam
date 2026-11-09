@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {waveDifficulty} from '../src/config/waves.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
-import {waveTailTargets} from '../src/core/wave-tail-targets.js';
+import {waveTailTargets} from '../src/core/battle/wave-tail-targets.js';
 import {projectTailTarget,placeTailMarker} from '../src/ui/wave-tail-navigation.js';
 import {WAVE_TAIL_NAVIGATION as STYLE} from '../src/config/wave-tail-navigation.js';
 // 使用正式清缴场与真实计数，目标测试不绕过安全区要求。

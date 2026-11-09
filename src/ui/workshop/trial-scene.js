@@ -26,6 +26,7 @@ export function createWeaponTrialPage({root,dialog:workshop,dialogs,createTrial,
   if(!session)return;resize();drawWeaponTrialScene(canvas.getContext('2d'),session,{night,reduced:reduced(),stick});
   const g=session.game,m=g.vehicle.active&&g.vehicle.module?g.vehicle.module.magazine:g.magazines[g.progress.weapon];
   get('score').textContent='击破 '+session.destroyed+' · 伤害 '+session.damage+(session.spec.trees?' · 采伐 '+session.treesCut:'')+(m&&Number.isFinite(m.ammo)?' · '+(m.remaining>0?'装填中':'余量 '+Math.ceil(m.ammo)):g.weapon().controller?' · 协同出击':'');
+  if(g.weapon().id==='water')get('score').textContent=`击破 ${session.destroyed} · 伤害 ${Math.round(session.damage)} · 水袋 ${Math.ceil(m.ammo)} / ${g.weapon().magazineSize}${m.remaining>0?' · 练习补水中':' · 练习独立供给'}`;
   if(g.weapon().attackKind==='defense'){const shield=g.magazines[g.progress.weapon];get('score').textContent=`已抵挡 ${session.absorbed} · 护盾 ${Math.ceil(shield.ammo)} / ${g.weapon().magazineSize}${shield.remaining>0?' · '+shield.remaining.toFixed(1)+'秒后恢复':''}`;}
   // 补靶提示放在场地下方，不能遮住正在播放的死亡动作与伤害数字。
   get('hint').textContent=session.refillRemaining>0?'本组靶标已击毁，稍后自动补靶。':session.spec.hint;

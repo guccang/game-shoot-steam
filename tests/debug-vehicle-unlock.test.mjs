@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
-import {debugGrantProgress} from '../src/progression/debug-grants.js';
+import {debugGrantProgress} from '../src/progression/player/debug-grants.js';
 import {createProgressController} from '../src/app/progress-controller.js';
 import {VEHICLE_ARMAMENTS} from '../src/config/vehicle-armaments.js';
 

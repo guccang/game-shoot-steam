@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {MONSTER_CAMPS,MONSTER_CAMP_RULES as RULES} from '../src/config/monster-camps.js';
-import {updateMonsterCamps,monsterCampObjects} from '../src/core/monster-camps.js';
+import {updateMonsterCamps,monsterCampObjects} from '../src/core/battle/monster-camps.js';
 
 // 进入营地正式受伤，再把交战位置移到驻地附近，确保观察到实际返程。
 function woundedScene(index=0){

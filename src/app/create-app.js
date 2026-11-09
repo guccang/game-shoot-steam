@@ -1,11 +1,19 @@
+import {createRegionalCampPanel} from '../ui/regional-camps.js';
+import {recoverRegionalParcel} from '../core/camp/regional-camps.js';
+import {createCampLayoutPanel} from '../ui/camp-layout.js';
+import {createCampLandPanel} from '../ui/camp-land.js';
+import {createInventoryTransfer} from '../ui/inventory-transfer.js';
+import {createIndustryPanel} from '../ui/industry.js';
 import {createCampTradePanel} from '../ui/camp-trade.js';
 import {createCreatureCodex} from '../ui/creature-codex.js';
 import {createShopCheckout} from '../ui/shop-checkout.js';
 import {createOutdoors} from '../ui/outdoors.js';
+import {createWaystations} from '../ui/waystations.js';
+import {createLocalMinimap} from '../ui/local-minimap.js';
 import {createTreasure} from '../ui/treasure.js';
 import {createLoadCleanup} from '../ui/load-cleanup.js';
 import {interiorLayout} from '../config/workshop-interiors.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {createVehicleRepairPanel} from '../ui/vehicle-repair.js';
 import {facilityOpen} from '../config/town-restoration.js';
 
@@ -18,10 +26,10 @@ import { bindMobileFullscreen } from '../platform/mobile-fullscreen.js';
 import { createRenderInterpolation } from '../rendering/render-interpolation.js';
 import {createRestorationPanel} from '../ui/town-restoration.js';
 import {createNearbyInteraction} from '../ui/nearby-interaction.js';
-import {requestParking} from '../core/parking.js';
-import {requestFireParking} from '../core/fire-rescue.js';
-import {campProgress,campDiscountText} from '../progression/camp-level.js';
-import {updateWorkshopDisplayEntry} from '../core/workshop-display-entry.js';
+import {requestParking} from '../core/vehicles/parking.js';
+import {requestFireParking} from '../core/activities/fire-rescue.js';
+import {campProgress,campDiscountText} from '../progression/camp/camp-level.js';
+import {updateWorkshopDisplayEntry} from '../core/workshop/workshop-display-entry.js';
 import {STORY_POSTS} from '../config/story-posts.js';
 import {createTaskReward} from '../ui/task-reward.js';
 import {createCampHome} from '../ui/camp-home.js';
@@ -42,26 +50,27 @@ import { recordPlayTime } from '../world/play-chronicle.js';
 import { freshRangerProgress } from '../progression/progress.js';
 import { createRangerArrival } from '../ui/ranger-arrival.js';
 import {createMainline} from '../ui/mainline.js';
-import {recordMainlineEvent} from '../core/mainline-manager.js';
+import {recordMainlineEvent} from '../core/story/mainline-manager.js';
 import { i18nText } from "../i18n/index.js";
 import { localizeDocument } from '../i18n/document.js';
 // 应用首页与战场共用生命周期，首页不推进或重写玩法状态。
 import {createFirePanel} from '../ui/fire-rescue.js';
 import { createTitleMenu } from '../ui/title-menu.js';
 import { createStartLoading } from '../ui/start-loading.js';
+import {START_LOADING_WEIGHTS as LOADING_WEIGHT,START_LOADING_TIMING as LOADING_TIME} from '../config/start-loading.js';
 import { createStoryPanel } from '../ui/story.js';
-import { advanceLedger } from '../progression/economy-ledger.js';
+import { advanceLedger } from '../progression/economy/economy-ledger.js';
 import { createNaturalClock } from '../world/natural-clock.js';
 import { createChroniclePanel } from '../ui/panels/chronicle.js';
 import { createMechanicalPanel } from '../ui/panels/mechanical.js';
-import { configureMechanical } from '../core/mechanical-loadout.js';
+import { configureMechanical } from '../core/workshop/mechanical-loadout.js';
 import { createSpiderPanel } from '../ui/panels/spider.js';
-import { configureSpider } from '../core/spider-loadout.js';
+import { configureSpider } from '../core/workshop/spider-loadout.js';
 import {createLegendaryWorkshop} from '../ui/legendary-workshop.js';
 import { createWorkshop } from '../ui/workshop.js';
 import { createWorldWorkshop } from '../ui/world-workshop.js';
-import { commitWorkshop } from '../core/workshop.js';
-import { createWorkshopTrial } from '../core/workshop-trial.js';
+import { commitWorkshop } from '../core/workshop/workshop.js';
+import { createWorkshopTrial } from '../core/workshop/workshop-trial.js';
 // 应用装配入口：连接规则、画布与浏览器适配器，内部模块不依赖此入口。
 import { Game, NavigationWarmup } from '../core/game.js';
 import { Renderer } from '../rendering/renderer.js';
@@ -142,43 +151,49 @@ export function createApplication({
   const renderer = new Renderer(canvas, game, environment, profiler);
   const navigationWarmup = new NavigationWarmup();
   renderer.navigationWarmup = navigationWarmup;
-  let warmupFrame = null, recoveryFrame = null, resolveReady, warmupClock = 0;
+  let warmupFrame = null, recoveryFrame = null, resolveReady, warmupClock = 0, initialWorldSteps=null;
   // 就绪信号代表点击进入后的地图准备完成；首页不主动兑现或触发建图。
   const ready = new Promise(resolve => { resolveReady = resolve; });
   profiler.end('init.renderer');
   diagnostics.attach({ game, renderer });
   const storm = new StormCycle();
-  let campDefensePanel,campHome,npcConversations;
+  let campDefensePanel,campHome,npcConversations,campLandPanel;
   // 各交互控制器共享主动闲聊入口，初始化完成后才接收场景点击。
   const onTalk=(id,service)=>npcConversations.open(id,service);
   let worldRealms, worldWorkshop, worldVehicleWorkshop, guardianBuild, cameraControls;
   const input = createInput({ game, root, host, enabled:()=>shell.page==='game', onChange: () => refresh(),
-    onTap: event => { if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event)||outdoors.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
+    onTap: event => { if(waystations.tapWorld(event))return; if(campLandPanel?.tap(event))return; if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event)||outdoors.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
   const dialogs = createDialogs({ game, root, isGameplayActive:()=>shell.page==='game', resetInput: input.reset, onChange: () => { refresh(); syncAudio(); },onEvent:(type,data)=>{if(type==='dialog-open')checkout.prepare(data.id);diagnostics.gameplay.event(type,data);} });
   const checkout=createShopCheckout({game,root,dialogs,onNotice:toast.show});
   const inventory = createInventory({ game, root, dialogs, onChange: () => refresh(), onInventoryRender:()=>backpack.render(), onCleanup:()=>loadCleanup.open(null) });
   const updateHud = createHud({ game, root, inventory, dialogs, getView: () => renderer.view });
-  let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, productionPanel, seedShop, monsterCampPanel;
-  refresh = () => {
-    titleMenu?.render();
+  let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, productionPanel, industryPanel, seedShop, monsterCampPanel, regionalCampPanel;
+  // 交互立即刷新全部界面；低频 HUD 在绘制之后更新，复用本帧已刷新的面板。
+  refresh = ({afterDraw = false} = {}) => {
+    if (!afterDraw || shell.page === 'title') titleMenu?.render();
     if(shell.page==='title')return;
     updateHud();
     rangerArrival?.render();
     equipmentGoals?.render();
     realmPanel?.render();
     settingsPanel?.syncRealm();
-    worldRealms?.render();
-    campHome?.render();
-    worldWorkshop?.render();
-    worldVehicleWorkshop?.render();
-    guardianBuild?.render();
+    if (!afterDraw) {
+      worldRealms?.render();
+      campHome?.render();
+      worldWorkshop?.render();campLandPanel?.render();
+      worldVehicleWorkshop?.render();
+      guardianBuild?.render();
+    }
     cameraControls?.render();
     storyPanel?.render();
     livingPanel?.render();
-    farmPanel?.render();
-    productionPanel?.render();
+    if (!afterDraw) {
+      farmPanel?.render();
+      productionPanel?.render();
+      industryPanel?.render();
+    }
     seedShop?.render();
-    monsterCampPanel?.render();
+    monsterCampPanel?.render();regionalCampPanel?.render();
     clearingPanel?.render();
     firePanel?.render();
     mainline?.render();
@@ -247,19 +262,23 @@ export function createApplication({
    else if(id==='race')realmPanel.enter(id);
    else if(id==='travel')$('phone-button').click();
    else if(id==='clearing')clearingPanel.visit();
-   else if(['cottage','garage','fire','tower'].includes(id)){const room=interiorLayout({kind:id==='garage'?'vehicle':id});requestWorldNavigation(game,{...room.door,id:room.id,mapId:'forest'},'前往'+room.name,{direct:true});toast.show('下车后在门口站定 1 秒进入，与屋内售货员交谈。');}
+   else if(['cottage','garage','fire','tower','outdoor','ammo','cat-home','furniture','construction','repair','refinery','factory'].includes(id)){const room=interiorLayout({kind:id==='garage'?'vehicle':id});requestWorldNavigation(game,{...room.door,id:room.id,mapId:'forest'},'前往'+room.name,{direct:true});toast.show('下车后在门口站定 1 秒进入，与屋内售货员交谈。');}
    else if(id==='story')storyPanel.open();
    else if(id==='neighbors')livingPanel.open();
    else if(id==='defense')campDefensePanel.visit('left');
    else realmPanel.enter(id);
   }});
   game.requestFacility=id=>restorationPanel.open(id);
+  campLandPanel=createCampLandPanel({game,root,renderer,dialogs,onChange:refresh});
+  const campLayoutPanel=createCampLayoutPanel({game,root,dialogs,onChange:refresh});
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const creatureCodex=createCreatureCodex({game,root,dialogs});
   const outdoors=createOutdoors({game,root,renderer,dialogs,onChange:refresh,onFishCaught:creatureCodex.showCatch,onNotice:toast.show});
   const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onOutdoor:()=>outdoors.open(),onCargo:()=>logistics.open('cargo',game.vehicle.index),onCleanup:()=>loadCleanup.open(game.vehicle.index)});
+  industryPanel=createIndustryPanel({game,root,renderer,dialogs,input,onChange:refresh,onNotice:toast.show});
   const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
-  const logistics=createLogistics({game,root,dialogs,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
+  const inventoryTransfer=createInventoryTransfer({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
+  const logistics=createLogistics({game,root,dialogs,onTransfer:inventoryTransfer.open,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),onCleanup:()=>loadCleanup.open(null),
     commit: plan => { const result = commitWorkshop(game, plan, store.saveProgress); diagnostics.gameplay.event('workshop-commit',{plan:{kind:plan.kind,index:plan.index,action:plan.action,part:plan.part,choice:plan.choice},ok:result.ok,reason:result.reason,cost:result.cost});renderSaveStatus(); return result; },
     createTrial: createWorkshopTrial });
@@ -271,10 +290,13 @@ export function createApplication({
   worldVehicleWorkshop=createWorldWorkshop({game,renderer,root,kind:'vehicle',onLocked:id=>restorationPanel.open(id)});
   const vehicleControls = createVehicleControls({ game, root, onChange: () => refresh() });
   const mapPanel = createMapPanel({ game, renderer, root, dialogs, onChange: refresh });
+  const localMinimap=createLocalMinimap({game,renderer,root,dialogs});
+  renderer.localMinimap=localMinimap;
+  const waystations=createWaystations({game,root,renderer,dialogs,persist:store.saveProgress,onChange:refresh,onNotice:toast.show});
   const vehicleRepair=createVehicleRepairPanel({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
   const treasure=createTreasure({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
   const tradePanel=createCampTradePanel({game,root,dialogs,renderer,onChange:refresh});
-  const backpack=createKeepsakeBackpack({onTrade:()=>tradePanel.open(),game,root,dialogs,savePreferences:store.saveGameplay,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open(),onPlaceSprinkler:()=>productionPanel?.placeStored()});
+  const backpack=createKeepsakeBackpack({onWaystations:waystations.open,onTransfer:inventoryTransfer.open,onCargo:()=>logistics.open('cargo'),onTrade:()=>tradePanel.open(),game,root,dialogs,savePreferences:store.saveGameplay,onChange:refresh,onNotice:message=>toast.show(message),onRepair:()=>vehicleRepair.open(true),onTreasure:()=>treasure.open(),onPlaceSprinkler:()=>productionPanel?.placeStored()});
   firePanel=createFirePanel({game,root,dialogs,onChange:refresh});
   realmPanel = createRealmPanel({ game, root, dialogs, audio, onChange: () => refresh(),onFire:()=>firePanel.open() });
   guardianBuild = createGuardianBuild({game,renderer,root,onChange:()=>refresh()});
@@ -300,9 +322,10 @@ export function createApplication({
   clearingPanel=createClearingPanel({game,root,renderer,dialogs,onChange:refresh});
   livingPanel=createLivingPanel({game,root,renderer,dialogs,onTalk,onEquipmentStory:id=>storyPanel.openEquipment(id),onClearing:()=>clearingPanel.visit(),onChange:refresh,environment,onRest:()=>{projectLivingCalendar(environment,game.progress.living.calendar);environmentPanel.render();}});
   storyPanel = createStoryPanel({game,root,dialogs,renderer,onLiving:requestId=>livingPanel.open(null,requestId),onChange:()=>refresh(),openWorkshop:(kind,index)=>workshop.open(kind,index)});
+  regionalCampPanel=createRegionalCampPanel({game,root,dialogs,onChange:refresh});
   monsterCampPanel=createMonsterCampPanel({game,root,renderer,dialogs,onTalk,onChange:refresh});
   seedShop=createSeedShop({game,root,renderer,dialogs,onChange:refresh});
-  farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPasture:()=>productionPanel.openPasture(),onSeedShop:()=>seedShop.open()});
+  farmPanel=createFarmPanel({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPasture:()=>productionPanel.openPasture(),onSeedShop:()=>seedShop.open(),onSprinkler:()=>productionPanel.selectSprinkler(),onIndustry:()=>industryPanel.open('factory')});
   productionPanel=createFarmProduction({game,root,renderer,input,dialogs,onChange:refresh,onNotice:toast.show,onPlacementStart:()=>farmPanel.close(false)});
   game.mainlinePersist=store.saveProgress;
   game.campDefensePersist=store.saveProgress;
@@ -325,6 +348,7 @@ export function createApplication({
   npcConversations=createNpcConversations({game,root,renderer,dialogs,onChange:refresh,onCampService:()=>mainline.talk()});
   // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
   function openRoomService(kind,index){
+    if(kind==='refinery'||kind==='factory')return industryPanel.open(kind);
     if(kind==='construction')return campHome.openService(kind,index);
     if(kind==='warehouse')return warehouse.open();
     if(kind==='outdoor')return outdoors.open();
@@ -349,6 +373,8 @@ export function createApplication({
       else restorationPanel.open(entry.key);
     }
     else if(entry.type==='arrival-repair')game.advanceArrival();
+    else if(entry.type==='regional-camp')regionalCampPanel.open(entry.key);
+    else if(entry.type==='regional-parcel'){const result=recoverRegionalParcel(game,entry.key);toast.show(result.message);refresh();}
     else if(entry.type==='monster-camp')monsterCampPanel.open(entry.key,entry.id);
     else if(entry.type==='seed-shop')seedShop.open();
     else if(entry.type==='display'){if(entry.kind==='cottage')campHome.openHomeDecor();else openRoomService(entry.kind,entry.index);}
@@ -375,7 +401,13 @@ export function createApplication({
     if(type==='victory'&&data?.clearingComplete&&data.qualification)taskReward.enqueue({title:'清缴完成',challenge:data.qualification,clearingRound:data.clearingRound});
     // 停车完成只恢复步行；入室须自行走到门口站定，升级页由按钮打开。
     if(type==='scene-warehouse'){warehouse.open();return;}
-    if(type==='camp-parking-change'||type==='cottage-change'){input.reset();renderer.camera.time=null;save();return;}
+    // 同场景上下车保留镜头缓动时钟，只有切换室内外才重新取景。
+    if(type==='camp-parking-change'||type==='cottage-change'){
+      input.reset();
+      // 登乘只改变角色座位，补偿这一步的镜头偏移，再沿原时钟柔和跟随。
+      if(data?.boardingFrom&&renderer.camera.time!==null)renderer.camera.boardingAnchor={...data.boardingFrom,to:{x:game.player.x,y:game.player.y},body:game.player,elapsed:0};
+      if(type==='cottage-change')renderer.camera.time=null;save();return;
+    }
     if(type==='vehicle-parked'){input.reset();save();refresh();return;}
     if(type==='navigation-change'){save();toast.show(game.progress.mainline.navigationEnabled?'寻路已开启':'寻路已关闭，再点右侧箭头即可开启');return;}
     recordMainlineEvent(game,type);if(type.startsWith('mainline-')){input.reset();save();if(type==='mainline-complete')taskReward.enqueue(data);return;}dispatchGameEvent(type,data);
@@ -399,8 +431,11 @@ export function createApplication({
   function enterFromMenu() {
     if(disposed||shell.page!=='title'||!shell.ready||shell.loading||shell.failed||shell.saveStatus==='corrupt')return;
     shell.loading=true;startLoading.start();titleMenu.render();canvas.setAttribute('aria-busy','true');
+    // 进入此处时字体、必需图集、配置校验与应用装配已经完成。
+    startLoading.update(LOADING_WEIGHT.bootstrap);
     // 已建图也完整播放过场，但继续复用地图与现场，不重复建图或提前恢复模拟。
-    if(shell.worldReady){startLoading.complete(finishMenuEntry);return;}
+    if(shell.worldReady){startLoading.update(99);startLoading.complete(finishMenuEntry);return;}
+    initialWorldSteps=game.initializeWorldSteps();
     warmupFrame=host.requestAnimationFrame(()=>{warmupFrame=host.requestAnimationFrame(prepareInitialFrame);});
   }
   // 首次与再次开始共用唯一完成出口，100%结束后才恢复游戏与挂起弹窗。
@@ -606,10 +641,12 @@ export function createApplication({
         profiler.start('render.panels.fire'); firePanel.renderFrame(); profiler.end('render.panels.fire');
         profiler.start('render.panels.story'); storyPanel.renderFrame(dt); profiler.end('render.panels.story');
         profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
-        profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); profiler.end('render.panels.farm');
+        profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); industryPanel.render(); profiler.end('render.panels.farm');
         legendaryWorkshop.renderFrame();
         seedShop.renderFrame();tradePanel.renderFrame();
         outdoors.renderFrame();
+        waystations.renderFrame();
+        profiler.start('render.panels.minimap'); localMinimap.renderFrame(); profiler.end('render.panels.minimap');
         monsterCampPanel.renderFrame();
         profiler.start('render.panels.living'); livingPanel.renderFrame(); profiler.end('render.panels.living');
         profiler.start('render.panels.arrival'); rangerArrival.renderFrame(); profiler.end('render.panels.arrival');
@@ -620,7 +657,7 @@ export function createApplication({
         profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
         profiler.start('render.panels.home'); campHome.render(); profiler.end('render.panels.home');
         profiler.start('render.panels.nearby'); nearbyControls.render();treasure.update(); profiler.end('render.panels.nearby');
-        profiler.start('render.panels.workshop'); worldWorkshop.render(); profiler.end('render.panels.workshop');
+        profiler.start('render.panels.workshop'); worldWorkshop.render();campLandPanel.render(); profiler.end('render.panels.workshop');
         profiler.start('render.panels.vehicleWorkshop'); worldVehicleWorkshop.render(); profiler.end('render.panels.vehicleWorkshop');
         profiler.start('render.panels.guardian'); guardianBuild.render(); profiler.end('render.panels.guardian');
         profiler.end('render.panels');
@@ -628,7 +665,7 @@ export function createApplication({
         uiTime += dt;
         if (uiTime > 0.12) {
           profiler.start('ui');
-          refresh();
+          refresh({afterDraw:true});
           profiler.end('ui');
           uiTime = 0;
         }
@@ -671,6 +708,7 @@ export function createApplication({
     save();
     loop.dispose();
     if (warmupFrame !== null) host.cancelAnimationFrame(warmupFrame);
+    initialWorldSteps?.return();initialWorldSteps=null;
     if (recoveryFrame !== null) host.cancelAnimationFrame(recoveryFrame);
     navigationWarmup.dispose(); renderer.ground.dispose(); resolveReady(false);
     startLoading.dispose();titleMenu.dispose(); canvas.removeAttribute('aria-busy');
@@ -684,7 +722,8 @@ export function createApplication({
     chroniclePanel.dispose();
     environmentPanel.dispose();
     mapPanel.dispose();
-    warehouse.dispose();treasure.dispose();backpack.dispose();tradePanel.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();outdoors.dispose();creatureCodex.dispose();loadCleanup.dispose();
+    localMinimap.dispose();
+    waystations.dispose();inventoryTransfer.dispose();warehouse.dispose();treasure.dispose();backpack.dispose();tradePanel.dispose();vehicleRepair.dispose();logistics.dispose();fieldEquipment.dispose();outdoors.dispose();creatureCodex.dispose();loadCleanup.dispose();
     funnelPanel.dispose();
     mechanicalPanel.dispose();
     spiderPanel.dispose();
@@ -692,7 +731,7 @@ export function createApplication({
     vehiclePanel.dispose();
     storyPanel.dispose();
     livingPanel.dispose();
-    productionPanel.dispose();
+    productionPanel.dispose();industryPanel.dispose();
     farmPanel.dispose();
     clearingPanel.dispose();
     rangerArrival.dispose();
@@ -702,9 +741,9 @@ export function createApplication({
     realmPanel.dispose();firePanel.dispose();
     worldRealms.dispose();
     nearbyControls.dispose();
-    restorationPanel.dispose();
+    restorationPanel.dispose();campLandPanel.dispose();campLayoutPanel.dispose();
     seedShop.dispose();
-    monsterCampPanel.dispose();
+    monsterCampPanel.dispose();regionalCampPanel.dispose();
     campHome.dispose();
     worldWorkshop.dispose();
     worldVehicleWorkshop.dispose();
@@ -735,13 +774,24 @@ export function createApplication({
   function prepareInitialFrame() {
     if (disposed) return;
     try {
-      game.initializeWorld();
-      const view = renderer.prepareGround();
+      if(initialWorldSteps){
+        const started=host.performance.now();let count=0;
+        while(initialWorldSteps&&count++<LOADING_TIME.maxSteps&&host.performance.now()-started<LOADING_TIME.worldBudget){
+          const part=initialWorldSteps.next();
+          startLoading.update(LOADING_WEIGHT.bootstrap+LOADING_WEIGHT.world*(part.done?1:part.value));
+          if(part.done)initialWorldSteps=null;
+        }
+        // 即便本批刚好完成，也先让出一帧显示进度，再开始首屏纹理。
+        warmupFrame=host.requestAnimationFrame(prepareInitialFrame);return;
+      }
+      const view = renderer.prepareGround(LOADING_TIME.firstFrameMargin);
       // 首屏也可能丢失上下文，等待恢复后继续原加载流程，不能把空视野传给地块调度。
       if(!view){warmupFrame=host.requestAnimationFrame(prepareInitialFrame);return;}
       navigationWarmup.prepare({ ...game.player, mapId: game.mapId });
       // 过场期间没有战斗模拟，给首屏纹理8毫秒、导航2毫秒，逐帧让出主线程。
       renderer.ground.advance(8); navigationWarmup.advance(2);
+      startLoading.update(LOADING_WEIGHT.bootstrap+LOADING_WEIGHT.world+
+        LOADING_WEIGHT.ground*renderer.ground.readiness(view)+LOADING_WEIGHT.navigation*navigationWarmup.progress);
       if (!renderer.ground.ready(view) || navigationWarmup.steps) {
         warmupFrame = host.requestAnimationFrame(prepareInitialFrame); return;
       }
@@ -750,6 +800,7 @@ export function createApplication({
       startLoading.complete(finishMenuEntry);
     } catch (error) {
       profiler.event('frame-error', { phase: ['cache.initial'], message: String(error.stack || error) });
+      initialWorldSteps?.return();initialWorldSteps=null;
       startLoading.stop();warmupFrame=null;shell.loading=false;shell.failed=true;canvas.removeAttribute('aria-busy');titleMenu.render();toast.show(i18nText("app.create-app.613e6b34ce")); resolveReady(false);
     }
   }

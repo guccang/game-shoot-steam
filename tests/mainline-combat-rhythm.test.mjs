@@ -7,13 +7,13 @@ import {MAINLINE_IDS,MAINLINE_TASKS,currentMainlineTask} from '../src/config/mai
 
 
 
-import {recordMainlineCombat} from '../src/progression/mainline-combat.js';
+import {recordMainlineCombat} from '../src/progression/story/mainline-combat.js';
 import {TOWN_RESTORATIONS,pendingRestoration} from '../src/config/town-restoration.js';
-import {defeatBoss} from '../src/core/boss-manager.js';
+import {defeatBoss} from '../src/core/battle/boss-manager.js';
 import {CAMP_GATES} from '../src/config/camp-defense.js';
-import {startCampDefense,claimCampDefense} from '../src/core/camp-defense.js';
-import {beginStoryWave,updateStoryWave} from '../src/core/story-encounters.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {startCampDefense,claimCampDefense} from '../src/core/camp/camp-defense.js';
+import {beginStoryWave,updateStoryWave} from '../src/core/story/story-encounters.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 import {STORY_SITES} from '../src/config/story.js';
 
 // 只准备任务和建筑前置，战斗结算仍经过正式入口。
@@ -68,7 +68,7 @@ test('无出生空间重试保留配额，到时明确失败，不静默放行',
  const g=encounter();beginStoryWave(g,'SIGN',6,6);const cfg=storyDefinition(g).encounters;const attempts=cfg.spawn.attempts;
  try{cfg.spawn.attempts=0;for(let i=0;i<70&&g.story.phase!=='failed';i++)updateStoryWave(g,.31);assert.equal(g.story.combat.spawned,0);assert.equal(g.story.phase,'failed');assert.ok(g.story.error);}finally{cfg.spawn.attempts=attempts;}
 });
-import {storyDefinition} from '../src/core/story-definition.js';
+import {storyDefinition} from '../src/core/story/story-definition.js';
 
 // 三套正式借装自然清理成组首战与三波守点，不改伤害、血量或杀怪结果。
 import {pacingGame} from './helpers/story-combat-pacing.mjs';

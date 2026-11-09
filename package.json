@@ -8,6 +8,7 @@
     "build:audio": "node scripts/build-audio.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "node scripts/check.mjs",
+    "check:modules": "node scripts/check-modules.mjs",
     "config:check": "node scripts/gameplay-config.mjs check",
     "config:export": "node scripts/gameplay-config.mjs export",
     "config:audit": "node scripts/gameplay-audit.mjs",

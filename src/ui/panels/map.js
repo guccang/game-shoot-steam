@@ -1,28 +1,32 @@
+import {REGIONAL_CAMPS,regionalNpc,regionalParcel} from '../../config/regional-camps.js';
+import {NATURAL_TERRAIN} from '../../world/natural-terrain.js';
+import {landingPoint} from '../../combat/vehicle-landing.js';
 import {displayMeters} from '../../world/distance-units.js';
 import {MONSTER_CAMPS,campVisitorSite} from '../../config/monster-camps.js';
 import {FARM_CROPS} from '../../config/farm.js';
-import {monsterCampsAvailable,monsterCampLevel} from '../../core/monster-camps.js';
-import {requestWorldNavigation} from '../../core/world-navigation.js';
-import {legendaryVisible,travelLegendary} from '../../core/legendary-workshop.js';
+import {monsterCampsAvailable,monsterCampLevel} from '../../core/battle/monster-camps.js';
+import {requestWorldNavigation} from '../../core/navigation/world-navigation.js';
+import {legendaryVisible,travelLegendary} from '../../core/workshop/legendary-workshop.js';
 import {FOREST_LEVEL_BANDS} from '../../world/forest-levels.js';
 import {forestRuleLines} from '../../config/forest-rules.js';
 import {facilityOpen} from '../../config/town-restoration.js';
-import {clearingSite} from '../../progression/clearing-site.js';
+import {clearingSite} from '../../progression/story/clearing-site.js';
 import {CLEARING_POST} from '../../config/clearing.js';
 import { canvasFont } from '../../rendering/text-style.js';
 import { i18nHtml, i18nText } from "../../i18n/index.js";
-import {worldStoryPosts} from '../../core/story-posts.js';
-import {mainlineObjective,markMainline} from '../../core/mainline-manager.js';
+import {worldStoryPosts} from '../../core/story/story-posts.js';
+import {mainlineObjective,markMainline} from '../../core/story/mainline-manager.js';
 import {LIVING_PLACES,LIVING_ROADS} from '../../config/living-world.js';
 import {livingForest} from '../../world/living-spaces.js';
-import {livingRequestTarget} from '../../core/living-world.js';
-import {trackedLivingRequest} from '../../core/task-tracking.js';
+import {livingRequestTarget} from '../../core/camp/living-world.js';
+import {trackedLivingRequest} from '../../core/navigation/task-tracking.js';
 // 区域地图面板：共享场景背景与分区配置，不复制地图逻辑。
 import { BIOMES } from '../../world/biomes.js';
+import {HABITATS} from '../../world/forest-habitats.js';
 import { WORLD, ORIGINAL_WORLD, canonical, worldDistance } from '../../world/coordinates.js';
 import { createEventScope } from '../../platform/events.js';
 import { MAPS } from '../../world/maps.js';
-import {storyDefinition} from '../../core/story-definition.js';
+import {storyDefinition} from '../../core/story/story-definition.js';
 import { JIUZHAIGOU_ZONES, JIUZHAIGOU_SIGNPOSTS } from '../../world/jiuzhaigou.js';
 // 打开时生成当前视图，关闭及暂停恢复由公共弹窗控制器处理。
 export function createMapPanel({ game, renderer, root, dialogs, onChange = () => {} }) {
@@ -51,6 +55,20 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       scaleY = c.canvas.height / extent.height;
     c.clearRect(0, 0, 720, 560);
     const ready = renderer.ground.drawMap(c, 720, 560, { ...previewOptions(), retry });
+    // 四个代表地名直接落在对应色带，营火、玩家与任务图标稍后绘制在它们上方。
+    if(ready&&game.mapId==='forest'&&!game.story){
+      c.save();c.font=canvasFont(19);c.textAlign='center';c.lineJoin='round';c.lineWidth=4;
+      c.strokeStyle='#faf2d2';c.fillStyle='#344d39';
+      for(const {name,label:[x,y]} of Object.values(HABITATS)){
+        c.strokeText(name,x*scaleX,y*scaleY);c.fillText(name,x*scaleX,y*scaleY);
+      }
+      c.restore();
+    }
+    // 新地貌覆盖旧静态总览的局部轮廓，标号与下方目录一致。
+    if(game.mapId==='forest'&&!game.story)for(const [i,f]of NATURAL_TERRAIN.earth.entries()){
+      c.beginPath();f.outline.forEach((p,j)=>j?c.lineTo((f.x+p.x)*scaleX,(f.y+p.y)*scaleY):c.moveTo((f.x+p.x)*scaleX,(f.y+p.y)*scaleY));c.closePath();c.fillStyle=f.color;c.fill();
+      c.fillStyle='#fff0c5';c.strokeStyle='#365b46';c.lineWidth=1.5;c.beginPath();c.arc(f.x*scaleX,f.y*scaleY,8,0,Math.PI*2);c.fill();c.stroke();c.fillStyle='#365b46';c.font=canvasFont(10);c.textAlign='center';c.fillText(String(i+1),f.x*scaleX,f.y*scaleY+3);
+    }
     const failed = !!renderer.ground.mapPreview.failure;
     loading.textContent = failed ? '地图加载失败，请关闭后重试。' : '正在准备地图…';
     loading.hidden = ready; c.canvas.hidden = !ready; c.canvas.setAttribute('aria-busy', String(!ready && !failed));
@@ -98,6 +116,11 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       c.beginPath();c.arc(x,y,forest?3.5:10,0,Math.PI*2);c.fill();c.stroke();
       if(!forest){c.fillStyle='#365b43';c.font=canvasFont(12);c.textAlign='center';c.fillText('火',x,y+4);}
     }
+    // 自建驿站是实时存档标记，不烘焙进共享地形底图。
+    if(game.mapId==='forest'&&!game.story)for(const s of game.progress.waystations?.sites||[]){
+      const x=s.x*scaleX,y=s.y*scaleY;c.fillStyle='#fff0c5';c.strokeStyle='#365b46';c.lineWidth=2;c.fillRect(x-8,y-8,16,16);c.strokeRect(x-8,y-8,16,16);c.fillStyle='#365b46';c.font=canvasFont(10);c.textAlign='center';c.fillText(String(s.id),x,y+3);
+    }
+    if(game.mapId==='forest'&&!game.story)for(const camp of REGIONAL_CAMPS){const x=camp.x*scaleX,y=camp.y*scaleY;c.fillStyle='#fff0c5';c.strokeStyle='#365b43';c.lineWidth=2;c.fillRect(x-7,y-7,14,14);c.strokeRect(x-7,y-7,14,14);c.font=canvasFont(10);c.fillStyle='#365b43';c.textAlign='center';c.fillText('营',x,y+4);}
     const p = canonical(game.player);
     c.beginPath();
     c.arc(p.x * scaleX, p.y * scaleY, 7, 0, Math.PI * 2);
@@ -106,10 +129,15 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     c.strokeStyle = '#b76542';
     c.lineWidth = 3;
     c.stroke();
-    $('region-legend').innerHTML = zones.map(
+    $('region-legend').innerHTML = game.mapId==='forest'?Object.values(HABITATS).map(h=>
+      `<div style="--zone-color:rgb(${h.ground.join(',')})"><b>${h.name}</b><small>${h.note}</small></div>`).join(''):zones.map(
       (z) =>
         `<div style="--zone-color:${z.monster}"><b>${i18nHtml("common.namedLevel", { p0: z.name, p1: z.range })}</b><small>${i18nHtml("ui.panels.map.3700687250", { p0: (z.species), p1: (z.tree === 'pine' ? i18nText("ui.panels.map.b1a9b33767") : i18nText("ui.panels.map.8916f82881")) })}</small></div>`,
     ).join('');
+    if(game.mapId==='forest'&&!game.story)for(const camp of REGIONAL_CAMPS){const row=root.createElement('div'),h=root.createElement('b'),p=root.createElement('small'),b=root.createElement('button');h.textContent='营 · '+camp.name;p.textContent=camp.region+' · 补给 / 维修 / 装备 / 种子 / 猫猫';b.className='ui-button';b.textContent='前往营地';b.dataset.regionalCamp=camp.id;row.append(h,p,b);$('region-legend').append(row);if(game.progress.regionalCamps[camp.id].stage===1){const q=root.createElement('button');q.className='ui-button';q.textContent='寻找'+camp.parcel;q.dataset.regionalQuest=camp.id;row.append(q);}}
+    if(game.mapId==='forest'&&!game.story)for(const [i,f]of NATURAL_TERRAIN.earth.entries()){
+      const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small'),button=root.createElement('button');title.textContent=(i+1)+' · '+f.name;note.textContent='距你 '+displayMeters(worldDistance(game.player,f))+' 米'+(f.kind==='rift'?' · 深谷不可通行':'');button.type='button';button.className='ui-button';button.dataset.earthLandform=f.id;button.textContent='前往观景处';row.append(title,note,button);$('region-legend').append(row);
+    }
     for(const post of posts){const row=root.createElement('div'),title=root.createElement('b'),note=root.createElement('small');title.textContent='✉ '+post.name;note.textContent=i18nText("ui.panels.map.561f17dade");row.append(title,note);$('region-legend').append(row);}
     if(livingForest(game)){
       const tracked=trackedLivingRequest(game),target=tracked&&livingRequestTarget(game,tracked);
@@ -135,6 +163,10 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     showRegionMap(); onChange(); renderer.draw();
     $('map-done').focus({ preventScroll: true });
   });
+  // 地区营地与委托箱导航只标记真实目标，不传送玩家。
+  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-regional-camp],[data-regional-quest]');if(!b)return;const camp=REGIONAL_CAMPS.find(c=>c.id===(b.dataset.regionalCamp||b.dataset.regionalQuest));if(!camp||game.mapId!=='forest'||game.story)return;const site=b.dataset.regionalQuest?regionalParcel(camp):{...regionalNpc(camp),id:camp.id,mapId:'forest',name:camp.name};requestWorldNavigation(game,site,'前往'+site.name,{direct:true,arrivalRadius:45});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
+  // 观景目标在地貌前方的干地，不把导航终点设进裂谷或山体。
+  scope.on($('region-legend'),'click',event=>{const id=event.target.closest('[data-earth-landform]')?.dataset.earthLandform,f=NATURAL_TERRAIN.earth.find(f=>f.id===id);if(!f)return;const point=landingPoint({...game.player,x:f.x,y:f.y+f.ry+100,mapId:'forest'},game.trees,{nearbyOnly:true});if(!point)return;requestWorldNavigation(game,{...point,id:f.id,mapId:'forest',name:f.name+'观景处',kind:'earth-viewpoint'},'前往'+f.name+'观景处',{direct:true,arrivalRadius:35});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
   // 选中营地只设置圈外导航，关闭地图后由玩家实际行走。
   scope.on($('region-legend'),'click',event=>{if(!event.target.closest('[data-legendary-route]'))return;if(!travelLegendary(game).ok)return;for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
   scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-monster-camp]'),c=MONSTER_CAMPS.find(c=>c.id===b?.dataset.monsterCamp);if(c&&c.mapId===game.mapId){requestWorldNavigation(game,campVisitorSite(c),'前往'+c.name+'圈外',{direct:true});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();}});

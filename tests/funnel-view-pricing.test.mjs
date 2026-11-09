@@ -5,10 +5,10 @@ import {CombatCamera} from '../src/rendering/camera.js';
 import {funnelFlightBounds} from '../src/combat/funnel-movement.js';
 import {freshProgress,WEAPONS} from '../src/game.js';
 import {RECOMMENDED_ECONOMY} from '../src/config/economy.js';
-import {equipmentRecipe} from '../src/progression/equipment-goals.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
-import {transactProgress} from '../src/progression/transactions.js';
-import {campProgress} from '../src/progression/camp-level.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
+import {campProgress} from '../src/progression/camp/camp-level.js';
 const prices={pulse:30000,funnel:48000,drone:36000,'mechanical-core':44000,'mechanical-spider':56000,'gravity-gun':20000};
 
 test('浮游炮与默认镜头完全一致，切枪及缩屏不放大视野，狙击和无人机保持专属倍率',()=>{

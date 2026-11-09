@@ -1,4 +1,4 @@
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 import { WORLD } from '../src/world/coordinates.js';
 // 星环浮游炮验收：真实调度、目标优先级、资源守恒、来源归属与默认视野。
 import test from 'node:test';

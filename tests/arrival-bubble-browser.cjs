@@ -7,7 +7,7 @@ async original=>{
   await page.goto(original.url()||'http://localhost:4175');await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
-   window.speech=(await import('/src/core/ranger-arrival.js')).arrivalSpeech;window.samples=[];
+   window.speech=(await import('/src/core/camp/ranger-arrival.js')).arrivalSpeech;window.samples=[];
    const advance=a.renderer.ground.advance.bind(a.renderer.ground);
    // 气泡面板已更新后采样，避免在Canvas绘制结束而DOM尚未刷新时误报一帧延迟。
    a.renderer.ground.advance=(...args)=>{

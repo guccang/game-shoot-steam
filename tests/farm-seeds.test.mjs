@@ -2,10 +2,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {grantFarmSeeds,validateFarm} from '../src/progression/farm.js';
-import {buyFarmSeeds,awardFarmSeedDrop} from '../src/core/farm-seeds.js';
-import {farmAction} from '../src/core/farm.js';
-import {catLoad,movementLoadFactor} from '../src/progression/load-weight.js';
+import {grantFarmSeeds,validateFarm} from '../src/progression/farming/farm.js';
+import {buyFarmSeeds,awardFarmSeedDrop} from '../src/core/farming/farm-seeds.js';
+import {farmAction} from '../src/core/farming/farm.js';
+import {catLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
 import {itemDefinition} from '../src/config/items.js';
 import {FARM_CROPS,FARM_SEED_DROP,FARM_SEED_DOOR,FARM_SEED_SHOP,FARM_STOCK_CAP} from '../src/config/farm.js';
 import {farmLandReason} from '../src/world/farm-land.js';
@@ -29,7 +29,7 @@ test('领主两粒种子恰好满载时整批入仓，重复击杀不补发，�
  assert.equal(g.progress.warehouse.seeds[0],2);
  g.cottage={kind:'seed'};
  assert.ok(buyFarmSeeds(g,0,5).ok);
- assert.equal(g.progress.farm.seeds[0],0);assert.equal(g.progress.warehouse.seeds[0],7);
+ assert.equal(g.progress.farm.seeds[0],1);assert.equal(g.progress.warehouse.seeds[0],6);
  assert.equal(g.progress.coins,100-5*FARM_CROPS[0].cost);
  assert.equal(movementLoadFactor(g),1);
 });
@@ -53,7 +53,7 @@ test('活怪、树木和副本活动不产种子也不推进保底',()=>{
 test('购买锁定、距离、余额、容量与参数均重新检查；骑乘可购且雏菊收费',()=>{
  const g=scene();assert.equal(buyFarmSeeds(g,0).ok,false);grantFarmSeeds(g.progress.farm,0,1);g.vehicle={active:true};g.cottage={kind:'seed'};
  assert.equal(buyFarmSeeds(g,0,5).ok,true);assert.equal(g.progress.coins,50);assert.equal(g.progress.farm.seeds[0],6);
- for(const count of [0,-1,2,1.5,Infinity])assert.equal(buyFarmSeeds(g,0,count).ok,false);
+ for(const count of [0,-1,NaN,1.5,Infinity])assert.equal(buyFarmSeeds(g,0,count).ok,false);
  assert.equal(buyFarmSeeds(g,0,10).ok,false);g.cottage=null;assert.equal(buyFarmSeeds(g,0).ok,false);g.cottage={kind:'seed'};g.progress.farm.seeds[0]=FARM_STOCK_CAP;assert.ok(buyFarmSeeds(g,0).ok);assert.equal(g.progress.warehouse.seeds[0],1);g.progress.warehouse.seeds[0]=FARM_STOCK_CAP;assert.equal(buyFarmSeeds(g,0).ok,false);
 });
 test('保存失败不扣金币和库存，播种只消耗库存不自动购买',()=>{
@@ -61,6 +61,21 @@ test('保存失败不扣金币和库存，播种只消耗库存不自动购买',
  g.livingPersist=()=>true;g.player={x:900,y:2800};g.progress.farm.plots=[{id:0,mapId:'forest',...g.player,crop:null,plantedAt:0,readyAt:0,watered:false}];
  assert.equal(farmAction(g,'plant',{plot:0,crop:0,now:1000}).ok,true);assert.equal(g.progress.coins,100);assert.equal(g.progress.farm.seeds[0],0);
  g.progress.farm.plots[0].crop=null;assert.equal(farmAction(g,'plant',{plot:0,crop:0}).ok,false);assert.equal(g.progress.coins,100);assert.equal(g.progress.farm.unlocked[0],true);
+});
+
+test('店外有车也先装背包，批量购种只将余数装车，保存失败整批回滚',()=>{
+ const g=scene(),p=g.progress;g.cottage={kind:'seed'};g.vehicle={active:false,index:0};
+ p.farm.unlocked[0]=true;p.vehicleHulls[0]=1;
+ p.campParking.owned=[{...g.player,mapId:'forest',hull:0,spot:null,hp:1,ammo:0,reload:0}];
+ const load=catLoad(g),mass=itemDefinition('seed:0').mass;
+ p.farm.seeds[1]=Math.round((load.capacity-load.weight)/mass)-3;
+ g.livingPersist=()=>false;const before=structuredClone(p);
+ assert.equal(buyFarmSeeds(g,0,5).ok,false);assert.deepEqual(g.progress,before);
+ g.livingPersist=()=>true;const result=buyFarmSeeds(g,0,5);
+ assert.equal(result.ok,true);assert.match(result.message,/猫猫背包 2 粒/);
+ assert.equal(g.progress.farm.seeds[0],2);assert.equal(g.progress.shopStock[0]['seed:0'],3);
+ assert.equal(g.progress.warehouse.seeds[0],0);assert.equal(g.progress.coins,50);
+ assert.equal(validateProgress(g.progress).shopStock[0]['seed:0'],3);
 });
 test('小屋底座阻挡种地与穿行，门前和两侧可通行',()=>{
  const g=scene();assert.ok(farmLandReason(g,FARM_SEED_SHOP));assert.equal(livingFacilityBlocked(FARM_SEED_SHOP.x,FARM_SEED_SHOP.y,10,'forest'),true);

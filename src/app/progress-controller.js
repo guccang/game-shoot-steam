@@ -1,12 +1,12 @@
 import {vehicleMaxHp} from '../config/vehicles.js';
 import {createVehicle} from '../combat/vehicle.js';
-import {syncCampDefense} from '../core/camp-defense.js';
+import {syncCampDefense} from '../core/camp/camp-defense.js';
 import { i18nText } from "../i18n/index.js";
 // 存档应用控制器统一处理成长、巡游检查点、清档和体验解锁事务。
 import { freshRangerProgress } from '../progression/progress.js';
-import { unlockedWeaponProgress } from '../progression/unlock-weapons.js';
-import { capturePatrol } from '../core/patrol-session.js';
-import { debugGrantProgress } from '../progression/debug-grants.js';
+import { unlockedWeaponProgress } from '../progression/workshop/unlock-weapons.js';
+import { capturePatrol } from '../core/battle/patrol-session.js';
+import { debugGrantProgress } from '../progression/player/debug-grants.js';
 
 // 存储和界面均由宿主注入，测试可使用内存存储而不依赖真实浏览器。
 export function createProgressController({

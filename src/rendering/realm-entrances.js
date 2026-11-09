@@ -1,5 +1,5 @@
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
-import { style } from '../art-styles/config.js';
+
 import { drawWorldSign } from './world-signs.js';
 import { drawFireStation } from './fire-rescue.js';
 import { box, oval, poly, outline } from './primitives.js';

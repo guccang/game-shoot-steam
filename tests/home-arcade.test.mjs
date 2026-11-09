@@ -3,10 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {openBasement} from '../src/progression/mining.js';
+import {openBasement} from '../src/progression/mining/mining.js';
 import {HOME_ARCADE,ARCADE_MINERALS,ARCADE_CLAW as C} from '../src/config/home-arcade.js';
-import {homeArcadeAccess,openHomeArcade,startHomeArcade,updateHomeArcade,shootArcadeBird,reloadArcadeGun,dropArcadeClaw,arcadeClawPoint,settleHomeArcade,closeHomeArcade,pauseHomeArcade} from '../src/core/home-arcade.js';
-import {updateCottage} from '../src/core/cottage.js';
+import {homeArcadeAccess,openHomeArcade,startHomeArcade,updateHomeArcade,shootArcadeBird,reloadArcadeGun,dropArcadeClaw,arcadeClawPoint,settleHomeArcade,closeHomeArcade,pauseHomeArcade} from '../src/core/home/home-arcade.js';
+import {updateCottage} from '../src/core/home/cottage.js';
 // 隔离玩家沿用正式Game与进度，楼层与阳台数据对应已完成施工状态。
 function setup(kind='birds',floor=9){const p=freshProgress();p.homeDecor.floors=12;p.homeDecor.balconies={[floor]:['east']};p.homeDecor.basement=true;openBasement(p.mining);const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.livingPersist=()=>true;g.cottage=kind==='birds'?{kind:'cottage',floor,balcony:'east',outside:{x:600,y:370}}:{kind:'mine',depth:1,direction:1,autoDig:false,shaftWork:0,outside:{x:600,y:370}};return g;}
 // 固定步长推进真实小游戏，测试不依赖系统钟或浏览器速度。

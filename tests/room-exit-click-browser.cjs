@@ -8,7 +8,7 @@ async page=>{
    window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game;
    g.progress=(await import('/src/progression/progress.js')).freshProgress();g.progress.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(r=>r.id);g.progress.arrival={version:3,phase:'complete',keys:true};
    g.progress.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;
-   window.roomModule=await import('/src/core/cottage.js');window.roomConfig=await import('/src/config/workshop-interiors.js');
+   window.roomModule=await import('/src/core/home/cottage.js');window.roomConfig=await import('/src/config/workshop-interiors.js');
    window.roomTick=g.update.bind(g);window.streetExit=(await import('/src/config/home-construction.js')).cottageStreetExit;g.update=()=>{};
   });
   for(const kind of ['cottage','outdoor','weapons','vehicle'])for(const [width,height]of [[320,568],[390,844]])for(const time of ['day','night']){

@@ -1,15 +1,15 @@
-import {taskNavigationEnabled} from '../core/task-navigation.js';
-import {storyInteractionReady} from '../core/story-interaction.js';
-import {farmMode} from '../core/farm.js';
+import {taskNavigationEnabled} from '../core/navigation/task-navigation.js';
+import {storyInteractionReady} from '../core/story/story-interaction.js';
+import {farmMode} from '../core/farming/farm.js';
 import { i18nText } from "../i18n/index.js";
 // 第一章地面提示与发言锚点直接读取正式任务、人物和碰撞数据。
-import {storyDefinition,storySceneActive} from '../core/story-definition.js';
-import {storyDialogueEntries} from '../core/story-journey.js';
+import {storyDefinition,storySceneActive} from '../core/story/story-definition.js';
+import {storyDialogueEntries} from '../core/story/story-journey.js';
 import { nearest, visibleBodies } from '../world/coordinates.js';
 import { storyCast } from './story-props.js';
-import {storyRouteState,visibleRouteDots} from '../core/story-route.js';
-import {worldNavigationObjective} from '../core/world-navigation.js';
-import {livingRouteStates} from '../core/living-route.js';
+import {storyRouteState,visibleRouteDots} from '../core/navigation/story-route.js';
+import {worldNavigationObjective} from '../core/navigation/world-navigation.js';
+import {livingRouteStates} from '../core/navigation/living-route.js';
 import {CLEARING_POST} from '../config/clearing.js';
 import {drawRestorationArea} from './town-restoration.js';
 import {NAVIGATION_STYLE,drawNavigationDot,drawNavigationRing,drawNavigationPin,navigationPinBelow,navigationPinLift} from './navigation-markers.js';

@@ -5,9 +5,9 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {waveDifficulty,clearingWaveBudget,clearingKillReward} from '../src/config/waves.js';
 import {forestReward} from '../src/config/economy.js';
-import {awardMaterials} from '../src/progression/material-loot.js';
+import {awardMaterials} from '../src/progression/economy/material-loot.js';
 import {MATERIAL_CAP} from '../src/config/materials.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 
 // 固定同区域同阶级，排除怪物构成不同造成的收益差异。
 function arena(wave=5){const g=new Game(freshProgress(),()=>.99);g.start();g.progress.living.patrolActive=true;Object.assign(g.player,{x:BOSS_CLEARING.x,y:BOSS_CLEARING.y});g.waveWarning=0;g.wave=wave;g.bossWave=wave;g.waveKills=g.waveSpawned=0;g.enemies=[];g.trees=[];return g;}
@@ -70,7 +70,7 @@ test('波次回收不发奖，随机遭遇与领主援军只领取一份且不�
  assert.deepEqual(g.progress.materialPity,{parts:2,crystal:2});
  const e=g.spawnEnemy(0,1700),coins=g.progress.coins;
  // 回收入口仅退还配额，避免远离地图反复领取预算。
- return import('../src/core/enemy-manager.js').then(({recycleEnemies})=>{
+ return import('../src/core/battle/enemy-manager.js').then(({recycleEnemies})=>{
   recycleEnemies(g);assert.ok(!g.enemies.includes(e));assert.equal(g.progress.coins,coins);assert.equal(g.waveKills,0);
   Object.assign(g.player,{x:BOSS_CLEARING.x,y:BOSS_CLEARING.y});kill(g);assert.equal(g.progress.coins-coins,clearingKillReward(5,0).coins);
  });

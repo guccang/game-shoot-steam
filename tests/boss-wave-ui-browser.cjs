@@ -9,7 +9,7 @@ async original=>{
    const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();
    p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;
    p.living.patrolActive=true;p.living.clearingNotice='seen';g.progress=p;g.reset();g.start();g.mainlineSpeech=null;g.mainlineTalkDelay=999;
-   window.site=(await import('/src/progression/clearing-site.js')).clearingSite(p);Object.assign(g.player,{x:site.x,y:site.y,invincible:0});
+   window.site=(await import('/src/progression/story/clearing-site.js')).clearingSite(p);Object.assign(g.player,{x:site.x,y:site.y,invincible:0});
    Object.assign(g,{wave:2,waveGroupStart:1,bossWave:5,waveKills:3,waveSpawned:3,waveWarning:0,waveRest:0});
    g.enemies=[];g.spawnEnemy(0,0,{x:site.x+100,y:site.y+65},{ambient:true});g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.summonVehicle();
    // 定格战场逻辑供布局复核；正式渲染、轨道刷新与UI关闭时钟仍正常执行。
@@ -19,11 +19,11 @@ async original=>{
   await page.evaluate(()=>{a.game.progress.living.clearingNotice='arrival';a.refresh();});
   const countdown=[];
   for(const seconds of [3,2,1]){
-   await page.waitForFunction(seconds=>document.getElementById('clearing-notice-countdown').textContent===`${seconds}秒后关闭`,seconds);
+   await page.waitForFunction(seconds=>document.getElementById('clearing-notice-countdown').textContent.startsWith(`${seconds}秒后收起`),seconds);
    countdown.push(await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectBossWaveUi(document)));
   }
-  await page.locator('#clearing-arrival-notice').waitFor({state:'hidden'});
-  if(countdown.some(s=>s.host!=='clearing-notice-track'||!s.visible||s.trackCount!==1||s.nodes.length!==5))throw Error('进场未复用完整轨道 '+JSON.stringify(countdown));
+  await page.locator('#wave-help-dialog').waitFor({state:'hidden'});
+  if(countdown.some(s=>s.host!=='wave-help-track'||!s.visible||s.trackCount!==1||s.nodes.length!==5))throw Error('进场未复用完整轨道 '+JSON.stringify(countdown));
   if(await page.evaluate(()=>document.getElementById('wave-track').parentElement.id)!=='quest')throw Error('自动关闭未归还轨道');
   // 手机竖屏、短横屏及桌面既有容器统一使用同一页面，不新增桌面布局。
   for(const [width,height] of [[320,568],[360,640],[390,844],[430,932],[844,390],[1280,900]])for(const time of ['day','night']){
@@ -33,11 +33,11 @@ async original=>{
     a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);
     a.game.progress.living.clearingNotice='arrival';a.renderer.camera.time=null;a.renderer.resize();a.refresh();
    },time);
-   await page.locator('#clearing-arrival-notice').waitFor({state:'visible'});
+   await page.locator('#wave-help-dialog').waitFor({state:'visible'});
    const arrival=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectBossWaveUi(document));
-   if(!arrival.visible||arrival.overflow||!arrival.contained||arrival.noticeBox.right>width||arrival.trackBox.bottom>arrival.noticeBox.bottom)throw Error('进场布局错误 '+JSON.stringify(arrival));
+   if(!arrival.visible||arrival.overflow||!arrival.contained||arrival.noticeBox.right>width+1||arrival.trackBox.bottom>arrival.noticeBox.bottom)throw Error('进场布局错误 '+JSON.stringify(arrival));
    await page.screenshot({path:`output/playwright/boss-wave-ui/arrival-${width}-${time}.png`});
-   await page.locator('#wave-help').tap();
+   await page.locator('#wave-help-dialog').waitFor({state:'hidden'});await page.locator('#wave-help').tap();await page.waitForTimeout(280);
    const detail=await page.evaluate(async()=>{
     const result=(await import('/src/rendering/visual-review.js')).inspectBossWaveUi(document);
     const dialog=document.getElementById('wave-help-dialog'),body=dialog.querySelector('.ui-panel__body'),close=document.getElementById('wave-help-close').getBoundingClientRect(),action=document.getElementById('clearing-detail-navigation').getBoundingClientRect();

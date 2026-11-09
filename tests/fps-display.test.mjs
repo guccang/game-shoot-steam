@@ -23,9 +23,9 @@ test('关闭、后台与首页丢弃旧采样窗口，卸载后不留下监听',
 test('显示FPS偏好默认关闭、严格读取布尔值并与暂停偏好共同保存',()=>{
  const values=new Map(),store=createSaveStore(()=>({getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)}));
  assert.equal(store.loadGameplay().showFps,false);
- store.saveGameplay({showFps:true,pauseOnBlur:false});assert.deepEqual(store.loadGameplay(),{targetWood:true,showFps:true,pauseOnBlur:false});
+ store.saveGameplay({showFps:true,pauseOnBlur:false});assert.deepEqual(store.loadGameplay(),{targetWood:true,vehicleTargetWood:true,showFps:true,pauseOnBlur:false});
  for(const raw of ['null','{}','{"showFps":"true"}','{"showFps":1}']){values.set(STORAGE_KEYS.gameplay,raw);assert.equal(store.loadGameplay().showFps,false);}
- store.saveGameplay({showFps:false,pauseOnBlur:true});assert.deepEqual(store.loadGameplay(),{targetWood:true,showFps:false,pauseOnBlur:true});
+ store.saveGameplay({showFps:false,pauseOnBlur:true});assert.deepEqual(store.loadGameplay(),{targetWood:true,vehicleTargetWood:true,showFps:false,pauseOnBlur:true});
 });
 
 test('旧偏好默认勾选木材，明确关闭后读回并保留其余偏好',()=>{
@@ -33,5 +33,7 @@ test('旧偏好默认勾选木材，明确关闭后读回并保留其余偏好',
  values.set(STORAGE_KEYS.gameplay,JSON.stringify({showFps:true}));
  const preferences=store.loadGameplay();assert.equal(preferences.targetWood,true);
  assert.equal(store.saveGameplay({...preferences,targetWood:false}),true);
- assert.deepEqual(store.loadGameplay(),{showFps:true,pauseOnBlur:false,targetWood:false});
+ assert.deepEqual(store.loadGameplay(),{showFps:true,pauseOnBlur:false,targetWood:false,vehicleTargetWood:true});
+ assert.ok(store.saveGameplay({...store.loadGameplay(),targetWood:true,vehicleTargetWood:false}));
+ assert.deepEqual(store.loadGameplay(),{showFps:true,pauseOnBlur:false,targetWood:true,vehicleTargetWood:false});
 });

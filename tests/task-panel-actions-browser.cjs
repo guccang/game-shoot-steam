@@ -14,9 +14,9 @@ async page=>{
    const p=freshProgress();p.arrival=null;p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;
    p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf(id));p.mainline.phase='doing';p.mainline.navigationEnabled=false;p.weapons[0]=1;
    a.game.progress=p;a.game.reset();a.game.state='playing';a.game.mainlineSpeech=null;a.game.mainlineTalkDelay=99999;a.game.update=()=>{};
-   const o=(await import('/src/core/mainline-manager.js')).mainlineObjective(a.game);
+   const o=(await import('/src/core/story/mainline-manager.js')).mainlineObjective(a.game);
    Object.assign(a.game.player,{x:o.site.x+(near?0:500),y:o.site.y});a.refresh();a.renderer.draw();
-   return {label:o.label,action:(await import('/src/core/mainline-manager.js')).mainlineAction(a.game)};
+   return {label:o.label,action:(await import('/src/core/story/mainline-manager.js')).mainlineAction(a.game)};
   };
  });
  // 正文在寻路关闭时仍能打开详情，关闭窗口后偏好不变。

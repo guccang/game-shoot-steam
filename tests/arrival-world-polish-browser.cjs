@@ -19,7 +19,7 @@ async page=>{
  await page.locator('#arrival-speech-skip').click();await page.locator('#arrival-skip').click();
  if(await page.locator('#arrival-next').count())throw Error('主页面仍有制作按钮');
  for(let i=0;i<8;i++){
-  const phase=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;const t=(await import('/src/core/ranger-arrival.js')).arrivalTarget(g);if(t&&g.progress.arrival.phase==='gather')Object.assign(g.player,{x:t.x-45,y:t.y});return g.progress.arrival.phase;});
+  const phase=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;const t=(await import('/src/core/camp/ranger-arrival.js')).arrivalTarget(g);if(t&&g.progress.arrival.phase==='gather')Object.assign(g.player,{x:t.x-45,y:t.y});return g.progress.arrival.phase;});
   if(phase!=='gather')break;await page.waitForTimeout(2500);
  }
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;Object.assign(a.game.player,{x:480,y:680});a.refresh();});

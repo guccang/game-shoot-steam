@@ -1,11 +1,11 @@
 import {freshProgress} from '../src/progression/progress.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 // 场景入口的候停、暂停、防重复和屏幕锚点专项检查。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {BUILDING_ENTRIES} from '../src/config/building-entries.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {canInspectBuilding} from '../src/core/building-entry.js';
+import {canInspectBuilding} from '../src/core/camp/building-entry.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 import {doorwayInteractionAnchor,projectInteractionAnchor} from '../src/world/interaction-anchors.js';
 // 最小正式状态只提供入口实际读取的条件，避免无关战斗时钟参与断言。

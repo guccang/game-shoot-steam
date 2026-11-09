@@ -19,19 +19,19 @@ async page=>{
    for(const scenario of ['mainline','living','repair','visit','distance','closed','construction']){
     await t.evaluate(async scenario=>{
      const g=a.game,{MAINLINE_SITES}=await import('/src/config/mainline.js'),{TOWN_RESTORATIONS}=await import('/src/config/town-restoration.js');
-     const {requestMainlineNavigation,requestWorldNavigation}=await import('/src/core/world-navigation.js');requestMainlineNavigation(g);
+     const {requestMainlineNavigation,requestWorldNavigation}=await import('/src/core/navigation/world-navigation.js');requestMainlineNavigation(g);
      g.progress.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);g.progress.restoration.build=null;g.progress.taskTracking={kind:'mainline'};
      if(scenario!=='mainline'){g.progress.living.requests['neighbors-lunch'].stage=0;g.progress.living.requests['neighbors-lunch'].completed=false;g.progress.taskTracking={kind:'living',id:'neighbors-lunch'};}
      if(['repair','closed','construction'].includes(scenario))g.progress.restoration.repaired=g.progress.restoration.repaired.filter(id=>id!=='tower');
      if(scenario==='distance')requestWorldNavigation(g,{x:g.player.x+300,y:g.player.y,mapId:g.mapId},'距离换算验证',{direct:true});
      if(scenario==='visit')requestWorldNavigation(g,MAINLINE_SITES.seedShop,'前往种子小屋',{direct:true});
-     if(scenario==='closed')(await import('/src/core/task-navigation.js')).setTaskNavigationEnabled(g,false);
+     if(scenario==='closed')(await import('/src/core/navigation/task-navigation.js')).setTaskNavigationEnabled(g,false);
      if(scenario==='construction')g.progress.restoration.build={id:'tower',elapsed:0,x:1000,y:1300};
      a.refresh();
     },scenario);
     await t.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const info=await t.evaluate(async()=>{
-     const {worldNavigationObjective}=await import('/src/core/world-navigation.js'),{storyGuidanceState}=await import('/src/rendering/story-guidance.js'),{storyRouteState}=await import('/src/core/story-route.js'),{livingRouteStates}=await import('/src/core/living-route.js');
+     const {worldNavigationObjective}=await import('/src/core/navigation/world-navigation.js'),{storyGuidanceState}=await import('/src/rendering/story-guidance.js'),{storyRouteState}=await import('/src/core/navigation/story-route.js'),{livingRouteStates}=await import('/src/core/navigation/living-route.js');
      const source=a.renderer.renderGame,nav=worldNavigationObjective(source),route=storyRouteState(source),living=livingRouteStates(source);
      return {interpolated:source!==a.game,label:document.querySelector('#mainline-hud b').textContent,kind:document.querySelector('#mainline-hud').dataset.taskKind,key:nav?.key||null,route:route?.site||null,target:storyGuidanceState(source).target,living:living.map(r=>({id:r.id,target:{x:r.target.x,y:r.target.y}})),expected:worldNavigationObjective(a.game)?.site||null,distanceText:document.querySelector('.mainline-bearing small').textContent,expectedMeters:nav?Math.ceil((await import('/src/world/coordinates.js')).worldDistance(a.game.player,nav.site)/10):null};
     });

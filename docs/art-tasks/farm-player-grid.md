@@ -12,7 +12,7 @@
 
 ## 技术交付与预算
 
-程序坐标和资格规则修订，无imagegen、SVG、PNG或新画布。原两张作物图集与昼夜渲染复用，无新增解码和缓存。正式入口：src/world/farm-land.js、src/core/farm.js、src/ui/farm.js；读档与旅行入口停止迁田。视野与点击使用同一正式镜头坐标，循环世界选择可见镜像。
+程序坐标和资格规则修订，无imagegen、SVG、PNG或新画布。原两张作物图集与昼夜渲染复用，无新增解码和缓存。正式入口：src/world/farm-land.js、src/core/farming/farm.js、src/ui/farm.js；读档与旅行入口停止迁田。视野与点击使用同一正式镜头坐标，循环世界选择可见镜像。
 
 ## 动画及生成指令
 

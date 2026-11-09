@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {FARM_CROPS,FARM_SEED_DOOR} from '../src/config/farm.js';
-import {debugGrantProgress,debugSeedsUnlocked} from '../src/progression/debug-grants.js';
+import {debugGrantProgress,debugSeedsUnlocked} from '../src/progression/player/debug-grants.js';
 import {createProgressController} from '../src/app/progress-controller.js';
-import {buyFarmSeeds} from '../src/core/farm-seeds.js';
+import {buyFarmSeeds} from '../src/core/farming/farm-seeds.js';
 
 test('解锁所有种子购买不赠资源、不改任务，读档和重复执行保持一致',()=>{
  const p=validateProgress(freshProgress()),before=structuredClone(p);assert.equal(debugSeedsUnlocked(p),false);

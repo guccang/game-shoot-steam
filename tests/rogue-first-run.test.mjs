@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
 import { freshProgress } from '../src/progression/progress.js';
-import { validateRealms } from '../src/progression/realm-progress.js';
-import { updateRealm } from '../src/core/realm-manager.js';
+import { validateRealms } from '../src/progression/realms/realm-progress.js';
+import { updateRealm } from '../src/core/realms/realm-manager.js';
 
 // 只解锁远征设施，以正式补给和祝福接口进入第一关。
 function start(progress=freshProgress()) {

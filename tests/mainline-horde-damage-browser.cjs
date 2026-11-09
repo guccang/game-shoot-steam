@@ -17,8 +17,8 @@ async page=>{
    if(id==='pine-patrol'){g.progress.vehicleIndex=0;g.progress.vehicleHulls[0]=1;(await import('/src/config/vehicle-armaments.js')).grantVehicleArmament(g.progress,0);}
    g.reset();g.arrivalScene=null;g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.attackTimer=999;g.enemies=[];Object.assign(g.player,{x:750,y:1050});a.refresh();
   };
-  window.nav=async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game);
-  window.route=async()=>(await import('/src/core/story-route.js')).storyRouteState(a.game);
+  window.nav=async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game);
+  window.route=async()=>(await import('/src/core/navigation/story-route.js')).storyRouteState(a.game);
  });
  for(const [id,step,key] of [['first-letter',0,'storyPost'],['expedition',0,'rogueEntry'],['tower',0,'towerEntry'],['guardian',0,'guardianEntry'],['fire-duty',0,'fireEntry'],['neighbors',0,'neighbors'],['long-patrol',0,'weaponsEntry'],['long-patrol',1,'garageEntry'],['pine-patrol',0,'westGate']]){
   await page.evaluate(([id,step])=>checkpoint(id,step),[id,step]);await page.waitForTimeout(700);await clickTask();

@@ -1,4 +1,5 @@
-import {livingInteractionPosition} from '../core/living-world.js';
+import {escapeOptionalHtml as escape} from './shared/html.js';
+import {livingInteractionPosition} from '../core/camp/living-world.js';
 import {equipmentQuestCards} from './equipment-quests.js';
 import {EQUIPMENT_QUESTS,equipmentStoryCompleted} from '../config/equipment-quests.js';
 import {focusedResidentRequest,visibleResidentRequests} from './living-request-view.js';
@@ -11,21 +12,21 @@ import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
 import {LIVING_REQUESTS,RESIDENTS,LIVING_PLACES,LIVING_ACTION_NAMES,SEASON_WORK,MAIN_LIVING_RESULTS} from '../config/living-world.js';
 import {calendarView,livingSeasonDays} from '../world/living-calendar.js';
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
-import {livingResidents,residentInteraction,residentFor,residentLine,acceptLivingRequest,interactLivingRequest,livingRequestTarget,nearbyLivingInteraction,restLivingWorld} from '../core/living-world.js';
+import {livingResidents,residentInteraction,residentFor,residentLine,acceptLivingRequest,interactLivingRequest,livingRequestTarget,nearbyLivingInteraction,restLivingWorld} from '../core/camp/living-world.js';
 import {worldDistance} from '../world/coordinates.js';
-import {nearbyStoryPost} from '../core/story-posts.js';
-import {claimStoryCollection} from '../progression/story-rewards.js';
+import {nearbyStoryPost} from '../core/story/story-posts.js';
+import {claimStoryCollection} from '../progression/story/story-rewards.js';
 import {storyCollectionMarkup} from './story-rewards.js';
 import {STORY_POSTS} from '../config/story-posts.js';
 import {createEventScope} from '../platform/events.js';
-import {trackedLivingRequest} from '../core/task-tracking.js';
-import {trackLivingRequest} from '../core/living-world.js';
+import {trackedLivingRequest} from '../core/navigation/task-tracking.js';
+import {trackLivingRequest} from '../core/camp/living-world.js';
 import {createResidentChatter} from './resident-chatter.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
-import {clearingSite} from '../progression/clearing-site.js';
-import {mainlineTask} from '../core/mainline-manager.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
+import {clearingSite} from '../progression/story/clearing-site.js';
+import {mainlineTask} from '../core/story/mainline-manager.js';
 // 文本既包括存档日志也包括配置内容，统一转义后插入。
-function escape(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 // 创建可卸载的生活面板，日常世界不另开章节会话。
 export function createLivingPanel({game,root,dialogs,onChange,environment,onRest,onClearing,renderer,onEquipmentStory,onTalk}){
   const scope=createEventScope(),dialog=root.createElement('dialog'),menu=root.createElement('button'),action=root.createElement('button'),hint=root.createElement('div');

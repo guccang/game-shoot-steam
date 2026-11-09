@@ -1,5 +1,5 @@
 // 场景物品本体接收短按，动态箭头仅提示位置；拖动继续交给统一移动输入。
-import {storyInteractionReady,storyInteractionTarget} from '../core/story-interaction.js';
+import {storyInteractionReady,storyInteractionTarget} from '../core/story/story-interaction.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 import {sceneLayout} from './scene-layout.js';
 

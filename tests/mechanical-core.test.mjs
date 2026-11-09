@@ -7,13 +7,13 @@ import { freshProgress, validateProgress } from '../src/progression/progress.js'
 import { WEAPONS } from '../src/config/weapons.js';
 import { effectiveWeapon } from '../src/config/weapon-mods.js';
 import { equipmentParts } from '../src/config/equipment-parts.js';
-import { workshopUpgrade, quoteWorkshop, applyPartPreview } from '../src/progression/workshop.js';
-import { commitWorkshop } from '../src/core/workshop.js';
+import { workshopUpgrade, quoteWorkshop, applyPartPreview } from '../src/progression/workshop/workshop.js';
+import { commitWorkshop } from '../src/core/workshop/workshop.js';
 import { updateMechanical } from '../src/combat/mechanical.js';
-import { createWorkshopTrial } from '../src/core/workshop-trial.js';
+import { createWorkshopTrial } from '../src/core/workshop/workshop-trial.js';
 import { expeditionEquipment } from '../src/config/expedition.js';
 import { guardianProgress } from '../src/config/guardian-equipment.js';
-import { prepareGuardianDefense, updateGuardianDefenses } from '../src/core/guardian-defense.js';
+import { prepareGuardianDefense, updateGuardianDefenses } from '../src/core/battle/guardian-defense.js';
 import { blocked } from '../src/physics/motion.js';
 import { worldDistance } from '../src/world/coordinates.js';
 

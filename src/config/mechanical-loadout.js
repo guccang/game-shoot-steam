@@ -1,4 +1,4 @@
-import {carriedWeapon} from '../progression/weapon-storage.js';
+import {carriedWeapon} from '../progression/inventory/weapon-storage.js';
 // 前三只共用一个远程枪型，其余重装近战；空槽全队重装，禁止递归召唤及电锯。
 import { WEAPONS, WEAPON_DISPLAY_ORDER } from './weapons.js';
 export const MECHANICAL_HP = 60;

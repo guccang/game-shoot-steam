@@ -9,7 +9,7 @@
 - 居民生活、预警、战斗、返营均保留物种。生活与返营推进真实脚步、车轮和重靴时钟；叶翼保持翼根振翅，武器、车体和身体独立。
 - 预警只转头注视，远程不射击；头顶提示按实际身高抬高。居民依然分两三只聚集，按脚底排序，保留原过道和无围栏的开放营地。
 - 共用身体面部增加可选注视输入，未设置的普通野怪绘制保持原行为。角色、武器、载具、死亡、暂停和减少动态沿用原合同。
-- 正式入口：`src/config/camp-residents.js`、`src/core/monster-camps.js`、`src/rendering/monster-camps.js`。新运行位图及常驻缓存为0；PNG精修本轮不适用。
+- 正式入口：`src/config/camp-residents.js`、`src/core/battle/monster-camps.js`、`src/rendering/monster-camps.js`。新运行位图及常驻缓存为0；PNG精修本轮不适用。
 
 ## 验收
 

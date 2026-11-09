@@ -8,14 +8,14 @@ import {WAREHOUSE} from '../src/config/warehouse.js';
 import {FARM_CROPS} from '../src/config/farm.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {updateWarehouseHarvest} from '../src/core/warehouse-harvest.js';
-import {warehouseRows,transferWarehouse,updateWarehouseWood} from '../src/core/warehouse.js';
-import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
+import {updateWarehouseHarvest} from '../src/core/inventory/warehouse-harvest.js';
+import {warehouseRows,transferWarehouse,updateWarehouseWood} from '../src/core/inventory/warehouse.js';
+import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {resourcePickupPoses} from '../src/combat/resource-pickup.js';
 import {updateCombatTraces} from '../src/combat/transient-effects.js';
-import {sellCrops} from '../src/core/cargo.js';
+import {sellCrops} from '../src/core/inventory/cargo.js';
 import {FARM_SEED_DOOR} from '../src/config/farm.js';
-import {farmAction} from '../src/core/farm.js';
+import {farmAction} from '../src/core/farming/farm.js';
 
 // 只准备仓库附近的真实来源，保存回调捕获可用于重建游戏的正式进度。
 function scene(){
@@ -51,8 +51,8 @@ test('驾驶超载能交货；跨地图或救援维修中的车辆不远程售�
  updateWarehouseHarvest(g,.05);assert.equal(g.progress.logistics.builds[0].cargo[3],0);assert.equal(vehicleLoad(g,0).overloaded,false);for(const i of [1,2,3])assert.equal(g.progress.logistics.builds[i].cargo[0],7);
 });
 test('金币接近上限时只卖完整份数，余额满后不吞掉余货或反复保存',()=>{
- const {g,saved}=scene();g.progress.coins=RESOURCE_CAP-65;updateWarehouseHarvest(g,.05);assert.equal(g.progress.coins,RESOURCE_CAP-5);assert.equal(g.progress.farm.inventory[0],1);assert.equal(g.progress.farm.inventory[1],2);assert.equal(g.progress.logistics.builds[0].cargo[3],4);
- for(let i=0;i<100;i++)updateWarehouseHarvest(g,.05);assert.equal(saved.length,1);assert.equal(g.progress.farm.inventory[0],1);g.progress.coins-=30;for(let i=0;i<45;i++)updateWarehouseHarvest(g,.05);assert.equal(g.progress.farm.inventory[0],0);assert.equal(g.progress.coins,RESOURCE_CAP-5);
+ const {g,saved}=scene();g.progress.coins=RESOURCE_CAP-(FARM_CROPS[0].value*2+5);updateWarehouseHarvest(g,.05);assert.equal(g.progress.coins,RESOURCE_CAP-5);assert.equal(g.progress.farm.inventory[0],1);assert.equal(g.progress.farm.inventory[1],2);assert.equal(g.progress.logistics.builds[0].cargo[3],4);
+ for(let i=0;i<100;i++)updateWarehouseHarvest(g,.05);assert.equal(saved.length,1);assert.equal(g.progress.farm.inventory[0],1);g.progress.coins-=FARM_CROPS[0].value;for(let i=0;i<45;i++)updateWarehouseHarvest(g,.05);assert.equal(g.progress.farm.inventory[0],0);assert.equal(g.progress.coins,RESOURCE_CAP-5);
 });
 test('保存失败或抛错保持作物、金币和账本，限频重试后只入账一次',()=>{
  for(const throwing of [true,false]){const {g,saved}=scene(),before=structuredClone(g.progress);let attempts=0;g.livingPersist=()=>{attempts++;if(throwing)throw Error('写盘失败');return false;};for(let i=0;i<20;i++)updateWarehouseHarvest(g,.05);assert.equal(attempts,1);assert.deepEqual(g.progress,before);assert.equal(g.drops.length,0);assert.equal(g.numbers.length,1);

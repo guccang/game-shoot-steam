@@ -5,7 +5,7 @@ async original=>{
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(15000);
  await page.goto('http://localhost:4175');await page.locator('#start').tap();await page.locator('#game-frame[data-page=game]').waitFor({timeout:60000});
  await page.evaluate(async()=>{
-  window.a=(await import('/src/main.js')).application;await a.ready;window.outdoorCore=await import('/src/core/outdoors.js');window.sites=await import('/src/world/outdoor-sites.js');
+  window.a=(await import('/src/main.js')).application;await a.ready;window.outdoorCore=await import('/src/core/activities/outdoors.js');window.sites=await import('/src/world/outdoor-sites.js');
   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(r=>r.id);p.restoration.cottageRested=true;p.vehicleHulls[0]=1;p.vehicleIndex=0;p.coins=1000;
   const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=g.fireClock=99999;g.enemies=[];g.boss=null;g.vehicle.active=false;g.parkingVisitors=[];g.progress.campParking.owned=[];g.progress.living.patrolActive=false;g.cottage=null;
   Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.ammoEntry);g.cottageDoorLatch=null;a.renderer.camera.time=null;Object.assign(a.environment,{autoTime:false,time:'day',autoWeather:false,weather:'sun',livingPreview:true});a.refresh();

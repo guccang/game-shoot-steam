@@ -30,7 +30,7 @@ async(page)=>{
    r.storyCamera.reset();r.camera.time=null;r.draw();a.refresh();return {...r.view};
   },{time,battle});
   const opening=await page.evaluate(async battle=>{
-   const a=cameraApp,g=a.game,r=a.renderer,encounter=await import('/src/core/story-encounters.js');
+   const a=cameraApp,g=a.game,r=a.renderer,encounter=await import('/src/core/story/story-encounters.js');
    if(battle==='wave')encounter.beginStoryWave(g,'SIGN',6,4);else encounter.spawnStoryBoss(g,'boar');
    r.draw();a.refresh();return {view:{...r.view},prepared:r.prepareGround(),radius:g.player.arena.radius};
   },battle);
@@ -46,18 +46,18 @@ async(page)=>{
   // 同屏复核包含近处普通怪或Boss、角色、载具和环境，不用预览绘制器替代。
   await page.evaluate(async battle=>{
    const a=cameraApp,g=a.game;
-   if(battle==='wave'){const {spawnStoryEnemy}=await import('/src/core/story-encounters.js');spawnStoryEnemy(g,g.player.arena,0);g.story.combat.spawned=1;Object.assign(g.enemies[0],{x:g.player.x-75,y:g.player.y+85});}
+   if(battle==='wave'){const {spawnStoryEnemy}=await import('/src/core/story/story-encounters.js');spawnStoryEnemy(g,g.player.arena,0);g.story.combat.spawned=1;Object.assign(g.enemies[0],{x:g.player.x-75,y:g.player.y+85});}
    else Object.assign(g.boss,{x:g.player.x-85,y:g.player.y+110});
    a.renderer.draw();a.refresh();
   },battle);
   await page.screenshot({path:'output/playwright/story-battle-camera/'+battle+'-'+width+'-'+time+'.png'});
   const after=await page.evaluate(async battle=>{
    const a=cameraApp,g=a.game;
-   if(battle==='wave'){g.enemies=[];g.story.combat.spawned=g.story.combat.total;(await import('/src/core/story-encounters.js')).updateStoryWave(g,.01);}
+   if(battle==='wave'){g.enemies=[];g.story.combat.spawned=g.story.combat.total;(await import('/src/core/story/story-encounters.js')).updateStoryWave(g,.01);}
    else{
     const b=g.boss;g.hit(b,1e9);if(g.boss)g.hit(b,1e9);
     // 领主死亡后由正式任务调度确认援兵已清空，再退出该战斗阶段。
-    g.state='playing';(await import('/src/core/story-manager.js')).updateStory(g,.01);g.state='story';
+    g.state='playing';(await import('/src/core/story/story-manager.js')).updateStory(g,.01);g.state='story';
    }
    a.renderer.draw();a.refresh();return {view:{...a.renderer.view},arena:!!g.player.arena};
   },battle);
@@ -68,7 +68,7 @@ async(page)=>{
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  await page.evaluate(async()=>{
-  const a=cameraApp,g=a.game,{STORY_SITES}=await import('/src/config/story.js'),{beginStoryWave}=await import('/src/core/story-encounters.js');
+  const a=cameraApp,g=a.game,{STORY_SITES}=await import('/src/config/story.js'),{beginStoryWave}=await import('/src/core/story/story-encounters.js');
   Object.assign(g.story,{stageId:'Q20',phase:'active',dialogue:null,combat:null});Object.assign(g.player,STORY_SITES.SIGN);
   g.enemies=[];g.boss=null;delete g.player.arena;beginStoryWave(g,'SIGN',6,4);g.story.combat.timer=999;
   g.state='playing';g.attackTimer=999;if(g.vehicle.module)g.vehicle.module.cooldown=999;

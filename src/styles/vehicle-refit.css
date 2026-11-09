@@ -1,0 +1,16 @@
+/* 改造页沿用手机底板，只定义区域图与内容排列。 */
+.refit-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:12px 0}
+.refit-tabs .ui-button{padding:8px 2px;min-width:0;min-height:44px}
+.refit-tabs [aria-pressed=true]{background:var(--ui-forest,#315c43);color:#fff4cf}
+.refit-space{display:flex;height:58px;border:2px solid #315c43;border-radius:12px;overflow:hidden;gap:2px;background:#315c43}
+.refit-space span{min-width:0}
+.refit-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.refit-metrics span{font-size:12px;min-width:0}.refit-metrics b{display:block;font-size:14px;overflow-wrap:anywhere}
+.refit-zone{display:block;border-left:5px solid var(--zone-color);padding:8px;margin:12px 0}
+.refit-zone span{display:flex;justify-content:space-between;gap:8px}.refit-zone input{width:100%;min-height:44px;accent-color:#315c43;margin:0}.refit-zone small{display:block}
+#logistics-dialog .ui-section>.ui-button{min-height:44px;margin:4px 0;max-width:100%;white-space:normal}
+
+/* 更高的内容选择器避免底板按钮状态覆盖选中对比度。 */
+#logistics-dialog .refit-tabs .ui-button[aria-pressed=true]{background:#315c43;color:#fff4cf}
+.refit-tabs svg{display:block;margin:auto}.refit-tabs span{display:block}
+.refit-plan-title{margin:0 0 8px;font-size:12px}.refit-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:12px}.refit-legend i{display:inline-block;width:10px;height:10px;border:1px solid #315c43;margin-right:4px}

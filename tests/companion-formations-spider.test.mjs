@@ -5,7 +5,7 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {updateMechanical,hurtMechanical} from '../src/combat/mechanical.js';
 import {updateSpider} from '../src/combat/spider.js';
-import {configureSpider} from '../src/core/spider-loadout.js';
+import {configureSpider} from '../src/core/workshop/spider-loadout.js';
 import {canMountSpider,spiderGunDamage,spiderGunWeapon} from '../src/config/spider-loadout.js';
 import {effectiveWeapon,weaponDamage} from '../src/config/weapon-mods.js';
 import {vehicleWeapon,vehicleDamage} from '../src/config/vehicles.js';
@@ -13,7 +13,7 @@ import {vehicleCompanionContext} from '../src/combat/vehicle-companions.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
 import {guardianProgress} from '../src/config/guardian-equipment.js';
 import {expeditionEquipment} from '../src/config/expedition.js';
-import {createWorkshopTrial} from '../src/core/workshop-trial.js';
+import {createWorkshopTrial} from '../src/core/workshop/workshop-trial.js';
 import {worldDistance} from '../src/world/coordinates.js';
 // 开放平台隔离自然地形，直接检验真实移动、枪仓和攻击模块。
 function arena(index=16){const p=freshProgress();p.weapons.fill(1);p.vehicleWeapons.fill(1);p.vehicleHulls.fill(1);p.weapon=index;const g=new Game(p,()=>.5);g.state='playing';g.enemies=[];g.trees=[];g.updateWaves=()=>{};Object.assign(g.player,{x:2000,y:2000,arena:{x:2000,y:2000,radius:5000}});return g;}

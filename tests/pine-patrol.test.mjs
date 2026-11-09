@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {ownedPineProgress} from './helpers/owned-pine-progress.mjs';
 import {MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
-import {mainlineTask,mainlineObjective,updateMainline,completeMainline} from '../src/core/mainline-manager.js';
-import {startCampDefense,rescueCampDefense,updateCampDefense,claimCampDefense} from '../src/core/camp-defense.js';
+import {mainlineTask,mainlineObjective,updateMainline,completeMainline} from '../src/core/story/mainline-manager.js';
+import {startCampDefense,rescueCampDefense,updateCampDefense,claimCampDefense} from '../src/core/camp/camp-defense.js';
 import {summonVehicle} from '../src/combat/vehicle.js';
 // 只建立已购车检查点，正式守门与结算共用游戏实现。
 function setup(){const p=ownedPineProgress();p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf('pine-patrol'));p.mainline.phase='doing';const g=new Game(p,()=>.5);g.start();Object.assign(g.player,MAINLINE_SITES.westGate);g.mainlineTalkDelay=999;summonVehicle(g);return g;}

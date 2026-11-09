@@ -67,6 +67,8 @@ export class GroundCache {
     this.lastInvalidation = null;
     this.mapPreview = new MapPreviewCache();
   }
+  // 设施搬迁后释放包含旧庭院的分块，下次绘制使用新的正式锚点。
+  invalidateCampLayout(){this.noteInvalidation('camp-layout');this.cancelWarmup();for(const tile of this.tiles.values())release(tile);this.tiles.clear();}
   // 地图切换立即释放旧分块，避免两张地图共用坐标键或累积像素内存。
   setMap(mapId = 'forest') {
     if (this.mapId === mapId) return;
@@ -244,6 +246,12 @@ export class GroundCache {
   }
   // 首次入场只等可见块的完整昼夜纹理，周围块继续在后续空余帧预热。
   ready(view) { return groundTiles(view).every(spec => this.tiles.get(spec.key)?.night); }
+  // 加载进度只计算可见块已发布的昼夜纹理，不计远处后台预热或半成品画布。
+  readiness(view){
+    const keys=new Set(groundTiles(view).map(spec=>spec.key));let done=0;
+    for(const key of keys){const tile=this.tiles.get(key);done+=Number(!!tile?.day)+Number(!!tile?.night);}
+    return keys.size?done/(keys.size*2):1;
+  }
   // 离开应用时释放缓存与未完成任务，重挂载不会留下离屏纹理。
   dispose() { this.cancelWarmup(); for (const tile of this.tiles.values()) release(tile); this.tiles.clear(); this.mapPreview.dispose(); }
   // 仅绘制视野内块，不把全地图纹理作为 CanvasPattern 每帧提交。

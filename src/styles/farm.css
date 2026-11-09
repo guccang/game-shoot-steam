@@ -21,11 +21,18 @@
 /* 工具区沿用底部安全区，保留至少 44 像素触区。 */
 #farm-tools{z-index:6;bottom:max(20px,env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));margin-inline:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:3px;width:auto;max-width:440px;padding:5px;box-sizing:border-box;}
 #farm-tools button{width:100%;min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;}
-/* 窄屏将八个工具均分两行，菜单按钮让出两行工具的高度。 */
-@media(max-width:412px){
- #farm-tools{grid-template-columns:repeat(4,minmax(0,1fr));}
- #game-frame:has(#farm-tools:not([hidden])) .field-menu{--field-menu-lift:146px;}
-}
+/* 常用入口排成两行，长按后在同一底板内切换工具，不遮挡田地。 */
+#farm-tools{grid-template-columns:repeat(4,minmax(0,1fr));}
+#farm-tools [data-farm-group]{position:relative;}
+#farm-tools [data-farm-group]::after{content:"";position:absolute;right:5px;top:5px;border-style:solid;border-width:0 0 5px 5px;border-color:transparent transparent #697c50 transparent;transform:rotate(180deg);}
+#farm-tools .farm-group-tip{align-self:center;text-align:center;font-size:11px;line-height:1.4;}
+#farm-tools[data-group-open]>button,#farm-tools[data-group-open]>.farm-group-tip{display:none;}
+#farm-tools .farm-tool-group{grid-column:1/-1;}
+#farm-tools .farm-tool-group[hidden]{display:none;}
+.farm-tool-group header{display:flex;align-items:center;justify-content:space-between;padding:0 2px 4px 8px;}
+#farm-tools .farm-tool-group header button{width:auto;min-width:58px;min-height:44px;}
+.farm-tool-group>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
+#game-frame:has(#farm-tools:not([hidden])) .field-menu{--field-menu-lift:146px;}
 #farm-tools #farm-exit{grid-column:auto;}
 #farm-tools .farm-remove-symbol{font-size:28px;line-height:28px;height:28px;}
 #farm-tools button,#farm-picker button:not(.ui-close),#farm-harvest,#farm-mail button{min-height:44px;min-width:44px;border:1px solid #95a37e;border-radius:9px;padding:5px;background:#f9edc8;color:#304b37;font-size:12px;touch-action:none;cursor:pointer;}
@@ -123,7 +130,9 @@
 
 /* 牛犁专属操作栏；田格提示允许手指穿过，牛身热点供近身交互。 */
 #farm-ox-controls:not([hidden]){position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px;background:var(--ui-paper,#fff5d9);border:2px solid var(--ui-forest,#35583e);border-radius:12px;pointer-events:auto;white-space:nowrap;z-index:9}
-#farm-ox-controls button{min-height:44px;min-width:48px;touch-action:none;user-select:none}
+/* 四个作业按钮在短屏也保持完整触控区，沿用统一底板与按钮状态。 */
+#farm-ox-controls:not([hidden]){width:min(400px,calc(100% - 16px));box-sizing:border-box;display:grid;grid-template-columns:repeat(4,minmax(44px,1fr));}
+#farm-ox-controls button{min-height:44px;min-width:44px;padding:6px;font-size:12px;touch-action:none;user-select:none}
 #farm-ox-controls [aria-pressed=true]{outline:3px solid #9bb67e}
 #farm-ox-hit{pointer-events:auto}
 .farm-meadow-action{position:absolute;pointer-events:auto;white-space:nowrap;min-width:76px;min-height:44px;padding:4px}

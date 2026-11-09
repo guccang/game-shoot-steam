@@ -46,8 +46,8 @@ test('仅改内容数据可追加主线、扩展成长，并改变正式怪物�
   data.monsters.ranged['reed-archer'].health=2;data.monsters.rules.ranged.lateChance=.5;
   data.monsters.rules.enemy.baseSpeed=70;
   const {validateContentConfig}=await import('./src/config/content-validation.js');validateContentConfig();
-  const {mainlineTask,mainlineSteps}=await import('./src/core/mainline-manager.js');
-  const {validateMainline}=await import('./src/progression/mainline-progress.js');
+  const {mainlineTask,mainlineSteps}=await import('./src/core/story/mainline-manager.js');
+  const {validateMainline}=await import('./src/progression/story/mainline-progress.js');
   const {MAINLINE_IDS}=await import('./src/config/mainline.js');
   const {TOWN_RESTORATIONS}=await import('./src/config/town-restoration.js');
   const progress={restoration:{repaired:TOWN_RESTORATIONS.map(f=>f.id)},mainline:validateMainline({version:7,completed:MAINLINE_IDS.slice(0,-1),phase:'complete',seen:{map:1},distance:80})};

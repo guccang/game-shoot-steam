@@ -5,7 +5,7 @@ async original=>{
   await page.goto('http://localhost:4175');await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
-   const p=(await import('/src/progression/progress.js')).freshProgress(),ids=(await import('/src/config/mainline.js')).MAINLINE_IDS,repairs=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS,people=await import('/src/core/camp-routines.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress(),ids=(await import('/src/config/mainline.js')).MAINLINE_IDS,repairs=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS,people=await import('/src/core/camp/camp-routines.js');
    p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=ids.filter(id=>id!=='first-map');p.mainline.currentId='first-map';p.mainline.phase='meet';p.restoration.repaired=repairs.map(r=>r.id);p.restoration.cottageRested=true;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineTalkDelay=999;g.mainlineSpeech=null;g.enemies=[];g.trees=[];g.vehicle.active=false;g.spawnTimer=g.fireClock=999;
    const actor=people.campResidents(g).find(n=>n.id==='mint');Object.assign(g.player,{x:actor.x,y:actor.y+65});a.renderer.camera.time=null;a.refresh();

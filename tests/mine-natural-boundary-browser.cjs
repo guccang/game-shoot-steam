@@ -24,9 +24,9 @@ async original=>{
  async function move(dx,dy,ms){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:180,y:430}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:180+dx,y:430+dy}]});await page.waitForTimeout(ms);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}
  try{
   await page.goto(base);await page.locator('#start').tap();await page.evaluate(async()=>{
-   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining.js');
-   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining.js')).openBasement(p.mining);p.mining.seed=1847;p.wood=200;p.mining.ore=100;
-   p.mining.layers[2]=(await import('/src/progression/mine-layers.js')).freshMineLayer(2,{x:8,y:4},()=>.31);
+   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining/mining.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining/mining.js')).openBasement(p.mining);p.mining.seed=1847;p.wood=200;p.mining.ore=100;
+   p.mining.layers[2]=(await import('/src/progression/mining/mine-layers.js')).freshMineLayer(2,{x:8,y:4},()=>.31);
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);g.cottage.scanWait=999;a.refresh();
   });
   if(!onlyDeep){
@@ -43,9 +43,9 @@ async original=>{
   }
   // 深层右下边界是非整格的小数范围，刷新必须保持同一岩层位置。
   for(const time of ['day','night']){await page.setViewportSize({width:390,height:844});await position('south-east',2);await phase(time);await shot('deep-fractional-'+time);}
-  const saved=await page.evaluate(async()=>{const g=a.game;const result=(await import('/src/core/mine-transactions.js')).miningCommit(g,()=>{},'边界验收保存');if(!result.ok)throw Error('隔离存档失败');return structuredClone(g.progress.mining.layers[2].bounds);});
+  const saved=await page.evaluate(async()=>{const g=a.game;const result=(await import('/src/core/mining/mine-transactions.js')).miningCommit(g,()=>{},'边界验收保存');if(!result.ok)throw Error('隔离存档失败');return structuredClone(g.progress.mining.layers[2].bounds);});
   await page.reload();await page.locator('#start').tap();await page.evaluate(async()=>{
-   window.a=(await import('/src/main.js')).application;await a.ready;window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining.js');const g=a.game;g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);
+   window.a=(await import('/src/main.js')).application;await a.ready;window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining/mining.js');const g=a.game;g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);
   });
   if(JSON.stringify(saved)!==JSON.stringify(await page.evaluate(()=>a.game.progress.mining.layers[2].bounds)))throw Error('刷新改变深层边界');
   await position('south-east',2);await phase('night');await shot('deep-fractional-restored');

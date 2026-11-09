@@ -2,20 +2,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
-import {recordActivity,validateGameStatistics,STAT_RESOURCES} from '../src/progression/game-statistics.js';
-import {creditResource} from '../src/progression/resource-wallet.js';
+import {recordActivity,validateGameStatistics,STAT_RESOURCES} from '../src/progression/player/game-statistics.js';
+import {creditResource} from '../src/progression/economy/resource-wallet.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
 import {MATERIAL_CAP} from '../src/config/materials.js';
-import {debugGrantProgress} from '../src/progression/debug-grants.js';
-import {claimStoryCollection} from '../src/progression/story-rewards.js';
+import {debugGrantProgress} from '../src/progression/player/debug-grants.js';
+import {claimStoryCollection} from '../src/progression/story/story-rewards.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {storyPostApproach} from '../src/core/story-posts.js';
+import {storyPostApproach} from '../src/core/story/story-posts.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {enterStory,leaveStory} from '../src/core/story-manager.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
-import {setLivingPatrol} from '../src/core/living-world.js';
-import {finishRealm,syncRealm} from '../src/core/realm-manager.js';
-import {startCampDefense,leaveCampDefense,syncCampDefense} from '../src/core/camp-defense.js';
+import {enterStory,leaveStory} from '../src/core/story/story-manager.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {setLivingPatrol} from '../src/core/camp/living-world.js';
+import {finishRealm,syncRealm} from '../src/core/realms/realm-manager.js';
+import {startCampDefense,leaveCampDefense,syncCampDefense} from '../src/core/camp/camp-defense.js';
 
 // 测试从正式新档开始，不购买或升级任何装备。
 function scene(){const g=new Game(freshProgress(),()=>.45);g.start();g.mainlineSpeech=null;return g;}

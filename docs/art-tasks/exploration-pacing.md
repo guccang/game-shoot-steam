@@ -20,7 +20,7 @@
 - 尺寸：沿用手机底板480px上限，320×568、360×640、390×844、430×932、844×390按原框架响应。320窄屏的三个按钮约80.7×65.2px，均超过44px。
 - 锚点与分层：原对话框居中；内容滚动、底栏固定；暂停追踪后原任务HUD隐藏。无新增Canvas、SVG视框、图集、透明背景或缓存。
 - 程序职责：任务阶段、保存事务、追踪和显示状态由程序控制，角色动作时钟不变。
-- 正式入口：`src/ui/mainline.js#createMainline`，`src/core/mainline-selection.js#selectMainlineTask`，`src/core/mainline-manager.js#mainlineObjective`。
+- 正式入口：`src/ui/mainline.js#createMainline`，`src/core/story/mainline-selection.js#selectMainlineTask`，`src/core/story/mainline-manager.js#mainlineObjective`。
 - 预算：新增位图0、解码内存0、画布0；自选按钮仅打开/选择时重建，不在战场逐帧创建。
 - 必需素材仍沿用现有正式加载器，缺资源失败行为不变。
 

@@ -1,0 +1,6 @@
+/* 行进状态只占底部工具上方的一行，手机短屏仍保留可触控的停止入口。 */
+#waystation-travel{position:absolute;bottom:calc(136px + env(safe-area-inset-bottom));left:12px;right:12px;display:flex;gap:8px;align-items:center;padding:8px 10px;border:2px solid #365b46;border-radius:14px;background:#fff5d9;color:#365b46;z-index:8;pointer-events:auto;}
+#waystation-travel[hidden]{display:none}
+#waystation-travel span{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}
+#waystation-travel button{flex:none;min-height:44px}
+#waystation-list .ui-button{width:100%}

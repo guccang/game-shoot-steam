@@ -1,32 +1,33 @@
+import {escapeHtml as escape} from './shared/html.js';
 import {isCampaignTask} from '../config/mainline-pacing.js';
-import {selectMainlineTask} from '../core/mainline-selection.js';
+import {selectMainlineTask} from '../core/story/mainline-selection.js';
 import {displayMeters} from '../world/distance-units.js';
-import {farmLesson} from '../progression/farm.js';
+import {farmLesson} from '../progression/farming/farm.js';
 import {FARM_CROPS} from '../config/farm.js';
 import {createTaskNavigation} from './task-navigation.js';
 import {sceneLayout} from './scene-layout.js';
-import {taskNavigationEnabled} from '../core/task-navigation.js';
+import {taskNavigationEnabled} from '../core/navigation/task-navigation.js';
 import {dockNpcDialogue} from './npc-dialogue-layout.js';
 import {mainlineReward} from '../config/economy.js';
 import {layoutTaskCombatHud,combatHudVisible} from './task-combat-layout.js';
-import {clearingCombatActive} from '../core/living-safety.js';
+import {clearingCombatActive} from '../core/camp/living-safety.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 import {MAP_CAT_HIT} from './scene-resident.js';
 // 巡林簿界面只展示任务表和提交操作意图；不直接改等级、赠装备或判定通关。
-import {campTalkSite} from '../core/camp-routines.js';
+import {campTalkSite} from '../core/camp/camp-routines.js';
 import {MAINLINE_TASKS,MAINLINE_SITES,MAINLINE_NPCS} from '../config/mainline.js';
-import {mainlineTask,mainlineObjective,canTalkMainline,updateMainline,markMainline,mainlineSteps,mainlineStep,mainlineAction,advanceMainlineSpeech} from '../core/mainline-manager.js';
+import {mainlineTask,mainlineObjective,canTalkMainline,updateMainline,markMainline,mainlineSteps,mainlineStep,mainlineAction,advanceMainlineSpeech} from '../core/story/mainline-manager.js';
 import {createEventScope} from '../platform/events.js';
 import {worldDistance,nearest} from '../world/coordinates.js';
 import {storyBearing} from './story-navigation.js';
-import {trackedLivingRequest} from '../core/task-tracking.js';
-import {livingRequestTarget} from '../core/living-world.js';
+import {trackedLivingRequest} from '../core/navigation/task-tracking.js';
+import {livingRequestTarget} from '../core/camp/living-world.js';
 import {createOperationGuide} from './operation-guide.js';
 import {createSpeechBubble} from './speech-bubble.js';
-import {requestMainlineNavigation,worldNavigationObjective,worldTaskObjective} from '../core/world-navigation.js';
+import {requestMainlineNavigation,worldNavigationObjective,worldTaskObjective} from '../core/navigation/world-navigation.js';
 const resourceNames={coins:'金币',wood:'木材',parts:'机械零件',crystal:'能源晶体',core:'首领核心'};
 // 任务正文来自固定中文表；仍转义后插入HTML，防止未来内容表引入标签。
-const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 一张紧凑任务卡、一名可交谈NPC和一本按章节展开的手册共享当前目标。
 export function createMainline({game,root,renderer,dialogs,onChange,openAction,workshop,onFarm,onTalk}){
  const scope=createEventScope(),frame=root.getElementById('game-frame');

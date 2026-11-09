@@ -6,7 +6,7 @@ async page=>{
  await page.screenshot({path:'output/playwright/arrival-world-polish/road-junction.png'});
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;Object.assign(a.game.player,{x:415,y:1850});a.refresh();});
  await page.waitForTimeout(700);await page.screenshot({path:'output/playwright/arrival-world-polish/road-neighbors-final.png'});
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.progress.arrival={version:2,phase:'craft',elapsed:0,wood:24,keys:true,parked:true,x:480,y:680};g.progress.wood=8;g.vehicle.active=false;Object.assign(g.player,{x:480,y:680});(await import('/src/core/ranger-arrival.js')).restoreArrival(g);a.refresh();});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.progress.arrival={version:2,phase:'craft',elapsed:0,wood:24,keys:true,parked:true,x:480,y:680};g.progress.wood=8;g.vehicle.active=false;Object.assign(g.player,{x:480,y:680});(await import('/src/core/camp/ranger-arrival.js')).restoreArrival(g);a.refresh();});
  const cdp=await page.context().newCDPSession(page),samples=[];
  for(const width of [1280,390,320]){
   await page.setViewportSize({width,height:900});await page.waitForTimeout(600);

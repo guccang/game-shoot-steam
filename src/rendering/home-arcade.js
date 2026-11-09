@@ -2,7 +2,7 @@
 import {drawHomeBalcony} from './home-balcony.js';
 import {drawCat} from './characters.js';
 import {box,oval,poly} from './primitives.js';
-import {arcadeClawPoint} from '../core/home-arcade.js';
+import {arcadeClawPoint} from '../core/home/home-arcade.js';
 import {ARCADE_CLAW as C} from '../config/home-arcade.js';
 import {calendarView} from '../world/living-calendar.js';
 const ink='#365b47';

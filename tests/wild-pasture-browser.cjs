@@ -11,7 +11,7 @@ async original=>{
    p.arrival=null;p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';
    const g=a.game;g.progress=p;g.reset();g.start();g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=g.fireClock=999999;
    for(const d of document.querySelectorAll('dialog[open]'))d.close();
-   const sites=(await import('/src/core/wild-pasture.js')).wildPastureObjects(g);window.ox=sites.find(s=>s.type==='wild-ox');window.grass=sites.find(s=>s.type==='sweet-grass');
+   const sites=(await import('/src/core/farming/wild-pasture.js')).wildPastureObjects(g);window.ox=sites.find(s=>s.type==='wild-ox');window.grass=sites.find(s=>s.type==='sweet-grass');
    Object.assign(g.player,{x:ox.x-53,y:ox.y+47});a.renderer.camera.time=null;a.refresh();
   });
   const cow=page.locator('[data-meadow="wild-ox"]'),grass=page.locator('[data-meadow="sweet-grass"]');
@@ -33,7 +33,12 @@ async original=>{
   await cow.tap();await page.waitForFunction(()=>document.getElementById('farm-notice')?.textContent.includes('嗅了嗅'));
   await grass.tap();await page.waitForFunction(()=>a.game.progress.farm.forage===1);
   await cow.tap();await page.waitForFunction(()=>a.game.progress.farm.oxPlow&&a.game.progress.farm.forage===0);
+  await page.waitForFunction(()=>a.game.oxArrival?.moving&&Math.hypot(a.game.oxArrival.point.x-ox.x,a.game.oxArrival.point.y-ox.y)>12);
+  await page.screenshot({path:out+'/return-walk.png'});
   await page.evaluate(async()=>{const gate=(await import('/src/config/pasture.js')).PEN_GATE;Object.assign(a.game.player,gate);a.renderer.camera.time=null;a.refresh();});
+  await page.waitForFunction(()=>a.game.progress.farm.oxReturn==='pen',null,{timeout:65000});
+  await page.screenshot({path:out+'/return-gate.png'});
+  await page.waitForFunction(()=>!a.game.progress.farm.oxReturn);
   await page.locator('#farm-pasture-gate').tap();await page.locator('#production-dialog[open]').waitFor();
   if(!(await page.locator('#production-body').innerText()).includes('已领养'))throw Error('牧栏未登记耕牛');
   await page.locator('[data-production-close]').last().tap();

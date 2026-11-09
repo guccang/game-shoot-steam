@@ -16,7 +16,7 @@ async page=>{
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(async()=>{await entryCheckpoint('pine-patrol');Object.assign(a.game.player,{x:330,y:729});a.refresh();});await page.waitForTimeout(200);
  await page.evaluate(()=>document.querySelector('[data-camp-gate="left"]').focus({preventScroll:true}));await page.keyboard.press('Enter');await page.waitForTimeout(100);
- if(!await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game)?.action?.gate==='left'))throw Error('盾牌路线丢失操作');
+ if(!await page.evaluate(async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game)?.action?.gate==='left'))throw Error('盾牌路线丢失操作');
  const box=await page.locator('#mainline-hud').boundingBox();await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
  if(await page.locator('dialog[open]').count())throw Error('远处点击守门路线误开了其他页面');
  await page.evaluate(()=>{a.game.player.x=200;a.refresh();});await page.locator('#camp-defense-dialog').waitFor({state:'visible'});

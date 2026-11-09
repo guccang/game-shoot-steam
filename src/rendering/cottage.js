@@ -6,7 +6,7 @@ import {workshopInteriorView} from './workshop-interior.js';
 // 小屋正式绘制器：家具、窗景和角色共用局部坐标与脚底排序，无独立预览替身。
 import {COTTAGE,COTTAGE_FURNITURE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
 import {box,oval,poly} from './primitives.js';
-import {placedDecor} from '../progression/home-decor.js';
+import {placedDecor} from '../progression/home/home-decor.js';
 import {drawHomeDecor} from './home-decor.js';
 import {drawCat} from './characters.js';
 import {PLAYER_SCALE} from '../combat/recoil.js';

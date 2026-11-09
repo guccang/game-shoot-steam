@@ -94,7 +94,7 @@
 - 29项针对性检查通过：tests/fire-rescue.test.mjs、tests/audio.test.mjs、tests/audio-source.test.mjs；未运行全量测试。浏览器完整流程：tests/fire-return-browser.cjs，无pageerror。
 - 昼夜/设备：1280×900、390×844、320×740的白天与夜晚逐张检查，原车/原猫/消防站/河岸/树林/返站HUD同屏清楚，无溢出，菜单仍可点击。返站已清怪，因此本阶段不再生成怪物凑同屏；怪物沿用原救援基准。结算后门牌遮挡司机已修订为待确认结果期间隐藏该门牌。
 - 资源：新增位图/视频0；原创PCM按22050Hz单声道在首用时合成并缓存，8种新增/独立消防音色合计约0.89MiB Float32缓冲，最多一条发动机与一条工作循环同时播放；不增加原音乐或武器的缓存副本，无外部录音版权或网络依赖。
-- 正式入口：[返站生命周期](../../src/core/fire-rescue.js)、[消防音色与操作状态](../../src/platform/audio-fire.js)、[音频循环服务](../../src/platform/audio.js)、[inspectFireReturn](../../src/rendering/visual-review.js)。
+- 正式入口：[返站生命周期](../../src/core/activities/fire-rescue.js)、[消防音色与操作状态](../../src/platform/audio-fire.js)、[音频循环服务](../../src/platform/audio.js)、[inspectFireReturn](../../src/rendering/visual-review.js)。
 - 基准：[桌面白天](../art-reference/fire-return/desktop-day.png)、[桌面夜晚](../art-reference/fire-return/desktop-night.png)、[390白天](../art-reference/fire-return/390-day.png)、[390夜晚](../art-reference/fire-return/390-night.png)、[320白天](../art-reference/fire-return/320-day.png)、[320夜晚](../art-reference/fire-return/320-night.png)、[停车后车辆保留](../art-reference/fire-return/parked-320.png)。工作截图位于output/playwright/fire-return。
 - 主分支设置与波次提示整合复核：[定向脚本](../../tests/fire-return-settings.cjs)实际点击音效开关、返回游戏并驾驶；静音声源0，恢复后发动机为消防车4且无返程警笛，领奖仍为1次，无pageerror。320夜间结算图确认门牌隐藏、原猫司机和整车清楚，结论通过。
 
@@ -122,7 +122,7 @@
 | 音效与操作 | 交接后正式音频vehicle=-1、engineGain=0、fire=[]、voices=0。工坊允许选用整备，禁用入库车驾驶；快捷按钮显示接警待命。通过真实按钮切换其他车→选回消防车→拒绝火警后，车库仍保持。 |
 | 资源与验证 | 新增位图/视频运行资源0、解码缓存0，仅最多一辆停驻车复用正式车体和挂载绘制。12项消防定向测试通过（原10项及补充迁移/秘境隔离2项），完整流程与UI浏览器无pageerror；未运行全量测试。绕行起点使用明确静态夹具，后续全部真实键盘行走；不以该夹具代替完整救援验证。 |
 
-正式入口：[交接与存档](../../src/core/fire-rescue.js)、[车库绘制](../../src/rendering/fire-rescue.js)、[世界实体层](../../src/rendering/renderer.js)、[inspectFireGarage](../../src/rendering/visual-review.js)。
+正式入口：[交接与存档](../../src/core/activities/fire-rescue.js)、[车库绘制](../../src/rendering/fire-rescue.js)、[世界实体层](../../src/rendering/renderer.js)、[inspectFireGarage](../../src/rendering/visual-review.js)。
 
 截图：[桌面白天](../art-reference/fire-garage/desktop-day.png)、[桌面夜晚](../art-reference/fire-garage/desktop-night.png)、[390白天](../art-reference/fire-garage/390-day.png)、[390夜晚](../art-reference/fire-garage/390-night.png)、[320白天](../art-reference/fire-garage/320-day.png)、[320夜晚](../art-reference/fire-garage/320-night.png)、[再次出警空车库](../art-reference/fire-garage/dispatch-320.png)、[站前](../art-reference/fire-garage/walk-front.png)、[侧面](../art-reference/fire-garage/walk-side.png)、[屋后](../art-reference/fire-garage/walk-behind.png)、[连续走位帧](../art-reference/fire-garage/walk-contact.png)、[接警卡片](../art-reference/fire-garage/dispatch-card-390.png)。
 
@@ -154,7 +154,7 @@
 | 音效、资源与预算 | 原发动机/启动/停止音效跟随车辆状态；完成后vehicle=-1、engineGain=0、fire=[]、voices=0。新增运行位图/视频/音频0、解码缓存0；建筑前后分层只增加实体绘制，至多一辆停驻车。录制和验收图只放docs/output，不进入游戏运行包。 |
 | 检查范围 | 原12项消防定向测试通过，新增3项连续移动/五阶段恢复/绕站房测试通过；正式浏览器完整救援、真实设置暂停、结算刷新无pageerror。语言表与国际化校验通过。旧消防回归脚本已等待新增动画阶段。没有运行全量测试。 |
 
-正式入口：[连续移动控制器](../../src/core/fire-transit.js)、[阶段切换](../../src/core/fire-rescue.js)、[世界分层](../../src/rendering/renderer.js)、[同屏检查器](../../src/rendering/visual-review.js)。
+正式入口：[连续移动控制器](../../src/core/activities/fire-transit.js)、[阶段切换](../../src/core/activities/fire-rescue.js)、[世界分层](../../src/rendering/renderer.js)、[同屏检查器](../../src/rendering/visual-review.js)。
 
 截图：[桌面白天](../art-reference/fire-motion/desktop-day.png)、[桌面夜晚](../art-reference/fire-motion/desktop-night.png)、[390白天](../art-reference/fire-motion/390-day.png)、[390夜晚](../art-reference/fire-motion/390-night.png)、[320白天](../art-reference/fire-motion/320-day.png)、[320夜晚](../art-reference/fire-motion/320-night.png)、[车旁登车点](../art-reference/fire-motion/at-door.png)、[下车后原车保留](../art-reference/fire-motion/parked-night.png)。
 

@@ -6,8 +6,8 @@ import {freshProgress,freshRangerProgress,validateProgress} from '../src/progres
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 import {TOWN_RESTORATIONS,RESTORATION_SECONDS,RESTORATION_FLIGHT,facilityOpen} from '../src/config/town-restoration.js';
-import {advanceArrival,updateArrival,workshopBuildView} from '../src/core/ranger-arrival.js';
-import {repairFacility,updateRestoration} from '../src/core/town-restoration.js';
+import {advanceArrival,updateArrival,workshopBuildView} from '../src/core/camp/ranger-arrival.js';
+import {repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
 
 // 从真实工坊修复检查点开始，材料与钥匙沿用正式存档。
 function workshop(){

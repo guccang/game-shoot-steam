@@ -1,12 +1,12 @@
-import {taskNavigationEnabled} from '../core/task-navigation.js';
-import {harvestGuidePlot} from '../core/harvest-guide.js';
+import {taskNavigationEnabled} from '../core/navigation/task-navigation.js';
+import {harvestGuidePlot} from '../core/farming/harvest-guide.js';
 // 主线操作覆盖层：定位真实控件与安装圈，不接管交易或复制工坊逻辑。
-import {mainlineTask,mainlineSteps,mainlineOperation,mainlineAction,mainlineObjective} from '../core/mainline-manager.js';
-import {workshopGuideCue} from '../core/workshop-guide.js';
+import {mainlineTask,mainlineSteps,mainlineOperation,mainlineAction,mainlineObjective} from '../core/story/mainline-manager.js';
+import {workshopGuideCue} from '../core/workshop/workshop-guide.js';
 import {nativeVehicleWeapon} from '../config/vehicle-armaments.js';
 import {worldDistance} from '../world/coordinates.js';
 import {arrivalWorkshopGuide} from './arrival-workshop-guide.js';
-import {clearingCombatActive} from '../core/living-safety.js';
+import {clearingCombatActive} from '../core/camp/living-safety.js';
 import {FARM_CROPS,FARM_CATEGORIES} from '../config/farm.js';
 
 // 每个界面只有一组引导，所有绘制位置使用目标节点的实时屏幕矩形。

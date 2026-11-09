@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {staticAudit,upgradeBudget,sumResources,summarizeSamples} from '../scripts/task-economy-audit.mjs';
 import {sampleClearing} from '../scripts/clearing-timing.mjs';
 import {openingAuditProgress} from '../scripts/opening-economy-audit.mjs';
-import {transactProgress} from '../src/progression/transactions.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
 import {MAINLINE_TASKS} from '../src/config/mainline.js';
 import {nativeVehicleWeapon} from '../src/config/vehicle-armaments.js';
 

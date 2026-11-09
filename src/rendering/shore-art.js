@@ -18,16 +18,21 @@ function waterEdge(y, side) {
   return riverXAt(y) + side * (riverHalfWidth(y, side) - 2 + ripple(y, side) * 1.3);
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function* ribbon(c, start, end, left, right, color) {
+function* ribbon(c, start, end, left, right, color, view = null) {
+  // 两岸分别沿原起点/终点的4单位采样网格裁切，避免沙湾末端相位改变或地块接缝。
+  const low=view?Math.max(start,start+Math.floor((view.y-8-start)/4)*4):start;
+  const high=view?Math.min(end,start+Math.ceil((view.y+view.h+8-start)/4)*4):end;
   c.beginPath();
-  for (let y = start; y < end; y += 4) {
+  if(low>=high)return;
+  for (let y = low; y < high; y += 4) {
     const x = left(y);
-    if (y === start) c.moveTo(x, y);
+    if (y === low) c.moveTo(x, y);
     else c.lineTo(x, y);
   }
-  c.lineTo(left(end), end);
-  for (let y = end; y > start; y -= 4) c.lineTo(right(y), y);
-  c.lineTo(right(start), start);
+  c.lineTo(left(high), high);
+  const rightHigh=end-Math.floor((end-high)/4)*4;
+  for (let y = rightHigh; y > low; y -= 4) c.lineTo(right(y), y);
+  c.lineTo(right(low), low);
   c.closePath();
   c.fillStyle = color;
   c.fill();
@@ -38,7 +43,7 @@ export function drawShoreGround(c, winter = false) {
   consumeDrawSteps(drawShoreGroundSteps(c, winter)); // 同步入口保留全部图元。
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-export function* drawShoreGroundSteps(c, winter = false) {
+export function* drawShoreGroundSteps(c, winter = false, view = null) {
   for (const side of [-1, 1]) {
     yield* ribbon(
       c,
@@ -47,6 +52,7 @@ export function* drawShoreGroundSteps(c, winter = false) {
       (y) => waterEdge(y, side) + side * (10 + ripple(y, side, 17) * 2),
       (y) => waterEdge(y, -side),
       winter ? '#eff3e8' : '#8b9d69',
+      view,
     );
     yield* ribbon(
       c,
@@ -55,9 +61,11 @@ export function* drawShoreGroundSteps(c, winter = false) {
       (y) => waterEdge(y, side) + side * (5 + ripple(y, side, 13)),
       (y) => waterEdge(y, -side),
       '#c1bf8b',
+      view,
     );
   }
   for (const { start, end, side } of NATURAL_TERRAIN.beaches) {
+    if(view&&(end<view.y-16||start>view.y+view.h+16))continue;
     for (const [fraction, edge, color] of [
       [1, 6, winter ? '#ecf2e7' : '#8b9b62'],
       [1, 2.5, '#b6a16d'],
@@ -74,10 +82,12 @@ export function* drawShoreGroundSteps(c, winter = false) {
           side * (5 + riverBeachWidth(y, side) * fraction + edge * Math.min(1, riverBeachWidth(y, side) / 12)),
         (y) => waterEdge(y, side) - side * 2,
         color,
+        view,
       );
     }
     // 少量沙纹和碎石强调材质，不把可走的干沙铺成满屏纹理。
     for (let y = start + 43; y < end - 30; y += 57) {
+      if(view&&(y<view.y-16||y>view.y+view.h+16))continue;
       const width = riverBeachWidth(y, side);
       if (width < 24) continue;
       const x = waterEdge(y, side) + side * (8 + width * 0.6);
@@ -92,7 +102,7 @@ export function drawShoreWater(c) {
   consumeDrawSteps(drawShoreWaterSteps(c)); // 同步入口保留全部图元。
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-export function* drawShoreWaterSteps(c) {
+export function* drawShoreWaterSteps(c, view = null) {
   c.save();
   yield* ribbon(
     c,
@@ -101,6 +111,7 @@ export function* drawShoreWaterSteps(c) {
     (y) => waterEdge(y, -1),
     (y) => waterEdge(y, 1),
     style.shoreArt.drawShoreWaterStepsColor,
+    view,
   );
   c.clip();
   yield* ribbon(
@@ -110,6 +121,7 @@ export function* drawShoreWaterSteps(c) {
     (y) => waterEdge(y, -1) + 9 + ripple(y, -1, 13) * 3,
     (y) => waterEdge(y, 1) - 9 + ripple(y, 1, 11) * 3,
     style.shoreArt.drawShoreWaterStepsColor2,
+    view,
   );
   yield* ribbon(
     c,
@@ -118,12 +130,16 @@ export function* drawShoreWaterSteps(c) {
     (y) => riverXAt(y) - riverHalfWidth(y, -1) * 0.43 + ripple(y, 1, 6) * 7,
     (y) => riverXAt(y) + riverHalfWidth(y, 1) * 0.38 + ripple(y, -1, 8) * 8,
     style.shoreArt.drawShoreWaterStepsColor3,
+    view,
   );
   for (
     let row = style.shoreArt.drawShoreWaterStepsValue;
     row < (style.shoreArt.fineWater ? WORLD.height / 38 + 1 : WORLD.height / 78);
     row++
   ) {
+    // 保留原行号决定纹理相位，留40单位容纳曲线、抖动与描边，离屏行不触发栅格读回。
+    const rowY=style.shoreArt.fineWater?row*38:row*78+27;
+    if(view&&(rowY<view.y-40||rowY>view.y+view.h+40))continue;
     if (row % 8 === 0) yield;
 
     // 细节开关只控制局部绘制，保留共同分层与动作输入。
@@ -159,6 +175,7 @@ export function* drawShoreWaterSteps(c) {
     }
   }
   for (let y = 87; y < WORLD.height; y += 113) {
+    if(view&&(y<view.y-20||y>view.y+view.h+20))continue;
     const side = Math.sin(y) > 0 ? 1 : -1;
     c.strokeStyle = '#deeee0a0';
     c.lineWidth = 1.5;

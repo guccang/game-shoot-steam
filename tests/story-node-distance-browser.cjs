@@ -14,14 +14,14 @@ async(page)=>{
    const a=window.distanceApp,g=a.game,{STORY_CAMPAIGN}=await import('/src/config/story-campaign.js');
    if(g.story)g.leaveStory();g.progress.story.run=null;g.state='playing';
    for(const required of STORY_CAMPAIGN[id].requires||[])g.progress.story.chapters[required].completed=true;
-   const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');
+   const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');
    Object.assign(g.player,storyPostApproach(storyPostForChapter(g,id)));
-   const {enterStory}=await import('/src/core/story-manager.js');
+   const {enterStory}=await import('/src/core/story/story-manager.js');
    if(!enterStory(g,null,id))throw Error('无法进入 '+id);
    g.advanceStoryDialogue(true);g.chooseStoryLoadout(STORY_CAMPAIGN[id].loadouts[0].id);g.startStoryStage();
    Object.assign(g.story,{stageId:stage,phase:'active',dialogue:null,combat:null,group:0,waypoint:0});
    const center=STORY_CAMPAIGN[id].world.sites[site];Object.assign(g.player,{x:center.x,y:center.y+80});
-   const {beginStoryWave,spawnStoryEnemy}=await import('/src/core/story-encounters.js');
+   const {beginStoryWave,spawnStoryEnemy}=await import('/src/core/story/story-encounters.js');
    beginStoryWave(g,site,6,4);
    for(let i=0;i<2;i++)if(spawnStoryEnemy(g,center,i))g.story.combat.spawned++;
    g.state='playing';for(const d of document.querySelectorAll('dialog[open]'))d.close();
@@ -49,7 +49,7 @@ async(page)=>{
  // 路段起点沿目标方向真实移动，验证HUD会随实际距离减少，不是随机显示。
  const before=await page.evaluate(async()=>{const a=window.distanceApp,g=a.game;
   g.leaveStory();g.progress.story.run=null;g.state='playing';
-  const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');
+  const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');
   Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));g.enterStory('sunleaf-01');
   g.advanceStoryDialogue(true);g.chooseStoryLoadout('line-patrol');g.startStoryStage();
   Object.assign(g.story,{stageId:'Q30',routeId:'road',phase:'active',dialogue:null,combat:null,group:0});

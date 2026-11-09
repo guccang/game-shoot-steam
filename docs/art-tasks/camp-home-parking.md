@@ -78,7 +78,7 @@ designCriterion：camp-home-parking。结论：通过。版本：v1；不适用�
 
 规则结果：本次三个专项文件共24项，21项通过；另外3项在未修改master上复现相同失败，分别为“河岸取水与原地刷新…”、“超时和死亡…”的默认车型5与旧断言0不符，以及“关闭交接后步行…”的旧测试未拥有车型0却请求召唤。不修改这些既有玩法与前置，具体本轮新增场景和浏览器交互均通过。未运行全量测试。
 
-正式入口增加：`src/rendering/parking.js#drawParkingCountdown`，消防状态来自`src/core/fire-rescue.js`；`visual-contract.json`继续绑定`camp-home-parking`与`fire-garage-motion`。结论：v2通过。原停车后下车流程按用户确认不作修改。
+正式入口增加：`src/rendering/parking.js#drawParkingCountdown`，消防状态来自`src/core/activities/fire-rescue.js`；`visual-contract.json`继续绑定`camp-home-parking`与`fire-garage-motion`。结论：v2通过。原停车后下车流程按用户确认不作修改。
 
 
 ## v3 小屋出口倒计时（制作前约定）
@@ -92,7 +92,7 @@ designCriterion：camp-home-parking。结论：通过。版本：v1；不适用�
 - 昼夜与适配通过：output/playwright/cottage-exit/{1280,390,320}-{day,night}.png；现场计时进行到2秒时冻结截图比较，文字、按钮无溢出，家具与通道保持原样。室内不生成怪物或载具，不适用战场同屏检查。
 - 资源与动作：没有新增资源或绘制替代，图集、内存与缓存增量为0；角色连续行走仍走正式updateCatMotion，门垫和家具绘制不变。
 
-正式入口：src/core/cottage.js#updateCottage、src/ui/camp-home.js#render；房间仍由src/rendering/cottage.js#drawCottage绘制，inspectCampHome增加出口计时快照。visual-contract.json的campHomeParkingCriterion继续绑定designCriterion=camp-home-parking，增加本轮实机脚本。结论：v3通过。
+正式入口：src/core/home/cottage.js#updateCottage、src/ui/camp-home.js#render；房间仍由src/rendering/cottage.js#drawCottage绘制，inspectCampHome增加出口计时快照。visual-contract.json的campHomeParkingCriterion继续绑定designCriterion=camp-home-parking，增加本轮实机脚本。结论：v3通过。
 
 
 ## v4 床边候睡与休息选项（制作前约定）
@@ -108,7 +108,7 @@ designCriterion：camp-home-parking。结论：通过。版本：v1；不适用�
 - 昼夜与适配通过：output/playwright/cottage-bed-rest/countdown-{1280,390,320}-{day,night}.png 与 options-{1280,390,320}-{day,night}.png，共12张实际运行截图；倒计时与选项可读，按钮满足44像素触控要求，无视口溢出。室内不生成怪物或载具，不适用战场同屏检查；家具、遮挡、原通道和角色连续帧保留。
 - 资源预算：无新增位图、图集、视频或动画，素材与纹理增量为0。房间绘制仍使用正式src/rendering/cottage.js#drawCottage，未加入替代画面。
 
-正式入口：src/core/cottage.js#updateCottage、src/ui/camp-home.js#render；inspectCampHome增加床边计时与选项状态，visual-contract.json的campHomeParkingCriterion绑定designCriterion=camp-home-parking及本轮实机脚本。结论：v4通过。
+正式入口：src/core/home/cottage.js#updateCottage、src/ui/camp-home.js#render；inspectCampHome增加床边计时与选项状态，visual-contract.json的campHomeParkingCriterion绑定designCriterion=camp-home-parking及本轮实机脚本。结论：v4通过。
 
 ## v5 休息时间预告（制作前约定）
 
@@ -123,4 +123,4 @@ designCriterion：camp-home-parking。结论：通过。版本：v1；不适用�
 - 昼夜和适配通过：output/playwright/cottage-rest-time/options-{1280,390,320}-{day,night}.png；原倒计时对应countdown系列截图一同保留，共12张。实际查看桌面与手机昼夜画面，时间分行可读、按钮触控高度至少44像素、无横向或竖向溢出，焦点圈清晰。
 - 保留与预算通过：仍为正式房间、家具和原猫连续帧，几何与动作未改变；室内不生成怪物或载具，不适用室外战斗同屏检查。新增纹理、位图、视频和缓存字节为0。
 
-正式入口：src/ui/camp-home.js#render、src/ui/cottage-rest-time.js#cottageRestTimeView、src/core/cottage.js#cottageSleepTarget，房间沿用src/rendering/cottage.js#drawCottage。visual-contract.json的campHomeParkingCriterion绑定designCriterion=camp-home-parking与本轮更新的实机脚本。结论：v5通过。
+正式入口：src/ui/camp-home.js#render、src/ui/cottage-rest-time.js#cottageRestTimeView、src/core/home/cottage.js#cottageSleepTarget，房间沿用src/rendering/cottage.js#drawCottage。visual-contract.json的campHomeParkingCriterion绑定designCriterion=camp-home-parking与本轮更新的实机脚本。结论：v5通过。

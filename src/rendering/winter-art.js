@@ -3,7 +3,7 @@ import { drawCozyCottageSnow } from './cozy-cottage.js';
 import { WORLD } from '../world/coordinates.js';
 // 与地表一致的稳定噪声，使每块雪坡不受战斗随机数影响。
 function terrainNoise(x,y) { const n=Math.sin(x*12.9898+y*78.233)*43758.5453; return n-Math.floor(n); }
-import { poly } from './primitives.js';
+
 
 // 不规则雪檐由暖白亮面与蓝灰底边组成，少量下垂体现积雪厚度。
 export function snowCap(c, x, y, rx, ry, color = (hex) => hex) {
@@ -66,5 +66,6 @@ export function drawScenerySnow(c, item) {
     snowCap(c,-5,-25,12,5);snowCap(c,16,-11,7,3);
   } else if(item.kind==='logs') snowCap(c,-3,-33,16,4);
   else if(item.kind==='flowers') snowCap(c,2,1,22,3);
+  else if(item.kind==='fern'||item.kind==='mushrooms') snowCap(c,-8,-10,8,3);
   else if(item.kind==='driftwood') snowCap(c,2,-15,22,3);
 }

@@ -1,8 +1,8 @@
-// HP区域外圈表示换弹，圆内蓝色表示仓库负荷，中心复用原简洁载具图标。
-import {vehicleLoad} from '../progression/load-weight.js';
-import {personalFleet} from '../core/vehicle-repair.js';
-import {vehicleModel} from '../config/vehicles.js';
-import {statusIcon} from './status-rings.js';
+// 左下载具外圈表示换弹，圆内蓝色表示仓库负荷，中心复用原车型展示图。
+import {vehicleLoad} from '../progression/inventory/load-weight.js';
+import {personalFleet} from '../core/vehicles/vehicle-repair.js';
+import {drawVehicleIcon} from '../rendering/vehicle.js';
+import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
 import {isSummonEnergy} from '../config/summon-energy.js';
 // 驾驶与停驻共用车辆载荷；借用玩法不冒用永久车队负重。
 export function vehicleLoadHudState(game){
@@ -16,12 +16,11 @@ export function vehicleReloadHudState(magazine,weapon){
  const remaining=Math.max(0,magazine.remaining||0),reloading=remaining>0;
  return {fill:reloading?Math.max(0,Math.min(1,1-remaining/Math.max(.001,weapon.reloadTime))):1,state:reloading?'reloading':'ready',remaining};
 }
-// 与旧HUD使用同一图标分类和SVG路径，切换分类才替换图形节点。
+// 中心沿用已有车型展示图，车型或画布恢复版本变化时才重绘，装填与负载仍独立。
 function paintVehicle(node,index){
- const model=vehicleModel(index),kind=model.flying?'helicopter':model.amphibious?'hovercraft':'vehicle';
- if(node.dataset.vehicleArt===kind)return;
- for(const layer of node.querySelectorAll('.vehicle-load-art'))layer.innerHTML=statusIcon(kind);
- node.dataset.vehicleArt=kind;
+ const revision=String(canvasRecoveryRevision());if(node.dataset.vehicleArt===String(index)&&node.dataset.vehicleArtRecovery===revision)return;
+ for(const layer of node.querySelectorAll('.vehicle-load-art')){let canvas=layer.querySelector('canvas');if(!canvas){canvas=node.ownerDocument.createElement('canvas');canvas.width=canvas.height=96;layer.replaceChildren(canvas);}drawVehicleIcon(canvas.getContext('2d'),index);}
+ node.dataset.vehicleArt=String(index);node.dataset.vehicleArtRecovery=revision;
 }
 // 固定按钮节点与数字层，不用HP或装填进度代替载荷，也不重建焦点。
 export function updateVehicleLoadHud(node,game,{ammo,label,mark='',reload}){

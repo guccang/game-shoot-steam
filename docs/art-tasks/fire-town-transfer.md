@@ -9,7 +9,7 @@
 - 目标：原地淡出，全黑时回到晴叶营地（900,700），淡入后真实步行到消防站、登车出库。
 - 数量与变体：一个纯黑遮罩；无造型变体，昼夜共用。
 - 保留项：原角色连续帧、独立操枪、森林与碰撞、消防车轮相、借车和灭火奖励、原出入库流程。
-- 制作路线与参考：HTML/CSS 遮罩；沿用 `src/ui/fire-rescue.js` 和 `src/core/fire-transit.js`，参考原正式消防运行画面。
+- 制作路线与参考：HTML/CSS 遮罩；沿用 `src/ui/fire-rescue.js` 和 `src/core/activities/fire-transit.js`，参考原正式消防运行画面。
 - 场景：当前森林接警；旧版卡住的 approaching 检查点恢复时也进入回镇流程。
 
 ## 2 造型与空间
@@ -25,7 +25,7 @@
 - 分层与透明：游戏 HUD 上方，黑色底；透明度由逻辑时钟计算，换位时必须为 1。
 - 碰撞：不更改地形；过场遮罩拦截触摸，核心状态锁住移动与退出任务。
 - 昼夜：共用遮罩；淡入后沿用真实昼夜渲染。
-- 格式与位置：`src/ui/fire-rescue.js`、`src/styles/fire-rescue.css`；配置在 `src/config/fire-rescue.js`，逻辑在 `src/core/fire-transit.js`。
+- 格式与位置：`src/ui/fire-rescue.js`、`src/styles/fire-rescue.css`；配置在 `src/config/fire-rescue.js`，逻辑在 `src/core/activities/fire-transit.js`。
 - 预算：一个 DOM 节点，无新增下载、图集、解码像素和昼夜缓存；不引入外部资源。
 
 ## 4 动画任务补充

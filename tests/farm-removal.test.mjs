@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {farmAction,queueFarmWork,setFarmTool,updateFarmWork,FARM_ACTION_TIMING} from '../src/core/farm.js';
+import {farmAction,queueFarmWork,setFarmTool,updateFarmWork,FARM_ACTION_TIMING} from '../src/core/farming/farm.js';
 import {farmApproach} from '../src/world/farm-land.js';
 // 地图草地夹具只提供一格田，其他进度使用正式新档结构。
 function scene(crop=null){const progress=freshProgress();progress.farm.wildMaps=['forest'];progress.farm.plots=[{id:7,mapId:'forest',x:1005,y:672,crop,plantedAt:crop===null?0:1000,readyAt:crop===null?0:61000,watered:false}];progress.farm.nextId=8;return {state:'playing',mapId:'forest',player:{x:1005,y:710,hp:100},trees:[],enemies:[],progress:validateProgress(progress),onEvent:()=>{},livingPersist:()=>true};}

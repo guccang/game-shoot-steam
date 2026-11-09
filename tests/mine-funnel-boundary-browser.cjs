@@ -44,9 +44,9 @@ async original=>{
  try{
   await page.goto(base);await page.locator('#start').tap();await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();
-   window.mc=await import('/src/config/mining.js');window.combat=await import('/src/core/mine-combat.js');window.motion=await import('/src/physics/mine-motion.js');
-   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining.js')).openBasement(p.mining);p.weapon=12;p.weapons[12]=1;p.mining.seed=1847;
-   const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);(await import('/src/core/mining.js')).enterMine(g);g.livingPersist=()=>true;window.originalBounds=g.progress.mining.bounds;a.refresh();
+   window.mc=await import('/src/config/mining.js');window.combat=await import('/src/core/mining/mine-combat.js');window.motion=await import('/src/physics/mine-motion.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining/mining.js')).openBasement(p.mining);p.weapon=12;p.weapons[12]=1;p.mining.seed=1847;
+   const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);(await import('/src/core/mining/mining.js')).enterMine(g);g.livingPersist=()=>true;window.originalBounds=g.progress.mining.bounds;a.refresh();
   });
   for(const time of ['day','night']){
    await phase(time);

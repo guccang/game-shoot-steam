@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {mainlineStep} from '../src/core/mainline-manager.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {mainlineStep} from '../src/core/story/mainline-manager.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {storyGuidanceState} from '../src/rendering/story-guidance.js';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
 

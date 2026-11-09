@@ -8,7 +8,7 @@ async page=>{
  async function attach(){await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game;g.update=()=>{};g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.spawnTimer=g.fireClock=999;});}
  await attach();
  // 通过正式告示牌核心接取并移动到实际清缴场，禁止绕过接取门槛。
- async function accept(){await page.evaluate(async()=>{const g=a.game;Object.assign(g.player,(await import('/src/config/clearing.js')).CLEARING_APPROACH);if(!(await import('/src/core/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('正式接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/clearing-site.js')).clearingSite(g.progress)));if(g.waveRest>0)g.updateWaves(3);g.waveWarning=0;a.refresh();});}
+ async function accept(){await page.evaluate(async()=>{const g=a.game;Object.assign(g.player,(await import('/src/config/clearing.js')).CLEARING_APPROACH);if(!(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('正式接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/story/clearing-site.js')).clearingSite(g.progress)));if(g.waveRest>0)g.updateWaves(3);g.waveWarning=0;a.refresh();});}
  // 只略过小怪耗时，自动 Boss 登场和致命结算仍走正式路径。
  async function finishRound(round){
   for(let batch=1;batch<=5;batch++){
@@ -30,7 +30,7 @@ async page=>{
  await page.screenshot({path:'output/playwright/clearing-round-labels/death-round-2.png'});
  await page.reload();await page.waitForFunction(()=>document.querySelector('#title-summary').textContent.includes('第 2 轮清缴'));
  await page.locator('#start').click();await attach();await page.locator('#resume').click();
- await page.evaluate(async()=>{const g=a.game;Object.assign(g.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/clearing-site.js')).clearingSite(g.progress)));g.waveWarning=0;g.mainlineSpeech=null;a.refresh();});
+ await page.evaluate(async()=>{const g=a.game;Object.assign(g.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/story/clearing-site.js')).clearingSite(g.progress)));g.waveWarning=0;g.mainlineSpeech=null;a.refresh();});
  const resumed=await page.evaluate(()=>({bosses:a.game.progress.bosses,wave:a.game.wave,kills:a.game.waveKills}));if(resumed.wave!==6||resumed.kills!==2)throw Error('续战进度回退');checks.push({resumed});
  await finishRound(2);await accept();
  // 三种尺寸的昼夜实机同时包含角色、载具、怪物、场景与正式轮次HUD。

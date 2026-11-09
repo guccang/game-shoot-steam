@@ -7,13 +7,13 @@ async original=>{
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
    window.fresh=(await import('/src/progression/progress.js')).freshProgress;
-   window.mainline=await import('/src/core/mainline-manager.js');window.ids=(await import('/src/config/mainline.js')).MAINLINE_IDS;
+   window.mainline=await import('/src/core/story/mainline-manager.js');window.ids=(await import('/src/config/mainline.js')).MAINLINE_IDS;
    window.facilities=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS;
    window.speechInfo=(await import('/src/rendering/story-guidance.js')).storySpeechInfo;
    const p=fresh();p.arrival=null;p.restoration.repaired=facilities.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=[...ids];p.mainline.phase='complete';
    const g=a.game;g.progress=p;g.reset();a.menu.enter();g.start();g.arrivalScene=null;g.mainlineSpeech=null;
    Object.assign(a.environment,{time:'day',weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});
-   const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));
+   const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));
    if(!g.enterStory('sunleaf-01'))throw Error('未进入故事');a.refresh();
   });
   await page.waitForFunction(()=>{const b=document.getElementById('story-speech');return !b.hidden&&b.dataset.typing==='true'&&b.querySelector('.speech-text-visible').textContent.length>0;});
@@ -31,7 +31,7 @@ async original=>{
   await page.locator('#story-dialog').waitFor({state:'visible'});
   const skipped=await page.evaluate(()=>({phase:a.game.story.phase,dialogue:a.game.story.dialogue,read:a.game.story.readLines,completed:a.game.progress.story.chapters['sunleaf-01'].completed}));
   if(skipped.phase!=='prepare'||skipped.dialogue||!skipped.read.includes('intro')||skipped.completed)throw Error('跳过未进入操作或误完成章节');checks.push({initial,reveal,skipped});
-  await page.evaluate(async()=>{for(const d of document.querySelectorAll('dialog[open]'))d.close();a.game.state='story';const {runStoryActions}=await import('/src/core/story-manager.js');runStoryActions(a.game,[{type:'dialogue',id:'sign'}]);a.refresh();});
+  await page.evaluate(async()=>{for(const d of document.querySelectorAll('dialog[open]'))d.close();a.game.state='story';const {runStoryActions}=await import('/src/core/story/story-manager.js');runStoryActions(a.game,[{type:'dialogue',id:'sign'}]);a.refresh();});
   await page.locator('#story-speech').waitFor({state:'visible'});await page.locator('#story-speech-skip').tap();
   await page.waitForFunction(()=>!a.game.story.dialogue&&a.game.story.stageId==='Q30');
   checks.push(await page.evaluate(()=>({routePhase:a.game.story.phase,dialogue:a.game.story.dialogue,stage:a.game.story.stageId})));

@@ -1,6 +1,6 @@
 // 以浏览器实际 Path2D 像素比较旧三角填充和新轮廓，不用不同机位截图掩盖裂缝。
 async page=>await page.evaluate(async()=>{
- const {freshMining,openBasement}=await import('/src/progression/mining.js'),{minePoint}=await import('/src/config/mining.js'),{buildMineSurface}=await import('/src/world/mine-surface.js'),{mineSurfaceContours,createMineSurfaceCache}=await import('/src/world/mine-surface-cache.js');
+ const {freshMining,openBasement}=await import('/src/progression/mining/mining.js'),{minePoint}=await import('/src/config/mining.js'),{buildMineSurface}=await import('/src/world/mine-surface.js'),{mineSurfaceContours,createMineSurfaceCache}=await import('/src/world/mine-surface-cache.js');
  const results=[];
  for(const seed of [1847,3291])for(const edge of [false,true]){
   const l=freshMining();openBasement(l);l.seed=seed;if(edge)l.bounds={left:0,top:0,right:4599.3,bottom:1149.7};

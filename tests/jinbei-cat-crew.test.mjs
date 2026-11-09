@@ -7,10 +7,10 @@ import {updateVehicle} from '../src/combat/vehicle.js';
 import {vehicleWeapon} from '../src/config/vehicles.js';
 import {hurtMechanical} from '../src/combat/mechanical.js';
 import {vehicleCompanionContext} from '../src/combat/vehicle-companions.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
-import {captureRealmVehicles,restoreRealmVehicles} from '../src/core/realm-vehicles.js';
-import {validateRealmVehicles} from '../src/progression/realm-vehicles.js';
-import {normalizeCampParking} from '../src/progression/camp-parking.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
+import {captureRealmVehicles,restoreRealmVehicles} from '../src/core/realms/realm-vehicles.js';
+import {validateRealmVehicles} from '../src/progression/realms/realm-vehicles.js';
+import {normalizeCampParking} from '../src/progression/vehicles/camp-parking.js';
 // 平台夹具隔离野外任务，但保留真实载具、伙伴、碰撞与命中处理。
 function arena(){const p=freshProgress();p.arrival=null;p.coins=p.wood=99990000;p.materials={parts:99999,crystal:99999,core:99999};p.vehicleHulls[7]=1;p.vehicleIndex=7;const g=new Game(p,()=>.5);g.state='playing';g.workshopTrial=true;g.trees=[];g.enemies=[];g.boss=null;Object.assign(g.player,{x:900,y:750,arena:{x:900,y:750,radius:1000}});g.summonVehicle();return g;}
 // 小步推进正式车载模块，避免借全局波次掩盖供给与部署结果。

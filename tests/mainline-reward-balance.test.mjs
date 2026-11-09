@@ -3,14 +3,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_TASKS,MAINLINE_IDS} from '../src/config/mainline.js';
-import {mainlineCondition,recordMainlineTrial,mainlineOperation} from '../src/core/mainline-manager.js';
-import {workshopGuideCue} from '../src/core/workshop-guide.js';
+import {mainlineCondition,recordMainlineTrial,mainlineOperation} from '../src/core/story/mainline-manager.js';
+import {workshopGuideCue} from '../src/core/workshop/workshop-guide.js';
 import {mainlineReward,RECOMMENDED_ECONOMY,bindEconomy} from '../src/config/economy.js';
-import {mainlineConditionCost} from '../src/progression/mainline-cost.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
+import {mainlineConditionCost} from '../src/progression/story/mainline-cost.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {previewWorkshop} from '../src/progression/workshop.js';
-import {createWorkshopTrial} from '../src/core/workshop-trial.js';
+import {previewWorkshop} from '../src/progression/workshop/workshop.js';
+import {createWorkshopTrial} from '../src/core/workshop/workshop-trial.js';
 // 只提供已修复建筑和当前委托，不预置金币、高级装备或演练完成记录。
 function scene(id){const p=freshProgress();p.arrival=null;p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.currentId=id;p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf(id));p.mainline.phase='doing';return {progress:p};}
 // 按稳定身份读取正式内容，不在测试中复制任务目标。

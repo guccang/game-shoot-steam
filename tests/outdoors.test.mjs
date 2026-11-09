@@ -1,3 +1,4 @@
+import {WOOD_ITEM} from '../src/config/wood-storage.js';
 // 以正式湖水、存档和动作入口验证露营垂钓，避免直接置位鱼获冒充操作。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,14 +9,14 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {fishingShores,campPlacement} from '../src/world/outdoor-sites.js';
 import {touchesLandform} from '../src/world/natural-terrain.js';
 import {blocked} from '../src/physics/motion.js';
-import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
-import {backpackEntries} from '../src/progression/backpack.js';
+import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
+import {backpackEntries} from '../src/progression/inventory/backpack.js';
 import {outdoorFishingView} from '../src/rendering/outdoors.js';
-import {requestWorldNavigation,worldNavigationObjective} from '../src/core/world-navigation.js';
+import {requestWorldNavigation,worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {OUTDOOR_RULES,FISH_SPECIES} from '../src/config/outdoors.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {livingSafePoint} from '../src/world/living-spaces.js';
-import {selectOutdoorGlider,buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,unloadCampKit,sleepAtCamp,beginFishing,fishingControl,finishFishing,updateOutdoors} from '../src/core/outdoors.js';
+import {selectOutdoorGlider,buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,unloadCampKit,sleepAtCamp,beginFishing,fishingControl,finishFishing,updateOutdoors} from '../src/core/activities/outdoors.js';
 
 // 只准备自由巡林档与保存回调，装备与鱼获仍通过真实业务提交。
 function scene(){
@@ -82,7 +83,7 @@ test('收营跳过满车，套装随可用货舱保存，仅在车旁可取出�
  const camp=g.progress.outdoors.camp;Object.assign(g.player,camp);
  g.progress.vehicleHulls[1]=1;
  g.progress.campParking.owned=[0,1].map(hull=>({...camp,spot:null,hull,x:camp.x+20+hull*25,hp:1}));
- g.progress.logistics.builds[0].wood=9999;
+ g.progress.logistics.builds[0].wood=Math.ceil(vehicleLoad(g,0).capacity/WOOD_ITEM.mass);
  const bag=catLoad(g).weight,cargo=vehicleLoad(g,1).cargo;
  g.livingPersist=()=>false;
  assert.equal(packCamp(g).ok,false);assert.deepEqual(g.progress.outdoors.camp,camp);
@@ -99,7 +100,7 @@ test('收营跳过满车，套装随可用货舱保存，仅在车旁可取出�
 test('货舱和背包都满时保留营地，清理背包后重试只收一份套装',()=>{
  const g=angler();wilderness(g);assert.ok(deployCamp(g).ok);
  const camp=g.progress.outdoors.camp;Object.assign(g.player,camp);
- g.progress.campParking.owned=[{...camp,hull:0,spot:null,hp:1}];g.progress.logistics.builds[0].wood=9999;
+ g.progress.campParking.owned=[{...camp,hull:0,spot:null,hp:1}];g.progress.logistics.builds[0].wood=Math.ceil(vehicleLoad(g,0).capacity/WOOD_ITEM.mass);
  g.progress.logistics.bagWood=999;const result=packCamp(g);
  assert.equal(result.ok,false);assert.match(result.message,/清理/);assert.deepEqual(g.progress.outdoors.camp,camp);
  g.progress.logistics.bagWood=0;assert.ok(packCamp(g).ok);assert.equal(g.progress.outdoors.tentHull,null);
@@ -164,3 +165,6 @@ test('户外店购伞后保留型号，换装免费，失败不扣款',()=>{
  assert.equal(g.progress.coins,0);
  assert.deepEqual(validateProgress(g.progress).outdoors.gliders,['basic','swift','voyager']);
 });
+
+// 生活区域使用正式驻营时钟，暂停不享受额外恢复。
+test('生活区域提高战车驻营效率，帐篷仍沿用原时钟',()=>{const g=angler();wilderness(g);g.progress.campParking.owned=[{hull:0,spot:null,mapId:g.mapId,x:g.player.x+20,y:g.player.y,hp:1}];assert.ok(deployCamp(g,'vehicle').ok);Object.assign(g.player,g.progress.outdoors.camp);assert.ok(sleepAtCamp(g).ok);g.progress.logistics.builds[0].refit.zones={engine:5,living:80,ammo:5,secondary:5,storage:5};updateOutdoors(g,.1);assert.equal(g.campSleep.elapsed,.25);g.state='paused';updateOutdoors(g,.1);assert.equal(g.campSleep.elapsed,.25);});

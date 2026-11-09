@@ -16,7 +16,7 @@ HTML/CSS界面沿用字体、透明纸色背景和正式DOM层；无新增位图
 原攻击等级兼容旧档；四条线每项1—10级，每次费用40×该项当前等级。攻击沿用原每级基础伤害+22%；攻速每级基础射速+12%；弹夹每级基础容量+20%向上取整；换弹时间除以1+0.15×升级次数。换弹越升越短，脉冲的蓄能和冷却随攻速一同缩短。每塔独立，浮游炮三门挂载共享本塔等级，永久装备不变；回收返还四项投资。所有预览与实战共用公式。
 
 ## 6 验收
-正式入口：`src/ui/panels/guardian.js` 的 guardianMarkup、`src/config/weapon-mods.js` 的 effectiveWeapon、`src/core/guardian-defense.js` 的 updateGuardianDefenses、`src/rendering/renderer.js` 的 Renderer.draw；designCriterion guardian-stat-upgrades，动作沿用工作台guardian-field-day/night正式绘制。
+正式入口：`src/ui/panels/guardian.js` 的 guardianMarkup、`src/config/weapon-mods.js` 的 effectiveWeapon、`src/core/battle/guardian-defense.js` 的 updateGuardianDefenses、`src/rendering/renderer.js` 的 Renderer.draw；designCriterion guardian-stat-upgrades，动作沿用工作台guardian-field-day/night正式绘制。
 
 | 设计目标 | 实测结果与证据 |
 | --- | --- |

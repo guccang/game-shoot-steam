@@ -38,7 +38,7 @@ async original=>{
    if(review.overflow||review.icons!==5||review.art.sheets!==3||review.buttons.some(b=>b.w<44||b.h<44))throw Error('场景或资源预算不合格 '+JSON.stringify(review));reviews.push({width,time,...review});
   }
   await page.setViewportSize({width:390,height:844});await page.evaluate(async()=>{await setLighting('day');const g=a.game,{farmApproach}=await import('/src/world/farm-land.js');window.tree=g.trees.find(t=>t.hp>0&&t.x>1600&&t.x<2200&&t.y>200&&t.y<900&&farmApproach(g,t));Object.assign(g.player,farmApproach(g,tree));a.renderer.camera.time=null;});await page.waitForTimeout(700);// 电锯已从种地UI移除，内部绘制兼容检查直接选择工具，不伪造按钮。
-  await page.evaluate(async()=>{(await import('/src/core/farm.js')).setFarmTool(a.game,'saw');});
+  await page.evaluate(async()=>{(await import('/src/core/farming/farm.js')).setFarmTool(a.game,'saw');});
   const treePoint=await page.evaluate(()=>{const v=a.renderer.view,r=a.renderer.canvas.getBoundingClientRect();return {x:r.x+(tree.x-v.x)*v.zoom,y:r.y+(tree.y-25-v.y)*v.zoom};});await page.touchscreen.tap(treePoint.x,treePoint.y);await page.waitForFunction(()=>tree.hp<=0&&!a.game.farmWork?.job);await page.screenshot({path:'output/playwright/farm-tools-motion/weapon-saw.png'});
   // 由已采集的正式帧组成连续分镜，正文时间标注属于验收记录。
   const counts=await page.evaluate(async()=>{

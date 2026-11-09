@@ -1,0 +1,21 @@
+// 正式地契、施工、碰撞和存档事务回归，避免只检查展示数据。
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {Game} from '../src/core/game.js';
+import {freshProgress,validateProgress} from '../src/progression/progress.js';
+import {CAMP_PLOTS,availableCampPlots,campPlotAt} from '../src/config/camp-land.js';
+import {purchaseCampLand} from '../src/core/camp/camp-land.js';
+import {TOWN_RESTORATIONS,facilityOpen,RESTORATION_SECONDS} from '../src/config/town-restoration.js';
+import {restorationStatus,repairFacility,updateRestoration,restorationObjective} from '../src/core/camp/town-restoration.js';
+import {campObjectVisible,campLandObjects} from '../src/rendering/camp-land.js';
+import {worldBuildingBlocked} from '../src/world/building-collision.js';
+import {WORLD} from '../src/world/coordinates.js';
+// 隔离新档只准备材料，操作仍由正式事务提交。
+function setup(){const p=freshProgress();p.arrival={phase:'complete',version:3,keys:true};p.coins=1000;p.wood=1000;p.mainline.trackingPaused=true;const g=new Game(p);g.state='playing';g.mainlineSpeech=null;g.restorationPersist=()=>true;return g;}
+test('新档只拥有起始营地，南侧与西侧可购，远端必须相邻',()=>{const g=setup();assert.deepEqual(g.progress.campLand.owned,['core']);assert.deepEqual(availableCampPlots(g.progress).map(p=>p.id),['workyard','services']);Object.assign(g.player,CAMP_PLOTS[2].sign);assert.equal(purchaseCampLand(g,'gardens').ok,false);assert.equal(g.progress.coins,1000);});
+test('购地保存失败不扣金币，成功一次扣款且刷新保留地契',()=>{const g=setup();Object.assign(g.player,CAMP_PLOTS[1].sign);const before=structuredClone(g.progress);assert.equal(purchaseCampLand(g,'workyard',()=>false).ok,false);assert.deepEqual(g.progress,before);assert.equal(purchaseCampLand(g,'workyard',()=>{throw Error('写入失败');}).ok,false);assert.equal(purchaseCampLand(g,'workyard').ok,true);assert.equal(g.progress.coins,976);assert.equal(purchaseCampLand(g,'workyard').ok,false);assert.equal(g.progress.coins,976);const restored=validateProgress(structuredClone(g.progress));assert.deepEqual(restored.campLand.owned,['core','workyard']);assert.ok(availableCampPlots(restored).some(p=>p.id==='gardens'));});
+test('买地与建设分开：未买不可施工，完工后才开放，暂停冻结',()=>{const g=setup(),f=TOWN_RESTORATIONS.find(f=>f.id==='garage');Object.assign(g.player,f.site);assert.equal(restorationStatus(g,'garage').canRepair,false);assert.equal(repairFacility(g,'garage').ok,false);assert.match(restorationObjective(g,null,f).label,/购买/);Object.assign(g.player,CAMP_PLOTS[1].sign);assert.equal(purchaseCampLand(g,'workyard').ok,true);assert.equal(facilityOpen(g.progress,'garage'),false);Object.assign(g.player,f.site);assert.equal(repairFacility(g,'garage').ok,true);const wood=g.progress.wood;g.state='paused';updateRestoration(g,10);assert.equal(g.progress.restoration.build.elapsed,0);g.state='playing';updateRestoration(g,RESTORATION_SECONDS);assert.equal(facilityOpen(g.progress,'garage'),true);assert.equal(g.progress.wood,wood);assert.equal(validateProgress(g.progress).restoration.repaired.includes('garage'),true);});
+test('隐去实体同步撤掉墙体，周期镜像仍识别同一地块',()=>{const g=setup(),f=TOWN_RESTORATIONS.find(f=>f.id==='garage');for(const dx of [0,WORLD.width]){assert.equal(campPlotAt({x:f.x+dx,y:f.y}).id,'workyard');assert.equal(campObjectVisible(g,{type:'scenery',kind:'garage',x:f.x+dx,y:f.y}),false);assert.equal(worldBuildingBlocked(f.x+90+dx,f.y,12,{mapId:'forest',campProgress:g.progress}),false);}assert.ok(campLandObjects(g).some(p=>p.id==='workyard'));g.progress.campLand.owned.push('workyard');assert.ok(!campLandObjects(g).some(p=>p.id==='workyard'));assert.equal(campObjectVisible(g,{type:'scenery',kind:'garage',...f}),true);});
+test('旧档保留土地及原营业设施，新档不免费开放新增建设项目',()=>{const p=freshProgress();assert.equal(facilityOpen(p,'ammo'),false);delete p.campLand;p.restoration.repaired=['garage'];const migrated=validateProgress(p);assert.equal(migrated.campLand.owned.length,CAMP_PLOTS.length);assert.equal(facilityOpen(migrated,'garage'),true);assert.equal(facilityOpen(migrated,'ammo'),true);assert.deepEqual(validateProgress(migrated).campLand,migrated.campLand);});
+
+test('异常地契字段不会崩溃或授予未知土地',()=>{for(const owned of [null,42,'industry',['unknown']]){const p=freshProgress();p.campLand={version:1,owned};assert.deepEqual(validateProgress(p).campLand.owned,['core']);}});

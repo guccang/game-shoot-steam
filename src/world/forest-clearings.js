@@ -1,3 +1,4 @@
+import {regionalClearing} from '../config/regional-camps.js';
 import {OUTDOOR_SHOP} from '../config/outdoor-shop.js';
 import {WAREHOUSE,WAREHOUSE_DEPOT} from '../config/warehouse.js';
 import {AMMO_SHOP} from '../config/supplies.js';
@@ -45,7 +46,7 @@ export function inCampComposition(x, y) {
 // 以树冠包围范围检查地标留白，避免树根虽在外侧、前景树冠却压住整个地标。
 export function coversScenery(x, y) {
   ({ x, y } = canonical({ x, y }));
-  if(livingClearing(x,y)||worldDistance({x,y},BOSS_CLEARING)<180)return true;
+  if(regionalClearing(x,y)||livingClearing(x,y)||worldDistance({x,y},BOSS_CLEARING)<180)return true;
   // 渡口平台、船形路牌和岸边入口留出完整树冠净空。
   if(RIVER_DOCKS.some(d=>Math.abs(x-d.x)<115&&y>d.y-100&&y<d.y+170))return true;
   // 配置新增林间任务点时同时保留建筑前与屋顶的树冠空间。
@@ -93,9 +94,12 @@ function treeSpacing(tree) {
 }
 
 // 只疏除原始布局中的树，不重新随机撒点；区域外的树位、树种和采集属性保持稳定。
-export function thinSceneryTrees(trees) {
+export function thinSceneryTrees(trees) {const steps=thinSceneryTreesSteps(trees);let step;do{step=steps.next();}while(!step.done);return step.value;}
+// 每批疏林回报已检查的候选数，未完成结果不发布给正式场景。
+export function* thinSceneryTreesSteps(trees) {
   const kept = [], spacingIndex = new TreeSpacingIndex();
-  for (const tree of trees) {
+  for (const [index,tree] of trees.entries()) {
+    if(index%64===0)yield index/Math.max(1,trees.length);
     if (coversScenery(tree.x, tree.y) || inCampComposition(tree.x, tree.y)) continue;
     // 南侧树冠也退出活动区，让营地、麦田前方与桥头形成连续的开阔草场。
     if (Math.hypot((nearest(tree,TOWN_LAYOUT.spawn).x - TOWN_LAYOUT.spawn.x) / 245, (tree.y - 830) / 240) < 1) continue;

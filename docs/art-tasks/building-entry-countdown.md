@@ -14,7 +14,7 @@
 - 房间门、床与场景入口不堆文字倒计时；不改变通道或树木布置。
 
 ## 3 技术交付
-- 新逻辑配置/控制器：config/building-entries.js、core/building-entry.js；入口完成复用原页面或场景方法。
+- 新逻辑配置/控制器：config/building-entries.js、core/camp/building-entry.js；入口完成复用原页面或场景方法。
 - 绘制入口：rendering/player-action-countdown.js，原点为徽记中心，正式房间与世界投影共用。
 - 透明程序绘制，无纹理、图集、解码内存或昼夜副本；单次最多一个人物交互徽记。
 - 门口停留三秒、移开取消、暂停冻结、界面关闭后离开触发区才重启。房间与原剧情节点保持各自状态身份。

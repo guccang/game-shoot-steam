@@ -21,7 +21,7 @@ async original=>{
    await page.evaluate(async time=>{
     const g=a.game;g.update=()=>{};g.enemies=[];g.bullets=[];
     for(const p of g.progress.farm.plots.filter(p=>p.id<2))Object.assign(p,{crop:0,plantedAt:0,readyAt:0});
-    Object.assign(g.player,{x:893,y:2814});(await import('/src/core/farm.js')).setFarmTool(g,'harvest');
+    Object.assign(g.player,{x:893,y:2814});(await import('/src/core/farming/farm.js')).setFarmTool(g,'harvest');
     Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.renderer.camera.time=null;a.refresh();
    },time);
    await touch('touchStart','#farm-sickle');for(const id of [0,1])await touch('touchMove',`[data-farm-cell="${id}"]`);await touch('touchEnd');

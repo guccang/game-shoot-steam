@@ -11,12 +11,12 @@ async original=>{
  async function restore(){await page.evaluate(()=>{const g=a.game;g.state='playing';g.cottage.tool='pick';g.cottage.autoDig=true;g.cottage.dig=null;g.cottage.rockWork=null;g.cottage.rockDamage={};g.cottage.rockScan=null;g.cottage.combat=null;g.progress.mining.animals={};delete g.progress.mining.harvested[rock.key];Object.assign(g.player,{x:rock.x,y:rock.y+55,vx:0,vy:0});a.refresh();});await page.waitForTimeout(150);}
  try{
   await page.goto(base);await page.locator('#start').tap();await page.evaluate(async()=>{
-   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining.js');
-   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining.js')).openBasement(p.mining);p.mining.seed=1847;p.wood=200;p.mining.ore=100;
-   p.mining.layers[2]=(await import('/src/progression/mine-layers.js')).freshMineLayer(2,{x:8,y:4},()=>.31);
+   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining/mining.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining/mining.js')).openBasement(p.mining);p.mining.seed=1847;p.wood=200;p.mining.ore=100;
+   p.mining.layers[2]=(await import('/src/progression/mining/mine-layers.js')).freshMineLayer(2,{x:8,y:4},()=>.31);
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);g.cottage.scanWait=99999;g.livingPersist=()=>true;g.progress.outdoors.rod=true;g.progress.outdoors.bait=20;
 
-   window.rocks=await import('/src/core/mine-rocks.js');const physics=await import('/src/physics/mine-motion.js');
+   window.rocks=await import('/src/core/mining/mine-rocks.js');const physics=await import('/src/physics/mine-motion.js');
    outer:for(let y=-8;y<35;y++)for(let x=-8;x<35;x++){const r=rocks.mineRockSite(g.progress.mining,{x,y});if(r&&physics.mineOccupancy(g,r.x,r.y+55)&&physics.mineLineClear(g,r,{x:r.x,y:r.y+55})){window.rock=r;break outer;}}
    if(!window.rock)throw Error('找不到真实景观山体');g.cottage.tool='pick';g.cottage.autoDig=true;Object.assign(g.player,{x:rock.x,y:rock.y+55});a.refresh();
   });

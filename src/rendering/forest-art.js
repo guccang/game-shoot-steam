@@ -1,3 +1,4 @@
+import {plant} from './forest-floor-plants.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { consumeDrawSteps } from './draw-steps.js';
@@ -13,6 +14,7 @@ import { artSampleWeight } from './art-sample.js';
 import { drawSampleMeadow, drawTerrainPatches } from './sample-ground.js';
 import { nightColor } from './river.js';
 import { drawWinterMeadow, snowDrift } from './winter-art.js';
+import {drawHabitatGround} from './habitat-ground.js';
 import { isBeachScenery } from '../world/scenery.js';
 
 // 参考 game-slg 的花园美术：暖木、冷石、层叠树冠与成簇植物，保持二维矢量资产独立。
@@ -46,7 +48,7 @@ export function drawForestShadow(c, tree, night = 0, winter = false, season = 's
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function campCanopyAlpha(tree, player) {
-  if (!player || !inCampComposition(tree.x, tree.y)) return 1;
+  if (!player || (!tree.woodland && !inCampComposition(tree.x, tree.y))) return 1;
   const size = tree.size || 1,
     dx = Math.abs(player.x - tree.x);
   const depth = tree.y - player.y;
@@ -89,50 +91,6 @@ export function drawForestTree(
   }
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function plant(c, x, y, kind, scale = 1) {
-  c.save();
-  c.translate(x, y);
-  c.scale(scale, scale);
-  if (kind === 0) {
-    for (let i = -2; i <= 2; i++) {
-      c.strokeStyle = '#67834d';
-      c.lineWidth = 1.4;
-      c.beginPath();
-      c.moveTo(0, 0);
-      c.quadraticCurveTo(i * 6, -9, i * 5, -22 + Math.abs(i) * 4);
-      c.stroke();
-      for (let j = 1; j < 4; j++) ellipse(c, i * j * 1.4, -j * 5 + Math.abs(i), 4, 1.7, j % 2 ? '#7f9e56' : '#a7b969');
-    }
-  } else if (kind === 1) {
-    for (const dx of [-5, 4]) {
-      c.fillStyle = '#e4c89d';
-      c.fillRect(dx, -9, 3, 10);
-      c.fillStyle = '#bd7657';
-      c.beginPath();
-      c.ellipse(dx + 1, -10, 7, 5, 0, Math.PI, Math.PI * 2);
-      c.fill();
-      ellipse(c, dx - 1, -12, 1.5, 1, '#f7dfb4');
-    }
-  } else {
-    for (let i = 0; i < 3; i++) {
-      const px = i * 7 - 7,
-        py = -(i % 2) * 6 - 6;
-      ellipse(c, px, py + 4, 5, 2, '#6e9054');
-      for (let p = 0; p < 5; p++)
-        ellipse(
-          c,
-          px + Math.cos(p * 1.26) * 3,
-          py + Math.sin(p * 1.26) * 3,
-          2.3,
-          2.3,
-          kind === 3 ? '#b8a3c6' : '#fff1d3',
-        );
-      ellipse(c, px, py, 1.8, 1.8, '#dcad57');
-    }
-  }
-  c.restore();
-}
-// 共用绘制与动作输入，风格差异由配置提供。
 export function drawGardenDetails(c, rand, view = null, winter = false, season = 'summer') {
   // 每片林下只使用本地植物，沿林缘成簇分布，主路保持干净。
   for (const zone of FOREST_BIOME_ANCHORS)
@@ -172,6 +130,7 @@ export function drawBiomeGround(c, view = null, winter = false, season = 'summer
 export function* drawBiomeGroundSteps(c, view = null, winter = false, season = 'summer') {
   c.fillStyle = style.forestArt.grass;
   c.fillRect(0, 0, WORLD.width, WORLD.height);
+  if(!winter)drawHabitatGround(c,false);
   for (const zone of FOREST_BIOME_ANCHORS)
     for (const ox of [-WORLD.width, 0, WORLD.width])
       for (const oy of [-WORLD.height, 0, WORLD.height]) {
@@ -198,7 +157,7 @@ export function* drawBiomeGroundSteps(c, view = null, winter = false, season = '
     c.fillStyle = season === 'spring' ? '#c9e3a020' : season === 'summer' ? style.forestArt.groundGlaze : '#dfb96b38';
     c.fillRect(0, 0, WORLD.width, WORLD.height);
   }
-  if (winter) drawWinterMeadow(c, view);
+  if (winter) {drawWinterMeadow(c, view);drawHabitatGround(c,true);}
   yield;
   yield* drawSoftRoadsSteps(c, view);
 }

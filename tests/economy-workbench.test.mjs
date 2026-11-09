@@ -7,17 +7,17 @@ import { RECOMMENDED_ECONOMY as C, ORIGINAL_ECONOMY, validateEconomy, bindEconom
 import {MAINLINE_TASKS} from '../src/config/mainline.js';
 import {clearingKillReward} from '../src/config/waves.js';
 import { freshProgress, validateProgress } from '../src/progression/progress.js';
-import { transactProgress } from '../src/progression/transactions.js';
-import { transactVehicle } from '../src/progression/vehicles.js';
-import { equipmentRecipe, equipmentRequirements } from '../src/progression/equipment-goals.js';
-import { quoteWorkshop, workshopUpgrade } from '../src/progression/workshop.js';
+import { transactProgress } from '../src/progression/economy/transactions.js';
+import { transactVehicle } from '../src/progression/vehicles/vehicles.js';
+import { equipmentRecipe, equipmentRequirements } from '../src/progression/workshop/equipment-goals.js';
+import { quoteWorkshop, workshopUpgrade } from '../src/progression/workshop/workshop.js';
 import { realmReward } from '../src/config/realms.js';
 import { expeditionEquipment } from '../src/config/expedition.js';
 import { simulateEconomy, runBatch, summarize, reportCSV, validateScenario, growthCadence } from '../src/balance/model.js';
 import { benchmarkGrowth } from '../src/balance/benchmark.js';
 import { Game } from '../src/core/game.js';
-import { recordEconomy, advanceLedger } from '../src/progression/economy-ledger.js';
-import { awardMaterials } from '../src/progression/material-loot.js';
+import { recordEconomy, advanceLedger } from '../src/progression/economy/economy-ledger.js';
+import { awardMaterials } from '../src/progression/economy/material-loot.js';
 
 // 只提供测试所需资源，不影响游戏或模拟默认新档。
 function funded(){const p=freshProgress();p.coins=p.wood=1000000;p.materials={parts:10000,crystal:10000,core:1000};p.mainline.completed=MAINLINE_TASKS.map(t=>t.id);p.mainline.phase='complete';p.restoration.repaired.push('garage');return p;}

@@ -27,7 +27,7 @@
 
 逻辑尺寸、像素尺寸、脚底锚点、透明背景与分层均沿用原资产，无新增PNG/SVG、解码像素或图集缓存。玩法逻辑负责数值、进度、刷怪和导航，动画继续使用正式时钟和绘制器。现场实体上限保持24，尸体、弹丸、特效仍受既有预算限制；需实机检查密度与帧耗时。素材缺失仍明确失败，不添加替代画面。
 
-入口：src/config/waves.js、src/config/clearing-difficulty.js、src/core/wave-manager.js、src/core/enemy-manager.js、src/core/enemy-arrival.js、src/ui/clearing.js、src/ui/task-reward.js。
+入口：src/config/waves.js、src/config/clearing-difficulty.js、src/core/battle/wave-manager.js、src/core/battle/enemy-manager.js、src/core/battle/enemy-arrival.js、src/ui/clearing.js、src/ui/task-reward.js。
 
 ## 4 动画
 

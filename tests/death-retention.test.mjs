@@ -1,11 +1,11 @@
 import {freshRangerProgress} from '../src/progression/progress.js';
 import {prepareBossNode} from './helpers/boss-node.mjs';
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 // 死亡续游保留累计数据，保留当前波与配额；清档仍是唯一完整归零入口。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, freshProgress } from '../src/game.js';
-import { capturePatrol } from '../src/core/patrol-session.js';
+import { capturePatrol } from '../src/core/battle/patrol-session.js';
 import { waveDifficulty } from '../src/config/waves.js';
 
 // 使用用户截图中的累计数据，构造拥有装备、熟练度与独立炮塔的中后期存档。

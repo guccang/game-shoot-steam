@@ -11,6 +11,11 @@ function drawIcon(c,icon){
   // 阶梯和方向箭头独立绘制，上下楼共用同一轮廓与进度环。
   c.strokeStyle='#41664b';c.lineWidth=1.7;c.beginPath();c.moveTo(-7,6);c.lineTo(-2,6);c.lineTo(-2,1);c.lineTo(3,1);c.lineTo(3,-4);c.lineTo(8,-4);c.stroke();
   const d=icon==='stairs-up'?-1:1;c.beginPath();c.moveTo(-5,-d*6);c.lineTo(-5,d*6);c.moveTo(-8,d*3);c.lineTo(-5,d*6);c.lineTo(-2,d*3);c.stroke();
+ }else if(icon==='water'){
+  // 潮汐水罐沿用弹药页窄盖、圆罐与水滴轮廓，图标不参与进度计算。
+  box(c,-2.5,-8,5,3,1,'#aebfb6','#41664b',1);
+  box(c,-6,-5,12,13,3,'#93bcb4','#41664b',1.3);
+  c.beginPath();c.moveTo(0,-2);c.bezierCurveTo(-1,-.5,-3,1,-3,3);c.bezierCurveTo(-3,6,3,6,3,3);c.bezierCurveTo(3,1,1,-.5,0,-2);c.fillStyle='#fff6dc';c.fill();
  }else if(icon==='wood'){
   drawResourceIcon(c,'wood',0,0,18);
  }else if(icon==='weapon'){

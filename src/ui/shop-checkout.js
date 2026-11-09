@@ -1,17 +1,17 @@
 import {cartProductIcon} from './cart-product-icon.js';
-import {buyFarmSeeds} from '../core/farm-seeds.js';
-import {tradeSupply} from '../core/supplies.js';
-import {buyOutdoorGear} from '../core/outdoors.js';
-import {tendPasture,upgradeWateringCan} from '../core/farm-production.js';
-import {buyDetector} from '../core/treasure.js';
+import {buyFarmSeeds} from '../core/farming/farm-seeds.js';
+import {tradeSupply} from '../core/vehicles/supplies.js';
+import {buyOutdoorGear} from '../core/activities/outdoors.js';
+import {tendPasture,upgradeWateringCan} from '../core/farming/farm-production.js';
+import {buyDetector} from '../core/activities/treasure.js';
 import {ERA_RESOURCES,eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 // 商品在上、结账区在下，点按或拖入购物车后统一确认。
 import {createEventScope} from '../platform/events.js';
-import {SHOP_GOODS} from '../progression/shop-stock.js';
-import {shopDelivery} from '../core/shop-delivery.js';
+import {SHOP_GOODS} from '../progression/economy/shop-stock.js';
+import {shopDelivery,addShopStock} from '../core/economy/shop-delivery.js';
 import {HOME_CATALOG} from '../config/home-decor.js';
-import {quoteWorkshop} from '../progression/workshop.js';
-import {weaponPurchaseQuote} from '../core/weapon-purchase-load.js';
+import {quoteWorkshop} from '../progression/workshop/workshop.js';
+import {weaponPurchaseQuote} from '../core/inventory/weapon-purchase-load.js';
 import {MATERIALS} from '../config/materials.js';
 
 const selector='button[data-shop-good],button[data-shop-name]';
@@ -27,7 +27,7 @@ function offer(game,button,batches){
  if(item){
   const count=batches*(item.pack||1),cost=batches*item.price,delivery=shopDelivery(game,item.id,count);
   const affordable=game.progress.coins>=cost;
-  return {id:item.id,name:item.name,info:item.description||item.use,price:cost+' 金币',count,place:delivery.label,error:affordable?delivery.message:'金币不足。',ok:delivery.ok&&affordable};
+  return {id:item.id,name:item.name,info:item.description||item.use,price:item.price+' 金币',count,place:delivery.label,allocations:delivery.allocations,error:affordable?delivery.message:'金币不足。',ok:delivery.ok&&affordable};
  }
  const furniture=HOME_CATALOG.find(i=>i.id===d.buy);
  return {id:d.shopKey||d.buy||d.shopName,name:d.shopName,info:furniture?.description||d.shopInfo||'',price:d.shopPrice,count:1,place:d.shopPlace,ok:!button.disabled};
@@ -83,15 +83,20 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
  // 每次打开和修改数量后重新报价，并逐行保留交付位置。
  function renderCart(message=''){
   const lines=carts.get(owner)||[],list=panel.querySelector('[data-cart-lines]');list.replaceChildren();
+  // 多个品种共享一次预估库存；前一行占掉的背包余量不能再次报价给后一行。
+  const preview=lines.length>1&&owner.id==='seed-shop-dialog'
+   ?Object.assign(Object.create(game),{progress:structuredClone(game.progress)}):game;
   for(const [i,row] of lines.entries()){
-   row.quote=offer(game,row.source,1);const q=row.quote,entry=root.createElement('article');entry.className='cart-line';
+   const quantity=row.source.hasAttribute('data-buy-seed')?row.batches:1;
+   row.quote=offer(preview,row.source,quantity);const q=row.quote,entry=root.createElement('article');entry.className='cart-line';
+   if(preview!==game&&q.ok)for(const part of q.allocations)addShopStock(preview.progress,q.id,part.count,part.where);
    const name=root.createElement('strong'),info=root.createElement('small'),remove=root.createElement('button');
    name.textContent=q.name+' ×'+row.batches*row.units;
    info.textContent=q.price+(row.batches>1?' × '+row.batches:'')+' · '+(q.ok?'交付到'+(q.place||'当前地点'):q.error);
    remove.type='button';remove.className='ui-button';remove.dataset.removeLine=i;remove.textContent='移除';remove.setAttribute('aria-label','移除'+q.name);
    entry.append(row.icon,name,info,remove);
    // 种子及弹药仍可在清单内快速选择常用数量。
-   const presets=row.source.hasAttribute('data-buy-seed')?[1,5,10]:row.source.hasAttribute('data-ammo-buy')?[1,5,20]:[];
+   const presets=row.source.hasAttribute('data-buy-seed')?[10,30,100]:row.source.hasAttribute('data-ammo-buy')?[1,5,20]:[];
    if(presets.length){
     const options=root.createElement('div');options.className='cart-quantities';
     for(const n of presets){const preset=root.createElement('button');preset.type='button';preset.className='ui-button';preset.textContent=n+(row.source.hasAttribute('data-buy-seed')?' 粒':' 包');preset.dataset.orderAmount=n;preset.dataset.cartRow=i;preset.setAttribute('aria-pressed',String(row.batches===n));options.append(preset);}
@@ -184,13 +189,13 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
  // 货架可能已经切到另一分类，常规商品仍走同一个正式购买函数。
  function purchase(row,button){
   const d=row.source.dataset;
+  if(d.buySeed!==undefined)return buyFarmSeeds(game,Number(d.buySeed),row.batches);
   if(button){
    if(button.disabled)return {ok:false,message:'该商品目前无法购买。'};
    const before=game.progress,coins=before.coins,wood=before.wood;
    authorized=button;try{button.click();}finally{authorized=null;}
    return {ok:game.progress!==before||game.progress.coins<coins||game.progress.wood<wood,message:'购买未完成，请检查库存、材料和商品条件。'};
   }
-  if(d.buySeed!==undefined)return buyFarmSeeds(game,Number(d.buySeed),1);
   if(d.ammoBuy)return tradeSupply(game,{kind:'ammo',id:d.ammoBuy,batches:1,target:d.ammoTarget});
   if(d.itemBuy)return tradeSupply(game,{kind:'item',id:d.itemBuy,batches:1,target:'hand'});
   if(d.outdoorBuy)return buyOutdoorGear(game,d.outdoorBuy);
@@ -208,11 +213,12 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
    let delivered=0;
    for(const row of [...lines]){
     while(row.batches>0){
-     const button=liveButton(row),q=offer(game,button||row.source,1);
+     const quantity=row.source.hasAttribute('data-buy-seed')?row.batches:1;
+     const button=liveButton(row),q=offer(game,button||row.source,quantity);
      if(!q.ok||q.price!==row.quote.price||q.place!==row.quote.place){if(button)row.source=button.cloneNode(false);renderCart(q.ok?'报价或交付地点已变化，请核对后继续。':q.error);return;}
      const result=purchase(row,button);
      if(!result.ok){renderCart((delivered?'已交付 '+delivered+' 件，剩余商品保留在购物车。':'')+result.message);return;}
-     delivered+=row.units;row.batches--;if(!row.batches)lines.splice(lines.indexOf(row),1);updateZone(owner);
+     delivered+=row.units*quantity;row.batches-=quantity;if(!row.batches)lines.splice(lines.indexOf(row),1);updateZone(owner);
     }
    }
    dialogs.close(panel.id);onNotice('购物车中的商品已交付。');

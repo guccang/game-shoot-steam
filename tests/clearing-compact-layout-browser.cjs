@@ -7,7 +7,7 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();
    p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;
    p.weapon=(await import('/src/config/weapons.js')).WEAPONS.findIndex(w=>w.independentSupply);p.weapons[p.weapon]=1;p.living.patrolActive=true;p.living.clearingNotice='seen';
-   g.progress=p;g.reset();g.start();g.mainlineSpeech=null;g.update=()=>{};const site=(await import('/src/progression/clearing-site.js')).clearingSite(p);Object.assign(g.player,{x:site.x,y:site.y});a.renderer.camera.time=null;a.refresh();
+   g.progress=p;g.reset();g.start();g.mainlineSpeech=null;g.update=()=>{};const site=(await import('/src/progression/story/clearing-site.js')).clearingSite(p);Object.assign(g.player,{x:site.x,y:site.y});a.renderer.camera.time=null;a.refresh();
   });
   for(const [width,height] of [[320,568],[390,844]]){
    await page.setViewportSize({width,height});await page.waitForTimeout(200);

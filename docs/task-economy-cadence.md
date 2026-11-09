@@ -89,7 +89,7 @@
 
 - 相关经济、任务、存档、清缴、操作引导、内容配置和奖励收据测试通过；新增7项任务经济回归。批量节奏验收10种情景各100种子，压力超标如实记录。
 - `npm run content:check`通过；全部改动JS语法与JSON解析通过；`git diff --check`通过。
-- `check`未通过：基线master和本分支同样报 `combat/bosses.js → core/camp-defense.js` 跨层依赖。该已有问题不归因为本次数值修改，不宣称全量检查通过；按项目规则未运行无关全量 `npm test`。
+- `check`未通过：基线master和本分支同样报 `combat/bosses.js → core/camp/camp-defense.js` 跨层依赖。该已有问题不归因为本次数值修改，不宣称全量检查通过；按项目规则未运行无关全量 `npm test`。
 - 工作台实机验证版本3导入导出、非法输入拒绝、候选隔离、100组15分钟超时样本显示、任务奖励时间轴；1280/390/320宽度无横向溢出。
 - 正式游戏任务簿、升级入口、中文目标与奖励，在1280/390/320昼夜同屏检查；部件/安装提示可读，入口分别到武器工坊和角色页。截图为代表存档，不称为真人完整主线试玩。
 - 对应现有 `designCriterion`：`mainline-operation-guide`（真实操作入口）、`balance-inline-help`（用途和影响就地可读）；正式入口 `src/ui/mainline.js`、`src/ui/operation-guide.js`、`src/balance/app.js`。本次无新增/替换美术资源及绘制器变更；素材尺寸、动作生成、碰撞和纹理预算不适用。

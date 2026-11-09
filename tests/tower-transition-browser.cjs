@@ -10,7 +10,7 @@ async page => {
     if (g.realm?.mode !== 'tower') throw Error('请通过正式界面进入时空之塔');
     g.state = 'playing'; g.player.hp = g.maxHp();
     g.enemies = []; g.boss = null; g.realm.kills = g.realm.spec.total;
-    const { updateRealm } = await import('/src/core/realm-manager.js');
+    const { updateRealm } = await import('/src/core/realms/realm-manager.js');
     updateRealm(g, 0); a.refresh();
     return { stage: g.realm.stage, arena: g.realm.arena, coins: g.progress.coins };
   });

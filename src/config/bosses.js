@@ -90,8 +90,12 @@ export function nextBoss(progress) {
   }
   return BOSSES[(count+BOSSES.length-1)%BOSSES.length];
 }
+// 只有兽潮末波的团子使用团山专属外形与命中反馈。
+export function isHordeGiant(boss){
+  return boss?.kind==='dumpling'&&!!boss.campDefense;
+}
 // 未携带新身份的旧测试实体继续使用原苔藓巨兽规则。
 export function bossProfile(boss) {
-  if (boss?.campDefense && boss.kind === 'dumpling') return HORDE_GIANT;
+  if (isHordeGiant(boss)) return HORDE_GIANT;
   return BOSSES.find((b) => b.id === boss?.kind) || BOSSES.find(b=>b.id==='moss');
 }

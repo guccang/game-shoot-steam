@@ -22,7 +22,7 @@
 
 ## 正式入口、资源与保留
 
-配置`src/config/farm.js`；规则`src/core/farm.js`与`src/progression/farm.js`；世界绘制`src/rendering/farm.js`与`src/rendering/farm-water-tool.js`；工具UI`src/ui/farm.js`。新增图标、壶体、水滴均为Canvas，无imagegen请求或新位图；2张作物图集预算保持。暂停冻结壶与水滴，取消或受伤不提前结算，驾车/其他场景沿用限制。PNG精修为后续阶段，保持锚点、分层和稳定ID。
+配置`src/config/farm.js`；规则`src/core/farming/farm.js`与`src/progression/farming/farm.js`；世界绘制`src/rendering/farm.js`与`src/rendering/farm-water-tool.js`；工具UI`src/ui/farm.js`。新增图标、壶体、水滴均为Canvas，无imagegen请求或新位图；2张作物图集预算保持。暂停冻结壶与水滴，取消或受伤不提前结算，驾车/其他场景沿用限制。PNG精修为后续阶段，保持锚点、分层和稳定ID。
 
 ## 验收计划
 

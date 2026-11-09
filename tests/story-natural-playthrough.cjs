@@ -4,7 +4,7 @@ async(page)=>{
  await page.evaluate(async()=>{
   if(window.storyPlay)return;
   const a=(await import('/src/main.js')).application;await a.ready;
-  const defs=await import('/src/core/story-definition.js'),coords=await import('/src/world/coordinates.js'),motion=await import('/src/physics/motion.js'),nav=await import('/src/physics/terrain-navigation.js'),journey=await import('/src/core/story-journey.js');
+  const defs=await import('/src/core/story/story-definition.js'),coords=await import('/src/world/coordinates.js'),motion=await import('/src/physics/motion.js'),nav=await import('/src/physics/terrain-navigation.js'),journey=await import('/src/core/story/story-journey.js');
   window.storyPlay={a,defs,coords,motion,nav,journey,index:0,keys:[],records:[],stages:[],dialogues:[],deaths:[],lastStage:'',all:['sunleaf-01','sunleaf-02','sunleaf-03','sunleaf-04','sunleaf-05','sunleaf-06','sunleaf-side-expedition','sunleaf-side-guardian'],loadouts:['line-patrol','tide-arc','frost-guard','little-team','canopy-light','little-team']};
   const saved=sessionStorage.getItem('playthrough-log');if(saved){Object.assign(window.storyPlay,JSON.parse(saved));sessionStorage.removeItem('playthrough-log');}
  });

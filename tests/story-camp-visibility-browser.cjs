@@ -15,7 +15,7 @@ async original=>{
   await page.reload();await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
-   const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');
+   const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');
    Object.assign(a.game.player,storyPostApproach(storyPostForChapter(a.game,'sunleaf-02')));a.game.enemies=[];a.game.boss=null;a.game.mainlineSpeech=null;a.refresh();
   });
   // 从正式任务目录接取第二章，不直接设置故事会话。
@@ -46,7 +46,7 @@ async original=>{
   await page.locator('#story-speech-skip').tap();await page.waitForTimeout(150);await check('准备出发');
   // 借用装备与出发使用游戏公开动作，持续运行原更新循环验证碰撞开关。
   await page.evaluate(async()=>{
-   const def=(await import('/src/core/story-definition.js')).storyDefinition(a.game);
+   const def=(await import('/src/core/story/story-definition.js')).storyDefinition(a.game);
    if(!a.game.chooseStoryLoadout(def.loadouts[0].id)||!a.game.startStoryStage())throw Error('无法出发');a.refresh();
   });
   if(await page.locator('#story-dialog').isVisible())await page.locator('#story-close').tap();

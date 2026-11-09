@@ -1,7 +1,7 @@
 // 目录与说明使用真实章节和记录，覆盖类型、锁定、已领取与文本转义。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {storyUnlocked} from '../src/core/story-definition.js';
+import {storyUnlocked} from '../src/core/story/story-definition.js';
 import {freshProgress} from '../src/game.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {storyCatalogRow,storyChapterHelp} from '../src/ui/story-catalog.js';

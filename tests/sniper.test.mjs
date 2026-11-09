@@ -1,5 +1,5 @@
 import {upgradeCost} from '../src/progression/progress.js';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 import { WORLD } from '../src/world/coordinates.js';
 // 狙击枪验证实际远射、贯穿去重、存档兼容、重击物理与暂停清理。
 import test from 'node:test';

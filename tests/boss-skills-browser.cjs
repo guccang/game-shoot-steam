@@ -10,13 +10,13 @@ async page=>{
   const {freshProgress}=await import('/src/progression/progress.js');
   const {MAINLINE_IDS}=await import('/src/config/mainline.js');
   const {TOWN_RESTORATIONS}=await import('/src/config/town-restoration.js');
-  const {acceptClearingPost}=await import('/src/core/clearing-guide.js');
+  const {acceptClearingPost}=await import('/src/core/story/clearing-guide.js');
   const {CLEARING_APPROACH}=await import('/src/config/clearing.js');
-  const {clearingSite}=await import('/src/progression/clearing-site.js');
+  const {clearingSite}=await import('/src/progression/story/clearing-site.js');
   const {waveDifficulty}=await import('/src/config/waves.js');
   const {updateBoss,updateBossHazards}=await import('/src/combat/bosses.js');
-  const {updateBossSupport}=await import('/src/core/boss-reinforcements.js');
-  const {updateEnemies}=await import('/src/core/enemy-manager.js');
+  const {updateBossSupport}=await import('/src/core/battle/boss-reinforcements.js');
+  const {updateEnemies}=await import('/src/core/battle/enemy-manager.js');
   window.inspect=(await import('/src/rendering/visual-review.js')).inspectBossAttackVariety;
   // 每场重新接取真实清缴，只隔离自动攻击，保留正式领主和怪物工厂。
   window.bossScene=kind=>{

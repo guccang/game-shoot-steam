@@ -93,3 +93,12 @@ PNG精修替换结论：不适用，无新增图案。
 需修订内容：无本轮未完成项；低对比倒计时与短横屏操作栏已修订并通过复核。
 
 确认后的版本与长期参考：见本次Git提交及上述输出截图，保持原美术参考。
+## 2026-11-08 统一进场详情与收拢动画
+
+本轮按用户要求取消独立进场提示，使用同一个 `wave-help-dialog` 和唯一正式波次轨道；3、2、1 秒后等比平移缩向生命卡旁猫猫问号，手动打开从图标展开且不自动关闭。读详情期间沿用统一弹窗暂停保护，替代此前非模态不暂停的要求。原纸材、森林绿、猫问号 SVG、Boss 头像与 44px 触控保留，无新图片、离屏画布和世界镜头缩放。
+
+动画使用实时 DOM 中心坐标与 Web Animations，收起 440ms、手动展开 260ms；减少动态模式只淡出 100ms。外部关闭、快速重开和卸载撤销旧动画回调，唯一轨道归还原 HUD。正式绘制/检查入口为 `src/ui/wave-help.js`、`src/ui/wave-progress.js`、`src/rendering/visual-review.js#inspectBossWaveUi`，设计目标 `boss-wave-ui` 与 `clearing-compact-hud`。
+
+本轮动态验收通过：`tests/boss-wave-ui-browser.cjs` 检查 320/360/390/430 手机、844×390 短横屏和 1280 既有竖版容器的昼夜共 12 组；同一面板、轨道、当前批次、Boss 头像与固定操作栏均可读，没有横向溢出或小于 44px 的操作。`tests/clearing-panel-motion-browser.cjs` 实测面板出现后 3000.5ms 开始收起，动画终点与猫猫图标中心误差 x/y 均 0px，手动常驻、Escape、关闭途中重开和减少动态通过。11 项详情与首次展示资格单元检查通过。
+
+证据：[首次完整面板](../../output/playwright/clearing-panel-motion/arrival.png)、[缩向入口中段](../../output/playwright/clearing-panel-motion/collapsing.png)、[收起后入口](../../output/playwright/clearing-panel-motion/icon.png)，尺寸与昼夜证据在 `output/playwright/boss-wave-ui/`。手机采用浏览器触控模拟，未使用实体手机。原场景角色、怪物、载具及环境同屏保留；动画只作用于 DOM 面板。无素材生成及 PNG 替换项，资源预算不变。

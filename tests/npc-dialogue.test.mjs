@@ -10,11 +10,11 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WORKSHOP_INTERIORS,interiorShopkeeper} from '../src/config/workshop-interiors.js';
 import {TREASURE_SITES} from '../src/config/treasure.js';
 import {MONSTER_CAMPS,CAMP_CHARACTERS,campCharacterSite,campSignSite} from '../src/config/monster-camps.js';
-import {campResidents} from '../src/core/camp-routines.js';
-import {livingResidents} from '../src/core/living-world.js';
-import {canConverse,chooseNpcLine,converseWithNpc} from '../src/core/npc-dialogue.js';
-import {normalizeNpcDialogue} from '../src/progression/npc-dialogue.js';
-import {callNeighbor,navigatePhone} from '../src/core/patrol-phone.js';
+import {campResidents} from '../src/core/camp/camp-routines.js';
+import {livingResidents} from '../src/core/camp/living-world.js';
+import {canConverse,chooseNpcLine,converseWithNpc} from '../src/core/camp/npc-dialogue.js';
+import {normalizeNpcDialogue} from '../src/progression/camp/npc-dialogue.js';
+import {callNeighbor,navigatePhone} from '../src/core/battle/patrol-phone.js';
 
 // 创建普通森林现场，跳过新手演出但不修改受测对话或存储函数。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);const g=new Game(p,()=>.5);g.state='playing';g.trees=[];g.enemies=[];g.mainlineSpeech=null;g.vehicle.active=false;g.livingPersist=()=>true;return g;}

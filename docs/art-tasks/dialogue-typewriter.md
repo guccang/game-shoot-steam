@@ -21,7 +21,7 @@
 - `src/ui/dialogue-text.js`：可见文字时钟、全文显示、会话重置。
 - `src/ui/speech-bubble.js`：共用文字、按钮与事件生命周期。
 - `src/ui/story-speech.js`、`src/ui/mainline.js`：接入正式逐句、跳过和任务动作。
-- `src/core/mainline-manager.js`：取消计时自动接取／交付。
+- `src/core/story/mainline-manager.js`：取消计时自动接取／交付。
 - `src/styles/story.css`、`src/styles/ui-foundation.css`：文字稳定排版、触控及倒计时样式移除。
 
 没有新增图集、纹理、音频或 Canvas 缓存；每个对白组件只保留一份当前文字状态，关闭与销毁分别重置状态、移除监听。后台与其他弹窗遮挡时不推进文字，不使用独立计时器自动跳句。

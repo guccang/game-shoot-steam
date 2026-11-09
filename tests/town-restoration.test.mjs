@@ -1,3 +1,4 @@
+import {CAMP_PLOTS} from '../src/config/camp-land.js';
 // 修复解锁回归：覆盖任务自动投料、自选手动确认、保存原子性及核心入口。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -5,22 +6,23 @@ import {Game,freshProgress} from '../src/game.js';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS,facilityOpen,pendingRestoration,RESTORATION_SECONDS,RESTORATION_FLIGHT} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {recordRestorationWood,updateRestoration,restorationStatus,repairFacility} from '../src/core/town-restoration.js';
-import {mainlineObjective,mainlineSteps,updateMainline} from '../src/core/mainline-manager.js';
-import {enterCottage} from '../src/core/cottage.js';
-import {setLivingPatrol,acceptLivingRequest} from '../src/core/living-world.js';
-import {startCampDefense} from '../src/core/camp-defense.js';
-import {requestFireRescue} from '../src/core/fire-rescue.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
+import {recordRestorationWood,updateRestoration,restorationStatus,repairFacility} from '../src/core/camp/town-restoration.js';
+import {mainlineObjective,mainlineSteps,updateMainline} from '../src/core/story/mainline-manager.js';
+import {enterCottage} from '../src/core/home/cottage.js';
+import {setLivingPatrol,acceptLivingRequest} from '../src/core/camp/living-world.js';
+import {startCampDefense} from '../src/core/camp/camp-defense.js';
+import {requestFireRescue} from '../src/core/activities/fire-rescue.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 import {summonVehicle} from '../src/combat/vehicle.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 // 设置某项主线开始的现场，不修改修复函数本身。
 function scene(id='clearing'){
  const f=TOWN_RESTORATIONS.find(f=>f.id===id),p=freshProgress();
- p.mainline.completed=MAINLINE_IDS.slice(0,f.order);p.mainline.phase='doing';
+ p.campLand.owned=CAMP_PLOTS.map(plot=>plot.id);
+ p.mainline.completed=f.before?MAINLINE_IDS.slice(0,f.order):[...MAINLINE_IDS];p.mainline.currentId=f.before;p.mainline.phase='doing';
  p.restoration.repaired=TOWN_RESTORATIONS.slice(0,TOWN_RESTORATIONS.indexOf(f)).map(f=>f.id);
  // 后续设施场景已完成小屋休息教学，避免被首次休息目标接管。
  p.restoration.cottageRested=p.restoration.repaired.includes('cottage');
@@ -36,7 +38,7 @@ test('新档全部功能关闭，缺字段不继承旧主线权限',()=>{
 });
 test('目录主线引用均有效，未到现场不能远程修复',()=>{
  assert.equal(new Set(TOWN_RESTORATIONS.map(f=>f.id)).size,TOWN_RESTORATIONS.length);
- const {g}=scene();for(const f of TOWN_RESTORATIONS){assert.ok(f.order>=0);assert.ok(Number.isFinite(f.site.x)&&Number.isFinite(f.site.y));}
+ const {g}=scene();for(const f of TOWN_RESTORATIONS){assert.ok(f.before===null||f.order>=0);assert.ok(Number.isFinite(f.site.x)&&Number.isFinite(f.site.y));}
  assert.equal(repairFacility(g,'fire').ok,false);
  assert.equal(pendingRestoration(g.progress).id,'clearing');
 });
@@ -62,7 +64,7 @@ test('投料保存失败保持钱包，完工保存失败不解锁且重试不�
  g.restorationPersist=()=>false;finish(g);assert.equal(facilityOpen(g.progress,f.id),false);assert.equal(g.progress.wood,paid);
  g.restorationPersist=()=>true;g.restorationRetry=0;finish(g);assert.equal(facilityOpen(g.progress,f.id),true);assert.equal(g.progress.wood,paid);
 });
-test('十三项设施都能按顺序修复，完成记录正常存取',()=>{
+test('全部已购地设施都能分别建设，完成记录正常存取',()=>{
  for(const f of TOWN_RESTORATIONS){
   const {g}=scene(f.id);g.progress.wood=f.wood;assert.equal(g.progress.restoration.gathered[f.id],0);assert.ok(repairFacility(g,f.id).ok);assert.equal(g.progress.restoration.build?.id,f.id);
   finish(g);assert.equal(facilityOpen(validateProgress(g.progress),f.id),true);assert.equal(g.progress.wood,0);
@@ -104,9 +106,9 @@ test('首间工坊已有木料靠近自动修复，全程结束才解锁',()=>{
 
 // 赠车从短剧情实体切换为持久化停车记录时仍留在北广场，导航不得回到废墟。
 test('赠送木制自行车停在北广场，接管与重载不重复占位',async()=>{
- const {adoptArrivalParking,parkingOccupied,vehicleParkingSite,boardParkedVehicle}=await import('../src/core/camp-parking.js');
+ const {adoptArrivalParking,parkingOccupied,vehicleParkingSite,boardParkedVehicle}=await import('../src/core/vehicles/camp-parking.js');
  const {arrivalObjects}=await import('../src/rendering/ranger-arrival.js');
- const {skipArrivalJourney}=await import('../src/core/ranger-arrival.js');
+ const {skipArrivalJourney}=await import('../src/core/camp/ranger-arrival.js');
  const g=new Game(freshRangerProgress());g.start();g.arrivalPersist=()=>true;skipArrivalJourney(g);
  const car=arrivalObjects(g).find(o=>o.type==='arrival-gift');
  assert.equal(car.hull,RANGER.giftHull);assert.equal(car.x,RANGER.parking.x);assert.equal(car.y,RANGER.parking.y);assert.equal(car.depthOffset,undefined);
@@ -168,6 +170,8 @@ test('两座营门在营内外步行或骑乘靠近都能修复，导航与投�
   // 北门朝外时不把前侧偏移再叠到围栏上。
   if(gate.id==='top')g.player.y=anchor.y-gate.ny*(side<0?70:78)*side;
   g.progress.wood=f.wood;g.vehicle.active=mounted;
+  // 西侧现有加工厂占用旧的北侧站位，改从同侧下方空地检查营门。
+  if(gate.id==='left')g.player.y+=36;
   assert.equal(blocked(g.player.x,g.player.y,mounted?26:12,g.trees,g.player),false,gate.id+' 站位受阻');
   const status=restorationStatus(g,f.id);assert.equal(status.near,true,gate.id+' / '+mounted+' / '+side);assert.equal(status.canRepair,true);
   assert.equal(mainlineObjective(g).site.id,anchor.site.id);
@@ -199,7 +203,7 @@ test('首次工坊在载具上靠近侧前方自动开工',()=>{
 
 // 旧导航在85单位就停下，新范围外仍继续指路，跨入标示区域才算抵达。
 test('修复路线停止点与可见范围一致',async()=>{
- const {storyRouteState}=await import('../src/core/story-route.js');
+ const {storyRouteState}=await import('../src/core/navigation/story-route.js');
  const {g,f}=scene('garage');g.progress.wood=f.wood;
  Object.assign(g.player,{x:f.x,y:f.y+100});assert.equal(restorationStatus(g,f.id).near,false);assert.equal(storyRouteState(g).near,false);
  g.player.y=f.y+94;assert.equal(restorationStatus(g,f.id).near,true);assert.equal(storyRouteState(g).near,true);

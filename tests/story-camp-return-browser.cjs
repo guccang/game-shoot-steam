@@ -15,10 +15,10 @@ async original=>{
   await page.reload();await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
-   const g=a.game,{storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');g.enemies=[];g.boss=null;
+   const g=a.game,{storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');g.enemies=[];g.boss=null;
    Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-02')));if(!g.enterStory('sunleaf-02'))throw Error('不能进入送药章节');
-   g.advanceStoryDialogue(true);const def=(await import('/src/core/story-definition.js')).storyDefinition(g);g.chooseStoryLoadout(def.loadouts[0].id);g.startStoryStage();
-   (await import('/src/core/story-manager.js')).runStoryActions(g,[{type:'stage',id:'END'}]);Object.assign(g.player,def.world.sites.CAMP);a.refresh();
+   g.advanceStoryDialogue(true);const def=(await import('/src/core/story/story-definition.js')).storyDefinition(g);g.chooseStoryLoadout(def.loadouts[0].id);g.startStoryStage();
+   (await import('/src/core/story/story-manager.js')).runStoryActions(g,[{type:'stage',id:'END'}]);Object.assign(g.player,def.world.sites.CAMP);a.refresh();
   });
   // 夹具通过规则推进准备阶段，收起期间已自动打开的任务簿后验证正式收尾对白。
   if(await page.locator('#story-dialog').isVisible())await page.locator('#story-close').tap();

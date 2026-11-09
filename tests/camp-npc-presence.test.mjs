@@ -5,9 +5,9 @@ import {Game,freshProgress} from '../src/game.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_NPCS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {CAMPAIGN_TASK_IDS} from '../src/config/mainline-pacing.js';
-import {mainlineActors,mainlineObjective,updateMainline,completeMainline,canTalkMainline} from '../src/core/mainline-manager.js';
-import {selectMainlineTask} from '../src/core/mainline-selection.js';
-import {livingResidents,updateLivingWorld} from '../src/core/living-world.js';
+import {mainlineActors,mainlineObjective,updateMainline,completeMainline,canTalkMainline} from '../src/core/story/mainline-manager.js';
+import {selectMainlineTask} from '../src/core/story/mainline-selection.js';
+import {livingResidents,updateLivingWorld} from '../src/core/camp/living-world.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from '../src/rendering/scene-npc-continuity.js';
 // 使用正式游戏实例，保存入口只捕获本测试进度。
 function world(){const g=new Game(freshProgress(),()=>.5);g.start();g.mainlinePersist=()=>true;g.enemies=[];g.boss=null;g.vehicle.active=false;return g;}

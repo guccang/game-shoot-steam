@@ -11,7 +11,7 @@ async(page)=>{
   await page.evaluate(async({board,time,complete})=>{
    const a=(await import('/src/main.js')).application,g=a.game;
    const {STORY_POSTS}=await import('/src/config/story-posts.js'),post=STORY_POSTS.find(p=>p.id===board);
-   const {storyPostApproach}=await import('/src/core/story-posts.js');
+   const {storyPostApproach}=await import('/src/core/story/story-posts.js');
    g.progress.story.run=null;g.story=null;g.boss=null;g.enemies=[];g.bullets=[];g.state='playing';
    Object.assign(g.player,storyPostApproach(post));g.player.hp=1e8;
    for(const id of post.chapters)Object.assign(g.progress.story.chapters[id],{completed:complete,rewardClaimed:complete});
@@ -67,7 +67,7 @@ async(page)=>{
  await page.locator('#start').click();
  await page.evaluate(async()=>{
   const a=(await import('/src/main.js')).application,p=(await import('/src/config/story-posts.js')).STORY_POSTS[0];
-  Object.assign(a.game.player,(await import('/src/core/story-posts.js')).storyPostApproach(p));a.refresh();
+  Object.assign(a.game.player,(await import('/src/core/story/story-posts.js')).storyPostApproach(p));a.refresh();
  });
  await page.keyboard.press('e');await page.locator('#story-dialog').waitFor({state:'visible'});if(!await page.locator('.story-collection').evaluate(n=>n.open))await page.locator('.story-collection>summary').click();
  const reloaded=await sample();if(!reloaded.text.includes('✓ 已领取')||reloaded.buttons.some(b=>!b.disabled))throw Error('重载丢失领取记录');
@@ -78,7 +78,7 @@ async(page)=>{
   if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('无法建立暂离夹具');
   g.leaveStory();g.state='playing';
   const p=(await import('/src/config/story-posts.js')).STORY_POSTS.find(p=>p.id==='monster-neighbors');
-  Object.assign(g.player,(await import('/src/core/story-posts.js')).storyPostApproach(p));a.refresh();
+  Object.assign(g.player,(await import('/src/core/story/story-posts.js')).storyPostApproach(p));a.refresh();
  });
  await page.keyboard.press('e');await page.locator('#story-dialog').waitFor({state:'visible'});if(!await page.locator('.story-collection').evaluate(n=>n.open))await page.locator('.story-collection>summary').click();await page.waitForTimeout(300);
  const pending=await sample();if(pending.title!=='怪物邻里委托板'||!pending.text.includes('0 / 3'))throw Error('暂离任务覆盖另一块板');

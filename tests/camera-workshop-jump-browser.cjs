@@ -16,7 +16,7 @@ async page=>{
   for(const [width,height] of [[320,568],[390,844],[844,390],[1280,900]])for(const active of [false,true]){
    await t.setViewportSize({width,height});
    const result=await t.evaluate(async({active})=>{
-    const {WORKSHOP}=await import('/src/world/workshop.js'),{nearbyInteraction}=await import('/src/core/nearby-interaction.js');
+    const {WORKSHOP}=await import('/src/world/workshop.js'),{nearbyInteraction}=await import('/src/core/navigation/nearby-interaction.js');
     const g=a.game,r=a.renderer;g.vehicle.active=active;g.state='playing';Object.assign(g.player,{x:WORKSHOP.x+90,y:WORKSHOP.y+230,vx:0,vy:0});r.camera.time=null;a.refresh();r.draw();
     let last=null,maxStep=0,maxZoomStep=0,maxFollowError=0;const targets=new Set();
     // 上下穿越交互范围并反向，采样实际渲染帧；不重置镜头来掩盖边界变化。

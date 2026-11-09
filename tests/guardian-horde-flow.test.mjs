@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {realmStageSpec, REALM_RADIUS} from '../src/config/realms.js';
-import {updateRealm} from '../src/core/realm-manager.js';
+import {updateRealm} from '../src/core/realms/realm-manager.js';
 import {CombatCamera} from '../src/rendering/camera.js';
 
 // 固定随机数使出生位置和正式波次状态可重现。

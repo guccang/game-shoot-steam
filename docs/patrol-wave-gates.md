@@ -17,10 +17,10 @@
 ## 实现入口
 
 - `src/config/waves.js`：`WAVE_GROUP` 与组长度抽取。
-- `src/core/wave-manager.js`：组内自动推进与组末等待。
-- `src/core/enemy-arrival.js`：`findArrivalSpot` 周围安全选点。
-- `src/core/boss-manager.js`：手动资格检查与胜利衔接。
-- `src/core/patrol-session.js`、`src/progression/patrol-progress.js`：节点保存、迁移与失败重试。
+- `src/core/battle/wave-manager.js`：组内自动推进与组末等待。
+- `src/core/battle/enemy-arrival.js`：`findArrivalSpot` 周围安全选点。
+- `src/core/battle/boss-manager.js`：手动资格检查与胜利衔接。
+- `src/core/battle/patrol-session.js`、`src/progression/battle/patrol-progress.js`：节点保存、迁移与失败重试。
 - `src/ui/hud.js`、`src/app/game-events.js`：正式头像、状态文本与节点事件提示。
 
 ## 首版节点验收记录（历史）

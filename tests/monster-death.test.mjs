@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {monsterDeathPose,monsterDeathFragments} from '../src/config/monster-death.js';
 import {Game,freshProgress} from '../src/game.js';
 import {CombatFX} from '../src/combat/effects.js';
-import {leaveEnemyRemnant,updateEnemies} from '../src/core/enemy-manager.js';
+import {leaveEnemyRemnant,updateEnemies} from '../src/core/battle/enemy-manager.js';
 test('亮芯、烟团与碎屑按正式寿命分段，结束不残留，减少动态不飞散',()=>{
  const e={burst:true,duration:.6,life:.6};const first=monsterDeathPose(e);assert.ok(first.flash>0);assert.equal(first.chips,10);assert.equal(first.puffs,5);
  e.life=.4;const mid=monsterDeathPose(e);assert.equal(mid.flash,0);assert.ok(mid.spread>first.spread);assert.ok(mid.smoke>0);

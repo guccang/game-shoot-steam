@@ -7,7 +7,7 @@ async page=>{
   window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game,p=g.progress;
   p.arrival.phase='complete';g.arrivalScene=null;p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';
   p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.start();a.menu.enter();
-  const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));
+  const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));
   if(!g.enterStory('sunleaf-01'))throw Error('首篇进入失败');g.advanceStoryDialogue(true);g.chooseStoryLoadout('line-patrol');g.startStoryStage();
   for(const d of document.querySelectorAll('dialog[open]'))d.close();a.refresh();
  });
@@ -22,7 +22,7 @@ async page=>{
  // 阶段夹具只定位新场地；使用正式怪物和载具绘制，不作为整章通关证据。
  for(const [site,stage]of [['RELAY','Q50'],['BOSS','Q60']])for(const [width,height]of [[320,568],[390,844],[1280,900]]){
   await t.setViewportSize({width,height});await t.evaluate(async({site,stage})=>{
-   const g=a.game,s=(await import('/src/config/story.js')).STORY_SITES[site],{beginStoryWave,spawnStoryEnemy,spawnStoryBoss}=await import('/src/core/story-encounters.js');
+   const g=a.game,s=(await import('/src/config/story.js')).STORY_SITES[site],{beginStoryWave,spawnStoryEnemy,spawnStoryBoss}=await import('/src/core/story/story-encounters.js');
    g.enemies=[];g.boss=null;g.projectiles=[];g.enemyBolts=[];g.hazards=[];delete g.player.arena;Object.assign(g.player,{x:s.x,y:s.y+80,invincible:999});Object.assign(g.story,{stageId:stage,phase:'active',dialogue:null,combat:null,group:0});
    if(site==='RELAY'){beginStoryWave(g,site,10,6);for(let i=0;i<2;i++)if(spawnStoryEnemy(g,s,i))g.story.combat.spawned++;}
    else spawnStoryBoss(g,'boar');

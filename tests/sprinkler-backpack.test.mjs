@@ -4,11 +4,11 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {storeSprinkler,placeProduction,productionPlacement,updateProduction,pickupSprinkler,carriedSprinkler} from '../src/core/farm-production.js';
-import {backpackEntries} from '../src/progression/backpack.js';
+import {storeSprinkler,placeProduction,productionPlacement,updateProduction,pickupSprinkler,carriedSprinkler} from '../src/core/farming/farm-production.js';
+import {backpackEntries} from '../src/progression/inventory/backpack.js';
 import {productionObjects} from '../src/rendering/farm-production.js';
 import {SPRINKLER,SPRINKLER_OFFSETS,sprinklerReach} from '../src/config/farm-production.js';
-import {sprinklerCovers} from '../src/progression/farm-production.js';
+import {sprinklerCovers} from '../src/progression/farming/farm-production.js';
 // 使用真实游戏和真实地形，持久化由隔离事务钩子验证。
 function scene(){
  const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';

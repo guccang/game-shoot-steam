@@ -13,7 +13,7 @@ async (page) => {
     Object.assign(g.boss, { x: g.player.x + 40, y: g.player.y - 125,
       hp: 5000, maxHp: 5000, speed: 0, attack: 999 });
     g.boss.support.timer = 0;
-    const { updateBossSupport } = await import('/src/core/boss-reinforcements.js');
+    const { updateBossSupport } = await import('/src/core/battle/boss-reinforcements.js');
     updateBossSupport(g, 0.01); a.refresh();
   });
   for (const width of [320, 390, 580]) {
@@ -32,7 +32,7 @@ async (page) => {
   const adds = await page.evaluate(async () => {
     const a = (await import('/src/main.js')).application, g = a.game;
     a.renderer.resize(); g.setViewport(a.renderer.width, a.renderer.height); a.renderer.draw();
-    const { updateBossSupport } = await import('/src/core/boss-reinforcements.js');
+    const { updateBossSupport } = await import('/src/core/battle/boss-reinforcements.js');
     const before = [g.wave, g.waveKills, g.waveSpawned];
     updateBossSupport(g, 2); updateBossSupport(g, 0.01); updateBossSupport(g, 0.8);
     const reinforcements = g.enemies.filter(e => e.bossOwner);

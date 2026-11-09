@@ -76,7 +76,7 @@
 
 实机脚本：`tests/ranger-garage-browser.cjs`、`tests/ranger-garage-walk.cjs`、`tests/ranger-scenic-live-browser.cjs`、既有采集/修复造枪/战斗工坊脚本。绕行脚本后半段使用已完成剧情的空间夹具，不替代前面真实完成教学的证据。完整截图与完整入场录像保留于主工作区 `output/playwright/ranger-garage-seating/`。
 
-正式绘制器入口：`src/rendering/garage.js#drawGarage`、`src/rendering/ranger-arrival.js#drawArrivalObject`、`src/core/ranger-arrival.js#poseArrival`。
+正式绘制器入口：`src/rendering/garage.js#drawGarage`、`src/rendering/ranger-arrival.js#drawArrivalObject`、`src/core/camp/ranger-arrival.js#poseArrival`。
 
 `designCriterion`：`ranger-garage-seating`，正式采样入口 `src/rendering/visual-review.js#inspectGarageArrival`。
 
@@ -103,7 +103,7 @@
 
 用户截图中后座猫头露出过高。本轮将后座整体脚底锚点降低，让松伯自然遮挡大部分脸，只露耳朵及少量头顶；替代上一轮后座完整脸外露的构图。参考为用户本轮开场骑行截图，保留原猫真实连续帧、1.05 比例、同轴前后分层、前座位置、车身及握把。尺寸、透明背景、原点和资源格式不变，不裁切身体、不缩放或旋转帧。新档初始化、骑行、恢复及下车起点共用后座高度配置，保证动作衔接；车库、碰撞与通行不变。无新增运行图片或缓存。
 
-正式入口：`src/core/ranger-arrival.js#arrivalRiders`、`src/rendering/ranger-arrival.js#drawArrivalObject`；`designCriterion=ranger-garage-seating`，沿用正式采样器。验收覆盖桌面及 320/390 昼夜乘坐、停靠、下车及倒推画面，连续动作与刷新衔接；物理手机验收条件单独注明。结果待完成后填写。
+正式入口：`src/core/camp/ranger-arrival.js#arrivalRiders`、`src/rendering/ranger-arrival.js#drawArrivalObject`；`designCriterion=ranger-garage-seating`，沿用正式采样器。验收覆盖桌面及 320/390 昼夜乘坐、停靠、下车及倒推画面，连续动作与刷新衔接；物理手机验收条件单独注明。结果待完成后填写。
 
 修订结果（本节为当前后座高度验收依据）：
 

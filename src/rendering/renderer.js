@@ -1,14 +1,20 @@
+import {regionalCampObjects,drawRegionalCamp,drawRegionalCampGround} from './regional-camps.js';
+import {activateCampLayout} from '../world/camp-layout-bindings.js';
+import {drawCampLayoutRoads,campLayoutObjectVisible} from './camp-layout.js';
+import {campLandObjects,campObjectVisible,drawCampLandGround,drawCampLandObject} from './camp-land.js';
+import {industryObjects,drawIndustry} from './industry.js';
 import {tradeObjects,drawTradeObject} from './camp-trade.js';
 import {clipEraSeat} from './vehicle-eras.js';
 import {drawAmbientFish} from './ambient-fish.js';
 import {drawHomeArcade} from './home-arcade.js';
 import {drawHomeBalcony,balconyProject,balconyWorldTransform,balconyUpright,balconyObjectVisible} from './home-balcony.js';
 import {drawMining,drawMineShaft} from './mining.js';
-import {mineShaftObjects} from '../core/mining.js';
+import {mineShaftObjects} from '../core/mining/mining.js';
 import {constructionObjects,drawConstructionCompany} from './construction-company.js';
 import {campBuildingCache} from './camp-building-cache.js';
 import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
-import {outdoorBusy} from '../core/outdoors.js';
+import {outdoorBusy} from '../core/activities/outdoors.js';
+import {waystationObjects,drawWaystation} from './waystations.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from './scene-npc-continuity.js';
 import {outdoorShopObjects,drawOutdoorShop} from './outdoor-shop.js';
 import {ammoShopObjects,drawAmmoShop} from './ammo-shop.js';
@@ -19,14 +25,14 @@ import {furnitureShopObjects,drawFurnitureShop} from './furniture-shop.js';
 import {vehicleServiceObjects,drawVehicleServiceObject} from './vehicle-repair.js';
 import {storyCampScene} from './story-camp.js';
 import {drawProductionDevice} from './farm-production.js';
-import {wildPastureObjects} from '../core/wild-pasture.js';
+import {wildPastureObjects} from '../core/farming/wild-pasture.js';
 import {drawPasture} from './pasture.js';
 import {oxHandler} from '../config/pasture.js';
 import {drawOxPlow} from './ox-plow.js';
 import {drawFarmGround,farmObjects,drawFarmCrop,drawFarmTool,drawFarmDelivery,drawCampFarmSign,farmArtBudget} from './farm.js';
 import {drawSeedShop} from './seed-shop.js';
 import {cropGrowthBoosts} from './farm-growth.js';
-import {farmWorking} from '../core/farm.js';
+import {farmWorking} from '../core/farming/farm.js';
 import { CanvasCommandSampler } from '../platform/canvas-command-sampler.js';
 import {drawResourcePickups} from './resource-pickup.js';
 import {restorationBuildingVisible,restorationObjects,drawRestorationObject,drawRestorationScaffold,drawRestorationTransfer,drawRestorationBuildCountdown} from './town-restoration.js';
@@ -34,8 +40,9 @@ import {facilityOpen} from '../config/town-restoration.js';
 import {drawEnergyShield} from './energy-shield.js';
 import {drawGravityFields} from './gravity-gun.js';
 import {drawWorkshopInterior} from './workshop-interior.js';
-import {workshopBuildView} from '../core/ranger-arrival.js';
+import {workshopBuildView} from '../core/camp/ranger-arrival.js';
 import {drawCottage} from './cottage.js';
+import {drawWaterBagIndicator} from './water-bag-indicator.js';
 import {drawPlayerActionCountdown} from './player-action-countdown.js';
 import {parkedVehicleObjects,drawParkedVehicle} from './parked-vehicles.js';
 import {campDefenseObjects,drawCampDefense,drawCampDefenseGround} from './camp-defense.js';
@@ -49,7 +56,7 @@ import {campRenderObjects,drawMonsterCampGround,drawMonsterCampObject} from './m
 import { livingObjects,drawLivingObject,drawLivingGround } from './living-world.js';
 import {settlementObjects,drawSettlement} from './settlements.js';
 import { storyObjects, drawStoryProp, storyResidentIds } from './story-props.js';
-import {mainlineActors} from '../core/mainline-manager.js';
+import {mainlineActors} from '../core/story/mainline-manager.js';
 import { drawStoryGuidance, drawStoryDestination, storySpeechInfo } from './story-guidance.js';
 import { drawEnemyBolts } from './ranged-enemies.js';
 import { drawArmedSpider } from './spider-armed.js';
@@ -68,7 +75,9 @@ import {drawFireHelmet} from './fire-truck.js';
 import {drawRaceBale,drawRaceTrackEffects} from './forest-race-track.js';
 import {drawRaceRunner} from './forest-race.js';
 import { drawRealmGround, drawGoddess } from './realms.js';
-import { NATURAL_TERRAIN } from '../world/natural-terrain.js';
+import {visibleEarthLandforms} from '../world/earth-landforms.js';
+import {drawEarthLandform} from './earth-landforms.js';
+import { NATURAL_TERRAIN,visibleMountains } from '../world/natural-terrain.js';
 import { drawMountain, naturalAtlasStats } from './natural-terrain.js';
 // 场景合成器：地形、实体、弹道和天气按层绘制。
 import { drawResourceIcon } from './resource-icons.js';
@@ -95,6 +104,7 @@ import { REALM_ENTRANCES, towerRealmLandmark } from '../world/realm-entrances.js
 import { drawRealmEntrance, drawRealmEntranceGround } from './realm-entrances.js';
 import { drawScenery, sceneryAtlasStats } from './scenery.js';
 import { viewBody, visibleBodies } from '../world/coordinates.js';
+import { SpatialGrid, treesInBounds } from '../world/spatial-grid.js';
 import { sniperGuide } from '../combat/aim.js';
 import { drawFunnelArray } from './funnel.js';
 import { drawReloadIndicator } from './reload-indicator.js';
@@ -126,6 +136,8 @@ import {watchRenderCanvas,canvasRecoveryRevision,canvasRecoveryStats} from './ca
 import {recoverSharedRenderCaches} from './render-cache-recovery.js';
 // 仅统计本轮接入缓存的七类建筑，避免把角色或施工动作归到静态立面。
 const CACHED_CAMP_BUILDINGS=new Set(['warehouse-depot','warehouse','cat-home','furniture-shop','seed-shop','legendary-workshop','ammo-shop','construction-company']);
+// 山湖摆件和建筑锚点固定，每帧只为镜头附近的景物计算周期镜像。
+let sceneryGrid=new SpatialGrid(SCENERY,{cellSize:480});
 export class Renderer {
   // 初始化轻量缓存；地形位图在首次进入可见区域时才生成。
   constructor(canvas, game, environment = { time: 'day', weather: 'sun' }, profiler = null) {
@@ -201,22 +213,32 @@ export class Renderer {
     this.canvas.height = rect.height * dpr;
     this.dpr = dpr;
   }
-  // 首次准备使用镜头副本，只计算将要显示的完整地块，不推进正式镜头与战斗时钟。
-  prepareGround() {
+    // 预热和正式帧共用营地版本，首次显示不会误将刚准备好的地面判成旧布局。
+    syncCampLayout(progress){
+      const revision=activateCampLayout(progress);
+      if(this.campLayoutRevision===revision)return;
+      this.campLayoutRevision=revision;sceneryGrid=new SpatialGrid(SCENERY,{cellSize:480});this.ground.invalidateCampLayout();
+    }
+    // 首次准备使用镜头副本，只计算将要显示的完整地块，不推进正式镜头与战斗时钟。
+  prepareGround(padding=0) {
     if(!this.recoverContext())return null;
     const g = this.game, now = performance.now();
+      this.syncCampLayout(g.progress);
     this.ground.setMap(g.mapId);this.ground.setSceneryMask(null);
     const camera = Object.assign(new CombatCamera(), this.camera);
     const speech=storySpeechInfo(g);
     const guide = speech?null:['funnel', 'drone'].includes(g.weapon().controller) ? { kind: g.weapon().controller } : sniperGuide(g);
     const normal = camera.update(g.player, this.width, this.height, guide, g.time, this.reduced.matches,
       { arena: g.realm?.arena, mode: g.realm?.mode, session: g.realm, horde: g.campDefense, giant:g.boss?.campDefense&&g.boss.kind==='dumpling'?g.boss:null });
-    const view=outdoorFishingView(g,Object.assign(new StoryCamera(),this.storyCamera).update(normal,speech,now/1000,this.reduced.matches,g.story||null),this.width,this.height);
+    const visible=outdoorFishingView(g,Object.assign(new StoryCamera(),this.storyCamera).update(normal,speech,now/1000,this.reduced.matches,g.story||null),this.width,this.height);
+    // 入场车可能在首次绘制前前进一个模拟步；边缘也计入就绪门禁，实际镜头保持原尺寸。
+    const view=padding?{...visible,x:visible.x-padding,y:visible.y-padding,w:visible.w+padding*2,h:visible.h+padding*2}:visible;
     this.ground.update(this.environment,view,now); return view;
   }
   // 合成场景继续同步消费已完成的纹理，缺块时仍走完整原精度绘制。
   draw(renderGame = this.game) {
     if(!this.recoverContext())return;
+      this.syncCampLayout(renderGame.progress);
     this.renderGame = renderGame;
     const profiler = this.profiler;
     profiler?.start('render.prepare');
@@ -308,7 +330,10 @@ export class Renderer {
     this.stormStrike = prepareStormStrike(this.stormStrike, view, this.storm,
       source.mapId, light.storm, this.reduced.matches);
     // 所有武器先裁剪再创建代理、光影和深度排序，远距视野仍保留所需周期镜像。
-    for (const key of ['trees', 'enemies', 'remnants', 'stumps'])
+    const treePadding = 140;
+    g.trees = visibleBodies(treesInBounds(source.trees, view.x, view.y,
+      view.x + view.w, view.y + view.h, treePadding), view, treePadding);
+    for (const key of ['enemies', 'remnants', 'stumps'])
       g[key] = visibleBodies(source[key], view);
     if (guide || funnel) g.hazards = visibleBodies(source.hazards, view);
     this.visibleStats = { trees: g.trees.length, enemies: g.enemies.length,
@@ -348,7 +373,9 @@ export class Renderer {
         c.restore();
       }
     drawLivingGround(c,camp,light.night,view);
+    drawCampLayoutRoads(c,camp,view,light.night);
     drawMonsterCampGround(c,source,light.night,view);
+    drawRegionalCampGround(c,source,light.night,view);
     drawFarmGround(c,camp,view);
     drawParkingGround(c,camp,view,light.night);
     drawOutdoorGround(c,source,view,light.night);
@@ -396,6 +423,7 @@ export class Renderer {
     c.stroke();
     c.setLineDash([]);
     }
+    drawCampLandGround(c,camp,view,light.night);
     for (const stump of g.stumps) {
       oval(c, stump.x, stump.y, 15, 7, '#9c8254', '#67744c');
       oval(c, stump.x, stump.y - 2, 11, 5, '#d1b381', '#9c8254', 1);
@@ -415,12 +443,15 @@ export class Renderer {
     const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source).map(actor=>g.campActors?.get(actor.id)||actor)],view);
     const activeStoryResidents=new Set([...storyResidentIds(source),...scenePeople.map(a=>a.residentId).filter(Boolean)]);
     const objects = [
+      ...visibleBodies(campLandObjects(camp),view,110),
       ...visibleBodies(mineShaftObjects(source),view,100),
       ...visibleBodies(constructionObjects(camp),view,160),
       ...visibleBodies(vehicleServiceObjects(camp),view,180),
-      ...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(outdoorShopObjects(camp),view,200),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
+      ...visibleBodies(industryObjects(camp),view,200),...visibleBodies(warehouseObjects(camp),view,150),...visibleBodies(ammoShopObjects(camp),view,150),...visibleBodies(outdoorShopObjects(camp),view,200),...visibleBodies(catHomeObjects(camp),view,150),...visibleBodies(furnitureShopObjects(camp),view,150),
       ...visibleBodies(farmObjects(camp),view,190),...visibleBodies(wildPastureObjects(source),view,150),
       ...visibleBodies(outdoorObjects(source),view,200),
+      ...visibleBodies(waystationObjects(source),view,110),
+      ...visibleBodies(regionalCampObjects(source),view,190),
       ...visibleBodies(restorationObjects(camp),view,150),
       ...visibleBodies(campDefenseObjects(camp),view,160),
       ...riverCrossings,
@@ -431,7 +462,7 @@ export class Renderer {
       ...visibleBodies(scenePeople,view,100),...storyPosts,
       ...visibleBodies(livingObjects(camp).filter(o=>o.type!=='living-resident'||!activeStoryResidents.has(o.id)),view,150),
       ...visibleBodies(campRenderObjects(source,view),view,150),
-      ...visibleBodies(settlementObjects(source),view,120),
+      ...visibleBodies(settlementObjects(source),view,240),
       ...mechanicalCats,...spiders,
       ...(source.realm?.mode==='race'?visibleBodies(source.realm.features.filter(f=>f.kind==='bale').map(f=>({...f,type:'race-bale'})),view):[]),
       ...(source.realm?.mode==='race'?visibleBodies(source.realm.rivals.map(n=>({...n,type:'race-runner'})),view):[]),
@@ -440,9 +471,10 @@ export class Renderer {
       ...entrances.flatMap(entry=>entry.mode==='fire'?[{...entry,type:'fire-station-back',depthOffset:-150},{...entry,worldLayers:true}]:[entry]),
       ...(!valley&&!source.realm&&!source.story&&source.fireStationTruck?visibleBodies([{...FIRE_GARAGE,type:'fire-truck-rear',depthOffset:-1},{...FIRE_GARAGE,type:'fire-truck-front',depthOffset:1}],view,120):[]),
       ...(source.realm ? [] : visibleBodies(valley ? JIUZHAIGOU_SIGNPOSTS : REGION_SIGNPOSTS, view, valley ? 250 : 140)),
-      ...(valley ? [] : guardianScenery(visibleBodies(SCENERY, view, 340), source.realm)),
+      ...(valley ? [] : guardianScenery(visibleBodies(sceneryGrid.query(view.x,view.y,view.x+view.w,view.y+view.h,340), view, 340), source.realm)),
       ...(!valley&&!source.realm?forestUnderstory(view):[]),
-      ...(valley ? [] : visibleBodies(NATURAL_TERRAIN.mountains, view, 340)),
+      ...(valley ? [] : visibleMountains(view)),
+      ...(valley ? [] : visibleEarthLandforms(NATURAL_TERRAIN,view)),
       ...(source.realm?.mode === 'guardian' ? [source.realm.goddess, ...source.realm.defenses.map(t => ({ ...guardianPads(source.realm.arena)[t.slot], type: 'defense', tower: t, flying: t.kind === 'vehicle' && t.index === 2 }))] : []),
       ...visibleBodies(legendaryObjects(source),view,220),
       ...g.trees,
@@ -451,7 +483,7 @@ export class Renderer {
       ...(g.boss ? [g.boss] : []),
       { type: 'player', x: g.player.x, y: g.player.y, flying: g.player.flying||!!flight,
         depthOffset:parkingGaragePose(g.player,g.vehicle)?parkingGaragePose(g.player,g.vehicle).y+3-g.player.y:0 },
-    ].filter(item=>!source.balconyScene||balconyObjectVisible(view,item)).sort((a, b) =>
+    ].filter(item=>campObjectVisible(camp,item)&&campLayoutObjectVisible(camp,item)).filter(item=>!source.balconyScene||balconyObjectVisible(view,item)).sort((a, b) =>
       // 空中单位及其预警在树冠上方，避免飞行近战从完全遮挡的位置突然命中。
       Number(!!a.flying) - Number(!!b.flying) || (source.balconyScene?(balconyProject(view,a).y-balconyProject(view,b).y)/zoom: a.y-b.y)+(a.depthOffset||0)-(b.depthOffset||0),
     );
@@ -467,13 +499,13 @@ export class Renderer {
       // 独立运动草坪覆盖原地表，平台内部不能残留森林摆件或山体遮挡。
       if(['football','race'].includes(source.realm?.mode)&&['scenery','landform','fixture','signpost'].includes(item.type)&&Math.hypot(item.x-source.realm.arena.x,item.y-source.realm.arena.y)<source.realm.arena.radius+220)continue;
       // 宽麦田按真实冠幅裁剪，镜头经过行中心外侧时仍保留伸入画面的麦穗。
-      const margin = item.burst ? 180 : ['realm-entrance','fire-station-back'].includes(item.type) ? Math.max(90,item.width/2+10) : item.type === 'landform' ? item.rx + 45 : item.scenic ? 190 : item.type === 'scenery' ? Math.max(100, (item.width || 160) / 2 + 16) : 90;
-      if (
+      const margin = item.type==='settlement-gate'?item.length/2+55:item.burst ? 180 : ['realm-entrance','fire-station-back'].includes(item.type) ? Math.max(90,item.width/2+10) : item.type === 'landform' ? item.rx + 45 : item.scenic ? 190 : item.type === 'scenery' ? Math.max(100, (item.width || 160) / 2 + 16) : 90;
+      if (!['landform','earth-landform'].includes(item.type) && (
         item.x < cameraX - margin ||
         item.x > cameraX + view.w + margin ||
-        item.y < cameraY - (item.burst?180:70) ||
-        item.y > cameraY + view.h + (item.kind==='cottage'&&!item.workshop?380:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
-      )
+        item.y < cameraY - (item.type==='settlement-gate'?margin:item.burst?180:70) ||
+        item.y > cameraY + view.h + (item.type==='settlement-gate'?margin:item.kind==='cottage'&&!item.workshop?380:item.burst?180:item.type === 'landform' ? item.height + item.ry + 40 : item.scenic ? 250 : item.type === 'realm-entrance' ? item.height + 10 : 140)
+      ))
         continue;
       // 屋体前后层同步显露；库内车辆仍只在消防设施已开放时出现。
       if(item.type==='fire-station-back'&&!restorationBuildingVisible(camp,'fire'))continue;
@@ -482,9 +514,12 @@ export class Renderer {
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();continue;}
       const cachedBuilding=CACHED_CAMP_BUILDINGS.has(item.type);
       if(cachedBuilding){this.visibleStats.campBuildings++;profiler?.start('render.campBuildings');}
-      if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
+      if(item.type==='camp-land-sign'||item.type==='camp-land-stake')drawCampLandObject(c,item,light.night);
+      else if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
       else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
+      else if(item.type.startsWith('regional-'))drawRegionalCamp(c,item,source,light.night,winter);
+      else if(item.type==='waystation')drawWaystation(c,item,light.night);
       else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches,g.player);
       else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
       else if(item.type==='river-dock'||item.type==='river-barrier')drawRiverCrossing(c,item,light.night,g.player);
@@ -505,7 +540,8 @@ export class Renderer {
       else if (item.type === 'defense') drawGuardianDefense(c, item.tower, g.time, this.reduced.matches);
       else if (item.type === 'goddess') drawGoddess(c, item, g.time, this.reduced.matches);
       else if (item.type === 'realm-entrance') drawRealmEntrance(c, item, light.night, g.player, time, this.reduced.matches);
-      else if (item.type === 'landform') drawMountain(c, item, light.night, g.player, winter);
+      else if(item.type==='earth-landform')drawEarthLandform(c,item,light.night,g.player);
+      else if (item.type === 'landform') drawMountain(c, item, light.night, g.player, winter,view);
       // 洞内车已在门洞之后裁切绘制，车库保持实墙，不再把整栋建筑淡成透明。
       else if (item.type === 'scenery') {
         // 工坊造型由已保存的入职阶段投影，不叠画旧小屋或额外封门图层。
@@ -541,6 +577,7 @@ export class Renderer {
       else if(item.type==='farm-delivery')drawFarmDelivery(c,item);
       else if(item.type==='outdoor-shop')drawOutdoorShop(c,item,light.night,winter);
       else if(item.type==='ammo-shop')drawAmmoShop(c,item,light.night,winter);
+      else if(item.type==='industry')drawIndustry(c,item,g,light.night);
       else if(item.type==='warehouse'||item.type==='warehouse-depot')drawWarehouse(c,item,light.night,winter);
       else if(item.type==='cat-home')drawCatHome(c,item,light.night,winter);
       else if(item.type==='furniture-shop')drawFurnitureShop(c,item,light.night,winter);
@@ -591,8 +628,11 @@ export class Renderer {
           this.reduced.matches?0:source.magazines[(source.loadout||source.progress).weapon]?.rotor||0,
           outdoorBusy(source)||farmWorking(source)||source.realm?.mode==='race'||source.arrivalCinematic||frontRider(g.vehicle),
           gustStrength(g.time, item.x, wind),
+          !!ox&&!ox.approach,
         );
         c.restore();
+        // 与骑车一样先画座位上的猫，再由牛头、挽具遮住腿部。
+        if(ox&&!ox.approach)drawOxPlow(c,item,ox,g.time);
         drawFarmTool(c,source,g.player);
         drawOutdoorFishing(c,source,g.player,light.night);
         if(source.fireActive||g.vehicle.active&&g.vehicle.index===4)drawFireHelmet(c,g.player);
@@ -732,6 +772,7 @@ export class Renderer {
     profiler?.end('render.tone');
     profiler?.start('render.indicators');
     drawPlayerActionCountdown(this);
+    drawWaterBagIndicator(this);
     // 用屏幕坐标贴在角色头顶，装填环不参与世界光照、后坐震动或树冠排序。
     if (
       !flight && !source.balconyScene && !this.actionCountdownView && !source.weapon().independentSupply &&

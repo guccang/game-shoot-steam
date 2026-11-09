@@ -7,14 +7,14 @@ import {MAINLINE_IDS,MAINLINE_TASKS,MAINLINE_SITES} from '../src/config/mainline
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {FARM_CROPS} from '../src/config/farm.js';
 import {WAREHOUSE} from '../src/config/warehouse.js';
-import {taskResourceStock,taskCropStock} from '../src/progression/task-resources.js';
-import {mainlineConditionCost,mainlineResourceHint} from '../src/progression/mainline-cost.js';
-import {mainlineCondition,mainlineSteps,mainlineObjective,updateMainline,completeMainline} from '../src/core/mainline-manager.js';
-import {harvestBudget,harvestGuideHint} from '../src/core/harvest-guide.js';
-import {transferWarehouse} from '../src/core/warehouse.js';
-import {updateWarehouseHarvest} from '../src/core/warehouse-harvest.js';
-import {beginGardeningLesson} from '../src/progression/mainline-gardening.js';
-import {transferCargo} from '../src/core/cargo.js';
+import {taskResourceStock,taskCropStock} from '../src/progression/economy/task-resources.js';
+import {mainlineConditionCost,mainlineResourceHint} from '../src/progression/story/mainline-cost.js';
+import {mainlineCondition,mainlineSteps,mainlineObjective,updateMainline,completeMainline} from '../src/core/story/mainline-manager.js';
+import {harvestBudget,harvestGuideHint} from '../src/core/farming/harvest-guide.js';
+import {transferWarehouse} from '../src/core/inventory/warehouse.js';
+import {updateWarehouseHarvest} from '../src/core/inventory/warehouse-harvest.js';
+import {beginGardeningLesson} from '../src/progression/story/mainline-gardening.js';
+import {transferCargo} from '../src/core/inventory/cargo.js';
 
 // 清空前置修复阻挡，使用正式进度、真实仓库和持久化事务。
 function scene(id='upgrade-harvest'){

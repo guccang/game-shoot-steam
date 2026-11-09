@@ -17,7 +17,7 @@ async page=>{
  await page.reload();await page.locator('#start').click();
  const restored=await page.evaluate(async()=>{
   const a=(await import('/src/main.js')).application;await a.ready;const g=a.game;
-  const state={active:g.progress.living.patrolActive,position:{x:g.player.x,y:g.player.y},boss:g.boss&&{hp:g.boss.hp,maxHp:g.boss.maxHp,x:g.boss.x,y:g.boss.y},savedHp:g.progress.patrol.bossHp,allowed:(await import('/src/core/living-safety.js')).livingWaveAllowed(g)};
+  const state={active:g.progress.living.patrolActive,position:{x:g.player.x,y:g.player.y},boss:g.boss&&{hp:g.boss.hp,maxHp:g.boss.maxHp,x:g.boss.x,y:g.boss.y},savedHp:g.progress.patrol.bossHp,allowed:(await import('/src/core/camp/living-safety.js')).livingWaveAllowed(g)};
   g.pause();a.refresh();return state;
  });
  if(!restored.active||!restored.allowed||Math.hypot(restored.position.x-1600,restored.position.y-400)>2||restored.boss?.maxHp!==1600||restored.savedHp!==640)throw Error('旧档恢复失败 '+JSON.stringify(restored));
@@ -44,7 +44,7 @@ async page=>{
  await page.locator('#resume').click();
  const before=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return {x:g.player.x,hp:g.boss.hp};});
  await page.keyboard.down('ArrowRight');await page.waitForTimeout(400);await page.keyboard.up('ArrowRight');
- const continued=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;const result={state:g.state,x:g.player.x,bossHp:g.boss?.hp,allowed:(await import('/src/core/living-safety.js')).livingWaveAllowed(g)};g.pause();a.refresh();return result;});
+ const continued=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;const result={state:g.state,x:g.player.x,bossHp:g.boss?.hp,allowed:(await import('/src/core/camp/living-safety.js')).livingWaveAllowed(g)};g.pause();a.refresh();return result;});
  if(continued.state!=='playing'||!continued.allowed||Math.abs(continued.x-before.x)<5||continued.bossHp>before.hp)throw Error('恢复后不能继续战斗 '+JSON.stringify(continued));
  if(errors.length)throw Error(errors.join(';'));
  return {restored,samples,before,continued,errors};

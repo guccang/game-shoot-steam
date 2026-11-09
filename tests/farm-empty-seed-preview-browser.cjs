@@ -11,7 +11,7 @@ async original=>{
    const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.cottageRested=true;p.farm.wildMaps=['forest','jiuzhaigou'];p.farm.lessonRewarded=true;
    p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);
    g.progress=p;g.reset();g.state='playing';g.arrivalScene=null;g.mainlineSpeech=null;g.enemies=[];g.boss=null;g.vehicle.active=false;
-   const {farmLandReason,farmApproach}=await import('/src/world/farm-land.js'),{farmAction}=await import('/src/core/farm.js');
+   const {farmLandReason,farmApproach}=await import('/src/world/farm-land.js'),{farmAction}=await import('/src/core/farming/farm.js');
    for(let y=900;y<1300;y+=52)for(let x=1200;x<1760;x+=56){const point={x,y,mapId:g.mapId},approach=farmApproach(g,point);if(farmLandReason(g,point)||!approach)continue;Object.assign(g.player,approach,{vx:0,vy:0});const r=farmAction(g,'dig',{point});if(!r.ok)continue;g.progress.farm.seeds[0]=3;g.progress.farm.unlocked[0]=true;for(const d of document.querySelectorAll('dialog[open]'))d.close();a.renderer.camera.time=null;a.refresh();a.renderer.draw();a.farm.open();return g.progress.farm.plots.at(-1);}
    throw Error('正式地图未找到可开垦田地');
   });
@@ -26,7 +26,7 @@ async original=>{
   await cell.tap();if(!await page.locator('#farm-picker').isVisible()||await preview.isVisible())throw Error('点击空田未进入选种');
   await page.screenshot({path:'output/playwright/farm-empty-seed-preview/picker.png'});
   await page.locator('[data-farm-seed="0"]').tap();await cell.tap();
-  const planted=await page.evaluate(async id=>{const g=a.game,{updateFarmWork}=await import('/src/core/farm.js');if(!g.farmWork.queue.some(j=>j.action==='plant'))throw Error('播种未进入正式队列');for(let i=0;i<80;i++)updateFarmWork(g,.05,{x:0,y:0});a.refresh();return {crop:g.progress.farm.plots.find(p=>p.id===id).crop,seeds:g.progress.farm.seeds[0]};},plot.id);
+  const planted=await page.evaluate(async id=>{const g=a.game,{updateFarmWork}=await import('/src/core/farming/farm.js');if(!g.farmWork.queue.some(j=>j.action==='plant'))throw Error('播种未进入正式队列');for(let i=0;i<80;i++)updateFarmWork(g,.05,{x:0,y:0});a.refresh();return {crop:g.progress.farm.plots.find(p=>p.id===id).crop,seeds:g.progress.farm.seeds[0]};},plot.id);
   if(planted.crop!==0||planted.seeds!==2)throw Error('播种结算错误 '+JSON.stringify(planted));
   await page.locator('#farm-hoe').tap();await cell.hover();await page.waitForTimeout(100);if(await preview.getAttribute('data-mode')==='seed')throw Error('已有作物仍显示选种袋');
   const targets=await page.evaluate(async()=>{const {farmDigTarget}=await import('/src/world/farm-land.js'),v=a.renderer.view,r=a.renderer.canvas.getBoundingClientRect(),out={};for(let y=160;y<r.height-110;y+=16)for(let x=20;x<r.width-20;x+=16){const el=document.elementFromPoint(r.x+x,r.y+y);if(el?.closest('button,[role="button"],dialog'))continue;const t=farmDigTarget(a.game,{x:v.x+x/r.width*v.w,y:v.y+y/r.height*v.h},v),kind=t.reason?'invalid':'valid';if(!out[kind]&&t.point&&!('id'in t.point))out[kind]={x:r.x+x,y:r.y+y};}return out;});

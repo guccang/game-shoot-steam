@@ -2,10 +2,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress} from '../src/progression/progress.js';
-import {createWorkshopTrial} from '../src/core/workshop-trial.js';
+import {createWorkshopTrial} from '../src/core/workshop/workshop-trial.js';
 import {WEAPONS} from '../src/config/weapons.js';
 import {WEAPON_TRIAL_SCENES,TRIAL_ORIGIN,TRIAL_RADIUS} from '../src/config/weapon-trial-scenes.js';
-import {previewWorkshop} from '../src/progression/workshop.js';
+import {previewWorkshop} from '../src/progression/workshop/workshop.js';
 // 场景通过正式工坊工厂创建。
 const trial=(index,p=freshProgress())=>createWorkshopTrial(p,'weapons',index,false,{scene:true});
 // 小步推进真实战斗，不跳过蓄能、换弹和死亡回收。

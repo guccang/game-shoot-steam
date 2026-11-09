@@ -5,11 +5,11 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {MAINLINE_IDS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
-import {acceptNextClearing} from '../src/core/living-world.js';
-import {finishClearingNavigation} from '../src/core/clearing-completion.js';
-import {worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
-import {updateMainline,recordMainlineEvent,completeMainline} from '../src/core/mainline-manager.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {acceptNextClearing} from '../src/core/camp/living-world.js';
+import {finishClearingNavigation} from '../src/core/story/clearing-completion.js';
+import {worldNavigationObjective,requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {updateMainline,recordMainlineEvent,completeMainline} from '../src/core/story/mainline-manager.js';
 
 // 使用真实进度与固定随机序列，只补任务前置，不预填清缴完成记录。
 function scene(id){

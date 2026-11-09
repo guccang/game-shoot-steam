@@ -6,7 +6,7 @@ import {BOSSES} from '../src/config/bosses.js';
 import {BOSS_SPECIAL_SKILLS,nextBossSkill} from '../src/config/boss-skills.js';
 import {bossSkillHazards,bossSkillTouches} from '../src/combat/boss-skills.js';
 import {updateBoss,updateBossHazards} from '../src/combat/bosses.js';
-import {beginBossSupport,updateBossSupport,dismissBossSummons} from '../src/core/boss-reinforcements.js';
+import {beginBossSupport,updateBossSupport,dismissBossSummons} from '../src/core/battle/boss-reinforcements.js';
 import {summonClearingBossAtNode} from './helpers/clearing-scene.mjs';
 import {STORY_CHAPTER} from '../src/config/story.js';
 import {ARMORED} from '../src/config/armored-enemies.js';

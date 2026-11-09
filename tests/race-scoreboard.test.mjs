@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {finishRace} from '../src/core/forest-race.js';
+import {finishRace} from '../src/core/activities/forest-race.js';
 import {drawRestorationObject} from '../src/rendering/town-restoration.js';
 
 test('两场完赛分别保留最好名次和最快时间，失败与重复结算不增加记录',()=>{

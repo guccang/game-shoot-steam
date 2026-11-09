@@ -18,7 +18,7 @@ async original=>{
   for(const q of quests){
    await page.evaluate(async q=>{
     for(const d of document.querySelectorAll('dialog[open]'))d.close();
-    const posts=await import('/src/core/story-posts.js');Object.assign(a.game.player,posts.storyPostApproach(posts.storyPostForChapter(a.game,q.chapter)));
+    const posts=await import('/src/core/story/story-posts.js');Object.assign(a.game.player,posts.storyPostApproach(posts.storyPostForChapter(a.game,q.chapter)));
     a.game.state='playing';a.workshop.open(q.kind,q.index);a.refresh();
    },q);
    await page.locator('#ws-story-condition').waitFor({state:'visible'});
@@ -37,7 +37,7 @@ async original=>{
     for(const d of document.querySelectorAll('dialog[open]'))d.close();
     Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});
     a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);
-    const posts=await import('/src/core/story-posts.js');Object.assign(a.game.player,posts.storyPostApproach(posts.storyPostForChapter(a.game,'equipment-red-wolf')));
+    const posts=await import('/src/core/story/story-posts.js');Object.assign(a.game.player,posts.storyPostApproach(posts.storyPostForChapter(a.game,'equipment-red-wolf')));
     a.game.state='playing';a.workshop.open('vehicle',6);a.refresh();
    },time);
    await page.locator('#ws-story-condition').tap();await page.locator('[data-selected-story="equipment-red-wolf"]').scrollIntoViewIfNeeded();

@@ -1,4 +1,4 @@
-// 牛蹄是整组的落地点。猫先在后方绘制，扶柄、犁铧和牛按前后关系叠放。
+// 牛蹄是整组的落地点。骑手先在牛背绘制，再叠放挽具、犁铧和牛头以遮住腿部。
 import {drawLivestock} from './livestock-atlas.js';
 import {oxHandler} from '../config/pasture.js';
 

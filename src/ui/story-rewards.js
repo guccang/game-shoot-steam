@@ -1,11 +1,12 @@
+import {escapeHtml as esc} from './shared/html.js';
 import { HELP_EMBLEM } from './help-emblem.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 // 故事奖励展示只读取配置和永久记录，首通、重玩与整组领取保持同一来源。
 import {storyTypeIcon} from './story-icons.js';
 import {resourceIcon,resourceName} from '../rendering/resource-icons.js';
-import {storyCollectionStatus,ownsStoryEquipment,storyEquipmentName,storyCollectionChoice} from '../progression/story-rewards.js';
+import {storyCollectionStatus,ownsStoryEquipment,storyEquipmentName,storyCollectionChoice} from '../progression/story/story-rewards.js';
 // 所有配置文案按普通文本转义，避免把装备名字解释为 HTML。
-const esc=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 单篇主视图只展示本次可领取的资源；首通和重玩解释移到说明页。
 export function storyRewardMarkup(def,record){
  if(record?.rewardClaimed)return '';

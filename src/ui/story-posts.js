@@ -1,9 +1,9 @@
 import {sceneHit,placeSceneHit} from './scene-hit.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 // 世界任务标记投影到正式建筑上；点击和E键共用距离权限，不出现泛营地底部按钮。
-import {worldStoryPosts,canUseStoryPost,canManageStoryPost,nearbyStoryPost,storyPostApproach} from '../core/story-posts.js';
+import {worldStoryPosts,canUseStoryPost,canManageStoryPost,nearbyStoryPost,storyPostApproach} from '../core/story/story-posts.js';
 import {createEventScope} from '../platform/events.js';
-import {nearbyLivingInteraction} from '../core/living-world.js';
+import {nearbyLivingInteraction} from '../core/camp/living-world.js';
 // 每个配置地点复用一个可访问按钮，卸载时清理监听和DOM。
 export function createStoryPostMarkers({game,root,renderer,open}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),nodes=new Map();

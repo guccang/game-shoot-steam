@@ -1,6 +1,6 @@
 // 收获超载沿用统一手机确认底板；取消保留田里的作物，确认仅授权当前这一份。
 import {createEventScope} from '../platform/events.js';
-import {resolveHarvestLoad} from '../core/farm.js';
+import {resolveHarvestLoad} from '../core/farming/farm.js';
 import {FARM_CROPS} from '../config/farm.js';
 
 // 持有当前农活引用，防止旧弹窗确认到换图、换工具后的另一份收获。
@@ -14,7 +14,7 @@ export function createFarmHarvestConfirm({game,root,dialogs,onChange,onNotice}){
   const job=game.farmWork?.job,request=job?.loadRequest;if(panel.open||pending||!request||game.state!=='playing'||game.farmWork.autoCombat||root.querySelector('dialog[open]'))return;
   show(request,allow=>resolveHarvestLoad(game,job,allow));
  }
- // 车上直接点击与步行队列共用超载提示，关闭后才重新校验并提交。
+ // 农活队列等待玩家决定，关闭后重新校验并提交。
  function show(request,resolve){
   if(panel.open||pending)return;
   pending=resolve;accepted=false;const l=request.load;
@@ -29,5 +29,5 @@ export function createFarmHarvestConfirm({game,root,dialogs,onChange,onNotice}){
  scope.on(panel,'close',()=>{if(panel.open)return;const resolve=pending,allow=accepted;pending=null;accepted=false;if(!resolve)return;const result=resolve(allow);if(!result.ok||!allow)onNotice?.(result.message);onChange();});
  // 离开页面不提交尚未确认的收获。
  function dispose(){pending=null;scope.dispose();panel.remove();}
- return {render,show,dispose};
+ return {render,dispose};
 }

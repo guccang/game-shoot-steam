@@ -1,12 +1,12 @@
 // 生活短句仅来自镜头中的居民，以头顶小气泡展示口头禅，不移动镜头或阻挡操作。
-import {campConversation,campResidentsVisible} from '../core/camp-routines.js';
+import {campConversation,campResidentsVisible} from '../core/camp/camp-routines.js';
 import {createCompactSpeech} from './compact-speech.js';
 import {sceneLayout} from './scene-layout.js';
 import {sceneResident} from './scene-resident.js';
-import {mainlineObjective} from '../core/mainline-manager.js';
+import {mainlineObjective} from '../core/story/mainline-manager.js';
 import {RESIDENT_CHATTER} from '../config/resident-chatter.js';
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
-import {livingResidents} from '../core/living-world.js';
+import {livingResidents} from '../core/camp/living-world.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 // 单泡限频，暂停与剧情时隐藏；同一居民轮换台词，避免连续重复。
 export function createResidentChatter({game,root,renderer,random=Math.random}){

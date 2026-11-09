@@ -11,7 +11,7 @@ async original=>{
     const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);
     g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.vehicle.active=false;g.enemies=[];
     const layout=(await import('/src/config/workshop-interiors.js')).interiorLayout({kind});Object.assign(g.player,layout.door);
-    if(!(await import('/src/core/cottage.js')).enterWorkshop(g,kind))throw Error('进店失败 '+kind);
+    if(!(await import('/src/core/home/cottage.js')).enterWorkshop(g,kind))throw Error('进店失败 '+kind);
     g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time).start+1000;
     (await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);
     a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();

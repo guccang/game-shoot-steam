@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {skipArrivalJourney,completeArrivalLetter} from '../src/core/ranger-arrival.js';
+import {skipArrivalJourney,completeArrivalLetter} from '../src/core/camp/ranger-arrival.js';
 import {arrivalWorkshopGuide} from '../src/ui/arrival-workshop-guide.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
-import {storyRouteState,storyRouteDots} from '../src/core/story-route.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
+import {storyRouteState,storyRouteDots} from '../src/core/navigation/story-route.js';
 
 // 从正式交接入口进入来信任务，不伪造阶段或赠品。
 function waiting(){const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);return g;}

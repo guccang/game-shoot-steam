@@ -5,13 +5,13 @@ import {Game,freshProgress} from '../src/game.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 import {waveDifficulty,clearingWaveBudget,WAVE_ARRIVAL} from '../src/config/waves.js';
 import {ENCOUNTERS} from '../src/config/encounters.js';
-import {updateEncounters,resetEncounters} from '../src/core/encounter-manager.js';
-import {findNearbyArrivalSpot} from '../src/core/enemy-arrival.js';
+import {updateEncounters,resetEncounters} from '../src/core/battle/encounter-manager.js';
+import {findNearbyArrivalSpot} from '../src/core/battle/enemy-arrival.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {terrainLineClear,terrainBlocked} from '../src/physics/terrain-navigation.js';
 import {BIOMES,enemyIdentity,biomeAt} from '../src/world/biomes.js';
 import {livingSafePoint} from '../src/world/living-spaces.js';
-import {recycleEnemies} from '../src/core/enemy-manager.js';
+import {recycleEnemies} from '../src/core/battle/enemy-manager.js';
 import {forestReward} from '../src/config/economy.js';
 import {CLEARING_DENSITY} from '../src/config/clearing-difficulty.js';
 // 使用实际清缴场与正式游戏工厂，不绕过真实奖励和死亡流程。

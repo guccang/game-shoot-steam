@@ -5,7 +5,7 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {BOSSES,nextBoss,bossProfile} from '../src/config/bosses.js';
 import {updateBoss,updateBossHazards} from '../src/combat/bosses.js';
 import {riverXAt,isWaterBlocked} from '../src/world/river-geometry.js';
-import {restoreBoss} from '../src/core/boss-manager.js';
+import {restoreBoss} from '../src/core/battle/boss-manager.js';
 
 // 测试在干地隔离刷怪与自动攻击，但保留正式攻击状态机和危险区判定。
 function arena(){

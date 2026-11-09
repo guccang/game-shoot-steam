@@ -8,7 +8,7 @@ import {fireBallistics} from '../src/combat/ballistics.js';
 import {cutWithChainsaw} from '../src/combat/melee.js';
 import {explodeGrenade} from '../src/combat/grenades.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
-import {updateEnemies} from '../src/core/enemy-manager.js';
+import {updateEnemies} from '../src/core/battle/enemy-manager.js';
 import {worldDistance} from '../src/world/coordinates.js';
 const heights=[0,80,300,600];
 // 开放平台隔离地形与故事，在相同水平坐标对比不同高度，保留正式弹道和伤害入口。

@@ -2,7 +2,7 @@
 import {nearest,worldDistance} from '../../world/coordinates.js';
 import {SpatialGrid} from '../../world/spatial-grid.js';
 import {questLineClear} from '../../physics/quest-route.js';
-import {createRouteSession,advanceRouteSession} from '../../core/quest-navigation-cache.js';
+import {createRouteSession,advanceRouteSession} from '../../core/navigation/quest-navigation-cache.js';
 const paths=new WeakMap();
 // 玩家能贴近围栏的空隙未必容得下母体；在玩家同侧选择可站立的近邻落点。
 function followAnchor(owner,body,index){

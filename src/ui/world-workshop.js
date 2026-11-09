@@ -1,6 +1,6 @@
 // 建筑本体与门前空地都是透明入口，短按走到门口，拖动继续使用摇杆。
-import {CLICK_BUILDINGS,clickableBuildings,buildingContains,buildingClickHeight,approachBuilding,approachMineEntrance} from '../core/scene-approach.js';
-import {mineShaftObjects} from '../core/mining.js';
+import {CLICK_BUILDINGS,clickableBuildings,buildingContains,buildingClickHeight,approachBuilding,approachMineEntrance} from '../core/navigation/scene-approach.js';
+import {mineShaftObjects} from '../core/mining/mining.js';
 import {MINE_ENTRANCE,mineEntranceContains} from '../world/mine-entrances.js';
 import {SCENE_APPROACH} from '../config/scene-approach.js';
 import {facilityOpen} from '../config/town-restoration.js';

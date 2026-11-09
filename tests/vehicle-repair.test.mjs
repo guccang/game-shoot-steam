@@ -3,17 +3,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {ownedPineProgress} from './helpers/owned-pine-progress.mjs';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {absorbVehicleHit,updateVehicle} from '../src/combat/vehicle.js';
 import {REPAIR_CENTER,REPAIR_BAY} from '../src/config/vehicle-repair.js';
 import {economyFor} from '../src/config/economy.js';
-import {vehicleRepairQuote,requestVehicleRepair,collectRepairedVehicle,updateVehicleRepair,vehicleService} from '../src/core/vehicle-repair.js';
+import {vehicleRepairQuote,requestVehicleRepair,collectRepairedVehicle,updateVehicleRepair,vehicleService} from '../src/core/vehicles/vehicle-repair.js';
 import {blocked} from '../src/physics/motion.js';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
 import {vehicleServiceObjects} from '../src/rendering/vehicle-repair.js';
-import {parkedOwned} from '../src/core/camp-parking.js';
+import {parkedOwned} from '../src/core/vehicles/camp-parking.js';
 import {farmLandReason} from '../src/world/farm-land.js';
-import {startFireRescue} from '../src/core/fire-rescue.js';
+import {startFireRescue} from '../src/core/activities/fire-rescue.js';
 // 测试使用真实游戏对象和自有车，避开入职演出，不使用替代业务实现。
 function game(){const p=ownedPineProgress();p.coins=100000;const g=new Game(p);g.state='playing';Object.assign(g.player,{x:220,y:835});g.trees=[];g.enemies=[];g.boss=null;return g;}
 // 用正式受伤入口建立残骸，溢出伤害不损伤猫猫。

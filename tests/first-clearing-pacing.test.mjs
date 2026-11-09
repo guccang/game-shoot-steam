@@ -5,8 +5,8 @@ import {enterClearing} from './helpers/clearing-scene.mjs';
 import {waveDifficulty,CLEARING_QUOTA_VERSION,clearingWaveBudget,clearingKillReward} from '../src/config/waves.js';
 import {clearingEnemyHealth} from '../src/config/clearing-damage.js';
 import {clearingBossHealth,CLEARING_BOSS_HEALTH_VERSION} from '../src/config/clearing-boss.js';
-import {validatePatrol} from '../src/progression/patrol-progress.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {validatePatrol} from '../src/progression/battle/patrol-progress.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {waveProgressState} from '../src/ui/wave-progress.js';
 

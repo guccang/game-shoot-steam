@@ -29,7 +29,7 @@ async page=>{
   await t.locator('#vehicle-button').tap();
   const route=await t.evaluate(async()=>{
    arrivalTick(.05);a.game.attackTimer=999;
-   const start={x:a.game.player.x,y:a.game.player.y},{storyRouteState,visibleRouteDots}=await import('/src/core/story-route.js');
+   const start={x:a.game.player.x,y:a.game.player.y},{storyRouteState,visibleRouteDots}=await import('/src/core/navigation/story-route.js');
    let state,dots=[];for(let i=0;i<60;i++){arrivalTick(.05);a.refresh();a.renderer.draw();state=storyRouteState(a.game);dots=visibleRouteDots(state,a.renderer.view);if(dots.length)break;}
    if(a.game.progress.arrival.phase!=='gather'||!state?.reachable||!dots.length)throw Error('静止时没有采木路点');
    if(start.x!==a.game.player.x||start.y!==a.game.player.y)throw Error('观察期间玩家发生移动');

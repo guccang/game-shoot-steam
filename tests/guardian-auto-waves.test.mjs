@@ -2,9 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
-import { updateRealm } from '../src/core/realm-manager.js';
+import { updateRealm } from '../src/core/realms/realm-manager.js';
 import { GUARDIAN_REST_SECONDS } from '../src/config/realms.js';
-import { validateRealms } from '../src/progression/realm-progress.js';
+import { validateRealms } from '../src/progression/realms/realm-progress.js';
 
 // 使用正式清波事务创建已结算的休整阶段，保留部署与站位。
 function resting() {

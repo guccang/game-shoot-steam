@@ -1,3 +1,5 @@
+
+import {drawCampFoundation} from './camp-land.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import {
@@ -23,7 +25,7 @@ import { drawActionCountdown } from './action-countdown.js';
 // 关联原实体，不在废墟下面叠画完整建筑；已解锁时交还原绘制器。
 // 共用绘制与动作输入，风格差异由配置提供。
 export function restorationForObject(item) {
-  let id = null;
+  let id = ({'outdoor-shop':'outdoor','ammo-shop':'ammo','cat-home':'cat-home','furniture-shop':'furniture','construction-company':'construction','repair-center':'repair','repair-center-back':'repair'})[item.type]|| (item.type==='industry'?item.id:null);
   if (item.type === 'scenery' && item.kind === 'garage') id = 'garage';
   else if (item.type === 'scenery' && item.kind === 'cottage' && !item.workshop) id = 'cottage';
   else if (item.type === 'realm-entrance') id = item.mode;
@@ -247,6 +249,8 @@ export function drawRestorationObject(c, item, game, night = 0, player = null) {
   if (!f) return false;
   const ready = facilityOpen(game.progress, f.id);
   if (ready && !f.extra) return false;
+  if(!ready&&item.type==='repair-center-back'&&game.progress.restoration?.build?.id!==f.id)return true;
+  if(!ready&&game.progress.restoration?.build?.id!==f.id){drawCampFoundation(c,item,f.name,night);return true;}
   if (restorationBuildingVisible(game, f.id) && !f.extra) {
     return false;
   }

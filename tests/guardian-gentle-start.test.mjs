@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {realmStageSpec} from '../src/config/realms.js';
-import {syncRealm} from '../src/core/realm-manager.js';
+import {syncRealm} from '../src/core/realms/realm-manager.js';
 
 // 固定随机序列保留真实地形、怪物、弹药与伤害，不解锁或升级任何装备。
 function beginner(seed){

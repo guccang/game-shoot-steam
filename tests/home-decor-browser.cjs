@@ -6,7 +6,7 @@ async original=>{
  // 断言同时记录阶段，失败时明确给出操作原因。
  function check(ok,message){if(!ok)throw Error(message);}
  // 使用正式已修复小屋入口，仅测试夹具给足金币和已完成主线。
- async function enter(){await page.locator('#start').click();await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game;g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=99999;g.vehicle.active=false;Object.assign(g.player,(await import('/src/config/cottage.js')).COTTAGE.door);if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('正式入室失败');a.refresh();});await page.locator('#home-decor-open').waitFor({state:'visible'});}
+ async function enter(){await page.locator('#start').click();await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game;g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=99999;g.vehicle.active=false;Object.assign(g.player,(await import('/src/config/cottage.js')).COTTAGE.door);if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('正式入室失败');a.refresh();});await page.locator('#home-decor-open').waitFor({state:'visible'});}
  // 通过真实触摸坐标选择家具落点，不直接修改布局状态。
  async function place(x,y){const box=await page.locator('#home-preview').boundingBox();await page.locator('#home-preview').tap({position:{x:x/360*box.width,y:y/360*box.height}});}
  // 家具购买迁到新店，布置仍在家中；往返使用正式门口与出口计时。

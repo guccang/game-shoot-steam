@@ -11,9 +11,9 @@ async original=>{
     p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';
     const g=a.game;g.progress=validateProgress(p);g.reset();a.menu.enter();g.start();g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=9999;if(mounted&&!g.summonVehicle())throw Error('召唤失败');
     Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);
-    if(!g.enterRealm('rogue'))throw Error('进入远征失败');const {rollRealmEquipment,readyRealm}=await import('/src/core/realm-manager.js');rollRealmEquipment(g,'weapon');rollRealmEquipment(g,'vehicle');readyRealm(g);g.chooseRealmBlessing(g.realm.offers[0]);if(!mounted&&g.vehicle.active)g.dismountVehicle();
+    if(!g.enterRealm('rogue'))throw Error('进入远征失败');const {rollRealmEquipment,readyRealm}=await import('/src/core/realms/realm-manager.js');rollRealmEquipment(g,'weapon');rollRealmEquipment(g,'vehicle');readyRealm(g);g.chooseRealmBlessing(g.realm.offers[0]);if(!mounted&&g.vehicle.active)g.dismountVehicle();
     // 布局验收冻结战斗模拟，使用正式第五层与领主生成，不改变 HUD 和绘制路径。
-    const {beginRealmStage,updateRealm}=await import('/src/core/realm-manager.js');g.realm.stage=5;beginRealmStage(g);g.realm.warning=0;g.realm.spawned=g.realm.spec.total-1;g.realm.kills=g.realm.spec.total-1;g.realm.spawnTimer=0;updateRealm(g,.1);g.update=()=>{};a.refresh();
+    const {beginRealmStage,updateRealm}=await import('/src/core/realms/realm-manager.js');g.realm.stage=5;beginRealmStage(g);g.realm.warning=0;g.realm.spawned=g.realm.spec.total-1;g.realm.kills=g.realm.spec.total-1;g.realm.spawnTimer=0;updateRealm(g,.1);g.update=()=>{};a.refresh();
    },{time,mounted});
    if(await page.locator('#realm-dialog').evaluate(e=>e.open))await page.locator('[data-realm-resume]').tap();
    await page.waitForTimeout(250);

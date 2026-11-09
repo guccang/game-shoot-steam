@@ -1,5 +1,5 @@
 // 靠近后的明确点击入口：复用手机按钮材质，鼠标、触屏和键盘共用一次动作。
-import {nearbyInteraction} from '../core/nearby-interaction.js';
+import {nearbyInteraction} from '../core/navigation/nearby-interaction.js';
 import {createEventScope} from '../platform/events.js';
 import {nearbyInteractionAnchor,projectInteractionAnchor} from '../world/interaction-anchors.js';
 import {sceneLayout} from './scene-layout.js';

@@ -7,11 +7,11 @@ import {NATURAL_TERRAIN,touchesLandform} from '../src/world/natural-terrain.js';
 import {JIUZHAIGOU_LAKES} from '../src/world/jiuzhaigou.js';
 import {mineSurfaceAt} from '../src/world/mine-surface.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {normalizeOutdoors} from '../src/progression/outdoors.js';
+import {normalizeOutdoors} from '../src/progression/activities/outdoors.js';
 import {CREATURE_ENTRIES,CREATURE_FISH,CREATURE_MONSTERS} from '../src/config/creature-codex.js';
 import {Game} from '../src/core/game.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {finishFishing,sellOutdoorFish} from '../src/core/outdoors.js';
+import {finishFishing,sellOutdoorFish} from '../src/core/activities/outdoors.js';
 // 使用真正自由巡林场景与原子保存，只准备上岸待结算鱼以隔离新增记录事务。
 function caughtScene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';const g=new Game(p,()=>.4);g.state='playing';g.mainlineSpeech=null;g.cottage=null;g.vehicle.active=false;g.livingPersist=()=>true;g.fishing={phase:'landed',species:0,size:31.5};return g;}
 // 鱼体取多个边缘点，验证持续游动而非出现一次，并避免游上岸。

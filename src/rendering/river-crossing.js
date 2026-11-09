@@ -2,7 +2,7 @@ import { onArtStyleChange } from '../art-styles/state.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { RIVER_DOCKS } from '../config/river-crossing.js';
-import { storyWorldBarriers } from '../core/story-world.js';
+import { storyWorldBarriers } from '../core/story/story-world.js';
 import { box, oval, poly } from './primitives.js';
 import { canvasFont } from './text-style.js';
 

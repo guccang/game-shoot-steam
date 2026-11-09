@@ -7,7 +7,7 @@ import {MAINLINE_SITES,MAINLINE_NPCS} from './mainline.js';
 import {COLLECTED_VEHICLES} from './vehicles.js';
 import {WEAPONS} from './weapons.js';
 import {CAMP_GATES} from './camp-defense.js';
-import {MAINLINE_SEEN} from '../progression/mainline-progress.js';
+import {MAINLINE_SEEN} from '../progression/story/mainline-progress.js';
 import {FARM_CROPS} from './farm.js';
 import {HEROES} from './heroes.js';
 

@@ -1,3 +1,4 @@
+import {REGIONAL_CAMPS,regionalBuildings} from './regional-camps.js';
 // 世界建筑实体目录：底座锚点、墙体和开放车库通道共用周期坐标。
 import {TOWN_LAYOUT} from './town-layout.js';
 import {REPAIR_CENTER} from './vehicle-repair.js';
@@ -7,6 +8,9 @@ import {LEGENDARY_WORKSHOP} from './legendary-workshop.js';
 import {LIVING_PLACES} from './living-world.js';
 // 矩形为相对底座的实体墙面；门前进屋点始终留在实体外侧。
 export const WORLD_BUILDINGS=[
+ ...REGIONAL_CAMPS.flatMap(c=>regionalBuildings(c).map(b=>({...b,regional:true,rects:[[-(b.kind==='legendary'?101:b.kind==='seed'?54:70),-105,b.kind==='legendary'?108:b.kind==='seed'?54:70,5]]}))),
+ {id:'refinery',...TOWN_LAYOUT.refinery,rects:[[-92,-118,92,4]]},
+ {id:'factory',...TOWN_LAYOUT.factory,rects:[[-92,-118,92,4]]},
  {id:'outdoor',...TOWN_LAYOUT.outdoor,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {id:'ammo',...TOWN_LAYOUT.ammo,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {id:'cat-home',...TOWN_LAYOUT.catHome,rects:[[-67,-93,69,5]]},
@@ -15,7 +19,8 @@ export const WORLD_BUILDINGS=[
  {id:'furniture',...TOWN_LAYOUT.furniture,rects:[[-63,-84,65,5]]},
  {id:'construction',...TOWN_LAYOUT.construction,rects:[[-66,-92,66,6]]},
  {id:'cottage',...TOWN_LAYOUT.cottage,rects:[[-60,-98,70,0]]},
- {id:'weapons',...TOWN_LAYOUT.weapons,rects:[[-68,-98,70,6]]},
+ // 武器工坊旧屋始终占地，修复只开放功能，不能突然把墙体生成在猫猫脚下。
+ {id:'weapons',...TOWN_LAYOUT.weapons,solidBeforeRepair:true,rects:[[-68,-98,70,6]]},
  {id:'vehicle',...TOWN_LAYOUT.garage,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {...REPAIR_CENTER,id:'repair',rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},
  {...FARM_SEED_SHOP,id:'seed',rects:[[-54,-86,54,5]]},

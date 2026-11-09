@@ -21,7 +21,7 @@
 验收通过：上车与停车入屋相关19项定向用例通过，覆盖四周接近、范围内移动、离开重置、暂停冻结、下车防回车、库门与墙体阻挡。
 正式浏览器验证320、390、844横屏、900纵屏的昼夜画面，实际键盘移动接近侧面触发倒计时，侧面与车尾均可完成上车；点击不跳过计时，暂停恢复、下车后离开再靠近及读档清除半程计时均通过，无浏览器错误。
 截图与运行记录保存在output/playwright/nearby-vehicle-boarding/，包括side-walk-countdown.png、board-320-night.png、board-844-night.png及result.txt。已复核窄屏夜间画面：车旁显示“靠近1秒上车”，倒计时徽记完整可见。
-正式入口：src/core/vehicle-boarding.js、src/rendering/player-action-countdown.js。
+正式入口：src/core/vehicles/vehicle-boarding.js、src/rendering/player-action-countdown.js。
 designCriterion：nearby-vehicle-boarding。
 
 2026-11-01 一秒等待修正验收：14项上车定向测试通过，新增首帧零进度、完整一秒边界、长帧与无效时间、重新靠近清零检查。四种手机尺寸昼夜浏览器验证共17个检查点通过，8次上车均在靠近超过1000ms后完成，无页面错误。复核320夜间与390白天截图，1s徽记清楚可见；正式绘制器、资源和布局未修改。证据沿用上述目录。

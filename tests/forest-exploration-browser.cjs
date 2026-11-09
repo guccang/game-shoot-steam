@@ -27,7 +27,7 @@ async page=>{
  const before=await page.evaluate(async()=>(await import('/src/main.js')).application.game.waveWarning);
  await page.waitForTimeout(500);
  if(await page.evaluate(async()=>(await import('/src/main.js')).application.game.waveWarning)!==before)throw Error('营地仍在倒计时');
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;Object.assign(a.game.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/clearing-site.js')).clearingSite(a.game.progress)));a.refresh();});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;Object.assign(a.game.player,((s)=>({x:s.x,y:s.y}))((await import('/src/progression/story/clearing-site.js')).clearingSite(a.game.progress)));a.refresh();});
  await page.waitForTimeout(450);if(!await page.locator('#quest').isVisible())throw Error('清缴场缺少波次节点');
  await page.screenshot({path:'output/playwright/forest-exploration/clearing.png'});
  const samples=[];
@@ -38,7 +38,7 @@ async page=>{
    await page.evaluate(async time=>{const a=(await import('/src/main.js')).application,g=a.game;
     Object.assign(g.player,{x:650,y:1940});g.enemies=[];g.progress.living.patrolActive=false;g.mainlineTalkDelay=999;
     g.progress.living.calendar={day:1,elapsed:time==='day'?500000:1000000};a.environment.weather='sun';a.environment.autoWeather=false;
-    const {livingResidents}=await import('/src/core/living-world.js');livingResidents(g);
+    const {livingResidents}=await import('/src/core/camp/living-world.js');livingResidents(g);
     a.refresh();
    },time);
    await page.waitForTimeout(1200);

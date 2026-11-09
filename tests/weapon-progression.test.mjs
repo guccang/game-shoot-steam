@@ -1,5 +1,5 @@
 import {summonBossAtNode} from './helpers/boss-node.mjs';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 // 武器获取门槛回归：资源与永久战绩同时达标，失败事务不扣费。
 import test from 'node:test';
 import assert from 'node:assert/strict';

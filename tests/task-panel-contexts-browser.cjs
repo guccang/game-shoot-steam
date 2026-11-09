@@ -14,7 +14,7 @@ async page=>{
   if(state.dialog!==expected||state.navigation)throw Error(phase+JSON.stringify(state));results.push({phase,...state});
  }
  await page.evaluate(async()=>{
-  await taskScene('first-patrol',true);const {clearingSite}=await import('/src/progression/clearing-site.js');
+  await taskScene('first-patrol',true);const {clearingSite}=await import('/src/progression/story/clearing-site.js');
   a.game.progress.living.patrolActive=true;Object.assign(a.game.player,clearingSite(a.game.progress));a.refresh();a.renderer.draw();
  });
  await page.locator('#quest').click({position:{x:12,y:12}});await page.locator('#wave-help-dialog').waitFor({state:'visible'});

@@ -9,6 +9,6 @@ export const WORLD_CODEX=[...CREATURE_ENTRIES,
  ...FARM_CROPS.map((c,index)=>({...c,index,key:'crop:'+c.id,category:'crop',group:FARM_CATEGORIES.find(t=>t.id===c.category)?.name||'作物',portrait:'crop'})),
  ...WEAPONS.map((w,index)=>({...w,index,key:'weapon:'+w.id,category:'weapon',group:w.attackKind==='defense'?'防护装备':'手持武器',portrait:'weapon'})),
  ...VEHICLE_ARMAMENTS.map(w=>({...w,index:w.weaponIndex,key:'armament:'+w.id,category:'weapon',group:'载具专属装备',portrait:'armament'})),
- ...COLLECTED_VEHICLES.map((v,index)=>({...v,index,key:'vehicle:'+v.id,category:'vehicle',group:v.flying?'飞行载具':v.amphibious?'水陆载具':'地面载具',portrait:'vehicle'}))];
+ ...COLLECTED_VEHICLES.map((v,index)=>({...v,index,key:'vehicle:'+v.id,category:'vehicle',group:v.flying?'飞行载具':v.amphibious?'水陆载具':'地面载具',portrait:'vehicle'})).filter(v=>!v.retired)];
 // 展示名变化不会改变条目关联，非法链接返回空值。
 export function worldCodexEntry(key){return WORLD_CODEX.find(e=>e.key===key)||null;}

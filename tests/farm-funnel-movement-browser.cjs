@@ -23,7 +23,7 @@ async original=>{
     await page.keyboard.down('ArrowRight');await page.waitForTimeout(650);await page.keyboard.up('ArrowRight');
     const result=await page.evaluate(async before=>{
      const g=a.game,s=g[g.weapon().controller];
-     if(!(await import('/src/core/farm.js')).farmWorking(g))throw Error('未保持种地模式');
+     if(!(await import('/src/core/farming/farm.js')).farmWorking(g))throw Error('未保持种地模式');
      if(s.time<=before.time+.1)throw Error('种地时飞行时钟冻结');
      if(Math.hypot(g.player.x-before.player.x,g.player.y-before.player.y)<20)throw Error('真实输入未移动');
      if(s.nodes.some(n=>n.targetId!==null||Math.hypot(n.x,n.y)>270))throw Error('伙伴误攻击或未跟随');

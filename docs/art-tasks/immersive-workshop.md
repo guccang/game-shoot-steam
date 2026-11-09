@@ -151,7 +151,7 @@ designCriterion：visual-contract.json 的 workshopCriteria / workshopCases，�
 
 目标：修复靶标无限血量且每帧回血造成的持续攻击首靶。靶标固定 54 耐久，沿用五个原有靶位和正式攻击、致命命中特效、死亡回收与重新索敌；剩余靶位按固定编号保持。被击毁后从画面移除，底栏短标签显示击破数量；再次试射复原全部靶标。保留射程限制，不改变武器属性或远靶距离。靶标击毁不产生金币、木材、材料、熟练度或击杀奖励。
 
-制作路线：仅会话规则和状态文案修改，不新增/修改位图、字体、程序化靶标轮廓、场景或动作。原有透明画布、锚点、分层、材质和配色不变；主画布及施工层仍各 264000 像素以内，无新缓存。正式入口 src/core/workshop-trial.js#createWorkshopTrial、src/rendering/workshop.js#drawWorkshopTrial、src/core/game.js#hit。designCriterion：workshop-trial-targets。验收需实际观察靶标消失、切换攻击目标与计数，并验证当前/试装隔离、重开重置和正式奖励仍正常。
+制作路线：仅会话规则和状态文案修改，不新增/修改位图、字体、程序化靶标轮廓、场景或动作。原有透明画布、锚点、分层、材质和配色不变；主画布及施工层仍各 264000 像素以内，无新缓存。正式入口 src/core/workshop/workshop-trial.js#createWorkshopTrial、src/rendering/workshop.js#drawWorkshopTrial、src/core/game.js#hit。designCriterion：workshop-trial-targets。验收需实际观察靶标消失、切换攻击目标与计数，并验证当前/试装隔离、重开重置和正式奖励仍正常。
 
 ### v04 验收结果（2026-10-22）
 
@@ -170,7 +170,7 @@ designCriterion：visual-contract.json 的 workshopCriteria / workshopCases，�
 
 在 v04 可击毁靶标基础上，十秒试射期间每批五靶全部击破后，同帧在原位置补满一批；单靶死亡不提前补齐。使用新固定编号与相同 54 耐久，原靶位记录清空复用，最多记录五项。保留飞行中弹丸、弹药、装填、武器冷却、真实索敌及独立随机流。计数改为“第 N 批 · 累计击破 N”，重新试射归零，结束或关闭后不继续生成。
 
-仅会话规则和短状态文案变化，无新增/修改美术资源、靶标轮廓、动画、锚点、画布、场景或碰撞。沿用 v04 配色与正式命中/靶标绘制，designCriterion 为 workshop-trial-targets；无需新图集和缓存，画布预算保持小于 5 MiB。正式入口为 src/core/workshop-trial.js#createWorkshopTrial、src/ui/workshop.js#createWorkshop 和原 src/rendering/workshop.js#drawWorkshopTrial。
+仅会话规则和短状态文案变化，无新增/修改美术资源、靶标轮廓、动画、锚点、画布、场景或碰撞。沿用 v04 配色与正式命中/靶标绘制，designCriterion 为 workshop-trial-targets；无需新图集和缓存，画布预算保持小于 5 MiB。正式入口为 src/core/workshop/workshop-trial.js#createWorkshopTrial、src/ui/workshop.js#createWorkshop 和原 src/rendering/workshop.js#drawWorkshopTrial。
 
 ### v05 验收结果（2026-10-22）
 

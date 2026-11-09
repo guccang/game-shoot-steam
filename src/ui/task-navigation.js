@@ -1,5 +1,5 @@
 // 手机任务卡右侧共用寻路开关；不把取消路线当作放弃任务。
-import {taskNavigationEnabled,toggleTaskNavigation} from '../core/task-navigation.js';
+import {taskNavigationEnabled,toggleTaskNavigation} from '../core/navigation/task-navigation.js';
 import {createEventScope} from '../platform/events.js';
 // 不重复设置相同属性，避免每帧使样式失效。
 function attribute(node,name,value){if(node.getAttribute(name)!==value)node.setAttribute(name,value);}

@@ -14,11 +14,11 @@
 ## 实现入口
 
 - `src/config/encounters.js`：独立间隔、数量上限和基础属性倍率。
-- `src/core/encounter-manager.js`：独立计时与出生序号。
+- `src/core/battle/encounter-manager.js`：独立计时与出生序号。
 - `src/core/game.js`：依据主动输入及实际位移推进遭遇。
-- `src/core/enemy-manager.js`：`ambient` 身份及 `wave: 0`，复用战斗和奖励。
-- `src/core/wave-manager.js`：仅统计本波怪物，保持手动领主节点。
-- `src/core/enemy-arrival.js`：共用安全选点，分别传入出生序号。
+- `src/core/battle/enemy-manager.js`：`ambient` 身份及 `wave: 0`，复用战斗和奖励。
+- `src/core/battle/wave-manager.js`：仅统计本波怪物，保持手动领主节点。
+- `src/core/battle/enemy-arrival.js`：共用安全选点，分别传入出生序号。
 
 ## 本次时段切换验收
 

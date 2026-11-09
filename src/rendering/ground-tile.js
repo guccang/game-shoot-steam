@@ -29,6 +29,8 @@ export function* buildGroundTile(spec, mapId, season, transition, old = null, ni
     for (const [dx, dy] of shifts) {
       c.save(); c.translate(dx, dy); c.beginPath(); c.rect(0, 0, WORLD.width, WORLD.height); c.clip();
       const view = { x: spec.x - dx - GROUND_PAD, y: spec.y - dy - GROUND_PAD, w: canvas.width, h: canvas.height };
+      // 首屏不等待整张森林的装饰；各镜像只准备当前裁切及花叶伸出范围，冬景无需点缀。
+      if(mapId!=='jiuzhaigou'&&partSeason!=='winter')yield* prepareSeasonGroundSteps(view);
       const painter = mapId === 'jiuzhaigou' ? paintJiuzhaigouSteps(c, view)
         : paintGroundSteps(c, view, partSeason === 'winter', partSeason, sceneryMask);
       for (const phase of painter) {
@@ -41,7 +43,6 @@ export function* buildGroundTile(spec, mapId, season, transition, old = null, ni
     return canvas;
   }
   try {
-    if (mapId !== 'jiuzhaigou') yield* prepareSeasonGroundSteps();
     if (!tile.day) tile.day = yield* build(season);
     if (transition?.active && !tile.fromDay) {
       const layers = Object.entries(transition.from).filter(([, weight]) => weight > 0);

@@ -1,6 +1,8 @@
+import { visibilityRoute } from './visibility-route.js';
 import { i18nText } from "../i18n/index.js";
 // 自然地貌绕行：小型可见图只在路径被湖山挡住时建立，普通追击仍走直线。
 import { NATURAL_TERRAIN, isNaturalBlocked } from '../world/natural-terrain.js';
+import {mountainPeaks} from '../world/mountain-peaks.js';
 import { isWaterBlocked, BRIDGE } from '../world/river-geometry.js';
 import { nearest, WORLD } from '../world/coordinates.js';
 import { JIUZHAIGOU_TERRAIN, JIUZHAIGOU_SPAWN, valleyBlocked } from '../world/jiuzhaigou.js';
@@ -23,12 +25,15 @@ function routeLineClear(a, b, radius=12) {
 }
 
 // 静态角点用整数周期偏移定位，避免跟随者的小数坐标使同一条缓存边出现浮点尾差。
-function navigationNodes(body) {
+function navigationNodes(body,goal=body,margin=1400) {
   const nodes = [], terrain = body.mapId === 'jiuzhaigou' ? JIUZHAIGOU_TERRAIN : NATURAL_TERRAIN;
-  for (const item of terrain.obstacles) {
+  const nearby=terrain.obstacles.filter(item=>{const p=nearest(item,body),b=item.bounds;return !(p.x+b.x>Math.max(body.x,goal.x)+margin||p.x+b.x+b.w<Math.min(body.x,goal.x)-margin||p.y+b.y>Math.max(body.y,goal.y)+margin||p.y+b.y+b.h<Math.min(body.y,goal.y)-margin);});
+  for (const item of nearby.flatMap(item=>item.regional&&item.kind==='mountain'?mountainPeaks(item):[item])) {
     const cx = item.x + Math.ceil((body.x - item.x) / WORLD.width - .5) * WORLD.width;
     const cy = item.y + Math.ceil((body.y - item.y) / WORLD.height - .5) * WORLD.height;
     const b = item.bounds, pad = 30;
+    // 扩图后只把当前路线附近的山湖加入图，远处数百座山不参与一次局部绕行。
+    if(cx+b.x>Math.max(body.x,goal.x)+margin||cx+b.x+b.w<Math.min(body.x,goal.x)-margin||cy+b.y>Math.max(body.y,goal.y)+margin||cy+b.y+b.h<Math.min(body.y,goal.y)-margin)continue;
     for (const x of [b.x - pad, b.x + b.w + pad]) for (const y of [b.y - pad, b.y + b.h + pad]) {
       const point = { x: cx + x, y: cy + y, mapId: body.mapId, navKey: `${item.id}:${x}:${y}` };
       if (!terrainBlocked(point.x, point.y, 12, body.mapId)) nodes.push(point);
@@ -45,13 +50,13 @@ function navigationNodes(body) {
 // 仅预热静态边；战斗中的动态起终点和搜索顺序仍同步执行，未预热也不延迟单位行动。
 export class NavigationWarmup {
   // 调度状态属于应用实例，静态判定结果由有界缓存跨实例复用。
-  constructor() { this.steps = null; this.key = ''; this.slices = 0; this.maxSliceMs = 0; }
+  constructor() { this.steps = null; this.key = ''; this.slices = 0; this.maxSliceMs = 0; this.completedEdges=0;this.totalEdges=0; }
   // 地图或镜像组合变化时替换未完成批次；已算好的边继续由有界缓存复用。
   prepare(body) {
     const nodes = navigationNodes(body);
     const key = `${body.mapId || 'forest'}:${nodes.map(p => `${p.x},${p.y}`).join(';')}`;
     if (key === this.key) return;
-    this.key = key; this.steps = this.edges(nodes);
+    this.key = key;this.completedEdges=0;this.totalEdges=nodes.length*Math.max(0,nodes.length-1);this.steps = this.edges(nodes);
   }
   // 每条有向边独立让出执行权，缓存的是原采样判定而不是近似导航结果。
   *edges(nodes) {
@@ -59,6 +64,7 @@ export class NavigationWarmup {
       if (a === b) continue;
       const misses = edgeStats.misses;
       routeLineClear(a, b); edgeStats.warmed += edgeStats.misses - misses;
+      this.completedEdges++;
       yield;
     }
   }
@@ -72,6 +78,8 @@ export class NavigationWarmup {
   }
   // 销毁只撤销预热任务，共享缓存仍保持容量上限。
   dispose() { this.steps?.return(); this.steps = null; }
+  // 只统计本次准备的实际有向边，不把运行时间当作完成比例。
+  get progress(){return this.totalEdges?this.completedEdges/this.totalEdges:1;}
   // 诊断区分预热与按需查询，不能将预热时间混入战斗武器阶段。
   stats() { return { ...edgeStats, count: staticEdges.size, limit: STATIC_EDGE_LIMIT,
     pending: !!this.steps, slices: this.slices, maxSliceMs: this.maxSliceMs }; }
@@ -98,7 +106,8 @@ export function nearestDryTerrain(point, reference = point, radius = 12) {
   const blocked = (x, y, r) => terrainBlocked(x, y, r, point.mapId || reference.mapId);
   if (!blocked(point.x, point.y, radius)) return { x: point.x, y: point.y };
   const near = nearest(reference, point), angle = Math.atan2(near.y - point.y, near.x - point.x);
-  for (let distance = 16; distance <= 800; distance += 16) {
+  // 大湖中的旧存档先到本地最近岸边，不因旧800单位上限被送回营地。
+  for (let distance = 16; distance <= 3600; distance += distance<800?16:32) {
     for (let i = 0; i < 32; i++) {
       const a = angle + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * Math.PI / 16;
       const x = point.x + Math.cos(a) * distance, y = point.y + Math.sin(a) * distance;
@@ -116,28 +125,11 @@ function planRoute(body, goal, radius=12) {
   // 每条候选边都检查端点；端点已在障碍内时不存在可行边，直接返回原有等待结果。
   if (terrainBlocked(body.x, body.y, radius, body.mapId) || terrainBlocked(goal.x, goal.y, radius, body.mapId)) return [];
   const nodes = [{ x: body.x, y: body.y, mapId: body.mapId }, { ...goal, mapId: body.mapId }];
-  nodes.push(...navigationNodes(body));
-  const costs = nodes.map(() => Infinity), previous = nodes.map(() => -1), visited = new Set();
-  costs[0] = 0;
-  for (let step = 0; step < nodes.length; step++) {
-    let current = -1;
-    for (let i = 0; i < nodes.length; i++)
-      if (!visited.has(i) && (current < 0 || costs[i] < costs[current])) current = i;
-    if (current < 0 || !Number.isFinite(costs[current])) break;
-    if (current === 1) {
-      const path = [];
-      for (let i = 1; i > 0; i = previous[i]) path.unshift(nodes[i]);
-      return path;
-    }
-    visited.add(current);
-    for (let next = 0; next < nodes.length; next++) {
-      if (visited.has(next)) continue;
-      const distance = Math.hypot(nodes[next].x - nodes[current].x, nodes[next].y - nodes[current].y);
-      if (costs[current] + distance >= costs[next] || !routeLineClear(nodes[current], nodes[next],radius)) continue;
-      costs[next] = costs[current] + distance; previous[next] = current;
-    }
-  }
-  return [];
+  nodes.push(...navigationNodes(body,goal));
+  // 保留原图和逐点碰撞，只对最短路线候选执行通行检查。
+  return visibilityRoute(nodes,
+    (a, b) => Math.hypot(b.x - a.x, b.y - a.y),
+    (a, b) => routeLineClear(a, b, radius));
 }
 
 // 缓存每只单位的绕行点；目标明显移动或路线失效才重规划，抵达角点自动取后续路段。

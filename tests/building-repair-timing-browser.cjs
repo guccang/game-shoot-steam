@@ -16,7 +16,7 @@ async original=>{
     if(id==='weapons'){Object.assign(p.arrival,{phase:'repair',keys:true,x:WORKSHOP.x,y:WORKSHOP.y+25});p.wood=RANGER.repairWood;}else p.wood=f.wood;
     g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.arrivalPersist=g.restorationPersist=()=>true;
     Object.assign(g.player,id==='weapons'?{x:WORKSHOP.x,y:WORKSHOP.y+25}:f.site);
-    const arrival=await import('/src/core/ranger-arrival.js'),town=await import('/src/core/town-restoration.js');
+    const arrival=await import('/src/core/camp/ranger-arrival.js'),town=await import('/src/core/camp/town-restoration.js');
     if(!(id==='weapons'?arrival.advanceArrival(g):town.repairFacility(g,id).ok))throw Error('无法开工 '+id);
     window.updateBuild=id==='weapons'?arrival.updateArrival:town.updateRestoration;
     const initial=id==='weapons'?arrival.workshopBuildView(g).seconds:3;

@@ -1,14 +1,14 @@
 import {traceEnergyShield,energyShieldMeleeTarget} from './energy-shield-surface.js';
-import {bossCombatActive,updateBossEngagement} from '../core/boss-engagement.js';
+import {bossCombatActive,updateBossEngagement} from '../core/battle/boss-engagement.js';
 import {advanceDumplingMotion} from './dumpling-motion.js';
-import {hurtCampBarricade} from '../core/camp-defense.js';
+import {hurtCampBarricade} from '../core/camp/camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { GAMEPLAY_TABLES } from '../config/gameplay-tables.js';
 // 领主状态机与危险区独立于绘制；所有计时均使用有效战斗时间。
 import { bossProfile } from '../config/bosses.js';
 import {nextBossSkill,BOSS_SPECIAL_SKILLS} from '../config/boss-skills.js';
 import {bossSkillHazards,bossSkillTouches} from './boss-skills.js';
-import {beginBossSupport} from '../core/boss-reinforcements.js';
+import {beginBossSupport} from '../core/battle/boss-reinforcements.js';
 import { WORLD, nearest, worldDistance } from '../world/coordinates.js';
 import { moveBody, clearWaterPath } from '../physics/motion.js';
 import { groundPursuit, hoveringOverWater } from '../physics/ground-pursuit.js';

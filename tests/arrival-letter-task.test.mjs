@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {skipArrivalJourney,completeArrivalLetter,arrivalTarget} from '../src/core/ranger-arrival.js';
+import {skipArrivalJourney,completeArrivalLetter,arrivalTarget} from '../src/core/camp/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 // 快速交付原定赠品，保持正式的待阅读状态。
 function waiting(){const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));return g;}

@@ -1,12 +1,12 @@
-import {restoreVehicleService} from './vehicle-repair.js';
+import {restoreVehicleService} from './vehicles/vehicle-repair.js';
 import {farmCovers} from '../world/farm-land.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { createSpiderState } from '../combat/spider.js';
 import { createMechanicalState } from '../combat/mechanical.js';
-import { createCatMotion } from './cat-motion.js';
+import { createCatMotion } from './battle/cat-motion.js';
 // 战场构建模块负责初始实体、运行时容器和树林生成，不承担存档与战斗推进。
-import { resetEncounters } from './encounter-manager.js';
-import { resetWaves } from './wave-manager.js';
+import { resetEncounters } from './battle/encounter-manager.js';
+import { resetWaves } from './battle/wave-manager.js';
 import { createRecoil } from '../combat/recoil.js';
 import { createMagazines } from '../combat/magazine.js';
 import { createVehicle } from '../combat/vehicle.js';
@@ -16,7 +16,7 @@ import { initializeFunnelLoadouts } from '../combat/funnel-loadout.js';
 import { createWeaponCycle } from '../combat/grenades.js';
 import { createPulseState } from '../combat/pulse.js';
 import { CombatFX } from '../combat/effects.js';
-import { forestLayout, biomeAt, terrainNoise } from '../world/biomes.js';
+import { forestLayout, forestLayoutSteps, biomeAt, terrainNoise } from '../world/biomes.js';
 import { updateAimLock } from '../combat/targeting.js';
 import { excludesNaturalScenery } from '../world/natural-terrain.js';
 import { isWaterScenery } from '../world/river-geometry.js';
@@ -88,6 +88,23 @@ export function resetBattlefield(game, continuation = null) {
   // 营地采集树已统一安排在疏林布局的边缘，不再额外生成遮挡小屋和麦田的近景树。
   // 首次进入和死亡续游统一经过预警与外围调度，不再预置五只近身怪物。
   updateAimLock(game, 0);
+}
+
+// 首次加载分批建立布局与树木实体，保留同步重置使用的正式树木入口和身份顺序。
+export function* populateBattlefieldSteps(game){
+ let trees;
+ if(game.mapId==='jiuzhaigou')trees=jiuzhaigouTrees();
+ else{
+  const steps=forestLayoutSteps();let part;
+  do{part=steps.next();if(!part.done)yield .03+.6*part.value;}while(!part.done);
+  trees=part.value;
+ }
+ yield .63;
+ for(const [index,tree] of trees.entries()){
+  game.addTree(tree.x,tree.y,tree);
+  if(index%128===0)yield .63+.3*(index+1)/trees.length;
+ }
+ yield .93;
 }
 
 // 树木初始化与再生统一从此入口生成，避免属性默认值散落。

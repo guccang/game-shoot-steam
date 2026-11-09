@@ -10,14 +10,14 @@ async original=>{
    const p=(await import('/src/progression/progress.js')).freshRangerProgress();p.arrival=null;p.farm.wildMaps=['forest','jiuzhaigou'];
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=g.spawnTimer=999999;g.enemies=[];
    window.tick=g.update.bind(g);g.update=()=>{};
-   (await import('/src/core/wild-farm.js')).ensureWildFarms(g);window.site={...g.progress.farm.plots[0]};window.keep={...g.progress.farm.plots[1]};window.initial=g.progress.farm.plots.length;
+   (await import('/src/core/farming/wild-farm.js')).ensureWildFarms(g);window.site={...g.progress.farm.plots[0]};window.keep={...g.progress.farm.plots[1]};window.initial=g.progress.farm.plots.length;
    Object.assign(g.player,(await import('/src/world/farm-land.js')).farmApproach(g,site),{vx:0,vy:0});
    await (await import('/src/rendering/farm.js')).loadFarmArt();a.renderer.camera.time=null;a.refresh();
    // 游戏历法跳转用于边界验证，环境预览只固定截图光照。
    Object.assign(a.environment,{livingPreview:true,autoTime:false,autoWeather:false,weather:'sun'});
   });
   const before=await page.evaluate(async()=>{
-   const g=a.game,{advanceLivingCalendar}=await import('/src/world/living-calendar.js'),{wildFarmYear}=await import('/src/progression/wild-farm-age.js'),{farmAction}=await import('/src/core/farm.js');
+   const g=a.game,{advanceLivingCalendar}=await import('/src/world/living-calendar.js'),{wildFarmYear}=await import('/src/progression/farming/wild-farm-age.js'),{farmAction}=await import('/src/core/farming/farm.js');
    advanceLivingCalendar(g.progress.living.calendar,wildFarmYear()/2);
    Object.assign(g.player,{x:keep.x,y:keep.y});if(!farmAction(g,'harvest',{plot:keep.id}).ok)throw Error('收获失败');
    g.progress.farm.seeds[0]=1;if(!farmAction(g,'plant',{plot:keep.id,crop:0}).ok)throw Error('播种失败');
@@ -27,7 +27,7 @@ async original=>{
   if(before.count!==before.initial)throw Error('到期前提前清理 '+JSON.stringify(before));
   await page.screenshot({path:'output/playwright/wild-farm-expiry/before.png'});
   const after=await page.evaluate(async()=>{
-   const g=a.game,{setFarmTool,queueFarmWork}=await import('/src/core/farm.js');setFarmTool(g,'hoe');
+   const g=a.game,{setFarmTool,queueFarmWork}=await import('/src/core/farming/farm.js');setFarmTool(g,'hoe');
    if(!queueFarmWork(g,'harvest',{plot:site.id}).ok)throw Error('安排收割失败');g.farmWork.job=g.farmWork.queue.shift();
    (await import('/src/world/living-calendar.js')).advanceLivingCalendar(g.progress.living.calendar,1);tick(.04);a.refresh();
    return {ids:g.progress.farm.plots.map(p=>p.id),job:g.farmWork?.job,queue:g.farmWork?.queue};
@@ -40,7 +40,7 @@ async original=>{
    await page.waitForTimeout(150);await page.screenshot({path:`output/playwright/wild-farm-expiry/after-${time}.png`});
   }
   const restored=await page.evaluate(async()=>{
-   const {validateProgress}=await import('/src/progression/progress.js'),{ensureWildFarms}=await import('/src/core/wild-farm.js');
+   const {validateProgress}=await import('/src/progression/progress.js'),{ensureWildFarms}=await import('/src/core/farming/wild-farm.js');
    a.game.progress=validateProgress(JSON.parse(JSON.stringify(a.game.progress)));ensureWildFarms(a.game);a.refresh();return a.game.progress.farm.plots.map(p=>p.id);
   });
   if(JSON.stringify(restored)!==JSON.stringify(after.ids)||errors.length)throw Error(JSON.stringify({restored,errors}));

@@ -79,3 +79,18 @@
 验收通过。正式入口为 `forestLayout` 和 `Renderer.draw → forestUnderstory → drawScenery`。全图树位 13,317 个。抽样 160 个 390×600 世界单位的视野，其中 150 个包含树或低景。林下摆件复用三种既有图集，按镜头取格，缓存上限 256 格。昼夜实机检查中，猫、坐骑、树干、倒木和花石按脚底落位，手机触控向右骑行约 258 世界单位。野怪驻地、木牌和候车路线的留白检查通过。两套风格的地图预览已刷新并核对依赖指纹。
 
 对应 designCriterion 为 `forest-biome-coherence` 和 `preserved-gameplay`。截图在 `output/playwright/forest-landscape-density/forest-{day,night}-{390,1100}.png`。动作与资源替换项不适用，本轮仅布置既有运行素材。
+
+## 野外营地与生态带
+
+制作阶段为正式 Canvas 布景。以玩家提供的全图截图为对照，远林沿连续的松岭、枫坡和幽林形成长短不一的林带，林带之间留花甸；营地沿林缘与开阔地聚散。地图底色、树种、林下伴生物、营址共用世界坐标。保留近营地手工区域、路桥、站牌、营地存档 ID 和距离等级表。核验全图、手机与大视口昼夜场景、营门距离、树冠净空、所有等级与地图接缝。
+
+验收通过。森林有 185 个营地。按 320 × 300 米统计，180 个样区中有 67 个没有营地，17 个有三个或更多。近郊 14 处支营也已错开。全部营地的木牌、观察点、居民与冷灰堆经正式碰撞检查可达，距离等级覆盖 1–20 级。手机地图实按“前往圈外”后，导航目标与迁移后的观察点一致。
+
+| designCriterion | 正式入口与结果 | 实机证据 |
+| --- | --- | --- |
+| forest-biome-coherence | `forestHabitat → biomeAt / forestLayout / forestUnderstory`。花甸圆冠树、松岭石蕨、枫坡菌丛、柏林倒木沿同一生境场分布。正式地图与实景共享地色；图例列出各区地表特征。 | `output/playwright/forest-habitats/overview-full.png`、`{meadow,pine,amber,deep}-{day,night}-390.png` |
+| preserved-gameplay | `frontierCamps / campVisitorSite`。保留营地账本 ID、种子来源和距离难度；手机点击实测导航成功。角色、怪物、坐骑和小景的地脚关系已复核。 | 同目录 `pine-{day,night}-320.png`、`amber-{day,night}-1080.png`、`comparison.jpg` |
+| winter-snow-surfaces | `drawBiomeGroundSteps → drawHabitatGround`；积雪仅轻染地色，蕨、菌使用已有的植物画法和雪帽。两套风格四季底图从正式绘制器导出。 | `assets/art-styles/{classic,clear}/map-preview/forest-winter.png` |
+| 资源与地貌 | 地色缓存 242 × 182 像素，约 172 KiB。正式森林有 11,617 处树位。景观目录检查发现部分种子的泉边山丘试位耗尽，已补同景点的有界试位，六类景观形态、1,296 种搭配以及湖山避让专项通过。 | `tests/map-expansion.test.mjs`、`tests/landscape-varieties.test.mjs`、`tests/natural-terrain.test.mjs` |
+
+本轮复用已有角色、树冠及地表素材，新增的是布局与局部画法；角色视频、载具部件和武器动作资源替换项不适用。

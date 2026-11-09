@@ -1,6 +1,6 @@
 # 巡林簿：长期成长主线
 
-正式配置：src/config/content/mainline.json；解释器：src/core/mainline-manager.js。运行 node scripts/mainline-doc.mjs 更新任务表。
+正式配置：src/config/content/mainline.json；解释器：src/core/story/mainline-manager.js。运行 node scripts/mainline-doc.mjs 更新任务表。
 
 ## 经济与体验规则
 

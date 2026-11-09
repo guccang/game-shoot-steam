@@ -9,16 +9,16 @@ import {FARM_CROPS} from '../src/config/farm.js';
 import {WEAPONS} from '../src/config/weapons.js';
 import {VEHICLE_ARMAMENTS} from '../src/config/vehicle-armaments.js';
 import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
-import {codexRecord,codexTotals} from '../src/progression/world-codex.js';
-import {normalizeCodexStatistics,codexMonsterKey} from '../src/progression/codex-statistics.js';
-import {farmAction} from '../src/core/farm.js';
-import {hitMineAnimal} from '../src/core/mine-combat.js';
-import {finishFishing} from '../src/core/outdoors.js';
+import {codexRecord,codexTotals} from '../src/progression/player/world-codex.js';
+import {normalizeCodexStatistics,codexMonsterKey} from '../src/progression/player/codex-statistics.js';
+import {farmAction} from '../src/core/farming/farm.js';
+import {hitMineAnimal} from '../src/core/mining/mine-combat.js';
+import {finishFishing} from '../src/core/activities/outdoors.js';
 // 真实自由巡林实例隔离用户进度，保存回调用于故障注入。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.vehicle.active=false;g.enemies=[];g.trees=[];g.livingPersist=()=>true;return g;}
-test('作物、手持、专属主炮和全部载具进入目录，稳定键不冲突',()=>{
+test('作物、手持、专属主炮和现役载具进入目录，稳定键不冲突',()=>{
  assert.equal(new Set(WORLD_CODEX.map(e=>e.key)).size,WORLD_CODEX.length);
- for(const [category,expected] of [['crop',FARM_CROPS.length],['weapon',WEAPONS.length+VEHICLE_ARMAMENTS.length],['vehicle',COLLECTED_VEHICLES.length]])assert.equal(WORLD_CODEX.filter(e=>e.category===category).length,expected);
+ for(const [category,expected] of [['crop',FARM_CROPS.length],['weapon',WEAPONS.length+VEHICLE_ARMAMENTS.length],['vehicle',COLLECTED_VEHICLES.filter(v=>!v.retired).length]])assert.equal(WORLD_CODEX.filter(e=>e.category===category).length,expected);
  assert.ok(WORLD_CODEX.every(e=>e.name&&e.group&&e.portrait));assert.equal(worldCodexEntry('not-found'),null);
 });
 test('旧档保留已有总数、鱼获与装备历史，不从库存捏造作物和怪物明细',()=>{

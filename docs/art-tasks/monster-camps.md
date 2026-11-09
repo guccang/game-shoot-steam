@@ -44,7 +44,7 @@
 | 透明规则 | 程序直接绘制，无不透明贴图地板；接触影单独绘制 |
 | 碰撞与通行 | 低矮摆件均为装饰，警戒边界可走；人物不进入敌人表；保留真实水/山/树碰撞 |
 | 昼夜 | 正式环境日历与 SceneTone 共用；火焰只做局部亮色，减少动态保留稳定火芯 |
-| 文件位置 | `src/config/monster-camps.js`、`src/progression/monster-camps.js`、`src/core/monster-camps.js`、`src/rendering/monster-camps.js`、`src/ui/monster-camps.js` |
+| 文件位置 | `src/config/monster-camps.js`、`src/progression/battle/monster-camps.js`、`src/core/battle/monster-camps.js`、`src/rendering/monster-camps.js`、`src/ui/monster-camps.js` |
 | 内存与缓存 | 新增位图 0 字节、离屏画布 0 个；11 个固定目录记录，每处最多5名额；仅650单位内建立生活实体，远处释放；复用既有怪物缓存 |
 | 资源与失败 | 使用现有怪物/猫/字体资源与正式加载流程；没有新外部图片或隐藏替代图。保存失败保留旧账本和未结算死亡，重试时不重复发种 |
 

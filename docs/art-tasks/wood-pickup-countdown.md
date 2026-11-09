@@ -12,7 +12,7 @@
 
 ## 3 技术交付
 
-沿用木材17逻辑单位图标、每批最多3枚，木材动画总寿命0.7秒。起点为实际砍树位置，终点跟随角色/当前载具位置，世界循环坐标与减少动态选项保持原逻辑。不新增图片、画布、图集或动画缓存。核心入口 src/core/wood-pickup.js#collectAutomaticWood，正式绘制沿用 src/combat/resource-pickup.js 和 src/rendering/resource-pickup.js。
+沿用木材17逻辑单位图标、每批最多3枚，木材动画总寿命0.7秒。起点为实际砍树位置，终点跟随角色/当前载具位置，世界循环坐标与减少动态选项保持原逻辑。不新增图片、画布、图集或动画缓存。核心入口 src/core/inventory/wood-pickup.js#collectAutomaticWood，正式绘制沿用 src/combat/resource-pickup.js 和 src/rendering/resource-pickup.js。
 
 ## 4 动画与保留项
 

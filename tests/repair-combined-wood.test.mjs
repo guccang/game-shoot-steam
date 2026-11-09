@@ -3,16 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,freshRangerProgress,validateProgress} from '../src/progression/progress.js';
-import {constructionWood,spendConstructionWood} from '../src/progression/resource-wallet.js';
-import {repairWoodStatus,woodTaskStatus} from '../src/core/wood-task-status.js';
-import {restorationStatus,repairFacility,updateRestoration} from '../src/core/town-restoration.js';
-import {mainlineSteps,mainlineObjective} from '../src/core/mainline-manager.js';
+import {constructionWood,spendConstructionWood} from '../src/progression/economy/resource-wallet.js';
+import {repairWoodStatus,woodTaskStatus} from '../src/core/inventory/wood-task-status.js';
+import {restorationStatus,repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
+import {mainlineSteps,mainlineObjective} from '../src/core/story/mainline-manager.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
-import {arrivalWorkshopObjective} from '../src/core/ranger-arrival.js';
-import {buildHome} from '../src/core/home-construction.js';
+import {arrivalWorkshopObjective} from '../src/core/camp/ranger-arrival.js';
+import {buildHome} from '../src/core/home/home-construction.js';
 import {HOME_BUILD_PRICES} from '../src/config/home-construction.js';
 // 真实修复现场具备当前任务和保存接口，不跳过施工核心。
 function scene(id='clearing'){const f=TOWN_RESTORATIONS.find(f=>f.id===id),p=freshProgress();p.mainline.completed=MAINLINE_IDS.slice(0,f.order);p.mainline.phase='doing';p.restoration.repaired=TOWN_RESTORATIONS.slice(0,TOWN_RESTORATIONS.indexOf(f)).map(f=>f.id);const g=new Game(p,()=>.5);g.start();Object.assign(g.player,f.site);g.vehicle.active=false;g.enemies=[];g.boss=null;g.attackTimer=999;g.restorationPersist=()=>true;return {g,f};}

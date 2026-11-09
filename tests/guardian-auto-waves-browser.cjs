@@ -18,7 +18,7 @@ async page => {
     const a=(await import('/src/main.js')).application,g=a.game;
     if(g.realm.defenses.length!==1||g.state!=='playing')throw Error('移除状态栏后地面建造失效');
     if(document.querySelector('.guardian-command-bar')||!document.querySelector('.guardian-wave-controls').hidden)throw Error('战斗仍显示常驻状态栏');
-    const {updateRealm}=await import('/src/core/realm-manager.js');
+    const {updateRealm}=await import('/src/core/realms/realm-manager.js');
     g.enemies=[];g.realm.kills=g.realm.spec.total;updateRealm(g,0);a.refresh();
     if(g.realm.restRemaining!==20||g.realm.offers.length)throw Error('未进入20秒无祝福休整');
   });
@@ -41,7 +41,7 @@ async page => {
     const a=(await import('/src/main.js')).application,g=a.game;
     if(g.realm.stage!==2||g.realm.phase!=='combat')throw Error('点击倒计时没有开波');
     if(document.querySelector('dialog[open]'))throw Error('开波仍打开祝福弹窗');
-    const {updateRealm}=await import('/src/core/realm-manager.js');
+    const {updateRealm}=await import('/src/core/realms/realm-manager.js');
     g.enemies=[];g.realm.kills=g.realm.spec.total;updateRealm(g,0);a.refresh();
     return performance.now();
   });
@@ -54,7 +54,7 @@ async page => {
   if(elapsed<19900)throw Error(`二十秒计时过早结束：${elapsed}ms`);
   await page.evaluate(async()=>{
     const a=(await import('/src/main.js')).application,g=a.game;
-    const {updateRealm}=await import('/src/core/realm-manager.js');
+    const {updateRealm}=await import('/src/core/realms/realm-manager.js');
     g.enemies=[];g.realm.kills=g.realm.spec.total;updateRealm(g,0);a.refresh();
   });
   const results=[];

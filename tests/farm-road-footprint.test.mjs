@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {farmOverlapsRoad} from '../src/world/farm-roads.js';
 import {farmLandReason} from '../src/world/farm-land.js';
-import {farmAction,queueFarmWork} from '../src/core/farm.js';
+import {farmAction,queueFarmWork} from '../src/core/farming/farm.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {WORLD} from '../src/world/coordinates.js';
 

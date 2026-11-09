@@ -13,7 +13,7 @@ async original=>{
   });
   // 战斗中仍阻止进店；离开边界使用正常键盘移动，不直接改脱战标记。
   if(!await page.locator('#boss-hud').isVisible())throw Error('交战时Boss条未显示');
-  if(await page.evaluate(async()=>(await import('/src/core/cottage.js')).canEnterCottage(a.game)))throw Error('交战中提前解除进店限制');
+  if(await page.evaluate(async()=>(await import('/src/core/home/cottage.js')).canEnterCottage(a.game)))throw Error('交战中提前解除进店限制');
   await page.evaluate(()=>{a.game.player.x=a.game.boss.x+680;a.renderer.camera.time=null;});
   await page.keyboard.down('d');try{await page.waitForFunction(()=>a.game.boss.disengaged);}finally{await page.keyboard.up('d');}
   await page.waitForFunction(()=>document.getElementById('boss-hud').hidden);if(await page.evaluate(()=>a.game.boss.hp)!==321)throw Error('撤退改变Boss血量');
@@ -30,7 +30,7 @@ async original=>{
   await page.reload();await page.locator('#start').tap();await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;a.game.attackTimer=a.game.spawnTimer=a.game.fireClock=999;a.game.enemies=[];a.game.trees=[];a.game.mainlineSpeech=null;});
   const restored=await page.evaluate(()=>({x:a.game.boss.x,y:a.game.boss.y,hp:a.game.boss.hp,disengaged:a.game.boss.disengaged}));
   if(restored.hp!==321||Math.hypot(restored.x-after.x,restored.y-after.y)>1||!restored.disengaged)throw Error('刷新把Boss带回营地或重置血量 '+JSON.stringify(restored));
-  await page.evaluate(async()=>{const g=a.game;if(g.cottage){g.cottage.sleep=null;(await import('/src/core/cottage.js')).leaveCottage(g);}g.cottageDoorLatch=false;g.state='playing';Object.assign(g.player,{x:g.boss.x+100,y:g.boss.y});g.player.invincible=999;g.attackTimer=999;g.boss.attack=999;g.boss.speed=0;a.renderer.camera.time=null;});
+  await page.evaluate(async()=>{const g=a.game;if(g.cottage){g.cottage.sleep=null;(await import('/src/core/home/cottage.js')).leaveCottage(g);}g.cottageDoorLatch=false;g.state='playing';Object.assign(g.player,{x:g.boss.x+100,y:g.boss.y});g.player.invincible=999;g.attackTimer=999;g.boss.attack=999;g.boss.speed=0;a.renderer.camera.time=null;});
   await page.waitForFunction(()=>!a.game.boss.disengaged&&!document.getElementById('boss-hud').hidden);
   if(await page.evaluate(()=>a.game.boss.hp)!==321)throw Error('重新接战重置血量');await page.screenshot({path:out+'boss-resumed.png'});
   if(errors.length)throw Error(errors.join('\n'));return {designCriterion:'clearing-compact-hud',checks,before,after,restored,resumed:true,errors};

@@ -2,10 +2,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {wildFarmTime,wildFarmYear} from '../src/progression/wild-farm-age.js';
+import {wildFarmTime,wildFarmYear} from '../src/progression/farming/wild-farm-age.js';
 import {advanceLivingCalendar} from '../src/world/living-calendar.js';
-import {expireWildFarms,ensureWildFarms} from '../src/core/wild-farm.js';
-import {farmAction} from '../src/core/farm.js';
+import {expireWildFarms,ensureWildFarms} from '../src/core/farming/wild-farm.js';
+import {farmAction} from '../src/core/farming/farm.js';
 
 // 起点放在年末附近，验证跨年编号不会提前删除；每图各留一块野田及自耕田。
 function scene(){

@@ -31,7 +31,7 @@ async original=>{
    await page.keyboard.up('ArrowLeft');if(sample.error>.06||sample.visible<35||sample.moved<10)throw Error(JSON.stringify(sample));results.push({...sample,phase});await page.screenshot({path:'output/playwright/steady-speech-bubbles/npc-'+phase+'.png'});
   }
   await page.evaluate(async()=>{
-   const g=a.game,{storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));
+   const g=a.game,{storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));
    if(!g.enterStory('sunleaf-01'))throw Error('无法准备章节');g.story.stageId='Q40';g.story.phase='active';g.state='playing';g.story.dialogue=null;g.story.activeCue={id:'supply-care',speaker:'player',text:'连备用零件都留下了……她一定打算自己回来取。',remaining:60,age:0};
    g.enemies=[];g.trees=[];Object.assign(g.player,{x:2200,y:400,invincible:99999});a.renderer.camera.time=null;a.refresh();
   });

@@ -34,7 +34,7 @@ async original=>{
   if(after.hand!==before.hand+300||after.coins!==before.coins-360||after.hp!==321)throw Error('猫猫弹药或费用异常 '+JSON.stringify({before,after}));
   for(const [key,count] of [['light',300],['shell',50],['heavy',30],['water',200]])if(after.car[key]!==before.car[key]+count)throw Error('载具弹药购买失败 '+key);checks.push('all-ammo-purchases');await page.screenshot({path:out+'ammo-purchased.png'});
   await page.locator('#field-equipment-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
-  await page.evaluate(async()=>{const g=a.game;g.cottage.sleep=null;if(!(await import('/src/core/cottage.js')).leaveCottage(g))throw Error('无法离店');});
+  await page.evaluate(async()=>{const g=a.game;g.cottage.sleep=null;if(!(await import('/src/core/home/cottage.js')).leaveCottage(g))throw Error('无法离店');});
   await board();await page.locator('#clearing-accept').tap();await page.waitForFunction(()=>a.game.progress.living.patrolActive&&!document.getElementById('clearing-dialog').open);
   await page.evaluate(()=>{const g=a.game;Object.assign(g.player,{x:g.boss.x+100,y:g.boss.y,vx:0,vy:0});g.player.invincible=999;g.attackTimer=99999;g.boss.attack=999;g.boss.speed=0;a.renderer.camera.time=null;});
   await page.waitForFunction(()=>!a.game.boss.disengaged);if(await page.evaluate(()=>a.game.boss.hp)!==321)throw Error('继续挑战重置血量');checks.push('resume-original-boss');await page.screenshot({path:out+'resumed.png'});

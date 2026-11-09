@@ -1,6 +1,6 @@
 import {eraVehicle} from '../config/vehicle-eras.js';
 // 停驻车体不绘制驾驶员；访客样车与玩家装备目录完全分离。
-import {parkedOwned,campParkingVisible,VISITOR_MODELS} from '../core/camp-parking.js';
+import {parkedOwned,campParkingVisible,VISITOR_MODELS} from '../core/vehicles/camp-parking.js';
 import {PARKING_SPOTS} from '../config/parking.js';
 import {GARAGE} from '../world/workshop.js';
 import {drawVehicleTracks,drawVehicleArmor} from './vehicle.js';

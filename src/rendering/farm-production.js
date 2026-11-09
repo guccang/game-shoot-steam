@@ -1,5 +1,5 @@
 // 生产设施正式Canvas绘制：矮底座、独立喷嘴、台面与压榨罐共享森林配色。
-import {carriedSprinkler} from '../core/farm-production.js';
+import {carriedSprinkler} from '../core/farming/farm-production.js';
 import {SPRINKLER_OFFSETS,SPRINKLER,SPRINKLER_OUTLINE,sprinklerReach,sprinklerSweepAngle} from '../config/farm-production.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 // 设施以脚底参与现有深度排序，不增加图片或独立画布。

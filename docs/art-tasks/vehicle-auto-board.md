@@ -14,7 +14,7 @@
 一次1秒圆环；无需新角色动作或视频源。保留真实腿部、尾巴、炮管、履带及旋翼。离开、换目标、车辆失效取消；暂停不推进，刷新不保存半程进度；刚下车需离开原触发区才允许再触发。
 
 ## 5 生成与正式入口
-不生成图片，扩展现有Canvas徽记。逻辑 src/core/vehicle-boarding.js，绘制 src/rendering/player-action-countdown.js 与 action-countdown.js。designCriterion: vehicle-auto-board；正式验收记录在 visual-contract.json 和 visual-review.js。
+不生成图片，扩展现有Canvas徽记。逻辑 src/core/vehicles/vehicle-boarding.js，绘制 src/rendering/player-action-countdown.js 与 action-countdown.js。designCriterion: vehicle-auto-board；正式验收记录在 visual-contract.json 和 visual-review.js。
 
 ## 6 验收记录
 动态交互结论：通过。9项新增自动上车用例通过，包括真实Game更新中0.95秒仍步行、1秒完成、侧后方不触发、移动/切换车/失效取消、暂停、读档、刚下车防抖、路边/九寨沟/周期镜像、库内泊位与消防车、入职赠车无需点击继续采木。入职引导及房屋/路边停车相关回归通过，原门口倒计时与实体碰撞保留。

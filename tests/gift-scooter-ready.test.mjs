@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {completeArrivalLetter,skipArrivalJourney} from '../src/core/ranger-arrival.js';
-import {adoptArrivalParking,boardParkedVehicle,parkedOwned,updateParkingVisitors} from '../src/core/camp-parking.js';
+import {completeArrivalLetter,skipArrivalJourney} from '../src/core/camp/ranger-arrival.js';
+import {adoptArrivalParking,boardParkedVehicle,parkedOwned,updateParkingVisitors} from '../src/core/vehicles/camp-parking.js';
 import {facilityOpen} from '../src/config/town-restoration.js';
 // 使用正式开场或跳过入口创建尚未修复任何建筑的新档。
 function arrive(skip=false){

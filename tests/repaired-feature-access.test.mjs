@@ -3,18 +3,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
-import {canUseFarm,farmAction} from '../src/core/farm.js';
+import {canUseFarm,farmAction} from '../src/core/farming/farm.js';
 import {farmCell} from '../src/config/farm.js';
 import {TOWN_RESTORATIONS,facilityOpen} from '../src/config/town-restoration.js';
-import {repairFacility,updateRestoration} from '../src/core/town-restoration.js';
+import {repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {enterCottage,leaveCottage} from '../src/core/cottage.js';
-import {quoteWorkshop,workshopUpgrade} from '../src/progression/workshop.js';
-import {commitWorkshop} from '../src/core/workshop.js';
+import {enterCottage,leaveCottage} from '../src/core/home/cottage.js';
+import {quoteWorkshop,workshopUpgrade} from '../src/progression/workshop/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
 import {CAMP_GATES} from '../src/config/camp-defense.js';
-import {startCampDefense} from '../src/core/camp-defense.js';
-import {setLivingPatrol} from '../src/core/living-world.js';
-import {arrivalParkingAllowed} from '../src/core/camp-parking.js';
+import {startCampDefense} from '../src/core/camp/camp-defense.js';
+import {setLivingPatrol} from '../src/core/camp/living-world.js';
+import {arrivalParkingAllowed} from '../src/core/vehicles/camp-parking.js';
 
 // 只准备任务未完成、材料充足的存档；权限、扣费和状态推进全部使用正式代码。
 function scene(phase='gather'){

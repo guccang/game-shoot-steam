@@ -6,7 +6,7 @@ async page=>{
  await page.reload();await page.locator('#start').click();await page.setViewportSize({width:390,height:844});
  await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;a.game.enemies=[];a.game.vehicle.active=false;a.game.spawnTimer=a.game.fireClock=999;});
  for(const kind of ['weapons','vehicle']){
-  const target=await page.evaluate(async kind=>{const g=a.game,m=await import('/src/config/workshop-interiors.js'),core=await import('/src/core/cottage.js');Object.assign(g.player,m.WORKSHOP_INTERIORS[kind].door,{vx:0,vy:0});if(!core.enterWorkshop(g,kind))throw Error('入室失败');const t=m.interiorWorkshopTargets(g)[0];Object.assign(g.player,{x:t.x,y:t.y+t.height/2+20});return t;},kind);
+  const target=await page.evaluate(async kind=>{const g=a.game,m=await import('/src/config/workshop-interiors.js'),core=await import('/src/core/home/cottage.js');Object.assign(g.player,m.WORKSHOP_INTERIORS[kind].door,{vx:0,vy:0});if(!core.enterWorkshop(g,kind))throw Error('入室失败');const t=m.interiorWorkshopTargets(g)[0];Object.assign(g.player,{x:t.x,y:t.y+t.height/2+20});return t;},kind);
   await page.waitForFunction(()=>a.game.cottage.displayEntry?.elapsed>.5);if(await page.locator('#workshop-dialog').isVisible())throw Error('候停未满三秒提前打开');
   // 真实键盘移开取消，回到同一展品重新计时。
   await page.keyboard.down('ArrowRight');await page.waitForFunction(x=>a.game.player.x>x+105,target.x,{timeout:4000});await page.keyboard.up('ArrowRight');await page.waitForFunction(()=>!a.game.cottage.displayEntry);

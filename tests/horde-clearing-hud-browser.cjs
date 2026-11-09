@@ -18,7 +18,7 @@ async page=>{
   await page.setViewportSize({width:390,height:844});
   if(mode==='horde'){
    await page.evaluate(async()=>{const gate=(await import('/src/config/camp-defense.js')).CAMP_GATES.find(g=>g.id==='left');Object.assign(a.game.player,gate);a.refresh();});await page.locator('[data-camp-gate="left"]').click();await page.locator('#camp-primary').click();await page.locator('#camp-defense-hud').waitFor({state:'visible'});
-   await page.evaluate(async()=>{a.game.campDefense.timer=0;(await import('/src/core/camp-defense.js')).updateCampDefense(a.game,1);a.refresh();});
+   await page.evaluate(async()=>{a.game.campDefense.timer=0;(await import('/src/core/camp/camp-defense.js')).updateCampDefense(a.game,1);a.refresh();});
   }else{
    await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/clearing.js')).CLEARING_APPROACH);a.refresh();});await page.locator('#clearing-marker').click();await page.locator('#clearing-accept').click();await restored('清缴赶路');
    await page.evaluate(()=>{Object.assign(a.game.player,a.game.progress.living.clearingSite);a.game.updateWaves(.5);a.refresh();});
@@ -32,10 +32,10 @@ async page=>{
   await page.setViewportSize({width:320,height:568});
   if(mode==='horde'){
    await page.locator('#camp-help').click();await page.locator('#camp-close').click();
-   await page.evaluate(async()=>{const g=a.game;g.enemies=[];Object.assign(g.campDefense,{cleared:10,phase:'boss-ready'});(await import('/src/core/camp-defense.js')).spawnCampBoss(g);a.refresh();});await inspect('兽潮领主','camp-defense-hud');
+   await page.evaluate(async()=>{const g=a.game;g.enemies=[];Object.assign(g.campDefense,{cleared:10,phase:'boss-ready'});(await import('/src/core/camp/camp-defense.js')).spawnCampBoss(g);a.refresh();});await inspect('兽潮领主','camp-defense-hud');
    const separated=await page.evaluate(()=>document.getElementById('boss-hud').getBoundingClientRect().top>=document.getElementById('camp-defense-hud').getBoundingClientRect().bottom+7);if(!separated)throw Error('兽潮领主血条覆盖波次');await page.screenshot({path:'output/playwright/horde-clearing-hud/horde-boss.png'});
    await page.evaluate(()=>{a.game.hit(a.game.boss,1e9);a.refresh();});await restored('兽潮结算');await page.locator('#camp-primary').click();await page.locator('#task-reward-dialog').waitFor({state:'hidden',timeout:6000});await restored('兽潮领奖');
-   await page.evaluate(async()=>{const m=await import('/src/core/camp-defense.js'),gate=(await import('/src/config/camp-defense.js')).CAMP_GATES[0];Object.assign(a.game.player,gate);if(!m.startCampDefense(a.game,gate.id))throw Error('再次守门失败');a.refresh();});await page.locator('#camp-help').click();await page.locator('#camp-leave').click();await restored('主动退出兽潮');
+   await page.evaluate(async()=>{const m=await import('/src/core/camp/camp-defense.js'),gate=(await import('/src/config/camp-defense.js')).CAMP_GATES[0];Object.assign(a.game.player,gate);if(!m.startCampDefense(a.game,gate.id))throw Error('再次守门失败');a.refresh();});await page.locator('#camp-help').click();await page.locator('#camp-leave').click();await restored('主动退出兽潮');
   }else{
    await page.locator('#task-navigation-toggle').click();await inspect('清缴关闭寻路','quest');await page.locator('#task-navigation-toggle').click();
    await page.evaluate(()=>{const g=a.game,s=g.progress.living.clearingSite;g.player.x=s.x+s.radius+100;a.refresh();});await restored('离开清缴区');await page.evaluate(()=>{Object.assign(a.game.player,a.game.progress.living.clearingSite);a.refresh();});await inspect('返回清缴区','quest');

@@ -9,13 +9,13 @@ import { updateSpider, resetSpiderFormation } from '../src/combat/spider.js';
 import { updateMechanical, hurtMechanical } from '../src/combat/mechanical.js';
 import { advanceReload } from '../src/combat/magazine.js';
 import { companionTargets, companionEnemyTarget, damageCompanion } from '../src/combat/companion-targets.js';
-import { workshopUpgrade, quoteWorkshop } from '../src/progression/workshop.js';
-import { commitWorkshop } from '../src/core/workshop.js';
+import { workshopUpgrade, quoteWorkshop } from '../src/progression/workshop/workshop.js';
+import { commitWorkshop } from '../src/core/workshop/workshop.js';
 import { expeditionEquipment } from '../src/config/expedition.js';
 import { vehicleCompanionContext } from '../src/combat/vehicle-companions.js';
 import { updateVehicle } from '../src/combat/vehicle.js';
-import { createWorkshopTrial } from '../src/core/workshop-trial.js';
-import { prepareGuardianDefense, updateGuardianDefenses } from '../src/core/guardian-defense.js';
+import { createWorkshopTrial } from '../src/core/workshop/workshop-trial.js';
+import { prepareGuardianDefense, updateGuardianDefenses } from '../src/core/battle/guardian-defense.js';
 import { blocked } from '../src/physics/motion.js';
 
 // 开放地面夹具仍调用真实战斗逻辑，不使用玩家存档。

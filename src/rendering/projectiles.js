@@ -10,7 +10,7 @@ export function drawBallistics(c, bullets, reduced = false) {
   for (const b of bullets) {
     if(b.effectKind==='hover-tide'){drawTideProjectile(c,b,reduced);continue;}
     if(b.kind==='gravity-gun'){drawGravityProjectile(c,b,reduced);continue;}
-    if(['tank-125','wolf-256'].includes(b.kind)){drawTankShell(c,b,reduced);continue;}
+    if(['tank-125','wolf-256','ember-shell','snow-range','strata-heavy'].includes(b.kind)){drawTankShell(c,b,reduced);continue;}
     if (['funnel', 'drone'].includes(b.kind)) {
       drawFunnelProjectile(c, b, reduced);
       continue;

@@ -5,13 +5,13 @@ import assert from 'node:assert/strict';
 
 import { freshProgress, validateProgress } from '../src/progression/progress.js';
 import { canMountMechanical } from '../src/config/mechanical-loadout.js';
-import { configureMechanical } from '../src/core/mechanical-loadout.js';
+import { configureMechanical } from '../src/core/workshop/mechanical-loadout.js';
 import { updateMechanical, hurtMechanical, resetMechanicalFormation } from '../src/combat/mechanical.js';
 import { updateVehicle, configureVehicle } from '../src/combat/vehicle.js';
 import { vehicleCompanionContext } from '../src/combat/vehicle-companions.js';
 import { companionEnemyTarget } from '../src/combat/companion-targets.js';
-import { updateEnemies } from '../src/core/enemy-manager.js';
-import { quoteWorkshop, workshopDraft } from '../src/progression/workshop.js';
+import { updateEnemies } from '../src/core/battle/enemy-manager.js';
+import { quoteWorkshop, workshopDraft } from '../src/progression/workshop/workshop.js';
 import { worldDistance } from '../src/world/coordinates.js';
 import { expeditionEquipment } from '../src/config/expedition.js';
 import { guardianProgress } from '../src/config/guardian-equipment.js';

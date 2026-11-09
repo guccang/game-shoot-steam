@@ -1,16 +1,17 @@
+import {escapeHtml as escape} from './shared/html.js';
 // 小屋武器架使用真实场景热点，楼梯由站定倒计时控制；存取面板沿用手机底板与暂停管理。
 import {createEventScope} from '../platform/events.js';
 import {sceneHit} from './scene-hit.js';
 import {cottageFloor} from '../config/cottage.js';
-import {placedDecor} from '../progression/home-decor.js';
-import {carriedWeapon} from '../progression/weapon-storage.js';
-import {accessibleWeaponRack,weaponStorageReason,transferRackWeapon} from '../core/weapon-storage.js';
+import {placedDecor} from '../progression/home/home-decor.js';
+import {carriedWeapon} from '../progression/inventory/weapon-storage.js';
+import {accessibleWeaponRack,weaponStorageReason,transferRackWeapon} from '../core/inventory/weapon-storage.js';
 import {WEAPONS} from '../config/weapons.js';
 import {WEAPON_RACK_CAPACITY} from '../config/home-decor.js';
 import {itemDefinition} from '../config/items.js';
-import {catLoad} from '../progression/load-weight.js';
+import {catLoad} from '../progression/inventory/load-weight.js';
 // 列表文本来自配置，转义后进入HTML，避免名称中的符号破坏结构。
-const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 生命周期挂在房屋控制器上，返回室外立即关闭存取页。
 export function createCottageStorage({game,renderer,root,panel,dialogs,input,onChange}){
  const scope=createEventScope(),hits=root.createElement('div'),dialog=root.createElement('dialog');hits.className='workshop-room-hits';panel.append(hits);

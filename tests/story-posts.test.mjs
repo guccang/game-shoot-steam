@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {validateStoryPosts,worldStoryPosts,storyPostApproach,storyPostForChapter,canUseStoryPost,nearbyStoryPost} from '../src/core/story-posts.js';
+import {validateStoryPosts,worldStoryPosts,storyPostApproach,storyPostForChapter,canUseStoryPost,nearbyStoryPost} from '../src/core/story/story-posts.js';
 import {storyPostObjects} from '../src/rendering/story-posts.js';
 import {coversScenery} from '../src/world/forest-clearings.js';
 import {WORLD} from '../src/world/coordinates.js';

@@ -1,64 +1,72 @@
-import {normalizeTrade} from './camp-trade.js';
-import {restoreForestExtent} from './forest-extent.js';
+import {normalizeRegionalCamps} from './camp/regional-camps.js';
+import {normalizeWaystations} from './navigation/waystations.js';
+import {normalizeCampLayout} from '../config/camp-layout.js';
+import {freshCampLand,normalizeCampLand} from '../config/camp-land.js';
+import {migrateRetiredVehicles} from './vehicles/vehicle-retirement.js';
+import {normalizeIndustry} from './industry/industry.js';
+import {normalizeTrade} from './camp/camp-trade.js';
+import {restoreForestExtent} from './player/forest-extent.js';
 import {ERA_RESOURCES} from '../config/vehicle-eras.js';
-import {normalizeProduction} from './farm-production.js';
-import {freshHomeArcade,normalizeHomeArcade} from './home-arcade.js';
-import {freshMining,normalizeMining,openBasement} from './mining.js';
-import {normalizeNpcDialogue} from './npc-dialogue.js';
-import {normalizeOutdoors} from './outdoors.js';
-import {normalizeShopStock} from './shop-stock.js';
-import {freshTreasure,normalizeTreasure} from './treasure.js';
-import {normalizeWarehouse} from './warehouse.js';
-import {normalizeWeaponStorage} from './weapon-storage.js';
-import {freshSupplies,normalizeSupplies} from './supplies.js';
+import {normalizeProduction} from './farming/farm-production.js';
+import {freshHomeArcade,normalizeHomeArcade} from './home/home-arcade.js';
+import {freshMining,normalizeMining,openBasement} from './mining/mining.js';
+import {normalizeNpcDialogue} from './camp/npc-dialogue.js';
+import {normalizeOutdoors} from './activities/outdoors.js';
+import {normalizeShopStock} from './economy/shop-stock.js';
+import {freshTreasure,normalizeTreasure} from './activities/treasure.js';
+import {normalizeWarehouse} from './inventory/warehouse.js';
+import {normalizeWeaponStorage} from './inventory/weapon-storage.js';
+import {freshSupplies,normalizeSupplies} from './vehicles/supplies.js';
 import {isVehicleArmament} from '../config/vehicle-armaments.js';
-import {freshMailbox,normalizeMailbox} from './mailbox.js';
-import {freshLogistics,normalizeLogistics} from './vehicle-build.js';
-import {normalizeHeroXp,awardHeroXp} from './hero-experience.js';
-import {normalizeVehicleService} from './vehicle-repair.js';
+import {freshMailbox,normalizeMailbox} from './camp/mailbox.js';
+import {freshLogistics,normalizeLogistics} from './vehicles/vehicle-build.js';
+import {normalizeHeroXp,awardHeroXp} from './player/hero-experience.js';
+import {normalizeVehicleService} from './vehicles/vehicle-repair.js';
 import {residentRoster} from '../config/cottage-residents.js';
-import {freshHome,normalizeHome} from './home-decor.js';
+import {freshHome,normalizeHome} from './home/home-decor.js';
 import {equipmentLevelCap,normalizeLegendaryWorkshop} from '../config/legendary-workshop.js';
-import {normalizeMonsterCamps} from './monster-camps.js';
+import {normalizeMonsterCamps} from './battle/monster-camps.js';
 import {TOWN_LAYOUT_VERSION} from '../config/town-layout.js';
 import {FIRE_STATION_LAYOUT_VERSION} from '../config/fire-station-layout.js';
 import {freshRestoration,validateRestoration} from '../config/town-restoration.js';
-import {freshFarm,validateFarm} from './farm.js';
-import {initializeWildFarmAges} from './wild-farm-age.js';
-import {freshKeepsakes,normalizeKeepsakes} from './keepsakes.js';
-import {validateCampLevel} from './camp-level.js';
-import {validateGameStatistics} from './game-statistics.js';
+import {freshFarm,validateFarm} from './farming/farm.js';
+import {initializeWildFarmAges} from './farming/wild-farm-age.js';
+import {freshKeepsakes,normalizeKeepsakes} from './inventory/keepsakes.js';
+import {validateCampLevel} from './camp/camp-level.js';
+import {validateGameStatistics} from './player/game-statistics.js';
 import { RESOURCE_CAP } from '../config/resource-limits.js';
-import {normalizeCampParking} from './camp-parking.js';
-import {validateCampDefense} from './camp-defense.js';
+import {normalizeCampParking} from './vehicles/camp-parking.js';
+import {validateCampDefense} from './camp/camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { MASTERY_THRESHOLDS, WEAPON_MODS } from '../config/weapon-mods.js';
-import { normalizeLivingWorld } from './living-world.js';
-import {normalizeTaskTracking} from './task-tracking.js';
+import { normalizeLivingWorld } from './camp/living-world.js';
+import {normalizeTaskTracking} from './navigation/task-tracking.js';
 import { RANGER, validateArrival, arrivalPending, arrivalGiftHull } from '../config/ranger-arrival.js';
-import {validateMainline} from './mainline-progress.js';
+import {validateMainline} from './story/mainline-progress.js';
 import { VEHICLE_WEAPONS } from '../config/vehicle-armaments.js';
-import { validateStory } from './story-progress.js';
+import { validateStory } from './story/story-progress.js';
 import { economyUpgradeCost, bindEconomy, economyFor } from '../config/economy.js';
-import { freshLedger, validateLedger } from './economy-ledger.js';
+import { freshLedger, validateLedger } from './economy/economy-ledger.js';
 // 当前成长存档的默认值与校验，巡游子记录交给独立校验器，不访问浏览器或战场。
 import { validateMechanicalLoadout } from '../config/mechanical-loadout.js';
 import { validateSpiderLoadout } from '../config/spider-loadout.js';
 import { validatePartLevels } from '../config/equipment-parts.js';
 import { validateFunnelLoadout } from '../config/funnel-loadouts.js';
-import { validateRealms } from './realm-progress.js';
+import { validateRealms } from './realms/realm-progress.js';
 import { WEAPONS } from '../config/weapons.js';
 import { HEROES } from '../config/heroes.js';
 import { VEHICLE_MAX_LEVEL, COLLECTED_VEHICLES, VEHICLE_DISPLAY_ORDER } from '../config/vehicles.js';
 import { clamp } from '../core/math.js';
-import { validatePatrol } from './patrol-progress.js';
+import { validatePatrol } from './battle/patrol-progress.js';
 import { MATERIAL_KEYS, MATERIAL_CAP } from '../config/materials.js';
 import { BOSSES } from '../config/bosses.js';
-import { equipmentRecipe, ownsEquipment } from './equipment-goals.js';
+import { equipmentRecipe, ownsEquipment } from './workshop/equipment-goals.js';
 // 创建新玩家进度，首批物资可用于体验一次升级。
-import {validateFireProgress} from './fire-progress.js';
+import {validateFireProgress} from './activities/fire-progress.js';
 export function freshProgress() {
   return {
+    campLayout:normalizeCampLayout(null),
+    campLand:freshCampLand(),
     townLayoutVersion:TOWN_LAYOUT_VERSION,
     forestExtentVersion:1,
     fireStationLayoutVersion:FIRE_STATION_LAYOUT_VERSION,
@@ -66,11 +74,14 @@ export function freshProgress() {
     arrival: null,
     farm:freshFarm(),
     production:normalizeProduction(null),
+    industry:normalizeIndustry(null),
     mailbox:freshMailbox(),
     logistics:freshLogistics(),
     supplies:freshSupplies(),
     warehouse:normalizeWarehouse(null),
     outdoors:normalizeOutdoors(null),
+    regionalCamps:normalizeRegionalCamps(null),
+    waystations:normalizeWaystations(null),
     trade:normalizeTrade(null),
     shopStock:{},
     treasure:freshTreasure(),
@@ -138,16 +149,23 @@ export function freshRangerProgress() {
 export function validateProgress(raw) {
   const p = freshProgress();
   if (!raw || raw.version !== 1) return p;
+  raw=migrateRetiredVehicles(raw);
   p.legendaryWorkshop=normalizeLegendaryWorkshop(raw.legendaryWorkshop);
+  p.campLayout=normalizeCampLayout(raw.campLayout);
+  p.campLand=normalizeCampLand(raw.campLand);
   p.restoration=validateRestoration(raw.restoration);
+  // 老存档原本营业的商店保留权限；新档必须在对应土地上建设。
+  if(!raw.campLand)for(const id of ['outdoor','ammo','cat-home','furniture','construction','repair','refinery','factory'])if(!p.restoration.repaired.includes(id))p.restoration.repaired.push(id);
   p.farm=validateFarm(raw.farm);
-  p.trade=normalizeTrade(raw.trade);
   p.outdoors=normalizeOutdoors(raw.outdoors);
+  p.regionalCamps=normalizeRegionalCamps(raw.regionalCamps);
+  p.waystations=normalizeWaystations(raw.waystations);
   p.mailbox=normalizeMailbox(raw.mailbox);
   p.campLevel=validateCampLevel(raw.campLevel);
   p.mainline=validateMainline(raw.mainline);
   bindEconomy(p,economyFor(raw));
   p.economyLog=validateLedger(raw.economyLog);
+  p.trade=normalizeTrade(raw.trade,p.economyLog);
   p.statistics=validateGameStatistics(raw.statistics);
   if(!raw.statistics?.codex)p.statistics.codex.partial=true;
   p.mapId = raw.mapId === 'jiuzhaigou' ? 'jiuzhaigou' : 'forest';
@@ -218,6 +236,9 @@ export function validateProgress(raw) {
   p.mining=normalizeMining(raw.mining);
   p.homeArcade=normalizeHomeArcade(raw.homeArcade);
   p.production=normalizeProduction(raw.production,p.mining);
+  p.industry=normalizeIndustry(raw.industry);
+  // 旧工业背包的原石合并到四矿种随身货物，只搬一次，保留原有数量与负重。
+  if(p.industry.bag.rawStone){p.mining.bagOre.stone=(p.mining.bagOre.stone||0)+p.industry.bag.rawStone;p.industry.bag.rawStone=0;}
   if(p.homeDecor.basement)openBasement(p.mining);
   initializeWildFarmAges(p.farm,p.living.calendar);
   p.monsterCamps=normalizeMonsterCamps(raw.monsterCamps);
@@ -226,6 +247,9 @@ export function validateProgress(raw) {
   for (const key of [...MATERIAL_KEYS,...Object.keys(ERA_RESOURCES)])
     if (Number.isFinite(raw.materials?.[key]))
       p.materials[key] = clamp(Math.floor(raw.materials[key]), 0, MATERIAL_CAP);
+  // 已完成建造的旧农具迁入工业成品槽，普通新档从加工开始。
+  if(raw.farm?.machines?.seeder)p.materials.seederKit=Math.max(1,p.materials.seederKit);
+  if(raw.farm?.machines?.reaper)p.materials.reaperKit=Math.max(1,p.materials.reaperKit);
   for (const key of ['parts', 'crystal'])
     if (Number.isFinite(raw.materialPity?.[key]))
       p.materialPity[key] = clamp(Math.floor(raw.materialPity[key]), 0, Math.max(economyFor(p).drops[key].pity,economyFor(p).drops[key].favoredPity||0)-1);

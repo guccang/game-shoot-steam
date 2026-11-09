@@ -6,17 +6,17 @@ import {advanceReload} from '../src/combat/magazine.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
 import {effectiveWeapon} from '../src/config/weapon-mods.js';
 import {equipmentParts} from '../src/config/equipment-parts.js';
-import {transactProgress} from '../src/progression/transactions.js';
-import {equipmentRecipe} from '../src/progression/equipment-goals.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
 import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
 import {canMountMechanical} from '../src/config/mechanical-loadout.js';
 import {guardianCanDeploy} from '../src/config/guardian.js';
 import {footballGuns} from '../src/config/slime-football.js';
-import {createWeaponTrialScene} from '../src/core/weapon-trial-scene.js';
+import {createWeaponTrialScene} from '../src/core/workshop/weapon-trial-scene.js';
 import {workshopMastery} from '../src/ui/workshop/mastery.js';
 import {workshopResultChanges} from '../src/ui/workshop/results.js';
-import {workshopUpgrade,applyPartPreview} from '../src/progression/workshop.js';
-import {workshopCatalog} from '../src/progression/workshop-catalog.js';
+import {workshopUpgrade,applyPartPreview} from '../src/progression/workshop/workshop.js';
+import {workshopCatalog} from '../src/progression/workshop/workshop-catalog.js';
 import {ammoRingState} from '../src/ui/status-rings.js';
 // 关闭外围任务与随机波次，保留真正的 Game、车体、怪物与弹道。
 function arena(){

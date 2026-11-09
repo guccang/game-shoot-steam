@@ -1,7 +1,7 @@
 import {displayMeters} from '../world/distance-units.js';
 // 尾怪方向使用正式镜头投影，界面不改变镜头或输入；几何计算可独立验证。
 import {nearest} from '../world/coordinates.js';
-import {waveTailTargets} from '../core/wave-tail-targets.js';
+import {waveTailTargets} from '../core/battle/wave-tail-targets.js';
 import {WAVE_TAIL_NAVIGATION as STYLE} from '../config/wave-tail-navigation.js';
 
 // 已经出现在视口中的怪物不用指向箭头；边缘身体露出也视为可见。

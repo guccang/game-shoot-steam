@@ -34,7 +34,7 @@
 | 接口与保留 | 稳定建筑/家具ID、脚底、真实动画和武器绘制保持；意图不写入存档，换角色或楼层清理 |
 | 碰撞与通行 | 室外复用正式任务路线碰撞；室内注入`cottageBlocked`逐段扫掠，目标阻塞不传送 |
 | 昼夜 | 同一套触点和既有正式昼夜画面 |
-| 文件与入口 | `src/config/scene-approach.js`集中目录和数值；`src/core/scene-approach.js`负责规则；`src/ui/world-workshop.js`、`src/ui/cottage-approach.js`负责触控 |
+| 文件与入口 | `src/config/scene-approach.js`集中目录和数值；`src/core/navigation/scene-approach.js`负责规则；`src/ui/world-workshop.js`、`src/ui/cottage-approach.js`负责触控 |
 | 内存和缓存预算 | 不增加位图、图集、音频或画布；最多17个透明按钮，一个当前搜索，4096节点预算，每逻辑步最多1.5ms/256批 |
 | 必需资源及失败 | 沿用既有必需图集和加载错误；无备用美术；无可达路径时停止移动 |
 

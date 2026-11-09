@@ -13,7 +13,7 @@ async original=>{
    if(kind==='warehouse'){Object.assign(g.player,{x:w.x+190,y:w.y+80});g.progress.campParking.owned=[{hull:0,spot:null,mapId:'forest',x:w.x-85,y:w.y+80,hp:1,ammo:0},{hull:1,spot:null,mapId:'forest',x:w.x+550,y:w.y+80,hp:1,ammo:0}];}
    else{
     Object.assign(g.player,{x:893,y:2814});g.trees=g.trees.filter(t=>Math.hypot(t.x-921,t.y-2752)>180);g.progress.campParking.owned=kind==='cargo'?[{hull:0,spot:null,mapId:'forest',x:1005,y:2844,hp:1,ammo:0}]:[];g.vehicleBoardingBlocked={hull:0,mapId:'forest'};
-    const {catLoad,vehicleLoad}=await import('/src/progression/load-weight.js'),load=kind==='cargo'?vehicleLoad(g,0,{driver:true}):catLoad(g),remaining=load.capacity-(load.payload??load.weight)-.25;
+    const {catLoad,vehicleLoad}=await import('/src/progression/inventory/load-weight.js'),load=kind==='cargo'?vehicleLoad(g,0,{driver:true}):catLoad(g),remaining=load.capacity-(load.payload??load.weight)-.25;
     if(kind==='cargo'){const mass=(await import('/src/config/items.js')).itemDefinition('material:wood').mass,n=Math.floor(remaining/mass);g.progress.logistics.builds[0].wood=n;g.progress.supplies.vehicles[0].light+=Math.ceil((remaining-n*mass)/(await import('/src/config/supplies.js')).AMMO_TYPES.light.mass);}else if(kind==='bag')g.progress.supplies.hand.light+=Math.ceil(remaining/(await import('/src/config/supplies.js')).AMMO_TYPES.light.mass);
    }
    Object.assign(a.environment,{autoTime:false,time,autoWeather:false,weather:'sun',livingPreview:true});g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time).start;

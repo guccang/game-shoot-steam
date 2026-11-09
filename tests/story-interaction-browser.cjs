@@ -15,11 +15,11 @@ async original=>{
   await page.reload();await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
-   window.interaction=await import('/src/core/story-interaction.js');window.definition=await import('/src/core/story-definition.js');
+   window.interaction=await import('/src/core/story/story-interaction.js');window.definition=await import('/src/core/story/story-definition.js');
    // 夹具只跳过路途战斗，点击、调查、对白和镜头仍执行正式实现。
    window.stage=async(chapter,id)=>{
     const g=a.game;if(g.story?.chapterId!==chapter){if(g.story)g.leaveStory();g.progress.story.run=null;
-     const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js');
+     const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js');
      g.state='playing';Object.assign(g.player,storyPostApproach(storyPostForChapter(g,chapter)));g.enemies=[];g.boss=null;
      if(!g.enterStory(chapter))throw Error('进入章节失败 '+JSON.stringify({chapter,state:g.state,mainline:g.progress.mainline,arrival:g.progress.arrival,repaired:g.progress.restoration.repaired,run:g.progress.story.run,defense:g.campDefense,fire:g.fireActive,post:storyPostForChapter(g,chapter)}));g.advanceStoryDialogue(true);g.chooseStoryLoadout(definition.storyDefinition(g).loadouts[0].id);g.startStoryStage();
     }

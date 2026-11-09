@@ -2,12 +2,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {recordWaveKill} from '../src/core/wave-manager.js';
+import {recordWaveKill} from '../src/core/battle/wave-manager.js';
 import {waveDifficulty} from '../src/config/waves.js';
 import {clearingSpawnKind} from '../src/config/clearing-enemies.js';
 import {RANGED_ENEMIES} from '../src/config/ranged-enemies.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {validatePatrol} from '../src/progression/patrol-progress.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {validatePatrol} from '../src/progression/battle/patrol-progress.js';
 
 // 清缴场使用正式出生与击杀，只禁用自动射击和树木对采样时刻的干扰。
 function arena(wave=2){

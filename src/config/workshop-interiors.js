@@ -13,7 +13,7 @@ import {LIVING_PLACES} from './living-world.js';
 // 工坊室内的入口、家具、展示热点和碰撞共用坐标，玩家只在局部空间步行。
 import {WORKSHOP,VEHICLE_WORKSHOP} from '../world/workshop.js';
 import {COTTAGE,COTTAGE_FURNITURE,cottageFloor} from './cottage.js';
-import {homeFurniture} from '../progression/home-decor.js';
+import {homeFurniture} from '../progression/home/home-decor.js';
 import {WEAPONS} from './weapons.js';
 import {COLLECTED_VEHICLES,VEHICLE_DISPLAY_ORDER} from './vehicles.js';
 
@@ -28,6 +28,8 @@ export const VEHICLE_DISPLAYS=purchasableVehicles.map((index,slot)=>({id:'showro
 // 小型营业房使用同一门槛和通道，服务名称决定室内柜台文案。
 function serviceRoom(id,name,site,door={x:site.x,y:site.y+22}){return {...WORKSHOP_ROOM,id,name,site,door,outside:{x:door.x,y:door.y+52},service:true};}
 export const WORKSHOP_INTERIORS={
+ refinery:serviceRoom('refinery','矿产提炼厂',TOWN_LAYOUT.refinery,{x:TOWN_LAYOUT.refinery.x,y:TOWN_LAYOUT.refinery.y+55}),
+ factory:serviceRoom('factory','金属加工厂',TOWN_LAYOUT.factory,{x:TOWN_LAYOUT.factory.x,y:TOWN_LAYOUT.factory.y+55}),
  warehouse:serviceRoom('warehouse','小屋仓库',WAREHOUSE),
  outdoor:serviceRoom('outdoor','户外用品店',OUTDOOR_SHOP),
  ammo:serviceRoom('ammo','弹药补给铺',AMMO_SHOP),
@@ -62,6 +64,7 @@ export function interiorVehicleDisplays(){return VEHICLE_DISPLAYS.map(item=>({..
 // 武器柜与车库工具台使用同一碰撞来源；泊位只有停着车才阻挡角色。
 export function interiorFurniture(game){
  const counter=interiorCounter(game.cottage);
+ if(['refinery','factory'].includes(game.cottage?.kind))return [counter,{id:'industry-machine',type:'industry-machine',x:65,y:145,width:58,height:48},{id:'industry-crate',type:'warehouse-crate',label:game.cottage.kind==='refinery'?'原矿':'金属',x:295,y:145,width:64,height:48}];
  if(interiorLayout(game.cottage).service)return [counter,...(game.cottage.kind==='warehouse'?[{id:'wood-store',type:'warehouse-crate',label:'木材',x:66,y:125,width:65,height:42},{id:'ammo-store',type:'warehouse-crate',label:'弹药',x:294,y:125,width:65,height:42},{id:'seed-store',type:'warehouse-crate',label:'种子',x:66,y:280,width:65,height:42}]:[]),...(game.cottage.kind==='cat-home'?[{id:'cat-bed-left',type:'cat-bed',x:65,y:280,width:65,height:38},{id:'cat-bed-right',type:'cat-bed',x:295,y:280,width:65,height:38}]:[]),...(game.cottage.kind==='furniture'?FURNITURE_SHOP_DISPLAYS:[])];
  if(game.cottage?.kind==='weapons')return [...interiorWeaponDisplays(),counter];
  if(game.cottage?.kind==='vehicle')return [...GARAGE_FURNITURE,...VEHICLE_DISPLAYS,...(garageVehicleRecord(game)?[VEHICLE_BAY]:[]),counter];
@@ -76,7 +79,7 @@ export const SHOPKEEPER_ENTRY={wait:1,depth:20,releaseRadius:16,clickRadius:170,
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;
  if(!kind||kind==='cottage')return null;
- return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='construction'?'建筑师·森工':kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
+ return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='refinery'?'提炼厂管理员':kind==='factory'?'加工厂管理员':kind==='construction'?'建筑师·森工':kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
 }
 // 柜台跟随售货员底座，绘制和碰撞共用同一位置；私人小屋没有柜台。
 export function interiorCounter(room){const seller=interiorShopkeeper(room);return seller?{id:'counter',type:'counter',x:seller.x,y:seller.y+30,width:130,height:36}:null;}

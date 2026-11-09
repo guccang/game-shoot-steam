@@ -7,7 +7,7 @@ import {WEAPONS} from '../config/weapons.js';
 import {vehicleDamage,vehicleMaxHp,COLLECTED_VEHICLES} from '../config/vehicles.js';
 import {grantVehicleArmament,nativeVehicleWeapon,VEHICLE_WEAPONS} from '../config/vehicle-armaments.js';
 import {enemyLevelHealth} from '../config/combat-levels.js';
-import {createWorkshopTrial} from '../core/workshop-trial.js';
+import {createWorkshopTrial} from '../core/workshop/workshop-trial.js';
 
 // 基准使用栗子、无熟练度和改装、一级附属部件；车体与主炮分开设置。
 export function levelLoadout({hero=0,heroLevel=1,weapon=0,weaponLevel=1,vehicle=0,turretLevel=1,hullLevel=1}={}){

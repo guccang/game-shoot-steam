@@ -11,8 +11,8 @@ import {COTTAGE} from '../src/config/cottage.js';
 import {planQuestRoute,questLineClear} from '../src/physics/quest-route.js';
 import {blocked,moveBody} from '../src/physics/motion.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
-import {restoreTownPosition} from '../src/core/town-layout.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {restoreTownPosition} from '../src/core/camp/town-layout.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 import {SETTLEMENT_FENCES,settlementAt,settlementBlocked} from '../src/world/settlements.js';
 import {NATURAL_TERRAIN} from '../src/world/natural-terrain.js';
 
@@ -51,7 +51,7 @@ test('主轴和南门双向通行，铺地无树干侵占，任务区不与停�
  assert.ok(T.story.y>800&&T.clearing.y>800&&T.letters.y<600);
  assert.ok(worldDistance(T.story,T.clearing)>180);
  assert.ok([T.guardian,T.rogue,T.tower].every(p=>p.y>1150));
- assert.equal(NATURAL_TERRAIN.mountains.length,6);
+ assert.equal(NATURAL_TERRAIN.mountains.length,10);
 });
 
 test('旧档位于新围栏、饭桌或低岩丘时就近恢复，安全坐标与任务资产不变',()=>{

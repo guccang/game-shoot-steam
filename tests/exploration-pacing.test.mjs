@@ -5,20 +5,20 @@ import {Game,freshProgress} from '../src/game.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_TASKS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
 import {CAMPAIGN_TASK_IDS,isCampaignTask} from '../src/config/mainline-pacing.js';
-import {selectMainlineTask} from '../src/core/mainline-selection.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
-import {completeMainline,updateMainline,mainlineObjective,mainlineTask} from '../src/core/mainline-manager.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
-import {trackedLivingId} from '../src/progression/task-tracking.js';
+import {selectMainlineTask} from '../src/core/story/mainline-selection.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
+import {completeMainline,updateMainline,mainlineObjective,mainlineTask} from '../src/core/story/mainline-manager.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
+import {trackedLivingId} from '../src/progression/navigation/task-tracking.js';
 import {TOWN_RESTORATIONS,pendingRestoration} from '../src/config/town-restoration.js';
-import {startRestoredTask} from '../src/progression/restoration-task.js';
-import {beginGardeningLesson} from '../src/progression/mainline-gardening.js';
-import {resetEncounters,updateEncounters,encounterRules} from '../src/core/encounter-manager.js';
+import {startRestoredTask} from '../src/progression/camp/restoration-task.js';
+import {beginGardeningLesson} from '../src/progression/story/mainline-gardening.js';
+import {resetEncounters,updateEncounters,encounterRules} from '../src/core/battle/encounter-manager.js';
 import {ENCOUNTERS,LOW_RISK_ENCOUNTERS} from '../src/config/encounters.js';
-import {findNearbyArrivalSpot} from '../src/core/enemy-arrival.js';
+import {findNearbyArrivalSpot} from '../src/core/battle/enemy-arrival.js';
 import {forestThreatAt} from '../src/world/forest-levels.js';
 import {livingSafePoint} from '../src/world/living-spaces.js';
-import {observingMonsterCamp} from '../src/core/monster-camps.js';
+import {observingMonsterCamp} from '../src/core/battle/monster-camps.js';
 import {taskCatalog} from '../src/ui/task-catalog.js';
 // 使用正式游戏实例及保存入口，测试不访问用户存储。
 function scene(){const g=new Game(freshProgress(),()=>.5);g.start();g.state='playing';g.vehicle.active=false;g.mainlinePersist=()=>true;g.enemies=[];g.boss=null;g.trees=[];return g;}
@@ -80,7 +80,7 @@ test('从危险区返回低风险区不立即补怪；专属战斗继续冻结�
 // 自选活动结算或退出不应把已暂停的主线再次推到屏幕上。
 test('自由探索中完成邻里委托后不自动恢复主线',async()=>{
  const {LIVING_REQUESTS}=await import('../src/config/living-world.js');
- const {livingRequestTarget,interactLivingRequest}=await import('../src/core/living-world.js');
+ const {livingRequestTarget,interactLivingRequest}=await import('../src/core/camp/living-world.js');
  const g=scene(),spec=LIVING_REQUESTS[0];g.livingPersist=()=>true;g.progress.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);
  assert.ok(selectMainlineTask(g));g.progress.living.requests[spec.id].stage=spec.steps.length-1;g.progress.taskTracking={kind:'living',id:spec.id};
  const target=livingRequestTarget(g,spec);Object.assign(g.player,{x:target.x,y:target.y});assert.ok(interactLivingRequest(g,spec.id).ok);reload(g);

@@ -7,9 +7,9 @@ import {storyTrees,validateStorySites} from '../src/world/story-sites.js';
 import {SpatialGrid} from '../src/world/spatial-grid.js';
 import {planQuestRoute,questLineClear} from '../src/physics/quest-route.js';
 import {blocked,moveBody} from '../src/physics/motion.js';
-import {validateStory} from '../src/progression/story-progress.js';
-import {enterStory} from '../src/core/story-manager.js';
-import {beginStoryWave,spawnStoryEnemy,spawnStoryBoss} from '../src/core/story-encounters.js';
+import {validateStory} from '../src/progression/story/story-progress.js';
+import {enterStory} from '../src/core/story/story-manager.js';
+import {beginStoryWave,spawnStoryEnemy,spawnStoryBoss} from '../src/core/story/story-encounters.js';
 
 const journeys=[['CAMP','SIGN','ROAD1','ROAD2','MINT','RELAY','BOSS','RELAY','CAMP'],['SIGN','SHORT1','MINT']];
 // 距离累计正式寻路折线，包含山湖与树干造成的绕行。

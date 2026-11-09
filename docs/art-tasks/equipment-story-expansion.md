@@ -19,7 +19,7 @@
 使用内置imagegen，每个载具单独生成，红狼画像仅作画风参考；完整实际提示词保存在assets/equipment-stories/source/story-portraits-prompts.json。不生成图片中的可读文字。
 
 ## 验收记录
-验收日期：2026-10-31。正式入口：`src/ui/workshop/equipment-info.js`、`src/core/equipment-story-actions.js`；采样入口：`src/rendering/visual-review.js#inspectEquipmentStoryExpansion`。`visual-contract.json` 对应 `designCriterion: equipment-story-expansion`。
+验收日期：2026-10-31。正式入口：`src/ui/workshop/equipment-info.js`、`src/core/story/equipment-story-actions.js`；采样入口：`src/rendering/visual-review.js#inspectEquipmentStoryExpansion`。`visual-contract.json` 对应 `designCriterion: equipment-story-expansion`。
 
 | 项目 | 结果与证据 |
 | --- | --- |

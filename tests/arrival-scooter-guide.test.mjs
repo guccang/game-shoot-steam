@@ -5,17 +5,17 @@ import {Game} from '../src/core/game.js';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {RESTORATION_FLIGHT,facilityOpen} from '../src/config/town-restoration.js';
-import {skipArrivalJourney,completeArrivalLetter,arrivalTarget,workshopBuildView} from '../src/core/ranger-arrival.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {skipArrivalJourney,completeArrivalLetter,arrivalTarget,workshopBuildView} from '../src/core/camp/ranger-arrival.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {arrivalWorkshopGuide} from '../src/ui/arrival-workshop-guide.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {CAMP_WAREHOUSE} from '../src/config/wood-storage.js';
-import {storeWood} from '../src/core/wood-storage.js';
-import {woodPickupCapacity} from '../src/core/wood-pickup.js';
+import {storeWood} from '../src/core/inventory/wood-storage.js';
+import {woodPickupCapacity} from '../src/core/inventory/wood-pickup.js';
 import {TREE_REWARD} from '../src/config/rewards.js';
 import {WORKSHOP} from '../src/world/workshop.js';
-import {commitWorkshop} from '../src/core/workshop.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 
 // 原定赠品从正式短剧跳过入口交付，来信仍需明确确认。
 function ready(wood=0){const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));g.progress.wood=wood;assert.ok(completeArrivalLetter(g));return g;}

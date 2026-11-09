@@ -1,10 +1,10 @@
 // 首次兽潮配装与真实战斗采样；仅准备主线装备，伤害和生命均由正式游戏推进。
 import {Game,freshProgress} from '../../src/game.js';
 import {CAMP_GATES} from '../../src/config/camp-defense.js';
-import {startCampDefense} from '../../src/core/camp-defense.js';
+import {startCampDefense} from '../../src/core/camp/camp-defense.js';
 import {grantVehicleArmament} from '../../src/config/vehicle-armaments.js';
 import {MAINLINE_IDS} from '../../src/config/mainline.js';
-import {vehicleParkingSite} from '../../src/core/camp-parking.js';
+import {vehicleParkingSite} from '../../src/core/vehicles/camp-parking.js';
 // 固定随机种子便于前后比较，不修改命中或暴击。
 function random(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 // 还原抵达西门时的基础战车、专属主炮、三级手枪和二级栗子。

@@ -4,7 +4,7 @@ async page=>{
  await page.reload();await page.locator('#start').click();
  await page.evaluate(async()=>{
   window.a=(await import('/src/main.js')).application;await a.ready;
-  const g=a.game,{freshRangerProgress}=await import('/src/progression/progress.js'),{skipArrivalJourney}=await import('/src/core/ranger-arrival.js');
+  const g=a.game,{freshRangerProgress}=await import('/src/progression/progress.js'),{skipArrivalJourney}=await import('/src/core/camp/ranger-arrival.js');
   g.progress=freshRangerProgress();skipArrivalJourney(g);
   g.update=()=>{};g.enemies=[];g.attackTimer=g.fireClock=999;
   const {RANGER}=await import('/src/config/ranger-arrival.js');window.gift=RANGER.parking;
@@ -26,7 +26,7 @@ async page=>{
   }
  }
  await page.evaluate(async()=>{
-  const g=a.game,{adoptArrivalParking}=await import('/src/core/camp-parking.js');
+  const g=a.game,{adoptArrivalParking}=await import('/src/core/vehicles/camp-parking.js');
   g.progress.arrival.phase='complete';adoptArrivalParking(g);g.arrivalScene=null;g.progress.restoration.repaired=['garage'];
   Object.assign(g.player,{x:gift.x+90,y:gift.y+18});a.renderer.camera.time=null;a.refresh();
  });

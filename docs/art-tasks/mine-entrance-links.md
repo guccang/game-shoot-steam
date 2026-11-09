@@ -9,7 +9,7 @@
 只改变入口可见性与命中，不新增碰撞墙体，不开掘两个洞口之间的道路。小地图仍224×224（200704字节），远端标记压到边缘，保留小屋、方向和层间坡道。原猫视频连续帧、手持武器、怪物和载具动作全部保留；本轮无新增动作帧、图集或PNG，PNG精修不适用。运行资源沿用正式加载失败规则。
 
 ## 实现入口
-正式入口src/rendering/mining.js、src/rendering/player-action-countdown.js、src/ui/world-workshop.js；designCriterion为mine-entrance-links。地图几何与禁种共享src/world/mine-entrances.js，数值保留src/config/mining.js；实际进入由src/core/mining.js提交。倒计时随游戏时间，暂停冻结，移动取消，出洞防回弹，明确点击可重新进入。
+正式入口src/rendering/mining.js、src/rendering/player-action-countdown.js、src/ui/world-workshop.js；designCriterion为mine-entrance-links。地图几何与禁种共享src/world/mine-entrances.js，数值保留src/config/mining.js；实际进入由src/core/mining/mining.js提交。倒计时随游戏时间，暂停冻结，移动取消，出洞防回弹，明确点击可重新进入。
 
 ## 验收
 | 设计目标 | 实际验收结果与证据 |

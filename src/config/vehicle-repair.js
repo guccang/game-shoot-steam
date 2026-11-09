@@ -1,8 +1,8 @@
 // 维修中心几何、报价比例和工时由玩法与正式绘制共同读取。
 import {TOWN_LAYOUT} from './town-layout.js';
 export const REPAIR_LAYOUT_VERSION=2;
-export const REPAIR_CENTER=Object.freeze({id:'vehicle-repair',name:'载具维修中心',mapId:'forest',...TOWN_LAYOUT.repair});
-export const REPAIR_BAY=Object.freeze({x:REPAIR_CENTER.x+185,y:REPAIR_CENTER.y+160});
+export const REPAIR_CENTER={id:'vehicle-repair',name:'载具维修中心',mapId:'forest',...TOWN_LAYOUT.repair};
+export const REPAIR_BAY={x:REPAIR_CENTER.x+185,y:REPAIR_CENTER.y+160};
 export const VEHICLE_REPAIR=Object.freeze({repairRate:.5,repairSeconds:12,hookSeconds:2,towSpeed:115,radius:250});
 // 红狼的购车价包含稀有装备价值，日常维修不按同等溢价征收；其他车型维持现有标准。
 const MODEL_REPAIR_RATES=Object.freeze({'red-wolf':.05});

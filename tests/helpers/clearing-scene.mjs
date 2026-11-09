@@ -2,9 +2,9 @@
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../../src/game.js';
 import {CLEARING_APPROACH} from '../../src/config/clearing.js';
-import {clearingSite} from '../../src/progression/clearing-site.js';
-import {acceptClearingPost} from '../../src/core/clearing-guide.js';
-import {livingWaveAllowed} from '../../src/core/living-safety.js';
+import {clearingSite} from '../../src/progression/story/clearing-site.js';
+import {acceptClearingPost} from '../../src/core/story/clearing-guide.js';
+import {livingWaveAllowed} from '../../src/core/camp/living-safety.js';
 import {prepareBossNode} from './boss-node.mjs';
 
 // 接取、重接或死亡重试后到达正式清缴场，保留现有波次和奖励进度。

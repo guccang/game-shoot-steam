@@ -2,11 +2,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
-import {requestFireParking,updateFireRescue} from '../src/core/fire-rescue.js';
+import {requestFireParking,updateFireRescue} from '../src/core/activities/fire-rescue.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {FIRE_GARAGE,FIRE_DOOR,FIRE_PARKING,FIRE_EXIT} from '../src/world/fire-navigation.js';
 import {worldDistance} from '../src/world/coordinates.js';
-import {fireTransferOpacity} from '../src/core/fire-transit.js';
+import {fireTransferOpacity} from '../src/core/activities/fire-transit.js';
 import {FIRE_TOWN_ARRIVAL} from '../src/world/fire-navigation.js';
 // 跑到指定阶段，逐帧检查速度上限，避免用最终落点掩盖瞬移。
 function reach(g,phase){let max=0;for(let i=0;i<5000&&g.fireRescue.phase!==phase;i++){const old={x:g.player.x,y:g.player.y};g.update(.05,{x:-1,y:-1});const d=worldDistance(old,g.player);if(d>7.501)assert.equal(fireTransferOpacity(g),1,'换位只能发生在全黑期间');max=Math.max(max,d);}assert.equal(g.fireRescue.phase,phase);return max;}

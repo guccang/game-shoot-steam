@@ -1,7 +1,7 @@
-import {storyPostForChapter,storyPostApproach} from '../../src/core/story-posts.js';
+import {storyPostForChapter,storyPostApproach} from '../../src/core/story/story-posts.js';
 // 第一章重构前后的行为轨迹：只推进章节任务，击杀夹具不代替正式战斗平衡。
 import {Game,freshProgress} from '../../src/game.js';
-import {updateStory} from '../../src/core/story-manager.js';
+import {updateStory} from '../../src/core/story/story-manager.js';
 import {STORY_SITES} from '../../src/world/story-sites.js';
 import {storyObjects} from '../../src/rendering/story-props.js';
 import {storySpeechInfo} from '../../src/rendering/story-guidance.js';

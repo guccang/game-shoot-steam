@@ -5,7 +5,7 @@ async page=>{
  if(await page.locator('#start').isVisible())await page.locator('#start').click();
  await page.evaluate(async()=>{
   window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
-  window.routines=await import('/src/core/camp-routines.js');const g=a.game;
+  window.routines=await import('/src/core/camp/camp-routines.js');const g=a.game;
   g.progress=(await import('/src/progression/progress.js')).freshProgress();g.reset();g.state='playing';g.vehicle.active=false;g.enemies=[];g.boss=null;g.campActors=null;g.campRoutine=null;
   g.progress.mainline.trackingPaused=true;g.progress.taskTracking={kind:'none'};window.realUpdate=g.update.bind(g);g.update=()=>{};
   routines.updateCampRoutines(g,.04);window.beforeCampProgress=JSON.stringify({mainline:g.progress.mainline,tracking:g.progress.taskTracking});

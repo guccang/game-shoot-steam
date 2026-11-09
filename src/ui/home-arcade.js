@@ -1,6 +1,6 @@
 // 家园小游戏复用统一手机按钮与底板，操作输入交给独立核心，所有提示使用中文。
 import {HOME_ARCADE} from '../config/home-arcade.js';
-import {openHomeArcade,homeArcadeAccess,startHomeArcade,settleHomeArcade,closeHomeArcade,pauseHomeArcade,reloadArcadeGun,shootArcadeBird,dropArcadeClaw} from '../core/home-arcade.js';
+import {openHomeArcade,homeArcadeAccess,startHomeArcade,settleHomeArcade,closeHomeArcade,pauseHomeArcade,reloadArcadeGun,shootArcadeBird,dropArcadeClaw} from '../core/home/home-arcade.js';
 import {createEventScope} from '../platform/events.js';
 const rules={birds:'点击飞鸟瞄准射击。45秒内达到120分，快鸟分值更高；6发弹夹自动装填，也可手动装填。使用专用练习枪，不消耗背包弹药。',gold:'抓钩左右摆动，看准方向放钩。金块和宝石分数高，石头重、收回慢；只有拉回卷扬机才计分。60秒内达到250分。'};
 // 两个入口分别放在阳台和矿区操作栏，锁定提示和核心资格保持一致。

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
-import {captureRealmVehicles,restoreRealmVehicles} from '../src/core/realm-vehicles.js';
+import {captureRealmVehicles,restoreRealmVehicles} from '../src/core/realms/realm-vehicles.js';
 import {tideKick} from '../src/config/tide-cannon.js';
 import {fireBallistics} from '../src/combat/ballistics.js';
 import {vehicleWeapon} from '../src/config/vehicles.js';

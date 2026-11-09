@@ -53,7 +53,7 @@ async page=>{
    // 森林的载具菜单已路由综合工坊；局内收藏页仅在秘境上下文中使用。
    await click('#vehicles-button');await inspect('workshop-dialog','vehicle-workshop');await p.locator('#ws-close').tap();await p.waitForFunction(()=>a.game.state==='playing');
    // 邻里目录与NPC复用同一个面板，切换后仍是底部浅标题。
-   await p.evaluate(async()=>{const r=(await import('/src/core/living-world.js')).residentFor(a.game,'cook');Object.assign(a.game.player,{x:r.x,y:r.y+40});a.living.open('cook');});
+   await p.evaluate(async()=>{const r=(await import('/src/core/camp/living-world.js')).residentFor(a.game,'cook');Object.assign(a.game.player,{x:r.x,y:r.y+40});a.living.open('cook');});
    await inspect('living-dialog','neighbor');await p.locator('#living-close').tap();await p.waitForFunction(()=>a.game.state==='playing');
    await p.evaluate(()=>a.game.onEvent('task-reward',{title:'巡林任务奖励',reward:{coins:1,wood:1}}));await inspect('task-reward-dialog');await p.locator('#task-reward-close').tap();
   }
@@ -86,7 +86,7 @@ async page=>{
    await click('[data-camp-gate]');await inspect('camp-defense-dialog','camp-defense-'+phase);await p.locator('#camp-close').tap();await p.waitForFunction(()=>a.game.state==='playing');
    await p.evaluate(async()=>{
     const g=a.game,c=(await import('/src/config/cottage.js')).COTTAGE;Object.assign(g.player,c.door);
-    if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('入屋失败');
+    if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('入屋失败');
     Object.assign(g.player,c.bed);g.cottage.restOpen=true;a.refresh();
    });
    await inspect('cottage-rest-dialog','rest-'+phase);await p.locator('#cottage-rest-cancel').tap();await p.locator('#cottage-exit').tap();

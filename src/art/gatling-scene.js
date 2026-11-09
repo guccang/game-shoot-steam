@@ -1,6 +1,6 @@
 import { loadCozyCottage } from '../rendering/cozy-cottage.js';
 // 隔离试玩使用正式应用和内存存档；固定耐久靶只服务外观、动作及命中检查。
-import { restoreArrival } from '../core/ranger-arrival.js';
+import { restoreArrival } from '../core/camp/ranger-arrival.js';
 import { createApplication } from '../app/create-app.js';
 import { loadGameFont } from '../platform/fonts.js';
 import { freshProgress, validateProgress } from '../progression/progress.js';

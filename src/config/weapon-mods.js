@@ -1,3 +1,4 @@
+import {WATER_BAG,isWaterBag} from './water-bag.js';
 import {applyHeroWeaponTalent,heroTalentMultiplier} from './hero-talents.js';
 import growth from './content/growth.json' with {type:'json'};
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
@@ -256,7 +257,10 @@ export function effectiveWeapon(progress, index = progress.weapon, kind = 'weapo
   result.damage *= 1 + (mastery.level - 1) * GAMEPLAY_VALUES.progress.masteryDamagePerLevel;
   result.modName = mod?.name || i18nText("config.weapon-mods.e49deec22c");
   if (mod) result.description = `${mod.name} · ${mod.description}`;
-  return applyHeroWeaponTalent(applyMechanicalArmor(applyGuardianSupply(applyWeaponParts(result, progress, index), progress.guardianUpgrades),progress),progress,kind);
+  const effective=applyHeroWeaponTalent(applyMechanicalArmor(applyGuardianSupply(applyWeaponParts(result, progress, index), progress.guardianUpgrades),progress),progress,kind);
+  // 角色装填天赋叠加后仍保留至少三秒的水袋补水过程，面板与正式供水共用。
+  if(isWaterBag(effective))effective.reloadTime=Math.max(WATER_BAG.fastestSeconds,effective.reloadTime);
+  return effective;
 }
 
 // 手持枪伤害由战斗与工坊共用，熟练度已经包含在有效武器快照中。

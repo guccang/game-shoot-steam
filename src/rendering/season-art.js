@@ -1,4 +1,5 @@
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
+import {EXTRA_TREE_SPECIES} from '../config/earth-biomes.js';
 import { style } from '../art-styles/config.js';
 
 // 四季只重映射树叶色阶，不染白树干、改变树种或给角色套全屏滤镜。
@@ -23,7 +24,7 @@ export function seasonalLeafColor(hex, species, season) {
     if (cartoon) {
       const level = cartoon.indexOf(hex);
       if (level === 0) return hex;
-      if (season === 'autumn' && !['pine', 'cypress'].includes(species))
+      if (season === 'autumn' && !(['pine', 'cypress'].includes(species)||EXTRA_TREE_SPECIES.some(s=>s.id===species&&s.evergreen)))
         return ['#69492f', '#bd914e', '#dfb562', '#edcc7c', '#edcc7c'][level];
       if (season === 'spring') return ['#594b32', '#83a568', '#a7c57e', '#c6d993', '#c6d993'][level];
       if (season === 'summer' && cartoon === style.referenceMaterials.leafRamps[2])
@@ -35,7 +36,7 @@ export function seasonalLeafColor(hex, species, season) {
   if (!ramp) return hex;
   const index = ramp.indexOf(hex),
     level = Math.round((index / (ramp.length - 1)) * 4);
-  if (season === 'autumn' && !['pine', 'cypress'].includes(species))
+  if (season === 'autumn' && !(['pine', 'cypress'].includes(species)||EXTRA_TREE_SPECIES.some(s=>s.id===species&&s.evergreen)))
     return ['#765431', '#ae7131', '#e5a241', '#f5c768', '#ffe4a0'][level];
   if (season === 'spring') return ['#315f3e', '#4b8d46', '#7dbb52', '#b8df79', '#e1f2aa'][level];
   if (season === 'summer' && species === 'maple') return ['#28583d', '#327546', '#469449', '#72b651', '#add46f'][level];

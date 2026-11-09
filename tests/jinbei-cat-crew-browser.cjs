@@ -8,7 +8,7 @@ async page=>{
  for(const width of [1280,390,320])for(const time of ['day','night']){
   await page.setViewportSize({width,height:width===1280?960:844});
   await page.evaluate(async(time)=>{
-   const a=reviewApp,g=a.game,{validateProgress}=await import('/src/progression/progress.js'),{restoreArrival}=await import('/src/core/ranger-arrival.js'),{EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');
+   const a=reviewApp,g=a.game,{validateProgress}=await import('/src/progression/progress.js'),{restoreArrival}=await import('/src/core/camp/ranger-arrival.js'),{EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');
    if(g.reviewUpdate){g.update=g.reviewUpdate;delete g.reviewUpdate;}
    g.progress.vehicleIndex=7;g.progress=validateProgress(g.progress);g.reset();restoreArrival(g);g.start();g.workshopTrial=true;g.state='playing';if(!g.summonVehicle())throw Error('未成功上车');g.updateWaves=()=>{};g.enemies=[];g.boss=null;g.waveWarning=0;g.spawnTimer=9999;g.workshopTrial=true;g.attack=()=>false;
    const origin={x:350,y:1260};Object.assign(g.player,origin);g.trees=g.trees.filter(t=>Math.hypot(t.x-origin.x,t.y-origin.y)>350);

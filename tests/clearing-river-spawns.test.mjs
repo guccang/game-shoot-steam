@@ -2,12 +2,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {findNearbyArrivalSpot} from '../src/core/enemy-arrival.js';
+import {findNearbyArrivalSpot} from '../src/core/battle/enemy-arrival.js';
 import {WAVE_ARRIVAL,waveDifficulty} from '../src/config/waves.js';
 import {riverXAt,riverHalfWidth,isWaterBlocked} from '../src/world/river-geometry.js';
 import {canonical,WORLD,worldDistance} from '../src/world/coordinates.js';
-import {beginBossSupport,updateBossSupport} from '../src/core/boss-reinforcements.js';
-import {normalizeClearingSite} from '../src/progression/clearing-site.js';
+import {beginBossSupport,updateBossSupport} from '../src/core/battle/boss-reinforcements.js';
+import {normalizeClearingSite} from '../src/progression/story/clearing-site.js';
 
 // 不替换地形，只提供出生查询所需的场景与可重复随机序列。
 function sampleGame(x,y){let seed=37;return {mapId:'forest',player:{x,y},trees:[],enemies:[],random:()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32)};}

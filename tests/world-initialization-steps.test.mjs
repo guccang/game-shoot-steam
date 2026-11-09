@@ -1,0 +1,9 @@
+// 分批建图必须与正式同步入口保持实体、存档恢复和取消行为一致。
+import test from 'node:test';import assert from 'node:assert/strict';
+import {Game} from '../src/core/game.js';import {freshProgress} from '../src/progression/progress.js';
+import {forestLayoutSteps,forestLayout} from '../src/world/biomes.js';
+// 固定随机流比较完整现场，测试不修改地图资源和恢复入口。
+function deferred(p){return new Game(p,()=>.5,()=>{},{deferWorld:true});}
+test('取消未完成布局不发布半成品缓存，下一次完整生成仍一致',()=>{const abandoned=forestLayoutSteps();for(let i=0;i<40;i++)assert.equal(abandoned.next().done,false);abandoned.return();const trees=forestLayout();assert.ok(trees.length>10000);const again=forestLayoutSteps().next();assert.equal(again.done,true);assert.deepEqual(again.value,trees);});
+for(const mapId of ['forest','jiuzhaigou'])test(mapId+' 分批生成先保持待就绪，最终实体与同步初始化相同',()=>{const p=freshProgress();p.mapId=mapId;const g=deferred(p),steps=g.initializeWorldSteps();let last=0,count=0,part;do{part=steps.next();if(!part.done){assert.ok(part.value>=last&&part.value<=1);last=part.value;count++;if(last<.93)assert.equal(g.worldPending,true);}}while(!part.done);assert.equal(part.value,true);assert.equal(g.worldPending,false);assert.ok(count>3);const normal=deferred(p);normal.initializeWorld();assert.deepEqual(g.trees,normal.trees);assert.deepEqual(g.player,normal.player);assert.deepEqual(g.progress,normal.progress);assert.equal(g.time,0);assert.equal(g.initializeWorldSteps().next().value,false);});
+test('取消树木批次后仍未就绪，再次进入从完整初始化重新开始',()=>{const g=deferred(freshProgress()),steps=g.initializeWorldSteps();while(!g.trees.length)steps.next();steps.return();assert.equal(g.worldPending,true);assert.ok(g.trees.length<forestLayout().length);g.initializeWorld();assert.equal(g.worldPending,false);const normal=deferred(freshProgress());normal.initializeWorld();assert.deepEqual(g.trees,normal.trees);});

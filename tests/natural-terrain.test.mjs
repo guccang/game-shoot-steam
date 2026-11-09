@@ -15,7 +15,8 @@ import { createEnemyAttack, updateEnemyAttack } from '../src/combat/enemy-attack
 import { landingPoint } from '../src/combat/vehicle-landing.js';
 
 test('地貌可序列化且种子复现，独立候选区和空配置可供后续随机地图使用', () => {
-  assert.equal(terrain.lakes.length, 6); assert.equal(terrain.mountains.length, 6);
+  // 扩图后的山湖按面积配额生成；数量不再固定为旧版十处，精确面积由专项审计覆盖。
+  assert.ok(terrain.lakes.some(i=>i.regional)); assert.ok(terrain.mountains.some(i=>i.regional));
   assert.deepEqual(generateNaturalTerrain(), terrain);
   assert.deepEqual(JSON.parse(JSON.stringify(terrain)), terrain);
   assert.notDeepEqual(generateNaturalTerrain({ seed: 744 }), terrain);
@@ -43,7 +44,8 @@ test('多个种子的地标不占营地、主路和河桥；沙滩两岸面积�
 });
 
 test('湖水和山脚禁止地面高速穿越，空中单位可越过且循环镜像判定一致', () => {
-  for (const item of terrain.obstacles) {
+  // 实体地貌仍整座阻挡；开放群峰与可走雨林分别由专项验证底座、间隙和树干。
+  for (const item of terrain.obstacles.filter(i=>!i.regional&&i.kind!=='rainforest')) {
     assert.ok(isNaturalBlocked(item.x, item.y));
     assert.ok(isNaturalBlocked(item.x + WORLD.width, item.y - WORLD.height));
     for (const sign of [-1, 1]) {
@@ -62,7 +64,7 @@ test('湖水和山脚禁止地面高速穿越，空中单位可越过且循环�
 });
 
 test('追兵实际绕过湖山抵达另一侧，不穿障碍或错误跑向木桥', () => {
-  for (const item of terrain.obstacles) {
+  for (const item of terrain.obstacles.filter(i=>!i.regional)) {
     const body = { x: item.x + item.bounds.x - 35, y: item.y },
       target = { x: item.x + item.bounds.x + item.bounds.w + 35, y: item.y };
     for (let step = 0; step < 900 && Math.hypot(body.x - target.x, body.y - target.y) > 5; step++) {

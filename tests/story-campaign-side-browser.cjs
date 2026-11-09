@@ -26,7 +26,7 @@ async(page)=>{
    await page.locator('[data-realm-ready]').click();await page.locator('[data-realm-blessing]').first().click();
   }else await page.locator('.guardian-next-wave').click();
   // 正式刷怪和清关逻辑继续执行，只把已经出生的敌人用夹具击杀。
-  await page.evaluate(async()=>{const a=window.campaignApp,g=a.game,{updateRealm}=await import('/src/core/realm-manager.js');
+  await page.evaluate(async()=>{const a=window.campaignApp,g=a.game,{updateRealm}=await import('/src/core/realms/realm-manager.js');
    for(let i=0;i<2000&&g.realm.cleared<1;i++){updateRealm(g,.1);for(const e of g.enemies)if(e.hp>0)g.hit(e,1e6);g.enemies=g.enemies.filter(e=>e.hp>0);}
    if(g.realm.cleared!==1)throw Error('未完成正式清关');a.refresh();});
   if(mode==='rogue')await page.locator('[data-realm-blessing]').first().click();

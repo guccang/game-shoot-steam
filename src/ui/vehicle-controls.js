@@ -1,23 +1,36 @@
 import {activateVehicleTransfer} from './vehicle-transfer.js';
-import {parkingFleetApplies} from '../core/camp-parking.js';
-import {vehicleRequiresService,vehicleService} from '../core/vehicle-repair.js';
+import {parkingFleetApplies} from '../core/vehicles/camp-parking.js';
+import {boardParkedVehicle} from '../core/vehicles/camp-parking.js';
+import {boardingVehicles,nearVehicle} from '../core/vehicles/vehicle-boarding.js';
+import {worldDistance} from '../world/coordinates.js';
+import {boardFireGarage} from '../core/activities/fire-rescue.js';
+import {vehicleRequiresService,vehicleService} from '../core/vehicles/vehicle-repair.js';
 import { i18nText } from "../i18n/index.js";
 import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
 import { funnelWeapon } from '../config/funnel-loadouts.js';
-// 血条下方的载具图标提供定位和下车，改装仍由工坊负责。
+// 左下角载具图标提供就近上车、下车和远处定位，改装仍由工坊负责。
 import { createEventScope } from '../platform/events.js';
 import { realmWeapon } from '../config/realms.js';
 import { drawVehicleIcon } from '../rendering/vehicle.js';
 import { vehicleWeapon, vehicleModel } from '../config/vehicles.js';
 import {updateVehicleLoadHud,vehicleReloadHudState} from './vehicle-load-hud.js';
-import {parkedOwned,arrivalParkingAllowed} from '../core/camp-parking.js';
-// 自有车快捷键只定位或下车；活动借车沿用场景原有召唤规则。
+import {parkedOwned,arrivalParkingAllowed} from '../core/vehicles/camp-parking.js';
+// 主动点击可以跳过靠近候停，仍校验正式车旁范围、建筑阻隔和车辆状态。
+export function nearbyBoardingVehicle(game){return !game.vehicle.active&&parkingFleetApplies(game)?boardingVehicles(game).filter(s=>nearVehicle(game,s)).sort((a,b)=>worldDistance(a,game.player)-worldDistance(b,game.player))[0]||null:null;}
+// 按钮和键盘点击共用行为；远处仍标路，不把车辆瞬移到玩家身边。
+export function activateVehicleShortcut(game){
+ if(game.vehicle.active)return game.dismountVehicle();
+ const nearby=nearbyBoardingVehicle(game);
+ if(nearby?.fireGarage){if(game.vehicle.index!==4&&!game.selectVehicle(4))return false;return boardFireGarage(game);}
+ if(nearby&&!nearby.fireGarage)return boardParkedVehicle(game,nearby.hull);
+ if(parkingFleetApplies(game))return activateVehicleTransfer(game,nearby?.hull??game.vehicle.index);
+ return game.summonVehicle();
+}
+// 同一个原按钮保留监听、焦点与载荷刷新，不创建重复入口。
 export function createVehicleControls({ game, root, onChange }) {
   const scope = createEventScope();
   scope.on(root.getElementById('vehicle-button'), 'click', () => {
-    if (game.vehicle.active) game.dismountVehicle();
-    else if(parkingFleetApplies(game))activateVehicleTransfer(game,game.vehicle.index);
-    else game.summonVehicle();
+    activateVehicleShortcut(game);
     onChange();
   });
   return { dispose: scope.dispose };
@@ -46,11 +59,17 @@ export function updateVehicleHud(root, game) {
       ? i18nText("ui.vehicle-controls.c7e1c2df7f", { p0: (Math.ceil(v.cooldown)) })
       : i18nText("ui.vehicle-controls.006ef8b30e", { p0: (model.shortName) });
   node.disabled = !!game.cottage || game.arrivalCinematic || !game.loadout.vehicleHulls[v.index] || game.fireTransit || game.realm?.mode==='football' || !['playing', 'paused'].includes(game.state) || repairing;
-  node.hidden = game.realm?.mode==='football';
+  node.hidden = !!game.cottage||game.arrivalCinematic||['football','race'].includes(game.realm?.mode);
   const campParked=!game.realm&&!game.story&&parkedOwned(game).find(s=>s.record.hull===v.index);
   if(campParked&&!v.active)node.disabled||=!arrivalParkingAllowed(game,v.index)||game.fireActive||!!game.campDefense||!!game.workshopTrial;
   const service=vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase),status=service?(v.hp<=0?'已报废，需要维修':'维修中心待取车'):repairing?'维修中':reloading?'装填中':'';
-  const action=v.active?'点击下车':parkingFleetApplies(game)?'定位载具':'调用载具',count=w?Math.max(0,Math.ceil(ammo||0)):'—';
-  updateVehicleLoadHud(node,game,{ammo:count,label:`${model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}`,mark:service?'!':repairing||reloading?'↻':'',reload:vehicleReloadHudState(m,w)});
+  const nearby=nearbyBoardingVehicle(game);
+  if(nearby&&!game.cottage&&!game.arrivalCinematic&&['playing','paused'].includes(game.state))node.disabled=false;
+  const action=v.active?'下车':nearby?'上车':parkingFleetApplies(game)?'找车':'上车',count=w?Math.max(0,Math.ceil(ammo||0)):'—';
+  updateVehicleLoadHud(node,game,{ammo:count,label:`${nearby?vehicleModel(nearby.hull).shortName:model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}`,mark:service?'!':repairing||reloading?'↻':'',reload:vehicleReloadHudState(m,w)});
   node.setAttribute('aria-pressed', String(v.active));
+  // 车型图配进出箭头表达操作，文字仅保留在无障碍名称与悬停说明中。
+  let icon=node.querySelector('.vehicle-action-icon');if(!icon){icon=root.createElement('span');icon.className='vehicle-action-icon';icon.setAttribute('aria-hidden','true');node.append(icon);}
+  const state=v.active?'exit':nearby?'enter':parkingFleetApplies(game)?'locate':'enter';
+  if(icon.dataset.action!==state){icon.dataset.action=state;icon.innerHTML='<svg viewBox="0 0 24 24">'+(state==='locate'?'<circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>':state==='exit'?'<path d="M10 5H5v14h5m1-7h10m-4-4 4 4-4 4"/>':'<path d="M14 5h5v14h-5M3 12h11m-4-4 4 4-4 4"/>')+'</svg>';}
 }

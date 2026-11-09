@@ -31,13 +31,13 @@ async page=>{
  }
  // 主线从正式管理器进入对白，暂停、跳过后确认HUD恢复，而非只手改hidden属性。
  await page.setViewportSize({width:390,height:844});
- await page.evaluate(async()=>{const g=a.game,m=await import('/src/core/mainline-manager.js'),c=await import('/src/config/mainline.js');g.progress.mainline=(await import('/src/progression/progress.js')).freshProgress().mainline;g.progress.taskTracking={kind:'mainline'};Object.assign(g.player,c.MAINLINE_SITES[m.mainlineTask(g).site]);g.mainlineTalkDelay=0;m.updateMainline(g,.1);a.renderer.camera.time=null;a.refresh();});
+ await page.evaluate(async()=>{const g=a.game,m=await import('/src/core/story/mainline-manager.js'),c=await import('/src/config/mainline.js');g.progress.mainline=(await import('/src/progression/progress.js')).freshProgress().mainline;g.progress.taskTracking={kind:'mainline'};Object.assign(g.player,c.MAINLINE_SITES[m.mainlineTask(g).site]);g.mainlineTalkDelay=0;m.updateMainline(g,.1);a.renderer.camera.time=null;a.refresh();});
  await page.locator('#mainline-speech').waitFor({state:'visible'});await page.locator('#mainline-speech-pause').click();
  if(!await page.evaluate(()=>a.game.mainlineSpeech.paused))throw Error('对白暂停失败');
  await page.screenshot({path:'output/playwright/sixty-fps/mainline-dialogue.png'});await page.locator('#mainline-speech-skip').click();
  if(await page.locator('#map-dialog').isVisible())await page.locator('#close-map').click();
  await page.waitForFunction(()=>!a.game.mainlineSpeech&&document.getElementById('mainline-speech').hidden);
- await page.evaluate(async()=>{const g=a.game;g.mainlineTalkDelay=999;g.state='playing';const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('故事夹具进入失败');a.refresh();});
+ await page.evaluate(async()=>{const g=a.game;g.mainlineTalkDelay=999;g.state='playing';const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('故事夹具进入失败');a.refresh();});
  await page.locator('#story-speech').waitFor({state:'visible'});await page.locator('#story-speech-pause').click();await page.screenshot({path:'output/playwright/sixty-fps/story-dialogue.png'});await page.locator('#story-speech-skip').click();
  await page.waitForFunction(()=>!a.game.story.dialogue&&document.getElementById('story-speech').hidden&&!document.getElementById('game-frame').classList.contains('story-speaking'));
  if(errors.length)throw Error(errors.join(' / '));return {stable,samples,dialogues:true,errors};

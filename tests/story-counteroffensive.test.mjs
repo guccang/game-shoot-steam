@@ -2,16 +2,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {validateStory} from '../src/progression/story-progress.js';
+import {validateStory} from '../src/progression/story/story-progress.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {MAINLINE_TASKS} from '../src/config/mainline.js';
 import {EQUIPMENT_QUESTS} from '../src/config/equipment-quests.js';
 import {equipmentQuestStatus} from '../src/ui/equipment-quests.js';
-import {storyUnlocked,storyCondition} from '../src/core/story-definition.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
-import {updateStory,failStory,hurtStoryTarget} from '../src/core/story-manager.js';
-import {updateStoryBoss} from '../src/core/story-encounters.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {storyUnlocked,storyCondition} from '../src/core/story/story-definition.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
+import {updateStory,failStory,hurtStoryTarget} from '../src/core/story/story-manager.js';
+import {updateStoryBoss} from '../src/core/story/story-encounters.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 import {pacingGame} from './helpers/story-combat-pacing.mjs';
 
 const finale=STORY_CAMPAIGN['sunleaf-06'];

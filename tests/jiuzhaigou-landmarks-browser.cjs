@@ -35,7 +35,7 @@ async (page) => {
         const a = (await import('/src/main.js')).application, g = a.game, r = a.renderer;
         const { EnvironmentTransition } = await import('/src/world/environment.js');
         const { SceneTone } = await import('/src/rendering/scene-tone.js');
-        const { spawnEnemy } = await import('/src/core/enemy-manager.js');
+        const { spawnEnemy } = await import('/src/core/battle/enemy-manager.js');
         Object.assign(a.environment, { time: night ? 'night' : 'day', weather: 'sun', autoTime: false, autoWeather: false });
         r.light = new EnvironmentTransition(a.environment); r.tone = new SceneTone(a.environment);
         Object.assign(g.player, { x, y }); g.enemies = []; spawnEnemy(g, 2.4, 150); spawnEnemy(g, 3.5, 180);

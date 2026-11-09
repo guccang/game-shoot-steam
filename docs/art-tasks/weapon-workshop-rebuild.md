@@ -50,4 +50,4 @@
 
 浏览器tests/building-repair-timing-browser.cjs覆盖320×568、390×844昼夜的武器工坊与巡林小屋，共8组；正式修复事务启动后显示3秒，推进1秒显示2秒，2.95秒未开放，3秒开放，页面错误0。已复核武器工坊320白天和小屋390夜晚的施工圈、横条、屋面与角色同屏。证据位于主工作区output/playwright/building-repair-three-seconds/，4175已有服务，隔离验收使用4176。
 
-正式入口：src/core/ranger-arrival.js#updateArrival / workshopBuildView、src/core/town-restoration.js#updateRestoration、src/ui/ranger-arrival.js；继续使用weapon-workshop-rebuild设计目标及既有正式绘制器。结论：通过，本节替代前文五秒施工时长，不改变建筑费用、开放条件和施工效果。
+正式入口：src/core/camp/ranger-arrival.js#updateArrival / workshopBuildView、src/core/camp/town-restoration.js#updateRestoration、src/ui/ranger-arrival.js；继续使用weapon-workshop-rebuild设计目标及既有正式绘制器。结论：通过，本节替代前文五秒施工时长，不改变建筑费用、开放条件和施工效果。

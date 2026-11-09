@@ -12,8 +12,8 @@ import { WORLD, worldDistance } from '../src/world/coordinates.js';
 test('生成目录保留六种形态，四境森林按生态区统一主树种',()=>{
   for(const seed of [743,...Array.from({length:24},(_,i)=>i)]) {
     const terrain=generateNaturalTerrain({seed});
-    assert.equal(terrain.lakes.length,6,`种子${seed}缺湖`);
-    assert.equal(terrain.mountains.length,6,`种子${seed}缺山`);
+    assert.equal(terrain.lakes.length,10,`种子${seed}缺湖`);
+    assert.equal(terrain.mountains.length,10,`种子${seed}缺山`);
     for(const [items,key,catalog] of [[terrain.lakes,'variant',LAKE_VARIANTS],[terrain.mountains,'variant',MOUNTAIN_VARIANTS],
       [terrain.lakes,'beachVariant',BEACH_VARIANTS],[terrain.lakes,'forestVariant',FOREST_VARIANTS]])
       assert.deepEqual(new Set(items.map(i=>i[key])),new Set(catalog.map(v=>v.id)));
@@ -44,7 +44,7 @@ test('四类目录支持1296种指定组合，湖形与岸带不靠换色产生�
   for(let i=0;i<6;i++) {
     const terrain=generateNaturalTerrain({combinations:[{mountain:MOUNTAIN_VARIANTS[i].id,lake:LAKE_VARIANTS[i].id,
       beach:BEACH_VARIANTS[(i+2)%6].id,forest:FOREST_VARIANTS[(i+4)%6].id}]});
-    assert.equal(terrain.lakes.length,6);assert.equal(terrain.mountains.length,6);
+    assert.equal(terrain.lakes.length,10);assert.equal(terrain.mountains.length,10);
     for(const lake of terrain.lakes) {
       assert.equal(lake.variant,LAKE_VARIANTS[i].id);
       for(const mountain of terrain.mountains)for(const p of mountain.outline)
@@ -53,9 +53,9 @@ test('四类目录支持1296种指定组合，湖形与岸带不靠换色产生�
   }
 });
 
-test('每组山湖草坡相接且林缘有对应树种，萤火虫分布到全部六座湖',()=>{
+test('每组山湖草坡相接且林缘有对应树种，萤火虫分布到各座湖',()=>{
   const trees=forestLayout(),field=new FireflyField();
-  assert.equal(LANDSCAPES.groups.length,6);
+  assert.equal(LANDSCAPES.groups.length,10);
   for(const group of LANDSCAPES.groups) {
     const [lake,mountain]=[NATURAL_TERRAIN.lakes,NATURAL_TERRAIN.mountains].map(list=>list.find(i=>i.group===group.id));
     const sites=LANDSCAPES.sites.filter(s=>s.group===group.id);

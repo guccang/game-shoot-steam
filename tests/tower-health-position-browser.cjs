@@ -13,7 +13,7 @@ async original=>{
     Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);
     if(!g.enterRealm('tower'))throw Error('进入高塔失败');if(g.realm.phase==='choice')g.chooseRealmBlessing(g.realm.offers[0]);
     // 布局验收冻结战斗模拟，使用正式第五层与领主生成，不改变 HUD 和绘制路径。
-    const {beginRealmStage,updateRealm}=await import('/src/core/realm-manager.js');g.realm.stage=5;beginRealmStage(g);g.realm.warning=0;g.realm.spawned=g.realm.spec.total-1;g.realm.kills=g.realm.spec.total-1;g.realm.spawnTimer=0;updateRealm(g,.1);g.update=()=>{};a.refresh();
+    const {beginRealmStage,updateRealm}=await import('/src/core/realms/realm-manager.js');g.realm.stage=5;beginRealmStage(g);g.realm.warning=0;g.realm.spawned=g.realm.spec.total-1;g.realm.kills=g.realm.spec.total-1;g.realm.spawnTimer=0;updateRealm(g,.1);g.update=()=>{};a.refresh();
    },{time,mounted});
    await page.waitForTimeout(250);
    const rects=await page.evaluate(()=>{

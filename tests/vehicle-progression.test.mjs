@@ -1,12 +1,12 @@
 import { ownedPineProgress as freshProgress } from './helpers/owned-pine-progress.mjs';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 // 独立炮塔经济与载具成长回归，覆盖旧档迁移、扣费、真实伤害和供给保护。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/game.js';
 import { vehicleDamage } from '../src/config/vehicles.js';
 import { updateVehicle } from '../src/combat/vehicle.js';
-import { unlockedWeaponProgress } from '../src/progression/unlock-weapons.js';
+import { unlockedWeaponProgress } from '../src/progression/workshop/unlock-weapons.js';
 
 // 空战场避免怪物波次和主枪攻击干扰交易验证。
 function arena() {

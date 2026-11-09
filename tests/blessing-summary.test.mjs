@@ -8,7 +8,7 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 function scene(){const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);const g=new Game(p,()=>.4);g.start();return g;}
 import { blessingSummary } from '../src/config/blessing-summary.js';
 import { realmWeapon } from '../src/config/realms.js';
-import { validateRealms } from '../src/progression/realm-progress.js';
+import { validateRealms } from '../src/progression/realms/realm-progress.js';
 
 // 模拟已经完成的远征关卡，选择仍经过正式校验、开战与保存入口。
 function choice(game, key) {

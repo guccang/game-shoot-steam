@@ -39,7 +39,7 @@ async page=>{
  // 连续帧通过正式试射会话复核，另放大同源喷口以检查前后伸缩差。
  await page.setViewportSize({width:1280,height:960});
  await page.evaluate(async()=>{
-  const {renderVisualCase}=await import('/src/rendering/visual-review.js'),{drawVehicleArmament}=await import('/src/rendering/vehicle-armaments.js'),{createWorkshopTrial}=await import('/src/core/workshop-trial.js'),{vehicleWeapon}=await import('/src/config/vehicles.js');
+  const {renderVisualCase}=await import('/src/rendering/visual-review.js'),{drawVehicleArmament}=await import('/src/rendering/vehicle-armaments.js'),{createWorkshopTrial}=await import('/src/core/workshop/workshop-trial.js'),{vehicleWeapon}=await import('/src/config/vehicles.js');
   const canvas=document.createElement('canvas');canvas.id='tide-frames';canvas.width=1200;canvas.height=520;canvas.style.cssText='position:fixed;z-index:9999;left:0;top:0;background:#eee8c8';document.body.append(canvas);
   const c=canvas.getContext('2d'),tile=document.createElement('canvas');tile.width=300;tile.height=260;
   for(const [i,phase] of [.025,.085,.15,.27].entries()){

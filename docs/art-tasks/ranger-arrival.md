@@ -86,7 +86,7 @@
 
 目标：移除修复完成后的下车任务与车辆按钮提示，修好后直接指向工坊购买第一把手枪。旧存档的下车阶段续到购枪阶段，保存失败可以重试，骑乘状态保留。
 
-本轮仅调整任务状态和中文提示，不新增或替换美术资源。任务卡、工坊入口、字体、锚点、分层与44px触控目标沿用原实现；不增加画布、纹理或动画。正式入口为`src/core/ranger-arrival.js`、`src/ui/ranger-arrival.js`、`src/ui/arrival-workshop-guide.js`，对应`ranger-arrival`。
+本轮仅调整任务状态和中文提示，不新增或替换美术资源。任务卡、工坊入口、字体、锚点、分层与44px触控目标沿用原实现；不增加画布、纹理或动画。正式入口为`src/core/camp/ranger-arrival.js`、`src/ui/ranger-arrival.js`、`src/ui/arrival-workshop-guide.js`，对应`ranger-arrival`。
 
 验收范围：实际点击上车、采木、修复及骑乘购枪；320/390手机和横屏昼夜检查任务与提示位置；旧阶段存档续接和交易单次结算。
 

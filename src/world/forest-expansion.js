@@ -1,34 +1,48 @@
 // 扩展森林的稳定林团与增量间距索引；不复制营地、剧情地点或碰撞地标。
 import {WORLD, ORIGINAL_WORLD, PREVIOUS_FOREST_WORLD, wrap, worldDistance} from './coordinates.js';
+
+import {forestCoverAt} from './forest-cover.js';
 // 固定坐标噪声只影响静态布局，不消耗战斗随机流。
 function noise(x,y){const n=Math.sin(x*12.9898+y*78.233)*43758.5453;return n-Math.floor(n);}
 // 外围每个疏林格生成一团，保留原地图内全部手工布置。
-export function outerForestGroves(){
+export function outerForestGroves(){const steps=outerForestGrovesSteps();let step;do{step=steps.next();}while(!step.done);return step.value;}
+// 每行地形采样独立让出主线程，同步入口与加载入口消费同一生成序列。
+export function* outerForestGrovesSteps(){
  const result=[];
  // 既有林区保持原有树团。
  for(let y=240;y<8400;y+=520)for(let x=240;x<10800;x+=520){
   if(x<ORIGINAL_WORLD.width+200&&y<ORIGINAL_WORLD.height+200)continue;
   result.push([x+(noise(x,y)-.5)*160,y+(noise(y,x)-.5)*160,155+noise(x+7,y)*55]);
  }
- // 远林用小树组和独树交错填充，每组带自己的株数，林间保留连续可穿行的草地。
- for(let y=290;y<WORLD.height;y+=580)for(let x=290;x<WORLD.width;x+=580){
+ // 集中一部分树木形成连片林冠，其余格保留散树、低景和活动空地。
+ for(let y=150;y<WORLD.height;y+=300){
+  yield y/WORLD.height;
+  for(let x=150;x<WORLD.width;x+=300){
   if(x<PREVIOUS_FOREST_WORLD.width&&y<PREVIOUS_FOREST_WORLD.height)continue;
-  result.push([x+(noise(x,y)-.5)*330,y+(noise(y,x)-.5)*330,
-   84+noise(x+7,y)*70,1+Math.floor(noise(x,y+11)*4)]);
+  const cover=forestCoverAt(x,y);
+  if(cover==='lake'||cover==='mountain')continue;
+  const dense=cover==='forest';
+  if(!dense&&noise(x,y+11)>(cover==='meadow'?.025:.12))continue;
+  result.push([x+(noise(x,y)-.5)*95,y+(noise(y,x)-.5)*95,
+   dense?165+noise(x+7,y)*35:90,dense?9:1,dense]);
+ }
  }
  return result;
 }
+
+// 门外两翼错开，长林带夹出入营主路；南侧树林绕过生活区和农田。
+export const CAMP_WOODLANDS=[
+ [970,486,215,32,true],[974,955,235,34,true],
+ [-985,530,245,40,true],[-1000,986,275,42,true],
+ [90,-242,250,38,true],[605,-225,238,34,true],
+ [-390,2310,265,38,true],[880,2210,205,30,true],
+];
 // 外圈生态锚点与正式树种、地表颜色、怪物等级共用定义，旧四个目的地不变。
 export function expandedBiomeAnchors(biomes){
  const result=[...biomes];
  for(let row=0;row<3;row++)for(let col=0;col<3;col++){
   if(!row&&!col)continue;
   for(let n=0;n<4;n++){const source=biomes[(n+row+col)%biomes.length];result.push({...source,x:col*3600+700+(n%2)*2100,y:row*2800+650+Math.floor(n/2)*1400});}
- }
- // 远林按较大的景观区铺设生态锚点，颜色与战场属地共用同一位置。
- for(let y=2600;y<WORLD.height;y+=6000)for(let x=2600;x<WORLD.width;x+=6000){
-  if(x<10800&&y<8400)continue;
-  const source=biomes[Math.floor(noise(x,y)*biomes.length)];result.push({...source,x,y});
  }
  return result;
 }

@@ -9,7 +9,7 @@ import {waveDifficulty} from '../src/config/waves.js';
 import {updateRangedAttack} from '../src/combat/ranged-enemies.js';
 import {RANGED_ENEMIES} from '../src/config/ranged-enemies.js';
 import {attackProfile} from '../src/combat/enemy-attack.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {prepareBossNode} from './helpers/boss-node.mjs';
 import {clearingIdentity} from '../src/config/clearing-enemies.js';
 import {enemyIdentity} from '../src/world/biomes.js';

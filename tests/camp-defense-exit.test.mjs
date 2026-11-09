@@ -2,8 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {startCampDefense,leaveCampDefense,syncCampDefense,spawnCampBoss,rescueCampDefense} from '../src/core/camp-defense.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {startCampDefense,leaveCampDefense,syncCampDefense,spawnCampBoss,rescueCampDefense} from '../src/core/camp/camp-defense.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {createGameEventHandler} from '../src/app/game-events.js';
 // 使用正式入场入口保留森林玩家、载具、弹药与波次快照。
 function setup(){const g=new Game(freshProgress(),()=>.4);g.state='playing';Object.assign(g.player,{x:120,y:729});g.wave=4;g.waveKills=2;g.magazines[0].ammo=3;g.player.hp=73;return g;}

@@ -16,9 +16,9 @@ async page=>{
 async page=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  if(await page.evaluate(()=>questApp.game.progress.mainline.phase==='meet'))await page.locator('#mainline-speech-skip').click();
- await page.evaluate(async()=>{const g=questApp.game,c=(await import('/src/config/monster-camps.js')).MONSTER_CAMPS[0];Object.assign(g.player,c,{vx:0,vy:0,invincible:99999});(await import('/src/core/monster-camps.js')).updateMonsterCamps(g,.04);for(const e of [...g.enemies].filter(e=>e.monsterCamp===c.id))g.hit(e,99999);questApp.renderer.camera.time=null;questApp.refresh();});
+ await page.evaluate(async()=>{const g=questApp.game,c=(await import('/src/config/monster-camps.js')).MONSTER_CAMPS[0];Object.assign(g.player,c,{vx:0,vy:0,invincible:99999});(await import('/src/core/battle/monster-camps.js')).updateMonsterCamps(g,.04);for(const e of [...g.enemies].filter(e=>e.monsterCamp===c.id))g.hit(e,99999);questApp.renderer.camera.time=null;questApp.refresh();});
  await page.waitForFunction(()=>questApp.game.progress.mainline.gardening.seedDrops===1);
- const drop=await page.evaluate(async()=>({seeds:questApp.game.progress.farm.seeds[0],unlocked:questApp.game.progress.farm.unlocked[0],destination:(await import('/src/core/world-navigation.js')).worldNavigationObjective(questApp.game)?.key}));
+ const drop=await page.evaluate(async()=>({seeds:questApp.game.progress.farm.seeds[0],unlocked:questApp.game.progress.farm.unlocked[0],destination:(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(questApp.game)?.key}));
  if(!drop.seeds||!drop.unlocked||drop.destination!=='camp')throw Error('营地清空未掉种或返程目标不对 '+JSON.stringify(drop));
  await page.screenshot({path:'output/playwright/neighbor-quests/01-seed-found.png'});
  await page.evaluate(async()=>{Object.assign(questApp.game.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp,{vx:0,vy:0});questApp.game.mainlineTalkDelay=0;questApp.renderer.camera.time=null;questApp.refresh();});

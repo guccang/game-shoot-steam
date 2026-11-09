@@ -1,4 +1,5 @@
 import { i18nText } from "../i18n/index.js";
+import {currentPlayer,playerName} from '../platform/player-profile.js';
 // 主菜单只提交导航意图，存档写入与游戏生命周期由应用控制。
 import {createEventScope} from '../platform/events.js';
 import {createTitleVideo} from '../platform/title-video.js';
@@ -25,14 +26,17 @@ export function createTitleMenu({root,host,game,shell,dialogs,onEnter,onHome}) {
     $('game-frame').dataset.page=shell.page;$('title-menu').hidden=!home;
     $('title-menu').dataset.loading=String(shell.loading);$('title-menu').inert=shell.loading;
     for(const node of $('game-frame').children)if(node.id!=='title-menu'&&node.id!=='start-loading')node.inert=home;
-    $('start').disabled=!shell.ready||shell.loading||shell.failed||shell.saveStatus==='corrupt';
+    const name=playerName($('login-name').value), switching=name!==currentPlayer;
+    $('start').disabled=!shell.ready||shell.loading||!name||(!switching&&(shell.failed||shell.saveStatus==='corrupt'));
+    $('title-settings').disabled=switching;
     $('start').setAttribute('aria-busy',String(!shell.ready||shell.loading));
     const warning=shell.failed?'地图准备失败，请刷新后重试。':shell.saveStatus==='corrupt'?i18nText('ui.title-menu.b63a1a6bdc'):shell.saveStatus==='unavailable'?i18nText('ui.title-menu.e842016a6d'):'';
-    $('title-save-warning').textContent=warning;$('title-save-warning').hidden=!warning;
+    $('title-save-warning').textContent=warning;$('title-save-warning').hidden=switching||!warning;
     $('settings-home').hidden=home;
     $('settings-done').textContent=home?i18nText("rendering.visual-review.e34e61a243"):i18nText("ui.title-menu.871430cf08");
   }
   scope.on($('start'),'click',onEnter);
+  scope.on($('login-name'),'input',render);
   scope.on($('title-settings'),'click',()=>dialogs.open('settings-dialog'));
   scope.on($('settings-home'),'click',onHome);
   scope.on(host,'keydown',event=>{if(event.code==='Escape'&&!root.querySelector('dialog[open]')&&shell.page==='game'){event.preventDefault();if(game.state==='playing'||game.canExploreRealm){game.pause();root.getElementById('settings-button').focus();}render();}});

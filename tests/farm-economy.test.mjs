@@ -2,15 +2,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,freshRangerProgress,validateProgress} from '../src/progression/progress.js';
-import {farmAction,setFarmTool,queueFarmWork,updateFarmWork,FARM_ACTION_TIMING} from '../src/core/farm.js';
-import {updateFarmDelivery,claimFarmParcel} from '../src/core/farm-delivery.js';
-import {farmGrowth,validateFarm,farmLesson} from '../src/progression/farm.js';
+import {farmAction,setFarmTool,queueFarmWork,updateFarmWork,FARM_ACTION_TIMING} from '../src/core/farming/farm.js';
+import {updateFarmDelivery,claimFarmParcel} from '../src/core/farming/farm-delivery.js';
+import {farmGrowth,validateFarm,farmLesson} from '../src/progression/farming/farm.js';
 import {farmApproach,farmLandReason,farmCovers} from '../src/world/farm-land.js';
 import {FARM_CROPS,FARM_DELIVERY,farmCell} from '../src/config/farm.js';
 import {WORLD} from '../src/world/coordinates.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
-import {creditResource} from '../src/progression/resource-wallet.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
+import {creditResource} from '../src/progression/economy/resource-wallet.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
 import {forestReward,mainlineReward,RECOMMENDED_ECONOMY} from '../src/config/economy.js';
 import {MAINLINE_TASKS} from '../src/config/mainline.js';
 import {clearingWaveBudget} from '../src/config/waves.js';
@@ -19,7 +19,7 @@ import {footballReward} from '../src/config/slime-football.js';
 import {CAMP_DEFENSE} from '../src/config/camp-defense.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {debugGrantProgress} from '../src/progression/debug-grants.js';
+import {debugGrantProgress} from '../src/progression/player/debug-grants.js';
 import {simulateEconomy} from '../src/balance/model.js';
 // 事务夹具使用道路东侧草地；旧版坐标迁移仍保留原farmCell目录。
 function safeCell(){return {...farmCell(0),x:1005};}

@@ -1,6 +1,6 @@
 // 新武器、河道通行与轻量物理回归，检查可玩行为而非只验证配置值。
-import {equipmentRecipe} from '../src/progression/equipment-goals.js';
-import {equipmentQuest} from '../src/progression/equipment-quests.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
+import {equipmentQuest} from '../src/progression/workshop/equipment-quests.js';
 import {upgradeCost} from '../src/progression/progress.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';

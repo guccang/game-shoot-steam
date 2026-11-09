@@ -7,18 +7,18 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
 import {HOME_CATALOG} from '../src/config/home-decor.js';
-import {enterCottage,changeCottageFloor,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/cottage.js';
-import {buyDecor,moveDecor,storeDecor} from '../src/core/home-decor.js';
-import {transferRackWeapon,accessibleWeaponRack} from '../src/core/weapon-storage.js';
-import {placementError,placedDecor} from '../src/progression/home-decor.js';
-import {carriedWeapon} from '../src/progression/weapon-storage.js';
-import {catLoad} from '../src/progression/load-weight.js';
-import {backpackEntries} from '../src/progression/backpack.js';
-import {cleanupEntries,discardLoad} from '../src/core/load-cleanup.js';
+import {enterCottage,changeCottageFloor,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/home/cottage.js';
+import {buyDecor,moveDecor,storeDecor} from '../src/core/home/home-decor.js';
+import {transferRackWeapon,accessibleWeaponRack} from '../src/core/inventory/weapon-storage.js';
+import {placementError,placedDecor} from '../src/progression/home/home-decor.js';
+import {carriedWeapon} from '../src/progression/inventory/weapon-storage.js';
+import {catLoad} from '../src/progression/inventory/load-weight.js';
+import {backpackEntries} from '../src/progression/inventory/backpack.js';
+import {cleanupEntries,discardLoad} from '../src/core/inventory/load-cleanup.js';
 import {canMountMechanical} from '../src/config/mechanical-loadout.js';
 import {canMountSpider} from '../src/config/spider-loadout.js';
 import {validateFunnelLoadout} from '../src/config/funnel-loadouts.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 // 排除剧情与其他演出，保留真实室内走动、弹匣和持久化入口。
 function setup(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(i=>i.id);p.coins=10000;for(const i of [0,1,2,3,4])p.weapons[i]=2;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.livingPersist=()=>true;g.cottage={kind:'furniture',outside:{x:800,y:900},floor:0};return g;}
 // 每个架子必须真实付费并摆到当前楼层，不能直接伪造已存武器。

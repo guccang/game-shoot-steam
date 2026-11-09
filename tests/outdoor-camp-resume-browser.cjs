@@ -18,7 +18,7 @@ async page=>{
   game.vehicle.active=false;
   const {outdoor}= (await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS;
   Object.assign(game.player,outdoor.door);
-  if(!(await import('/src/core/cottage.js')).enterWorkshop(game,'outdoor'))throw Error('未进入户外用品店');
+  if(!(await import('/src/core/home/cottage.js')).enterWorkshop(game,'outdoor'))throw Error('未进入户外用品店');
   Object.assign(game.player,{x:150,y:260});
   application.refresh();
  });

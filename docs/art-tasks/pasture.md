@@ -33,3 +33,8 @@
 本轮通过。正式入口为 createFarmPanel 中的 farm-summon-ox，牛体由 drawOxPlow 与 drawLivestock 绘制，沿用 pasture-herding。浏览器触控验证了手机旧入口移除、点击牛头、途中禁止重复召唤、到达后点牛身牵犁。实测从屏外走入画面，以每秒 68 世界单位行走，停在离猫 48 世界单位处。图标为透明内联 SVG，新增位图和图集缓存为零。
 
 [步行入场](../../output/playwright/farm-ox-call/walking.png)、[390 宽白天](../../output/playwright/farm-ox-call/390-day.png)、[320 宽夜晚](../../output/playwright/farm-ox-call/320-night.png)、[桌面白天](../../output/playwright/farm-ox-call/1280-day.png)与[桌面夜晚](../../output/playwright/farm-ox-call/1280-night.png)均在正式场景取样。窄屏显示两行工具，入口与右下菜单分开。手机采用触控模拟。
+## 驯养后的回栏行走
+
+目标是让同一头牛从喂食处经北门走到栏内。使用既有正面待机和迈步图集、原比例和牛蹄锚点，按实际位移播放，沿用角色与围栏的脚底排序。此处只调整路线、读档和状态切换，无新增图片、动作序列或缓存画布。
+
+手机触控模拟实测采草、喂牛、[从野外起步](../../output/playwright/wild-pasture/return-walk.png)、[经过北门](../../output/playwright/wild-pasture/return-gate.png)、入栏后照料与牵犁。门口的照料按钮移至左门柱，和牛身触控区分开。上述昼夜和桌面竖版场景已重新运行。规则测试逐步检查牛蹄位移不超过每秒 68 世界单位，验证途中暂停、读档续行和最终站位。正式时钟入口为 `updateOxArrival`，绘制入口为 `drawOxPlow` / `drawLivestock`。对应 `designCriterion: wild-ox-forage`，本次交互与步行阶段通过。

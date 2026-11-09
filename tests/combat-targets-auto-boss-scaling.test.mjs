@@ -8,8 +8,8 @@ import {summonTargetPool,allocateGroundTargets} from '../src/combat/summons/targ
 import {summonGroundReachable,summonGroundWaypoint} from '../src/combat/summons/reachability.js';
 import {encounterDifficulty} from '../src/config/encounter-difficulty.js';
 import {campDefenseBoss,campDefenseWave} from '../src/config/camp-defense.js';
-import {startCampDefense,updateCampDefense,syncCampDefense,leaveCampDefense} from '../src/core/camp-defense.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {startCampDefense,updateCampDefense,syncCampDefense,leaveCampDefense} from '../src/core/camp/camp-defense.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 // 使用跨世界边缘的圆圈复现西门，视口省略以隔离几何资格。
 function arena(){return {player:{x:0,y:700,arena:{x:-100,y:700,radius:300}},time:0,enemies:[],trees:[],boss:null};}
 // 简单实体只提供共用选敌所需字段。

@@ -3,14 +3,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FISH_SPECIES,FISH_WATERS,naturalFishIndex} from '../src/config/fish-catalog.js';
 import {FISHING_RODS,FISHING_BAITS,baitCount,fishCatchWeight} from '../src/config/fishing-tackle.js';
-import {fishingOdds,sampleFishingOdds} from '../src/core/fishing-tackle.js';
-import {buyOutdoorGear,equipFishingTackle,beginFishing,fishingControl,updateOutdoors,finishFishing,sellOutdoorFish} from '../src/core/outdoors.js';
-import {normalizeOutdoors,outdoorInventory} from '../src/progression/outdoors.js';
+import {fishingOdds,sampleFishingOdds} from '../src/core/fishing/fishing-tackle.js';
+import {buyOutdoorGear,equipFishingTackle,beginFishing,fishingControl,updateOutdoors,finishFishing,sellOutdoorFish} from '../src/core/activities/outdoors.js';
+import {normalizeOutdoors,outdoorInventory} from '../src/progression/activities/outdoors.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {Game} from '../src/core/game.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {fishingShores} from '../src/world/outdoor-sites.js';
-import {catLoad} from '../src/progression/load-weight.js';
+import {catLoad} from '../src/progression/inventory/load-weight.js';
 // 使用真实商店和可用湖岸；仅准备自由巡林与钱包，不绕过购买或装备事务。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.coins=20000;const g=new Game(p,()=>.99999);g.state='playing';g.cottage={kind:'ammo'};g.vehicle.active=false;g.enemies=[];g.boss=null;g.mainlineSpeech=null;g.progress.living.patrolActive=false;g.livingPersist=()=>true;return g;}
 // 正式状态机推进到咬钩，保持完整的准备、蓄力、扣饵与选鱼步骤。

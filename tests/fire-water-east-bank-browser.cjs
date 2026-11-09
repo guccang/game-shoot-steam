@@ -9,12 +9,12 @@ async original=>{
     window.a=(await import('/src/main.js')).application;await a.ready;const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';
     const g=a.game;g.progress=p;g.reset();a.menu.enter();g.start();g.arrivalScene=null;g.mainlineSpeech=null;g.livingWeather='sun';g.update=()=>{};
     Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.refresh();g.livingWeather='sun';if(!g.requestFireRescue()||!g.startFireRescue())throw Error('接警失败');
-    const {updateFireRescue}=await import('/src/core/fire-rescue.js');for(let i=0;i<5000&&g.fireTransit;i++)updateFireRescue(g,.05);if(g.fireRescue.phase!=='active')throw Error('出库失败 '+JSON.stringify({state:g.state,phase:g.fireRescue.phase,transit:g.fireRescue.transit,player:{x:g.player.x,y:g.player.y}}));
+    const {updateFireRescue}=await import('/src/core/activities/fire-rescue.js');for(let i=0;i<5000&&g.fireTransit;i++)updateFireRescue(g,.05);if(g.fireRescue.phase!=='active')throw Error('出库失败 '+JSON.stringify({state:g.state,phase:g.fireRescue.phase,transit:g.fireRescue.transit,player:{x:g.player.x,y:g.player.y}}));
     Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();
    },time);
    for(let index=0;index<3;index++){
     const state=await page.evaluate(async index=>{
-     const g=a.game,r=g.fireRescue,s=r.waters[index],{fireObjective,updateFireRescue}=await import('/src/core/fire-rescue.js'),{riverXAt,isWaterBlocked}=await import('/src/world/river-geometry.js');
+     const g=a.game,r=g.fireRescue,s=r.waters[index],{fireObjective,updateFireRescue}=await import('/src/core/activities/fire-rescue.js'),{riverXAt,isWaterBlocked}=await import('/src/world/river-geometry.js');
      Object.assign(g.player,{x:s.x+25,y:s.y+30,vx:0,vy:0});r.water=10;r.waterGuide=true;r.routeClock=0;const target=fireObjective(g);updateFireRescue(g,.1);g.time+=.1;a.renderer.camera.time=null;a.refresh();
      return {index,x:s.x,y:s.y,east:s.x>riverXAt(s.y),dry:!isWaterBlocked(s.x,s.y,16),waterDx:s.waterDx,targetX:target.point.x,targetY:target.point.y,water:r.water,filling:r.filling,driving:g.vehicle.active,route:r.route.length};
     },index);

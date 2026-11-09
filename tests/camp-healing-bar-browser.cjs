@@ -5,7 +5,7 @@ async page=>{
  await page.evaluate(async()=>{const p=(await import('/src/progression/progress.js')).freshProgress(),cfg=await import('/src/config/monster-camps.js');p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.bosses=20;p.fireDispatch.next=999999;p.living.position=cfg.campVisitorSite(cfg.MONSTER_CAMPS[6]);localStorage.setItem('forest-patrol-v1',JSON.stringify(p));});
  await page.reload();await page.locator('#start').click();
  await page.evaluate(async()=>{
-  window.a=(await import('/src/main.js')).application;await a.ready;window.cfg=await import('/src/config/monster-camps.js');window.camps=await import('/src/core/monster-camps.js');window.bars=await import('/src/rendering/enemies.js');window.camp=cfg.MONSTER_CAMPS[6];
+  window.a=(await import('/src/main.js')).application;await a.ready;window.cfg=await import('/src/config/monster-camps.js');window.camps=await import('/src/core/battle/monster-camps.js');window.bars=await import('/src/rendering/enemies.js');window.camp=cfg.MONSTER_CAMPS[6];
   const g=a.game;g.attackTimer=g.encounterTimer=g.mainlineTalkDelay=999999;g.mainlineSpeech=null;g.player.invincible=999999;Object.assign(g.player,camp);camps.updateMonsterCamps(g,.04);window.actors=g.enemies.filter(e=>e.monsterCamp===camp.id);
   for(const e of actors)g.hit(e,e.maxHp*.6);
   Object.assign(g.player,{x:camp.x+900,y:camp.y});for(let i=0;i<30;i++)camps.updateMonsterCamps(g,.05);

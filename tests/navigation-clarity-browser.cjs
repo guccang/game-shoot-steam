@@ -4,7 +4,7 @@ async page=>{
  const errors=[],samples=[];page.on('pageerror',e=>errors.push(String(e)));
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;await a.ready;a.destroy();const p=(await import('/src/progression/progress.js')).freshProgress();p.living.position={x:580,y:1010};localStorage.setItem('forest-patrol-v1',JSON.stringify(p));localStorage.setItem('forest-patrol-gameplay-v1',JSON.stringify({pauseOnBlur:false}));});
  await page.reload();await page.locator('#start').click();
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.mainlineTalkDelay=999;g.mainlineSpeech=null;Object.assign(g.player,{x:580,y:1010});g.progress.fireDispatch.next=99999;a.environment.autoWeather=false;a.environment.weather='sun';(await import('/src/core/world-navigation.js')).requestWorldNavigation(g,{x:530,y:740},'前往武器工坊');a.refresh();});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.mainlineTalkDelay=999;g.mainlineSpeech=null;Object.assign(g.player,{x:580,y:1010});g.progress.fireDispatch.next=99999;a.environment.autoWeather=false;a.environment.weather='sun';(await import('/src/core/navigation/world-navigation.js')).requestWorldNavigation(g,{x:530,y:740},'前往武器工坊');a.refresh();});
  // 镜头跟随实际步行，路线与距离应随之推进。
  const before=await page.evaluate(async()=>(await import('/src/main.js')).application.game.player.y);
  await page.keyboard.down('ArrowUp');await page.waitForTimeout(550);await page.keyboard.up('ArrowUp');
@@ -23,7 +23,7 @@ async page=>{
  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(600);
  await page.screenshot({path:'output/playwright/navigation-clarity/reduced-motion.png'});await page.emulateMedia({reducedMotion:'no-preference'});
  // 到达后手动拜访标记退出，主线的购买步骤在未点击时不出现路线。
- const cleanup=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,{MAINLINE_TASKS}=await import('/src/config/mainline.js'),{worldNavigationObjective,requestMainlineNavigation}=await import('/src/core/world-navigation.js'),{inspectNavigationClarity}=await import('/src/rendering/visual-review.js');
+ const cleanup=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,{MAINLINE_TASKS}=await import('/src/config/mainline.js'),{worldNavigationObjective,requestMainlineNavigation}=await import('/src/core/navigation/world-navigation.js'),{inspectNavigationClarity}=await import('/src/rendering/visual-review.js');
   Object.assign(g.player,{x:530,y:740});worldNavigationObjective(g);
   const index=MAINLINE_TASKS.findIndex(t=>t.id==='buy-shotgun');g.progress.mainline.completed=MAINLINE_TASKS.slice(0,index).map(t=>t.id);g.progress.mainline.phase='doing';
   const hidden=inspectNavigationClarity(g,a.renderer.view);if(hidden.dots.length||hidden.targets.length)throw Error('购买任务自动显示路线');

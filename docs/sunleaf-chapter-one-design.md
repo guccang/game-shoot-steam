@@ -21,7 +21,7 @@
 
 明确不包含：新地图、第三条水路、护送人物寻路、六猫组队、好感度、复杂对话树、永久技能树、新武器、全套任务编辑器。新角色技能和机械召唤流派留到后续章节，避免本章同时验证过多变量。
 
-代码依据见[角色](../src/config/heroes.js)、[武器](../src/config/weapons.js)、[车型专属武器](../src/config/vehicle-armaments.js)、[命中与状态](../src/core/game.js)、[电弧](../src/combat/elemental.js)、[野猪王状态机](../src/combat/bosses.js)、[守护目标参考](../src/core/guardian-defense.js)和[架构说明](architecture.md)。历史说明可能落后于源码，例如当前气垫船已经有20号双联潮汐炮，本章按代码配置执行。
+代码依据见[角色](../src/config/heroes.js)、[武器](../src/config/weapons.js)、[车型专属武器](../src/config/vehicle-armaments.js)、[命中与状态](../src/core/game.js)、[电弧](../src/combat/elemental.js)、[野猪王状态机](../src/combat/bosses.js)、[守护目标参考](../src/core/battle/guardian-defense.js)和[架构说明](architecture.md)。历史说明可能落后于源码，例如当前气垫船已经有20号双联潮汐炮，本章按代码配置执行。
 
 ## 2 剧情与角色职责
 
@@ -339,10 +339,10 @@ Q60先允许准备，再由玩家点击迎战。薄荷移出战斗区的叙事�
 | 任务 | 交付物与主要位置 | 依赖 | 完成标准 |
 | --- | --- | --- | --- |
 | D1 场地与内容数据 | `src/config/story/sunleaf-01.js`、`src/world/story-sites.js`；地标最终表、路线截图 | 无 | 所有候选落点经碰撞复核，三车两路通行，Boss有两条冲锋走廊；剧情、遭遇、台词使用稳定ID |
-| D2 会话与存档 | `src/progression/story-progress.js`、`src/core/story-session.js`；接入progress、storage和app生命周期 | D1的阶段定义 | 新旧存档迁移、森林冻结/恢复、阶段检查点与奖励事务通过 |
-| D3 借用配置 | `src/config/story-loadouts.js`、`src/core/story-loadout.js`；接入正式武器和车辆快照 | D2 | 三套独立枪车正确工作，永久成长不会漏入，退回后供给恢复 |
-| D4 任务推进 | `src/core/story-manager.js`、`src/core/story-objectives.js` | D1、D2 | Q00至Q80可用规则事件完整走通，分支锁定、重复交互和跳过对话安全 |
-| D5 遭遇战与保护目标 | `src/core/story-encounters.js`；最小扩展现有敌人攻击目标适配 | D3、D4 | 普通战、三段守点、Boss与援兵使用正式战斗链，阶段结束准确且不泄漏奖励 |
+| D2 会话与存档 | `src/progression/story/story-progress.js`、`src/core/story-session.js`；接入progress、storage和app生命周期 | D1的阶段定义 | 新旧存档迁移、森林冻结/恢复、阶段检查点与奖励事务通过 |
+| D3 借用配置 | `src/config/story-loadouts.js`、`src/core/story/story-loadout.js`；接入正式武器和车辆快照 | D2 | 三套独立枪车正确工作，永久成长不会漏入，退回后供给恢复 |
+| D4 任务推进 | `src/core/story/story-manager.js`、`src/core/story-objectives.js` | D1、D2 | Q00至Q80可用规则事件完整走通，分支锁定、重复交互和跳过对话安全 |
+| D5 遭遇战与保护目标 | `src/core/story/story-encounters.js`；最小扩展现有敌人攻击目标适配 | D3、D4 | 普通战、三段守点、Boss与援兵使用正式战斗链，阶段结束准确且不泄漏奖励 |
 | D6 交互与正式绘制 | `src/ui/story.js`、`src/rendering/story-props.js`及现有装配入口 | D4、D5；制作前建立美术任务单 | 可实际接取、选路、试射、换装、失败重试和结算；绑定视觉合同 |
 | D7 平衡和验收 | `tests/story*.test.mjs`、浏览器验收脚本、`docs/story-reports/sunleaf-01.md` | D1–D6 | 下节技术、视觉与真人体验结果完整，未通过项有修订及复测记录 |
 

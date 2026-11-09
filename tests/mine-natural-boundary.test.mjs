@@ -3,16 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
-import {freshMining,openBasement,normalizeMining} from '../src/progression/mining.js';
+import {freshMining,openBasement,normalizeMining} from '../src/progression/mining/mining.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MINING as M,mineCell,mineKey,minePoint} from '../src/config/mining.js';
-import {freshMineLayer} from '../src/progression/mine-layers.js';
+import {freshMineLayer} from '../src/progression/mining/mine-layers.js';
 import {mineCellArea} from '../src/config/mine-ecology.js';
 import {mineSurfaceAt,buildMineSurface} from '../src/world/mine-surface.js';
 import {mineOccupancy} from '../src/physics/mine-motion.js';
-import {enterMine,updateMining,buildMine,rideMineCart,toggleMineCart,selectMineTool} from '../src/core/mining.js';
-import {buildMineBridge} from '../src/core/mine-ecology.js';
+import {enterMine,updateMining,buildMine,rideMineCart,toggleMineCart,selectMineTool} from '../src/core/mining/mining.js';
+import {buildMineBridge} from '../src/core/mining/mine-ecology.js';
 import {railExits} from '../src/config/mine-rail-routes.js';
 // 非整格边界覆盖真实部分边缘格，内部清出可用通道但不能打开外围岩层。
 function layer(){const m=freshMining();openBasement(m);m.seed=1847;m.bounds={left:M.home.x-101.25,top:M.home.y-109.5,right:M.home.x+101.25,bottom:M.home.y+109.5};for(let y=-4;y<=4;y++)for(let x=-4;x<=4;x++)m.dug[mineKey({x,y})]=true;return m;}

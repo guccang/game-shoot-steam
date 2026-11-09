@@ -11,7 +11,7 @@ async (page) => {
     const { catSprites } = await import('/src/rendering/cat-animation.js');
     if (!await catSprites.load()) throw Error('真实图集未能加载');
     const { drawCat } = await import('/src/rendering/characters.js');
-    const { createCatMotion } = await import('/src/core/cat-motion.js');
+    const { createCatMotion } = await import('/src/core/battle/cat-motion.js');
     const canvas = document.createElement('canvas'); canvas.width = canvas.height = 180;
     const c = canvas.getContext('2d'), signatures = [];
     for (const hero of [0, 1]) {
@@ -69,7 +69,7 @@ async (page) => {
   await page.setViewportSize({ width: 720, height: 420 });
   await page.evaluate(async () => {
     const { drawCat } = await import('/src/rendering/characters.js');
-    const { createCatMotion, updateCatMotion } = await import('/src/core/cat-motion.js');
+    const { createCatMotion, updateCatMotion } = await import('/src/core/battle/cat-motion.js');
     const { createRecoil, triggerRecoil, updateRecoil } = await import('/src/combat/recoil.js');
     const canvas = document.createElement('canvas'); canvas.id = 'cat-animation-review';
     canvas.width = 720; canvas.height = 420; canvas.style.cssText = 'position:fixed;inset:0;z-index:99999;width:720px;height:420px';

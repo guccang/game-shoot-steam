@@ -1,11 +1,11 @@
 // 主菜单只展示当前出战猫，伙伴在猫窝招募，回巡林小屋换班。
 import {HEROES} from '../config/heroes.js';
-import {heroExperience} from '../progression/hero-experience.js';
+import {heroExperience} from '../progression/player/hero-experience.js';
 import {heroGrowthMarkup} from './hero-growth.js';
 import {drawCat} from '../rendering/characters.js';
 import {createEventScope} from '../platform/events.js';
 import {COTTAGE} from '../config/cottage.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 // 复用正式角色头像和统一手机弹窗，只在打开时读取当前装备状态。
 export function createCurrentCat({game,root,dialogs,onInventoryRender,onCleanup}){
  const scope=createEventScope(),panel=root.createElement('dialog');panel.id='current-cat-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','current-cat-title');

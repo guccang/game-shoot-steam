@@ -6,17 +6,17 @@ import {ownedPineProgress} from './helpers/owned-pine-progress.mjs';
 import {validateProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WORKSHOP_INTERIORS,interiorLayout,interiorShopkeeper,interiorWorkshopTargets} from '../src/config/workshop-interiors.js';
-import {updateCottage,enterWorkshop} from '../src/core/cottage.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
-import {parkedOwned,boardParkedVehicle,parkingOccupied,updateParkingVisitors} from '../src/core/camp-parking.js';
-import {vehicleLocations,locateVehicle} from '../src/core/vehicle-location.js';
-import {worldNavigationDiagnostics} from '../src/core/world-navigation.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {updateCottage,enterWorkshop} from '../src/core/home/cottage.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
+import {parkedOwned,boardParkedVehicle,parkingOccupied,updateParkingVisitors} from '../src/core/vehicles/camp-parking.js';
+import {vehicleLocations,locateVehicle} from '../src/core/vehicles/vehicle-location.js';
+import {worldNavigationDiagnostics} from '../src/core/navigation/world-navigation.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {canonical,worldDistance} from '../src/world/coordinates.js';
-import {canBuyFarmSeeds,buyFarmSeeds} from '../src/core/farm-seeds.js';
-import {requestVehicleRepair,collectRepairedVehicle,updateVehicleRepair} from '../src/core/vehicle-repair.js';
+import {canBuyFarmSeeds,buyFarmSeeds} from '../src/core/farming/farm-seeds.js';
+import {requestVehicleRepair,collectRepairedVehicle,updateVehicleRepair} from '../src/core/vehicles/vehicle-repair.js';
 import {REPAIR_BAY} from '../src/config/vehicle-repair.js';
-import {requestParking,updateParking} from '../src/core/parking.js';
+import {requestParking,updateParking} from '../src/core/vehicles/parking.js';
 import {PARKING_SPOTS} from '../src/config/parking.js';
 
 // 完成建筑修复并关闭无关战斗，让断言只覆盖本次正式规则。

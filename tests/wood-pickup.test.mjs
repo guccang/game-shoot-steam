@@ -7,14 +7,14 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WOOD_ITEM} from '../src/config/wood-storage.js';
 import {LOAD_RULES} from '../src/config/vehicle-load.js';
-import {collectAutomaticWood,woodPickupCapacity} from '../src/core/wood-pickup.js';
-import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/load-weight.js';
+import {collectAutomaticWood,woodPickupCapacity} from '../src/core/inventory/wood-pickup.js';
+import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
-import {arrivalWorkshopObjective} from '../src/core/ranger-arrival.js';
+import {arrivalWorkshopObjective} from '../src/core/camp/ranger-arrival.js';
 import {resourcePickupPoses} from '../src/combat/resource-pickup.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {updateCombatTraces} from '../src/combat/transient-effects.js';
-import {updateLoadWarning} from '../src/core/load-warning.js';
+import {updateLoadWarning} from '../src/core/inventory/load-warning.js';
 // 完成非相关剧情，阻止生成怪物和自动攻击，只保留正常移动与拾取。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.vehicleHulls[0]=1;p.vehicleIndex=0;const events=[],g=new Game(p,()=>.5,(type,data)=>events.push({type,data}));g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=g.fireClock=g.attackTimer=999;g.trees=[];g.enemies=[];g.progress.campParking.owned=[];g.parkingVisitTimer=999;g.livingPersist=()=>true;Object.assign(g.player,{x:900,y:800,vx:0,vy:0});return {g,events};}
 
@@ -32,13 +32,14 @@ test('木制自行车装入八十份任务木材后可行驶，整批装不下�
  g.progress.vehicleHulls[hull]=1;g.progress.vehicleIndex=hull;g.vehicle=g.vehicles[hull];g.vehicle.active=true;
  for(let i=0;i<10;i++){g.addTree(1150,800);g.hit(g.trees.at(-1),9999);}
  const load=vehicleLoad(g);
- assert.equal(load.capacity,10);assert.equal(load.payload,8);
+ assert.equal(load.capacity,50);assert.equal(load.payload,8);
  assert.equal(g.progress.logistics.builds[hull].wood,80);assert.ok(movementLoadFactor(g)>0);
- g.progress.logistics.builds[hull].wood=96;
+ const fullCount=Math.round(load.capacity/WOOD_ITEM.mass);
+ g.progress.logistics.builds[hull].wood=fullCount-4;
  assert.equal(collectAutomaticWood(g,{type:'tree',x:1150,y:800},8),false);
  const first=g.numbers.find(n=>n.vehicleLoadNotice);assert.match(first.text,/这批木材/);
  g.player.x+=72;updateCombatTraces(g,2.5);assert.ok(first.life>.5);assert.equal(first.x,g.player.x);
- g.progress.logistics.builds[hull].wood=100;updateLoadWarning(g,.05,{x:1,y:0});
+ g.progress.logistics.builds[hull].wood=fullCount;updateLoadWarning(g,.05,{x:1,y:0});
  assert.match(first.text,/满载/);assert.equal(g.numbers.filter(n=>n.vehicleLoadNotice).length,1);
  updateCombatTraces(g,3);assert.equal(first.life,.5);updateCombatTraces(g,.5);
  assert.ok(!g.numbers.includes(first));

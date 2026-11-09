@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {BIOMES,enemyIdentity} from '../src/world/biomes.js';
 import {waveDifficulty} from '../src/config/waves.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {clearingEnemyHealth,clearingEnemyDamage} from '../src/config/clearing-damage.js';
 import {clearingEnemyLevel} from '../src/config/clearing-difficulty.js';
 

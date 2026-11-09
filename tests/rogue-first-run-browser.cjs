@@ -34,7 +34,7 @@ async page => {
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(async()=>{
     const a=(await import('/src/main.js')).application,g=a.game;
-    const {updateRealm}=await import('/src/core/realm-manager.js');
+    const {updateRealm}=await import('/src/core/realms/realm-manager.js');
     for(let n=0;n<4;n++){g.enemies=[];g.boss=null;g.realm.kills=g.realm.spec.total;updateRealm(g,0);g.chooseRealmBlessing(g.realm.offers[0]);}
     a.refresh();a.save();
   });
@@ -56,7 +56,7 @@ async page => {
   await page.evaluate(async()=>{
     const a=(await import('/src/main.js')).application,g=a.game;
     g.enterRealm('rogue');g.rollRealmEquipment('weapon');g.rollRealmEquipment('vehicle');g.readyRealm();g.chooseRealmBlessing(g.realm.offers[0]);
-    const {updateRealm}=await import('/src/core/realm-manager.js');
+    const {updateRealm}=await import('/src/core/realms/realm-manager.js');
     for(let n=0;n<4;n++){g.enemies=[];g.boss=null;g.realm.kills=g.realm.spec.total;updateRealm(g,0);g.chooseRealmBlessing(g.realm.offers[0]);}
     if(g.realm.phase!=='combat'||g.realm.stage!==5)throw Error('第二次不应提示');
     g.realm.firstRun=true;g.realm.phase='guide';g.state='realm';a.refresh();

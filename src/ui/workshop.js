@@ -1,21 +1,21 @@
 import {eraVehicle,eraDonor} from '../config/vehicle-eras.js';
-import {storedWeaponRack,storedWarehouseWeapon} from '../progression/weapon-storage.js';
-import {catLoad} from '../progression/load-weight.js';
-import {weaponPurchaseQuote} from '../core/weapon-purchase-load.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {storedWeaponRack,storedWarehouseWeapon} from '../progression/inventory/weapon-storage.js';
+import {catLoad} from '../progression/inventory/load-weight.js';
+import {weaponPurchaseQuote} from '../core/inventory/weapon-purchase-load.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {WORKSHOP,VEHICLE_WORKSHOP} from '../world/workshop.js';
-import {equipmentQuest,equipmentQuestReason} from '../progression/equipment-quests.js';
+import {equipmentQuest,equipmentQuestReason} from '../progression/workshop/equipment-quests.js';
 import {equipmentQuestStatus} from './equipment-quests.js';
 import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
 import {arrivalPistolPurchase} from '../config/ranger-arrival.js';
-import {workshopCatalog} from '../progression/workshop-catalog.js';
+import {workshopCatalog} from '../progression/workshop/workshop-catalog.js';
 import {vehicleBuild,installedEngine} from '../config/vehicle-load.js';
 import {WORKSHOP_FUNCTIONS,renderWorkshopFunctions} from './workshop/function-tabs.js';
 import {vehicleTransferState,activateVehicleTransfer} from './vehicle-transfer.js';
 import {challengeRankIcon} from '../rendering/challenge-rank.js';
 import {createWorkshopMastery} from './workshop/mastery.js';
 import {createWorkshopEquipmentInfo} from './workshop/equipment-info.js';
-import {canLegendaryForge} from '../core/legendary-workshop.js';
+import {canLegendaryForge} from '../core/workshop/legendary-workshop.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 import { VEHICLE_WEAPONS, nativeVehicleWeapon } from '../config/vehicle-armaments.js';
 import { renderWorkshopStats } from './workshop/stats.js';
@@ -31,17 +31,17 @@ import { drawEquipmentPart, partBounds } from '../rendering/equipment-parts.js';
 import { createWorkshopConstruction } from './workshop/construction.js';
 // 沉浸式工坊只管理交互草稿；规则、报价、提交与试射由独立模块提供。
 import { WORKSHOP_MARKUP } from './workshop/markup.js';
-import { WEAPONS, WEAPON_DISPLAY_ORDER } from '../config/weapons.js';
+import {WEAPONS} from '../config/weapons.js';
 import { COLLECTED_VEHICLES } from '../config/vehicles.js';
 import { WEAPON_MODS, masteryInfo, MOD_MASTERY_LEVEL } from '../config/weapon-mods.js';
 import { workshopPart } from '../config/workshop-parts.js';
-import { quoteWorkshop, previewWorkshop, workshopDraft, workshopUpgrade, applyPartPreview } from '../progression/workshop.js';
-import { trackEquipment } from '../progression/equipment-goals.js';
+import { quoteWorkshop, previewWorkshop, workshopDraft, workshopUpgrade, applyPartPreview } from '../progression/workshop/workshop.js';
+import { trackEquipment } from '../progression/workshop/equipment-goals.js';
 import { drawWorkshopEquipment, workshopLayout } from '../rendering/workshop.js';
 import { drawWorkshopPart } from '../rendering/workshop-parts.js';
 import { resourceButton } from '../rendering/resource-icons.js';
 import { createEventScope } from '../platform/events.js';
-import {recordMainlineTrial} from '../core/mainline-manager.js';
+import {recordMainlineTrial} from '../core/story/mainline-manager.js';
 import {mainlinePurchaseReason} from '../config/mainline-gates.js';
 
 // 所有入口共用一个弹窗；外部注入持久化事务和隔离靶场，界面不依赖 Game 类型。
@@ -99,6 +99,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
     if(plan.action==='part') {
       const spec=equipmentParts(plan.kind,plan.index,game.progress).find(p=>p.key===plan.part);
       const purposes={damage:i18nText("ui.workshop.8c0f404da6"),rate:i18nText("ui.workshop.c688841728"),capacity:i18nText("ui.workshop.b13fe6eb39"),reload:i18nText("ui.workshop.754ee4652f"),range:i18nText("ui.workshop.c93492d4a9"),accuracy:i18nText("ui.workshop.cb5b2e6e19"),armor:i18nText("ui.workshop.d501c505ba"),engine:i18nText("ui.workshop.c3c0f4b9a9"),coordination:i18nText("ui.workshop.e69e3c1155")};
+      if(plan.kind==='weapons'&&WEAPONS[plan.index].id==='water'&&['capacity','reload'].includes(plan.part))return `${spec.name} · ${plan.part==='capacity'?'增加储水量与可喷射次数':'缩短河湖岸边补满用时'}`;
       if(plan.kind==='weapons'&&WEAPONS[plan.index].attackKind==='defense')return `${spec.name} · ${plan.part==='damage'?'提升护盾容量':'提升每秒恢复量'}`;
       return `${spec.name} · ${purposes[plan.part]}`;
     }
@@ -347,7 +348,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
       if(part.growthBounds||target.index===2&&part.bounds)drawWorkshopPartComparison(c,target.index,part,level);
       else {c.save();c.translate(60,36);c.scale(2,2);drawEquipmentPart(c,target.index,part,level,true);c.restore();}
     }
-    if(target.kind==='vehicle')$('ws-components').innerHTML='<button id="ws-vehicle-fit" data-ws-fit><b>发动机与装甲</b><small>换装发动机 · 叠加装甲 · 查看载重</small></button>';
+    if(target.kind==='vehicle')$('ws-components').innerHTML='<button id="ws-vehicle-fit" data-ws-fit><b>载具可视化改造</b><small>引擎 · 装甲 · 底盘 · 区域分配</small></button>';
     const levels = kind === 'weapons' ? p.weapons : p.vehicleHulls;
     const shownLevel=editingTurret===null?levels[index]:p.vehicleWeapons[editingTurret];
     $('ws-level').textContent = shownLevel ? i18nText("common.level", { p0: shownLevel }) : i18nText("ui.inventory.2f0baebfe7");
@@ -571,7 +572,7 @@ export function createWorkshop({ game, root, dialogs, commit, createTrial, onCha
   function guideState(part){
     if(index===null)return {open:dialog.open,page:functionPage,kind,index:null,empty:true,draft:null,busy:false,dragging:false,trial:false,tool:construction.guideState(),affordable:false,reason:'当前页签没有武器'};
     const target=partTarget(),plan=part?workshopUpgrade(game.progress,target.kind,target.index,part,kind==='vehicle'?index:null):quotePlan();
-    const p=game.progress,key=JSON.stringify([dialog.open,plan,p.coins,p.wood,p.materials,p.bosses,p.campLevel?.xp,p.mainline?.completed.length,p.weapons,p.vehicleHulls,p.vehicleWeapons,p.mastery,p.mods,!!game.realm]);
+    const p=game.progress,key=JSON.stringify([dialog.open,plan,p.coins,p.wood,p.materials,p.logistics?.bagWood,p.logistics?.builds.map(b=>b.wood),p.industry?.bag,p.industry?.vehicles,p.bosses,p.campLevel?.xp,p.mainline?.completed.length,p.weapons,p.vehicleHulls,p.vehicleWeapons,p.mastery,p.mods,!!game.realm]);
     if(!guideQuoteCache||guideQuoteCache.key!==key||guideQuoteCache.progress!==p)guideQuoteCache={key,progress:p,quote:plan.action==='inspect'||!dialog.open?{ok:true,reason:''}:quoteWorkshop(p,plan,!!game.realm)};
     const quote=weaponPurchaseQuote(game,plan,guideQuoteCache.quote);
     return {open:dialog.open,page:functionPage,kind,index,turret:editingTurret,tray,part:selectedUpgrade,choice:selectedPart,

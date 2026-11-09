@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {hordeGame} from './helpers/horde-wave-pacing.mjs';
 import {CombatCamera} from '../src/rendering/camera.js';
-import {findCampOffscreenSpawn} from '../src/core/camp-defense-arrival.js';
-import {updateCampDefense} from '../src/core/camp-defense.js';
-import {updateEnemies} from '../src/core/enemy-manager.js';
+import {findCampOffscreenSpawn} from '../src/core/camp/camp-defense-arrival.js';
+import {updateCampDefense} from '../src/core/camp/camp-defense.js';
+import {updateEnemies} from '../src/core/battle/enemy-manager.js';
 import {nearest,worldDistance,WORLD} from '../src/world/coordinates.js';
 // 正式镜头计算结果投影为运行时提供给出生逻辑的相对视口。
 function viewFor(g,width,height){g.setViewport(width,height);const v=new CombatCamera().update(g.player,width,height,null,0,false,{horde:g.campDefense});g.arrivalView={left:v.x-g.player.x,right:v.x+v.w-g.player.x,top:v.y-g.player.y,bottom:v.y+v.h-g.player.y,width,height};return v;}

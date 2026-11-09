@@ -2,7 +2,7 @@
 import {storyCueInfo} from '../rendering/story-guidance.js';
 import {createCompactSpeech} from './compact-speech.js';
 import {sceneLayout} from './scene-layout.js';
-import {nearbyStoryPost} from '../core/story-posts.js';
+import {nearbyStoryPost} from '../core/story/story-posts.js';
 
 // 单个正式气泡节点复用所有提示，预警、长对白和操作区始终优先。
 export function createStoryChatter({game,root,renderer}){

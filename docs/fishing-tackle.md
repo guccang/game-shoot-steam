@@ -43,4 +43,4 @@
 
 湖面可见鱼群独立于玩家装备，按栖地与基础稀有度分布；它们是生态表现，不意味着画面中某条鱼必定被本次抛竿钓中。
 
-正式配置：[鱼种目录](../src/config/fish-catalog.js)、[钓具](../src/config/fishing-tackle.js)；概率预览和抽取共用[钓具计算](../src/core/fishing-tackle.js)。
+正式配置：[鱼种目录](../src/config/fish-catalog.js)、[钓具](../src/config/fishing-tackle.js)；概率预览和抽取共用[钓具计算](../src/core/fishing/fishing-tackle.js)。

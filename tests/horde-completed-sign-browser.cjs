@@ -10,7 +10,7 @@ async page=>{
  });
  await page.reload();await page.setViewportSize({width:390,height:900});await page.locator('#start').click();
  await page.evaluate(async()=>{window.signApp=(await import('/src/main.js')).application;await signApp.ready;const g=signApp.game;
-  Object.assign(g.player,(await import('/src/core/camp-parking.js')).vehicleParkingSite(g,0));if(!g.summonVehicle())throw Error('召唤战车失败');
+  Object.assign(g.player,(await import('/src/core/vehicles/camp-parking.js')).vehicleParkingSite(g,0));if(!g.summonVehicle())throw Error('召唤战车失败');
   window.signUpdate=g.update;g.update=()=>{};
  });
  // 正式审核入口与Canvas文字绘制同时核对，不以隐藏DOM文字代替牌面。
@@ -62,7 +62,7 @@ async page=>{
  if(!(await page.locator('#camp-content').textContent()).includes('已完成 9 次兽潮'))throw Error('点击后缺少累计详细说明');
  await page.screenshot({path:'output/playwright/horde-completed-sign/details.png'});await page.locator('#camp-primary').click();
  await page.waitForFunction(()=>signApp.game.state==='playing'&&!!signApp.game.campDefense);
- await page.evaluate(async()=>{const a=signApp,g=a.game,r=g.campDefense;g.enemies=[];Object.assign(r,{wave:10,waveKills:86,spawned:86,timer:0});(await import('/src/core/camp-defense.js')).updateCampDefense(g,.01);g.hit(g.boss,g.boss.hp);a.refresh();});
+ await page.evaluate(async()=>{const a=signApp,g=a.game,r=g.campDefense;g.enemies=[];Object.assign(r,{wave:10,waveKills:86,spawned:86,timer:0});(await import('/src/core/camp/camp-defense.js')).updateCampDefense(g,.01);g.hit(g.boss,g.boss.hp);a.refresh();});
  await page.locator('.camp-grade').waitFor({state:'visible'});
  if(await page.evaluate(()=>signApp.game.progress.campDefense.runs)!==9)throw Error('领奖前提前加次数');
  await page.locator('#camp-primary').click();await page.locator('#task-reward-dialog').waitFor({state:'visible'});await page.locator('#task-reward-close').click();

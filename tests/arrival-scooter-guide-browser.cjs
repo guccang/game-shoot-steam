@@ -27,14 +27,14 @@ async page=>{
   await t.locator('#arrival-goal').tap();await t.locator('#arrival-letter-done').tap();
   await t.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;window.arrivalTick=a.game.update.bind(a.game);a.game.update=()=>{};});
   if(await t.locator('#arrival-title').textContent()!=='骑上木制自行车')throw Error('读信后没有上车任务');
-  const route=await t.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));
+  const route=await t.evaluate(async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game));
   if(route?.task.id!=='arrival-scooter')throw Error('没有赠车路线');
   await t.evaluate(async()=>{const {RANGER}=await import('/src/config/ranger-arrival.js');Object.assign(a.game.player,{x:RANGER.parking.x+12,y:RANGER.parking.y+18});a.renderer.camera.time=null;a.refresh();a.renderer.draw();});
   await pictures('board','靠近木制自行车');await t.setViewportSize({width:390,height:844});
   await t.evaluate(()=>{for(let i=0;i<32&&!a.game.vehicle.active;i++)arrivalTick(.05);arrivalTick(.05);a.refresh();});
   if(!await t.evaluate(()=>a.game.vehicle.active&&a.game.progress.arrival.phase==='gather'))throw Error('实际上车未推进采集');checks.push('读信、路线及靠近上车');
   await t.evaluate(async()=>{
-   const {woodPickupCapacity}=await import('/src/core/wood-pickup.js'),{TREE_REWARD}=await import('/src/config/rewards.js'),{CAMP_WAREHOUSE}=await import('/src/config/wood-storage.js'),{storeWood}=await import('/src/core/wood-storage.js');
+   const {woodPickupCapacity}=await import('/src/core/inventory/wood-pickup.js'),{TREE_REWARD}=await import('/src/config/rewards.js'),{CAMP_WAREHOUSE}=await import('/src/config/wood-storage.js'),{storeWood}=await import('/src/core/inventory/wood-storage.js');
    const g=a.game;for(let n=0;n<40&&g.progress.arrival.phase==='gather';n++){
     const tree=g.trees.find(t=>t.hp>0);Object.assign(g.player,{x:tree.x-50,y:tree.y});g.player.angle=0;
     for(let i=0;i<120&&tree.hp>0&&g.progress.arrival.phase==='gather';i++)arrivalTick(.05);

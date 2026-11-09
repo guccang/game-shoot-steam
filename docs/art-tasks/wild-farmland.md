@@ -48,7 +48,7 @@
 | 透明背景 | 复用透明PNG；不叠加背景 |
 | 碰撞与可通行性 | 田块可通行，选点使用farmLandReason与farmApproach |
 | 昼夜处理 | 同一形体参与既有场景色调处理 |
-| 文件格式与位置 | src/core/wild-farm.js；src/rendering/farm.js；assets/farm/manifest.json |
+| 文件格式与位置 | src/core/farming/wild-farm.js；src/rendering/farm.js；assets/farm/manifest.json |
 | 内存与缓存预算 | 两图共58个新增田块数据/命中节点，两张既有作物图集，无新位图缓存 |
 | 必需资源与失败行为 | 既有农田图集；加载失败沿用明确错误提示，禁止占位通过 |
 
@@ -60,7 +60,7 @@
 | --- | --- |
 | 动作和时长 | 沿用成熟轻摆、走近挥镰及播种；无新身体动作 |
 | 时钟、帧率与循环 | 沿用正式农具动作时钟、作物表现时钟和暂停逻辑 |
-| 动作源码或源视频与连续片段 | src/rendering/farm-tools.js、farm-growth.js 与 core/farm.js；本轮无新视频 |
+| 动作源码或源视频与连续片段 | src/rendering/farm-tools.js、farm-growth.js 与 core/farming/farm.js；本轮无新视频 |
 | 尺寸、裁切和缩放 | 沿用FARM_CROP_SIZE与固定根部，不改裁切 |
 | 起停与状态衔接 | 沿用既有停止、暂停与动作衔接 |
 | 局部真实动作 | 作物局部茎叶轻摆，猫真实连续帧 |
@@ -125,7 +125,7 @@
 - 目标与规则：仅带wild标记的自动生成田地适用；生成及最近一次成功播种记录绝对游戏历法时间。经过完整四季未再播种，移除田格及其作物；每格独立计时，不因进入新年份立即清理。收获和浇水不续期，自行开垦田保留。
 - 存档与事务：旧档缺失日期从当前游戏日期起算，未来或损坏日期也回落当前日期；成功写盘后才移除田块及其农活队列，失败保留原状并限频重试。两图统一清理，生成记录保持，读档不补发野田、种子、金币或经验；已删除的教学目标按手动移除规则恢复。
 - 结构与保留项：复用现有田埂、作物、角色、农具和地图渲染；到期只删除正式地块记录及操作目标，无新增图像、颜色、尺寸、锚点、布局、碰撞或动画。美术资源生成和额外动作录制不适用。
-- 正式入口：src/core/game.js#update → src/core/wild-farm.js#expireWildFarms；历法规则在src/progression/wild-farm-age.js；播种续期在src/core/farm.js#farmAction。继续使用wild-farmland设计目标与正式绘制入口。
+- 正式入口：src/core/game.js#update → src/core/farming/wild-farm.js#expireWildFarms；历法规则在src/progression/farming/wild-farm-age.js；播种续期在src/core/farming/farm.js#farmAction。继续使用wild-farmland设计目标与正式绘制入口。
 - 测试：tests/wild-farm-expiry.test.mjs、wild-farm.test.mjs、wild-farm-scatter.test.mjs、farm-removal.test.mjs，共22项通过。包含满年边界、跨年、两图、旧档、播种/收获/浇水、写盘失败、暂停、队列及教学引用。
 - 浏览器：tests/wild-farm-expiry-browser.cjs通过。正式Game.update在满一年时从108格清理至1格，最近播种田保留，过期田点击层消失，正式农活队列取消，读档仍为1格且无页面异常。390×844白天/夜晚实景已复核；仅地块数据消失，现有UI及绘制尺寸不变。证据保存主工作区output/playwright/wild-farm-expiry/（before.png、after-day.png、after-night.png、browser-results.txt）。4175已有服务，隔离验证用4176。
 - 结论：通过，无新增运行素材和缓存。此节替代原田地永久保留的说明。

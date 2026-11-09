@@ -6,8 +6,8 @@
 #mine-minimap{width:88px;height:88px;flex:none}
 #mine-controls{position:absolute;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));pointer-events:none}
 #mine-controls #mine-message{font-size:11px;line-height:1.4;min-height:30px;max-height:32px;overflow:auto;margin:0 0 5px;color:#f0e1b9;text-align:center;pointer-events:auto}
-/* 种植式六格图形工具栏，选中态和文字同屏；第二行保留交通与建设入口。 */
-#mine-controls .mine-tools{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:5px;border:2px solid var(--ui-line);border-radius:var(--ui-radius-panel);background:var(--ui-paper);pointer-events:auto;margin-bottom:6px}
+/* 种植式五格图形工具栏，选中态和文字同屏；第二行保留交通与建设入口。 */
+#mine-controls .mine-tools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:5px;border:2px solid var(--ui-line);border-radius:var(--ui-radius-panel);background:var(--ui-paper);pointer-events:auto;margin-bottom:6px}
 #mine-controls .mine-tools button{min-width:44px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:3px;font-size:11px;touch-action:manipulation}
 #mine-controls .mine-tools svg{width:28px;height:28px;flex:none}
 #mine-controls .mine-tools span{white-space:nowrap}
@@ -40,7 +40,7 @@
 #mine-hud[data-expanded="false"] :is(#mine-development,#mine-position,#mine-home){display:none}
 #mine-controls #mine-message{min-height:0;max-height:32px;padding:4px 8px;border-radius:8px;background:#294c3ce8;max-width:100%;width:fit-content;margin:0 auto 6px}
 #mine-controls .mine-compact{display:flex;justify-content:flex-end;gap:8px;margin-bottom:6px}
-#mine-controls .mine-compact button{min-width:68px;min-height:44px}
+#mine-controls .mine-compact button{min-width:44px;min-height:44px;flex:1;padding-inline:6px}
 #mine-tools-panel[hidden]{display:none}
 #mine-tools-panel{max-height:45vh;overflow:auto;pointer-events:auto}
 /* 地下钓鱼复用正式操作条，贴近底部，避免与折叠工具重复占用空间。 */

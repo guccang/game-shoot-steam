@@ -9,7 +9,7 @@ async original=>{
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
    const p=(await import('/src/progression/progress.js')).freshProgress(),ids=(await import('/src/config/mainline.js')).MAINLINE_IDS,restoration=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS;
-   window.sites=await import('/src/world/outdoor-sites.js');window.navigation=await import('/src/core/world-navigation.js');window.coordinates=await import('/src/world/coordinates.js');const {blocked}=await import('/src/physics/motion.js');const {MONSTER_CAMPS}=await import('/src/config/monster-camps.js');
+   window.sites=await import('/src/world/outdoor-sites.js');window.navigation=await import('/src/core/navigation/world-navigation.js');window.coordinates=await import('/src/world/coordinates.js');const {blocked}=await import('/src/physics/motion.js');const {MONSTER_CAMPS}=await import('/src/config/monster-camps.js');
    p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...ids];p.mainline.phase='complete';p.restoration.repaired=restoration.map(r=>r.id);p.restoration.cottageRested=true;p.outdoors.rod=true;p.outdoors.bait=20;p.living.patrolActive=true;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.enemies=[];g.boss=null;g.vehicle.active=false;g.mainlineTalkDelay=g.spawnTimer=g.fireClock=g.attackTimer=99999;g.random=()=>.4;
    // 选取真实可走的最后几步，避免把准备位置直接放进湖岸后方的岩石或建筑。

@@ -6,9 +6,9 @@ import {ownedPineProgress} from './helpers/owned-pine-progress.mjs';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {leaveCottage} from '../src/core/cottage.js';
-import {updateParkingVisitors} from '../src/core/camp-parking.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {leaveCottage} from '../src/core/home/cottage.js';
+import {updateParkingVisitors} from '../src/core/vehicles/camp-parking.js';
 import {blocked} from '../src/physics/motion.js';
 import {canonical,WORLD,worldDistance} from '../src/world/coordinates.js';
 // 完整地图保留树木、建筑和停车体，避免空地图掩盖出生重叠。

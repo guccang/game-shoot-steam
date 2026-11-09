@@ -5,8 +5,8 @@ import {GameplayLog,diagnosticValue} from '../src/platform/gameplay-log.js';
 import {gameplayState} from '../src/core/gameplay-state.js';
 import {Game,freshProgress} from '../src/game.js';
 import {createSaveStore} from '../src/platform/storage.js';
-import {storyRouteDiagnostics} from '../src/core/story-route.js';
-import {requestWorldNavigation,worldNavigationDiagnostics} from '../src/core/world-navigation.js';
+import {storyRouteDiagnostics} from '../src/core/navigation/story-route.js';
+import {requestWorldNavigation,worldNavigationDiagnostics} from '../src/core/navigation/world-navigation.js';
 
 test('日志按真实顺序保存独立副本，返回报告也不能改写历史',()=>{
  let time=0;const log=new GameplayLog({now:()=>time,date:()=>new Date(time).toISOString()}),data={task:{phase:'doing'}};

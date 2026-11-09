@@ -20,8 +20,8 @@ async original=>{
   await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{a.game.update=a.game.frontReviewUpdate;delete a.game.frontReviewUpdate;});
   await page.waitForFunction(()=>a.game.progress.vehicleService[0].phase==='repairing',null,{timeout:25000});await view('repair');await shot('repair-working');
   await page.waitForFunction(()=>a.game.progress.vehicleService[0].phase===null,null,{timeout:20000});
-  const delivered=await page.evaluate(async()=>{const g=a.game,l=(await import('/src/core/vehicle-location.js')).vehicleLocations(g).find(r=>r.hull===0);return {slot:g.progress.campParking.owned.find(r=>r.hull===0).spot,active:g.vehicles[0].active,hp:g.vehicles[0].hp,full:g.vehicles[0].maxHp,location:l};});if(!delivered.slot.startsWith('north-')||delivered.active||delivered.hp!==delivered.full)throw Error(JSON.stringify(delivered));checks.push('auto-delivered');
-  await page.evaluate(async()=>{const s=(await import('/src/core/vehicle-location.js')).vehicleLocations(a.game).find(r=>r.hull===0);Object.assign(a.game.player,{x:s.x+20,y:s.y+80});a.renderer.camera.time=null;});await shot('north-parking-delivery');
+  const delivered=await page.evaluate(async()=>{const g=a.game,l=(await import('/src/core/vehicles/vehicle-location.js')).vehicleLocations(g).find(r=>r.hull===0);return {slot:g.progress.campParking.owned.find(r=>r.hull===0).spot,active:g.vehicles[0].active,hp:g.vehicles[0].hp,full:g.vehicles[0].maxHp,location:l};});if(!delivered.slot.startsWith('north-')||delivered.active||delivered.hp!==delivered.full)throw Error(JSON.stringify(delivered));checks.push('auto-delivered');
+  await page.evaluate(async()=>{const s=(await import('/src/core/vehicles/vehicle-location.js')).vehicleLocations(a.game).find(r=>r.hull===0);Object.assign(a.game.player,{x:s.x+20,y:s.y+80});a.renderer.camera.time=null;});await shot('north-parking-delivery');
   if(errors.length)throw Error(errors.join('\n'));return {checks,delivered,errors};
  }catch(e){await shot('failure');throw e;}finally{await context.close();}
 }

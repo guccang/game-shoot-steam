@@ -1,3 +1,4 @@
+import {isWaterBag} from '../config/water-bag.js';
 import {ammoKind} from '../config/supplies.js';
 import {advanceEnergyShield} from './energy-shield.js';
 import { advanceRotary } from './rotary.js';
@@ -29,6 +30,7 @@ export function consumeRound(magazine, weapon) {
   recordGatlingShot(magazine, weapon);
   if(weapon.id==='gatling')magazine.rotorDrive=.16;
   magazine.ammo--;
+  if(isWaterBag(weapon))magazine.waterComplete=0;
   if (magazine.ammo === 0 && !isSummonEnergy(weapon)) {
     magazine.remaining = weapon.reloadTime;
     announcedReloads.delete(magazine);
@@ -39,6 +41,8 @@ export function consumeRound(magazine, weapon) {
 // 推进单个供给槽的热量和装填，返回装填后可射击时间；原生能源逐格恢复，普通独立炮在入坞时装填。
 export function advanceReload(magazine, weapon, dt, onEvent, takeAmmo=null, reserve=Infinity) {
   if (magazine.modules || dt <= 0) return dt; // 独立炮各槽由编队控制器推进，外层不重复恢复。
+  // 岸边优先免费补水；离岸时空袋按正常装填消耗潮汐水罐，活动供给保持独立。
+  if(isWaterBag(weapon)&&magazine.waterFilling&&takeAmmo&&Number.isFinite(reserve)){magazine.remaining=0;announcedReloads.delete(magazine);return dt;}
   if(weapon.attackKind==='defense'){advanceEnergyShield(magazine,weapon,dt);return dt;}
   advanceRotary(magazine,weapon,dt);
   if (isSummonEnergy(weapon)) {

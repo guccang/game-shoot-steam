@@ -1,4 +1,5 @@
 import {CAMPAIGN_TASK_IDS} from '../config/mainline-pacing.js';
+import {playerStorage} from '../platform/player-profile.js';
 import {MAINLINE_TASKS} from '../config/mainline.js';
 import { i18nHtml, i18nText } from "../i18n/index.js";
 // 本机数值工作台：候选配置、Worker批次、正式靶场和报告互不修改玩家存档。
@@ -9,7 +10,7 @@ import { RECOMMENDED_ECONOMY, ORIGINAL_ECONOMY, validateEconomy, RESOURCE_KEYS, 
 import { DEFAULT_SCENARIO, DEFAULT_ROUTE, ROUTE_PRESETS, reportCSV } from './model.js';
 import { WEAPONS } from '../config/weapons.js';
 import { COLLECTED_VEHICLES } from '../config/vehicles.js';
-import { validateLedger } from '../progression/economy-ledger.js';
+import { validateLedger } from '../progression/economy/economy-ledger.js';
 import { parameterHelp, SCENARIO_HELP, activityHelp } from './help.js';
 import { createRouteEditor } from './route-editor.js';
 const $=id=>document.getElementById(id);
@@ -154,7 +155,7 @@ $('pin-report').onclick=()=>{if(!report){status(i18nText("balance.app.0c43a2a8d0
 $('clear-comparison').onclick=()=>{pinned=null;renderComparison();};
 $('export-report').onclick=()=>{if(report)download('forest-economy-report.json',JSON.stringify(report,null,2));else status(i18nText("balance.app.0c43a2a8d0"),true);};
 $('export-csv').onclick=()=>{if(report)download('forest-economy-report.csv',reportCSV(report),'text/csv;charset=utf-8');else status(i18nText("balance.app.0c43a2a8d0"),true);};
-$('import-progress').onclick=()=>{try{const raw=localStorage.getItem('forest-patrol-v1');if(!raw)throw Error(i18nText("balance.app.7ab0079f19"));$('initial-progress').value=JSON.stringify(JSON.parse(raw),null,2);status(i18nText("balance.app.3d270c537b"));}catch(error){status(error.message,true);}};
+$('import-progress').onclick=()=>{try{const raw=playerStorage().getItem('forest-patrol-v1');if(!raw)throw Error(i18nText("balance.app.7ab0079f19"));$('initial-progress').value=JSON.stringify(JSON.parse(raw),null,2);status(i18nText("balance.app.3d270c537b"));}catch(error){status(error.message,true);}};
 $('import-ledger').onclick=()=>$('ledger-file').click();
 $('ledger-file').onchange=async event=>{
   try{const raw=JSON.parse(await event.target.files[0].text());if(raw.ledger?.version!==1)throw Error(i18nText("balance.app.4d22c54fb8"));

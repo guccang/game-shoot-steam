@@ -6,6 +6,8 @@ async original=>{
   await page.goto(original.url()||'http://localhost:4175');await page.locator('#start').tap();
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.farm.wildMaps=['forest'];p.farm.lessonRewarded=true;p.farm.delivery.nextAt=Date.now()+3600000;
+   // 此场景仅验证四格播种，标记野外散布已完成，防止后台增添额外示范田。
+   p.farm.wildScatterVersion=(await import('/src/config/wild-farm.js')).WILD_FARM_SCATTER.version;
    p.farm.plots=[0,1,2,3].map(id=>({id,mapId:'forest',x:893+id%2*56,y:2752+Math.floor(id/2)*52,crop:null,plantedAt:0,readyAt:0,watered:false}));p.farm.nextId=4;p.farm.seeds.fill(0);p.farm.seeds[0]=1;p.farm.seeds[1]=2;p.farm.unlocked[0]=true;p.farm.unlocked[1]=false;
    g.progress=p;g.mapId='forest';g.reset();g.state='playing';g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=g.spawnTimer=999999;g.enemies=[];g.vehicle.active=false;
    Object.assign(g.player,{x:921,y:2855,vx:0,vy:0});for(const d of document.querySelectorAll('dialog[open]'))d.close();a.renderer.camera.time=null;a.refresh();
@@ -14,7 +16,15 @@ async original=>{
   // 等待正式角色走近和落点结算，不能通过直接修改库存模拟耗尽。
   async function planted(id,crop){await page.waitForFunction(({id,crop})=>a.game.progress.farm.plots.find(p=>p.id===id)?.crop===crop&&!a.game.farmWork.job&&!a.game.farmWork.queue.length,{id,crop},{timeout:20000});}
   // 选择界面弹出后不能误排播种或留下拖动锁，耗尽品种不可点击。
-  async function checkPicker(emptyCrop){await picker.waitFor({state:'visible'});if(!await seed(emptyCrop).isDisabled()||!await page.evaluate(()=>!a.game.farmDragging&&!a.game.farmWork.job&&!a.game.farmWork.queue.length))throw Error('耗尽后仍可播种或手势未释放');}
+  async function checkPicker(emptyCrop){
+   await picker.waitFor({state:'visible'});
+   // 补种会优先打开仍有库存的类别；到耗尽品种所在页检查，再返回玩家原先看到的类别。
+   const selected=await picker.locator('[data-farm-category][aria-pressed="true"]').getAttribute('data-farm-category');
+   const category=await page.evaluate(async id=>(await import('/src/config/farm.js')).FARM_CROPS[id].category,emptyCrop);
+   if(selected!==category)await picker.locator(`[data-farm-category="${category}"]`).tap();
+   if(!await seed(emptyCrop).isDisabled()||!await page.evaluate(()=>!a.game.farmDragging&&!a.game.farmWork.job&&!a.game.farmWork.queue.length))throw Error('耗尽后仍可播种或手势未释放');
+   if(selected!==category)await picker.locator(`[data-farm-category="${selected}"]`).tap();
+  }
   await cell(0).tap();await picker.waitFor({state:'visible'});await page.waitForFunction(()=>!document.querySelector('[data-farm-seed="0"]').disabled);await seed(0).tap();await cell(0).tap();await planted(0,0);
   if(await page.evaluate(()=>a.game.progress.farm.seeds[0])!==0)throw Error('最后一粒种子未真实消耗');
   await cell(1).tap();await checkPicker(0);if(await seed(1).isDisabled())throw Error('礼物种子不可选');await page.screenshot({path:'output/playwright/farm-empty-seed-picker/change-seed.png'});
@@ -25,7 +35,7 @@ async original=>{
   await page.screenshot({path:'output/playwright/farm-empty-seed-picker/empty-320.png'});
   // 键盘和鼠标分别走点击及指针分支，均从空种子袋状态重新打开选择界面。
   for(const method of ['keyboard','mouse']){
-   await page.locator('#farm-hoe').tap();await page.evaluate(async()=>{(await import('/src/core/farm.js')).setFarmTool(a.game,'seed');a.refresh();});
+   await page.locator('#farm-hoe').tap();await page.evaluate(async()=>{(await import('/src/core/farming/farm.js')).setFarmTool(a.game,'seed');a.refresh();});
    if(method==='keyboard'){await cell(3).focus();await page.keyboard.press('Enter');}else await cell(3).click();await checkPicker(1);
   }
   const crops=await page.evaluate(()=>a.game.progress.farm.plots.map(p=>p.crop));if(JSON.stringify(crops)!=='[0,1,1,null]')throw Error('切换种子改动了其他田块');

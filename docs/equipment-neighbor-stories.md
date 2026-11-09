@@ -24,7 +24,7 @@
 实现入口：
 
 - [资格映射](../src/config/equipment-quests.js)、[六条故事](../src/config/equipment-story-chapters.js)。
-- [购买资格](../src/progression/equipment-quests.js)、[现场接取](../src/core/equipment-quest-entry.js)、[照料与碾压](../src/core/equipment-story-actions.js)。
+- [购买资格](../src/progression/workshop/equipment-quests.js)、[现场接取](../src/core/workshop/equipment-quest-entry.js)、[照料与碾压](../src/core/story/equipment-story-actions.js)。
 - [验收记录与昼夜截图](art-tasks/equipment-neighbor-stories.md)。
 
 验证命令：

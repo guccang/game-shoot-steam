@@ -6,9 +6,9 @@ import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {HOME_CATALOG,HOME_LIMIT} from '../src/config/home-decor.js';
 import {COTTAGE} from '../src/config/cottage.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {freshHome,placementError,plantState,homeFurniture} from '../src/progression/home-decor.js';
-import {buyDecor as purchaseDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../src/core/home-decor.js';
-import {enterCottage,cottageBlocked,updateCottage,leaveCottage} from '../src/core/cottage.js';
+import {freshHome,placementError,plantState,homeFurniture} from '../src/progression/home/home-decor.js';
+import {buyDecor as purchaseDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../src/core/home/home-decor.js';
+import {enterCottage,cottageBlocked,updateCottage,leaveCottage} from '../src/core/home/cottage.js';
 
 // 通过正式入口进入已修复小屋，避免用过时的未修复营地夹具。
 function setup(){const p=freshProgress();p.coins=10000;p.mainline.completed=[...MAINLINE_IDS];p.restoration.repaired=['cottage'];const g=new Game(p,()=>.7);g.start();g.vehicle.active=false;Object.assign(g.player,COTTAGE.door);assert.ok(enterCottage(g));g.livingPersist=()=>true;return g;}

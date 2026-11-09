@@ -9,7 +9,7 @@ async(page)=>{
    if(g.story)g.leaveStory();g.progress.story.run=null;g.enemies=[];g.boss=null;g.state='playing';Object.assign(g.player,{x:900,y:700,hp:120});
    for(const d of document.querySelectorAll('dialog[open]'))d.close();
    if(!g.enterStory(id))throw Error('无法接取 '+id);g.advanceStoryDialogue(true);g.chooseStoryLoadout(loadout);g.startStoryStage();
-   const def=(await import('/src/core/story-definition.js')).storyDefinition(g);
+   const def=(await import('/src/core/story/story-definition.js')).storyDefinition(g);
    Object.assign(g.story,{stageId:stage,phase:stage==='GUARD'?'prepare':'active',dialogue:null,group:0,waypoint:0,combat:null});
    Object.assign(g.player,def.world.sites[site]);if(id==='sunleaf-03'||id==='sunleaf-04')g.player.y+=70;if(id==='sunleaf-03')g.player.x-=70;g.state='playing';if(stage==='GUARD')g.startStoryStage();
    a.refresh();for(const d of document.querySelectorAll('dialog[open]'))d.close();g.state='playing';a.renderer.draw();},{id,stage,loadout,site});

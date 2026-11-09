@@ -6,7 +6,7 @@ async page=>{
  await page.evaluate(async()=>{
   window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
   const g=a.game;g.progress=(await import('/src/progression/progress.js')).freshProgress();g.progress.restoration.repaired=['garage','cottage'];g.progress.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();g.reset();g.state='playing';g.vehicle.active=false;g.spawnTimer=g.fireClock=999;g.mainlineSpeech=null;g.mainlineTalkDelay=999;
-  window.roomModule=await import('/src/core/cottage.js');window.roomConfig=await import('/src/config/workshop-interiors.js');window.originalUpdate=g.update.bind(g);
+  window.roomModule=await import('/src/core/home/cottage.js');window.roomConfig=await import('/src/config/workshop-interiors.js');window.originalUpdate=g.update.bind(g);
  });
  for(const kind of ['cottage','weapons','vehicle']){
   await page.evaluate(kind=>{

@@ -8,7 +8,7 @@ import {
   workshopWeapons,
 } from '../src/config/weapon-categories.js';
 import { freshProgress, validateProgress } from '../src/progression/progress.js';
-import { unlockedWeaponProgress } from '../src/progression/unlock-weapons.js';
+import { unlockedWeaponProgress } from '../src/progression/workshop/unlock-weapons.js';
 
 test('全部武器恰好归属一个分类，分类内仍按解锁顺序排列', () => {
   const p = freshProgress();

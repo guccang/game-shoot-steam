@@ -21,6 +21,35 @@
 | `src/game.js`、`src/render.js` | 保留原有公开导出的兼容门面 | 现有调用方无需改入口 |
 | `scripts/check.mjs` | 自动扫描模块，检查语法、路径、分层与循环依赖 | 新模块自动纳入检查 |
 
+## 业务模块子目录（2026-11-09）
+
+`core` 保留 `game.js`、`game-source.js`、`gameplay-state.js`、`battlefield.js` 和 `math.js` 作为游戏装配与基础入口；`progression` 保留 `progress.js` 作为存档结构及校验入口。其余211个模块按下面的业务职责归类，文件名及导出名称不变。数值继续放在 `config`，Canvas继续放在 `rendering`，界面继续放在 `ui`，不把不同层的实现混成一个功能文件。
+
+| 子目录 | 功能归属 |
+| --- | --- |
+| `navigation` | 任务路点、寻路缓存、驿站、接近交互、任务追踪及地图旅行 |
+| `farming` | 开垦、种子、农具、自动耕种、作物生产、牧场及野外农牧 |
+| `mining` | 地下层、矿物、矿车编组、地下战斗、挖矿事务 |
+| `vehicles` | 上下车、停车、牵引、制造、维修及载具补给 |
+| `inventory` | 背包、小屋仓库、载货、负重、木材、武器存放及转移 |
+| `industry` | 提炼、加工及工厂生产草稿 |
+| `workshop` | 武器工坊、装备目标、试射及装备解锁 |
+| `story` | 主线、章节、清剿、剧情交互及任务奖励 |
+| `camp` | 营地、区域营地、土地规划、设施修复、邻里、入职及信箱 |
+| `home` | 小屋、猫屋、家具、建房及家中活动 |
+| `fishing` | 钓鱼、钓具、鱼获容器及水袋 |
+| `activities` | 户外、消防、赛道、足球及寻宝 |
+| `battle` | 敌人、领主、波次、巡游、死亡及角色动作调度 |
+| `realms` | 秘境区域、进出、载具及挑战目录 |
+| `economy` | 资源账户、收支、购买、掉落及交付 |
+| `player` | 经验、熟练度、统计、图鉴及开发授予工具（成长层） |
+
+各子目录按实际职责设立，无对应功能时不创建空目录；跨功能调用使用明确相对路径。保留 `src/game.js`、`src/render.js`、`src/main.js` 和存档键，不留下旧位置的重复实现或批量转发文件。
+
+公共实现：`ui/shared/html.js` 提供普通值与可选文案两种转义语义；`core/inventory/warehouse-notice.js` 负责仓库提示去重；`world/terrain-noise.js` 保留原森林和湖谷噪声公式。玩家视觉路线与蜘蛛召唤物导航因续接、停车失效及状态归属不同，继续保留独立缓存。
+
+维护时运行 `npm run check:modules` 检查源码、测试、工具的语法及静态/动态模块路径、页面入口和未使用导入；按修改范围运行专项测试。旧 `npm run check` 仍是原有严格分层审计，不将历史分层问题隐藏在迁移检查中。
+
 ## 综合工坊模块
 
 `src/ui/workshop.js` 保留公开 `createWorkshop` 入口，负责选择对象、试装草稿、交易调用与画布装配。内部职责集中在 `src/ui/workshop/`：
@@ -35,7 +64,7 @@
 | `trial.js` | 素材加载、独立试射帧循环、暂停时钟及过期请求失效 |
 | `entrypoints.js` | 旧菜单和材料追踪入口路由，秘境放行原面板 |
 
-规则继续位于 `progression/workshop.js`，原子提交位于 `core/workshop.js`，独立战斗模拟位于 `core/workshop-trial.js`，绘制继续位于 `rendering/`。内部模块不改写存档或直接发放装备。销毁时由外层释放统一事件作用域及各动画会话。
+规则继续位于 `progression/workshop/workshop.js`，原子提交位于 `core/workshop/workshop.js`，独立战斗模拟位于 `core/workshop/workshop-trial.js`，绘制继续位于 `rendering/`。内部模块不改写存档或直接发放装备。销毁时由外层释放统一事件作用域及各动画会话。
 
 旧 `ui/inventory.js`、`ui/panels/vehicles.js` 仍服务秘境与角色菜单，不能因森林工坊接管入口就删除。`src/game.js`、`src/render.js` 的兼容门面继续保留。
 
@@ -118,12 +147,12 @@ flowchart TD
 | 模块 | 管理职责 | 关键规则 |
 | --- | --- | --- |
 | `core/battlefield.js` | 战场初始实体、武器供给、树林生成与再生入口 | 重开统一清理运行时状态，兼容 `Game.reset` 与 `Game.addTree` |
-| `core/patrol-session.js` | 提取与恢复巡游检查点 | 恢复剩余出生配额；活跃 Boss 恢复血量和强度；刷新后暂停 |
-| `progression/patrol-progress.js` | 巡游存档版本与白名单校验 | 旧档缺失字段安全回退，拒绝无效状态，限制数值范围 |
+| `core/battle/patrol-session.js` | 提取与恢复巡游检查点 | 恢复剩余出生配额；活跃 Boss 恢复血量和强度；刷新后暂停 |
+| `progression/battle/patrol-progress.js` | 巡游存档版本与白名单校验 | 旧档缺失字段安全回退，拒绝无效状态，限制数值范围 |
 | `app/progress-controller.js` | 保存时机、清档与一键解锁事务 | 两秒检查点、关键事件与离页即时写入；写入失败不清档 |
-| `core/wave-manager.js` | 波次重建、出生配额、击杀计数、休整与推进 | Boss 在场时冻结波次时钟；回收只退还名额；胜利后继续原波 |
-| `core/enemy-manager.js` | 出生区域与阶级、属性、攻击更新、受击刚体、残块与回收 | 使用 `combat/enemy-attack.js` 扑击状态机；通过波次模块记录死亡与回收 |
-| `core/boss-manager.js` | 首次召唤、强度快照、胜利清理 | 重试读取 `progress.bossChallenge`，不读取重开后的低波次；胜利才释放快照 |
+| `core/battle/wave-manager.js` | 波次重建、出生配额、击杀计数、休整与推进 | Boss 在场时冻结波次时钟；回收只退还名额；胜利后继续原波 |
+| `core/battle/enemy-manager.js` | 出生区域与阶级、属性、攻击更新、受击刚体、残块与回收 | 使用 `combat/enemy-attack.js` 扑击状态机；通过波次模块记录死亡与回收 |
+| `core/battle/boss-manager.js` | 首次召唤、强度快照、胜利清理 | 重试读取 `progress.bossChallenge`，不读取重开后的低波次；胜利才释放快照 |
 | `config/waves.js` | 基础增长及普通怪重开缓和 | 第二参数为 `recoveryRun`，Boss 始终不传缓和参数 |
 
 管理模块接收游戏上下文，不导入 `Game` 类或浏览器环境。`Game.spawnEnemy`、`Game.updateWaves` 和 `Game.summonBoss` 保留为兼容门面。`Game.update` 先结算攻击，再推进波次、更新怪物和领主，最后回收远处怪物；击杀当帧立即统计但 Boss 在场时不推进。死亡重开设定本局 `recoveryRun` 并重建第一波，永久挑战快照保持；清档同时重置二者。挑战快照在 `progression/progress.js` 白名单校验，`app/game-events.js` 收到首次召唤事件时保存。
@@ -153,7 +182,7 @@ game.update(1 / 60, { x: 1, y: 0 });
 
 ```js
 import { freshProgress } from './src/progression/progress.js';
-import { transactProgress } from './src/progression/transactions.js';
+import { transactProgress } from './src/progression/economy/transactions.js';
 
 // 所有校验通过后才修改成长；失败返回 false，不扣资源。
 const progress = freshProgress();
@@ -251,7 +280,7 @@ npx --yes --package @playwright/cli playwright-cli -s=modules run-code --filenam
 ## 新增枪械分支与树木细节
 
 - `config/weapon-mods.js`：以原厂数据生成有效属性，改装互斥，熟练度伤害加成统一计算；新增武器必须补齐两条分支。
-- `progression/mastery.js`：击杀奖励与改装扣费的纯事务。实战调用 `game.modifyWeapon(index, choice)`；choice 为 0（原厂）、1 或 2，由 Game 同步蓄能及保存事件。
+- `progression/player/mastery.js`：击杀奖励与改装扣费的纯事务。实战调用 `game.modifyWeapon(index, choice)`；choice 为 0（原厂）、1 或 2，由 Game 同步蓄能及保存事件。
 - `combat/elemental.js`：电弧首击遮挡与后续近邻连锁；冰晶使用现有实体弹道，命中后由 Game 和敌人状态机处理减速。
 - `rendering/tree-art.js`：缓存统一卡通风格的树木昼夜图像；`forest-art.js` 只处理树根变换、风摆与血条。
 
@@ -307,7 +336,7 @@ npx --yes --package @playwright/cli playwright-cli -s=modules run-code --filenam
 - 炮塔共用 `emitWeaponAttack`、`advancePulse`、`advanceGrenadeCharge`，拥有独立弹夹及周期；伤害和熟练度归属挂载枪。主武器、浮游炮和无人机状态不受载具切换影响。`vehicleGunPose` 与 `vehicleMuzzle` 供绘制和弹道共用，炮塔后坐不会造成错误的角色到枪口补偿命中。
 - 载具永久字段为 `vehicleLevel`、`vehicleWeapons` 独立等级数组和 `vehicleWeapon` 安装索引（空槽为 null）。永久车体挂载固定为车型专属主炮，旧独立炮塔数据保留兼容；秘境仍使用局内挂载。运行态不写入存档，刷新和重生沿用原游戏重新出发规则。
 - `rendering/vehicle.js` 按履带底层、原角色、前装甲和炮塔的顺序合成，沿用卡通平涂；不新增移动碰撞体。`ui/vehicle-controls.js` 负责 HP 下方的单图标召唤、下车和载具状态；永久配置由综合工坊的车体/专属主炮页签管理，旧面板入口定位同一工坊；秘境临时配置保留局内面板。`ui/status-rings.js` 统一生成弹药、装填和载具环形仪表，仅读取状态，不创建独立计时。修复时长统一来自 `config/vehicles.js`。
-- `config/weapon-categories.js` 提供分类与当前装备去重置顶顺序，不重排武器编号；`ui/inventory.js` 管理过滤和可折叠改装。`progression/unlock-weapons.js` 只生成所有权候选快照；应用先成功保存再提交内存，不重建游戏或弹夹。
+- `config/weapon-categories.js` 提供分类与当前装备去重置顶顺序，不重排武器编号；`ui/inventory.js` 管理过滤和可折叠改装。`progression/workshop/unlock-weapons.js` 只生成所有权候选快照；应用先成功保存再提交内存，不重建游戏或弹夹。
 
 ## 领主目录与状态机
 
@@ -325,4 +354,4 @@ npx --yes --package @playwright/cli playwright-cli -s=modules run-code --filenam
 
 `ui/hud.js` 依据 `game.vehicle.active` 选择角色或载具的名称、当前 HP、最大 HP、颜色及无障碍值，仅读取数据；上下车和损毁继续使用原有战斗规则。收藏面板事件由应用统一销毁，关闭不会取消用户原有的手动暂停。
 
-`progression/vehicles.js` 原子校验载具与炮塔交易，`config/vehicles.js` 提供独立炮塔伤害快照与旧购买费用兼容入口。升级装甲保持血量比例与冷却，炮塔升级不重建模块或在途弹丸。炮塔和同型号手持枪共用熟练度与改装，等级分别计算；新车型主炮使用独立目录，无手持同型号套件和熟练度。
+`progression/vehicles/vehicles.js` 原子校验载具与炮塔交易，`config/vehicles.js` 提供独立炮塔伤害快照与旧购买费用兼容入口。升级装甲保持血量比例与冷却，炮塔升级不重建模块或在途弹丸。炮塔和同型号手持枪共用熟练度与改装，等级分别计算；新车型主炮使用独立目录，无手持同型号套件和熟练度。

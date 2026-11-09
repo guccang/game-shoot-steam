@@ -14,30 +14,30 @@ export const CAMP_DEFENSE={gateHp:1500,limit:56,rest:3,spawnInterval:.17,radius:
  // 每三只优先安排一只从画面外走入，64单位边距覆盖身体与头顶标签。
  // 先出营再交战，随机强度只在临时援军中生效。
  rescue:{firstDelay:.8,stagger:2.8,inside:85,queueGap:65,outside:75,spread:48,speed:82,attackDistance:135,combatSeconds:14,bubbleSeconds:4},
-  // 兽潮使用独立生命曲线：首场每波18+波次索引×3，不随野外等级属性变化。
- waves:Array.from({length:10},(_,i)=>({level:i+1,count:18+i*5,hp:18+i*3,damage:2+i/3,speed:34+i*2,spawnInterval:.36-i*.018})),
+ // 五波依次使用原第五至第九波的完整强度，独立于野外等级属性。
+ waves:Array.from({length:5},(_,wave)=>{const i=wave+4;return {level:i+1,count:18+i*5,hp:18+i*3,damage:2+i/3,speed:34+i*2,spawnInterval:.36-i*.018};}),
  boss:{kind:'dumpling',hp:1900,damage:32,blastDamage:60,speed:45},
  spoils:{duration:1.8,bonus:{coins:3000,wood:300,parts:12,crystal:6,core:1}},
  allies:[{hero:1,name:'薄荷',vehicle:1,weapon:10},{hero:2,name:'栗子',vehicle:2,weapon:8},{hero:4,name:'雪团',vehicle:3,weapon:6}],
  grades:{S:{coins:1200,wood:400,parts:8},A:{coins:750,wood:250,parts:5},B:{coins:300,wood:100,parts:2}},
- lines:{death:'歇一歇，换我来！',barricade:'稳住，我们来了！',victory:'十波怪潮和领主都退了，今晚一起吃顿热饭。'},
+ lines:{death:'歇一歇，换我来！',barricade:'稳住，我们来了！',victory:'五波怪潮和领主都退了，今晚一起吃顿热饭。'},
 };
 // 援军出场前冻结成绩，救场击杀不得反过来抬高评分。
 export function campDefenseGrade({cleared,gateHp,bossDefeated,reason}){
- return bossDefeated&&!reason?(gateHp>=CAMP_DEFENSE.gateHp*.5?'S':'A'):cleared>=6?'A':'B';
+ return bossDefeated&&!reason?(gateHp>=CAMP_DEFENSE.gateHp*.5?'S':'A'):cleared>=Math.ceil(CAMP_DEFENSE.waves.length*.6)?'A':'B';
 }
 
 // 守门报酬与巨物掉落组成一张结算单，预览和实际入账使用同一份金额。
 export function campDefenseReward(run){
  const reward={...CAMP_DEFENSE.grades[campDefenseGrade(run)]};
- if(run.cleared===10 && run.bossDefeated && !run.reason){
+ if(run.cleared===CAMP_DEFENSE.waves.length && run.bossDefeated && !run.reason){
    for(const [key,amount] of Object.entries(CAMP_DEFENSE.spoils.bonus))reward[key]=(reward[key]||0)+amount;
  }
  return reward;
 }
 
-// 兽潮独立版本用于旧在途领主按剩余比例迁移，不改变已结算次数。
-export const CAMP_DEFENSE_GROWTH_VERSION=3;
+// 第四版将旧十波检查点按进度比例迁入五波，不改变已结算次数。
+export const CAMP_DEFENSE_GROWTH_VERSION=4;
 // 每场相对上一场复合增长5%；仅在数值表示极限处防止溢出，不沿用旧玩法倍率上限。
 export function campDefenseDifficulty(completed=0){
  const n=Math.max(0,Math.floor(Number.isFinite(completed)?completed:0));
@@ -48,11 +48,11 @@ export function campDefenseDifficulty(completed=0){
 function scaledCampStat(base,scale){return Math.min(Number.MAX_SAFE_INTEGER,Math.max(1,Math.round(base*scale)));}
 // 正式刷怪与续档共用属性入口，移速及数量始终来自原波次配置。
 export function campDefenseWave(wave=1,completed=0){
- const index=Math.min(9,Math.max(0,Math.floor(Number.isFinite(wave)?wave:1)-1)),base=CAMP_DEFENSE.waves[index],d=campDefenseDifficulty(completed);
+ const index=Math.min(CAMP_DEFENSE.waves.length-1,Math.max(0,Math.floor(Number.isFinite(wave)?wave:1)-1)),base=CAMP_DEFENSE.waves[index],d=campDefenseDifficulty(completed);
  // 独立基础生命只叠加场次成长，不再应用此前连续降血的统一系数。
  return {...base,hp:scaledCampStat(base.hp,d.health),damage:scaledCampStat(base.damage,d.damage)};
 }
-// 领主不计作第十一波，保留自身基础属性，仅按已结算兽潮次数成长。
+// 领主在五波之后单独迎战，保留自身基础属性，仅按已结算兽潮次数成长。
 export function campDefenseBoss(completed=0){
  const base=CAMP_DEFENSE.boss,d=campDefenseDifficulty(completed);
  return {...base,hp:missionBossHealth(scaledCampStat(base.hp,d.health)),damage:scaledCampStat(base.damage,d.damage),blastDamage:scaledCampStat(base.blastDamage,d.damage)};

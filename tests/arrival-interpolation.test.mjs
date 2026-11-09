@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
-import {restoreArrival,updateArrival} from '../src/core/ranger-arrival.js';
+import {restoreArrival,updateArrival} from '../src/core/camp/ranger-arrival.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
 import {createFixedStep} from '../src/platform/fixed-step.js';

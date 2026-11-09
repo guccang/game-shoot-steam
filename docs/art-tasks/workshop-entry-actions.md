@@ -33,7 +33,7 @@
 | 页面与状态 | 点击升级、关闭、站立入室、出口候停出门均走正式控制器；升级不扣费、不移动角色 |
 | 动作及资源预算 | 未修改身体、枪械、怪物、车辆资源，保留原绘制器；零新增位图与解码缓存 |
 
-正式入口：`src/ui/nearby-interaction.js#createNearbyInteraction`、`src/core/cottage.js#updateCottage`、`src/rendering/player-action-countdown.js#drawPlayerActionCountdown`。
+正式入口：`src/ui/nearby-interaction.js#createNearbyInteraction`、`src/core/home/cottage.js#updateCottage`、`src/rendering/player-action-countdown.js#drawPlayerActionCountdown`。
 
 对应 `designCriterion`：`workshop-standing-entry`。专项脚本为 `tests/workshop-entry-actions.test.mjs` 和 `tests/workshop-entry-actions-browser.cjs`。最终截图替代本轮中途的双入口草案；结论：通过。
 

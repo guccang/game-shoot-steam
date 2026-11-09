@@ -49,6 +49,8 @@ export function nearbyInteractionAnchor(game,entry) {
   // 守备热点覆盖正式标牌。
   case 'gate':{const g=CAMP_GATES.find(s=>s.id===entry.key);return g?at({x:g.x-g.ny*108,y:g.y+g.nx*108},166):null;}
   // 木牌热点在牌面中心，居民与灰堆保持原头顶入口。
+  case 'regional-camp':return at(entry,95);
+  case 'regional-parcel':return at(entry,60);
   case 'monster-camp':return at(entry,entry.presentation==='camp-sign'?38:72);
   case 'display':return at(entry,16,'room');
   default:return null;

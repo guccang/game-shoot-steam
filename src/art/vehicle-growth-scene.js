@@ -3,7 +3,7 @@ import { loadCozyCottage } from '../rendering/cozy-cottage.js';
 import {loadGameFont} from '../platform/fonts.js';
 import {createApplication} from '../app/create-app.js';
 import {freshProgress,validateProgress} from '../progression/progress.js';
-import {restoreArrival} from '../core/ranger-arrival.js';
+import {restoreArrival} from '../core/camp/ranger-arrival.js';
 import {catSprites} from '../rendering/cat-animation.js';
 import {EnvironmentTransition} from '../world/environment.js';
 import {SceneTone} from '../rendering/scene-tone.js';

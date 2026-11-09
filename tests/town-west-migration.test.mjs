@@ -15,7 +15,7 @@ import {Game} from '../src/game.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
 import {VEHICLE_COOLDOWN} from '../src/config/vehicles.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
-import {validateFireProgress} from '../src/progression/fire-progress.js';
+import {validateFireProgress} from '../src/progression/activities/fire-progress.js';
 
 test('原建筑保留西迁坐标，营地扩建外栏且河岸留出通道',()=>{
  assert.deepEqual(T.spawn,{x:600,y:700});assert.equal(T.weapons.x,50);assert.equal(T.cottage.x,550);

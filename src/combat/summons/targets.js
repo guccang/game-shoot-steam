@@ -8,7 +8,7 @@ export function summonTargetPool(game,origin,range,{allowFlying=true,bossFirst=f
   const valid=t=>t.hp>0&&(!game.combatLineClear||game.combatLineClear(origin,t))&&(!game.player.arena||worldDistance(t,game.player.arena)+(t.radius||0)<=game.player.arena.radius)&&summonTargetVisible(game,t)&&(allowFlying||!t.flying)&&worldDistance(t,origin)<=range;
   if(bossFirst&&game.boss&&valid(game.boss))return [game.boss];
   const enemies=(bossFirst?game.enemies:[...game.enemies,...(game.boss?[game.boss]:[])]).filter(valid);
-  return (enemies.length?enemies:targetTrees===false?[]:weaponTerrainTargets(game).filter(valid)).sort((a,b)=>worldDistance(a,origin)-worldDistance(b,origin)||(tieById?a.id-b.id:0));
+  return (enemies.length?enemies:targetTrees===false?[]:weaponTerrainTargets(game,game.vehicleMounted,true).filter(valid)).sort((a,b)=>worldDistance(a,origin)-worldDistance(b,origin)||(tieById?a.id-b.id:0));
 }
 
 // 全队按最少认领数分配目标，同数时保留当前锁定，避免抖动与十猫扎堆。

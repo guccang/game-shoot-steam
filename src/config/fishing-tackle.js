@@ -14,6 +14,11 @@ export const FISHING_BAITS={
  algae:{name:'水藻鱼饵',coins:20,mass:.01,pack:20,description:'适合叶鱼和带鱼。'},
  glow:{name:'荧菌鱼饵',coins:50,mass:.01,pack:20,description:'适合地下洞鱼、灯鱼和部分甲鱼。'}
 };
+// 空工具占背包重量，鱼获使用独立容量；两类容器均只收纳鱼。
+export const FISHING_CONTAINERS={
+ bucket:{name:'鱼桶',coins:120,mass:1,capacity:25,description:'独立收纳25千克鱼获，鱼获不占背包负重。'},
+ net:{name:'渔网',coins:260,mass:.6,capacity:60,description:'独立收纳60千克鱼获，适合长时间垂钓。'}
+};
 export const FISH_BASE_WEIGHTS=[100,45,18,5,1];
 // 旧档竿和谷物仍沿用原字段，扩展装备使用独立库存，避免重复计重。
 export function rodOwned(p,id){return id==='rod'?p.rod===true:p.rods?.[id]===true;}

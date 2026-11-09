@@ -21,7 +21,7 @@
 - 分层：原土壤地面层、作物脚底排序实体层、独立农具和UI；仅删除实体上额外的半径5圆点。
 - 程序继续管理生长、状态、导航、触控、动作结算；图集和稳定ID不变。
 - 透明背景、裁切、原图视框与碰撞均沿用原素材，无新SVG或PNG。
-- 正式入口：src/rendering/farm.js 的 drawFarmCrop；src/ui/farm.js 的 createFarmPanel；src/core/farm.js 的 canEnterFarm/canUseFarm。
+- 正式入口：src/rendering/farm.js 的 drawFarmCrop；src/ui/farm.js 的 createFarmPanel；src/core/farming/farm.js 的 canEnterFarm/canUseFarm。
 - 预算：不增加文件、图集、画布或缓存；作物图集仍最多两张，缺失继续明确报错。
 - 驾驶入口与执行资格分离；实际农活仍仅步行态可执行。下车走 Game.dismountVehicle，保留耐久、弹药、存档及安全落点检查。
 

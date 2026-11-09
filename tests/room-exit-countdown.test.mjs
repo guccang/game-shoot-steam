@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {interiorLayout} from '../src/config/workshop-interiors.js';
-import {enterCottage,enterWorkshop,updateCottage} from '../src/core/cottage.js';
+import {enterCottage,enterWorkshop,updateCottage} from '../src/core/home/cottage.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 // 解锁房屋后从正式入口入室，不修改真实出生点与出口范围。
 function scene(kind){const g=new Game(freshProgress(),()=>.5);g.start();g.vehicle.active=false;g.progress.restoration.repaired=['cottage','garage'];Object.assign(g.player,interiorLayout({kind}).door);assert.ok(kind==='cottage'?enterCottage(g):enterWorkshop(g,kind));return g;}
 // 固定小步推进，只检查房间逻辑，不引入主线与战斗计时。

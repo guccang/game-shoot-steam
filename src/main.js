@@ -1,5 +1,6 @@
 // 页面入口只负责装配，规则、界面和浏览器服务均在独立模块中。
 import {finishTitleStart} from './platform/title-start.js';
+import {playerStorage} from './platform/player-profile.js';
 import chinese from './i18n/locales/zh-CN.json' with { type: 'json' };
 // 语言包错误必须可见，禁止带着残缺文案继续初始化游戏。
 async function startApplication() {
@@ -29,7 +30,7 @@ async function startApplication() {
       preview.enterArtPreview(app).catch(error=>{document.getElementById('title-startup-error').textContent=error.message;document.getElementById('title-startup-error').hidden=false;console.error(error);});
       return app;
     }
-    const app=createApplication();finishTitleStart(app);return app;
+    const app=createApplication({getStorage:playerStorage});finishTitleStart(app);return app;
   } catch (error) {
     finishTitleStart(null);
     const status = document.getElementById('title-startup-error');

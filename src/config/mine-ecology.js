@@ -1,6 +1,6 @@
 // 地下生态目录和层级面积规则，稳定种子只在开通时生成一次。
 import {PREVIOUS_FOREST_WORLD as MINE_EXTENT} from '../world/coordinates.js';
-import {MINING,minePoint} from './mining.js';
+import {MINING,minePoint,DEPOT_COLUMN} from './mining.js';
 export const MINE_BIOMES=[
  {id:'mushroom',name:'荧菇林',floor:'#aaa982',night:'#76856c',resource:'wood',yield:3,regrow:90,animal:'spore'},
  {id:'roots',name:'地下根木林',floor:'#b6a37c',night:'#887c61',resource:'wood',yield:5,regrow:120,animal:'beetle'},
@@ -12,10 +12,10 @@ export const MINE_BIOMES=[
  {id:'spring',name:'地热温泉',floor:'#c7baa0',night:'#968e7f',resource:'heal',yield:16,regrow:80,animal:'beetle'},
  {id:'fossil',name:'化石遗迹',floor:'#c6b48c',night:'#938970',resource:'ore',yield:3,regrow:150,animal:'beetle'},
 ];
-export const MINE_ANIMALS={beetle:{name:'岩甲虫',hp:48,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'洞穴蝠',hp:30,speed:60,damage:6,range:36,windup:.65,recover:1,reward:2},spore:{name:'菌伞怪',hp:60,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
+export const MINE_ANIMALS={beetle:{name:'金属灰近战团子',hp:48,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'金属灰叶翼飞团',hp:30,speed:60,damage:6,range:36,windup:.65,recover:1,reward:2},spore:{name:'金属灰远程团子',hp:60,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
 // 景观石柱耐久与矿镐伤害独立于普通岩壁，矿石产量与恢复时间读取生态配置。
 export const MINE_ROCK={hp:60,pickDamage:20,pickReach:72};
-export const MINE_ECOLOGY={unlockRatio:.5,bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};
+export const MINE_ECOLOGY={bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};
 // 无状态坐标散列使景观、栖地和轮廓在读档后保持原布局。
 export function mineHash(x,y,seed=1847){let n=(Math.imul(x,374761393)^Math.imul(y,668265263)^seed)>>>0;n=Math.imul(n^(n>>>13),1274126177);return (n^(n>>>16))>>>0;}
 // 地下不设层数上限；第三层起均按10%至100%生成，矩形包含入口且只在首次开通时随机。
@@ -32,7 +32,11 @@ export function mineInsideBounds(layer,x,y){const b=mineBounds(layer);return x>=
 export function mineCellArea(cell,layer){const p=minePoint(cell),b=mineBounds(layer),half=MINING.tile/2;return Math.max(0,Math.min(p.x+half,b.right)-Math.max(p.x-half,b.left))*Math.max(0,Math.min(p.y+half,b.bottom)-Math.max(p.y-half,b.top));}
 // 根据固定地理种子生成相邻成片生态，边界轻微起伏，入口九格始终干燥。
 export function mineTerrain(cell,layer){
- const seed=layer?.seed||1847,entry=layer?.entry||'0,0',[ex,ey]=entry.split(',').map(Number),safe=Math.abs(cell.x-ex)<=1&&Math.abs(cell.y-ey)<=1;
+ // 仓库平台与小屋间留出一条可步行、可铺轨的干燥通道，深层沿用自身地形。
+ const row=layer?.depotRow,passage=Number.isInteger(row)&&(
+  cell.y===-1&&cell.x>=1&&cell.x<=DEPOT_COLUMN ||
+  Math.abs(cell.x-DEPOT_COLUMN)<=1&&cell.y>=-1&&cell.y<=row+1);
+ const seed=layer?.seed||1847,entry=layer?.entry||'0,0',[ex,ey]=entry.split(',').map(Number),safe=passage||Math.abs(cell.x-ex)<=1&&Math.abs(cell.y-ey)<=1;
  const wx=cell.x+Math.sin(cell.y*.32+(seed%11))*.8,wy=cell.y+Math.sin(cell.x*.27+(seed%7))*.8,cx=Math.floor((wx+3)/7),cy=Math.floor((wy+3)/7),index=((cx+cy*3+seed)%9+9)%9,biome=MINE_BIOMES[index],hash=mineHash(cell.x,cell.y,seed),lx=wx-(cx*7+.5),ly=wy-(cy*7+.5);
  const water=!safe&&(biome.id==='river'?Math.abs(lx-Math.sin(wy*.65)*.8)<1:biome.id==='lake'?((lx+.6)**2/6+(ly-.5)**2/3.5)<1:biome.id==='spring'?lx*lx+ly*ly<1.8:false);
  // 洞厅在开层时由稳定种子决定，水域与岸边天然露出，不依赖已开掘记录。

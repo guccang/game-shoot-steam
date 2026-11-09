@@ -36,7 +36,7 @@ async page=>{
   const layout=await page.locator('#farm-picker').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,count:el.querySelectorAll('[data-farm-seed]').length,overflow:[...el.querySelectorAll('small')].some(n=>n.scrollWidth>n.clientWidth+1),text:el.innerText};});
   if(layout.count!==8||layout.left<0||layout.right>width||layout.top<0||layout.bottom>height||layout.overflow)throw Error('选种信息溢出 '+JSON.stringify(layout));views.push(layout);
  }
- const shop=await page.evaluate(async()=>{const {quoteWorkshop}=await import('/src/progression/workshop.js');const p=structuredClone(balanceApp.game.progress);p.coins=p.wood=100000;p.materials={parts:1000,crystal:1000,core:100};p.restoration.repaired.push('garage');const q=quoteWorkshop(p,{kind:'vehicle',index:2,action:'buy'});return {ok:q.ok,rows:q.rows,spent:p.coins-q.next?.coins};});
+ const shop=await page.evaluate(async()=>{const {quoteWorkshop}=await import('/src/progression/workshop/workshop.js');const p=structuredClone(balanceApp.game.progress);p.coins=p.wood=100000;p.materials={parts:1000,crystal:1000,core:100};p.restoration.repaired.push('garage');const q=quoteWorkshop(p,{kind:'vehicle',index:2,action:'buy'});return {ok:q.ok,rows:q.rows,spent:p.coins-q.next?.coins};});
  if(!shop.ok||shop.spent!==10780)throw Error('战车正式报价与扣费错误 '+JSON.stringify(shop));
  if(errors.length)throw Error(JSON.stringify(errors));return {initial,carrot,planted,waterSavedSeconds:30,harvestCoins:1180,shop,views,errors};
 }

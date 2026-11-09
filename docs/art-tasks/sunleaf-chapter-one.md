@@ -39,7 +39,7 @@
 | --- | --- | --- |
 | sunleaf-objective-readable | `ui/story.js`、`visual-review.js#inspectSunleaf`；[320×568](../art-reference/sunleaf/final-layout-320.png)、[390×844](../art-reference/sunleaf/final-layout-390.png)、[1440×1000](../art-reference/sunleaf/final-layout-1440.png)、[320守点](../art-reference/sunleaf/final-guard-320.png) | 通过；窄屏保留方向和来敌提示，纵向可滚动，无横向截断 |
 | sunleaf-route-readable | `world/story-sites.js`、`ui/panels/map.js`；[路线选择](../art-reference/sunleaf/final-routes.png)、[路线地图](../art-reference/sunleaf/final-route-map.png) | 通过；实虚线及名称区分两路，19棵任务树疏除，正式碰撞采样与六次实战均通过 |
-| sunleaf-relay-state | `story-props.js#drawStoryProp`、`core/story-manager.js`；[桌面白天](../art-reference/sunleaf/tide-arc-1280-day.png)、[手机夜间](../art-reference/sunleaf/frost-guard-390-night.png) | 通过；三段灯与HP来自规则，角色从设备后方通过时设备淡化 |
+| sunleaf-relay-state | `story-props.js#drawStoryProp`、`core/story/story-manager.js`；[桌面白天](../art-reference/sunleaf/tide-arc-1280-day.png)、[手机夜间](../art-reference/sunleaf/frost-guard-390-night.png) | 通过；三段灯与HP来自规则，角色从设备后方通过时设备淡化 |
 | sunleaf-loadout-identity | `renderer.js`、`characters.js`、`vehicle-armaments.js`；三套各有390/1280昼夜图，`motion-0.png`至`motion-7.png`为连续采样 | 通过；身体来自真实视频帧，枪与独立车炮、履带/推进器保持正式绘制；未制作新人体动作 |
 | sunleaf-boss-warning | `combat/bosses.js`、`rendering/bosses.js`；[林线白天](../art-reference/sunleaf/final-boss-line-patrol-day.png)、[霜炮夜间](../art-reference/sunleaf/final-boss-frost-guard-night.png)，另有三套昼夜与`boss-windup/cast/recover.png` | 通过；已修复任务条遮住Boss血条，预警、冲锋、恢复均采样正式状态 |
 | sunleaf-world-return | `storyObjects`、`claimStory`；[回营持久变化](../art-reference/sunleaf/final-restored-camp.png)，浏览器领奖后刷新验证 | 通过；通讯牌避开工坊入口文字，薄荷在营地独立可辨，原森林角色及供给恢复 |

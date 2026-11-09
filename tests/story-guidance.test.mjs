@@ -4,11 +4,11 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_SITES} from '../src/world/story-sites.js';
 import {storyGuidanceState,drawStoryGuidance,storySpeechInfo} from '../src/rendering/story-guidance.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {storyCast} from '../src/rendering/story-props.js';
 import {moveBody,blocked} from '../src/physics/motion.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 // 从正式章节入口建立固定随机状态。
 function chapter(){const g=new Game(freshProgress(),()=>.5);g.start();g.enterStory();return g;}
 test('边界绘制直接使用碰撞圆心与半径，角色被限制在圆环内侧',()=>{

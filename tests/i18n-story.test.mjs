@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {storyDefinition} from '../src/core/story-definition.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
-import {storyDialogueEntries,storyDialogueLines} from '../src/core/story-journey.js';
+import {storyDefinition} from '../src/core/story/story-definition.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
+import {storyDialogueEntries,storyDialogueLines} from '../src/core/story/story-journey.js';
 import {storySpeechInfo,storyCueInfo} from '../src/rendering/story-guidance.js';
 
 test('全部章节对白及变体只引用稳定人物 ID',()=>{

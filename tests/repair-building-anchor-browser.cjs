@@ -23,7 +23,7 @@ async page=>{
    await page.waitForTimeout(100);
    const r=await page.evaluate(async id=>{
     const g=a.game,v=a.renderer.view,b=document.getElementById('nearby-interaction'),rect=b.getBoundingClientRect(),frame=document.getElementById('game-frame').getBoundingClientRect(),canvas=a.renderer.canvas.getBoundingClientRect();
-    const site=id==='arrival-repair'?rooms.weapons.site:(await import('/src/core/town-restoration.js')).restorationStatus(g,id).facility;
+    const site=id==='arrival-repair'?rooms.weapons.site:(await import('/src/core/camp/town-restoration.js')).restorationStatus(g,id).facility;
     const anchor=(await import('/src/world/coordinates.js')).nearest(site,{x:v.x+v.w/2,y:v.y+v.h/2});
     const safeTop=Math.max(8,...[document.querySelector('.hud-resources'),document.getElementById('mainline-hud')].filter(n=>n&&!n.hidden).map(n=>n.getBoundingClientRect().bottom-frame.top+8));
     return {target:b.dataset.target,hidden:b.hidden,x:rect.x+rect.width/2,y:rect.bottom,w:rect.width,h:rect.height,

@@ -1,7 +1,7 @@
 // 正式采集样本：逐棵走近树木，调用真实电锯攻击；不直接扣树血或补钱包。
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
-import {skipArrivalJourney} from '../src/core/ranger-arrival.js';
+import {skipArrivalJourney} from '../src/core/camp/ranger-arrival.js';
 import {worldDistance,nearest} from '../src/world/coordinates.js';
 import {seededRandom} from '../src/balance/model-metrics.js';
 import {writeFileSync,mkdirSync} from 'node:fs';

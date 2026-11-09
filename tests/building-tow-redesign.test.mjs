@@ -11,11 +11,11 @@ import {REPAIR_BAY,REPAIR_CENTER,TOW_TRUCK} from '../src/config/vehicle-repair.j
 import {blocked,moveBody} from '../src/physics/motion.js';
 import {planQuestRoute,questLineClear} from '../src/physics/quest-route.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
-import {restoreTownPosition} from '../src/core/town-layout.js';
-import {updateVehicleRepair} from '../src/core/vehicle-repair.js';
+import {restoreTownPosition} from '../src/core/camp/town-layout.js';
+import {updateVehicleRepair} from '../src/core/vehicles/vehicle-repair.js';
 import {vehicleServiceObjects} from '../src/rendering/vehicle-repair.js';
-import {vehicleLocations} from '../src/core/vehicle-location.js';
-import {parkingRecordSite} from '../src/progression/roadside-parking.js';
+import {vehicleLocations} from '../src/core/vehicles/vehicle-location.js';
+import {parkingRecordSite} from '../src/progression/vehicles/roadside-parking.js';
 import {validateProgress} from '../src/progression/progress.js';
 // 使用正式世界与完整建筑，关闭与本次规则无关的剧情状态。
 function setup(){const p=ownedPineProgress();p.arrival={version:2,phase:'complete',keys:true};p.restoration.repaired=TOWN_RESTORATIONS.map(x=>x.id);const g=new Game(p);g.state='playing';g.enemies=[];g.progress.campParking.owned=[];return g;}

@@ -22,7 +22,7 @@ async page=>{
  await page.locator('#nearby-interaction').click();
  await page.waitForFunction(()=>!a.game.vehicle.active&&a.game.progress.campParking.owned.some(s=>s.spot==='cottage'),null,{timeout:12000});
  const transfer=await page.evaluate(async()=>{
-  const {parkedOwned,vehicleParkingSite,boardParkedVehicle}=await import('/src/core/camp-parking.js');
+  const {parkedOwned,vehicleParkingSite,boardParkedVehicle}=await import('/src/core/vehicles/camp-parking.js');
   const g=a.game;g.progress.campParking=JSON.parse(JSON.stringify(g.progress.campParking));
   const parked=parkedOwned(g)[0],site=vehicleParkingSite(g,0);
   if(site.x!==parked.x||site.y!==parked.y)throw Error('取车导航未使用新位置');

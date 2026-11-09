@@ -11,7 +11,7 @@ async page=>{
  async function up(){await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
  // 报价从生产逻辑获取，验证提交恰好扣除所展示的费用。
  async function wallet(){return t.evaluate(()=>({coins:a.game.progress.coins,wood:a.game.progress.wood}));}
- async function quote(){return t.evaluate(async()=>{const plan=a.workshop.guideState().draft;return (await import('/src/progression/workshop.js')).quoteWorkshop(a.game.progress,plan).rows;});}
+ async function quote(){return t.evaluate(async()=>{const plan=a.workshop.guideState().draft;return (await import('/src/progression/workshop/workshop.js')).quoteWorkshop(a.game.progress,plan).rows;});}
  async function paid(old,rows){const now=await wallet();for(const key of ['coins','wood'])if(old[key]-now[key]!== (rows.find(r=>r.key===key)?.need||0))throw Error('扣费不匹配 '+key);}
  // 检查手机单屏操作区及实际正式绘制器输出。
  async function check(label,shot=false){await t.waitForTimeout(80);const s=await t.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectWorkshopFocus(document));const size=t.viewportSize(),bad=s.controls.filter(c=>c.box.width<43.9||c.box.height<43.9||c.box.x<0||c.box.y<0||c.box.right>size.width+1||c.box.bottom>size.height+1);if(s.overflow.length||bad.length||s.territory)throw Error(label+JSON.stringify({overflow:s.overflow,bad,territory:s.territory}));samples.push(label);if(shot)await t.screenshot({path:'output/playwright/workshop-hold/'+label+'.png'});}

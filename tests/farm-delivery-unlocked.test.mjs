@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {updateFarmDelivery,claimFarmParcel} from '../src/core/farm-delivery.js';
+import {updateFarmDelivery,claimFarmParcel} from '../src/core/farming/farm-delivery.js';
 import {FARM_CROPS,FARM_DELIVERY} from '../src/config/farm.js';
 // 只准备柜台位置与随机来源，发件和领取均经过正式事务。
 function scene(){return {state:'playing',mapId:'forest',player:{...FARM_DELIVERY,hp:100},progress:freshProgress(),onEvent:()=>{},livingPersist:()=>true,random:()=>.5};}

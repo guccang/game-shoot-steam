@@ -2,9 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {previewWorkshop} from '../src/progression/workshop.js';
-import {createWorkshopTrial} from '../src/core/workshop-trial.js';
-import {storyPostApproach,storyPostForChapter} from '../src/core/story-posts.js';
+import {previewWorkshop} from '../src/progression/workshop/workshop.js';
+import {createWorkshopTrial} from '../src/core/workshop/workshop-trial.js';
+import {storyPostApproach,storyPostForChapter} from '../src/core/story/story-posts.js';
 import {STORY_ID} from '../src/config/story.js';
 
 test('红狼击毁残血靶保留真实飘字和死亡动作，等待后才生成新一组满血靶',()=>{

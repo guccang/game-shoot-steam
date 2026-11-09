@@ -1,19 +1,20 @@
 import {fishingSurveyMarkup} from './fishing-surveys.js';
 import {fishingTackleMarkup} from './fishing-tackle.js';
+import {fishingStorageMarkup} from './fish-storage.js';
 import {rodOwned,baitCount} from '../config/fishing-tackle.js';
-import {fishingSetup} from '../core/fishing-tackle.js';
+import {fishingSetup} from '../core/fishing/fishing-tackle.js';
 // 手机野外装备页与实时钓鱼操作条；弹窗只负责准备，抛竿和收线始终发生在正式湖面。
 import {OUTDOOR_GEAR,FISH_SPECIES,OUTDOOR_RULES} from '../config/outdoors.js';
 import {balconyGlideMeters} from '../config/home-construction.js';
 import {WORLD_UNITS_PER_METER} from '../world/distance-units.js';
 import {GLIDERS} from '../config/gliders.js';
-import {selectOutdoorGlider,buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,acceptFishingSurvey,claimFishingSurvey,equipFishingTackle,fishingControl,outdoorBusy} from '../core/outdoors.js';
+import {selectOutdoorGlider,buyOutdoorGear,sellOutdoorFish,deployCamp,packCamp,sleepAtCamp,beginFishing,fishingAvailability,acceptFishingSurvey,claimFishingSurvey,equipFishingTackle,fishingControl,outdoorBusy} from '../core/activities/outdoors.js';
 import {fishingShores} from '../world/outdoor-sites.js';
 import {OUTDOOR_SHOP} from '../config/outdoor-shop.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {createEventScope} from '../platform/events.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
-import {storedShopGood} from '../progression/shop-stock.js';
+import {storedShopGood} from '../progression/economy/shop-stock.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {outdoorGearIcon} from './outdoor-gear-icon.js';
 import {FISH_RARITIES} from '../config/fish-catalog.js';
@@ -21,8 +22,8 @@ import {FISH_RARITIES} from '../config/fish-catalog.js';
 // 列表先说明用途与单价，重量、规格和完整说明留给商品详情。
 function outdoorGearCard(progress,id,g,shop){
  const p=progress.outdoors;
- const owned=g.kind!=='bait'&&(storedShopGood(progress,'outdoor:'+id)||(g.kind==='tent'?p.tent:rodOwned(p,g.tackleId)));
- const summary=g.kind==='tent'?'在野外搭营，睡觉或小憩。':g.kind==='rod'?`${g.tier} 阶 · 可钓${g.tier===1?'常见鱼':FISH_RARITIES[g.tier-1]+'及以下鱼种'}`:`每包 ${g.pack} 份 · ${g.description}`;
+ const owned=g.kind!=='bait'&&(storedShopGood(progress,'outdoor:'+id)||(g.kind==='tent'?p.tent:g.kind==='fish-container'?p.containers[g.tackleId]:rodOwned(p,g.tackleId)));
+ const summary=g.kind==='tent'?'在野外搭营，睡觉或小憩。':g.kind==='fish-container'?`独立鱼获容量 ${g.capacity} 千克`:g.kind==='rod'?`${g.tier} 阶 · 可钓${g.tier===1?'常见鱼':FISH_RARITIES[g.tier-1]+'及以下鱼种'}`:`每包 ${g.pack} 份 · ${g.description}`;
  return `<article class="outdoor-product">
   <button type="button" class="outdoor-product-icon" data-gear-detail="${id}" aria-haspopup="dialog" aria-label="查看${g.name}详情">${outdoorGearIcon(g)}<small>详情</small></button>
   <div class="outdoor-product-copy"><strong>${g.name}</strong><p>${summary}</p></div>
@@ -36,7 +37,8 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  entry.id='outdoor-menu';entry.setAttribute('aria-controls','outdoor-dialog');entry.setAttribute('aria-haspopup','dialog');entry.type='button';entry.setAttribute('aria-label','打开野外露营与钓鱼');entry.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 39 23 8 43 39Z" fill="#c8d39b" stroke="#315c43" stroke-width="3"/><path d="m14 39 9-18 10 18" fill="#f6e6b6" stroke="#315c43" stroke-width="2"/></svg><span>野外</span>';root.getElementById('field-menu-items').append(entry);
  panel.id='outdoor-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','outdoor-title');panel.innerHTML='<header class="ui-panel__header"><div><h2 id="outdoor-title">露营与垂钓</h2><p>把一天留给湖水和晚风</p></div><button class="ui-close" id="outdoor-close" aria-label="关闭野外装备">×</button></header><div class="ui-panel__body" id="outdoor-content"></div><footer class="ui-panel__footer"><p id="outdoor-message" role="status"></p></footer>';root.body.append(panel);
  hud.id='fishing-hud';hud.hidden=true;hud.setAttribute('aria-label','湖岸钓鱼操作');hud.innerHTML='<div class="fishing-heading"><b id="fishing-phase">湖岸垂钓</b><button class="ui-button" id="fishing-cancel">收竿</button></div><p id="fishing-message" role="status"></p><div id="fishing-meters"><label>鱼线张力 <meter id="fishing-tension" min="0" max="1" low="0.16" high="0.78" optimum="0.45"></meter></label><label>收线进度 <progress id="fishing-progress" max="1"></progress></label></div><label id="fishing-lean-label">左控竿 ← <input id="fishing-lean" type="range" min="-1" max="1" step="0.05" value="0" aria-label="左右控制鱼竿"> → 右控竿</label><button class="ui-button ui-button--primary" id="fishing-control">按住蓄力 · 松手抛竿</button>';root.getElementById('game-frame').append(hud);
- let campOnly=false,message='',held=false,lastPhase='';const get=id=>root.getElementById(id);
+ const nearby=root.createElement('button');nearby.id='fishing-nearby';nearby.type='button';nearby.className='ui-button ui-button--primary';nearby.textContent='钓鱼';nearby.setAttribute('aria-label','在湖边钓鱼');nearby.hidden=true;root.getElementById('game-frame').append(nearby);
+ let campOnly=false,message='',held=false,lastPhase='',nextShoreCheck=0;const get=id=>root.getElementById(id);
  const detail=root.createElement('dialog');
  detail.id='outdoor-gear-detail';detail.className='ui-panel ui-panel--compact';detail.setAttribute('aria-labelledby','outdoor-detail-name');
  detail.innerHTML='<header class="ui-panel__header"><h2 id="outdoor-detail-name"></h2><button type="button" class="ui-close" id="outdoor-detail-close" aria-label="关闭道具详情">×</button></header><div class="ui-panel__body"></div>';
@@ -53,6 +55,8 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
   }else if(g.kind==='bait'){
    specs.push(['每包数量',g.pack+' 份'],['行囊持有',baitCount(p,g.tackleId)+' 份']);
    usage='选用后每次抛竿消耗一份，偏好这种饵料的鱼更容易咬钩。';
+  }else if(g.kind==='fish-container'){
+   specs.push(['鱼获容量',g.capacity+' 千克'],['数量上限',OUTDOOR_RULES.maxFish+' 条']);usage='取回背包后，在鱼获收纳中选择；钓起鱼后也可手动选择放入鱼桶或渔网。鱼获不占背包负重。';
   }
   get('outdoor-detail-name').textContent=g.name;
   detail.querySelector('.ui-panel__body').innerHTML=`<div class="outdoor-detail-intro">${outdoorGearIcon(g)}<p>${g.description}</p></div><dl class="outdoor-detail-specs">${specs.map(([label,value])=>`<dt>${label}</dt><dd>${value}</dd>`).join('')}</dl><p>${usage}</p>`;
@@ -71,7 +75,7 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
    return `<article class="outdoor-gear"><div><b>${m.name}</b><p>每层航程 ${balconyGlideMeters(0,m.ratio)} 米 · 航速 ${m.speed/WORLD_UNITS_PER_METER} 米/秒 · 转向 ${Math.round(m.turn*180/Math.PI)}°/秒</p></div><button class="ui-button" data-glider-model="${id}" ${owned?'':'data-shop-name="'+m.name+'" data-shop-price="'+m.price+' 金币" data-shop-place="小屋阳台"'} ${current?'disabled':''}>${current?'已装备':owned?'装备':'加入购物车 · '+m.price+' 金币'}</button></article>`;
   }).join('')+'</details></section>':'';
   const shopSection=`<section class="ui-section"><details><summary class="outdoor-shelf-heading"><span>采购钓具与露营装备</span><small>持有 ${game.progress.coins} 金币</small></summary><div class="outdoor-products">${Object.entries(OUTDOOR_GEAR).map(([id,g])=>outdoorGearCard(game.progress,id,g,shop)).join('')}</div>${shop?'':'<button class="ui-button" data-outdoor-action="shop">前往户外用品店采购</button>'}</details></section>`;
-  get('outdoor-content').innerHTML=campOnly?campSection:`${shop?shopSection+gliderSection:''}${fishingTackleMarkup(game)}${fishingSurveyMarkup(game)}${shop?'':shopSection}${campSection}<section class="ui-section"><h3>湖边垂钓</h3><p>按住蓄力，松手抛竿。浮漂轻晃时等待，明显下沉时扬竿。中鱼后按住收线，张力变红就松手；向鱼逃窜的反方向控竿。</p><div class="outdoor-actions"><button class="ui-button" data-outdoor-action="shore">寻找最近湖岸</button><button class="ui-button ui-button--primary" data-outdoor-action="fish" ${fishingSetup(game).reason?'disabled':''}>在这里钓鱼</button></div><p>累计钓获 ${p.caught} 条 · 最长 ${p.best} 厘米</p><div class="outdoor-fish-list">${FISH_SPECIES.filter(f=>p.fish[f.id]>0).map(f=>`<span>${f.name} ×${p.fish[f.id]}<small>${f.mass} 千克/条 · ${f.coins} 金币/条</small></span>`).join('')}</div><button class="ui-button" data-outdoor-action="sell" ${!shop?'disabled':''}>在柜台出售全部鱼获</button></section>`;
+  get('outdoor-content').innerHTML=campOnly?campSection:`${shop?shopSection+gliderSection:''}${fishingTackleMarkup(game)}${fishingStorageMarkup(game)}${fishingSurveyMarkup(game)}${shop?'':shopSection}${campSection}<section class="ui-section"><h3>湖边垂钓</h3><p>按住蓄力，松手抛竿。浮漂轻晃时等待，明显下沉时扬竿。中鱼后按住收线，张力变红就松手；向鱼逃窜的反方向控竿。</p><div class="outdoor-actions"><button class="ui-button" data-outdoor-action="shore">寻找最近湖岸</button><button class="ui-button ui-button--primary" data-outdoor-action="fish" ${fishingAvailability(game).ok?'':'disabled'}>在这里钓鱼</button></div><p>累计钓获 ${p.caught} 条 · 最长 ${p.best} 厘米</p><div class="outdoor-fish-list">${FISH_SPECIES.filter(f=>p.fish[f.id]>0).map(f=>`<span>${f.name} ×${p.fish[f.id]}<small>${f.mass} 千克/条 · ${f.coins} 金币/条</small></span>`).join('')}</div><button class="ui-button" data-outdoor-action="sell" ${!shop?'disabled':''}>出售随身及附近载具鱼获</button></section>`;
   get('outdoor-content').querySelectorAll('details').forEach((d,i)=>{d.open=expanded[i]??(shop&&i===0);});get('outdoor-content').scrollTop=scroll;
   get('outdoor-message').textContent=message||(shop?'':game.outdoorNotice||'营地位置和装备会保存；离线不会自动钓鱼。');
  }
@@ -116,6 +120,9 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  }
  scope.on(panel,'change',e=>{const kind=e.target.dataset.fishingEquip;if(!kind)return;const result=equipFishingTackle(game,kind,e.target.value);message=result.message;renderPanel();onChange();});
  scope.on(entry,'click',open);scope.on(get('outdoor-close'),'click',()=>dialogs.close(panel.id));
+ // 就地入口直接备竿，实际按下时重新验证装备、危险与位置，防止沿用旧岸点。
+ scope.on(nearby,'pointerdown',e=>e.stopPropagation());
+ scope.on(nearby,'click',e=>{e.stopPropagation();const result=beginFishing(game);nearby.hidden=true;nextShoreCheck=0;if(!result.ok)onNotice(result.message);onChange();});
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.gearDetail){showGearDetail(b.dataset.gearDetail);return;}if(b.dataset.gliderModel){message=selectOutdoorGlider(game,b.dataset.gliderModel).message;renderPanel();onChange();return;}if(b.dataset.outdoorBuy){const result=buyOutdoorGear(game,b.dataset.outdoorBuy);message=result.message;renderPanel();onChange();}if(b.dataset.outdoorAction)perform(b.dataset.outdoorAction);});
  // 取消手势和窗口失焦只释放卷线轮，不把未完成蓄力误判为一次抛竿。
  function release(cancel=false){if(!held)return;held=false;if(cancel||game.state!=='playing'){if(game.fishing){game.fishing.reeling=false;if(game.fishing.phase==='charging')game.fishing.phase='ready';}}else fishingControl(game,'release');}
@@ -128,7 +135,10 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  scope.on(hud,'pointerdown',e=>e.stopPropagation());scope.on(hud,'click',e=>{e.stopPropagation();if(e.target.closest('#fishing-cancel')){fishingControl(game,'cancel');game.campSleep=null;held=false;onChange();}});
  // 低成本刷新文字、进度和显隐，不每帧重建按住中的按钮。
  function renderFrame(){
-  const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||!!root.querySelector('dialog[open]');hud.hidden=hidden;if(hidden){release(true);return;}
+  const dialogOpen=!!root.querySelector('dialog[open]'),now=performance.now();
+  if(game.state!=='playing'||dialogOpen||outdoorBusy(game)||game.vehicle.active||fishingSetup(game).reason){nearby.hidden=true;nextShoreCheck=0;}
+  else if(now>=nextShoreCheck){nearby.hidden=!fishingAvailability(game).ok;nextShoreCheck=now+OUTDOOR_RULES.shoreRefreshMs;}
+  const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||dialogOpen;hud.hidden=hidden;if(hidden){release(true);return;}
   if(f?.phase==='landed'){hud.hidden=true;release(true);onFishCaught(f);return;}
   const phase=s?'sleeping':f.phase;get('fishing-phase').textContent=s?'林间好梦':({ready:'湖岸垂钓',charging:'蓄力抛竿',casting:'浮漂入水',waiting:'静候鱼讯',nibble:'鱼儿试探',bite:'浮漂下沉！',fight:'稳住鱼竿',landed:'鱼儿上岸',missed:'下次再来'})[phase];
   get('fishing-message').textContent=s?'睡袋暖暖的，天光正在变化……':f.message+(['ready','charging'].includes(phase)?(f.mode==='school'?' 附近鱼群：'+[...new Set(f.schools.map(s=>FISH_SPECIES[s.species].name))].join('、')+'，更容易咬钩。':' 本湖常住鱼正在等待。'):'');
@@ -137,6 +147,6 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
   if(lastPhase!==phase){if(phase==='bite')root.defaultView.navigator.vibrate?.([35,35,65]);lastPhase=phase;}
  }
  // 销毁时释放触控与实时动作，防止遗留按住状态。
- function dispose(){release(true);scope.dispose();entry.remove();detail.remove();panel.remove();hud.remove();}
+ function dispose(){release(true);scope.dispose();entry.remove();detail.remove();panel.remove();hud.remove();nearby.remove();}
  return {open,tapWorld,renderFrame,dispose};
 }

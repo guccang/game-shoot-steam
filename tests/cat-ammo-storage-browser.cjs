@@ -3,7 +3,7 @@ async original=>{
  const out='output/playwright/cat-ammo-storage/',context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await context.newPage(),errors=[],checks=[];
  page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(15000);
  // 数量与重量都读取正式进度，屏幕文字不能代替实际交易结果。
- async function stock(){return page.evaluate(async()=>{const g=a.game;return {coins:g.progress.coins,wood:g.progress.wood,hand:g.progress.supplies.hand.light,car:g.progress.supplies.vehicles[1].light,load:(await import('/src/progression/load-weight.js')).catLoad(g)};});}
+ async function stock(){return page.evaluate(async()=>{const g=a.game;return {coins:g.progress.coins,wood:g.progress.wood,hand:g.progress.supplies.hand.light,car:g.progress.supplies.vehicles[1].light,load:(await import('/src/progression/inventory/load-weight.js')).catLoad(g)};});}
  try{
   await page.goto('http://localhost:4175');await page.locator('#start').tap();
   await page.evaluate(async()=>{
@@ -14,7 +14,7 @@ async original=>{
    g.progress.campParking.owned=[{hull:1,spot:null,mapId:'forest',x:room.door.x+1000,y:room.door.y+1000,hp:1,ammo:0,reload:0,wheel:0,track:0}];Object.assign(g.player,room.door,{vx:0,vy:0});g.cottageDoorLatch=false;a.renderer.camera.time=null;a.refresh();
   });
   await page.waitForFunction(()=>a.game.cottage?.kind==='ammo');await page.locator('[data-room-item=shopkeeper]').tap();await page.locator('#field-equipment-dialog[open]').waitFor();
-  await page.evaluate(async()=>{const g=a.game,{catLoad}=await import('/src/progression/load-weight.js'),load=catLoad(g);g.progress.supplies.hand.light+=Math.floor((load.capacity-load.weight-.1)/(await import('/src/config/supplies.js')).AMMO_TYPES.light.mass);});
+  await page.evaluate(async()=>{const g=a.game,{catLoad}=await import('/src/progression/inventory/load-weight.js'),load=catLoad(g);g.progress.supplies.hand.light+=Math.floor((load.capacity-load.weight-.1)/(await import('/src/config/supplies.js')).AMMO_TYPES.light.mass);});
   await page.locator('[data-supply-target=hand]').tap();const before=await stock();
   await page.locator('[data-ammo-buy=light]').tap();const bought=await stock();
   if(bought.hand<=before.hand||bought.hand>=before.hand+300||bought.hand+bought.car!==before.hand+before.car+300||bought.coins!==before.coins-30||bought.load.overloaded||await page.locator('#supply-load-confirm').isVisible())throw Error('购买未正确分流 '+JSON.stringify({before,bought}));

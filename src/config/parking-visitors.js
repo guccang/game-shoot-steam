@@ -8,4 +8,4 @@ export const SCIENCE_VEHICLES=[
  {id:'mosstiger',name:'苔虎',description:'钻探巡地车'},
  {id:'starring',name:'星环',description:'环轨观测舱'},
 ].map(m=>({...m,sciFi:true}));
-export const VISITOR_MODELS=[...COLLECTED_VEHICLES.map((m,hull)=>({id:hull===1?'heavy':hull===3?'hover':'visitor-'+m.id,name:m.shortName,hull})),...SCIENCE_VEHICLES];
+export const VISITOR_MODELS=[...COLLECTED_VEHICLES.flatMap((m,hull)=>m.retired?[]:[{id:hull===1?'heavy':hull===3?'hover':'visitor-'+m.id,name:m.shortName,hull}]),...SCIENCE_VEHICLES];

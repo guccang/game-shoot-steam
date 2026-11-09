@@ -4,11 +4,11 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {FARM_CROPS,FARM_CATEGORIES,FARM_SEED_DROP,FARM_SEED_DOOR,farmSeedPool} from '../src/config/farm.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {validateFarm,grantFarmSeeds} from '../src/progression/farm.js';
-import {awardFarmSeedDrop,buyFarmSeeds} from '../src/core/farm-seeds.js';
-import {farmAction} from '../src/core/farm.js';
+import {validateFarm,grantFarmSeeds} from '../src/progression/farming/farm.js';
+import {awardFarmSeedDrop,buyFarmSeeds} from '../src/core/farming/farm-seeds.js';
+import {farmAction} from '../src/core/farming/farm.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {beginGardeningLesson} from '../src/progression/mainline-gardening.js';
+import {beginGardeningLesson} from '../src/progression/story/mainline-gardening.js';
 // 保留完整正式存档和事务，仅替换随机数与存储接口。
 function scene(rounds=0){const progress=freshProgress();progress.bosses=rounds;return {progress,state:'playing',mapId:'forest',player:{x:921,y:2855,hp:100},livingPersist:()=>true,random:()=>0,trees:[]};}
 test('四类各十五种，旧作物身份稳定，所有阶段都有有效图集',()=>{

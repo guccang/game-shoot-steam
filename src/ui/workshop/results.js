@@ -23,6 +23,7 @@ export function workshopResultChanges(previous,next,plan,maxHp) {
   }
   if(plan.part==='reload'&&isSummonEnergy(a))return [{label:i18nText("ui.panels.funnel.d87a03ca6b"),old:summonRegenRate(a),value:summonRegenRate(b)}];
   const fields={rate:[['interval',i18nText("ui.workshop.results.eb9397f841")],['chargeTime',i18nText("ui.workshop.results.a2819c7096")],['cooldown',i18nText("ui.workshop.results.8f2ac689c2")]],capacity:[['magazineSize',i18nText("ui.workshop.results.d8272b3c5f")]],reload:[['reloadTime',i18nText("ui.workshop.results.cdbf2fecb6")]],range:[['range',i18nText("ui.inventory.5262a412ad")]],accuracy:[['spread',i18nText("ui.workshop.results.a62186865b")]],coordination:[['summonCount',i18nText("ui.workshop.results.1b82a3f01e")]]};
+  if(a.id==='water'){fields.capacity=[['magazineSize','水袋容量 / 次']];fields.reload=[['reloadTime','补满用时 / 秒']];}
   if(a.controller==='spider'){
     fields.capacity=[['magazineSize',i18nText("ui.workshop.results.7cf8c40969")]];fields.reload=[['reloadTime',i18nText("ui.workshop.results.4cf8988988")]];fields.range=[['minionRange',i18nText("ui.workshop.results.429df0595b")]];
     if(Number.isInteger(previous.spiderLoadout))fields.rate=[['minionInterval',i18nText("ui.workshop.results.71e6a40401")]];

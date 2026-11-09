@@ -22,7 +22,7 @@
 - 每张画布 240×160，按比例缩小；锚点与分层使用正式工坊布局。
 - 背景透明，卡片承托；无碰撞、无额外贴图/图集/网络请求。
 - 模型按当前经济购买表分组，不计故事专属载具；主线门槛及拥有状态独立标识。
-- 文件：src/progression/challenge-catalog.js、src/ui/challenge-catalog.js、src/styles/challenge-catalog.css。
+- 文件：src/progression/realms/challenge-catalog.js、src/ui/challenge-catalog.js、src/styles/challenge-catalog.css。
 - 缓存预算：仅绘制当前阶，切换替换旧画布；无持续动画或定时器，关闭释放图鉴卡片。
 
 ## 4 动画补充

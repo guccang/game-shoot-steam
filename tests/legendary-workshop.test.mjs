@@ -5,13 +5,13 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {LEGENDARY_WORKSHOP as SITE,equipmentLevelCap,legendaryUpgradeCost} from '../src/config/legendary-workshop.js';
-import {legendaryVisible,legendaryNearby,travelLegendary,commitLegendary} from '../src/core/legendary-workshop.js';
-import {quoteWorkshop,workshopUpgrade} from '../src/progression/workshop.js';
-import {commitWorkshop} from '../src/core/workshop.js';
+import {legendaryVisible,legendaryNearby,travelLegendary,commitLegendary} from '../src/core/workshop/legendary-workshop.js';
+import {quoteWorkshop,workshopUpgrade} from '../src/progression/workshop/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
 import {weaponDamage} from '../src/config/weapon-mods.js';
 import {partLevel,equipmentParts} from '../src/config/equipment-parts.js';
 import {economyUpgradeCost} from '../src/config/economy.js';
-import {transactProgress} from '../src/progression/transactions.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
 // 隔离玩家存档，使用真实战车和工坊事务。
 function scene(){const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.vehicleHulls.fill(1);p.vehicleIndex=6;p.weapons[0]=20;p.coins=p.wood=10000000;const g=new Game(p);g.state='playing';g.vehicle=g.vehicles[6];g.vehicle.active=true;Object.assign(g.player,SITE.arrival);return g;}
 test('红狼所有权显现，步行与换车不隐藏，未拥有和任务场景仍拒绝',()=>{const g=scene();assert.ok(legendaryNearby(g));for(const i of [0,1,2,3,4,5,7,8]){g.vehicle=g.vehicles[i];g.vehicle.active=true;assert.ok(legendaryVisible(g));}g.vehicle.active=false;assert.ok(legendaryVisible(g));g.story={};assert.equal(legendaryVisible(g),false);g.story=null;g.progress.vehicleHulls[6]=0;assert.equal(legendaryVisible(g),false);g.progress.vehicleHulls[6]=1;g.state='dead';assert.equal(legendaryVisible(g),false);});

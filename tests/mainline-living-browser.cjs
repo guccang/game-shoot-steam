@@ -11,7 +11,7 @@ async(page)=>{
  await page.locator('#mainline-hud').click();await page.locator('#living-dialog').waitFor({state:'visible'});
  await page.locator('#living-patrol').click();await page.locator('#living-close').click();
  const result=await page.evaluate(async()=>{
-  const g=a.game,{MAINLINE_SITES}=await import('/src/config/mainline.js'),{mainlineObjective}=await import('/src/core/mainline-manager.js');
+  const g=a.game,{MAINLINE_SITES}=await import('/src/config/mainline.js'),{mainlineObjective}=await import('/src/core/story/mainline-manager.js');
   const started=g.progress.living.patrolActive,key=mainlineObjective(g).key;
   Object.assign(g.player,MAINLINE_SITES.patrol);g.state='playing';g.waveWarning=0;g.spawnTimer=0;g.respawnDelay=0;g.waveRest=0;a.renderer.draw();g.updateWaves(.05);a.refresh();
   return {started,key,enemies:g.enemies.length,completed:g.progress.mainline.completed.length};

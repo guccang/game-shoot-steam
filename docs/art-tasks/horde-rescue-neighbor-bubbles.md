@@ -19,7 +19,7 @@
 - 实体尺寸、图集倍率和脚底锚点完全沿用原正式绘制器；不新增图片、纹理或缓存。
 - 分层：实体仍按脚底排序；小气泡在 HUD 下层且 pointer-events:none，不阻止点击/拖动。
 - 透明：仅气泡形状不透明，周围透明；无新增碰撞；昼夜同一形体。
-- 文件：core/camp-rescue.js、ui/compact-speech.js、相关配置与 CSS；截图置 output/playwright/horde-rescue-neighbor-bubbles/。
+- 文件：core/camp/camp-rescue.js、ui/compact-speech.js、相关配置与 CSS；截图置 output/playwright/horde-rescue-neighbor-bubbles/。
 - 预算：每个面板仅一个稳定气泡节点，无每帧创建 DOM 或图集。
 
 ## 4 动画任务补充

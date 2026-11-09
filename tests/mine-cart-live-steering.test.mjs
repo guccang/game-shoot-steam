@@ -6,10 +6,10 @@ import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MINING as M,minePoint,mineKey} from '../src/config/mining.js';
-import {freshMining,normalizeMining,openBasement} from '../src/progression/mining.js';
+import {freshMining,normalizeMining,openBasement} from '../src/progression/mining/mining.js';
 import {railExits,nextCartExit} from '../src/config/mine-rail-routes.js';
-import {enterMine,rideMineCart,toggleMineCart,updateMining} from '../src/core/mining.js';
-import {nearbyJunction,setMineCartDirection,setMineJunctionDirection,stoppedCartChoices} from '../src/core/mine-cart-directions.js';
+import {enterMine,rideMineCart,toggleMineCart,updateMining} from '../src/core/mining/mining.js';
+import {nearbyJunction,setMineCartDirection,setMineJunctionDirection,stoppedCartChoices} from '../src/core/mining/mine-cart-directions.js';
 // 构造隔离十字轨道，外部进度完成入职，不改用户存档。
 function setup(){
  const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;openBasement(p.mining);

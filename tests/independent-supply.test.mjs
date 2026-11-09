@@ -1,4 +1,4 @@
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 // 两套自动武器验收：独立供给、持续护航、存档兼容与弹道归属。
 import test from 'node:test';
 import assert from 'node:assert/strict';

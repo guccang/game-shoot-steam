@@ -1,10 +1,10 @@
 import {eraVehicle,eraDonor} from '../../config/vehicle-eras.js';
-import {eraCraftReason} from '../../progression/equipment-goals.js';
+import {eraCraftReason} from '../../progression/workshop/equipment-goals.js';
 import {vehicleBuild,installedEngine} from '../../config/vehicle-load.js';
-import {vehicleLoad} from '../../progression/load-weight.js';
-import {vehicleService,personalFleet} from '../../core/vehicle-repair.js';
+import {vehicleLoad} from '../../progression/inventory/load-weight.js';
+import {vehicleService,personalFleet} from '../../core/vehicles/vehicle-repair.js';
 import {facilityOpen} from '../../config/town-restoration.js';
-import {parkingFleetApplies} from '../../core/camp-parking.js';
+import {parkingFleetApplies} from '../../core/vehicles/camp-parking.js';
 import {vehicleTransferState,activateVehicleTransfer} from '../vehicle-transfer.js';
 import { i18nText, i18nHtml } from "../../i18n/index.js";
 import { nativeVehicleWeapon } from '../../config/vehicle-armaments.js';
@@ -24,7 +24,7 @@ import {
 } from '../../config/vehicles.js';
 import { drawVehicleIcon } from '../../rendering/vehicle.js';
 import { requirementsMarkup } from '../equipment-goals.js';
-import { canPurchaseEquipment } from '../../progression/equipment-goals.js';
+import { canPurchaseEquipment } from '../../progression/workshop/equipment-goals.js';
 import { upgradePriceMarkup } from '../upgrade-price.js';
 import { createEventScope } from '../../platform/events.js';
 

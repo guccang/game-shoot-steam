@@ -1,0 +1,40 @@
+// 隔离手机存档走正式建站、导航与读档流程，保留昼夜场景和短屏证据。
+async original=>{
+ const assert=require('node:assert/strict'),fs=require('node:fs'),out='output/playwright/waystations';fs.mkdirSync(out,{recursive:true});
+ const context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // 手机入口在每次操作中重新打开，检查页面的暂停归属。
+ async function open(){await page.locator('#phone-button').tap();await page.locator('#phone-dialog').getByRole('button',{name:'驿站',exact:true}).tap();await page.waitForFunction(()=>document.getElementById('waystations-dialog').open);}
+ try{
+  await page.goto('http://localhost:4175');await page.locator('#start').tap();
+  const sites=await page.evaluate(async()=>{
+   window.a=(await import('/src/main.js')).application;if(!await a.ready)throw Error('正式启动失败');window.g=a.game;window.realUpdate=g.update.bind(g);g.update=()=>{};
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(r=>r.id);p.campLand.owned=(await import('/src/config/camp-land.js')).CAMP_PLOTS.map(r=>r.id);p.vehicleHulls[5]=1;p.vehicleHulls[3]=1;g.progress=p;g.reset();g.start();g.arrivalScene=null;g.mainlineSpeech=null;g.enemies=[];g.boss=null;g.vehicle.active=false;g.spawnTimer=g.encounterTimer=g.mainlineTalkDelay=999999;g.gameplayPreferences.targetWood=false;g.gameplayPreferences.vehicleTargetWood=false;
+   const {waystationBuildReason}=await import('/src/core/navigation/waystations.js'),{questLineClear}=await import('/src/physics/quest-route.js'),{playerNavigationBody}=await import('/src/core/navigation/prepared-navigation.js');
+   for(let y=3000;y<6000;y+=80)for(let x=3000;x<6000;x+=80){Object.assign(g.player,{x,y,vx:0,vy:0});if(waystationBuildReason(g))continue;const from={x,y},to={x:x+320,y};Object.assign(g.player,to);if(waystationBuildReason(g)||!questLineClear(from,to,playerNavigationBody(g),g.trees))continue;Object.assign(g.player,from);a.renderer.camera.time=null;a.refresh();return {from,to};}
+   throw Error('找不到实景建站通道');
+  });
+  await open();assert.equal(await page.locator('#waystation-name').count(),0);await page.locator('#waystation-build').tap();assert.equal(await page.locator('#waystation-list section').count(),1);assert.equal(await page.locator('#waystation-build').isDisabled(),true);
+  await page.locator('#waystations-dialog .ui-close').tap();await page.waitForFunction(()=>g.state==='playing');
+  await page.evaluate(to=>{Object.assign(g.player,to);a.renderer.camera.time=null;a.refresh();},sites.to);await open();await page.locator('#waystation-build').tap();assert.equal(await page.locator('#waystation-list section').count(),2);const names=await page.evaluate(()=>g.progress.waystations.sites.map(s=>s.name));assert.notEqual(names[0],names[1]);
+  for(const [width,height] of [[320,568],[390,844],[430,932],[844,390]]){await page.setViewportSize({width,height});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:`${out}/panel-${width}.png`});}
+  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{g.update=realUpdate;});await page.locator('[data-station-go="1"]').tap();await page.waitForFunction(()=>g.waystationTravel?.phase==='moving');await page.screenshot({path:out+'/moving.png'});
+  await page.waitForFunction(()=>!g.waystationTravel,null,{timeout:20000});const arrived=await page.evaluate(async()=>({message:g.waystationMessage,distance:(await import('/src/world/coordinates.js')).worldDistance(g.player,g.progress.waystations.sites[0]),state:g.state}));assert.match(arrived.message,/已到达/);assert.ok(arrived.distance<=14);assert.equal(arrived.state,'playing');
+  // 逆向出发后用真实触控立即接管。
+  await open();await page.locator('[data-station-go="2"]').tap();await page.waitForFunction(()=>g.waystationTravel?.phase==='moving');const touch=await context.newCDPSession(page);await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:60,y:400}]});await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:130,y:400}]});await page.waitForFunction(()=>!g.waystationTravel);await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.match(await page.evaluate(()=>g.waystationMessage),/手动/);
+  const boarded=await page.evaluate(async()=>{g.progress.campParking.owned=[{hull:3,mapId:'forest',spot:null,x:g.player.x,y:g.player.y,hp:1,ammo:0,wheel:0,track:0,reload:0}];g.vehicles[3].cooldown=0;return (await import('/src/core/vehicles/camp-parking.js')).boardParkedVehicle(g,3);});assert.equal(boarded,true);await page.waitForTimeout(350);
+  // 气垫船无法行驶时留在驿站面板说明原因，恢复后真实起步并抵达。
+  await open();await page.evaluate(()=>{g.progress.supplies.engineFaults[3]=100;});await page.locator('[data-station-go="2"]').tap();assert.match(await page.locator('#waystation-message').textContent(),/发动机/);assert.equal(await page.evaluate(()=>!!g.waystationTravel),false);await page.screenshot({path:out+'/hover-engine-blocked.png'});
+  await page.evaluate(()=>{g.progress.supplies.engineFaults[3]=0;g.progress.logistics.builds[3].wood=1e8;});await page.locator('[data-station-go="2"]').tap();assert.match(await page.locator('#waystation-message').textContent(),/载荷已满/);await page.evaluate(()=>{g.progress.logistics.builds[3].wood=0;});
+  await page.locator('[data-station-go="2"]').tap();await page.waitForFunction(()=>g.waystationTravel?.moving&&g.vehicle.index===3&&g.player.amphibious);await page.screenshot({path:out+'/driving.png'});await page.waitForFunction(()=>!g.waystationTravel,null,{timeout:20000});assert.match(await page.evaluate(()=>g.waystationMessage),/已到达/);await page.evaluate(async()=>{(await import('/src/combat/vehicle.js')).dismountVehicle(g);});
+  // 保留猫、团子、电动车与路牌同屏，昼夜不改变锚点和形体。
+  for(const time of ['day','night']){
+   await page.evaluate(async time=>{g.update=()=>{};const s=g.progress.waystations.sites[0];Object.assign(g.player,{x:s.x+45,y:s.y+55,vx:0,vy:0});g.enemies=[];g.spawnEnemy(.3,90,{x:s.x+110,y:s.y+70});g.progress.campParking.owned=[{hull:5,mapId:'forest',spot:null,x:s.x-90,y:s.y+65,hp:1,ammo:0}];Object.assign(a.environment,{time,weather:'sun',forestSeason:'summer',autoTime:false,autoWeather:false});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.renderer.camera.time=null;a.refresh();a.renderer.draw();},time);
+   await page.waitForTimeout(350);await page.screenshot({path:`${out}/scene-${time}.png`});
+  }
+  const hit=await page.evaluate(()=>{const s=g.progress.waystations.sites[0],v=a.renderer.view,r=a.renderer.canvas.getBoundingClientRect();return {x:r.left+(s.x-v.x)/v.w*r.width,y:r.top+(s.y-50-v.y)/v.h*r.height};});await page.touchscreen.tap(hit.x,hit.y);await page.waitForFunction(()=>document.getElementById('waystations-dialog').open);await page.locator('#waystations-dialog .ui-close').tap();
+  await page.locator('#phone-button').tap();await page.locator('#phone-dialog').getByRole('button',{name:/看地图/}).tap();await page.screenshot({path:out+'/map.png'});
+  await page.reload();await page.locator('#start').tap();const saved=await page.evaluate(async()=>{const app=(await import('/src/main.js')).application;if(!await app.ready)throw Error('读档启动失败');return app.game.progress.waystations;});assert.equal(saved.sites.length,2);assert.deepEqual(saved.sites.map(s=>s.name),names);assert.deepEqual(saved.sites.map(s=>s.id),[1,2]);assert.deepEqual(errors,[]);
+  const result={sites,arrived,saved,errors};fs.writeFileSync(out+'/result.json',JSON.stringify(result,null,2));return result;
+ }catch(e){await page.screenshot({path:out+'/failure.png'});console.error(errors);throw e;}finally{await context.close();}
+}
+

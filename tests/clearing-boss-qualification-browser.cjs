@@ -12,7 +12,7 @@ async page=>{
   await page.locator('#start').click();await page.waitForFunction(()=>qApp.menu.page==='game');
   await page.waitForFunction(n=>n?qApp.renderer.tone.sample(performance.now()).night>.99:qApp.renderer.tone.sample(performance.now()).night<.01,night);
   await page.evaluate(async()=>{
-   const g=qApp.game,{CLEARING_APPROACH}=await import('/src/config/clearing.js'),{clearingSite}=await import('/src/progression/clearing-site.js'),{acceptClearingPost}=await import('/src/core/clearing-guide.js'),{waveDifficulty}=await import('/src/config/waves.js');
+   const g=qApp.game,{CLEARING_APPROACH}=await import('/src/config/clearing.js'),{clearingSite}=await import('/src/progression/story/clearing-site.js'),{acceptClearingPost}=await import('/src/core/story/clearing-guide.js'),{waveDifficulty}=await import('/src/config/waves.js');
    Object.assign(g.player,CLEARING_APPROACH);if(!acceptClearingPost(g).ok)throw Error('接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))(clearingSite(g.progress)));g.wave=g.bossWave;g.waveKills=g.waveSpawned=waveDifficulty(g.wave).total;g.bossReady=true;if(!g.summonBoss())throw Error('召唤失败');g.hit(g.boss,1e9);g.update=()=>{};qApp.refresh();
   });
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('2/3 胜')&&Number(getComputedStyle(document.querySelector('#toast')).opacity)>.99);

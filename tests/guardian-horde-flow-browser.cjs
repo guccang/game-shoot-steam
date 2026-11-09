@@ -37,7 +37,7 @@ async page => {
   await page.setViewportSize({width:390,height:844});
   // 观察真实循环中的清波，不通过暂停截帧冒充休整动作。
   const clear=await page.evaluate(async()=>{
-    const a=window.flowReview,g=a.game,{updateRealm}=await import('/src/core/realm-manager.js');
+    const a=window.flowReview,g=a.game,{updateRealm}=await import('/src/core/realms/realm-manager.js');
     g.realm.kills=g.realm.spec.total-g.enemies.filter(e=>e.hp>0).length;g.realm.spawned=g.realm.spec.total;
     for(const enemy of g.enemies.filter(e=>e.hp>0))g.hit(enemy,9999999);
     g.update(.001);a.refresh();a.renderer.resize();a.renderer.draw();
@@ -64,7 +64,7 @@ async page => {
   const automatic=await page.evaluate(()=>({elapsed:(performance.now()-window.flowStart)/1000,stage:window.flowReview.game.realm.stage,phase:window.flowReview.game.realm.phase}));
   if(automatic.elapsed<19.8||automatic.elapsed>27)throw Error('实际倒计时异常 '+JSON.stringify(automatic));
   // 在下一次正式休整点击倒计时，确认手动开波仍立即生效。
-  await page.evaluate(async()=>{const a=window.flowReview,g=a.game;g.enemies=[];g.boss=null;g.realm.kills=g.realm.spec.total;(await import('/src/core/realm-manager.js')).updateRealm(g,0);a.refresh();});
+  await page.evaluate(async()=>{const a=window.flowReview,g=a.game;g.enemies=[];g.boss=null;g.realm.kills=g.realm.spec.total;(await import('/src/core/realms/realm-manager.js')).updateRealm(g,0);a.refresh();});
   await page.locator('.guardian-next-wave').click();
   if(await page.evaluate(()=>window.flowReview.game.realm.stage)!==3)throw Error('点击倒计时未开波');
   const pressure=await page.evaluate(()=>{

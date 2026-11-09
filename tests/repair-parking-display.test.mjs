@@ -6,11 +6,11 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {REPAIR_BAY,VEHICLE_REPAIR} from '../src/config/vehicle-repair.js';
 import {REPAIR_PARKING_SPOTS} from '../src/config/repair-parking.js';
-import {assignRepairParking} from '../src/core/repair-parking.js';
-import {parkingOccupied,updateParkingVisitors} from '../src/core/camp-parking.js';
-import {updateVehicleRepair} from '../src/core/vehicle-repair.js';
+import {assignRepairParking} from '../src/core/vehicles/repair-parking.js';
+import {parkingOccupied,updateParkingVisitors} from '../src/core/vehicles/camp-parking.js';
+import {updateVehicleRepair} from '../src/core/vehicles/vehicle-repair.js';
 import {vehicleServiceObjects} from '../src/rendering/vehicle-repair.js';
-import {vehicleLocations} from '../src/core/vehicle-location.js';
+import {vehicleLocations} from '../src/core/vehicles/vehicle-location.js';
 // 完成入职的维修场地，三辆车同时交付，清空停车场以隔离随机访客。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.vehicleHulls[0]=p.vehicleHulls[1]=p.vehicleHulls[2]=1;const g=new Game(p);g.state='playing';g.mapId='forest';g.vehicle.active=false;g.progress.campParking.owned=[];g.parkingVisitors=[];g.onEvent=()=>{};for(const i of [0,1,2]){g.vehicles[i].hp=0;g.progress.vehicleService[i]={hp:0,phase:'repairing',mapId:'forest',position:{...REPAIR_BAY},timer:0};}return g;}
 test('一车一位，所有在修车辆都绘制于正式露天泊位，满位等待不计时',()=>{const g=scene();updateVehicleRepair(g,.5);const objects=vehicleServiceObjects(g).filter(o=>o.type==='repair-bay');assert.equal(objects.length,2);assert.notEqual(objects[0].id,objects[1].id);for(const item of objects){const spot=REPAIR_PARKING_SPOTS.find(s=>s.id===item.id);assert.equal(item.x,spot.x);assert.equal(item.y,spot.y);assert.notDeepEqual({x:item.x,y:item.y},REPAIR_BAY);assert.ok(parkingOccupied(g,item.id));const site=vehicleLocations(g).find(v=>v.hull===item.hull);assert.equal(site.x,item.x);assert.equal(site.y,item.y);}assert.equal(g.progress.vehicleService[2].timer,0);assert.equal(g.progress.vehicleService[2].repairSpot,null);g.parkingVisitTimer=999;updateParkingVisitors(g,0);for(const spot of REPAIR_PARKING_SPOTS)assert.ok(g.player.parkingBarriers.some(b=>b.x===spot.x&&b.y===spot.y-20));});

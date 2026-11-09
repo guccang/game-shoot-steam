@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {farmAction,setFarmTool,queueFarmWork,updateFarmWork,resolveHarvestLoad} from '../src/core/farm.js';
-import {harvestDestination} from '../src/core/farm-harvest-load.js';
-import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
+import {farmAction,setFarmTool,queueFarmWork,updateFarmWork,resolveHarvestLoad} from '../src/core/farming/farm.js';
+import {harvestDestination} from '../src/core/farming/farm-harvest-load.js';
+import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {farmApproach} from '../src/world/farm-land.js';
 import {itemDefinition} from '../src/config/items.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {cargoAccessible} from '../src/core/cargo.js';
+import {cargoAccessible} from '../src/core/inventory/cargo.js';
 import {LOAD_RULES} from '../src/config/vehicle-load.js';
 
 // 设置两块成熟田和固定停车点，场景无临时活动或自动售货范围。

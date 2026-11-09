@@ -1,7 +1,7 @@
 import {CREW_ITEMS} from '../config/cat-crew-items.js';
 // 金杯小队以车辆为出生点，逐只出门，近战沿用正式地面伙伴导航与命中。
 import {createMechanicalState,updateMechanical} from './mechanical.js';
-import {createCatMotion,updateCatMotion} from '../core/cat-motion.js';
+import {createCatMotion,updateCatMotion} from '../core/battle/cat-motion.js';
 import {consumeRound} from './magazine.js';
 import {blocked} from '../physics/motion.js';
 import {worldDistance} from '../world/coordinates.js';

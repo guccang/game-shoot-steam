@@ -2,6 +2,8 @@
 import {WORLD, ORIGINAL_WORLD, wrap} from './coordinates.js';
 import {pathDistance} from './paths.js';
 import {isWaterScenery} from './river-geometry.js';
+import {biomeAt} from './biomes.js';
+import {HABITATS} from './forest-habitats.js';
 import {monsterCampClearing} from '../config/monster-camps.js';
 import {coversScenery,inCampComposition} from './forest-clearings.js';
 
@@ -11,6 +13,9 @@ const groups=[
   [['flowers',0,0,1.26],['flowers',37,12,.76],['flowers',-46,-20,.91],['flowers',-75,-7,.54]],
   [['driftwood',0,0,1.18],['flowers',24,6,.75],['stones',-47,18,.58]],
   [['stones',0,0,1.58],['stones',40,18,.88]],
+  [['stones',0,0,1.22],['fern',-30,12,1.34],['fern',36,-10,.87]],
+  [['stones',0,0,1.05],['mushrooms',20,9,1.3],['mushrooms',-32,-11,.86]],
+  [['driftwood',0,0,1.23],['fern',-25,-4,1.42],['mushrooms',32,9,.97]],
 ];
 const cells=new Map();
 
@@ -26,7 +31,8 @@ function cellProps(col,row){
   if(cells.has(key))return cells.get(key);
   const props=[], x=col*CELL+92+noise(col,row,1)*216, y=row*CELL+68+noise(col,row,2)*264;
   const mirror=noise(col,row,3)<.5?-1:1,scale=.82+noise(col,row,4)*.4;
-  const layout=groups[Math.floor(noise(col,row,5)*groups.length)];
+  const choices=HABITATS[biomeAt(x,y).id].understory;
+  const layout=groups[choices[Math.floor(noise(col,row,5)*choices.length)]];
   for(const [kind,dx,dy,size] of layout){
     const px=x+dx*mirror*scale, py=y+dy*scale;
     if(px<ORIGINAL_WORLD.width&&py<ORIGINAL_WORLD.height)continue;

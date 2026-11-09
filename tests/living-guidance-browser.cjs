@@ -44,7 +44,7 @@ async page=>{
  }
  if(!await page.locator('#living-menu').isVisible())await page.locator('#field-menu-toggle').click();
  await page.locator('#living-menu').click();
- if((await page.evaluate(async()=> (await import('/src/core/living-route.js')).livingRouteStates(a.game))).length)throw Error('对话未清理');
+ if((await page.evaluate(async()=> (await import('/src/core/navigation/living-route.js')).livingRouteStates(a.game))).length)throw Error('对话未清理');
  await page.locator('#living-close').click();await page.waitForTimeout(200);await inspect('dialog-resume');
  // 移动经过旧版会逐点翻转的纵向阈值，正式地面不应有道路穿过此空地。
  await page.evaluate(()=>{Object.assign(a.game.player,{x:690,y:200});});

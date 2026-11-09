@@ -4,11 +4,11 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {CLEARING_APPROACH,CLEARING_SITE_RULES} from '../src/config/clearing.js';
 import {ENCOUNTERS} from '../src/config/encounters.js';
-import {chooseClearingSite} from '../src/core/clearing-site.js';
+import {chooseClearingSite} from '../src/core/story/clearing-site.js';
 import {forestThreatAt} from '../src/world/forest-levels.js';
 import {enemyIdentity} from '../src/world/biomes.js';
 import {worldDistance} from '../src/world/coordinates.js';
-import {clearingNavigationTarget} from '../src/progression/clearing-site.js';
+import {clearingNavigationTarget} from '../src/progression/story/clearing-site.js';
 
 // 同一组随机种子复现原三级委托抽到九级野外地点的问题。
 function scene(level,seed){
@@ -41,8 +41,8 @@ for(const level of [1,2,3,4,6,9,20])test(`${level}级委托地点及赶路刷怪
 
 // 已接取的历史地点不擅自搬动；回营暂停重接保留战斗进度并获得安全新地点。
 test('旧三级高等级地点重接后降到合适区域，波次和已击杀进度保留',async()=>{
- const {setLivingPatrol}=await import('../src/core/living-world.js');
- const {acceptClearingPost}=await import('../src/core/clearing-guide.js');
+ const {setLivingPatrol}=await import('../src/core/camp/living-world.js');
+ const {acceptClearingPost}=await import('../src/core/story/clearing-guide.js');
  const g=scene(3,5);g.progress.arrival=null;g.arrivalScene=null;g.mainlineSpeech=null;g.progress.restoration.repaired.push('clearing');
  g.progress.living.patrolActive=true;
  g.progress.living.clearingSite={id:'patrol-clearing',name:'本次清缴地点',mapId:'forest',x:2752.656031214032,y:2823.036705239221,radius:300,origin:{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y}};

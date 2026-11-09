@@ -1,5 +1,5 @@
 // 图鉴统计文案与资料内容集中生成，页面交互仍由统一图鉴管理。
-import {codexRecord,codexTotals} from '../progression/world-codex.js';
+import {codexRecord,codexTotals} from '../progression/player/world-codex.js';
 // 列表用短标签显示累计数量；库存不会被误称为历史。
 export function codexRecordLabel(p,e){
  const r=codexRecord(p,e);

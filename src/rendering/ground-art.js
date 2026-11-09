@@ -37,7 +37,7 @@ export function* paintGroundSteps(c, view = null, winter = false, season = 'summ
   c.fillRect(0, 0, WORLD.width, WORLD.height);
   yield* drawBiomeGroundSteps(c, view, winter, season);
   yield 'biome';
-  yield* drawRiverGroundSteps(c, winter);
+  yield* drawRiverGroundSteps(c, winter, view);
   yield 'river';
   drawLandscapeGround(c, view, undefined, winter, season);
   drawNaturalGround(c, view, winter);

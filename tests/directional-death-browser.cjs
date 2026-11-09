@@ -17,7 +17,7 @@ async page=>{
     await t.evaluate(async angle=>{
      const g=a.game;g.remnants=[];g.drops=[];g.numbers=[];g.fx.items=[];
      const e=g.spawnEnemy(0,0,{x:1600,y:470},{ambient:true});Object.assign(e,{species:'slime',rank:0,tough:false});
-     g.hit(e,e.hp+1,false,{direction:{x:Math.cos(angle),y:Math.sin(angle)},power:1});(await import('/src/core/enemy-manager.js')).recycleEnemies(g);g.numbers=[];
+     g.hit(e,e.hp+1,false,{direction:{x:Math.cos(angle),y:Math.sin(angle)},power:1});(await import('/src/core/battle/enemy-manager.js')).recycleEnemies(g);g.numbers=[];
      window.corpse=structuredClone(g.remnants[0]);window.impactFx=structuredClone(g.fx.items);g.player.angle=angle+Math.PI;
     },angle);
     for(const age of [.06,.16,.4]){
@@ -29,7 +29,7 @@ async page=>{
   }
   await t.setViewportSize({width:390,height:844});
   // 斜向重击保留延迟和翻滚；播放三轮记录真实时间上的爆裂节奏。
-  await t.evaluate(async()=>{const g=a.game;g.remnants=[];const e=g.spawnEnemy(0,0,{x:1600,y:470},{ambient:true});g.hit(e,e.hp+1,false,{direction:{x:.707,y:-.707},power:3,impulse:30});(await import('/src/core/enemy-manager.js')).recycleEnemies(g);g.numbers=[];g.fx.items=[];window.corpse=structuredClone(g.remnants[0]);
+  await t.evaluate(async()=>{const g=a.game;g.remnants=[];const e=g.spawnEnemy(0,0,{x:1600,y:470},{ambient:true});g.hit(e,e.hp+1,false,{direction:{x:.707,y:-.707},power:3,impulse:30});(await import('/src/core/battle/enemy-manager.js')).recycleEnemies(g);g.numbers=[];g.fx.items=[];window.corpse=structuredClone(g.remnants[0]);
    for(let cycle=0;cycle<3;cycle++)await new Promise(resolve=>{let start;function frame(now){start??=now;const age=(now-start)/1000;g.remnants=age<corpse.duration?[{...corpse,life:corpse.duration-age}]:[];a.renderer.draw();if(age<1.3)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});
   });
   await t.evaluate(()=>{a.game.remnants=[{...corpse,life:corpse.duration-.3}];a.renderer.draw();});await t.screenshot({path:'output/playwright/directional-death/heavy-night.png'});

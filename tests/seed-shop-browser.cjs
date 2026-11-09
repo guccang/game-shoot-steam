@@ -33,7 +33,7 @@ async original=>{
   if(!await page.locator('[data-buy-seed="0"]').first().isDisabled())throw Error('远程可购买');
   if(!(await page.locator('#seed-shop-goods article').first().innerText()).includes('已解锁购买'))throw Error('用完失去解锁');
   await page.locator('#seed-shop-go').tap();await page.waitForFunction(()=>!document.querySelector('#seed-shop-dialog').open);
-  const nav=await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));if(nav?.site.id!=='seed-shop')throw Error('导航目标错误 '+JSON.stringify(nav));
+  const nav=await page.evaluate(async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game));if(nav?.site.id!=='seed-shop')throw Error('导航目标错误 '+JSON.stringify(nav));
   // 导航沿用世界路线提示；玩家使用真实移动输入沿营地走到柜台。
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>Math.hypot(a.game.player.x-1000,a.game.player.y-872)<40,null,{timeout:12000});await page.keyboard.up('ArrowRight');
   await page.locator('#nearby-interaction[data-target="seed-shop"]').tap();await page.locator('[data-buy-seed="0"][data-count="1"]').tap();

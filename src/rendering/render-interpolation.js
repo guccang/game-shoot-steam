@@ -116,7 +116,8 @@ export function createRenderInterpolation() {
     // 残骸与绳端共用镜头所在的显示帧，只投影已挂接的位置。
     view.towedPosition=project(game.progress?.vehicleService?.[game.progress?.logistics?.tow?.target]?.position);
     // 矿车存于权威进度，另投影当前座位；镜头、车厢与猫必须使用同一时刻的位置。
-    view.mineCart=mineCart.sample(game,amount);
+    view.mineCarts=mineCart.sample(game,amount);
+    view.mineCart=view.mineCarts.get(game.cottage?.ride)||null;
     if(view.mineCart){view.player.x=view.mineCart.x;view.player.y=view.mineCart.y;}
     // 命中/寻敌等查询仍以权威对象为键，避免破坏感知 WeakMap 与锁定目标身份。
     // 查询绑定只在方法身份改变时重建，不为每个中间帧分配三个新函数。

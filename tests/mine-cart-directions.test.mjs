@@ -6,10 +6,11 @@ import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MINING as M,minePoint,mineKey} from '../src/config/mining.js';
-import {freshMining,normalizeMining,openBasement} from '../src/progression/mining.js';
+import {freshMining,normalizeMining,openBasement} from '../src/progression/mining/mining.js';
 import {railExits,nextCartExit} from '../src/config/mine-rail-routes.js';
-import {enterMine,rideMineCart,toggleMineCart,updateMining} from '../src/core/mining.js';
-import {nearbyJunction,setMineCartDirection,setMineJunctionDirection,stoppedCartChoices} from '../src/core/mine-cart-directions.js';
+import {enterMine,rideMineCart,toggleMineCart,updateMining} from '../src/core/mining/mining.js';
+import {nearbyJunction,setMineCartDirection,setMineJunctionDirection,stoppedCartChoices} from '../src/core/mining/mine-cart-directions.js';
+import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
 // 构造隔离十字轨道，外部进度完成入职，不改用户存档。
 function setup(){
  const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;openBasement(p.mining);
@@ -21,9 +22,51 @@ function setup(){
 function tick(g,n){for(let i=0;i<n;i++)updateMining(g,.05,{x:0,y:0});}
 // 获取事务后替换的新车对象，避免断言引用旧存档。
 function cart(g){return g.progress.mining.carts[0];}
-test('默认十字路口直行，三岔右转优先，其次左转，末端折返',()=>{
+test('三节矿车在直道与直角弯保持一格轨道距离，跨接点每步足速且轮毂同步',()=>{
+ const g=setup(),layer=g.progress.mining,render=createRenderInterpolation(),dt=.04;
+ layer.rails={};
+ for(const [x,y] of [[-2,0],[-1,0],[0,0],[1,0],[2,0],[2,1],[2,2],[2,3],[2,4]]){
+  const key=mineKey({x,y});layer.rails[key]=layer.dug[key]=layer.bridges[key]=true;
+ }
+ layer.carts=[0,1,2].map(i=>({id:i+1,leader:i||null,...minePoint({x:-i,y:0}),heading:1,wheel:0}));
+ assert.ok(rideMineCart(g));assert.ok(toggleMineCart(g));
+ const corner=minePoint({x:2,y:0}),arc=p=>p.x-M.home.x+p.y-M.home.y;
+ for(let tick=0;tick<47;tick++){
+  render.beforeStep(g);updateMining(g,dt,{x:0,y:0});
+  for(const alpha of [.1,.5,.9]){
+   const view=render.sample(g,alpha);
+   for(let i=0;i<3;i++){
+    const c=view.mineCarts.get(i+1),expected=(tick+alpha)*dt*M.cartSpeed-i*M.tile;
+    assert.ok(Math.abs(arc(c)-expected)<1e-8);
+    assert.ok(Math.min(Math.abs(c.y-M.home.y),Math.abs(c.x-corner.x))<1e-8);
+    assert.ok(Math.abs(Math.cos(c.wheel)-Math.cos(view.mineCart.wheel))<1e-8);
+   }
+  }
+ }
+});
+test('默认十字路口直行，三岔右转优先，其次左转，末端停车',()=>{
  const g=setup(),l=g.progress.mining,c=cart(g);c.heading=1;c.previous='-1,0';
- assert.equal(nextCartExit(l,c).i,1);delete l.rails['1,0'];assert.equal(nextCartExit(l,c).i,2);delete l.rails['0,1'];assert.equal(nextCartExit(l,c).i,0);delete l.rails['0,-1'];assert.equal(nextCartExit(l,c).i,3);
+ assert.equal(nextCartExit(l,c).i,1);delete l.rails['1,0'];assert.equal(nextCartExit(l,c).i,2);delete l.rails['0,1'];assert.equal(nextCartExit(l,c).i,0);delete l.rails['0,-1'];assert.equal(nextCartExit(l,c),null);assert.equal(nextCartExit(l,c,1,3).i,3);
+});
+
+test('单车和三节列车到尽头停稳，长按前进不重启，单车可主动选择返程',()=>{
+ for(const count of [1,3]){
+  const g=setup(),layer=g.progress.mining,end=minePoint({x:4,y:0});layer.rails={};
+  for(let x=-2;x<=4;x++)layer.rails[mineKey({x,y:0})]=true;
+  layer.carts=Array.from({length:count},(_,i)=>({id:i+1,leader:i||null,...minePoint({x:-i,y:0}),heading:1,wheel:0,cargo:{copper:i+1}}));
+  rideMineCart(g);toggleMineCart(g);
+  for(let n=0;n<50;n++)updateMining(g,.05,{x:1,y:0});
+  assert.equal(g.cottage.running,false);assert.equal(cart(g).x,end.x);assert.equal(cart(g).y,end.y);assert.equal(cart(g).heading,1);assert.match(g.cottage.notice,/铁路尽头/);
+  const stopped=structuredClone(layer.carts);for(let n=0;n<20;n++)updateMining(g,.05,{x:1,y:0});assert.deepEqual(layer.carts,stopped);
+  if(count===1){updateMining(g,.05,{x:0,y:0});updateMining(g,.05,{x:-1,y:0});assert.equal(g.cottage.running,true);assert.ok(cart(g).x<end.x);}
+ }
+});
+
+test('恰好在本帧到达末端时立即停止，剩余路程不会自动倒退',()=>{
+ for(const distance of [M.cartSpeed*.05,M.cartSpeed*.025]){
+  const g=setup(),end=minePoint({x:4,y:0});rideMineCart(g);Object.assign(cart(g),{x:end.x-distance,y:end.y,from:'3,0',target:'4,0',heading:1});g.cottage.running=true;
+  updateMining(g,.05,{x:0,y:0});assert.equal(g.cottage.running,false);assert.equal(cart(g).x,end.x);assert.equal(cart(g).target,null);assert.equal(g.player.x,end.x);
+ }
 });
 test('停车在格心可选北和反向，保持停车且起步真实沿所选轨道',()=>{
  const g=setup();rideMineCart(g);assert.equal(stoppedCartChoices(g).length,4);

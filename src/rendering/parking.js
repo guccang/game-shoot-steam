@@ -3,7 +3,7 @@ import {TOWN_SHIFT_X} from '../config/town-layout.js';
 import {PARKING as C,PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {nearest} from '../world/coordinates.js';
 import {GARAGE} from '../world/workshop.js';
-import {box,oval} from './primitives.js';
+import {box} from './primitives.js';
 import {drawActionCountdown} from './action-countdown.js';
 import {parkingInteractionAnchor,nearbyInteractionAnchor} from '../world/interaction-anchors.js';
 
@@ -12,11 +12,14 @@ export function drawParkingGround(c,game,view,night=0){
  if(game.mapId!=='forest'||game.realm||game.story)return;
  // 公共停车场以一块浅土色地面和共用过道组织六个泊位，北门主通道保持开放。
  const lot=nearest(NORTH_PARKING,game.player),shiftX=lot.x-NORTH_PARKING.x,shiftY=lot.y-NORTH_PARKING.y;
+ // 包围范围包含通道曲线、描边和牌子；完全屏外时不提交停车场图元。
+ if(lot.x-30<=view.x+view.w&&lot.x+560>=view.x&&lot.y-30<=view.y+view.h&&lot.y+NORTH_PARKING.height+30>=view.y){
  c.save();c.translate(shiftX,shiftY);
  c.strokeStyle=night?'#afba8e40':'#d5c99870';c.lineWidth=42;c.lineCap='round';c.beginPath();
  c.moveTo(500+TOWN_SHIFT_X,265);c.quadraticCurveTo(585+TOWN_SHIFT_X,265,NORTH_PARKING.entrance.x,NORTH_PARKING.entrance.y);c.stroke();
  box(c,NORTH_PARKING.x,NORTH_PARKING.y,NORTH_PARKING.width,NORTH_PARKING.height,20,night?'#9baf8230':'#d5c99880','#91a07770',1.5);
  box(c,280+TOWN_SHIFT_X,139,110,23,5,'#e9dcaf','#6c8869',1.5);c.fillStyle='#456a4b';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText('北门停车场',335+TOWN_SHIFT_X,155);c.restore();
+ }
  for(const spot of PARKING_SPOTS){
   if(spot.indoor)continue;
   const p=nearest(spot,game.player);

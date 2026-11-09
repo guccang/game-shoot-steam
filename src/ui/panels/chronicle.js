@@ -2,7 +2,7 @@ import { i18nHtml, i18nText } from "../../i18n/index.js";
 // 设置内的游玩档案使用累计时长和天气占比，不读取设备日期伪造游戏年月。
 import { createEventScope } from '../../platform/events.js';
 import { chronicleSummary } from '../../world/play-chronicle.js';
-import {STAT_RESOURCES,STAT_ACTIVITIES,validateGameStatistics} from '../../progression/game-statistics.js';
+import {STAT_RESOURCES,STAT_ACTIVITIES,validateGameStatistics} from '../../progression/player/game-statistics.js';
 import {WEAPONS} from '../../config/weapons.js';
 import {VEHICLE_ARMAMENTS} from '../../config/vehicle-armaments.js';
 import {COLLECTED_VEHICLES} from '../../config/vehicles.js';
@@ -39,7 +39,7 @@ export function createChroniclePanel({root,dialogs,record,game}) {
   // 已拥有或曾使用过的装备逐行展示，保留借用装备历史，不把未知旧记录分配给当前装备。
   function renderEquipment(equipment=validateGameStatistics(game.progress.statistics).equipment){
     const p=game.progress,vehicle=equipmentTab==='vehicles',records=equipment[equipmentTab];
-    const catalog=vehicle?COLLECTED_VEHICLES.map((v,index)=>({...v,index,owned:p.vehicleHulls[index]>0})).sort((a,b)=>(a.index===5?-1:b.index===5?1:a.index-b.index)):
+    const catalog=vehicle?COLLECTED_VEHICLES.map((v,index)=>({...v,index,owned:p.vehicleHulls[index]>0})).filter(v=>!v.retired).sort((a,b)=>(a.index===5?-1:b.index===5?1:a.index-b.index)):
       [...WEAPONS.map((w,index)=>({...w,owned:p.weapons[index]>0||(index<17&&p.vehicleWeapons[index]>0)})),...VEHICLE_ARMAMENTS.map(w=>({...w,owned:p.vehicleWeapons[w.weaponIndex]>0}))];
     const rows=catalog.filter(w=>w.owned||records[w.id]?.kills||records[w.id]?.trees);
     $('chronicle-equipment-table').innerHTML=`<table class="chronicle-equipment-table" aria-label="${vehicle?'载具':'武器'}杀怪和伐木数量"><thead><tr><th scope="col">${vehicle?'载具':'武器'}</th><th scope="col">杀怪</th><th scope="col">伐木</th></tr></thead><tbody>${rows.map(w=>`<tr data-equipment-id="${w.id}"><th scope="row">${w.name}</th><td>${numberMarkup(records[w.id]?.kills||0)}</td><td>${numberMarkup(records[w.id]?.trees||0)}</td></tr>`).join('')}</tbody></table>${rows.length?'':`<p class="environment-tip">暂无${vehicle?'载具':'武器'}记录</p>`}`;

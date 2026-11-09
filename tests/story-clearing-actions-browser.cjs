@@ -11,7 +11,7 @@ async page=>{
   p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.bosses=round-1;
   const g=a.game;for(const d of document.querySelectorAll('dialog[open]'))d.close();g.story=null;g.storyForest=null;g.realm=null;g.progress=validateProgress(p);g.reset();g.state='playing';g.mainlineSpeech=null;g.update=()=>{};
   const approach=(await import('/src/config/clearing.js')).CLEARING_APPROACH;Object.assign(g.player,{x:approach.x,y:approach.y});
-  if(!(await import('/src/core/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('告示牌接取失败');
+  if(!(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('告示牌接取失败');
   const s=g.progress.living.clearingSite;Object.assign(g.player,{x:s.x,y:s.y});
   for(let i=0;i<600&&!g.boss;i++){g.updateWaves(.5);for(const e of g.enemies.filter(e=>e.hp>0))g.hit(e,1e9);}
   if(!g.boss)throw Error('领主未出现');g.hit(g.boss,1e9);a.refresh();
@@ -38,7 +38,7 @@ async page=>{
   }
   const before=await t.evaluate(()=>({x:a.game.player.x,y:a.game.player.y,xp:a.game.progress.campLevel.xp}));
   await t.locator('#task-reward-next-clearing').tap();await t.waitForFunction(()=>a.game.state==='playing'&&a.game.progress.living.patrolActive);
-  const accepted=await t.evaluate(async before=>{const g=a.game,s=g.progress.living.clearingSite,goal=(await import('/src/core/world-navigation.js')).worldNavigationObjective(g);if(Math.hypot(s.origin.x-before.x,s.origin.y-before.y)>1e-6||g.progress.campLevel.xp!==before.xp||goal.site.x!==s.x||goal.site.y!==s.y)throw Error('续接位置、奖励或导航错误');return s;},before);
+  const accepted=await t.evaluate(async before=>{const g=a.game,s=g.progress.living.clearingSite,goal=(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(g);if(Math.hypot(s.origin.x-before.x,s.origin.y-before.y)>1e-6||g.progress.campLevel.xp!==before.xp||goal.site.x!==s.x||goal.site.y!==s.y)throw Error('续接位置、奖励或导航错误');return s;},before);
   checks.push({round,accepted});
  }
  // 普通奖励不会遗留续接按钮，仍自动关闭。
@@ -47,7 +47,7 @@ async page=>{
  // 正式进入第六章，再将任务定位至截图中的已读结尾，点击原完成按钮。
  await t.setViewportSize({width:390,height:844});await t.evaluate(async()=>{
   const g=a.game;g.progress.living.patrolActive=false;for(const [id,r]of Object.entries(g.progress.story.chapters))if(id!=='sunleaf-06'){r.completed=true;r.rewardClaimed=true;}
-  const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-06')));
+  const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-06')));
   if(!g.enterStory('sunleaf-06'))throw Error('第六章进入失败');
   Object.assign(g.story,{stageId:'END',phase:'prepare',dialogue:null,readLines:['ending']});g.state='story';a.refresh();document.getElementById('story-button').click();
  });await t.locator('[data-story-command="claim"]').waitFor({state:'visible'});
@@ -60,7 +60,7 @@ async page=>{
  await t.locator('#task-reward-dialog').waitFor({state:'hidden',timeout:5000});
  // 选择装备后用正文出发，关闭按钮仍只关页；正文继续可恢复主动暂停。
  await t.evaluate(async()=>{
-  for(const d of document.querySelectorAll('dialog[open]'))d.close();const g=a.game,posts=await import('/src/core/story-posts.js');
+  for(const d of document.querySelectorAll('dialog[open]'))d.close();const g=a.game,posts=await import('/src/core/story/story-posts.js');
   Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01'))throw Error('第一章进入失败');g.advanceStoryDialogue(true);a.refresh();
  });await t.locator('[data-story-command="start"]').waitFor({state:'visible'});
  await t.locator('[data-story-loadout="line-patrol"]').tap();await t.locator('#story-close').tap();

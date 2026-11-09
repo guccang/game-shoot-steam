@@ -45,7 +45,7 @@ async original=>{
   await enter('construction');await page.locator('[data-room-item="shopkeeper"]').tap();await page.locator('[data-npc-service]').tap();
   await page.locator('[data-build="elevator"]').tap();
   // 构造旧版不连续付费楼层，继续验证未装层的楼梯通行。
-  await page.evaluate(async()=>{const r=(await import('/src/core/home-construction.js')).buildHome(a.game,'elevator',{floor:2});if(!r.ok)throw Error(r.message);});
+  await page.evaluate(async()=>{const r=(await import('/src/core/home/home-construction.js')).buildHome(a.game,'elevator',{floor:2});if(!r.ok)throw Error(r.message);});
   bought=await page.evaluate(()=>({floors:a.game.progress.homeDecor.elevators,coins:a.game.progress.coins,wood:a.game.progress.wood}));
   if(JSON.stringify(bought)!==JSON.stringify({floors:[0,2],coins:38000,wood:8400}))throw Error('按层收费失败 '+JSON.stringify(bought));await shot('purchase-two-floors');await page.locator('[data-build-close]').tap();
   await enter('cottage');await shot('first-floor-elevator');await lift(4);await shot('top-floor-down-only');await stairs('down',3);await shot('third-floor-elevator');

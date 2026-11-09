@@ -1,12 +1,16 @@
 // 驾驶只放行种田入口，实际事务与演出、暂停限制必须继续生效。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {canEnterFarm,canUseFarm,farmWorking,setFarmTool,queueFarmWork} from '../src/core/farm.js';
-import {enterFarmVehicle,restoreFarmVehicle,validateFarmVehicleReturn} from '../src/core/farm-vehicle.js';
+import {canEnterFarm,canUseFarm,farmWorking,setFarmTool,queueFarmWork} from '../src/core/farming/farm.js';
+import {enterFarmVehicle,restoreFarmVehicle,validateFarmVehicleReturn} from '../src/core/farming/farm-vehicle.js';
+import {updateSceneApproach} from '../src/core/navigation/scene-approach.js';
+import {updateVehicleBoarding} from '../src/core/vehicles/vehicle-boarding.js';
+import {driveBody} from '../src/physics/motion.js';
+import {WORLD} from '../src/world/coordinates.js';
 import {Game,freshProgress} from '../src/game.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {vehicleWeapon} from '../src/config/vehicles.js';
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 
 // 使用真实已拥有载具与上下车入口，隔离开场停车和随机战斗。
 function mounted(hull=0){
@@ -89,6 +93,11 @@ test('驾驶进入种地后退出恢复原车，换工具与临时战斗不丢�
   assert.ok(enterFarmVehicle(g).dismounted);assert.equal(vehicle.active,false);
   for(const tool of ['hoe','water',null,'harvest']){setFarmTool(g,tool);validateFarmVehicleReturn(g);assert.equal(g.farmVehicleReturn.vehicle,vehicle);}
   assert.ok(enterFarmVehicle(g).ok);setFarmTool(g,null);assert.ok(restoreFarmVehicle(g));
+  assert.equal(vehicle.active,false);assert.equal(g.sceneApproach.id,'farm-vehicle');
+  // 真实步行至车旁后才开始候停，不能退出当帧恢复驾驶。
+  for(let i=0;i<400&&!vehicle.active;i++){
+   const input=updateSceneApproach(g,.04,{x:0,y:0});updateVehicleBoarding(g,.04);driveBody(g.player,input,140,.04,WORLD,g.trees);
+  }
   assert.equal(g.vehicle,vehicle);assert.ok(vehicle.active);assert.equal(vehicle.hp,73);assert.deepEqual(vehicle.module?.magazine,magazine);
   assert.equal(g.player.flying,hull===2);assert.equal(g.player.amphibious,hull===3);assert.equal(g.farmVehicleReturn,null);
   assert.equal(restoreFarmVehicle(g),false);

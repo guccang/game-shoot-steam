@@ -1,3 +1,4 @@
+import {ownsCampPoint} from '../config/camp-land.js';
 import {worldBuildingBlocked} from './building-collision.js';
 // 生活道路、安全边界和设施底座共用几何，避免画面安全而弹道仍穿入。
 import {LIVING_ROADS,LIVING_PLACES} from '../config/living-world.js';
@@ -18,8 +19,8 @@ export function livingForest(game){return game.mapId==='forest'&&!game.campDefen
 // 设施目录是静态配置，碰撞热路径只复用实体列表，不逐采样创建数组或重复筛选装饰。
 const collisionFacilities=Object.values(LIVING_PLACES).filter(s=>!['flowers','basket','warning','relay','kitchen','market'].includes(s.kind));
 // 桌台仍使用低矮底座，房屋由完整实体墙统一拦截。
-export function livingFacilityBlocked(x,y,radius){
- return worldBuildingBlocked(x,y,radius,{mapId:'forest'})||collisionFacilities.some(s=>{const p=nearest({x,y},s);return Math.abs(p.x-s.x)<s.width/2+radius&&p.y>s.y-19-radius&&p.y<s.y+5+radius;});
+export function livingFacilityBlocked(x,y,radius,body={mapId:'forest'}){
+ return worldBuildingBlocked(x,y,radius,body)||collisionFacilities.some(s=>{if(body.campProgress&&!ownsCampPoint(body.campProgress,s))return false;const p=nearest({x,y},s);return Math.abs(p.x-s.x)<s.width/2+radius&&p.y>s.y-19-radius&&p.y<s.y+5+radius;});
 }
 // 树冠完整退出工作点和生活走廊，保留两侧原有树林。
 export function livingClearing(x,y){return settlementClearing(x,y)||livingRoadDistance({x,y})<92||Object.values(LIVING_PLACES).some(s=>Math.abs(x-s.x)<s.width/2+75&&y>s.y-s.height-30&&y<s.y+125);}

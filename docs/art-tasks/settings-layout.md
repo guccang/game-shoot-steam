@@ -54,6 +54,6 @@ HTML/CSS/JavaScript，弹窗最大宽480px、高度不超过视口减28px；按�
 ## 2026-10-30 Debug解锁所有种子购买
 
 - 在原Debug解锁区增加“解锁所有种子购买”，复用primary按钮与原滚动容器。只将正式目录的种子购买资格设为已解锁，原有种子库存、金币、清缴轮数、剧情与价格不变；保存成功后禁用按钮并显示“所有种子购买已解锁”。
-- 正式入口index.html#unlock-seeds、src/ui/panels/settings.js、src/progression/debug-grants.js；designCriterion为settings-layout。无新增图像、动画、纹理或碰撞，锚点及资源制作项不适用。
+- 正式入口index.html#unlock-seeds、src/ui/panels/settings.js、src/progression/player/debug-grants.js；designCriterion为settings-layout。无新增图像、动画、纹理或碰撞，锚点及资源制作项不适用。
 - 8项相关单元检查通过。浏览器实际点击验证写盘失败不改变进度、恢复存储后可重试、刷新仍解锁17种购买资格；没有赠送种子或资源。390×844白天与320×568夜晚按钮均高46px，文案完整、无越界，页面错误0；为浏览器手机模拟。
 - 已复核[白天按钮](../art-reference/settings-layout/debug-seeds-day.png)、[窄屏夜晚](../art-reference/settings-layout/debug-seeds-night.png)，结论通过。脚本tests/debug-seed-unlock-browser.cjs；完整记录output/playwright/debug-seeds/result.txt，单元结果output/debug-seed-tests.txt。

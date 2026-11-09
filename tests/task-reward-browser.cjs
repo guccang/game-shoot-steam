@@ -15,7 +15,7 @@ async page=>{
  results.push({mainline:text,autoCloseMs:elapsed});
  // 邻里最后一步由正式面板点击，奖励覆盖当前对白但不会错误恢复底层暂停。
  await page.evaluate(async()=>{const g=a.game,{MAINLINE_IDS}=await import('/src/config/mainline.js');g.progress.mainline.completed=[...MAINLINE_IDS];g.progress.mainline.phase='complete';g.mainlineSpeech=null;
-  const {LIVING_REQUESTS}=await import('/src/config/living-world.js'),{livingRequestTarget}=await import('/src/core/living-world.js'),spec=LIVING_REQUESTS[0];g.progress.living.requests[spec.id].stage=spec.steps.length-1;g.progress.taskTracking={kind:'living',id:spec.id};Object.assign(g.player,livingRequestTarget(g,spec),{vx:0,vy:0});a.renderer.camera.time=null;});
+  const {LIVING_REQUESTS}=await import('/src/config/living-world.js'),{livingRequestTarget}=await import('/src/core/camp/living-world.js'),spec=LIVING_REQUESTS[0];g.progress.living.requests[spec.id].stage=spec.steps.length-1;g.progress.taskTracking={kind:'living',id:spec.id};Object.assign(g.player,livingRequestTarget(g,spec),{vx:0,vy:0});a.renderer.camera.time=null;});
  await page.locator('#living-dialog').waitFor({state:'visible'});await page.locator('[data-living-do="neighbors-lunch"]').click();
  await page.locator('#task-reward-dialog').waitFor({state:'visible'});if(!(await page.locator('#task-reward-items').innerText()).includes('+300'))throw Error('邻居奖励遗漏');
  await page.locator('#task-reward-dialog').waitFor({state:'hidden',timeout:5000});

@@ -38,7 +38,7 @@
 | 透明背景 | 不适用：仅Canvas描边，无位图背景 |
 | 碰撞与可通行性 | 所有参战实体共用arena圆形碰撞，继续遵守森林地形 |
 | 昼夜处理 | 沿用现有昼夜提示色，无局部新灯光 |
-| 文件格式与位置 | 配置src/config/story.js；逻辑src/core/story-encounters.js；验收output/playwright/story-playthrough |
+| 文件格式与位置 | 配置src/config/story.js；逻辑src/core/story/story-encounters.js；验收output/playwright/story-playthrough |
 | 内存与缓存预算 | 无新增图集、纹理、画布或缓存；每圈固定24组短刻度 |
 
 ## 4 动画任务补充

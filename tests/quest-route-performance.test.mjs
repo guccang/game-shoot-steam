@@ -3,11 +3,11 @@ import {WORLD} from '../src/world/coordinates.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createQuestRouteSearch,questLineClear} from '../src/physics/quest-route.js';
-import {createRouteSession,advanceRouteSession} from '../src/core/quest-navigation-cache.js';
+import {createRouteSession,advanceRouteSession} from '../src/core/navigation/quest-navigation-cache.js';
 import {SpatialGrid} from '../src/world/spatial-grid.js';
 import {Game,freshProgress} from '../src/game.js';
-import {storyRouteState} from '../src/core/story-route.js';
-import {requestWorldNavigation} from '../src/core/world-navigation.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
+import {requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
 
 test('1500单位绕河路线分帧完成，重复绘制同一帧不推进，所有边可通行',()=>{
  const body={x:1600,y:400,mapId:'forest',livingCollision:true},goal={x:700,y:1600};

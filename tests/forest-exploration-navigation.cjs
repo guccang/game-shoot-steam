@@ -14,7 +14,7 @@ async page=>{
  if(await page.locator('#mainline-dialog').isVisible())throw Error('点击工坊任务不应暂停导航打开详情');
  await page.waitForTimeout(200);
  if(!await page.locator('.mainline-bearing').isVisible())throw Error('点击任务未开启路线');
- const route=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return (await import('/src/core/story-route.js')).storyRouteState(g);});
+ const route=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return (await import('/src/core/navigation/story-route.js')).storyRouteState(g);});
  if(!route?.reachable)throw Error('购船地点无可行路线');
  await page.screenshot({path:'output/playwright/forest-exploration/purchase-selected-route.png'});
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle=g.vehicles[0];g.summonVehicle();Object.assign(g.player,{x:600,y:1980});a.refresh();});

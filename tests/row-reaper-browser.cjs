@@ -24,7 +24,7 @@ async original=>{
    farm.nextId=6;Object.assign(g.player,{x:point.x-48,y:point.y+8});a.renderer.camera.time=null;a.refresh();
   });
   if(!await page.locator('#farm-menu').isVisible())await page.locator('#field-menu-toggle').tap();
-  await page.locator('#farm-menu').tap();await page.locator('#farm-reaper').tap();
+  await page.locator('#farm-menu').tap();await page.locator('#farm-sickle').press('ArrowDown');await page.locator('#farm-reaper').tap();
   const hold=page.getByRole('button',{name:'按住收割'}),touch=await context.newCDPSession(page);
   await hold.waitFor();await page.locator('[data-ox-turn]').tap();await page.waitForFunction(()=>a.game.farmWork.reaper.facing===-1);
   await page.locator('[data-ox-turn]').tap();

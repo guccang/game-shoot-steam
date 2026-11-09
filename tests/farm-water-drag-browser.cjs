@@ -10,7 +10,7 @@ async page=>{
   if(!farmSites)throw Error('未找到合法测试田');
   window.basePlayer={x:farmSites[4].x,y:farmSites[4].y+72};Object.assign(g.player,basePlayer,{vx:0,vy:0});window.originalUpdate=g.update.bind(g);g.update=()=>{};
   // 准备两块空田、两块幼苗、一块湿田与一块成熟田，所有状态都由正式UI读取。
-  window.resetFields=async()=>{const now=Date.now();g.progress.farm.plots=farmSites.map((s,id)=>({...s,crop:id<2?null:0,plantedAt:id<2?0:id===5?now-61000:now,readyAt:id<2?0:id===5?now-1000:now+(id===4?45000:60000),watered:id===4}));g.progress.farm.nextId=6;(await import('/src/core/farm.js')).setFarmTool(g,'hoe');g.farmCursor=null;Object.assign(g.player,basePlayer,{vx:0,vy:0});a.renderer.camera.time=null;a.refresh();};
+  window.resetFields=async()=>{const now=Date.now();g.progress.farm.plots=farmSites.map((s,id)=>({...s,crop:id<2?null:0,plantedAt:id<2?0:id===5?now-61000:now,readyAt:id<2?0:id===5?now-1000:now+(id===4?45000:60000),watered:id===4}));g.progress.farm.nextId=6;(await import('/src/core/farming/farm.js')).setFarmTool(g,'hoe');g.farmCursor=null;Object.assign(g.player,basePlayer,{vx:0,vy:0});a.renderer.camera.time=null;a.refresh();};
   await resetFields();for(const d of document.querySelectorAll('dialog[open]'))d.close();
  });
  await page.locator('#field-menu-toggle').click();await page.locator('#farm-menu').click();

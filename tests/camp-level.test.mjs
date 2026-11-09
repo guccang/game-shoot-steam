@@ -3,18 +3,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress,upgradeCost} from '../src/progression/progress.js';
 import {CAMP_LEVELS,CAMP_ACTIVITY_XP} from '../src/config/camp-level.js';
-import {campProgress,campPurchasePrice,awardCampXp,countCampActivity} from '../src/progression/camp-level.js';
-import {equipmentRecipe,equipmentRequirements,canPurchaseEquipment} from '../src/progression/equipment-goals.js';
-import {transactProgress} from '../src/progression/transactions.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
+import {campProgress,campPurchasePrice,awardCampXp,countCampActivity} from '../src/progression/camp/camp-level.js';
+import {equipmentRecipe,equipmentRequirements,canPurchaseEquipment} from '../src/progression/workshop/equipment-goals.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 import {HEROES} from '../src/config/heroes.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {Game} from '../src/core/game.js';
-import {updateRealm,syncRealm} from '../src/core/realm-manager.js';
-import {finishFootball} from '../src/core/slime-football.js';
-import {rewardReceipt} from '../src/progression/reward-receipt.js';
+import {updateRealm,syncRealm} from '../src/core/realms/realm-manager.js';
+import {finishFootball} from '../src/core/activities/slime-football.js';
+import {rewardReceipt} from '../src/progression/economy/reward-receipt.js';
 import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
 // 富裕玩家不具备任何旧挑战或主线资格。
 function funded(){const p=freshProgress();p.coins=p.wood=99990000;p.materials={parts:99999,crystal:99999,core:99999};return p;}

@@ -6,7 +6,7 @@ import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {vehicleDamage} from '../src/config/vehicles.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
 import {syncSupplyAmmo} from '../src/combat/supply-ammo.js';
-import {vehicleRepairQuote,requestVehicleRepair,updateVehicleRepair,syncVehicleService} from '../src/core/vehicle-repair.js';
+import {vehicleRepairQuote,requestVehicleRepair,updateVehicleRepair,syncVehicleService} from '../src/core/vehicles/vehicle-repair.js';
 import {REPAIR_BAY} from '../src/config/vehicle-repair.js';
 // 测试车队明确拥有并安装主炮；移除随机波次，保留弹药与真实命中。
 function scene(hull=6){

@@ -7,7 +7,7 @@ async original=>{
   await page.locator('#game-frame[data-page=game]').waitFor({timeout:60000});
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
-   window.nav=await import('/src/core/story-route.js');window.frames=[];window.record=false;
+   window.nav=await import('/src/core/navigation/story-route.js');window.frames=[];window.record=false;
    const draw=a.renderer.draw.bind(a.renderer);
    // 在正式绘制入口采样首帧，避免点击后先等待路径完成而掩盖空白。
    a.renderer.draw=(...args)=>{if(record&&a.game.state==='playing'){const r=nav.storyRouteState(a.game,a.renderer.view);frames.push({dots:nav.visibleRouteDots(r,a.renderer.view).length,planning:r?.planning,searchStarts:r?.searchStarts,site:r?.site});}return draw(...args);};
@@ -22,7 +22,7 @@ async original=>{
     // 战斗按正式波次手动推进，实时帧只推进时钟，保持角色完全静止。
     g.update=dt=>{if(g.state==='playing')g.time+=dt;};
     const approach=(await import('/src/config/clearing.js')).CLEARING_APPROACH;Object.assign(g.player,{x:approach.x,y:approach.y});
-    const accepted=(await import('/src/core/clearing-guide.js')).acceptClearingPost(g);if(!accepted.ok)throw Error(action+': '+accepted.message);
+    const accepted=(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g);if(!accepted.ok)throw Error(action+': '+accepted.message);
     const site=g.progress.living.clearingSite;Object.assign(g.player,{x:site.x,y:site.y});
     for(let i=0;i<1200&&!g.boss;i++){g.updateWaves(.5);for(const e of g.enemies.filter(e=>e.hp>0))g.hit(e,1e9);}if(!g.boss)throw Error('正式领主未生成');
     if(action==='next'){
@@ -32,7 +32,7 @@ async original=>{
     }
     // 故意不手动更新教学阶段，覆盖领主刚死就弹出结算、还没走下一逻辑帧的情况。
     // 保留战斗期间手动打开告示牌产生的旧路线，结束必须恢复主线交付。
-    if(action!=='next')(await import('/src/core/world-navigation.js')).requestWorldNavigation(g,approach,'去清缴告示牌接取',{direct:true});
+    if(action!=='next')(await import('/src/core/navigation/world-navigation.js')).requestWorldNavigation(g,approach,'去清缴告示牌接取',{direct:true});
     g.hit(g.boss,1e9);g.numbers=[];g.particles=[];
     g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===phase).start+1000;(await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);
     Object.assign(a.environment,{time:phase,weather:'sun',autoTime:false,autoWeather:false,livingPreview:false});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.renderer.camera.time=null;a.refresh();
@@ -44,7 +44,7 @@ async original=>{
    else await page.locator(action==='end'?'#task-reward-end-clearing':action==='close'?'#task-reward-close':'#task-reward-next-clearing').tap();
    await page.waitForFunction(()=>frames.length>=10);
    const result=await page.evaluate(async before=>{
-    record=false;const g=a.game,first=frames[0],empty=frames.filter(f=>!f.dots).length,route=nav.storyRouteState(g,a.renderer.view),goal=(await import('/src/core/world-navigation.js')).worldNavigationObjective(g),{questLineClear}=await import('/src/physics/quest-route.js');
+    record=false;const g=a.game,first=frames[0],empty=frames.filter(f=>!f.dots).length,route=nav.storyRouteState(g,a.renderer.view),goal=(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(g),{questLineClear}=await import('/src/physics/quest-route.js');
     if(!first.dots||first.planning||first.searchStarts!==0||empty)throw Error('恢复首帧仍无路点 '+JSON.stringify(frames));
     if(g.player.x!==before.x||g.player.y!==before.y||g.progress.campLevel.xp!==before.xp||g.progress.bosses!==before.bosses)throw Error('验收改变位置或重复领奖');
     if(!route.points.every((p,i,points)=>!i||questLineClear(points[i-1],p,{...g.player,mapId:g.mapId,livingCollision:true},g.trees)))throw Error('路径穿过障碍');

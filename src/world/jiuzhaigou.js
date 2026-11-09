@@ -1,3 +1,4 @@
+import {terrainNoise as valleyNoise} from './terrain-noise.js';
 import { i18nText } from "../i18n/index.js";
 import {monsterCampClearing} from '../config/monster-camps.js';
 // 九寨沟地貌数据：以日则沟、则查洼沟和树正沟的 Y 形水系组织风格化可玩地图。
@@ -14,10 +15,7 @@ export const JIUZHAIGOU_ZONES = [
 ];
 
 // 固定噪声只控制地貌与植被，不消耗战斗随机数。
-export function valleyNoise(x, y) {
-  const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
-  return n - Math.floor(n);
-}
+export {valleyNoise};
 
 // 所有水体使用相同多边形供碰撞、小地图与正式绘制器读取。
 function feature(id, name, x, y, rx, ry, phase, kind = 'lake') {

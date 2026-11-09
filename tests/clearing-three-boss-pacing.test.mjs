@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {waveDifficulty} from '../src/config/waves.js';
 import {clearingBossHealth,CLEARING_BOSS_HEALTH_VERSION} from '../src/config/clearing-boss.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 // 在真实清缴场准备已完成的五波节点，不绕过领主属性创建逻辑。
 function challenge(index){const p=freshProgress();p.bosses=index;const g=new Game(p,()=>.5);g.start();g.progress.living.patrolActive=true;Object.assign(g.player,{x:1600,y:400});g.wave=index*5+5;g.waveGroupStart=index*5+1;g.bossWave=g.wave;g.waveKills=g.waveSpawned=waveDifficulty(g.wave).total;g.bossReady=true;g.roundBosses=index;assert.ok(g.summonBoss());return g;}
 test('前三次清缴生命预算生效，攻击缓慢成长且技能顺序不变',()=>{

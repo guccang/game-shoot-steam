@@ -8,7 +8,7 @@ import {storyCampScene} from '../src/rendering/story-camp.js';
 import {livingObjects} from '../src/rendering/living-world.js';
 import {farmObjects} from '../src/rendering/farm.js';
 import {restorationObjects,restorationBuildingVisible} from '../src/rendering/town-restoration.js';
-import {storyDeliveryReady} from '../src/core/story-definition.js';
+import {storyDeliveryReady} from '../src/core/story/story-definition.js';
 
 // 只采集永久建筑身份及修复显示条件，不把临时剧情人物计为营地建筑。
 function buildings(game){
@@ -43,7 +43,7 @@ test('正常森林和独立地图仍使用自身场景，章节车辆使用入�
 // 可见的营地底座在章节出发后仍阻挡角色，避免显示恢复后能够穿屋。
 test('第二章出发保留营地建筑底座碰撞',async()=>{
  const {MAINLINE_IDS}=await import('../src/config/mainline.js');
- const {storyPostForChapter,storyPostApproach}=await import('../src/core/story-posts.js');
+ const {storyPostForChapter,storyPostApproach}=await import('../src/core/story/story-posts.js');
  const {LIVING_PLACES}=await import('../src/config/living-world.js');
  const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.restoration.repaired=['story'];
  p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.story.chapters['sunleaf-01'].completed=true;

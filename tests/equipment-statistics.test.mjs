@@ -7,7 +7,7 @@ import {effectiveWeapon} from '../src/config/weapon-mods.js';
 import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {statisticsSource} from '../src/combat/statistics-source.js';
-import {recordDefeat,validateGameStatistics} from '../src/progression/game-statistics.js';
+import {recordDefeat,validateGameStatistics} from '../src/progression/player/game-statistics.js';
 import {fireBallistics,updateBallistics} from '../src/combat/ballistics.js';
 import {emitWeaponAttack} from '../src/combat/weapon-fire.js';
 import {launchGrenade,explodeGrenade} from '../src/combat/grenades.js';

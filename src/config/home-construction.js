@@ -2,7 +2,10 @@
 import {TOWN_LAYOUT} from './town-layout.js';
 import {COTTAGE,COTTAGE_STAIRS} from './cottage.js';
 export const CONSTRUCTION_COMPANY={...TOWN_LAYOUT.construction,width:166,height:140,id:'construction',name:'森筑建筑公司',mapId:'forest'};
-export const HOME_BUILD_PRICES={basement:{coins:2400,wood:180},floor:{coins:3000,wood:400},elevator:{coins:6000,wood:800},balcony:{coins:1500,wood:200}};
+// 加盖使用石质楼板与铁支撑，电梯逐层使用铁结构和铜部件；矿产只扣已入库成品。
+export const HOME_BUILD_PRICES={basement:{coins:2400,wood:180},floor:{coins:3000,wood:400,stone:80,iron:8},elevator:{coins:6000,wood:800,iron:12,copper:4},balcony:{coins:1500,wood:200}};
+// 报价和缺料提示共用中文资源名称，原石与加工后的石块保持独立身份。
+export const HOME_BUILD_RESOURCE_NAMES={coins:'金币',wood:'木材',stone:'石块',iron:'铁块',copper:'铜块'};
 // 门框锚在墙体，door 为室内侧可站立的门前点，二者不可混用。
 export const HOME_DIRECTIONS={
  north:{name:'北',dx:0,dy:-1,door:{x:240,y:102},frame:{x:240,y:83}},

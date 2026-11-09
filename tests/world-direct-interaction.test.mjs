@@ -1,10 +1,10 @@
 // 直接点击身份和现场推进回归：禁止最近邻居抢走点击、远程交付及替身身份错配。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {requestWorldNavigation,worldNavigationObjective} from '../src/core/world-navigation.js';
+import {requestWorldNavigation,worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
-import {livingResidents,residentInteraction,residentFor,interactLivingRequest} from '../src/core/living-world.js';
+import {livingResidents,residentInteraction,residentFor,interactLivingRequest} from '../src/core/camp/living-world.js';
 // 创建正式森林会话，测试只设置位置和已接任务阶段。
 function world(){const g=new Game(freshProgress(),()=>.5);g.start();g.livingPersist=()=>true;return g;}
 test('点击稍远的邻居仍打开本人，远距离或已隐藏居民不允许交互',()=>{

@@ -38,7 +38,7 @@
 | 透明背景 | 无新图片；使用已有角色透明图集与程序绘制 |
 | 碰撞 | mineOccupancy / mineLineClear；子弹可越水，不越未开掘岩壁和地图边界 |
 | 昼夜 | 正式历法与场景色调，无昼夜位图副本 |
-| 正式源码 | src/core/mine-combat.js、src/rendering/mine-combat.js、src/rendering/mining.js |
+| 正式源码 | src/core/mining/mine-combat.js、src/rendering/mine-combat.js、src/rendering/mining.js |
 | 资源预算 | 新位图 0 字节，无新增画布；沿用 260 项上限特效池，引力场最多 3 处，弹道按射程与寿命回收 |
 | 必需资源与失败 | 复用既有猫连续帧和枪械资源，无静态或备用猫图回退；浏览器验收无运行异常 |
 

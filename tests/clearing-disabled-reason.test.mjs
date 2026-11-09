@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {CLEARING_POST,CLEARING_APPROACH} from '../src/config/clearing.js';
-import {clearingPostReason,canUseClearingPost,acceptClearingPost} from '../src/core/clearing-guide.js';
+import {clearingPostReason,canUseClearingPost,acceptClearingPost} from '../src/core/story/clearing-guide.js';
 // 最小权限场景保留正式进度和告示牌坐标，避免无关战斗逻辑影响原因判定。
 function scene(){const progress=freshProgress();progress.restoration.repaired.push('clearing');return {progress,state:'playing',mapId:'forest',player:{...CLEARING_APPROACH},vehicle:{active:false}};}
 

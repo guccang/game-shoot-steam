@@ -18,7 +18,9 @@ async original=>{
   });
   const trade=page.locator('#camp-trade-dialog'),action=name=>trade.locator('[data-trade-action="'+name+'"]').first();
   await page.getByRole('button',{name:'营地订单板',exact:true}).tap();await trade.waitFor();
+  if(!(await trade.locator('[data-trade-summary]').innerText()).includes('共 4 项任务 · 已完成 0 项'))throw Error('初始订单进度错误');
   await action('take-crop').tap();await action('give-crop').tap();
+  if(!(await trade.locator('[data-trade-summary]').innerText()).includes('已完成 1 项'))throw Error('订单进度未刷新');
   if(!(await trade.locator('[role=status]').innerText()).includes('117'))throw Error('订单交付金额错误');
   await action('take-relic').tap();await action('escort').tap();await trade.locator('[data-keep]').check();
   await trade.locator('.ui-panel__body').evaluate(el=>el.scrollTop=0);
@@ -51,7 +53,7 @@ async original=>{
   // 由正式路线和护送逻辑带车到近站，再用短屏真实触控领取佣金。
   await page.evaluate(async()=>{
    const g=a.game,site=(await import('/src/config/camp-trade.js')).TRADE_STATIONS[0];
-   const {planQuestRoute}=await import('/src/physics/quest-route.js'),{updateTradeEscort}=await import('/src/core/camp-trade.js');
+   const {planQuestRoute}=await import('/src/physics/quest-route.js'),{updateTradeEscort}=await import('/src/core/camp/camp-trade.js');
    const route=planQuestRoute({...g.player,mapId:'forest',livingCollision:true},site,g.trees);
    if(!route.reachable)throw Error('旧哨驿站无法抵达');
    for(const point of route.points){

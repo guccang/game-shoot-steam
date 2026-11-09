@@ -1,10 +1,10 @@
 import {appendRangerLetter} from './ranger-letter.js';
-import {constructionWood} from '../progression/resource-wallet.js';
-import {woodTaskStatus,repairWoodStatus} from '../core/wood-task-status.js';
+import {constructionWood} from '../progression/economy/resource-wallet.js';
+import {woodTaskStatus,repairWoodStatus} from '../core/inventory/wood-task-status.js';
 // 入职只在地图上显示短目标，任务工坊靠近自动修复，首枪购买从建筑页面提交。
 import {RANGER,arrivalGiftName,RANGER_STAGES,RANGER_LETTER} from '../config/ranger-arrival.js';
 import {RESTORATION_SECONDS} from '../config/building-repair-timing.js';
-import {arrivalWorkReady,arrivalSpeech,skipArrivalJourney,arrivalWorkshopObjective,completeArrivalLetter,arrivalGuidanceVisible} from '../core/ranger-arrival.js';
+import {arrivalWorkReady,arrivalSpeech,skipArrivalJourney,arrivalWorkshopObjective,completeArrivalLetter,arrivalGuidanceVisible} from '../core/camp/ranger-arrival.js';
 import {createEventScope} from '../platform/events.js';
 import {createSpeechBubble} from './speech-bubble.js';
 // 底部对白使用正式故事组件，建筑页复用弹窗暂停和恢复生命周期。

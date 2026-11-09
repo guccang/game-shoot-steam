@@ -28,7 +28,7 @@
 - `src/rendering/jiuzhaigou.js`：正式地表、水帘、涟漪和白沫；减少动态模式冻结流动。
 - `src/rendering/jiuzhaigou-landscape.js`：可通行林坡与低矮地被，进入静态分块缓存。
 - `src/rendering/signposts.js`：森林区域牌和九寨沟地名牌共用正式绘制器。
-- `src/core/map-travel.js`：旅行事务、共享战斗状态及各地图运行时植被。
+- `src/core/navigation/map-travel.js`：旅行事务、共享战斗状态及各地图运行时植被。
 - `src/ui/panels/map.js`：旅行卡片、同源小地图和区域说明。
 
 ## 验收与 designCriterion

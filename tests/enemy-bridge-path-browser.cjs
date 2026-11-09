@@ -30,7 +30,7 @@ async(page)=>{
     for(const seconds of [3,9,28]){
       const r=await page.evaluate(async seconds=>{
         const a=(await import('/src/main.js')).application,g=a.game;
-        const {updateEnemies}=await import('/src/core/enemy-manager.js');
+        const {updateEnemies}=await import('/src/core/battle/enemy-manager.js');
         const {terrainBlocked}=await import('/src/physics/terrain-navigation.js');
         for(let i=0;i<seconds*60;i++){
           g.time+=1/60;updateEnemies(g,1/60,{...g.player});

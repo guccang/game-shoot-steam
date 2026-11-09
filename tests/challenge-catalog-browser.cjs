@@ -20,7 +20,7 @@ async page=>{
   for(let tier=0;tier<=5;tier++){
    await page.locator(`[data-challenge-tier="${tier}"]`).click();
    const actual=await page.locator('#challenge-catalog-grid h4').allTextContents();
-   const expected=await page.evaluate(async t=>(await import('/src/progression/challenge-catalog.js')).challengeCatalog(cApp.game.progress).tiers[t].items.map(i=>i.name),tier);
+   const expected=await page.evaluate(async t=>(await import('/src/progression/realms/challenge-catalog.js')).challengeCatalog(cApp.game.progress).tiers[t].items.map(i=>i.name),tier);
    if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error('名称或分组错误');
    const images=await page.locator('#challenge-catalog-grid canvas').evaluateAll(nodes=>nodes.map(c=>({width:c.width,height:c.height,pixels:Array.from(c.getContext('2d').getImageData(0,0,c.width,c.height).data).filter((v,i)=>i%4===3&&v>0).length})));
    if(images.some(i=>i.pixels<100))throw Error('装备图片为空');

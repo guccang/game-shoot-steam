@@ -6,7 +6,7 @@ import {freshRangerProgress} from '../src/progression/progress.js';
 import {waveDifficulty,WAVE_REST_SECONDS} from '../src/config/waves.js';
 import {BOSSES} from '../src/config/bosses.js';
 import {forestReward} from '../src/config/economy.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {clearingArena as arena,enterClearing,summonClearingBossAtNode as summonBossAtNode} from './helpers/clearing-scene.mjs';
 
 // 比较挑战强度，不把重试后的技能时钟和位置误当成强度变化。

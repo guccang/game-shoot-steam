@@ -19,7 +19,7 @@ async page=>{
   await mount(width,night,true);
   await page.evaluate(()=>document.querySelector('[data-camp-gate="left"]').click());await page.locator('#camp-primary').click();
   const result=await page.evaluate(async()=>{
-   const g=hudApp.game,r=g.campDefense,{updateCampDefense}=await import('/src/core/camp-defense.js'),{updateMechanical}=await import('/src/combat/mechanical.js'),{summonTargetPool}=await import('/src/combat/summons/targets.js'),{worldDistance}=await import('/src/world/coordinates.js');
+   const g=hudApp.game,r=g.campDefense,{updateCampDefense}=await import('/src/core/camp/camp-defense.js'),{updateMechanical}=await import('/src/combat/mechanical.js'),{summonTargetPool}=await import('/src/combat/summons/targets.js'),{worldDistance}=await import('/src/world/coordinates.js');
    r.timer=999;const outside={id:999999,type:'tree',x:r.arena.x,y:r.arena.y+430,radius:18,hp:100,maxHp:100};g.trees.push(outside);
    const before=performance.now();for(let i=0;i<120;i++){g.time+=1/60;updateMechanical(g,1/60);}const cost=performance.now()-before;
    if(summonTargetPool(g,g.player,1000).includes(outside)||g.mechanical.nodes.some(n=>n.targetId===outside.id))throw Error('锁定圈外树');

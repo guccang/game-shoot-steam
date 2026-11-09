@@ -22,7 +22,7 @@ async page=>{
   await page.evaluate(async time=>{
    const g=app.game,p=(await import('/src/config/story-posts.js')).STORY_POSTS.find(p=>p.id==='sunleaf-post');
    g.story=null;g.progress.story.run=null;g.state='playing';g.enemies=[];g.bullets=[];
-   Object.assign(g.player,(await import('/src/core/story-posts.js')).storyPostApproach(p));g.player.hp=1e8;
+   Object.assign(g.player,(await import('/src/core/story/story-posts.js')).storyPostApproach(p));g.player.hp=1e8;
    for(const [i,id] of p.chapters.entries())Object.assign(g.progress.story.chapters[id],{completed:i<2,rewardClaimed:i<2});
    g.summonVehicle();const e=g.spawnEnemy(0,0,{x:g.player.x+130,y:g.player.y+80});Object.assign(e,{hp:1e8,damage:0,speed:0});
    Object.assign(app.environment,{time,weather:'sun',autoTime:false,autoWeather:false});

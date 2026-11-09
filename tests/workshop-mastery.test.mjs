@@ -2,10 +2,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress} from '../src/progression/progress.js';
-import {awardAttackMastery} from '../src/progression/mastery.js';
+import {awardAttackMastery} from '../src/progression/player/mastery.js';
 import {MASTERY_THRESHOLDS,MASTERY_REWARDS} from '../src/config/weapon-mods.js';
 import {workshopMastery} from '../src/ui/workshop/mastery.js';
-import {quoteWorkshop,workshopDraft,previewWorkshop,workshopUpgrade} from '../src/progression/workshop.js';
+import {quoteWorkshop,workshopDraft,previewWorkshop,workshopUpgrade} from '../src/progression/workshop/workshop.js';
 
 test('显示真实累计经验、套件解锁缺口和下一级，满级不显示虚构门槛',()=>{
  const p=freshProgress(),selection={kind:'weapons',index:0};

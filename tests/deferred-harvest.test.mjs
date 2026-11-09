@@ -6,8 +6,8 @@ import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS,MAINLINE_TASKS,currentMainlineTask,MAINLINE_SITES} from '../src/config/mainline.js';
 
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {updateMainline,completeMainline} from '../src/core/mainline-manager.js';
-import {farmAction} from '../src/core/farm.js';
+import {updateMainline,completeMainline} from '../src/core/story/mainline-manager.js';
+import {farmAction} from '../src/core/farming/farm.js';
 import {FARM_CROPS} from '../src/config/farm.js';
 // 准备浇水后正常巡护的存档，作物时间不决定当前或下一个任务。
 function scene(){const p=freshProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf('first-patrol'));p.mainline.currentId='first-patrol';p.mainline.phase='doing';p.farm.planted=p.farm.dug=p.farm.watered=1;p.farm.plots=[{id:3,mapId:'forest',x:900,y:2800,crop:0,plantedAt:Date.now(),readyAt:Date.now()+45000,watered:true}];p.farm.nextId=4;p.farm.lessonRewarded=true;const g=new Game(p,()=>.5);g.state='playing';g.enemies=[];g.boss=null;Object.assign(g.player,MAINLINE_SITES.camp);return g;}

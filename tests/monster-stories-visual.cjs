@@ -14,7 +14,7 @@ async(page)=>{
   await page.evaluate(id=>{const a=neighborApp,g=a.game;Object.assign(g.player,{x:650,y:1840});g.state='playing';g.boss=null;g.enemies=[];g.enterStory(id,'monster-neighbors');g.advanceStoryDialogue(true);g.chooseStoryLoadout('line-patrol');g.startStoryStage();},id);
   // 公开动作推进到领主交谈前，移动和清场为显式夹具。
   await page.evaluate(async()=>{
-   const a=neighborApp,g=a.game,{updateStory}=await import('/src/core/story-manager.js'),{storyDefinition}=await import('/src/core/story-definition.js');
+   const a=neighborApp,g=a.game,{updateStory}=await import('/src/core/story/story-manager.js'),{storyDefinition}=await import('/src/core/story/story-definition.js');
    for(let i=0;i<10000;i++){
     if(g.story.dialogue&&['SERVE','ASK'].includes(g.story.stageId))break;
     if(g.story.dialogue){g.advanceStoryDialogue(true);continue;}

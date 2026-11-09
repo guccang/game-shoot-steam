@@ -11,7 +11,7 @@ async page=>{
     const g=a.game,{COTTAGE}=await import('/src/config/cottage.js'),{BUILDING_ENTRIES}=await import('/src/config/building-entries.js');g.cottage=null;g.cottageEntry=null;g.buildingEntry=null;g.buildingEntryLatch=null;g.enemies=[];g.progress.campParking.owned=[{hull:0,spot:scene==='vehicle-exit'?'garage':'cottage',hp:1,ammo:0,reload:0,wheel:0,track:0}];
     if(scene.endsWith('-exit')||scene==='home-bed'){
      const kind=scene.startsWith('home')?'cottage':scene.split('-')[0],layout=(await import('/src/config/workshop-interiors.js')).interiorLayout({kind});
-     Object.assign(g.player,layout.door,{vx:0,vy:0});const core=await import('/src/core/cottage.js');if(!(kind==='cottage'?core.enterCottage(g):core.enterWorkshop(g,kind)))throw Error('入室夹具失败');
+     Object.assign(g.player,layout.door,{vx:0,vy:0});const core=await import('/src/core/home/cottage.js');if(!(kind==='cottage'?core.enterCottage(g):core.enterWorkshop(g,kind)))throw Error('入室夹具失败');
      Object.assign(g.player,scene==='home-bed'?{x:150,y:170}:layout.exit);g.cottage.exitElapsed=scene==='home-bed'?0:1.4;g.cottage.restElapsed=scene==='home-bed'?1.4:0;
     }else{
      const entry=scene==='home-enter'?COTTAGE.door:BUILDING_ENTRIES.find(e=>e.id===scene);Object.assign(g.player,entry,{vx:0,vy:0});

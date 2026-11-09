@@ -6,11 +6,12 @@ async page=>{
   window.a=(await import('/src/main.js')).application;await a.ready;
   const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();
   p.arrival={version:3,phase:'complete',keys:true};p.coins=p.wood=10000;
+  Object.assign(p.materials,{stone:80,iron:8});
   p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';
   p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(b=>b.id);
   g.progress=p;g.reset();g.start();g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=g.fireClock=99999;
   const outside={x:g.player.x,y:g.player.y};g.cottage={kind:'cat-home',outside,displayEntryLatch:true};
-  Object.assign(g.player,(await import('/src/core/workshop-display-entry.js')).shopkeeperApproach(g.cottage));a.refresh();
+  Object.assign(g.player,(await import('/src/core/workshop/workshop-display-entry.js')).shopkeeperApproach(g.cottage));a.refresh();
  });
  // 短按管理员打开名册。加盖前按钮锁定；确认付款时预告真实入住层。
  async function roster(){
@@ -22,7 +23,7 @@ async page=>{
  if(!await adopt.isDisabled())throw Error('缺少三楼时不能招募');
  await page.locator('#cat-home-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
  await page.evaluate(async()=>{
-  const g=a.game;g.cottage.kind='construction';if(!(await import('/src/core/home-construction.js')).buildHome(g,'floor').ok)throw Error('加盖失败');
+  const g=a.game;g.cottage.kind='construction';if(!(await import('/src/core/home/home-construction.js')).buildHome(g,'floor').ok)throw Error('加盖失败');
   g.cottage.kind='cat-home';a.refresh();
  });
  await roster();await adopt.scrollIntoViewIfNeeded();
@@ -34,7 +35,7 @@ async page=>{
  await page.evaluate(async()=>{
   const g=a.game;
   g.cottage=null;const {COTTAGE}=await import('/src/config/cottage.js');Object.assign(g.player,COTTAGE.door);
-  if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('未能进屋');
+  if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('未能进屋');
   a.refresh();
  });
  // 在梯口附近短按真实热点，仍由正式候停计时完成切层。

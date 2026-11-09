@@ -3,8 +3,8 @@ import {COTTAGE,cottageFloor} from '../config/cottage.js';
 // 小屋装扮手机页面：购买与位置确认分开，预览使用正式房间绘制器。
 import {createEventScope} from '../platform/events.js';
 import {HOME_CATALOG,HOME_LIMIT,HOME_PLANTS,HOME_GRID,decorDefinition} from '../config/home-decor.js';
-import {placedDecor,placementError,plantState} from '../progression/home-decor.js';
-import {buyDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../core/home-decor.js';
+import {placedDecor,placementError,plantState} from '../progression/home/home-decor.js';
+import {buyDecor,moveDecor,storeDecor,sowDecor,harvestDecor} from '../core/home/home-decor.js';
 import {drawCottageRoom,drawFurniture} from '../rendering/cottage.js';
 import {drawHomeDecor} from '../rendering/home-decor.js';
 

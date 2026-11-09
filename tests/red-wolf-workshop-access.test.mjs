@@ -5,12 +5,12 @@ import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {legendaryVisible,legendaryNavigationReason,travelLegendary,commitLegendary} from '../src/core/legendary-workshop.js';
-import {worldNavigationDiagnostics,worldNavigationObjective} from '../src/core/world-navigation.js';
-import {updateCottage,leaveCottage} from '../src/core/cottage.js';
+import {legendaryVisible,legendaryNavigationReason,travelLegendary,commitLegendary} from '../src/core/workshop/legendary-workshop.js';
+import {worldNavigationDiagnostics,worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
+import {updateCottage,leaveCottage} from '../src/core/home/cottage.js';
 import {blocked} from '../src/physics/motion.js';
-import {commitWorkshop} from '../src/core/workshop.js';
-import {workshopUpgrade} from '../src/progression/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
+import {workshopUpgrade} from '../src/progression/workshop/workshop.js';
 
 // 使用正式新档与完成入职的自由探索状态，不依赖用户存档。
 function scene(){const p=freshProgress();p.arrival=null;p.mainline.completed=MAINLINE_IDS.slice();p.mainline.phase='complete';p.vehicleHulls[6]=1;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;return g;}

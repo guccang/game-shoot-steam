@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FARM_CROPS,FARM_CATEGORIES} from '../src/config/farm.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {grantFarmSeeds,validateFarm} from '../src/progression/farm.js';
-import {farmAction} from '../src/core/farm.js';
+import {grantFarmSeeds,validateFarm} from '../src/progression/farming/farm.js';
+import {farmAction} from '../src/core/farming/farm.js';
 
 test('旧十七种索引和存档库存完整保留，新追加种类默认锁定，ID及名称不重复',()=>{
  const ids=['daisy','carrot','strawberry','wheat','tomato','corn','pumpkin','sunflower','rice','soybean','cabbage','apple','pear','peach','orange','tulip','lavender'];

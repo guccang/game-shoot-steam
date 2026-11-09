@@ -1,3 +1,4 @@
+import {INDUSTRY_GOODS} from '../config/industry.js';
 import {ERA_RESOURCES} from '../config/vehicle-eras.js';
 import { i18nHtml, i18nText } from "../i18n/index.js";
 // 资源美术共用矢量轮廓：DOM 输出 SVG，战场使用缓存 Path2D，无外部图片和字体图标依赖。
@@ -62,8 +63,16 @@ export const RESOURCE_ART = {
 };
 
 // 资源名称供屏幕阅读器、悬停提示和点击说明使用，避免仅靠颜色分辨。
+// 原矿、金属块和用途部件各有轮廓，价格、背包与运输列表共用图标。
+for(const [key,item] of Object.entries(INDUSTRY_GOODS)){
+ if(RESOURCE_ART[key])continue;
+ const color=key.toLowerCase().includes('copper')?'#ca9367':key.toLowerCase().includes('rare')?'#a69bc8':'#a8b3a2';
+ const raw=key.startsWith('raw'),gun=key.endsWith('Gun'),vehicle=key.endsWith('Vehicle');
+ const path=raw?'M8 43 14 23 28 12 43 18 55 38 41 51 20 52Z':gun?'M9 22H50V32H34L30 49H18L22 32H9Z':vehicle?'M24 9H40L43 17 51 21 54 35 47 43 40 53H24L20 45 11 40 9 25 17 20Z':key==='farmParts'?'M15 8H24V35H49L44 51H21L15 38Z':'M8 31 20 17H47L56 31 46 48H17Z';
+ RESOURCE_ART[key]=[shape(path,color),shape(raw?'M14 23 29 30 43 18M29 30 20 52':vehicle?'M24 31a8 8 0 1 0 16 0a8 8 0 1 0-16 0':'M18 32H45','none','#586353',2)];
+}
 export function resourceName(key) {
-  return ERA_RESOURCES[key]?.name || MATERIALS[key]?.name || ({ coins: i18nText("balance.app.bbece6f829"), wood: i18nText("balance.app.30a9333b4f"), bosses: i18nText("balance.app.ba2b3bd76e") })[key] || '';
+  return INDUSTRY_GOODS[key]?.name || ERA_RESOURCES[key]?.name || MATERIALS[key]?.name || ({ coins: i18nText("balance.app.bbece6f829"), wood: i18nText("balance.app.30a9333b4f"), bosses: i18nText("balance.app.ba2b3bd76e") })[key] || '';
 }
 
 // 生成本地 SVG 图标；所有路径来自静态目录，没有用户输入或远程资源。

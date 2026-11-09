@@ -1,5 +1,5 @@
 // 地下地图仅消费已保存的探索与设施记录，不提前揭露天然洞厅。
-import {MINING,mineKey} from '../config/mining.js';
+import {MINING,mineKey,mineFreightCell} from '../config/mining.js';
 import {mineCellArea,mineTerrain} from '../config/mine-ecology.js';
 // 格子键统一解码，避免显示文案参与坐标判断。
 function cellOf(key){const [x,y]=key.split(',').map(Number);return {x,y,key};}
@@ -14,12 +14,13 @@ export function buildMineMapModel(layer,player,depth=1){
  const position={x:(player.x-MINING.home.x)/MINING.tile,y:(player.y-MINING.home.y)/MINING.tile},segments=[];
  for(const key of rails){const a=known.get(key);a.degree=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>rails.has(mineKey({x:a.x+dx,y:a.y+dy}))).length;for(const [dx,dy] of [[1,0],[0,1]]){const b=known.get(mineKey({x:a.x+dx,y:a.y+dy}));if(b?.rail){segments.push({a,b});(a.links??=[]).push(b);}}}
  const markers=[];
+ if(depth===1&&Number.isInteger(layer.depotRow)){const cell=mineFreightCell(layer,depth);markers.push({...cell,key:mineKey(cell),name:'仓库升井',kind:'depot'});}
  if(depth===1&&known.has('0,0'))markers.push({...cellOf('0,0'),name:'小屋',kind:'home'});
  if(layer.entry&&!(depth===1&&layer.entry==='0,0')&&known.has(layer.entry))markers.push({...cellOf(layer.entry),name:'上层',kind:'entry'});
  if(layer.descent&&known.has(layer.descent))markers.push({...cellOf(layer.descent),name:'下层',kind:'descent'});
  for(const [i,key] of (layer.shafts||[]).entries())if(known.has(key))markers.push({...cellOf(key),name:'洞口'+(i+1),kind:'shaft'});
  const bounds={left:position.x-.5,right:position.x+.5,top:position.y-.5,bottom:position.y+.5};
- for(const cell of cells){bounds.left=Math.min(bounds.left,cell.x-.5);bounds.right=Math.max(bounds.right,cell.x+.5);bounds.top=Math.min(bounds.top,cell.y-.5);bounds.bottom=Math.max(bounds.bottom,cell.y+.5);}
+ for(const cell of [...cells,...markers]){bounds.left=Math.min(bounds.left,cell.x-.5);bounds.right=Math.max(bounds.right,cell.x+.5);bounds.top=Math.min(bounds.top,cell.y-.5);bounds.bottom=Math.max(bounds.bottom,cell.y+.5);}
  return {depth,cells,rails:[...rails].map(k=>known.get(k)),segments,markers,position,bounds};
 }
 // 默认适配全部已探索区域，极小开局也保留足够上下文。

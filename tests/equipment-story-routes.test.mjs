@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {EQUIPMENT_STORY_CHAPTERS} from '../src/config/equipment-story-chapters.js';
 import {LIVING_PLACES} from '../src/config/living-world.js';
-import {storyPostApproach,storyPostForChapter} from '../src/core/story-posts.js';
+import {storyPostApproach,storyPostForChapter} from '../src/core/story/story-posts.js';
 import {validateStorySites} from '../src/world/story-sites.js';
 import {blocked,moveBody} from '../src/physics/motion.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';

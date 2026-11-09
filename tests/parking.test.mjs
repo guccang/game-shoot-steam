@@ -6,10 +6,12 @@ import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {PARKING as C,PARKING_SPOTS} from '../src/config/parking.js';
-import {requestParking,parkingPathClear,parkingAvailable,nearestParkingSpot} from '../src/core/parking.js';
+import {requestParking,parkingPathClear,parkingAvailable,nearestParkingSpot} from '../src/core/vehicles/parking.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
 import {PATHS,pathDistance} from '../src/world/paths.js';
 import {blocked} from '../src/physics/motion.js';
+import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 
 // 测试夹具只提供已拥有载具与完成主线的存档，移动及入库仍走正式更新。
 function setup(id='garage',hull=0){
@@ -20,6 +22,18 @@ function setup(id='garage',hull=0){
 }
 // 固定正式上限步长，无跳过计时、移动或入位事件。
 function tick(g,frames,input){for(let i=0;i<frames;i++)g.update(.05,input);}
+
+test('所有自有车型到空位都显示停车入口，未拥有的车不能占位',()=>{
+ const {g}=setup('north-0-1');
+ g.parkingVisitors=[];g.progress.campParking.owned=[];
+ for(const [hull,model] of COLLECTED_VEHICLES.entries()){
+  g.vehicle=g.vehicles[hull];g.vehicle.active=true;g.progress.vehicleHulls[hull]=1;
+  assert.equal(nearbyInteraction(g)?.id,'parking-north-0-1',model.name);
+  g.progress.vehicleHulls[hull]=0;
+  assert.equal(requestParking(g),false,model.name);
+  g.vehicle.active=false;
+ }
+});
 
 test('静止十秒不倒车，点击立即启动，暂停与连点不重复发起',()=>{
  const {g}=setup();tick(g,200);assert.equal(g.parking.phase,'waiting');assert.equal(g.parking.elapsed,0);
@@ -92,7 +106,8 @@ test('营地主路及路肩不触发候停，旧工坊停车入口也保持自�
 test('进入院内只提示点击，驶出边界立即清除候选',()=>{
  for(const spot of PARKING_SPOTS){
   const {g}=setup(spot.id);assert.equal(nearestParkingSpot(g)?.id,spot.id);
-  tick(g,20);assert.equal(g.parking.elapsed,0);
+  // 门口站定一秒会进入房屋，先在该交互完成前检查停车候选边界。
+  tick(g,1);assert.equal(g.parking.elapsed,0);
   Object.assign(g.player,{x:spot.x,y:spot.approachY+C.approachMargin+1,vx:0,vy:0});g.update(.05);
   assert.notEqual(g.parking?.id,spot.id);
  }

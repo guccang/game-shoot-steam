@@ -87,12 +87,12 @@ function pool(ctx, color, rx = 54, ry = 24) {
   ctx.fill();
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function drawWater(ctx) {
-  consumeDrawSteps(drawWaterSteps(ctx)); // 动态河面遮罩同步复用同一水形。
+function drawWater(ctx, view = null) {
+  consumeDrawSteps(drawWaterSteps(ctx, view)); // 动态河面遮罩同步复用同一水形。
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function* drawWaterSteps(ctx) {
-  yield* drawShoreWaterSteps(ctx);
+function* drawWaterSteps(ctx, view = null) {
+  yield* drawShoreWaterSteps(ctx, view);
   pool(ctx, style.river.drawWaterStepsColor, 56, 26);
   pool(ctx, style.river.drawWaterStepsColor2, 53, 23);
   pool(ctx, style.river.drawWaterStepsColor3, 41, 17);
@@ -148,12 +148,12 @@ export function drawRiverGround(ctx, winter = false) {
   consumeDrawSteps(drawRiverGroundSteps(ctx, winter)); // 同步入口完整执行原绘制序列。
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-export function* drawRiverGroundSteps(ctx, winter = false) {
+export function* drawRiverGroundSteps(ctx, winter = false, view = null) {
   ctx.save();
   ctx.lineCap = 'round';
-  yield* drawShoreGroundSteps(ctx, winter);
+  yield* drawShoreGroundSteps(ctx, winter, view);
   pool(ctx, winter ? '#d8e4db' : '#9cae7e', 62, 30);
-  yield* drawWaterSteps(ctx);
+  yield* drawWaterSteps(ctx, view);
   drawShoreDetails(ctx);
   // 瀑布两侧采用三块圆润岩石，无锐利切面、岩层纹理或体积渐变。
   for (const side of [-1, 1]) {
@@ -245,7 +245,8 @@ export class RiverRenderer {
       texture.height = region.h + RIVER_PAD * 2;
       const ctx = texture.getContext('2d');
       ctx.translate(RIVER_PAD - region.x, RIVER_PAD - region.y);
-      drawWater(ctx);
+      // 动态水面块也只提交自身与扰动留边内的原河道，不重复生成整条大地图河流。
+      drawWater(ctx,{x:region.x-RIVER_PAD,y:region.y-RIVER_PAD,w:texture.width,h:texture.height});
       ctx.clearRect(BRIDGE.x - 5, BRIDGE.y - 5, BRIDGE.width + 10, BRIDGE.height + 10);
       const left = regions[0].x,
         right = left + regions[0].w;

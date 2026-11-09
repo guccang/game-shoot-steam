@@ -3,11 +3,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {waveDifficulty,clearingRewardTotal,clearingWaveBudget,clearingKillReward} from '../src/config/waves.js';
-import {validatePatrol} from '../src/progression/patrol-progress.js';
+import {validatePatrol} from '../src/progression/battle/patrol-progress.js';
 import {MAINLINE_IDS,currentMainlineTask} from '../src/config/mainline.js';
-import {validateMainline} from '../src/progression/mainline-progress.js';
-import {mainlineCondition,mainlineOperation} from '../src/core/mainline-manager.js';
-import {recordMainlineCombat} from '../src/progression/mainline-combat.js';
+import {validateMainline} from '../src/progression/story/mainline-progress.js';
+import {mainlineCondition,mainlineOperation} from '../src/core/story/mainline-manager.js';
+import {recordMainlineCombat} from '../src/progression/story/mainline-combat.js';
 import {CLEARING_DENSITY} from '../src/config/clearing-difficulty.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 // 仅准备自有装备与任务前置，不修改工厂属性或战斗命中。

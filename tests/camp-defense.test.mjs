@@ -1,12 +1,12 @@
-// 怪潮守门专项：隔离、十波状态机、真实救场火力、存档与结算原子性。
+// 怪潮守门专项：隔离、五波状态机、真实救场火力、存档与结算原子性。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade} from '../src/config/camp-defense.js';
-import {startCampDefense,updateCampDefense,rescueCampDefense,hurtCampBarricade,spawnCampBoss,claimCampDefense,syncCampDefense} from '../src/core/camp-defense.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {livingProtected,livingWaveAllowed} from '../src/core/living-safety.js';
-import {updateEnemies} from '../src/core/enemy-manager.js';
+import {startCampDefense,updateCampDefense,rescueCampDefense,hurtCampBarricade,spawnCampBoss,claimCampDefense,syncCampDefense} from '../src/core/camp/camp-defense.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {livingProtected,livingWaveAllowed} from '../src/core/camp/living-safety.js';
+import {updateEnemies} from '../src/core/battle/enemy-manager.js';
 import {updateBossHazards} from '../src/combat/bosses.js';
 // 使用正式 Game，只有入场位置与已拥有装备作为检查点。
 function setup(){const p=freshProgress();p.restoration.repaired.push('defense');const g=new Game(p,()=>.41);g.state='playing';Object.assign(g.player,CAMP_GATES.find(gate=>gate.id==='left'));g.mainlineTalkDelay=999;return g;}
@@ -32,10 +32,10 @@ test('两座开阔营门各自入场，远程与其他活动拒绝，普通清�
  const g=setup();g.player.x=2400;assert.equal(startCampDefense(g,'left'),false);g.player.x=120;g.progress.living.patrolActive=true;assert.equal(startCampDefense(g,'left'),false);
 });
 
-test('固定十波后自动开启 Boss，击杀只记本局，S 资源一次领取并恢复现场',()=>{
+test('固定五波后自动开启 Boss，击杀只记本局，S 资源一次领取并恢复现场',()=>{
  const g=setup(),before=structuredClone(g.progress),player=g.player,trees=g.trees;assert.ok(startCampDefense(g,'left'));
  const r=g.campDefense;
- for(let wave=1;wave<=10;wave++){
+ for(let wave=1;wave<=5;wave++){
   assert.equal(r.wave,wave);r.timer=0;
   for(let guard=0;r.cleared<wave&&guard<500;guard++){
    updateCampDefense(g,.2);for(const e of g.enemies)if(e.hp>0)g.hit(e,100000);g.enemies=g.enemies.filter(e=>e.hp>0);
@@ -65,6 +65,6 @@ test('检查点恢复已杀配额、拒马和原清缴；结算刷新不会重�
 });
 
 test('评分三档仅由玩家守门成绩与破损决定，援军不提升通关标记',()=>{
- assert.equal(campDefenseGrade({cleared:10,gateHp:750,bossDefeated:true}),'S');assert.equal(campDefenseGrade({cleared:10,gateHp:749,bossDefeated:true}),'A');assert.equal(campDefenseGrade({cleared:6,gateHp:0,reason:'barricade'}),'A');assert.equal(campDefenseGrade({cleared:5,gateHp:1500,reason:'death'}),'B');
+ assert.equal(campDefenseGrade({cleared:5,gateHp:750,bossDefeated:true}),'S');assert.equal(campDefenseGrade({cleared:5,gateHp:749,bossDefeated:true}),'A');assert.equal(campDefenseGrade({cleared:3,gateHp:0,reason:'barricade'}),'A');assert.equal(campDefenseGrade({cleared:2,gateHp:1500,reason:'death'}),'B');
  const g=setup();startCampDefense(g,'left');hurtCampBarricade(g,2000);const grade=campDefenseGrade(g.campDefense);assert.equal(rescueCampDefense(g,'death'),false);assert.equal(campDefenseGrade(g.campDefense),grade);
 });

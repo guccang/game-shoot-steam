@@ -1,6 +1,6 @@
 import { i18nText } from "../i18n/index.js";
 // 正式战斗靶场对照：保留真实攻击、装填、蓄能与召唤，不将面板DPS冒充实测。
-import { createWorkshopTrial } from '../core/workshop-trial.js';
+import { createWorkshopTrial } from '../core/workshop/workshop-trial.js';
 import { freshProgress } from '../progression/progress.js';
 import { bindEconomy, heroHealth } from '../config/economy.js';
 import { weaponDamage } from '../config/weapon-mods.js';

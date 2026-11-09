@@ -29,7 +29,7 @@ async(page)=>{
     else {await page.locator('[data-story-loadout]').first().click();await page.locator('[data-story-command="start"]').click();}
    }else{
     await page.evaluate(async()=>{
-     const a=neighborApp,g=a.game,{updateStory}=await import('/src/core/story-manager.js'),{storyDefinition}=await import('/src/core/story-definition.js');
+     const a=neighborApp,g=a.game,{updateStory}=await import('/src/core/story/story-manager.js'),{storyDefinition}=await import('/src/core/story/story-definition.js');
      for(let i=0;i<5000&&g.story?.phase==='active';i++){
       g.state='playing';g.player.invincible=999;const o=g.storyObjective();Object.assign(g.player,storyDefinition(g).world.sites[o.site]);
       for(const e of g.enemies)if(e.hp>0)g.hit(e,1e6);g.enemies=g.enemies.filter(e=>e.hp>0);

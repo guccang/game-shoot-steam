@@ -5,7 +5,7 @@ import { BossHint } from '../src/ui/boss-hint.js';
 import { Game, freshProgress, validateProgress, WORLD } from '../src/game.js';
 import { WEAPONS } from '../src/config/weapons.js';
 import { vehicleWeaponCost } from '../src/config/vehicles.js';
-import { transactVehicle } from '../src/progression/vehicles.js';
+import { transactVehicle } from '../src/progression/vehicles/vehicles.js';
 import { createEnemyAttack, updateEnemyAttack, attackProfile } from '../src/combat/enemy-attack.js';
 import { riverXAt, isWaterBlocked } from '../src/world/river-geometry.js';
 import { applyImpulse, stepBodies } from '../src/physics/motion.js';

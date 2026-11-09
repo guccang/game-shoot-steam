@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {focusedResidentRequest,visibleResidentRequests} from '../src/ui/living-request-view.js';
-import {residentFor,interactLivingRequest,livingRequestTarget} from '../src/core/living-world.js';
+import {residentFor,interactLivingRequest,livingRequestTarget} from '../src/core/camp/living-world.js';
 import {LIVING_REQUESTS} from '../src/config/living-world.js';
 // 使用正式进度和居民工厂，不替换事务或任务目标。
 function scene(){const g=new Game(freshProgress(),()=>.5);g.start();g.mainlineSpeech=null;return g;}

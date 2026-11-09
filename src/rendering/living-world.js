@@ -1,4 +1,4 @@
-import {createCatMotion} from '../core/cat-motion.js';
+import {createCatMotion} from '../core/battle/cat-motion.js';
 import {drawBuildingArchitecture} from './building-architecture.js';
 import {createRenderCanvas,watchRenderCanvas} from './canvas-recovery.js';
 import { onArtStyleChange } from '../art-styles/state.js';
@@ -8,7 +8,7 @@ import { releaseArtCache } from '../art-styles/cache.js';
 import { LIVING_PLACES, MAIN_LIVING_RESULTS } from '../config/living-world.js';
 import { livingForest } from '../world/living-spaces.js';
 import { calendarView } from '../world/living-calendar.js';
-import { nearest, worldDistance, visibleBodies } from '../world/coordinates.js';
+import {worldDistance,visibleBodies} from '../world/coordinates.js';
 import { box, oval, poly } from './primitives.js';
 import { canvasFont } from './text-style.js';
 import { catSprites, RESIDENT_PORTRAIT_SCALE, scaleResidentForWorld } from './cat-animation.js';

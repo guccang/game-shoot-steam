@@ -32,7 +32,7 @@
 | 锚点、分层、透明 | 原站点(470,1350)底座；牌面左上(-56,-70)，属于原实体层，无不透明背景图 |
 | 程序职责与接口 | 正式足球结算维护totalGoals和best，存档校验迁移；Canvas直接绘制文字，稳定football ID与站点入口保留 |
 | 碰撞和昼夜 | 沿用无碰撞站牌，人物背后透显及日夜处理不变 |
-| 文件 | src/core/slime-football.js、src/progression/realm-progress.js、src/rendering/football-scoreboard.js、src/rendering/town-restoration.js |
+| 文件 | src/core/activities/slime-football.js、src/progression/realms/realm-progress.js、src/rendering/football-scoreboard.js、src/rendering/town-restoration.js |
 | 资源与缓存 | 无新增图片、画布或持久缓存，每次可见绘制两行文字 |
 | 必需资源与失败 | 沿用现有字体与基础绘制器，缺失处理不变，不引入替代图片 |
 

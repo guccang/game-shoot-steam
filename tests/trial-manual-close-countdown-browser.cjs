@@ -48,7 +48,7 @@ async page=>{
   await page.screenshot({path:`output/playwright/trial-manual-close-countdown/reward-${width}-${phase}.png`});
   await page.locator('#task-reward-close').click();
   // 小屋床边采用同一个徽记，底部仅保留取消提示，不叠加第二个文字秒数。
-  await page.evaluate(async()=>{const g=a.game;g.dismissFireRescue();g.vehicle.active=false;g.parking=null;const {COTTAGE}=await import('/src/config/cottage.js');Object.assign(g.player,COTTAGE.door);if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('未能进入小屋');Object.assign(g.player,COTTAGE.bed);g.cottage.restElapsed=1.5;a.renderer.draw();a.refresh();});
+  await page.evaluate(async()=>{const g=a.game;g.dismissFireRescue();g.vehicle.active=false;g.parking=null;const {COTTAGE}=await import('/src/config/cottage.js');Object.assign(g.player,COTTAGE.door);if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('未能进入小屋');Object.assign(g.player,COTTAGE.bed);g.cottage.restElapsed=1.5;a.renderer.draw();a.refresh();});
   await page.screenshot({path:`output/playwright/trial-manual-close-countdown/cottage-${width}-${phase}.png`});
   if((await page.locator('#cottage-notice').innerText()).includes('倒计时'))throw Error('还在页面里显示文字倒计时');
   await page.locator('#cottage-exit').click();checks.push({width,phase,badgeAbovePanel:true,panelBottom:view.panel.bottom});

@@ -1,3 +1,4 @@
+import {oreCount} from '../src/config/mine-freight.js';
 import {mineTerrain,mineCellOpen,mineCellArea} from '../src/config/mine-ecology.js';
 // 针对地下事务、世界坐标、持续开掘和轨道驾驶验证真实Game，不运行全量测试。
 import test from 'node:test';
@@ -7,12 +8,12 @@ import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MINING as M,mineKey,mineCell,minePoint} from '../src/config/mining.js';
-import {buildHome} from '../src/core/home-construction.js';
-import {enterMine,leaveMine,updateMining,toggleMineDig,buildMine,rideMineCart,toggleMineCart,faceMine,canOpenShaft,startMineShaft,updateMineEntrance,mineBlocked} from '../src/core/mining.js';
-import {updateCottage,leaveCottage} from '../src/core/cottage.js';
-import {normalizeMining} from '../src/progression/mining.js';
+import {buildHome} from '../src/core/home/home-construction.js';
+import {enterMine,leaveMine,updateMining,selectMineTool,toggleMineDig,buildMine,rideMineCart,toggleMineCart,faceMine,canOpenShaft,startMineShaft,updateMineEntrance,mineBlocked} from '../src/core/mining/mining.js';
+import {updateCottage,leaveCottage} from '../src/core/home/cottage.js';
+import {normalizeMining} from '../src/progression/mining/mining.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 
 // 使用已完成入职的隔离玩家，施工仍走正式建筑事务。
 function setup(enter=true){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.coins=10000;p.wood=1000;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.livingPersist=()=>true;g.cottage={kind:'construction',outside:{x:900,y:580}};if(enter){assert.ok(buildHome(g,'basement').ok);g.cottage={kind:'cottage',floor:0,outside:{x:M.home.x+50,y:M.home.y+30}};Object.assign(g.player,M.hatch.goal);assert.ok(enterMine(g));g.progress.mining.seed=1847;}return g;}
@@ -26,7 +27,7 @@ function wallScene(g){const l=g.progress.mining;l.seed=1847;g.cottage.scanWait=9
 test('地下室施工一次扣费，旧档兼容，刷新保留设施',()=>{const g=setup(false),coins=g.progress.coins,wood=g.progress.wood;assert.ok(buildHome(g,'basement').ok);assert.equal(g.progress.coins,coins-2400);assert.equal(g.progress.wood,wood-180);assert.equal(Object.keys(g.progress.mining.dug).length,9);assert.equal(buildHome(g,'basement').ok,false);const p=validateProgress(g.progress);assert.ok(p.homeDecor.basement);assert.deepEqual(p.mining,g.progress.mining);assert.ok(validateProgress({version:1}).mining.pickaxe);});
 test('施工与挖掘保存失败不扣资源、不改地形，异常也可重试',()=>{const g=setup(false);g.livingPersist=()=>false;const before=structuredClone(g.progress);assert.equal(buildHome(g,'basement').ok,false);assert.deepEqual(g.progress,before);g.livingPersist=()=>true;assert.ok(buildHome(g,'basement').ok);g.cottage={kind:'cottage',floor:0,outside:M.home};Object.assign(g.player,M.hatch.goal);enterMine(g);const wall=wallScene(g),key=mineKey(wall);g.livingPersist=()=>{throw Error('测试保存失败');};toggleMineDig(g);tick(g,20);assert.equal(g.progress.mining.dug[key],undefined);assert.equal(g.progress.mining.ore,0);assert.equal(g.cottage.autoDig,false);g.livingPersist=()=>true;toggleMineDig(g);tick(g,20);assert.ok(g.progress.mining.dug[key]);});
 test('同地表位置入矿，不能远程进出，地下存档不污染室外落点',()=>{const g=setup();assert.deepEqual({x:g.player.x,y:g.player.y},M.home);assert.equal(leaveCottage(g),false);const outside={...g.cottage.outside};capturePatrol(g);assert.deepEqual(g.progress.living.position,outside);Object.assign(g.player,minePoint({x:1,y:0}));assert.equal(leaveMine(g).ok,false);Object.assign(g.player,M.home);assert.ok(leaveMine(g).ok);assert.equal(g.cottage.kind,'cottage');assert.deepEqual({x:g.player.x,y:g.player.y},M.hatch.goal);updateCottage(g,.05,{x:0,y:0});assert.equal(g.cottage.kind,'cottage');Object.assign(g.player,COTTAGE.spawn);assert.equal(enterMine(g),false);});
-test('持续挖掘越过多格且不会重复产矿，暂停冻结，墙体不能穿透',()=>{const g=setup(),wall=wallScene(g),start=g.player.x;tick(g,100,{x:1,y:0});assert.ok(g.player.x<start+32);assert.ok(mineBlocked(g,minePoint(wall).x,minePoint(wall).y));toggleMineDig(g);tick(g,240,{x:1,y:0});assert.ok(mineCell(g.player).x>=wall.x+6);assert.ok(g.progress.mining.ore>0);const before=structuredClone(g.progress.mining),x=g.player.x;g.state='paused';tick(g,100,{x:1,y:0});assert.deepEqual(g.progress.mining,before);assert.equal(g.player.x,x);g.state='playing';toggleMineDig(g);tick(g,100);assert.deepEqual(g.progress.mining.dug,before.dug);assert.equal(g.progress.mining.ore,before.ore);});
+test('持续挖掘越过多格且不会重复产矿，暂停冻结，墙体不能穿透',()=>{const g=setup(),wall=wallScene(g),start=g.player.x;tick(g,100,{x:1,y:0});assert.ok(g.player.x<start+32);assert.ok(mineBlocked(g,minePoint(wall).x,minePoint(wall).y));toggleMineDig(g);tick(g,240,{x:1,y:0});assert.ok(mineCell(g.player).x>=wall.x+6);assert.ok(oreCount(g.progress.mining.bagOre)>0);const before=structuredClone(g.progress.mining),x=g.player.x;g.state='paused';tick(g,100,{x:1,y:0});assert.deepEqual(g.progress.mining,before);assert.equal(g.player.x,x);g.state='playing';toggleMineDig(g);tick(g,100);for(const key of Object.keys(g.progress.mining.dug)){const [x,y]=key.split(',').map(Number);if(!mineTerrain({x,y},before).natural)assert.ok(before.dug[key],key);}assert.equal(g.progress.mining.ore,before.ore);});
 test('矿格负坐标和远距离仍与地表单位对齐，不预生成全图',()=>{for(const cell of [{x:-12345,y:100000},{x:0,y:0},{x:999999,y:-999999}])assert.deepEqual(mineCell(minePoint(cell)),cell);assert.equal(Object.keys(setup().progress.mining.dug).length,9);});
 test('铺轨只在开放地块施工，重复设施、缺料和保存失败均不扣款',()=>{const g=setup();g.progress.mining.ore=20;const initial=g.progress.wood;assert.ok(buildMine(g,'rail').ok);assert.equal(g.progress.wood,initial-2);assert.equal(buildMine(g,'rail').ok,false);assert.ok(buildMine(g,'lamp').ok);assert.equal(buildMine(g,'sign').ok,false);wallScene(g);assert.equal(buildMine(g,'rail',true).ok,false);g.livingPersist=()=>false;const before=structuredClone(g.progress.mining),wood=g.progress.wood;assert.equal(buildMine(g,'rail').ok,false);assert.deepEqual(g.progress.mining,before);assert.equal(g.progress.wood,wood);g.livingPersist=()=>true;g.progress.mining.ore=0;assert.equal(buildMine(g,'cart').ok,false);});
 test('真实矿车沿弯道连续行驶并折返，暂停、急停与下车立即冻结',()=>{const g=setup();rails(g,[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:2,y:1},{x:2,y:2}]);Object.assign(g.player,M.home);assert.ok(buildMine(g,'cart').ok);assert.ok(rideMineCart(g));assert.ok(toggleMineCart(g));tick(g,27);assert.ok(g.player.y>M.home.y);const moving={x:g.player.x,y:g.player.y};g.state='paused';tick(g,100);assert.deepEqual({x:g.player.x,y:g.player.y},moving);g.state='playing';tick(g,90);assert.ok(g.cottage.running);toggleMineCart(g);const stop=structuredClone(g.progress.mining.carts[0]);tick(g,100);assert.deepEqual(g.progress.mining.carts[0],stop);toggleMineCart(g);tick(g,3);rideMineCart(g);const dismounted=structuredClone(g.progress.mining.carts[0]);tick(g,100);assert.deepEqual(g.progress.mining.carts[0],dismounted);assert.equal(g.cottage.ride,null);});
@@ -38,4 +39,41 @@ test('损坏存档过滤非法设施和重复车辆，不产生孤立轨道',()=
 test('隔岩壁不能登车，地下室施工不删除原家具',()=>{
  const g=setup(),wall=wallScene(g),m=g.progress.mining,p=minePoint(wall);m.dug[mineKey({x:wall.x+1,y:wall.y})]=true;m.rails[mineKey({x:wall.x+1,y:wall.y})]=true;m.carts=[{id:1,x:p.x+22,y:p.y,wheel:0}];Object.assign(g.player,{x:p.x-16,y:p.y});assert.equal(rideMineCart(g),false);
  const h=setup(false),item=h.progress.homeDecor.items.find(i=>i.type==='chair');Object.assign(item,{x:155,y:440});const uid=item.uid,count=h.progress.homeDecor.items.length;assert.ok(buildHome(h,'basement').ok);assert.equal(h.progress.homeDecor.items.length,count);assert.equal(h.progress.homeDecor.items.find(i=>i.uid===uid).x,null);
+});
+
+test('一层仓库与小屋可交叉进出，货物只在仓库升井卸下',()=>{
+ const g=setup(),m=g.progress.mining,depot=minePoint({x:6,y:0});
+ m.bagOre={iron:3};tick(g,1);assert.equal(g.progress.mining.ore,0);
+ for(let x=0;x<=6;x++){
+  const p=minePoint({x,y:-1});assert.equal(mineBlocked(g,p.x,p.y),false);
+ }
+ Object.assign(g.player,depot);tick(g,1);assert.equal(g.progress.mining.ore,0);
+ assert.equal(g.progress.industry.raw.iron,3);assert.equal(g.progress.materials.iron,0);assert.ok(leaveMine(g).ok);assert.equal(g.cottage,null);
+ assert.ok(enterMine(g,null,true));assert.deepEqual(mineCell(g.player),{x:6,y:0});
+ Object.assign(g.player,M.home);assert.ok(leaveMine(g).ok);assert.equal(g.cottage.kind,'cottage');
+ const old=structuredClone(m);delete old.depotRow;old.dug['6,0']=true;old.shafts=['6,0'];
+ const restored=normalizeMining(old);assert.equal(restored.depotRow,1);assert.deepEqual(normalizeMining(restored).shafts,['6,0']);
+});
+test('铺轨合用库存与随身矿，保存失败、缺木和重复铺设均不扣背包',()=>{
+ const g=setup(),wood=g.progress.wood;g.progress.mining.ore=1;g.progress.mining.bagOre={copper:1,iron:1,rareMetal:2};
+ assert.ok(buildMine(g,'rail').ok);assert.equal(g.progress.mining.ore,0);assert.equal(g.progress.mining.bagOre.copper,1);
+ g.livingPersist=()=>false;assert.equal(buildMine(g,'rail',true).ok,false);assert.equal(g.progress.mining.bagOre.copper,1);assert.equal(g.progress.wood,wood-2);
+ g.livingPersist=()=>true;g.progress.wood=1;assert.equal(buildMine(g,'rail',true).ok,false);assert.equal(g.progress.mining.bagOre.copper,1);
+ g.progress.wood=wood-2;assert.ok(buildMine(g,'rail',true).ok);assert.equal(buildMine(g,'rail',true).ok,false);
+ assert.deepEqual(g.progress.mining.bagOre,{iron:1,rareMetal:2});assert.equal(g.progress.wood,wood-4);
+});
+
+test('移动铺轨能连续使用背包矿，装矿的车在一层升井卸货',()=>{
+ const g=setup();Object.assign(g.player,minePoint({x:0,y:-1}));
+ g.progress.mining.bagOre={copper:6,iron:3};const wood=g.progress.wood;
+ selectMineTool(g,'rail');tick(g,35,{x:1,y:0});
+ const count=Object.keys(g.progress.mining.rails).length;
+ assert.ok(count>=3);assert.equal(oreCount(g.progress.mining.bagOre),9-count);
+ assert.equal(g.progress.wood,wood-count*2);
+ const depot=minePoint({x:6,y:0});
+ g.progress.mining.carts.push({id:1,...depot,cargo:{rareMetal:4},leader:null});
+ const carried={...g.progress.mining.bagOre};Object.assign(g.player,depot);
+ tick(g,1);assert.equal(g.progress.mining.ore,0);assert.equal(g.progress.industry.raw.copper,carried.copper||0);assert.equal(g.progress.industry.raw.iron,carried.iron||0);assert.equal(g.progress.industry.raw.rareMetal,4);
+ assert.equal(oreCount(g.progress.mining.carts[0].cargo),0);
+ assert.equal(oreCount(g.progress.mining.bagOre),0);
 });

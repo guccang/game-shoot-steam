@@ -2,18 +2,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {sendMail,unreadMailCount,normalizeMailbox} from '../src/progression/mailbox.js';
-import {readMail} from '../src/core/mailbox.js';
-import {updateFarmDelivery,claimFarmParcel} from '../src/core/farm-delivery.js';
+import {sendMail,unreadMailCount,normalizeMailbox} from '../src/progression/camp/mailbox.js';
+import {readMail} from '../src/core/camp/mailbox.js';
+import {updateFarmDelivery,claimFarmParcel} from '../src/core/farming/farm-delivery.js';
 import {FARM_DELIVERY,FARM_STOCK_CAP} from '../src/config/farm.js';
 import {Game} from '../src/core/game.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
-import {commitWorkshop} from '../src/core/workshop.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
 import {MAINLINE_IDS,MAINLINE_TASKS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {grantMainlineSeeds} from '../src/progression/mainline-seeds.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
-import {collectRepairedVehicle} from '../src/core/vehicle-repair.js';
+import {grantMainlineSeeds} from '../src/progression/story/mainline-seeds.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
+import {collectRepairedVehicle} from '../src/core/vehicles/vehicle-repair.js';
 // 使用正式游戏对象与可购买进度，避开入职演出和剧情资格。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.coins=p.wood=100000;p.materials={parts:10000,crystal:10000,core:10000};p.bosses=50;const g=new Game(p);g.state='playing';g.enemies=[];g.boss=null;g.mainlineSpeech=null;g.vehicle.active=false;g.livingPersist=()=>true;g.random=()=>0;return g;}
 // 用正式寄送入口生成包裹，快递站保留唯一领取入口。

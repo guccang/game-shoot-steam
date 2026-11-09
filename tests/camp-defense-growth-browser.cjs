@@ -11,20 +11,20 @@ async page=>{
  });
  await page.reload();await page.setViewportSize({width:390,height:900});await page.locator('#start').click();
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;await a.ready;const g=a.game;g.mainlineSpeech=null;g.mainlineTalkDelay=99999;
-  Object.assign(g.player,(await import('/src/core/camp-parking.js')).vehicleParkingSite(g,0));if(!g.summonVehicle())throw Error('上车失败');Object.assign(g.player,(await import('/src/config/camp-defense.js')).CAMP_GATES[0]);a.refresh();});
+  Object.assign(g.player,(await import('/src/core/vehicles/camp-parking.js')).vehicleParkingSite(g,0));if(!g.summonVehicle())throw Error('上车失败');Object.assign(g.player,(await import('/src/config/camp-defense.js')).CAMP_GATES[0]);a.refresh();});
  await page.locator('[data-camp-gate="top"]').dispatchEvent('click',{detail:0});await page.locator('#camp-defense-dialog').waitFor({state:'visible'});
  const entry=await page.locator('#camp-content').textContent();if(!entry.includes('第 1 次兽潮 · 已结算 0 次'))throw Error('首场记录文案错误');
  await page.screenshot({path:'output/playwright/horde-growth/entry.png'});await page.locator('#camp-primary').click();
  await page.waitForFunction(async()=>(await import('/src/main.js')).application.game.state==='playing');
  const opening=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense;g.attackTimer=999;g.vehicle.module.cooldown=999;r.timer=0;
-  (await import('/src/core/camp-defense.js')).updateCampDefense(g,.01);const e=g.enemies[0];return {hp:e.maxHp,damage:e.damage,speed:e.speed,rounds:r.rounds,vehicle:g.vehicle.active,x:g.player.x};});
+  (await import('/src/core/camp/camp-defense.js')).updateCampDefense(g,.01);const e=g.enemies[0];return {hp:e.maxHp,damage:e.damage,speed:e.speed,rounds:r.rounds,vehicle:g.vehicle.active,x:g.player.x};});
  if(opening.hp!==27||opening.damage!==4||opening.speed!==42||!opening.vehicle)throw Error('首波属性错误 '+JSON.stringify(opening));
  await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;g.attackTimer=g.vehicle.module.cooldown=0;});
  await page.keyboard.down('KeyD');await page.waitForTimeout(400);await page.keyboard.up('KeyD');await page.waitForTimeout(5000);
  const combat=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;return {state:g.state,kills:g.campDefense.kills,x:g.player.x,phase:g.campDefense.phase};});
  if(combat.state!=='playing'||combat.kills<1||Math.abs(combat.x-opening.x)<5)throw Error('正式移动或射击失败 '+JSON.stringify(combat));
  // 检查点只准备十波已完成状态，领主出生、受伤与领取仍通过正式入口。
- const boss=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense,core=await import('/src/core/camp-defense.js');
+ const boss=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense,core=await import('/src/core/camp/camp-defense.js');
   g.enemies=[];Object.assign(r,{wave:10,waveKills:86,spawned:86,kills:590,timer:0});core.updateCampDefense(g,.01);
   const result={hp:g.boss.maxHp,damage:g.boss.damage,skill:g.boss.blastDamage,speed:g.boss.speed};g.hit(g.boss,g.boss.hp);a.refresh();return result;});
  if(boss.hp!==1900||boss.skill!==60||boss.speed!==45)throw Error('首场领主属性错误');
@@ -38,12 +38,12 @@ async page=>{
  const next=await page.locator('#camp-content').textContent();if(!next.includes('第 2 次兽潮 · 已结算 1 次'))throw Error('结算后次数错误 '+next);
  await page.screenshot({path:'output/playwright/horde-growth/second-entry.png'});await page.locator('#camp-primary').click();
  await page.waitForFunction(async()=>(await import('/src/main.js')).application.game.state==='playing');
- const second=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;g.attackTimer=999;g.vehicle.module.cooldown=999;g.campDefense.timer=0;(await import('/src/core/camp-defense.js')).updateCampDefense(g,.01);return {hp:g.enemies[0].maxHp,damage:g.enemies[0].damage,rounds:g.campDefense.rounds,runs:g.progress.campDefense.runs};});
+ const second=await page.evaluate(async()=>{const g=(await import('/src/main.js')).application.game;g.attackTimer=999;g.vehicle.module.cooldown=999;g.campDefense.timer=0;(await import('/src/core/camp/camp-defense.js')).updateCampDefense(g,.01);return {hp:g.enemies[0].maxHp,damage:g.enemies[0].damage,rounds:g.campDefense.rounds,runs:g.progress.campDefense.runs};});
  if(second.hp!==28||second.rounds!==1||second.runs!==1)throw Error('下一场成长错误 '+JSON.stringify(second));
  for(const phase of ['day','night']){
   await page.evaluate(async phase=>{const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense;
    g.state='playing';g.enemies=[];Object.assign(r,{wave:10,waveKills:0,spawned:0,timer:0});g.attackTimer=g.vehicle.module.cooldown=999;
-   const core=await import('/src/core/camp-defense.js');for(let i=0;i<25;i++)core.updateCampDefense(g,.17);
+   const core=await import('/src/core/camp/camp-defense.js');for(let i=0;i<25;i++)core.updateCampDefense(g,.17);
    g.pause();const timing=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===phase);g.progress.living.calendar={day:1,elapsed:timing.start+timing.duration/2};
    (await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);a.environment.weather='sun';a.environment.autoWeather=false;a.refresh();
   },phase);await page.waitForTimeout(16000);

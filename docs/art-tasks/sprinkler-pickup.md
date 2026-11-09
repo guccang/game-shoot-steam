@@ -20,7 +20,7 @@
 ## 3 技术交付
 - 洒水器逻辑约44×40，底座锚点(0,0)，描边2；携带锚点为玩家右侧32、前侧8，主体上抬18；视框与PNG倍率不适用，直接Canvas绘制。
 - 分层：覆盖区与半透明目标在地面层，携带设备加入既有实体深度排序，投影仍在底座，禁止原位实体重复显示。
-- 入口：src/rendering/farm-production.js#productionObjects / drawProductionGround / drawProductionDevice；src/ui/farm-production.js，核心事务src/core/farm-production.js。
+- 入口：src/rendering/farm-production.js#productionObjects / drawProductionGround / drawProductionDevice；src/ui/farm-production.js，核心事务src/core/farming/farm-production.js。
 - 程序维护暂存拿起状态、目标、取消与原子保存；存档中的原位置直到成功放下才更新，刷新自动恢复原位，无耗材、无重复赠种。
 - 昼夜共用正式环境色调；无额外纹理、画布、缓存；最多一个携带对象和一个预览。资源依赖沿用现有猫图集，缺失不伪造素材。
 

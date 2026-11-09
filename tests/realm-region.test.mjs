@@ -6,7 +6,7 @@ import { freshProgress as freshBaseProgress } from '../src/progression/progress.
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import { REALM_ARENA, REALM_RADIUS } from '../src/config/realms.js';
-import { realmSites, validRealmArena, chooseRealmArena } from '../src/core/realm-region.js';
+import { realmSites, validRealmArena, chooseRealmArena } from '../src/core/realms/realm-region.js';
 import { SETTLEMENTS } from '../src/config/settlements.js';
 import { settlementAt } from '../src/world/settlements.js';
 import { WORLD, ORIGINAL_WORLD } from '../src/world/coordinates.js';
@@ -14,7 +14,7 @@ import { guardianPads } from '../src/config/guardian.js';
 import { terrainBlocked } from '../src/physics/terrain-navigation.js';
 import { blocked, moveBody } from '../src/physics/motion.js';
 import { landingPoint } from '../src/combat/vehicle-landing.js';
-import { updateRealm } from '../src/core/realm-manager.js';
+import { updateRealm } from '../src/core/realms/realm-manager.js';
 
 // 选区测试使用已修复秘境的存档，避免被新手设施权限提前拦截。
 function freshProgress(){const p=freshBaseProgress();p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';return p;}

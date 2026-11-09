@@ -27,7 +27,7 @@ async page=>{
  await page.locator('#close-chronicle').click();await page.locator('#settings-done').click();
  // 大数与多玩法仅作视觉夹具，计数语义由上方真实事件和专项规则测试验证。
  await page.evaluate(async()=>{
-  const {recordResourceGain,recordActivity,STAT_ACTIVITIES}=await import('/src/progression/game-statistics.js');
+  const {recordResourceGain,recordActivity,STAT_ACTIVITIES}=await import('/src/progression/player/game-statistics.js');
   const g=a.game;recordResourceGain(g.progress,'coins',123456789);recordResourceGain(g.progress,'wood',115122);
   for(const key of Object.keys(STAT_ACTIVITIES))recordActivity(g.progress,key);
   g.progress.vehicleHulls[0]=1;g.progress.vehicleIndex=0;g.vehicle=g.vehicles[0]=(await import('/src/combat/vehicle.js')).createVehicle(g.progress, 0);g.vehicle.active=true;g.numbers=[];g.remnants=[];g.drops=[];

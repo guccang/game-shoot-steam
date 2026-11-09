@@ -8,7 +8,7 @@ async original=>{
 
  // 样例保留真实景观，仅打开战斗范围以验证武器，不替换正式渲染。
  async function scene(index=0){await page.evaluate(index=>{
-  const g=a.game,l=g.progress.mining;g.state='playing';g.cottage.tool=null;g.cottage.autoDig=false;g.cottage.shaftWork=0;g.cottage.combat=null;g.cottage.scanWait=9999;g.cottage.ride=null;g.cottage.weaponTarget=null;
+  const g=a.game,l=g.progress.mining;g.state='playing';g.cottage.combatWork=null;g.cottage.combatRecovery=0;g.cottage.tool=null;g.cottage.autoDig=false;g.cottage.shaftWork=0;g.cottage.combat=null;g.cottage.scanWait=9999;g.cottage.ride=null;g.cottage.weaponTarget=null;
   g.progress.weapon=index;g.progress.weapons[index]=1;g.magazines[index].ammo=g.weapon().magazineSize;g.magazines[index].remaining=0;g.player.hp=g.maxHp();
   for(let y=16;y<=24;y++)for(let x=26;x<=34;x++){const c={x,y},key=mc.mineKey(c);l.dug[key]=true;if(ec.mineTerrain(c,l).water)l.bridges[key]=true;}
   const p=mc.minePoint({x:30,y:20});Object.assign(g.player,p,{vx:0,vy:0});l.animals={};
@@ -20,14 +20,14 @@ async original=>{
  async function shot(name){await page.screenshot({path:'output/playwright/mine-weapons/'+name+'.png'});const r=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectMineCombat(a.game,a.renderer,document));if(r.view.top!==0||r.view.bottom!==r.view.height)throw Error('地下地图未铺满画布');if(r.overflow||r.buttons.some(b=>b.width<43.9||b.height<43.9))throw Error('手机操作区不合格 '+JSON.stringify(r));reviews.push({name,...r});}
  try{
   await page.goto(base);await page.locator('#start').tap();await page.evaluate(async()=>{
-   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining.js');
-   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining.js')).openBasement(p.mining);p.mining.seed=1847;p.wood=200;p.mining.ore=100;
-   p.mining.layers[2]=(await import('/src/progression/mine-layers.js')).freshMineLayer(2,{x:8,y:4},()=>.31);
+   window.a=(await import('/src/main.js')).application;await a.ready;await(await import('/src/rendering/farm.js')).loadFarmArt();window.mc=await import('/src/config/mining.js');window.ec=await import('/src/config/mine-ecology.js');window.mi=await import('/src/core/mining/mining.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining/mining.js')).openBasement(p.mining);p.mining.seed=1847;p.wood=200;p.mining.ore=100;
+   p.mining.layers[2]=(await import('/src/progression/mining/mine-layers.js')).freshMineLayer(2,{x:8,y:4},()=>.31);
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);g.cottage.scanWait=999;a.refresh();
   });
 
   await scene();await phase('day');await shot('pistol-day');const before=await page.evaluate(()=>({ammo:a.game.magazines[0].ammo,hp:Object.values(a.game.progress.mining.animals).map(a=>a.hp)}));await page.waitForTimeout(1000);const after=await page.evaluate(()=>({ammo:a.game.magazines[0].ammo,hp:Object.values(a.game.progress.mining.animals).map(a=>a.hp)}));if(after.ammo>=before.ammo||after.hp.every((hp,i)=>hp===before.hp[i]))throw Error('实机未射击扣弹伤敌');
-  await page.locator('#mine-tools-toggle').tap();await page.locator('[data-mine-tool="pick"]').tap();await page.waitForTimeout(150);if(await page.evaluate(()=>a.game.cottage.weaponReady))throw Error('矿镐未切换');await shot('pick-mode');
+  await page.locator('#mine-tools-toggle').tap();await page.locator('[data-mine-tool="pick"]').tap();await page.waitForTimeout(150);if(!await page.evaluate(()=>a.game.cottage.weaponReady&&a.game.cottage.combatWork?.tool==='pick'))throw Error('挖矿遇敌未自动持枪');await shot('pick-auto-combat');
   await page.locator('#mine-weapon').tap();await page.waitForTimeout(150);if(!await page.evaluate(()=>a.game.cottage.weaponReady))throw Error('武器未恢复');
   const y=await page.evaluate(()=>a.game.player.y);await move(0,60,350);if(await page.evaluate(()=>a.game.player.y)<=y)throw Error('持枪触控无法移动');await shot('moving-armed');
   await page.locator('#mine-build').tap();const age=await page.evaluate(()=>a.game.progress.mining.age);await page.waitForTimeout(250);if(await page.evaluate(()=>a.game.progress.mining.age)!==age)throw Error('暂停推进战斗');await page.locator('[data-mine-close]').first().tap();

@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {CLEARING_POST,CLEARING_APPROACH} from '../src/config/clearing.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
-import {canUseClearingPost} from '../src/core/clearing-guide.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
+import {canUseClearingPost} from '../src/core/story/clearing-guide.js';
 import {nearbyInteractionAnchor} from '../src/world/interaction-anchors.js';
 
 // 构造已完成入职、未接清缴主线的真实营地，保留正式场景状态。

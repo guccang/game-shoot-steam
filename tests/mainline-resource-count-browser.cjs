@@ -7,10 +7,10 @@ async original=>{
   for(const [id,width,height,time] of [['upgrade-harvest',390,844,'day'],['buy-shotgun',320,568,'night'],['neighbor-seed-shop',390,844,'day']]){
    await page.setViewportSize({width,height});
    await page.evaluate(async({id,time})=>{
-    const {freshProgress}=await import('/src/progression/progress.js'),{MAINLINE_IDS,MAINLINE_TASKS}=await import('/src/config/mainline.js'),{mainlineConditionCost}=await import('/src/progression/mainline-cost.js'),{FARM_CROPS}=await import('/src/config/farm.js');
+    const {freshProgress}=await import('/src/progression/progress.js'),{MAINLINE_IDS,MAINLINE_TASKS}=await import('/src/config/mainline.js'),{mainlineConditionCost}=await import('/src/progression/story/mainline-cost.js'),{FARM_CROPS}=await import('/src/config/farm.js');
     const p=freshProgress();p.mainline.currentId=id;p.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf(id));p.mainline.phase='doing';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.coins=p.wood=0;p.vehicleHulls[0]=1;p.vehicleIndex=0;
-    (await import('/src/progression/mainline-gardening.js')).beginGardeningLesson(p);
-    if(id==='upgrade-harvest'){const cost=(await import('/src/core/harvest-guide.js')).harvestBudget(p,MAINLINE_TASKS.find(t=>t.id===id)).cost;p.mainline.gardening.harvested=1;p.logistics.builds[0].cargo[0]=Math.ceil(cost/FARM_CROPS[0].value);}
+    (await import('/src/progression/story/mainline-gardening.js')).beginGardeningLesson(p);
+    if(id==='upgrade-harvest'){const cost=(await import('/src/core/farming/harvest-guide.js')).harvestBudget(p,MAINLINE_TASKS.find(t=>t.id===id)).cost;p.mainline.gardening.harvested=1;p.logistics.builds[0].cargo[0]=Math.ceil(cost/FARM_CROPS[0].value);}
     if(id==='buy-shotgun'){const cost=mainlineConditionCost(p,MAINLINE_TASKS.find(t=>t.id===id).goal);p.coins=cost.coins;p.materials={parts:999,crystal:999,core:999};p.logistics.bagWood=Math.floor(cost.wood/2);p.logistics.builds[0].wood=cost.wood-p.logistics.bagWood;}
     if(id==='neighbor-seed-shop'){p.mainline.gardening.purchased=2;p.warehouse.seeds[0]=2;}
     const g=a.game;g.update=()=>{};g.progress=p;g.reset();g.start();g.state='playing';g.mainlineSpeech=null;g.enemies=[];g.vehicle.active=false;Object.assign(g.player,{x:2600,y:1800});
@@ -26,7 +26,7 @@ async original=>{
    if(id==='neighbor-seed-shop'&&(!book.includes('2/2')||!book.includes('从小屋仓库取出')))throw Error('种子任务详情不一致 '+book);
    await page.locator('#mainline-close').click();
    if(id==='upgrade-harvest'){
-    const result=await page.evaluate(async()=>{const g=a.game,{WAREHOUSE}=await import('/src/config/warehouse.js');Object.assign(g.player,{x:WAREHOUSE.x,y:WAREHOUSE.y+60});(await import('/src/core/warehouse-harvest.js')).updateWarehouseHarvest(g,.1);(await import('/src/core/mainline-manager.js')).updateMainline(g,0);a.refresh();return {id:g.progress.mainline.currentId,coins:g.progress.coins,cargo:g.progress.logistics.builds[0].cargo[0]};});
+    const result=await page.evaluate(async()=>{const g=a.game,{WAREHOUSE}=await import('/src/config/warehouse.js');Object.assign(g.player,{x:WAREHOUSE.x,y:WAREHOUSE.y+60});(await import('/src/core/inventory/warehouse-harvest.js')).updateWarehouseHarvest(g,.1);(await import('/src/core/story/mainline-manager.js')).updateMainline(g,0);a.refresh();return {id:g.progress.mainline.currentId,coins:g.progress.coins,cargo:g.progress.logistics.builds[0].cargo[0]};});
     if(result.id!=='pistol-upgrade'||result.coins<=0||result.cargo!==0)throw Error('结算未接续升级 '+JSON.stringify(result));
    }
    checks.push({id,width,time,text,book});

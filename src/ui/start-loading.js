@@ -1,45 +1,48 @@
-// 开始过场只管理展示与时序；地图是否就绪由应用显式通知，未就绪永远不到100%。
+// 过场只展示已完成的实际工作；未收到就绪通知永远不到100%。
 import {JINBEI_LOADING_SVG} from '../rendering/loading-van.js';
-export const START_LOADING_TIMING = {travel:1600,finish:260,hold:120};
+import {START_LOADING_TIMING} from '../config/start-loading.js';
+export {START_LOADING_TIMING} from '../config/start-loading.js';
 
-// 车身与进度填充使用合成层动画，主线程建立地图时仍可呈现行驶反馈。
-export function createStartLoading({root,host}) {
-  const panel=root.getElementById('start-loading'),road=root.getElementById('start-loading-road'),
-    fill=root.getElementById('start-loading-fill'),bar=root.getElementById('start-loading-progress'),
-    label=root.getElementById('start-loading-percent'),van=root.getElementById('start-loading-van');
-  van.innerHTML=JINBEI_LOADING_SVG;
-  let active=false,prepared=false,frame=null,started=0,finishing=null,callback=null,animations=[];
-  const reduced=host.matchMedia('(prefers-reduced-motion: reduce)');
-  // 同步视觉百分比与读屏进度，不播报每一帧的重复文字。
-  function setProgress(value){label.textContent=`${value}%`;bar.setAttribute('aria-valuenow',String(value));}
-  // 每段动画明确保留终点；结束或卸载统一释放，不留常驻动画层。
-  function animate(node,from,to,duration){animations.push(node.animate([{transform:from},{transform:to}],{duration,easing:'linear',fill:'forwards'}));}
-  // 取消未完成回调，防止退出期间重新进入游戏。
-  function stop(){active=false;prepared=false;callback=null;if(frame!==null)host.cancelAnimationFrame(frame);frame=null;for(const a of animations)a.cancel();animations=[];panel.hidden=true;}
-  // 进度按过场时钟前进到90%，最后一段必须等待真实地图与首帧缓存就绪。
-  function tick(now){
-    if(!active)return;
-    // 帧时间戳可能略早于点击时的 performance.now()；首帧耗时不得为负。
-    const elapsed=Math.max(0,now-started),{travel,finish,hold}=START_LOADING_TIMING;
-    if(prepared&&elapsed>=travel&&finishing===null){
-      finishing=now;animate(fill,'scaleX(.9)','scaleX(1)',finish);
-      if(!reduced.matches)animate(road,'translateX(90%)','translateX(calc(100% + 112px))',finish);
-    }
-    const percent=finishing===null?Math.min(90,Math.floor(elapsed/travel*90)):Math.min(100,90+Math.floor((now-finishing)/finish*10));
-    // 等待地图时车停在路边，轮辐也停在当前角度；最后一段再继续行驶。
-    panel.dataset.phase=finishing!==null?'finishing':elapsed>=travel?'waiting':'moving';
-    setProgress(percent);
-    if(finishing!==null&&now-finishing>=finish+hold){const done=callback;stop();done?.();return;}
-    frame=host.requestAnimationFrame(tick);
+// 百分比、填充与车身共用同一个显示进度，避免主线程忙碌时图文各走一套时钟。
+export function createStartLoading({root,host}){
+ const panel=root.getElementById('start-loading'),road=root.getElementById('start-loading-road'),fill=root.getElementById('start-loading-fill'),bar=root.getElementById('start-loading-progress'),label=root.getElementById('start-loading-percent'),van=root.getElementById('start-loading-van');
+ van.innerHTML=JINBEI_LOADING_SVG;
+ const reduced=host.matchMedia('(prefers-reduced-motion: reduce)');
+ let active=false,prepared=false,frame=null,shown=0,target=0,from=0,changed=0,finishedAt=null,callback=null;
+ // 数字、读屏与图形同步提交，减少动态时车仍停在CSS规定的中心位置。
+ function paint(exit=0){
+  const percent=Math.floor(shown);label.textContent=percent+'%';bar.setAttribute('aria-valuenow',String(percent));
+  fill.style.transform='scaleX('+shown/100+')';
+  road.style.transform=reduced.matches?'':exit>0?'translateX(calc(100% + '+exit*112+'px))':'translateX('+shown+'%)';
+ }
+ // 取消未完成回调与帧任务，销毁后不能误入游戏。
+ function stop(){active=false;prepared=false;callback=null;if(frame!==null)host.cancelAnimationFrame(frame);frame=null;panel.hidden=true;}
+ // 只向真实上报的目标插值；没有新任务完成时停在原位置。
+ function tick(now){
+  if(!active)return;
+  const ratio=Math.min(1,Math.max(0,now-changed)/START_LOADING_TIMING.smooth);
+  shown=Math.max(shown,from+(target-from)*ratio);if(ratio===1)shown=target;
+  panel.dataset.phase=prepared?'finishing':shown<target?'moving':'waiting';
+  let exit=0;
+  if(prepared&&shown===100){
+   finishedAt??=now;
+   // 100%只锁定进度，小车从条尾继续平移一个车身宽度，驶出后才移除过场。
+   const duration=reduced.matches?START_LOADING_TIMING.hold:START_LOADING_TIMING.exit;
+   exit=Math.min(1,Math.max(0,now-finishedAt)/duration);
+   if(exit===1){paint(exit);const done=callback;stop();done?.();return;}
   }
-  // 点击当帧先显示0%并隐藏首页控件，建图安排在后续帧。
-  function start(){
-    stop();active=true;started=host.performance.now();finishing=null;panel.dataset.phase='moving';panel.hidden=false;setProgress(0);
-    animate(fill,'scaleX(0)','scaleX(.9)',START_LOADING_TIMING.travel);
-    if(!reduced.matches)animate(road,'translateX(0)','translateX(90%)',START_LOADING_TIMING.travel);
-    panel.focus({preventScroll:true});frame=host.requestAnimationFrame(tick);
-  }
-  // 准备通知只放行最后10%，不会跳过用户可见的行驶或100%阶段。
-  function complete(done){if(!active)return;prepared=true;callback=done;}
-  return {start,complete,stop,dispose:stop};
+  paint(exit);
+  frame=host.requestAnimationFrame(tick);
+ }
+ // 新一轮清空旧进度；装配和缓存的完成量由应用重新上报。
+ function start(){stop();active=true;shown=target=from=0;changed=host.performance.now();finishedAt=null;panel.dataset.phase='moving';panel.hidden=false;paint();panel.focus({preventScroll:true});frame=host.requestAnimationFrame(tick);}
+ // 乱序、重复和非法上报均不能倒退或假报完成。
+ function update(value){
+  if(!active||prepared||!Number.isFinite(value))return;
+  const next=Math.max(target,Math.min(99,Math.max(0,value)));if(next===target)return;
+  from=shown;target=next;changed=host.performance.now();
+ }
+ // 只有全部工作就绪才解锁最后1%，100%可见后才恢复游戏模拟。
+ function complete(done){if(!active||prepared)return;prepared=true;callback=done;from=shown;target=100;changed=host.performance.now();}
+ return {start,update,complete,stop,dispose:stop};
 }

@@ -16,7 +16,7 @@
 
 作物图标最长边 23 世界单位，中心锚点；复用 assets/farm/manifest.json 的成熟阶段裁切，按原比例缩放。程序负责路径、时间、透明度和数值；素材不新增解码缓存。每个来源每种作物一批，全局 96 枚图标上限，生命周期 0.7 秒。无新图片或下载资源。金币只读取 progress.coins，不另造重复的钱包，不占背包载荷。
 
-正式入口：src/core/warehouse-harvest.js#updateWarehouseHarvest、src/rendering/farm.js#drawHarvestIcon、src/rendering/resource-pickup.js#drawResourcePickups、src/ui/warehouse.js#createWarehouse；收获去向为 src/core/farm-harvest-load.js，确认底板为 src/ui/farm-harvest-confirm.js。运行图集沿用原加载器，失败按现有加载错误处理。
+正式入口：src/core/inventory/warehouse-harvest.js#updateWarehouseHarvest、src/rendering/farm.js#drawHarvestIcon、src/rendering/resource-pickup.js#drawResourcePickups、src/ui/warehouse.js#createWarehouse；收获去向为 src/core/farming/farm-harvest-load.js，确认底板为 src/ui/farm-harvest-confirm.js。运行图集沿用原加载器，失败按现有加载错误处理。
 
 ## 4 动作与交互
 

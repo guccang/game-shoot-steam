@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { NavigationWarmup, naturalWaypoint } from '../src/physics/terrain-navigation.js';
-import { GroundCache } from '../src/rendering/ground-cache.js';
+import { GroundCache,groundTiles } from '../src/rendering/ground-cache.js';
 import { forestLayout } from '../src/world/biomes.js';
 
 test('导航预热按预算让出，准备前后同一绕行需求保持一致', () => {
@@ -42,4 +42,12 @@ test('缓存森林布局仍返回独立树对象，不共享伐木或战场状�
   const after = forestLayout();
   assert.equal(after[0].x, originalX); assert.equal(after[0].destroyed, undefined);
   assert.equal(after.length, before.length + 1);
+});
+
+// 加载统计只计当前视野的已发布纹理，半成品与远处预热不会提前完成。
+test('首屏完成比例按昼夜纹理计数，导航完成比例按实际有向边计数',()=>{
+ const view={x:10,y:10,w:600,h:400},cache=new GroundCache(),specs=groundTiles(view);assert.equal(cache.readiness(view),0);
+ cache.publish({day:{}},specs[0]);assert.equal(cache.readiness(view),1/(specs.length*2));cache.publish({day:{},night:{}},{key:'90:90',x:34560,y:34560});assert.equal(cache.readiness(view),1/(specs.length*2));
+ for(const spec of specs)cache.publish({day:{},night:{}},spec);assert.equal(cache.readiness(view),1);assert.equal(cache.ready(view),true);
+ const nav=new NavigationWarmup();nav.prepare({x:1600,y:1100,mapId:'forest'});assert.equal(nav.progress,0);nav.advance(2,(()=>{let n=0;return ()=>n++;})());assert.ok(nav.progress>0&&nav.progress<1);while(nav.steps)nav.advance(10);assert.equal(nav.progress,1);cache.dispose();
 });

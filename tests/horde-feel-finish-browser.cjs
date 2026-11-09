@@ -21,7 +21,7 @@ async page=>{
  const next=await page.evaluate(async()=>{
   const g=hordeApp.game;
   return {x:g.player.x,y:g.player.y,active:g.progress.living.patrolActive,wave:g.wave,bosses:g.progress.bosses,
-   coins:g.progress.coins,wood:g.progress.wood,site:(await import('/src/progression/clearing-site.js')).clearingSite(g.progress),
+   coins:g.progress.coins,wood:g.progress.wood,site:(await import('/src/progression/story/clearing-site.js')).clearingSite(g.progress),
    acceptedWallet:window.hordeAcceptedWallet,dialog:document.querySelector('#task-reward-dialog').open,state:g.state};
  });
  if(!next.active||next.dialog||next.bosses!==1||next.acceptedWallet.coins!==before.coins||next.acceptedWallet.wood!==before.wood||Math.hypot(next.x-before.x,next.y-before.y)>30)throw Error(JSON.stringify({before,next}));

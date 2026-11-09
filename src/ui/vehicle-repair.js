@@ -1,15 +1,15 @@
-import {inspectLogisticsLesson} from '../progression/mainline-logistics.js';
-import {supplyVehicleNearby} from '../core/supplies.js';
+import {inspectLogisticsLesson} from '../progression/story/mainline-logistics.js';
+import {supplyVehicleNearby} from '../core/vehicles/supplies.js';
 import {vehicleFaults} from '../config/supplies.js';
 // 手机与现场共用正式维修页，价格、权限和订单状态全部来自业务层。
-import {hookTow,unhookTow,towReason,selfTowRepairQuote,deliverTowedVehicle} from '../core/player-towing.js';
-import {vehicleLoad,catLoad,footTowCapacity} from '../progression/load-weight.js';
+import {hookTow,unhookTow,towReason,selfTowRepairQuote,deliverTowedVehicle} from '../core/vehicles/player-towing.js';
+import {vehicleLoad,catLoad,footTowCapacity} from '../progression/inventory/load-weight.js';
 import {createEventScope} from '../platform/events.js';
-import {vehicleRepairQuote,vehicleService,requestVehicleRepair,collectRepairedVehicle,repairUnavailable} from '../core/vehicle-repair.js';
+import {vehicleRepairQuote,vehicleService,requestVehicleRepair,collectRepairedVehicle,repairUnavailable} from '../core/vehicles/vehicle-repair.js';
 import {drawVehicleIcon} from '../rendering/vehicle.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {REPAIR_CENTER,VEHICLE_REPAIR,vehicleRepairRate} from '../config/vehicle-repair.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 // 维修和牵引名单共用正面车型图标，读屏名称由相邻车型文字提供。
 function repairVehicleIcon(hull){
  return `<canvas class="repair-vehicle-icon" data-repair-icon="${hull}" width="112" height="112" aria-hidden="true"></canvas>`;

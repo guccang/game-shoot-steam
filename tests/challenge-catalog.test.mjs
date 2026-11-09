@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress} from '../src/progression/progress.js';
-import {challengeCatalog} from '../src/progression/challenge-catalog.js';
+import {challengeCatalog} from '../src/progression/realms/challenge-catalog.js';
 import {challengeLevelMarkup} from '../src/ui/challenge-feedback.js';
 import {CAMP_LEVELS} from '../src/config/camp-level.js';
 test('六档营地优惠、下档和满级预览不改变存档',()=>{const p=freshProgress(),before=JSON.stringify(p),m=challengeCatalog(p);assert.equal(m.current,1);assert.equal(m.next,2);assert.deepEqual(m.tiers.map(t=>t.percent),CAMP_LEVELS.map(t=>t.percent));assert.equal(JSON.stringify(p),before);p.campLevel.xp=10800;assert.equal(challengeCatalog(p).next,6);assert.ok(challengeCatalog(p).tiers.every(t=>t.reached));});

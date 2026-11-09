@@ -1,9 +1,9 @@
 import { i18nText } from "../i18n/index.js";
 // 普通巡游进度只读取正式波次；剧情与秘境继续使用各自任务提示。
 import { waveDifficulty, WAVE_REST_SECONDS } from '../config/waves.js';
-import {livingForest} from '../world/living-spaces.js';
-import {livingWaveAllowed,clearingCombatActive} from '../core/living-safety.js';
-import { WAVE_WARNING_SECONDS } from '../core/wave-manager.js';
+
+import {livingWaveAllowed,clearingCombatActive} from '../core/camp/living-safety.js';
+import { WAVE_WARNING_SECONDS } from '../core/battle/wave-manager.js';
 import {clearingRound} from './clearing-round.js';
 
 // 波间只显示一次休整圆环；首次及波中重建单独显示准备圆环，不相加。
@@ -35,7 +35,7 @@ export function waveProgressState(game) {
 export function updateWaveProgress(root,game) {
   const quest=root.getElementById('quest'),track=root.getElementById('wave-track');
   // 详情和短提示复用同一轨道，范围外查看任务时也能读取已保存的波次。
-  const embedded=!!track.closest('#wave-help-dialog,#clearing-arrival-notice');
+  const embedded=!!track.closest('#wave-help-dialog');
   const visible=!game.story&&!game.realm&&!game.fireActive&&(embedded||livingWaveAllowed(game)||clearingCombatActive(game));
   quest.classList.toggle('wave-quest',visible);
   track.hidden=!visible;

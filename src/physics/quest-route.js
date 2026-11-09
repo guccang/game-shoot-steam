@@ -7,7 +7,7 @@ export const QUEST_ROUTE_STEP=32,QUEST_ROUTE_BUDGET=4096;
 // 八方向网格使用直角加对角距离；扣除终点直连的最大节省，保持估价不高于真实最短路。
 const GOAL_CONNECT_RADIUS=QUEST_ROUTE_STEP*1.5,GOAL_CONNECT_SLACK=GOAL_CONNECT_RADIUS*(Math.sqrt(4-2*Math.SQRT2)-1);
 // 远距离网格路径比欧氏直线更长，贴合八方向代价可减少向目标两侧无效扩张。
-function estimate(x,y,goal){const dx=Math.abs(goal.x-x),dy=Math.abs(goal.y-y);return Math.max(0,Math.max(dx,dy)+(Math.SQRT2-1)*Math.min(dx,dy)-GOAL_CONNECT_SLACK);}
+function estimate(x,y,goal,slack=GOAL_CONNECT_SLACK){const dx=Math.abs(goal.x-x),dy=Math.abs(goal.y-y);return Math.max(0,Math.max(dx,dy)+(Math.SQRT2-1)*Math.min(dx,dy)-slack);}
 // 单点碰撞共用正式规则，生成器和同步扫掠无需重复检测同一个端点。
 function pointClear(x,y,body,trees){
  // 玩家保持原有十二单位余量；大型召唤物显式传入自己的脚底尺寸。
@@ -39,8 +39,12 @@ function* lineSearch(a,b,collision){
  return true;
 }
 // A*在最近世界镜像内搜索；生成器同时供同步规则检查与正式分帧会话使用。
-function* routeSearch(player,target,trees,budget,local=false,bounds=null,canOccupy=null){
+function* routeSearch(player,target,trees,budget,local=false,bounds=null,canOccupy=null,step=QUEST_ROUTE_STEP){
+ // 远程驿站可先用稀疏网格，边仍逐8单位扫掠，旧任务保持32单位精度。
+ const connectRadius=step*1.5,slack=connectRadius*(Math.sqrt(4-2*Math.SQRT2)-1);
  const body={...player},start={x:player.x,y:player.y},goal=nearest(target,start),grid=trees.query?trees:new SpatialGrid(trees);
+ // 长途使用加权 A* 优先沿目标方向绕障，不为追求最短路铺开整片森林；近距离仍保留原代价。
+ const weight=Math.hypot(goal.x-start.x,goal.y-start.y)>1200?1.5:1;
  // 同次搜索缓存精确坐标的碰撞结果，不取整或放大网格，避免树角与窄门误判。
  const columns=new Map(),collision={samples:0,
   // 相邻边共享端点和采样点；缓存随本次搜索释放，能力或障碍变化仍由会话重新规划。
@@ -58,13 +62,13 @@ function* routeSearch(player,target,trees,budget,local=false,bounds=null,canOccu
   if(safe)return {points,visited:0,reachable:true};
  }
  if(!(yield* clear(start,start))||!(yield* clear(goal,goal)))return {points:[],visited:0,reachable:false};
- const heap=[],nodes=new Map(),origin={...start,ix:0,iy:0,cost:0,score:estimate(start.x,start.y,goal),previous:null};
+ const heap=[],nodes=new Map(),origin={...start,ix:0,iy:0,cost:0,score:weight*estimate(start.x,start.y,goal,slack),previous:null};
  nodes.set('0:0',origin);push(heap,origin);let visited=0;
  while(heap.length&&visited<budget){
   yield;
   const current=pop(heap);if(nodes.get(current.ix+':'+current.iy)!==current||current.closed)continue;
   current.closed=true;visited++;
-  if(Math.hypot(goal.x-current.x,goal.y-current.y)<=GOAL_CONNECT_RADIUS&&(yield* clear(current,goal))){
+  if(Math.hypot(goal.x-current.x,goal.y-current.y)<=connectRadius&&(yield* clear(current,goal))){
    const path=[goal];for(let n=current;n;n=n.previous){path.push({x:n.x,y:n.y});yield;}path.reverse();
    // 只在近邻内合并，避免对越来越长的全程重复扫掠；所有折点仍经正式碰撞验证。
    const points=[path[0]];let i=0;
@@ -73,25 +77,25 @@ function* routeSearch(player,target,trees,budget,local=false,bounds=null,canOccu
   }
   for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){
    const ix=current.ix+dx,iy=current.iy+dy;
-   if(Math.abs(ix*QUEST_ROUTE_STEP)>WORLD.width||Math.abs(iy*QUEST_ROUTE_STEP)>WORLD.height)continue;
-   const key=ix+':'+iy,cost=current.cost+Math.hypot(dx,dy)*QUEST_ROUTE_STEP;
+   if(Math.abs(ix*step)>WORLD.width||Math.abs(iy*step)>WORLD.height)continue;
+   const key=ix+':'+iy,cost=current.cost+Math.hypot(dx,dy)*step;
    if(nodes.has(key)&&nodes.get(key).cost<=cost)continue;
-   const node={x:start.x+ix*QUEST_ROUTE_STEP,y:start.y+iy*QUEST_ROUTE_STEP,ix,iy,cost,previous:current};
+   const node={x:start.x+ix*step,y:start.y+iy*step,ix,iy,cost,previous:current};
    if(bounds&&(node.x<bounds.left||node.x>bounds.right||node.y<bounds.top||node.y>bounds.bottom))continue;
    // 先排除堵塞终点；相邻节点再次探测同一堵塞格时直接命中缓存，不反复扫掠整条边。
    if(++collision.samples>=32){collision.samples=0;yield;}
    if(!collision.clear(node.x,node.y))continue;
    if(!(yield* clear(current,node)))continue;
-   node.score=cost+estimate(node.x,node.y,goal);nodes.set(key,node);push(heap,node);
+   node.score=cost+weight*estimate(node.x,node.y,goal,slack);nodes.set(key,node);push(heap,node);
   }
  }
  return {points:[],visited,reachable:false};
 }
 
 // 每帧最多1.5毫秒或256个搜索批次；每批最多32次采样，重复绘制不推进或伪造直线。
-export function createQuestRouteSearch(player,target,trees=[],budget=QUEST_ROUTE_BUDGET,{bounds=null,canOccupy=null}={}){
+export function createQuestRouteSearch(player,target,trees=[],budget=QUEST_ROUTE_BUDGET,{bounds=null,canOccupy=null,step=QUEST_ROUTE_STEP}={}){
  // 室内点击行走注入正式家具碰撞，仍共用有界搜索与逐段扫掠。
- const iterator=routeSearch(player,target,trees,budget,true,bounds,canOccupy);
+ const iterator=routeSearch(player,target,trees,budget,true,bounds,canOccupy,[32,64,96].includes(step)?step:QUEST_ROUTE_STEP);
  return {result:null,steps:0,slices:0,lastFrame:null,
   // 有界推进供故事和邻里共用；时钟参数支持确定性预算回归。
   advance(frame,{milliseconds=1.5,steps=256,now=()=>performance.now()}={}){

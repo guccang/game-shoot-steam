@@ -1,6 +1,7 @@
 // 二维战斗表现：定向碎屑、枪烟、弹壳与扩散环；不参与伤害和存档。
 import { stepFragment } from '../physics/motion.js';
 import { BIOMES } from '../world/biomes.js';
+import { isHordeGiant } from '../config/bosses.js';
 export const FX_LIMIT = 260;
 export class CombatFX {
   // 使用独立随机源，避免粒子数量影响暴击和关卡随机序列。
@@ -44,7 +45,7 @@ export class CombatFX {
   bossImpact(target, direction, kind, hit = null) {
     const pulse = kind === 'pulse', x = hit?.x ?? target.x, y = hit?.y ?? target.y - 35,
       angle = Math.atan2(direction.y, direction.x), color = pulse ? '#a9ffe7' : '#ffe7a1';
-    this.add('impact-flash', x, y, 0.22, { size: pulse ? 52 : 38, angle, color });
+    if(!isHordeGiant(target))this.add('impact-flash', x, y, 0.22, { size: pulse ? 52 : 38, angle, color });
     this.add('pressure', x, y, 0.32, { size: pulse ? 90 : 64, angle, color });
     this.add('ring', x, y, 0.3, { size: pulse ? 72 : 50, color });
     for (let i = 0; i < 6; i++) {
@@ -185,7 +186,7 @@ export class CombatFX {
         angle,
         color: weaponKind==='tank-125'?'#e6c58a':'#c8efff',
       });
-      this.add('impact-flash', hit.x, hit.y, 0.14, {
+      if(!isHordeGiant(hit.target))this.add('impact-flash', hit.x, hit.y, 0.14, {
         size: (dead ? 48 : 26) * scale,
         angle,
         color: weaponKind==='tank-125'?'#ffe3a2':'#f3fbff',

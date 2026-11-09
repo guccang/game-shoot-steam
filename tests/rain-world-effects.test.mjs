@@ -3,14 +3,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {farmAction,updateFarmRain} from '../src/core/farm.js';
+import {farmAction,updateFarmRain} from '../src/core/farming/farm.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {beginGardeningLesson} from '../src/progression/mainline-gardening.js';
+import {beginGardeningLesson} from '../src/progression/story/mainline-gardening.js';
 import {FARM_CROPS} from '../src/config/farm.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {updateFireRescue,requestFireParking,fireObjective} from '../src/core/fire-rescue.js';
+import {updateFireRescue,requestFireParking,fireObjective} from '../src/core/activities/fire-rescue.js';
 import {FIRE_EXIT,FIRE_PARKING} from '../src/world/fire-navigation.js';
-import {fireTransferOpacity} from '../src/core/fire-transit.js';
+import {fireTransferOpacity} from '../src/core/activities/fire-transit.js';
 import {worldDistance} from '../src/world/coordinates.js';
 // 室外田地包含空地、成长、成熟、手浇和另一张地图，使用固定时间排除墙钟误差。
 function farm(){const p=freshProgress();p.arrival=null;p.farm.seeds[0]=2;p.farm.plots=[0,1,2,3,4].map(id=>({id,x:2000+id*40,y:2000,mapId:id===4?'jiuzhaigou':'forest',crop:id===0?null:0,plantedAt:id===0?0:1000,readyAt:id===0?0:id===2?5000:id===3?46000:61000,watered:id===3}));return {state:'playing',mapId:'forest',livingWeather:'rain',progress:p,player:{x:2040,y:2000},trees:[],vehicles:[],livingPersist:()=>true};}

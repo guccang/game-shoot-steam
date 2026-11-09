@@ -8,10 +8,10 @@ import { NATURAL_TERRAIN } from '../src/world/natural-terrain.js';
 import { blocked, moveBody } from '../src/physics/motion.js';
 import { nearestDryTerrain, terrainBlocked, terrainLineClear, naturalWaypoint } from '../src/physics/terrain-navigation.js';
 import { landingPoint } from '../src/combat/vehicle-landing.js';
-import { spawnEnemy } from '../src/core/enemy-manager.js';
-import { findArrivalSpot } from '../src/core/enemy-arrival.js';
-import { capturePatrol } from '../src/core/patrol-session.js';
-import { enterRealm, leaveRealm } from '../src/core/realm-manager.js';
+import { spawnEnemy } from '../src/core/battle/enemy-manager.js';
+import { findArrivalSpot } from '../src/core/battle/enemy-arrival.js';
+import { capturePatrol } from '../src/core/battle/patrol-session.js';
+import { enterRealm, leaveRealm } from '../src/core/realms/realm-manager.js';
 
 // 地名覆盖和真实干地约束一起检查，避免地图目录有名称而游戏现场没有牌子。
 test('九寨沟每个湖滩瀑布及三条沟谷均有可读干岸地名牌', () => {

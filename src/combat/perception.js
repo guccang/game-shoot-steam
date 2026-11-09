@@ -1,4 +1,4 @@
-import {bossCombatActive} from '../core/boss-engagement.js';
+import {bossCombatActive} from '../core/battle/boss-engagement.js';
 // 首次发现与持续交战分开：画面发现敌人，武器射程决定能否继续攻击。
 import {AUTO_AIM_VIEW} from '../config/combat-perception.js';
 import {nearest, worldDistance, WORLD} from '../world/coordinates.js';

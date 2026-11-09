@@ -20,6 +20,7 @@ export function drawVehicleArmament(c, weapon, { kick = 0, flash = 0, rotor = 0,
     drawCrewModule(c);
     return;
   }
+  weapon=weapon.artBase?{...weapon,id:weapon.artBase}:weapon;
   const tank = ['tank-125', 'wolf-256'].includes(weapon.id),
     vulcan = weapon.id === 'vehicle-vulcan',
     levels = weapon.parts || {};
@@ -28,7 +29,8 @@ export function drawVehicleArmament(c, weapon, { kick = 0, flash = 0, rotor = 0,
   );
   c.save();
   c.save();
-  if (weapon.id === 'wolf-256') {
+  if(weapon.regional){drawRegionalGunBody(c,weapon,kick);}
+  else if (weapon.id === 'wolf-256') {
     drawWolfCannon(c, kick);
   } else if (tank) {
     poly(
@@ -203,3 +205,12 @@ export function drawTankShell(c, b, reduced = false) {
   box(c, -7, -3, 3, 6, 1, style.vehicleArmaments.drawVehicleArmamentColor2);
   c.restore();
 }
+
+// 地方主炮保留固定炮座与独立炮管，轮廓区别通过管数、支架和制退器表达。
+function drawRegionalGunBody(c,w,kick){const i=w.weaponIndex-25,heavy=[1,2,4].includes(i);poly(c,[[-26,-15],[-12,-21],[16,-16],[24,0],[12,18],[-24,13]],heavy?'#819680':'#9cae7e',outline,2);box(c,-19,-12,28,8,3,'#e3d7a7',outline,1.4);box(c,-6,-9,26,18,4,'#526d59',outline,2);
+ if(i===2)for(const y of [-13,13])box(c,8,y-2,53,4,1,'#b2bea0',outline,1.5);
+ if(i===1||i===4)for(const y of [-14,14])box(c,-8,y-3,30,6,2,'#c5b88a',outline,1.4);
+ c.save();c.translate(-kick,0);
+ if(i===3){for(const y of [-7,7]){box(c,12,y-3,37,6,2,'#bac9a4',outline,1.6);box(c,43,y-4,6,8,1,'#e6d4a2',outline,1.4);}}
+ else{const width=i===4?18:i===1?14:8,end=w.muzzle;box(c,10,-width/2,end-10,width,2,'#acbda0',outline,1.8);if(i===1)for(const x of [27,42])box(c,x,-10,7,20,2,'#e1ce99',outline,1.4);if(i===4){box(c,42,-14,16,28,3,'#d9c38f',outline,1.8);for(const y of [-8,0,8])box(c,54,y-2,4,4,1,'#365b43');}else box(c,end-7,-width/2-2,7,width+4,2,'#dfd6a9',outline,1.4);}
+ c.restore();}

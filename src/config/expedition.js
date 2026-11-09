@@ -6,7 +6,7 @@ import { COLLECTED_VEHICLES } from './vehicles.js';
 // 随机远征暂不抽纯防具，避免与无主炮载具组合后失去攻击手段。
 export const EXPEDITION_GUNS = WEAPONS.map((_, i) => i).filter(i=>WEAPONS[i].attackKind!=='defense');
 export const EXPEDITION_TURRETS = EXPEDITION_GUNS.filter(i => !WEAPONS[i].controller);
-export const EXPEDITION_VEHICLES = COLLECTED_VEHICLES.map((_, i) => i);
+export const EXPEDITION_VEHICLES = COLLECTED_VEHICLES.flatMap((v,i)=>v.retired?[]:[i]);
 export const SLOT_DELAYS = [55, 55, 60, 65, 75, 85, 100, 120, 145, 180, 230, 300];
 
 // 均匀抽取并排除上一局同槽型号，不受永久解锁进度影响。

@@ -1,3 +1,4 @@
+import {escapeOptionalHtml as escape} from './shared/html.js';
 // 邻里、任务簿与工坊共用中文任务状态，显示与购买校验读取同一永久记录。
 import {EQUIPMENT_QUESTS,equipmentStoryCompleted} from '../config/equipment-quests.js';
 import {STORY_CAMPAIGN} from '../config/story-campaign.js';
@@ -6,7 +7,7 @@ import {COLLECTED_VEHICLES} from '../config/vehicles.js';
 import {RESIDENTS} from '../config/living-world.js';
 
 // 配置和动态文案统一转义后进入页面。
-const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 
 // 购买前置与章节解锁一致，主线战果未齐时指向缺少的前章。
 export function equipmentQuestStatus(progress,q){

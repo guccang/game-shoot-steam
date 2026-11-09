@@ -1,3 +1,4 @@
+import {CAMP_PLOTS} from '../src/config/camp-land.js';
 // 建筑修复后的主线就地接取：覆盖正式存档、失败回滚、旧档和清缴入口。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -5,14 +6,15 @@ import {Game,freshProgress} from '../src/game.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS,RESTORATION_SECONDS} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {repairFacility,updateRestoration} from '../src/core/town-restoration.js';
-import {updateMainline,mainlineObjective} from '../src/core/mainline-manager.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
-import {restoredTaskToStart,startRestoredTask} from '../src/progression/restoration-task.js';
+import {repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
+import {updateMainline,mainlineObjective} from '../src/core/story/mainline-manager.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {restoredTaskToStart,startRestoredTask} from '../src/progression/camp/restoration-task.js';
 
 // 使用真实任务顺序和设施坐标，保持玩家位于修复现场。
 function scene(id='clearing'){
  const f=TOWN_RESTORATIONS.find(f=>f.id===id),p=freshProgress();
+ p.campLand.owned=CAMP_PLOTS.map(plot=>plot.id);
  p.mainline.completed=MAINLINE_IDS.slice(0,f.order);p.mainline.currentId=f.before;p.mainline.phase='meet';
  p.restoration.repaired=TOWN_RESTORATIONS.filter(x=>x.order<f.order).map(x=>x.id);p.restoration.cottageRested=true;p.wood=1000;
  const g=new Game(p,()=>.5);g.start();Object.assign(g.player,f.site);g.enemies=[];g.boss=null;g.vehicle.active=false;g.mainlineSpeech=null;g.restorationPersist=()=>true;g.mainlinePersist=()=>true;g.livingPersist=()=>true;
@@ -32,7 +34,7 @@ test('清缴告示牌完成修复即接主线，可原地接清缴且不会发�
 });
 
 test('所有绑定建筑的当前主线只接取一次，普通任务和待领奖阶段不变',()=>{
- for(const f of TOWN_RESTORATIONS){const {g}=scene(f.id);g.progress.restoration.repaired.push(f.id);
+ for(const f of TOWN_RESTORATIONS.filter(f=>f.before)){const {g}=scene(f.id);g.progress.restoration.repaired.push(f.id);
   assert.equal(startRestoredTask(g.progress,f.id)?.id,f.before,f.id);assert.equal(startRestoredTask(g.progress,f.id),null);
   g.progress.mainline.phase='report';assert.equal(startRestoredTask(g.progress,f.id),null);assert.equal(g.progress.mainline.phase,'report');
  }

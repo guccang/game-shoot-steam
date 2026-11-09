@@ -17,7 +17,7 @@ async page=>{
  // 断裂拒马通过正式受伤入口触发；检查点只停模拟便于同屏截图，不伪造战斗结果。
  async function rescue(stop=2.4){
   await page.evaluate(async stop=>{
-   const g=rescueApp.game,{startCampDefense,hurtCampBarricade}=await import('/src/core/camp-defense.js');startCampDefense(g,'left');const r=g.campDefense;g.attackTimer=999;r.timer=999;g.enemies=[];
+   const g=rescueApp.game,{startCampDefense,hurtCampBarricade}=await import('/src/core/camp/camp-defense.js');startCampDefense(g,'left');const r=g.campDefense;g.attackTimer=999;r.timer=999;g.enemies=[];
    for(let i=0;i<32;i++){const e=g.spawnEnemy(0,0,{x:r.barrier.x-190-Math.floor(i/8)*30,y:r.barrier.y+(i%8-3.5)*24},{ambient:true});Object.assign(e,{campDefense:true,arena:r.arena,hp:28,maxHp:28,speed:42,damage:5});}
    window.rescueCheck={stop,counts:[],last:0};const update=g.update.bind(g);g.update=dt=>{if(g.campDefense?.phase==='rescue'&&g.campDefense.rescueTime>=rescueCheck.stop)return;update(dt);if(r.rescueTime-rescueCheck.last>=.5){rescueCheck.last=r.rescueTime;rescueCheck.counts.push({t:r.rescueTime,count:g.enemies.filter(e=>e.hp>0).length});}};
    hurtCampBarricade(g,99999);rescueApp.refresh();
@@ -37,7 +37,7 @@ async page=>{
  }
  // 普通营地闲聊也复用小气泡，不能退回任务对话框。
  for(const night of [false,true]){
-  await mount(390,night);await page.evaluate(async()=>{const g=rescueApp.game,actors=(await import('/src/core/living-world.js')).livingResidents(g),actor=actors.find(a=>a.id==='snow');Object.assign(g.player,{x:actor.x,y:actor.y+90});rescueApp.refresh();});
+  await mount(390,night);await page.evaluate(async()=>{const g=rescueApp.game,actors=(await import('/src/core/camp/living-world.js')).livingResidents(g),actor=actors.find(a=>a.id==='snow');Object.assign(g.player,{x:actor.x,y:actor.y+90});rescueApp.refresh();});
   await page.locator('#resident-chatter:not([hidden])').waitFor({state:'visible',timeout:15000});await inspect('resident-'+(night?'night':'day'));
  }
  if(errors.length)throw Error(errors.join('\n'));return {result,samples:samples.map(s=>({label:s.label,phase:s.phase,enemies:s.enemies,helpers:s.helpers,bubbles:s.bubbles})),errors};

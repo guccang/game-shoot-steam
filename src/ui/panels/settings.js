@@ -1,4 +1,4 @@
-import {debugEquipmentMaxed,debugVehiclesUnlocked,debugBuildingsUnlocked,debugSeedsUnlocked} from '../../progression/debug-grants.js';
+import {debugEquipmentMaxed,debugVehiclesUnlocked,debugBuildingsUnlocked,debugSeedsUnlocked} from '../../progression/player/debug-grants.js';
 import { i18nText } from "../../i18n/index.js";
 // 设置与清空确认面板，确认仅调用应用事务，不自行操作存档或战场。
 import { createEventScope } from '../../platform/events.js';

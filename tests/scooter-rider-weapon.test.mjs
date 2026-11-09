@@ -6,9 +6,9 @@ import {freshProgress,freshRangerProgress} from '../src/progression/progress.js'
 import { VEHICLE_DISPLAY_ORDER, COLLECTED_VEHICLES } from '../src/config/vehicles.js';
 import { riderPosition, SCOOTER_RIDER_LIFT } from '../src/config/vehicle-rider.js';
 import { shotSolution } from '../src/combat/aim.js';
-import { createWorkshopTrial } from '../src/core/workshop-trial.js';
-import { transactVehicle } from '../src/progression/vehicles.js';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { createWorkshopTrial } from '../src/core/workshop/workshop-trial.js';
+import { transactVehicle } from '../src/progression/vehicles/vehicles.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 
 // 真实更新中的静止耐久靶，不生成额外波次或读写用户存档。
 function arena(weapon = 0) {

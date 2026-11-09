@@ -7,7 +7,7 @@ import {CombatCamera} from '../src/rendering/camera.js';
 import {StoryCamera} from '../src/rendering/story-camera.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 
 // 固定玩法条件，沿用正式候选选择与渲染器预热入口。
 function fixture(height,active){

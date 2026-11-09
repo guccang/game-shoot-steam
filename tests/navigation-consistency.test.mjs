@@ -7,12 +7,12 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {LIVING_REQUESTS} from '../src/config/living-world.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
-import {worldNavigationObjective,requestWorldNavigation,requestMainlineNavigation} from '../src/core/world-navigation.js';
-import {setTaskNavigationEnabled} from '../src/core/task-navigation.js';
+import {worldNavigationObjective,requestWorldNavigation,requestMainlineNavigation} from '../src/core/navigation/world-navigation.js';
+import {setTaskNavigationEnabled} from '../src/core/navigation/task-navigation.js';
 import {storyGuidanceState} from '../src/rendering/story-guidance.js';
-import {storyRouteState} from '../src/core/story-route.js';
-import {livingRouteStates} from '../src/core/living-route.js';
-import {livingRequestTarget,updateLivingWorld} from '../src/core/living-world.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
+import {livingRouteStates} from '../src/core/navigation/living-route.js';
+import {livingRequestTarget,updateLivingWorld} from '../src/core/camp/living-world.js';
 import {GAMEPLAY_VALUES} from '../src/config/gameplay-values.js';
 
 // 以已完成入职、尚未完成登塔的存档为基线，不跳过任务选择逻辑。

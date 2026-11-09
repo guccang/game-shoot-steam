@@ -3,7 +3,7 @@ import { onArtStyleChange } from '../art-styles/state.js';
 import { style } from '../art-styles/config.js';
 import { drawWorldSign } from './world-signs.js';
 import { box, oval, poly } from './primitives.js';
-import { worldStoryPosts } from '../core/story-posts.js';
+import { worldStoryPosts } from '../core/story/story-posts.js';
 
 // 世界回信驿使用正式Canvas绘制与脚底排序，不生成另一套预览资产。
 

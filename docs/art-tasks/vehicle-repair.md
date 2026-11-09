@@ -46,7 +46,7 @@
 | 透明背景 | Canvas透明合成，局部接触影 |
 | 碰撞与可通行性 | 工坊底座接入livingFacilityBlocked；门前可达；拖车路线用正式碰撞规划 |
 | 昼夜处理 | 同一形体通过运行时昼夜光照处理 |
-| 文件格式与位置 | src/rendering/vehicle-repair.js；src/core/vehicle-repair.js；src/ui/vehicle-repair.js |
+| 文件格式与位置 | src/rendering/vehicle-repair.js；src/core/vehicles/vehicle-repair.js；src/ui/vehicle-repair.js |
 | 内存与缓存预算 | 无新增位图/离屏画布；订单最多9份，单路线最多4096节点 |
 | 必需资源与失败行为 | 新增模块必需，加载失败明确报错；不提供备用图片 |
 
@@ -58,7 +58,7 @@
 | --- | --- |
 | 动作和时长 | 拖车出发/挂钩2秒/拖回/维修12秒/待取车 |
 | 时钟、帧率与循环 | 正式playing时钟，车轮由位移驱动；暂停冻结，无离线补跑 |
-| 动作源码或源视频与连续片段 | src/core/vehicle-repair.js 与 src/rendering/vehicle-repair.js，无新增视频 |
+| 动作源码或源视频与连续片段 | src/core/vehicles/vehicle-repair.js 与 src/rendering/vehicle-repair.js，无新增视频 |
 | 尺寸、裁切和缩放 | 车体固定原尺寸，不整图拉伸或旋转制造动作 |
 | 起停与状态衔接 | 停下保持轮相，暂停与读档续接订单 |
 | 局部真实动作 | 拖车四轮局部转动、绞盘挂钩、车体固定于拖板，原载具动力部件停机 |

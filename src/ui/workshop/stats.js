@@ -22,6 +22,7 @@ export function renderWorkshopStats({root,current,after,kind,index,maxHp,draft,c
     ['magazineSize', ranged?i18nText("ui.workshop.stats.bdd1ef480a"):mechanical?i18nText("ui.inventory.7b692d13e8"):i18nText("ui.inventory.f16f121dc0")], ['reloadTime', ranged?i18nText("ui.workshop.results.cdbf2fecb6"):mechanical?i18nText("ui.workshop.stats.8e2bafeb76"):i18nText("ui.workshop.results.cdbf2fecb6")], ['pellets', i18nText("ui.workshop.stats.8ba67b2248")], ['spread', i18nText("ui.workshop.results.a62186865b")],
     ['pierce', i18nText("ui.workshop.stats.9e5fe40689")], ['bounces', i18nText("ui.workshop.stats.80e62e20b9")], ['chain', i18nText("ui.workshop.stats.dc9ce849ce")], ['chargeTime', i18nText("ui.workshop.results.a2819c7096")],
     ['impulse', i18nText("ui.workshop.stats.7a22cc916a")], ['chillFactor', i18nText("ui.workshop.stats.ab448f19ea")], ['chillDuration', i18nText("ui.workshop.stats.133b1ea488")], ['treeMultiplier', i18nText("ui.workshop.stats.6cb20070c5")]];
+  if(b?.id==='water')for(const field of fields){if(field[0]==='magazineSize')field[1]='水袋容量 / 次';if(field[0]==='reloadTime')field[1]='补满用时 / 秒';}
   if(b?.attackKind==='defense')fields.splice(0,fields.length,['magazineSize','护盾容量'],['shieldRegen','每秒恢复'],['reloadTime','受击恢复延迟 / 秒'],['shieldBreakDelay','破盾恢复延迟 / 秒']);
   // 使用正式有效武器快照；炮塔伤害另包含车载等级与角色加成。
   const values = fields.filter(([key]) => !((mechanical||b?.controller==='spider')&&['pellets','spread'].includes(key)) && (Number.isFinite(a?.[key]) || Number.isFinite(b?.[key]))).map(([key, label]) => {

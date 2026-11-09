@@ -1,8 +1,8 @@
-import {buyDetector} from '../core/treasure.js';
-import {carriedWeapon} from '../progression/weapon-storage.js';
+import {buyDetector} from '../core/activities/treasure.js';
+import {carriedWeapon} from '../progression/inventory/weapon-storage.js';
 import {inventoryIcon,paintInventoryIcons} from './inventory-icons.js';
 import {ammoIcon} from './ammo-icons.js';
-import {equippedAmmo} from '../progression/ammo-fit.js';
+import {equippedAmmo} from '../progression/workshop/ammo-fit.js';
 import {ammoEquipmentMarkup,ammoOffersMarkup} from './ammo-shop-view.js';
 import {createSupplyLoadConfirm} from './supply-load-confirm.js';
 import {itemDefinition} from '../config/items.js';
@@ -12,10 +12,10 @@ import {createEventScope} from '../platform/events.js';
 import {AMMO_TYPES,AMMO_SHOP,SUPPLY_ITEMS,ammoKind,vehicleFaults} from '../config/supplies.js';
 import {WEAPONS} from '../config/weapons.js';
 import {vehicleModel,vehicleWeapon} from '../config/vehicles.js';
-import {catLoad,vehicleLoad} from '../progression/load-weight.js';
+import {vehicleLoad} from '../progression/inventory/load-weight.js';
 import {drawWorkshopEquipment} from '../rendering/workshop.js';
-import {useSupplyItem,supplyVehicleNearby} from '../core/supplies.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {useSupplyItem,supplyVehicleNearby} from '../core/vehicles/supplies.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {VEHICLE_WORKSHOP} from '../world/workshop.js';
 // 页面只在打开或用户操作后渲染，不中断滚动，不提供目录、升级或改装按钮。
 export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCargo,onOutdoor}){
@@ -41,7 +41,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
  }
  // 详情按当前装备重新读取伤害、弹匣与备用弹量。
  function renderEquipment(){if(mode==='vehicle'&&!(game.loadout||game.progress).vehicleHulls[game.vehicle.index]){get('body').innerHTML='<p>当前没有自有载具，请到载具工坊选购。</p>';return;}const p=game.loadout||game.progress,permanent=finiteSupply(game),car=mode==='vehicle',v=game.vehicle,index=car?v.index:p.weapon,w=car?vehicleWeapon(p,v.weaponIndex):game.weapon(),mag=car?v.module?.magazine:game.magazines[index],f=permanent?vehicleFaults(game.progress,v.index):{gun:0,engine:0},load=car?vehicleLoad(game,index,{driver:true}):null,key=ammoKind(w),stock=car?game.progress.supplies.vehicles[index]:game.progress.supplies.hand;
-  get('body').innerHTML=`<canvas id="field-equipment-image" width="320" height="180" style="width:100%;height:160px;object-fit:contain" aria-label="当前装备"></canvas><h3>${car?vehicleModel(index).name:WEAPONS[index].name}</h3>${car?`<p>当前载荷 ${load.payload.toFixed(2)} / ${load.capacity} kg</p>${load.overloaded?'<p role="status">载荷已满，无法移动，请清理货舱或随身背包。</p>':''}`:''}`+(car?`<p>车体 HP ${Math.ceil(v.hp)} / ${v.maxHp}</p><p>主炮：${w?.name||'未安装'}</p><section class="ui-inset"><b>主炮损坏 ${f.gun}% · 发动机损坏 ${f.engine}%</b><p>${f.gun>=100?'主炮停用。':f.gun?'主炮故障使射速降低。':'主炮正常。'}${f.engine>=100?'发动机停驶。':f.engine?'发动机故障使移动减速。':'发动机正常。'}完全损坏请送维修中心。</p></section>`:`<p>伤害 ${game.damage()} · 射程 ${Math.round(w.range)} · 弹夹容量 ${w.magazineSize}</p>`)+(key?`<p class="equipment-ammo"><span class="ammo-symbol">${ammoIcon(key)}</span><span>${AMMO_TYPES[key].name}：弹夹 ${Math.floor(mag?.ammo||0)} / ${w.magazineSize} · 备用 ${permanent?stock[key]+' 发 · '+AMMO_TYPES[key].mass+' kg/发':'活动独立供给，不消耗实物库存'}</span></p>`:'<p>该装备使用近战或独立能量，无需实物子弹。</p>')+(!car&&permanent&&key&&catAmmoWarehouse(game)?'<p>当前载具仓库 '+catAmmoWarehouse(game)[key]+' 发；背包备用耗尽后自动补给，取用量受背包余量限制。</p>':'')+(car?'<p>升级、改装及换炮请前往对应工坊，与屋内售货员交谈。</p>':'');
+  get('body').innerHTML=`<canvas id="field-equipment-image" width="320" height="180" style="width:100%;height:160px;object-fit:contain" aria-label="当前装备"></canvas><h3>${car?vehicleModel(index).name:WEAPONS[index].name}</h3>${car?`<p>当前载荷 ${load.payload.toFixed(2)} / ${load.capacity} kg</p>${load.overloaded?'<p role="status">载荷已满，无法移动，请清理货舱或随身背包。</p>':''}`:''}`+(car?`<p>车体 HP ${Math.ceil(v.hp)} / ${v.maxHp}</p><p>主炮：${w?.name||'未安装'}</p><section class="ui-inset"><b>主炮损坏 ${f.gun}% · 发动机损坏 ${f.engine}%</b><p>${f.gun>=100?'主炮停用。':f.gun?'主炮故障使射速降低。':'主炮正常。'}${f.engine>=100?'发动机停驶。':f.engine?'发动机故障使移动减速。':'发动机正常。'}完全损坏请送维修中心。</p></section>`:`<p>伤害 ${game.damage()} · 射程 ${Math.round(w.range)} · ${w.id==='water'?'水袋容量':'弹夹容量'} ${w.magazineSize}</p>`)+(w?.id==='water'?`<section class="ui-inset"><p class="equipment-ammo"><span class="ammo-symbol">${ammoIcon('waterbag')}</span><span>水袋 ${Math.floor(mag?.ammo||0)} / ${w.magazineSize} · ${Math.floor((mag?.ammo||0)/w.magazineSize*100)}%<br>可喷射 ${Math.floor(mag?.ammo||0)} 次</span></p><p>${permanent?'装备水枪靠近河流或湖泊自动补水，战斗和受击不会中断；离岸保留水量，空袋可消耗潮汐水罐装填。':'活动使用独立供给，不消耗随身库存。'}</p>${permanent?'<p>背包备用潮汐水罐 '+stock.water+' 份</p>':''}<p>从空袋补满约 ${Number(w.reloadTime.toFixed(2))} 秒；升级水袋增加容量，升级补水泵缩短补满时间。</p></section>`:key?`<p class="equipment-ammo"><span class="ammo-symbol">${ammoIcon(key)}</span><span>${AMMO_TYPES[key].name}：弹夹 ${Math.floor(mag?.ammo||0)} / ${w.magazineSize} · 备用 ${permanent?stock[key]+' 发 · '+AMMO_TYPES[key].mass+' kg/发':'活动独立供给，不消耗实物库存'}</span></p>`:'<p>该装备使用近战或独立能量，无需实物子弹。</p>')+(!car&&permanent&&key&&catAmmoWarehouse(game)?'<p>当前载具仓库 '+catAmmoWarehouse(game)[key]+' 发；背包备用耗尽后自动补给，取用量受背包余量限制。</p>':'')+(car?'<p>升级、改装及换炮请前往对应工坊，与屋内售货员交谈。</p>':'');
   drawWorkshopEquipment(get('image').getContext('2d'),p,car?'vehicle':'weapons',index);
  }
  // 猫猫优先背包并自动分流到当前自有载具，车用弹药仍受店旁装载规则约束。

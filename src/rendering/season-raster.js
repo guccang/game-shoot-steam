@@ -35,7 +35,7 @@ export function seasonRasterStats(release = false) {
 }
 export class SeasonAtlas {
   // 树木按现有造型与昼夜缓存，仅在过渡期间增加一个来源快照。
-  constructor() { this.entries = new Map(); this.revision = null; this.target = null; }
+  constructor(limit=Infinity) { this.limit=limit;this.entries = new Map(); this.revision = null; this.target = null; }
   // 换目标释放上一轮；过渡结束保留目标纹理并释放来源，避免结束时重烘焙。
   sync(state) {
     if (this.revision !== state.revision || this.target !== state.target || this.source !== state.from) {
@@ -49,9 +49,11 @@ export class SeasonAtlas {
     this.sync(state);
     let entry = this.entries.get(key);
     if (!entry) {
+      if(this.entries.size>=this.limit){const oldest=this.entries.keys().next().value,e=this.entries.get(oldest);releaseRaster(e.from);releaseRaster(e.to);this.entries.delete(oldest);}
       entry = { to: build(state.target), from: state.active ? weightedRaster(state.from, build) : null };
       this.entries.set(key, entry);
     }
+    this.entries.delete(key);this.entries.set(key,entry);
     return mixRaster(entry.from, entry.to, state.progress);
   }
   // 地图切换或结束检查可主动回收本图集全部画布。

@@ -14,7 +14,7 @@ export function createMineSurfaceCache(compile=mesh=>mesh){
  const chunks=new Map();let tag=null,builds=0;
  // 每帧只检查当前视口的少量依赖格；移动跨块只生成新进入的边缘条带。
  function sample(layer,rect){
-  const b=mineBounds(layer),nextTag=`${layer.seed}:${layer.entry}:${b.left},${b.top},${b.right},${b.bottom}`;
+  const b=mineBounds(layer),nextTag=`${layer.seed}:${layer.entry}:${layer.depotRow??''}:${b.left},${b.top},${b.right},${b.bottom}`;
   if(tag!==nextTag){chunks.clear();tag=nextTag;}
   const size=MINE_SURFACE_CHUNK,left=Math.floor(rect.x/size),top=Math.floor(rect.y/size),right=Math.ceil((rect.x+rect.w)/size),bottom=Math.ceil((rect.y+rect.h)/size),items=[];let rebuilt=0;
   for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){

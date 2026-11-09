@@ -2,8 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
-import {farmAction,farmWaterTargets,setFarmTool,queueFarmWork,updateFarmWork} from '../src/core/farm.js';
-import {farmGrowth,validateFarm} from '../src/progression/farm.js';
+import {farmAction,farmWaterTargets,setFarmTool,queueFarmWork,updateFarmWork} from '../src/core/farming/farm.js';
+import {farmGrowth,validateFarm} from '../src/progression/farming/farm.js';
 import {farmCell,FARM_CROPS} from '../src/config/farm.js';
 import {farmApproach} from '../src/world/farm-land.js';
 // 营地测试田只用作初始夹具，结算均调用正式事务。
@@ -48,7 +48,7 @@ test('走近动作落水才修改单田，移动取消不加速，队列重复�
 });
 
 test('矿石改造原子保存，旧档单格，改造后只浇右侧有效作物',async()=>{
- const {upgradeWateringCan}=await import('../src/core/farm-production.js');
+ const {upgradeWateringCan}=await import('../src/core/farming/farm-production.js');
  const g=scene();g.vehicle={active:false};delete g.progress.farm.doubleCan;
  assert.equal(validateProgress(g.progress).farm.doubleCan,false);
  assert.equal(upgradeWateringCan(g).ok,false);

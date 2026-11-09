@@ -1,5 +1,5 @@
 // 直接复用林间小院的真实透明图集边界；植物三阶段均为独立图案，脚底锚点固定。
-import {sprinklerSoilWetness} from '../progression/sprinkler-sweep.js';
+import {sprinklerSoilWetness} from '../progression/farming/sprinkler-sweep.js';
 import {productionObjects,drawProductionGround} from './farm-production.js';
 export {drawFarmTool} from './farm-tools.js';
 import {FARM_CROP_SIZE} from '../config/farm-tools.js';
@@ -31,7 +31,7 @@ export function drawNaturalFarmCrop(c,index,x,y,time,phase,night=false,reduced=f
 }
 // 实景土地、作物、快递站与独立农具共享正式世界镜头。
 import {FARM_DELIVERY,FARM_SEED_SHOP,FARM_GARDEN,FARM_PLOT_SHAPE,farmPosition} from '../config/farm.js';
-import {farmWorking} from '../core/farm.js';
+import {farmWorking} from '../core/farming/farm.js';
 import {PASTURE,oxFoot} from '../config/pasture.js';
 import {nearest,visibleBodies,worldDistance} from '../world/coordinates.js';
 // 两个世界与其故事现场共用永久田块，仅独立副本隔离土地。
@@ -59,7 +59,7 @@ export function drawFarmGround(c,game,view){
     c.lineWidth=3.5;c.strokeStyle='#fff2ba';c.stroke();
     c.setLineDash([6,3]);c.lineWidth=2;c.strokeStyle=cell.valid?'#30573e':'#887754';c.stroke();
     if(i===0){
-     c.setLineDash([]);c.translate(p.x,p.y+17);c.scale(reaper.facing,1);
+     c.setLineDash([]);c.translate(p.x,p.y+17);if(reaper.axis==='column')c.rotate(Math.PI/2);c.scale(reaper.facing,1);
      c.beginPath();c.moveTo(-7,-3);c.lineTo(1,-3);c.lineTo(1,-6);c.lineTo(9,0);c.lineTo(1,6);c.lineTo(1,3);c.lineTo(-7,3);c.closePath();
      c.fillStyle='#fff2ba';c.fill();c.strokeStyle='#30573e';c.stroke();
     }
@@ -94,7 +94,7 @@ function worldDistanceToPen(site){return worldDistance(oxFoot(site),PASTURE);}
 export function farmObjects(game){
  if(!farmVisible(game))return [];
  const site=game.progress.farm.oxSite;
- const parked=site?.mapId===game.mapId&&!game.cottage&&(game.farmWork?.tool!=='ox'||game.farmWork.ox?.approach||game.farmWork.autoCombat)?[{...site,...oxFoot(site),type:'parked-ox',moving:!!game.oxArrival?.moving,phase:game.oxArrival?.phase||0,unhitched:!!game.oxArrival||worldDistanceToPen(site)<65}]:[];
+ const parked=site?.mapId===game.mapId&&!game.cottage&&(game.farmWork?.tool!=='ox'||game.farmWork.ox?.approach||game.farmWork.autoCombat)?[{...site,...oxFoot(site),type:'parked-ox',moving:!!game.oxArrival?.moving,phase:game.oxArrival?.phase||0,unhitched:!!game.progress.farm.oxReturn||!!game.oxArrival||worldDistanceToPen(site)<65}]:[];
  const pen=game.mapId==='forest'?[{...PASTURE,y:PASTURE.y-PASTURE.halfHeight,type:'pasture-back'},{...PASTURE,y:PASTURE.y+PASTURE.halfHeight,type:'pasture-front'},...(game.progress.farm.sheep?[{x:PASTURE.x+58,y:PASTURE.y+34,type:'pasture-sheep'}]:[])]:[];
  return [...pen,...parked,...productionObjects(game),...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
 }

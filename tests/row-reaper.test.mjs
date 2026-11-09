@@ -4,14 +4,14 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {setFarmTool,updateFarmWork,resolveHarvestLoad} from '../src/core/farm.js';
-import {engageReaper,releaseReaper} from '../src/core/row-reaper.js';
+import {setFarmTool,updateFarmWork,resolveHarvestLoad} from '../src/core/farming/farm.js';
+import {engageReaper,releaseReaper} from '../src/core/farming/row-reaper.js';
 import {driveBody} from '../src/physics/motion.js';
 import {WORLD} from '../src/world/coordinates.js';
 
 // 第一行中间留一格未成熟作物，第二行全熟。
 function scene(){
- const p=freshProgress();p.arrival=null;p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';
+ const p=freshProgress();p.materials.seederKit=1;p.materials.reaperKit=1;p.arrival=null;p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';
  p.vehicleHulls.fill(0);p.farm.wildMaps=['forest','jiuzhaigou'];p.farm.lessonRewarded=true;
  p.farm.plots=Array.from({length:6},(_,id)=>({id,mapId:'forest',x:700+56*(id%3),y:2752+52*Math.floor(id/3),crop:0,plantedAt:id===1?Date.now():1,readyAt:id===1?Date.now()+3600000:2,watered:false}));p.farm.nextId=6;
  const g=new Game(p,()=>.4);g.state='playing';g.vehicle.active=false;g.progress.campParking.owned=[];g.livingPersist=()=>true;
@@ -52,4 +52,12 @@ test('刀口碰到障碍或收获保存失败时停下并保留作物',()=>{
   assert.equal(g.farmWork.result.ok,false);assert.equal(g.progress.farm.harvested,0);
   assert.equal(g.progress.farm.plots[0].crop,0);
  }
+});
+
+// 纵向路线只收同列，实际物理推进与横向共用结算。
+test('收割器沿列收割并在列尾停止',()=>{
+ const g=scene();g.progress.farm.axis='column';setFarmTool(g,'reaper');
+ Object.assign(g.player,{x:700,y:2700});engageReaper(g);
+ advance(g,()=>!g.farmWork.reaper.held);assert.equal(g.progress.farm.harvested,2);
+ assert.equal(g.progress.farm.plots.find(p=>p.id===2).crop,0);
 });

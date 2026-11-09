@@ -27,7 +27,7 @@ async(page)=>{
  await page.waitForFunction(()=>encApp.game.kills>0);
  if(!await page.evaluate(k=>encApp.game.waveKills===k,initial.kills))throw Error('遭遇击杀污染波次');
  // 建立并存场景检查昼夜和窄屏，复用原怪物绘制，没有新增美术。
- await page.evaluate(async()=>{const g=encApp.game,{updateEncounters}=await import('/src/core/encounter-manager.js');g.encounterTimer=0;updateEncounters(g,.1,true);g.attackTimer=999;g.player.invincible=999;});
+ await page.evaluate(async()=>{const g=encApp.game,{updateEncounters}=await import('/src/core/battle/encounter-manager.js');g.encounterTimer=0;updateEncounters(g,.1,true);g.attackTimer=999;g.player.invincible=999;});
  for(const [width,height,time] of [[1280,900,'day'],[390,844,'night']]){
   await page.setViewportSize({width,height});
   await page.evaluate(async time=>{const a=encApp;Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false});a.renderer.light=new (await import('/src/world/environment.js')).EnvironmentTransition(a.environment,performance.now()-20000);a.renderer.draw();a.refresh();},time);

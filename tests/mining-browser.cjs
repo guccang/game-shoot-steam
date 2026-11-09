@@ -45,7 +45,7 @@ async original=>{
   await page.setViewportSize({width:390,height:844});await page.locator('#mine-board').tap();
   // 挖掘地形从原矿道继续向北拓展，寻找真实地表无障碍落点。
   await stand(3,0);await page.locator('[data-mine-tool="pick"]').tap();await page.keyboard.down('ArrowUp');await page.waitForTimeout(6500);await page.keyboard.up('ArrowUp');await page.locator('[data-mine-tool="pick"]').tap();
-  const shaftCell=await page.evaluate(async()=>{const {mineCell,minePoint,mineKey}=await import('/src/config/mining.js'),{canOpenShaft}=await import('/src/core/mining.js'),g=a.game,saved={x:g.player.x,y:g.player.y};for(const key of Object.keys(g.progress.mining.dug)){const [x,y]=key.split(',').map(Number);Object.assign(g.player,minePoint({x,y}));if(canOpenShaft(g))return {x,y};}Object.assign(g.player,saved);return null;});if(!shaftCell)throw Error('实挖区域没有合法洞口位置');
+  const shaftCell=await page.evaluate(async()=>{const {mineCell,minePoint,mineKey}=await import('/src/config/mining.js'),{canOpenShaft}=await import('/src/core/mining/mining.js'),g=a.game,saved={x:g.player.x,y:g.player.y};for(const key of Object.keys(g.progress.mining.dug)){const [x,y]=key.split(',').map(Number);Object.assign(g.player,minePoint({x,y}));if(canOpenShaft(g))return {x,y};}Object.assign(g.player,saved);return null;});if(!shaftCell)throw Error('实挖区域没有合法洞口位置');
   await page.locator('#mine-build').tap();await page.locator('[data-mine-shaft]').tap();await page.waitForFunction(()=>a.game.progress.mining.shafts.length===1,null,{timeout:10000});await page.locator('#mine-exit').tap();await page.waitForFunction(()=>!a.game.cottage);
   // 从侧面留出完整洞口，再在同一正式场景检查昼夜光照。
   await page.keyboard.down('ArrowRight');await page.waitForTimeout(400);await page.keyboard.up('ArrowRight');

@@ -14,11 +14,11 @@ async original=>{
     const p=arrival?freshRangerProgress():freshProgress();p.wood=0;p.vehicleIndex=arrival?RANGER.scooter:0;p.vehicleHulls[p.vehicleIndex]=1;
     if(arrival)Object.assign(p.arrival,{phase:'gather',keys:true,parked:false});
     else{const f=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.find(f=>f.id==='clearing'),ids=(await import('/src/config/mainline.js')).MAINLINE_IDS;p.mainline.currentId=f.before;p.mainline.completed=ids.slice(0,ids.indexOf(f.before));p.mainline.phase='doing';p.restoration.cottageRested=true;}
-    const g=a.game;g.update=()=>{};g.progress=p;g.reset();if(arrival)(await import('/src/core/ranger-arrival.js')).restoreArrival(g);g.start();g.state='playing';g.mainlineSpeech=null;g.enemies=[];g.vehicle.active=false;Object.assign(g.player,{x:2600,y:1800});
+    const g=a.game;g.update=()=>{};g.progress=p;g.reset();if(arrival)(await import('/src/core/camp/ranger-arrival.js')).restoreArrival(g);g.start();g.state='playing';g.mainlineSpeech=null;g.enemies=[];g.vehicle.active=false;Object.assign(g.player,{x:2600,y:1800});
     g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time).start+1000;
     (await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);
     a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);
-    window.pickWood=(await import('/src/core/wood-pickup.js')).collectAutomaticWood;
+    window.pickWood=(await import('/src/core/inventory/wood-pickup.js')).collectAutomaticWood;
     window.chop=()=>{const tree=g.trees.find(t=>t.hp>0);if(!tree)throw Error('缺少可采集树木');g.hit(tree,tree.hp,false,{weaponIndex:RANGER.saw});};chop();
    },{arrival,time});
    const selector=arrival?'#arrival-body':'#mainline-hud .mainline-objective',required=arrival?80:40;
@@ -36,7 +36,7 @@ async original=>{
    await page.evaluate(required=>{const g=a.game;if(!pickWood(g,{type:'tree',x:2680,y:1800},required-16))throw Error('补齐采集失败');},required);
    await page.waitForFunction(({selector,required})=>document.querySelector(selector)?.textContent.includes(required+'/'+required),{selector,required});
    const complete=await page.locator(selector).textContent();
-   const inventory=await page.evaluate(async()=>{const g=a.game;return {bank:g.progress.wood,status:(await import('/src/core/wood-task-status.js')).woodTaskStatus(g,40).total};});
+   const inventory=await page.evaluate(async()=>{const g=a.game;return {bank:g.progress.wood,status:(await import('/src/core/inventory/wood-task-status.js')).woodTaskStatus(g,40).total};});
    if(inventory.bank!==0||inventory.status!==required)throw Error('库存凭空入库');
    await page.screenshot({path:`output/playwright/wood-task-count/collected-${width}-${time}.png`});
    checks.push({arrival,width,time,bagText,cargoText,summary,complete});

@@ -8,7 +8,7 @@ async page=>{
   await p.waitForFunction(()=>document.querySelector('#vehicle-button')?.getAttribute('aria-pressed')==='true',null,{timeout:60000});
   const result=await p.evaluate(async()=>{
    const {renderVisualCase}=await import('/src/rendering/visual-review.js'),{freshProgress}=await import('/src/progression/progress.js');
-   const {drawWorkshopEquipment,drawWorkshopTrial}=await import('/src/rendering/workshop.js'),{createWorkshopTrial}=await import('/src/core/workshop-trial.js');
+   const {drawWorkshopEquipment,drawWorkshopTrial}=await import('/src/rendering/workshop.js'),{createWorkshopTrial}=await import('/src/core/workshop/workshop-trial.js');
    const {COLLECTED_VEHICLES}=await import('/src/config/vehicles.js'),{WEAPONS}=await import('/src/config/weapons.js'),{grantVehicleArmament}=await import('/src/config/vehicle-armaments.js');
    const progress=freshProgress();progress.vehicleHulls.fill(1);progress.weapons.fill(1);COLLECTED_VEHICLES.forEach((_,i)=>grantVehicleArmament(progress,i));
    window.reviewSheets={};const trials=[],motions=[];

@@ -37,7 +37,7 @@
 | 事务与旧档 | 28 项相关规则测试通过（含初次失败夹具修正后重跑）；恢复旧回程对白直接交付，保存失败仍可重试，重复领取不发奖，普通秘境失败保留原结算。编排移至 Game 层后相关 12 项再次通过。 |
 
 证据目录：`output/playwright/realm-direct-delivery/`。主脚本 `tests/story-excursion-return-browser.cjs`，最终零页面异常。
-静态检查：7 个变更 JS 模块语法通过，依赖闭包相对基线无新增环。通用 `scripts/check.mjs` 被原有 `progression/story-rewards.js → core/story-posts.js` 分层规则阻断；基线还存在 `fire-rescue.js ↔ realm-manager.js` 环，本次没有新增或扩展这两项问题。
+静态检查：7 个变更 JS 模块语法通过，依赖闭包相对基线无新增环。通用 `scripts/check.mjs` 被原有 `progression/story/story-rewards.js → core/story/story-posts.js` 分层规则阻断；基线还存在 `fire-rescue.js ↔ realm-manager.js` 环，本次没有新增或扩展这两项问题。
 正式入口：src/ui/story.js、src/ui/title-menu.js、src/rendering/visual-review.js#inspectRealmDelivery。
 designCriterion：realm-direct-delivery、settings-only-home。
 

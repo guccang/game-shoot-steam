@@ -21,7 +21,7 @@
 - 同文件中2项清缴回归在本次工作树与未修改的master均失败，位置为`clearing-contract-onboarding.test.mjs`的`acceptClearingPost`初始接单断言；已确认基线问题，不扩大此次改动。
 - 单独新增的触屏检查替代现行合同中的两份历史自动投料录制入口，旧脚本留作历史记录。本次未运行全量测试。
 - 保留原施工飞木、持久化原子提交、暂停冻结、已支付施工恢复、提前修复和主线跳过；没有改变建筑资源、动画、区域、碰撞与费用。
-- 正式入口：`src/core/town-restoration.js#repairFacility`、`src/core/ranger-arrival.js#advanceArrival`、`src/ui/nearby-interaction.js#createNearbyInteraction`、`src/ui/town-restoration.js#createRestorationPanel`。
+- 正式入口：`src/core/camp/town-restoration.js#repairFacility`、`src/core/camp/ranger-arrival.js#advanceArrival`、`src/ui/nearby-interaction.js#createNearbyInteraction`、`src/ui/town-restoration.js#createRestorationPanel`。
 - `designCriterion: town-restoration`：沿用`src/rendering/visual-review.js#inspectTownRestoration`读取正式目录、范围与build状态，更新`visual-contract.json`的点击要求与验收入口。
 - 本地4175已有服务，本轮使用隔离端口4178，保留其他任务服务。
 

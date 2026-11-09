@@ -1,6 +1,6 @@
 // 守门节奏验收：正式武器、弹丸、敌人和拒马承伤，无秒杀或加血钩子。
 import {Game,freshProgress} from '../src/game.js';
-import {startCampDefense,spawnCampBoss} from '../src/core/camp-defense.js';
+import {startCampDefense,spawnCampBoss} from '../src/core/camp/camp-defense.js';
 import {campDefenseGrade} from '../src/config/camp-defense.js';
 const results=[];
 for(const equipped of [false,true]){

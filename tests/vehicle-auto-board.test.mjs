@@ -5,12 +5,12 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,freshRangerProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {parkedOwned} from '../src/core/camp-parking.js';
-import {vehicleBoardingPoint,updateVehicleBoarding,nearVehicle} from '../src/core/vehicle-boarding.js';
+import {parkedOwned} from '../src/core/vehicles/camp-parking.js';
+import {vehicleBoardingPoint,updateVehicleBoarding,nearVehicle} from '../src/core/vehicles/vehicle-boarding.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 import {activateVehicleTransfer} from '../src/ui/vehicle-transfer.js';
-import {worldNavigationDiagnostics} from '../src/core/world-navigation.js';
-import {skipArrivalJourney,completeArrivalLetter,arrivalTarget} from '../src/core/ranger-arrival.js';
+import {worldNavigationDiagnostics} from '../src/core/navigation/world-navigation.js';
+import {skipArrivalJourney,completeArrivalLetter,arrivalTarget} from '../src/core/camp/ranger-arrival.js';
 import {FIRE_GARAGE} from '../src/world/fire-navigation.js';
 import {WORLD} from '../src/world/coordinates.js';
 // 清理无关任务，仅创建两辆正常自有车，保留正式碰撞和上车事务。

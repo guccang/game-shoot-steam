@@ -42,7 +42,7 @@ async page => {
     const a = (await import('/src/main.js')).application, g = a.game;
     g.state = 'playing'; g.enterRealm('tower');
     g.enemies = []; g.boss = null; g.realm.kills = g.realm.spec.total;
-    const { updateRealm } = await import('/src/core/realm-manager.js');
+    const { updateRealm } = await import('/src/core/realms/realm-manager.js');
     updateRealm(g, 0); a.refresh();
   });
   await switchAway();

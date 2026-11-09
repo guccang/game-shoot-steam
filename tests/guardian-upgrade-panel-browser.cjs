@@ -50,7 +50,7 @@ async page=>{
     if(JSON.stringify(g.realm.defenses[0].upgrades)!=='{"rate":2,"magazine":2,"reload":2}'||g.realm.defenses[1].upgrades.rate!==2)throw Error('刷新丢失属性升级');
     document.querySelectorAll('dialog[open]').forEach(d=>d.close());
     g.continueRealm();g.realm.warning=0;g.summonVehicle();g.player.invincible=999;
-    const {updateRealm}=await import('/src/core/realm-manager.js');
+    const {updateRealm}=await import('/src/core/realms/realm-manager.js');
     for(let i=0;i<24;i++){g.realm.spawnTimer=0;updateRealm(g,0);}
     for(const e of g.enemies){e.hp=e.maxHp=100000;e.damage=0;}
     g.realm.spawnTimer=999;g.realm.goddess.hp=432.2;a.refresh();a.renderer.draw();

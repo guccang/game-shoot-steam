@@ -1,5 +1,5 @@
 // 引力枪及落点场共用磁环语言，范围跟随实际战斗数据，不参与规则推进。
-import {box,oval,poly,outline} from './primitives.js';
+import {box,oval,outline} from './primitives.js';
 import {nearest} from '../world/coordinates.js';
 import {currentGravityFields} from '../combat/gravity-field.js';
 // 短机匣与双极磁环独立于手部绘制，枪口与43单位正式锚点一致。

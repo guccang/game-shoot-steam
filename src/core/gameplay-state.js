@@ -1,7 +1,7 @@
 // 玩法诊断快照只读真实状态，不推进任务、寻路、随机数或存档迁移。
 import {currentMainlineTask} from '../config/mainline.js';
-import {storyRouteDiagnostics} from './story-route.js';
-import {worldNavigationDiagnostics} from './world-navigation.js';
+import {storyRouteDiagnostics} from './navigation/story-route.js';
+import {worldNavigationDiagnostics} from './navigation/world-navigation.js';
 
 // 明确选取字段，避免整棵场景树、敌人数组和历史存档进入日志。
 function pick(object,keys){if(!object)return null;return Object.fromEntries(keys.map(key=>[key,object[key]??null]));}

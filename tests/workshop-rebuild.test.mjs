@@ -6,7 +6,7 @@ import {Game} from '../src/core/game.js';
 import {freshRangerProgress,freshProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
-import {workshopBuildView,advanceArrival} from '../src/core/ranger-arrival.js';
+import {workshopBuildView,advanceArrival} from '../src/core/camp/ranger-arrival.js';
 
 // 从采料完成的真实门口检查点开工，保留正式费用和阶段提交。
 function ready(){

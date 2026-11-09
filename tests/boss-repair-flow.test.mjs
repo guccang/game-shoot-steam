@@ -5,18 +5,18 @@ import {Game,freshProgress} from '../src/game.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS,facilityOpen,pendingRestoration} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {repairFacility,updateRestoration} from '../src/core/town-restoration.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
-import {mainlineObjective,mainlineSteps} from '../src/core/mainline-manager.js';
-import {requestWorldNavigation,worldNavigationObjective} from '../src/core/world-navigation.js';
+import {repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
+import {mainlineObjective,mainlineSteps} from '../src/core/story/mainline-manager.js';
+import {requestWorldNavigation,worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {clearingBossHealth} from '../src/config/clearing-boss.js';
 import {clearingDifficulty} from '../src/config/clearing-difficulty.js';
 import {CAMP_GATES,campDefenseBoss} from '../src/config/camp-defense.js';
-import {validateCampDefense} from '../src/progression/camp-defense.js';
+import {validateCampDefense} from '../src/progression/camp/camp-defense.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
-import {runStoryActions,updateStory} from '../src/core/story-manager.js';
-import {spawnStoryBoss} from '../src/core/story-encounters.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
+import {runStoryActions,updateStory} from '../src/core/story/story-manager.js';
+import {spawnStoryBoss} from '../src/core/story/story-encounters.js';
 
 // 使用未推进主线的新进度，修复和故事仍由正式核心方法进入。
 function scene(){const g=new Game(freshProgress(),()=>.5);g.start();g.vehicle.active=false;g.enemies=[];g.boss=null;g.restorationPersist=()=>true;return g;}

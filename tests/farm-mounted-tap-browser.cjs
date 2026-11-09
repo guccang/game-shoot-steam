@@ -13,20 +13,28 @@ async original=>{
    Object.assign(g.player,{x:865,y:2960,vx:0,vy:0});a.renderer.camera.time=null;
    for(const d of document.querySelectorAll('dialog[open]'))d.close();a.refresh();
   });
-  const cell=page.locator('[data-farm-cell="0"]');await cell.tap();await page.locator('[data-farm-seed="0"]').tap();
+  const cell=page.locator('[data-farm-cell="0"]');
+  // 验证没有安全落脚点时，点田既不下车也不消耗种子，下次点击可以重试。
+  await page.evaluate(()=>{a.game.dismountVehicle=()=>false;});
+  await cell.tap();
+  if(!await page.evaluate(()=>a.game.vehicle.active&&!a.game.farmWork&&a.game.progress.farm.seeds[0]===3&&document.querySelector('#farm-notice').textContent.includes('无法安全下车')))throw Error('下车失败仍然开始了农活');
+  await page.evaluate(()=>{delete a.game.dismountVehicle;});
+  // 每种田况都从骑车开始，退出时使用正式返车入口。
+  async function rideAgain(){await page.locator('#farm-exit').tap();await page.waitForFunction(()=>a.game.vehicle.active);}
+  await cell.tap();await page.waitForFunction(()=>!a.game.vehicle.active);await page.locator('[data-farm-seed="0"]').tap();
   await page.waitForFunction(()=>a.game.progress.farm.plots[0].crop===0);
   if(await page.evaluate(()=>a.game.progress.farm.seeds[0])!==2)throw Error('种子扣除数量不符');
-  await cell.tap();await page.waitForFunction(()=>a.game.progress.farm.plots[0].watered);
+  await rideAgain();await cell.tap();await page.waitForFunction(()=>!a.game.vehicle.active&&a.game.progress.farm.plots[0].watered);
   await page.evaluate(()=>{const p=a.game.progress.farm.plots[0];p.readyAt=Date.now()-1;p.plantedAt=p.readyAt-1000;});
-  await cell.tap();await page.waitForFunction(()=>a.game.progress.farm.plots[0].crop===null);
-  if(!await page.evaluate(()=>a.game.vehicle.active&&a.game.progress.farm.harvested===1))throw Error('驾驶状态或收获次数不符');
-  // 满载时取消保留本茬；确认后只结算一次，车上始终保留驾驶员。
-  await page.evaluate(()=>{const g=a.game,p=g.progress.farm.plots[0];Object.assign(p,{crop:0,plantedAt:1,readyAt:2});g.progress.logistics.builds[g.vehicle.index].wood=500;});
-  await cell.tap();await page.locator('#farm-harvest-cancel').tap();
+  await rideAgain();await cell.tap();await page.waitForFunction(()=>a.game.progress.farm.plots[0].crop===null);
+  if(!await page.evaluate(()=>!a.game.vehicle.active&&a.game.progress.farm.harvested===1))throw Error('驾驶状态或收获次数不符');
+  // 满载时取消保留本茬；确认后只结算一次，猫猫在地面作业。
+  await page.evaluate(()=>{const g=a.game,p=g.progress.farm.plots[0];Object.assign(p,{crop:0,plantedAt:1,readyAt:2});g.progress.logistics.builds[g.vehicle.index].wood=6000;});
+  await rideAgain();await cell.tap();await page.locator('#farm-harvest-cancel').tap();
   await page.waitForFunction(()=>a.game.state==='playing');
   if(await page.evaluate(()=>a.game.progress.farm.harvested)!==1)throw Error('取消后仍然收获');
   await cell.tap();await page.locator('[data-harvest-continue]').tap();
-  await page.waitForFunction(()=>a.game.progress.farm.harvested===2&&a.game.vehicle.active);
+  await page.waitForFunction(()=>a.game.progress.farm.harvested===2&&!a.game.vehicle.active);
   await cell.tap();await page.waitForSelector('#farm-picker:not([hidden])');
   await page.evaluate(()=>{const g=a.game,e=g.spawnEnemy(0,0,{x:g.player.x+45,y:g.player.y});Object.assign(e,{hp:9999,maxHp:9999,speed:0,damage:0});});
   await cell.waitFor({state:'hidden'});await page.locator('#farm-picker').waitFor({state:'hidden'});

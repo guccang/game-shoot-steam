@@ -54,7 +54,7 @@ async page=>{
  const coins=await page.evaluate(()=>a.game.progress.coins);
  await page.screenshot({path:'output/playwright/pine-pacing/report-320.png'});
  await page.locator('.mainline-begin').click();
- const result=await page.evaluate(async()=>({task:(await import('/src/core/mainline-manager.js')).mainlineTask(a.game).id,coins:a.game.progress.coins,kills:a.game.progress.mainline.seen.pineKills,waves:a.game.progress.mainline.seen.pineWaves}));
+ const result=await page.evaluate(async()=>({task:(await import('/src/core/story/mainline-manager.js')).mainlineTask(a.game).id,coins:a.game.progress.coins,kills:a.game.progress.mainline.seen.pineKills,waves:a.game.progress.mainline.seen.pineWaves}));
  if(result.task!=='vehicle-service'||result.coins!==coins+180)throw Error('领奖未衔接整备');
  if(errors.length)throw Error(errors.join('\n'));
  return {result,samples,errors};

@@ -11,7 +11,7 @@ async original=>{
   const p=(await import('/src/game.js')).freshProgress();p.arrival={version:2,phase:"complete",keys:true};p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.restoration.repaired=['clearing'];p.weapons[0]=1;
   const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.arrivalScene=null;
   Object.assign(g.player,(await import('/src/config/clearing.js')).CLEARING_APPROACH);
-  const result=(await import('/src/core/clearing-guide.js')).acceptClearingPost(g);if(!result.ok)throw Error(result.message);
+  const result=(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g);if(!result.ok)throw Error(result.message);
   // 手动调度战斗，保留实时寻路时钟，避免自动攻击干扰位置和奖励断言。
   Object.assign(g.player,g.progress.living.clearingSite);g.update=dt=>{if(g.state==='playing')g.time+=dt;};a.renderer.camera.time=null;a.refresh();
  });
@@ -60,14 +60,14 @@ async original=>{
   if(before.xp!==round*180||before.bosses!==round)throw Error('续接重复发放了清缴奖励');
   if(!(await page.locator('#toast').textContent()).includes(round===1?'原地继续下一轮':'返回本次清缴地点'))throw Error('缺少续战成功反馈');
   // 范围外续接只恢复任务及导航，不传送角色、不提前刷怪、不重复结算奖励。
-  const resumed=await page.evaluate(async before=>{const g=a.game,site=g.progress.living.clearingSite,allowed=(await import('/src/core/living-safety.js')).livingWaveAllowed(g),goal=(await import('/src/core/world-navigation.js')).worldNavigationObjective(g),wave=g.wave,rest=g.waveRest;
+  const resumed=await page.evaluate(async before=>{const g=a.game,site=g.progress.living.clearingSite,allowed=(await import('/src/core/camp/living-safety.js')).livingWaveAllowed(g),goal=(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(g),wave=g.wave,rest=g.waveRest;
    if(JSON.stringify(site)!==JSON.stringify(before.site)||g.player.x!==before.position.x||g.player.y!==before.position.y||g.progress.campLevel.xp!==before.xp||g.progress.bosses!==before.bosses||g.pendingClearingRound!==0)throw Error('续接改变位置、场地或奖励');
    if(!allowed){if(goal?.site.id!==site.id)throw Error('范围外没有返回导航');g.updateWaves(30);if(g.wave!==wave||g.waveRest!==rest)throw Error('范围外提前刷怪');}
    return {allowed,goal:goal?.key,position:{x:g.player.x,y:g.player.y}};
   },before);rounds.at(-1).resumed=resumed;
   if(round>1){
-   await page.waitForFunction(async()=>{const nav=await import('/src/core/story-route.js');return nav.visibleRouteDots(nav.storyRouteState(a.game,a.renderer.view),a.renderer.view).length>0;});
-   rounds.at(-1).dots=await page.evaluate(async()=>{const nav=await import('/src/core/story-route.js');return nav.visibleRouteDots(nav.storyRouteState(a.game,a.renderer.view),a.renderer.view).length;});
+   await page.waitForFunction(async()=>{const nav=await import('/src/core/navigation/story-route.js');return nav.visibleRouteDots(nav.storyRouteState(a.game,a.renderer.view),a.renderer.view).length>0;});
+   rounds.at(-1).dots=await page.evaluate(async()=>{const nav=await import('/src/core/navigation/story-route.js');return nav.visibleRouteDots(nav.storyRouteState(a.game,a.renderer.view),a.renderer.view).length;});
   }
   await page.screenshot({path:`output/playwright/clearing-repeat/continued-${round}.png`});
   // 测试下一轮前回到原场地，让正式调度器继续产生五波及领主。

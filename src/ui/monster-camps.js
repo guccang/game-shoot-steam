@@ -1,7 +1,7 @@
 // 营地小故事使用底部对白；现场线索和灰堆仍由核心事务核对条件。
 import {MONSTER_CAMPS,CAMP_CHARACTERS,MONSTER_CAMP_RULES,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {campStory} from '../config/camp-stories.js';
-import {monsterCampsAvailable,monsterCampChatter,talkCampCharacter,inspectCampCache} from '../core/monster-camps.js';
+import {monsterCampsAvailable,monsterCampChatter,talkCampCharacter,inspectCampCache} from '../core/battle/monster-camps.js';
 import {createEventScope} from '../platform/events.js';
 import {createCompactSpeech} from './compact-speech.js';
 import {dockNpcDialogue} from './npc-dialogue-layout.js';

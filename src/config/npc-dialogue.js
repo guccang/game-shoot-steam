@@ -96,3 +96,13 @@ for(const [id,story] of Object.entries(CAMP_STORIES))add('camp-story:'+id,story.
 
 // 六名居民的交心层绑定各自真实遗物；首次进入这一层优先讲线索，不让随机运气拖延探索。
 for(const site of TREASURE_SITES){const line=NPC_DIALOGUES['resident:'+site.resident].lines.find(l=>l.stage===2);line.text=site.clue;line.treasure=site.id;}
+
+// 工厂管理员沿用现有交谈服务，规则说明与实际停靠货物读取保持一致。
+add('shop:refinery','炉芽','提炼厂管理员',[
+ ['原矿和木材放在小屋仓库就好，也可以装车停到厂门前。进屋选好数量，我会直接取料。'],
+ ['铜、铁和稀有原矿分别提炼。成品装回车里，再送到南边加工厂。'],
+ ['成品放在厂里等你，不急着取也不会丢。车装满了，就先运一趟。']]);
+add('shop:factory','榫叶','加工厂管理员',[
+ ['金属块和木材可直接从小屋仓库取用，也可以装车运来。需要枪械、载具还是农具部件，进屋告诉我。'],
+ ['厂内和停靠车辆的原料先用，不够就从小屋仓库补齐。生产开始才扣料，领成品时会看车的剩余载荷。'],
+ ['部件送回小屋仓库，工坊就能用上。每一块金属，都带着你走过的路。']]);

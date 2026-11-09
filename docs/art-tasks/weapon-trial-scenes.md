@@ -21,7 +21,7 @@
 | 昼夜与比例 | [390白天](../verification/redwolf-feedback/390-live-day.png)、[320夜晚](../verification/redwolf-feedback/320-live-night.png)、[横屏](../verification/redwolf-feedback/844-live-day.png)、[桌面同一手机页面夜景](../verification/redwolf-feedback/1280-live-night.png)；沿用车辆、靶标和场景比例，数字与击毁均可辨 |
 | 真实交互与资源 | 320×568、390×844、844×390、1280×900浏览器实测，暂停冻结补靶，重来重置，关闭返回工坊，来源存档不变；浏览器无异常。未进行实体手机测试。没有新地形、阻挡、下载媒体或缓存；桥水与新通路检查不适用 |
 
-正式入口：`src/core/weapon-trial-scene.js#createWeaponTrialScene`、`src/rendering/weapon-trial-scene.js#drawWeaponTrialScene`；工作台读取仍为 `src/rendering/visual-review.js#inspectWeaponTrialSceneReview`。对应 `designCriterion`：`weapon-trial-scenes`，真实火力特点、动作与昼夜可读性。结论：通过；无遗留修订项。
+正式入口：`src/core/workshop/weapon-trial-scene.js#createWeaponTrialScene`、`src/rendering/weapon-trial-scene.js#drawWeaponTrialScene`；工作台读取仍为 `src/rendering/visual-review.js#inspectWeaponTrialSceneReview`。对应 `designCriterion`：`weapon-trial-scenes`，真实火力特点、动作与昼夜可读性。结论：通过；无遗留修订项。
 
 执行依据为[游戏美术资源生成标准](../art-generation-standard.md)。本任务使用正式 Canvas 绘制器构成独立演练场，未生成新角色或媒体资产。
 

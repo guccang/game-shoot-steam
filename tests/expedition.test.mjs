@@ -3,10 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
 import { freshProgress } from '../src/progression/progress.js';
-import { validateRealms } from '../src/progression/realm-progress.js';
+import { validateRealms } from '../src/progression/realms/realm-progress.js';
 import { WEAPONS } from '../src/config/weapons.js';
 import { COLLECTED_VEHICLES, vehicleDamage } from '../src/config/vehicles.js';
-import { beginRealmStage, syncRealm } from '../src/core/realm-manager.js';
+import { beginRealmStage, syncRealm } from '../src/core/realms/realm-manager.js';
 import { drawExpeditionItem, EXPEDITION_GUNS, EXPEDITION_TURRETS } from '../src/config/expedition.js';
 
 // 保存时只序列化永久进度，运行时临时装备不得泄漏到所有权字段。
@@ -104,8 +104,9 @@ test('未解锁枪械、独立炮塔和所有车体可实战，森林装备与�
     g.leaveRealm(); assert.equal(g.vehicle,forestVehicle); assert.equal(g.vehicle.hp,77);
     assert.equal(g.loadout,g.progress);
   }
-  for(let i=0;i<COLLECTED_VEHICLES.length;i++) {
-    const g=new Game();g.enterRealm('rogue');g.rollRealmEquipment('weapon');g.random=()=> (i+.1)/COLLECTED_VEHICLES.length;
+  const available=COLLECTED_VEHICLES.flatMap((v,i)=>v.retired?[]:[i]);
+  for(const [slot,i] of available.entries()) {
+    const g=new Game();g.enterRealm('rogue');g.rollRealmEquipment('weapon');g.random=()=> (slot+.1)/available.length;
     g.rollRealmEquipment('vehicle');g.rollRealmEquipment('turret');g.readyRealm();g.chooseRealmBlessing(g.realm.offers[0]);
     assert.equal(g.vehicle.index,i);assert.equal(g.vehicle.active,true);
     assert.equal(g.vehicle.weaponIndex,g.realm.loadout.turret);

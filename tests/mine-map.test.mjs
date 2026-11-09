@@ -1,8 +1,8 @@
 // 地下探索图读取真实存档，测试未探索遮蔽、轨道连接和坐标变换。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshMining,openBasement,normalizeMining} from '../src/progression/mining.js';
-import {freshMineLayer} from '../src/progression/mine-layers.js';
+import {freshMining,openBasement,normalizeMining} from '../src/progression/mining/mining.js';
+import {freshMineLayer} from '../src/progression/mining/mine-layers.js';
 import {MINING,minePoint,mineKey} from '../src/config/mining.js';
 import {mineTerrain} from '../src/config/mine-ecology.js';
 import {buildMineMapModel,fitMineMap,zoomMineMap,clampMineMap} from '../src/world/mine-map.js';
@@ -22,7 +22,7 @@ test('铁轨只连接真实相邻格，转弯、十字、断开段和远端路�
 });
 test('洞口和上下行标记来自当前层；深层不伪造地表小屋',()=>{
  const l=layer();l.dug['4,0']=true;l.shafts=['4,0'];l.descent='1,0';
- assert.deepEqual(buildMineMapModel(l,MINING.home).markers.map(m=>m.name),['小屋','下层','洞口1']);
+ assert.deepEqual(buildMineMapModel(l,MINING.home).markers.map(m=>m.name),['仓库升井','小屋','下层','洞口1']);
  const deep=freshMineLayer(2,{x:5,y:4},()=>.3),model=buildMineMapModel(deep,minePoint({x:5,y:4}),2);
  assert.equal(model.markers.some(m=>m.kind==='home'),false);assert.ok(model.markers.some(m=>m.name==='上层'&&m.key==='5,4'));
 });

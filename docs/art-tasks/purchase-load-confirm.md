@@ -4,7 +4,7 @@
 ## 2026-11-02：猫猫弹药自动存入载具并补给
 本轮按用户要求，猫猫弹药优先放入背包，超出可移动负荷的部分存入当前自有载具；背包备用弹药耗尽后换弹自动取用该车的同类库存，无距离要求。取用仅补本次弹匣所需且不新增背包超载。沿用原有库存、计重及存档结构，无旧存档迁移；无自有载具时保留原背包负重确认，车辆满载仍须确认。
 
-UI复用补给页原正文、库存和确认底板，只补充背包／载具去向与自动补给说明；拆分购买时确认和结果都说明各自发数。保持森林绿、奶油底色、44px按钮及现有分层，未新增图片、动画或画布；世界锚点、角色动作与碰撞不适用。正式入口另含src/combat/supply-ammo.js及src/progression/load-weight.js，designCriterion仍为purchase-load-confirm。
+UI复用补给页原正文、库存和确认底板，只补充背包／载具去向与自动补给说明；拆分购买时确认和结果都说明各自发数。保持森林绿、奶油底色、44px按钮及现有分层，未新增图片、动画或画布；世界锚点、角色动作与碰撞不适用。正式入口另含src/combat/supply-ammo.js及src/progression/inventory/load-weight.js，designCriterion仍为purchase-load-confirm。
 
 验收通过：40项相关Node测试覆盖分流、购买／制作／批量、满载边界、自动补弹、当前车辆与活动隔离、存档、失败回滚和原后勤教学；未运行全量测试。原维修测试在main也失败，其北场断言已按现有REPAIR_PARKING_SPOTS修正为维修站露天车位，生产维修逻辑未改。新活动隔离测试首次错误赋值只读fireActive，改用独立活动上下文后定向复测通过。
 
@@ -18,7 +18,7 @@ UI复用补给页原正文、库存和确认底板，只补充背包／载具去
 统一森林绿与奶油底色，44px触控；320窄屏及844横屏正文滚动。无新图片、字体、画布、动画或世界坐标；图层／碰撞／角色动作／PNG精修不适用。重量逻辑读取正式公式，不改真实负重或价格。
 
 ## 正式入口与验收
-src/core/supplies.js、src/ui/supply-load-confirm.js、src/ui/field-equipment.js；designCriterion：purchase-load-confirm。
+src/core/vehicles/supplies.js、src/ui/supply-load-confirm.js、src/ui/field-equipment.js；designCriterion：purchase-load-confirm。
 通过。
 
 - 8项定向Node检查通过：既有分流／附近补给／交易事务，未满载直接购买，恰好上限确认，已超载确认，三种道具及通用子弹，载具炮弹购买与制作（预留驾驶员／背包），过期重量／不同商品重确认，保存失败与余额不足不扣款。

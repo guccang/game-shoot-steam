@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game, freshProgress, validateProgress, WEAPONS } from '../src/game.js';
 import { effectiveWeapon, masteryInfo } from '../src/config/weapon-mods.js';
-import { awardMastery, changeWeaponMod } from '../src/progression/mastery.js';
+import { awardMastery, changeWeaponMod } from '../src/progression/player/mastery.js';
 import { fireBallistics } from '../src/combat/ballistics.js';
 
 test('旧档保留装备，缺省新字段；非法熟练度和改装不能解锁收益', () => {

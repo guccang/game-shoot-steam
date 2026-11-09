@@ -3,6 +3,7 @@ import { isSummonEnergy } from '../config/summon-energy.js';
 // 紧凑战斗仪表：SVG 图标与圆环只读取规则快照，不使用独立动画计时。
 const GLYPHS = {
   hovercraft: '<rect x="2" y="14" width="20" height="6" rx="3"/><path d="M6 14v-4h9l4 4M5 17h14"/><circle cx="6" cy="6" r="4"/><path d="m4 4 4 4m0-4-4 4"/>',
+  waterbag: '<path d="M9 3h6v4l4 4 1 7-3 3H7l-3-3 1-7 4-4zM9 7h6M7 18h10"/><path d="M12 10s-3 4-3 5a3 3 0 0 0 6 0c0-1-3-5-3-5z"/>',
   ammo: '<path d="M10 5h4l2 4v12H8V9zM8 10h8M8 18h8"/>',
   shield: '<path d="M12 2 21 6v7c0 5-9 9-9 9S3 18 3 13V6z"/><path d="m8 12 3 3 5-6"/>',
   energy: '<path d="m12 3 8 9-8 9-8-9zM12 7l4 5-4 5-4-5z"/>',
@@ -31,6 +32,11 @@ export function ammoRingState(
   weapon,
   { returning = false, prefix = '', stopped = '', skill = null } = {},
 ) {
+  if(weapon.id==='water'){
+    const fill=Math.max(0,Math.min(1,magazine.ammo/weapon.magazineSize)),percent=Math.floor(fill*100),filling=magazine.waterFilling,reloading=!filling&&magazine.remaining>0;
+    return {fill:reloading?1-magazine.remaining/weapon.reloadTime:fill,state:filling||reloading?'reloading':'ready',icon:'waterbag',count:filling?percent+'%':magazine.ammo,mark:filling||reloading?'reload':'',inner:skill,
+      label:`${weapon.name}：水袋 ${magazine.ammo} / ${weapon.magazineSize}（${percent}%）${filling?'，正在取水（战斗中可补水）':reloading?'，正在用潮汐水罐装填，剩余 '+magazine.remaining.toFixed(1)+' 秒':'，靠近河湖补水或使用潮汐水罐'}${stopped}`,value:magazine.ammo,max:weapon.magazineSize};
+  }
   if(weapon.attackKind==='defense'){
     const count=Math.ceil(magazine.ammo),waiting=magazine.remaining>0;
     return {fill:magazine.ammo/weapon.magazineSize,state:waiting?'reloading':'ready',icon:'shield',count,mark:waiting?'wait':count<weapon.magazineSize?'charge':'',inner:null,

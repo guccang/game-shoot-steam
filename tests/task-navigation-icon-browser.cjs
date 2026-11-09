@@ -12,7 +12,7 @@ async browserPage=>{
   if(await page.locator('#mainline-info').count())throw Error('问号仍存在');records.push(result);return result;
  }
  await page.setViewportSize({width:320,height:568});
- await page.evaluate(async()=>{(await import('/src/core/mainline-manager.js')).updateMainline(a.game,.05);a.refresh();});
+ await page.evaluate(async()=>{(await import('/src/core/story/mainline-manager.js')).updateMainline(a.game,.05);a.refresh();});
  if(!await page.evaluate(()=>a.game.progress.mainline.phase==='report'&&a.game.progress.mainline.navigationEnabled!==false&&a.game.progress.mainline.seen.navigation===0))throw Error('认路任务仍强制操作寻路开关');
  if(await page.locator('#task-navigation-toggle.operation-source').count())throw Error('仍高亮要求切换寻路');
  await inspect();await page.screenshot({path:'output/navigation-toggle/icon-introduction-320.png'});
@@ -30,7 +30,7 @@ async browserPage=>{
  await page.evaluate(async()=>{const p=(await import('/src/progression/progress.js')).freshRangerProgress();Object.assign(p.arrival,{phase:'repair',keys:true,wood:80});p.wood=80;a.game.progress=p;a.game.reset();a.game.state='playing';a.refresh();});
  await inspect();await page.locator('#task-navigation-toggle').tap();await page.screenshot({path:'output/navigation-toggle/icon-arrival-off-320.png'});
  await page.locator('#arrival-goal').tap();if(!await page.evaluate(()=>a.game.progress.mainline.navigationEnabled))throw Error('入职目标未恢复寻路');
- await page.evaluate(async()=>{const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);g.progress=p;g.reset();g.state='playing';const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('故事夹具无法进入');g.story.phase='prepare';g.chooseStoryLoadout('frost-guard');g.startStoryStage();Object.assign(g.story,{stageId:'TO_RELAY',phase:'active',dialogue:null});g.state='playing';a.refresh();});
+ await page.evaluate(async()=>{const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);g.progress=p;g.reset();g.state='playing';const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('故事夹具无法进入');g.story.phase='prepare';g.chooseStoryLoadout('frost-guard');g.startStoryStage();Object.assign(g.story,{stageId:'TO_RELAY',phase:'active',dialogue:null});g.state='playing';a.refresh();});
  await inspect();await page.screenshot({path:'output/navigation-toggle/icon-story-on-320.png'});await page.locator('#task-navigation-toggle').tap();await inspect();
  if(!await page.locator('#story-navigation').isHidden())throw Error('故事方向仍然显示');await page.screenshot({path:'output/navigation-toggle/icon-story-off-320.png'});
  if(errors.length)throw Error(errors.join(' / '));

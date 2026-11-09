@@ -38,7 +38,7 @@
 - 透明：原 Canvas 半透明地坪；不增加不透明贴图。
 - 碰撞：不新增碰撞；复用正式倒车路径检测。主路中心线 50 单位内不候停，侧宽限制为半格宽，前向仅多留 18 单位。
 - 昼夜：共用正式色调和地面颜色。
-- 文件：src/config/parking.js、src/world/workshop.js、src/core/parking.js；验收位于 output/playwright/parking-off-road/。
+- 文件：src/config/parking.js、src/world/workshop.js、src/core/vehicles/parking.js；验收位于 output/playwright/parking-off-road/。
 - 预算：新增纹理、解码、缓存均为 0；主路距离只在候停区域命中后检查。
 
 ## 4 动画任务补充

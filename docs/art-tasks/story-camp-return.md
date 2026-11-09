@@ -22,7 +22,7 @@
 
 ## 5 生成指令
 
-不使用 imagegen：本次没有美术资产制作，修复正式场景筛选条件和状态迁移。实现位于 src/rendering/story-camp.js、src/rendering/renderer.js、src/core/story-definition.js、src/core/story-manager.js、src/core/game.js 及送药章节配置。
+不使用 imagegen：本次没有美术资产制作，修复正式场景筛选条件和状态迁移。实现位于 src/rendering/story-camp.js、src/rendering/renderer.js、src/core/story/story-definition.js、src/core/story/story-manager.js、src/core/game.js 及送药章节配置。
 
 ## 6 验收记录
 

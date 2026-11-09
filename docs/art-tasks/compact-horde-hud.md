@@ -133,7 +133,7 @@ designCriterion：compact-horde-hud
 | 预算与保留项 | 仅复用现有DOM血条、正式猫与领主/车体绘制器，无新增运行图集、视频、动画或解码缓存。世界碰撞、通行、水界、独立操枪和连续动作未改，新增动画源片及美术变体不适用。 |
 | 测试与存档 | `node --test tests/camp-defense-growth.test.mjs` 8项通过：覆盖两处营门、10波属性、跨场成长、结算/保存失败、旧领主比例和旧高配额波次迁移。旧档已击杀总数保留，波内数量按新上限续接，不会重复领奖或卡波。只测试本次改动及直接依赖，未跑全量测试。 |
 
-正式入口：[波次配置](../../src/config/camp-defense.js)、[出生与波次推进](../../src/core/camp-defense.js)、[兽潮HUD](../../src/ui/camp-defense.js)、[共用领主HUD](../../src/ui/hud.js)、[工作台读取](../../src/rendering/visual-review.js)。浏览器脚本：[horde-wave-balance-browser.cjs](../../tests/horde-wave-balance-browser.cjs)，[结果](../art-reference/horde-wave-balance/result.json)。
+正式入口：[波次配置](../../src/config/camp-defense.js)、[出生与波次推进](../../src/core/camp/camp-defense.js)、[兽潮HUD](../../src/ui/camp-defense.js)、[共用领主HUD](../../src/ui/hud.js)、[工作台读取](../../src/rendering/visual-review.js)。浏览器脚本：[horde-wave-balance-browser.cjs](../../tests/horde-wave-balance-browser.cjs)，[结果](../art-reference/horde-wave-balance/result.json)。
 
 长期截图：[390白天](../art-reference/horde-wave-balance/390-day.png)、[390夜晚](../art-reference/horde-wave-balance/390-night.png)、[320白天](../art-reference/horde-wave-balance/320-day.png)、[320夜晚](../art-reference/horde-wave-balance/320-night.png)、[短屏白天](../art-reference/horde-wave-balance/short-day.png)、[短屏夜晚](../art-reference/horde-wave-balance/short-night.png)、[宽视口白天](../art-reference/horde-wave-balance/wide-day.png)、[宽视口夜晚](../art-reference/horde-wave-balance/wide-night.png)。
 

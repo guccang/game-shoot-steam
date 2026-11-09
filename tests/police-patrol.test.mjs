@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {HEROES} from '../src/config/heroes.js';
 import {COLLECTED_VEHICLES,vehicleMaxHp,vehicleSpeed} from '../src/config/vehicles.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
 import {createVehicle,canMountVehicleWeapon} from '../src/combat/vehicle.js';
 import {advanceVehicleWheels} from '../src/combat/vehicle-motion.js';
-import {createWeaponTrialScene} from '../src/core/weapon-trial-scene.js';
+import {createWeaponTrialScene} from '../src/core/workshop/weapon-trial-scene.js';
 import {heroTalent} from '../src/config/hero-talents.js';
-import {campPurchasePrice} from '../src/progression/camp-level.js';
-import {equipmentRecipe} from '../src/progression/equipment-goals.js';
+import {campPurchasePrice} from '../src/progression/camp/camp-level.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
 import {MACHINE_SOUNDS,machineEngineSample} from '../src/platform/audio-machines.js';
 import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
 

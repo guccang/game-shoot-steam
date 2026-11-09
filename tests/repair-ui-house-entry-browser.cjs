@@ -28,7 +28,7 @@ async page=>{
   await t.waitForFunction(()=>a.game.cottage?.kind==='cottage');const entered=await t.evaluate(()=>({kind:a.game.cottage.kind,countdown:a.game.cottageEntry}));
   await t.screenshot({path:'output/playwright/repair-ui-house-entry/320-inside.png'});
   // 驾驶时只显示下车说明，不能提供绕过核心限制的进屋按钮。
-  await t.evaluate(async()=>{(await import('/src/core/cottage.js')).leaveCottage(a.game);a.game.vehicle.active=true;a.refresh();});
+  await t.evaluate(async()=>{(await import('/src/core/home/cottage.js')).leaveCottage(a.game);a.game.vehicle.active=true;a.refresh();});
   await t.waitForFunction(()=>document.querySelector('#mainline-hud b').textContent.includes('先下车'));
   if(await entry.count()&&await entry.isVisible())throw Error('驾驶时误显示进屋入口');
   if(errors.length)throw Error(errors.join('\n'));return {checks,entered,label,errors};

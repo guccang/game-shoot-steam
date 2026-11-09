@@ -1,13 +1,14 @@
 import {createCurrentCat} from './current-cat.js';
+import {workshopMaterialCount} from '../progression/workshop/workshop-materials.js';
 import {equipmentLevelCap} from '../config/legendary-workshop.js';
 import {heroGrowthMarkup} from './hero-growth.js';
 import {challengeLevelMarkup} from './challenge-feedback.js';
-import {campPurchasePrice} from '../progression/camp-level.js';
-import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
+import {campPurchasePrice} from '../progression/camp/camp-level.js';
+
 import { i18nText, i18nHtml } from "../i18n/index.js";
 import { isSummonEnergy, summonRegenRate } from '../config/summon-energy.js';
 import { weaponGrowth, heroHealth, upgradeHint, challengeDescription, economyFor, requiredTier } from '../config/economy.js';
-import { equipmentRecipe } from '../progression/equipment-goals.js';
+import { equipmentRecipe } from '../progression/workshop/equipment-goals.js';
 import { drawWorkshopEquipment } from '../rendering/workshop.js';
 // 营地养成与图标控制器，规则来自 progression，画像来自独立绘制模块。
 import { workshopWeapons } from '../config/weapon-categories.js';
@@ -22,7 +23,7 @@ import { funnelWeapon } from '../config/funnel-loadouts.js';
 import { drawFunnelIcon } from '../rendering/funnel.js';
 import {challengeRankIcon} from '../rendering/challenge-rank.js';
 import { requirementsMarkup } from './equipment-goals.js';
-import { canPurchaseEquipment } from '../progression/equipment-goals.js';
+import { canPurchaseEquipment } from '../progression/workshop/equipment-goals.js';
 import { priceIcons } from '../rendering/resource-icons.js';
 import { upgradePriceMarkup } from './upgrade-price.js';
 import { createEventScope } from '../platform/events.js';
@@ -81,6 +82,7 @@ export function createInventory({ game, root, dialogs, onChange, onInventoryRend
         modules.map(w=>isSummonEnergy(w)?i18nText("ui.inventory.fe1cdd24e8", { p0: (summonRegenRate(w).toFixed(2)) }):i18nText("ui.inventory.e9dc5dd213", { p0: (w.reloadTime.toFixed(1)) })).join(' · ');
       $('intro-reload-label').textContent=i18nText("ui.inventory.f68eafd7c0");
     }
+    if(weapon.id==='water'){$('intro-resource-label').textContent='水袋容量';$('intro-weapon-ammo').textContent=weapon.magazineSize+' 次喷射';$('intro-reload-label').textContent='岸边补满';$('intro-weapon-reload').textContent=Number(weapon.reloadTime.toFixed(2))+' 秒';}
     if(weapon.attackKind==='defense'){$('intro-weapon-ammo').textContent=weapon.magazineSize+' 点护盾';$('intro-weapon-reload').textContent='每秒恢复 '+weapon.shieldRegen+' 点';}
     const canvas = $('intro-weapon-icon'),
       c = canvas.getContext('2d');
@@ -120,12 +122,12 @@ export function createInventory({ game, root, dialogs, onChange, onInventoryRend
         const unlocked = heroes || !!level || isWeaponUnlocked(p, index);
         const requirement = !level ? heroes?challengeLevelMarkup(p):requirementsMarkup(p, 'weapons', index) : '';
         const afford = !heroes && !level ? canPurchaseEquipment(p, 'weapons', index)
-          : p.coins >= cost.coins && p.wood >= cost.wood,
+          : p.coins >= cost.coins && (heroes?p.wood:workshopMaterialCount(p,'wood')) >= cost.wood,
           maxed = level >= equipmentLevelCap(p,tab);
         const stats = heroes
           ? `${i18nHtml("ui.inventory.45bc77bc1c")} <b>${heroHealth(item.hp,level,p)}</b></span><span>${i18nHtml("ui.inventory.8d80b1f458")} <b>${item.speed}</b>`
           : item.attackKind==='defense'?`护盾容量 <b>${item.magazineSize}</b></span><span>每秒恢复 <b>${item.shieldRegen}</b></span><span>破盾等待 <b>${item.shieldBreakDelay} 秒</b>`
-          : `${['funnel', 'drone'].includes(item.controller) ? i18nText("ui.inventory.d0f2f4ee8b") : i18nText("ui.inventory.30e1196888")} <b>${Math.round(item.damage * weaponGrowth(level,p))}</b></span><span>${['funnel', 'drone'].includes(item.controller) ? i18nText("ui.inventory.83c483ddb9") : i18nText("ui.inventory.b6e5c86950")} <b>${i18nHtml("ui.inventory.fe1cdd24e8", { p0: ((1 / item.interval).toFixed(1)) })}</b></span><span>${i18nHtml("ui.inventory.5262a412ad")} <b>${item.range}</b></span><span>${item.independentSupply ? i18nText("ui.inventory.abd8fc9945") : item.resourceType === 'energy' ? (item.controller ? i18nText("ui.inventory.7b692d13e8") : i18nText("ui.inventory.1c69b1aa72")) : i18nText("ui.inventory.f16f121dc0")} <b>${item.magazineSize}</b></span><span>${isSummonEnergy(item)?i18nText("ui.inventory.964669e7ae"):item.independentSupply ? i18nText("ui.inventory.e470d32779") : item.resourceType === 'energy' ? i18nText("ui.inventory.c0c253c271") : i18nText("ui.inventory.eea36850d9")} <b>${isSummonEnergy(item)?i18nText("ui.inventory.7fa5be9778", { p0: (summonRegenRate(item).toFixed(2)) }):i18nText("ui.hud.67d54f9c74", { p0: (item.reloadTime.toFixed(1)) })}</b>`;
+          : `${['funnel', 'drone'].includes(item.controller) ? i18nText("ui.inventory.d0f2f4ee8b") : i18nText("ui.inventory.30e1196888")} <b>${Math.round(item.damage * weaponGrowth(level,p))}</b></span><span>${['funnel', 'drone'].includes(item.controller) ? i18nText("ui.inventory.83c483ddb9") : i18nText("ui.inventory.b6e5c86950")} <b>${i18nHtml("ui.inventory.fe1cdd24e8", { p0: ((1 / item.interval).toFixed(1)) })}</b></span><span>${i18nHtml("ui.inventory.5262a412ad")} <b>${item.range}</b></span><span>${item.id==='water'?'水袋容量':item.independentSupply ? i18nText("ui.inventory.abd8fc9945") : item.resourceType === 'energy' ? (item.controller ? i18nText("ui.inventory.7b692d13e8") : i18nText("ui.inventory.1c69b1aa72")) : i18nText("ui.inventory.f16f121dc0")} <b>${item.magazineSize}</b></span><span>${item.id==='water'?'岸边补满':isSummonEnergy(item)?i18nText("ui.inventory.964669e7ae"):item.independentSupply ? i18nText("ui.inventory.e470d32779") : item.resourceType === 'energy' ? i18nText("ui.inventory.c0c253c271") : i18nText("ui.inventory.eea36850d9")} <b>${isSummonEnergy(item)?i18nText("ui.inventory.7fa5be9778", { p0: (summonRegenRate(item).toFixed(2)) }):i18nText("ui.hud.67d54f9c74", { p0: (item.reloadTime.toFixed(1)) })}</b>`;
         return `<article class="item-card ${equipped ? 'equipped' : ''}">${!heroes && equipped ? `<div class="equipped-heading">${i18nHtml("ui.inventory.96dab22a52")}</div>` : ''}<div class="item-top"><canvas class="portrait" width="240" height="200" data-portrait="${index}" aria-label="${i18nHtml("ui.inventory.7114abdbaf", { p0: (item.name) })}"></canvas><div class="item-title"><h3>${item.name}<span class="level">${level ? i18nHtml("common.level", { p0: level }) : i18nText("ui.inventory.2f0baebfe7")}</span></h3><small>${heroes ? item.breed : item.title}</small><span class="item-tag">${heroes ? item.trait : item.description}</span></div></div>${!heroes && index === 12 ? `<small class="module-note">${i18nHtml("ui.inventory.77fdd14c4d")}</small>` : ''}<div class="item-stats ${heroes?'hero-stats':''} ${!heroes && ['funnel', 'drone'].includes(item.controller) ? 'funnel-stats' : ''}"><span>${stats}</span></div>${heroes?heroGrowthMarkup(p,index):''}${!heroes && index === 12 && level ? `<button class="funnel-config-button" data-funnel-config aria-haspopup="dialog" aria-controls="funnel-dialog">${i18nHtml("ui.inventory.5ecea50c3e")} <span>${i18nHtml("ui.inventory.1df0da7f6b")}</span></button>` : ''}${heroes || !level || item.attackKind==='defense' ? '' : `<details class="weapon-details" data-weapon-details="${index}" ${expandedWeapons.has(index) ? 'open' : ''}><summary>${i18nHtml("ui.inventory.8f8129e9b4", { p0: (masteryInfo(p, index).level) })}</summary>${weaponProgressMarkup(p, index)}</details>`}${requirement}<div class="card-buttons">${level ? `<button class="equip ${equipped ? 'equipped-label' : ''}" data-action="equip" data-index="${index}" ${equipped ? 'disabled' : ''}>${equipped ? i18nText("ui.inventory.19d9d1b544") : heroes ? i18nText("ui.inventory.95b16460ff") : i18nText("ui.inventory.36ab55267a")}</button>` : ''}<button ${!level&&!heroes?'data-shop-kind="weapons" data-shop-index="'+index+'" data-shop-name="'+item.name+'"':''} data-action="${level ? 'upgrade' : 'buy'}" data-index="${index}" ${!afford || maxed || !unlocked ? 'disabled' : ''} title="${!unlocked ? challengeDescription(economyFor(p).weapons[index].gate,economyFor(p)) : maxed ? i18nText("ui.inventory.523372b9bb") : i18nText("ui.inventory.f15aec2029", { p0: (cost.coins), p1: (cost.wood) })}">${!unlocked ? challengeRankIcon(requiredTier(cost.gate,economyFor(p)))+i18nText("ui.inventory.8a558786cc") : maxed ? i18nText("progression.workshop.d6d8e1de4a") : level ? i18nText("ui.inventory.4b17c59d2f", { p0: (upgradeHint(p,heroes?'heroes':'weapons',index,level)) }) : heroes ? i18nText("ui.inventory.79c0549e4f") : '加入购物车'}${maxed ? '' : `<span class="cost">${level ? upgradePriceMarkup(p,heroes?'heroes':'weapons',index,level) : priceIcons(cost)}</span>`}</button></div></article>`;
       })
       .join('');

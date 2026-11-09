@@ -38,6 +38,12 @@ function buildPathIndex(segments) {
  const mid=segments.length>>1;return {...box,children:[buildPathIndex(segments.slice(0,mid)),buildPathIndex(segments.slice(mid))]};
 }
 const pathIndex=buildPathIndex(PATHS.flatMap(path=>path.slice(1).map((b,i)=>{const a=path[i];return {a,b,left:Math.min(a.x,b.x),right:Math.max(a.x,b.x),top:Math.min(a.y,b.y),bottom:Math.max(a.y,b.y)};})));
+// 地貌生成查询道路包围树，避免为每个候选山湖遍历全世界的道路采样点。
+export function pathBoundsOverlap(bounds,pad=0){
+ const hit=b=>b.left<=bounds.x+bounds.w+pad&&b.right>=bounds.x-pad&&b.top<=bounds.y+bounds.h+pad&&b.bottom>=bounds.y-pad;
+ function visit(node){return hit(node)&&(node.segments?node.segments.some(hit):node.children.some(visit));}
+ return visit(pathIndex);
+}
 // 包围盒距离给出真实距离下界，远处枝条可安全跳过。
 function boxDistance(node,p){return Math.max(node.left-p.x,0,p.x-node.right)**2+Math.max(node.top-p.y,0,p.y-node.bottom)**2;}
 // 返回精确线段距离；只改变查询开销，营地与道路留白阈值保持不变。

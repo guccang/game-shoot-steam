@@ -5,10 +5,10 @@ import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {mainlineActors,mainlineTask,completeMainline} from '../src/core/mainline-manager.js';
+import {mainlineActors,mainlineTask,completeMainline} from '../src/core/story/mainline-manager.js';
 import {storyObjects} from '../src/rendering/story-props.js';
 import {createSceneNpcContinuity,sceneNpcObjects} from '../src/rendering/scene-npc-continuity.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 import {STORY_ID} from '../src/config/story.js';
 // 只准备已开放营地，使用正式交付与章节入口，渲染视野覆盖人物现场。
 function setup(){const p=freshProgress();p.arrival={phase:'complete',keys:true};p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;const g=new Game(p);g.state='playing';g.enemies=[];g.mainlinePersist=()=>true;return g;}

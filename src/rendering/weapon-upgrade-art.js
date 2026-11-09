@@ -25,6 +25,17 @@ function frame(c,x,y,w,h,color){
 
 // 正式战场、工坊小件及拆装共用；返回false时保留原版一级或车体部件。
 export function drawUpgradePart(c,index,key,level){
+  // 水枪扩容件采用柔软水袋，袋口、底部折边与水滴区别于刚性弹罐。
+  if(index===5&&key==='capacity'){
+    const h=16+Math.min(4,Math.max(0,level-1))*2;
+    c.beginPath();c.moveTo(-4,-h/2);c.lineTo(4,-h/2);
+    c.bezierCurveTo(8,-h/2+3,10,h/2-3,8,h/2);c.lineTo(-7,h/2);
+    c.bezierCurveTo(-11,h/2-3,-8,-h/2+3,-4,-h/2);c.closePath();
+    c.fillStyle='#93bcb4';c.fill();c.strokeStyle=outline;c.lineWidth=1.5;c.stroke();
+    box(c,-4,-h/2-3,8,4,1,'#fff6dc',outline,1.2);
+    poly(c,[[0,-5],[-3,0],[-2,3],[2,3],[3,0]],'#d8eee2',outline,.8);
+    c.beginPath();c.moveTo(-5,h/2-3);c.lineTo(5,h/2-3);c.stroke();return true;
+  }
   if(index===2||level<=1||['armor','engine'].includes(key))return false;
   const family=upgradeFamily(index),p=palette(index),n=Math.min(4,level-1),tier=key==='damage'?Math.min(3,Math.floor((level-1)/5)):Math.floor(n/2);
   const detail=key==='damage'?(level-1)%5:n;

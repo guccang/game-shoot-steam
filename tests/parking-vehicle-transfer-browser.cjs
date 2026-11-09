@@ -15,13 +15,13 @@ async page=>{
  if(!(await page.locator('#ws-feedback').innerText()).includes('北停车场'))throw Error('购买去向不清楚');
  if(await page.evaluate(()=>a.game.vehicle.index)!==5)throw Error('购买直接换了随行车');
  await page.locator('#ws-equip').click();
- const nav=await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));
+ const nav=await page.evaluate(async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game));
  if(!nav?.site.id.startsWith('north-'))throw Error('未导航到实际车位');
- await page.evaluate(async()=>{const g=a.game,s=(await import('/src/core/camp-parking.js')).parkedOwned(g).find(s=>s.record.hull===0);Object.assign(g.player,{x:s.x+64,y:s.y+18,vx:0,vy:0});a.renderer.camera.time=null;});
+ await page.evaluate(async()=>{const g=a.game,s=(await import('/src/core/vehicles/camp-parking.js')).parkedOwned(g).find(s=>s.record.hull===0);Object.assign(g.player,{x:s.x+64,y:s.y+18,vx:0,vy:0});a.renderer.camera.time=null;});
  await page.locator('[data-parked-hull="0"]').click();
  if(!await page.evaluate(()=>a.game.vehicle.active&&a.game.vehicle.index===0&&a.game.progress.campParking.owned.some(r=>r.hull===5)))throw Error('现场换乘未留下电动车');
  await page.locator('#vehicle-button').click();
- await page.evaluate(async()=>{const g=a.game,s=(await import('/src/core/camp-parking.js')).parkedOwned(g).find(s=>s.record.hull===5);Object.assign(g.player,{x:s.x+64,y:s.y+18,vx:0,vy:0});a.renderer.camera.time=null;window.baseCapacity=g.weapon().magazineSize;});
+ await page.evaluate(async()=>{const g=a.game,s=(await import('/src/core/vehicles/camp-parking.js')).parkedOwned(g).find(s=>s.record.hull===5);Object.assign(g.player,{x:s.x+64,y:s.y+18,vx:0,vy:0});a.renderer.camera.time=null;window.baseCapacity=g.weapon().magazineSize;});
  await page.locator('[data-parked-hull="5"]').click();
  const boosted=await page.evaluate(()=>a.game.weapon().magazineSize);
  if(boosted!==await page.evaluate(()=>Math.floor(baseCapacity*1.3)))throw Error('电动车倍率错误');
@@ -69,9 +69,9 @@ async page=>{
  await page.evaluate(async()=>{
   const g=a.game,{MAINLINE_IDS}=await import('/src/config/mainline.js');
   g.progress.mainline.completed=MAINLINE_IDS.slice(0,MAINLINE_IDS.indexOf('first-vehicle'));g.progress.mainline.phase='doing';g.progress.mainline.seen.drive=0;g.mainlineSpeech=null;
-  const spot=(await import('/src/core/camp-parking.js')).parkedOwned(g).find(s=>s.record.hull===0);
+  const spot=(await import('/src/core/vehicles/camp-parking.js')).parkedOwned(g).find(s=>s.record.hull===0);
   Object.assign(g.player,{x:spot.x+64,y:spot.y+18,vx:0,vy:0});a.renderer.camera.time=null;
-  (await import('/src/core/world-navigation.js')).requestMainlineNavigation(g);a.refresh();
+  (await import('/src/core/navigation/world-navigation.js')).requestMainlineNavigation(g);a.refresh();
  });
  await page.locator('#mainline-hud').click();await page.locator('#ws-equip').click();
  if(!await page.evaluate(()=>a.game.vehicle.active&&a.game.vehicle.index===0))throw Error('主线换乘操作未生效');

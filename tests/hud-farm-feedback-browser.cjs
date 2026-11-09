@@ -60,7 +60,7 @@ async page=>{
  await page.screenshot({path:'output/playwright/hud-farm/realm-layout.png'});
  await page.evaluate(()=>{a.game.leaveRealm();a.refresh();});
  // 故事任务卡原本是穿透点击的 section，整条开关也必须阻止误触战场摇杆。
- await page.evaluate(async()=>{const g=a.game,posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('故事入口不可用');g.story.phase='prepare';g.chooseStoryLoadout('frost-guard');g.startStoryStage();Object.assign(g.story,{stageId:'TO_RELAY',phase:'active',dialogue:null});g.state='playing';a.refresh();});await page.waitForTimeout(150);
+ await page.evaluate(async()=>{const g=a.game,posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory('sunleaf-01','sunleaf-post'))throw Error('故事入口不可用');g.story.phase='prepare';g.chooseStoryLoadout('frost-guard');g.startStoryStage();Object.assign(g.story,{stageId:'TO_RELAY',phase:'active',dialogue:null});g.state='playing';a.refresh();});await page.waitForTimeout(150);
  await page.locator('#quest').click({position:{x:70,y:20}});
  if(await page.evaluate(()=>a.game.progress.mainline.navigationEnabled)!==false)throw Error('故事任务整条关闭失败');
  await page.locator('#quest').click({position:{x:70,y:20}});

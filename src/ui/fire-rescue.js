@@ -1,12 +1,12 @@
 import {isRainWeather} from '../world/season-weather.js';
 import {displayMeters} from '../world/distance-units.js';
-import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
+import {facilityOpen} from '../config/town-restoration.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 // 世界消防面板、告警和导航摘要；只提交核心意图，不修改战场对象。
 import {FIRE_RESCUE as C} from '../config/fire-rescue.js';
 import {drawFireCard} from '../rendering/fire-rescue.js';
-import {fireObjective,fireMotionText} from '../core/fire-rescue.js';
-import {fireTransferOpacity} from '../core/fire-transit.js';
+import {fireObjective,fireMotionText} from '../core/activities/fire-rescue.js';
+import {fireTransferOpacity} from '../core/activities/fire-transit.js';
 import {worldDistance} from '../world/coordinates.js';
 import {createActionCountdown} from './action-countdown.js';
 import {createEventScope} from '../platform/events.js';

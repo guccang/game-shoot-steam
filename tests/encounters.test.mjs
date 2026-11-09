@@ -3,10 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game, freshProgress} from '../src/game.js';
 import {ENCOUNTERS} from '../src/config/encounters.js';
-import {updateEncounters, resetEncounters} from '../src/core/encounter-manager.js';
-import {recycleEnemies} from '../src/core/enemy-manager.js';
+import {updateEncounters, resetEncounters} from '../src/core/battle/encounter-manager.js';
+import {recycleEnemies} from '../src/core/battle/enemy-manager.js';
 import {waveDifficulty} from '../src/config/waves.js';
-import {arrivalRecycleRadius} from '../src/core/enemy-arrival.js';
+import {arrivalRecycleRadius} from '../src/core/battle/enemy-arrival.js';
 import {terrainBlocked} from '../src/physics/terrain-navigation.js';
 import {worldDistance} from '../src/world/coordinates.js';
 

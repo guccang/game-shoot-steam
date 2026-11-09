@@ -56,7 +56,7 @@
 
 修复与接取在同一候选存档提交。清缴告示牌修好后，当前主线直接开始，目标指向告示牌；现场点击「接取并出发」即可前往清缴场，无需回 NPC 交修复或再接主线。沿用设施目录 before 与当前任务的映射，其他建筑前置同样衔接。提前修好的设施或旧档待接任务会在下一次正常游玩时补接；不会跳过未到达的任务，也不会改动 doing/report 阶段。首次小屋休息等独立教学仍保留。
 
-这只是接取阶段调整，不自动结算主线，不发放完成奖励，不自动启动战斗。完工写盘失败时建筑和接取均不生效，原地重试不再扣木头；旧档补接失败按1秒间隔重试，成功后不重复保存。运行入口为 progression/restoration-task.js、core/town-restoration.js 与 core/mainline-manager.js。
+这只是接取阶段调整，不自动结算主线，不发放完成奖励，不自动启动战斗。完工写盘失败时建筑和接取均不生效，原地重试不再扣木头；旧档补接失败按1秒间隔重试，成功后不重复保存。运行入口为 progression/camp/restoration-task.js、core/camp/town-restoration.js 与 core/story/mainline-manager.js。
 
 专项 tests/restoration-task-flow.test.mjs 的5项全部通过，覆盖13个设施映射、修复现场接取清缴、完工原子性、旧档重试及普通任务隔离。相关既有 mainline.test.mjs 与 town-restoration.test.mjs 共39项中27项通过、12项失败；未修改master上同样12项失败（旧主线夹具及电动车停车坐标预期），本轮无新增失败。
 

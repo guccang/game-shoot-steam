@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {openBasement} from '../src/progression/mining.js';
+import {openBasement} from '../src/progression/mining/mining.js';
 import {MINING,minePoint} from '../src/config/mining.js';
 import {mineTerrain} from '../src/config/mine-ecology.js';
 import {mineSurfaceAt} from '../src/world/mine-surface.js';
 import {mineFishingShore} from '../src/world/mine-fishing.js';
-import {enterMine} from '../src/core/mining.js';
-import {beginFishing,fishingControl,finishFishing,updateOutdoors,deployCamp} from '../src/core/outdoors.js';
+import {enterMine} from '../src/core/mining/mining.js';
+import {beginFishing,fishingControl,finishFishing,updateOutdoors,deployCamp} from '../src/core/activities/outdoors.js';
 let shorePoint;
 // 使用天然水格周边可站立岸点，不挖假水池或伪造落漂点。
 function scene(){

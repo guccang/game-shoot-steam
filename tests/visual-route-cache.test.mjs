@@ -1,8 +1,8 @@
 // 专项覆盖完整路线复用、局部绕障、可见光点及失效条件，不运行战斗测试。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createVisualRouteSession,advanceVisualRouteSession,updateVisualRouteIndex} from '../src/core/visual-route-cache.js';
-import {visibleRouteDots} from '../src/core/story-route.js';
+import {createVisualRouteSession,advanceVisualRouteSession,updateVisualRouteIndex} from '../src/core/navigation/visual-route-cache.js';
+import {visibleRouteDots} from '../src/core/navigation/story-route.js';
 import {SpatialGrid} from '../src/world/spatial-grid.js';
 import {questLineClear} from '../src/physics/quest-route.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
@@ -84,7 +84,8 @@ test('移动重算期间远处停车状态变化只更新搜索快照，不清�
  for(let i=0;i<1000;i++){pending=advanceVisualRouteSession(session,body,time,camera(body));if(pending.searchStarts===2)break;time+=1/60;}
  assert.ok(pending.planning);assert.equal(pending.searchStarts,2);
  body.parkingBarriers=[{x:6000,y:6000,width:72,height:60}];
- const updated=advanceVisualRouteSession(session,body,time+.01,camera(body));assert.ok(visibleRouteDots(updated,camera(body)).length>0);assert.equal(updated.searchStarts,3);
+ const updated=advanceVisualRouteSession(session,body,time+.01,camera(body));assert.ok(visibleRouteDots(updated,camera(body)).length>0);assert.equal(updated.searchStarts,2);
+ const finished=ready(session,body,camera(body),time+.02).state;assert.ok(finished.reachable);assert.equal(finished.searchStarts,2);
 });
 test('远处树木变化只更新索引，主路新增障碍才重新规划',()=>{
  const body={x:700,y:900,mapId:'forest'},session=createVisualRouteSession(body,{x:950,y:900},new SpatialGrid([]),0);const first=ready(session,body,camera(body));

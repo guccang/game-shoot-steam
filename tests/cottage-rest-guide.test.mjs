@@ -2,15 +2,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {bindEconomy,economyFor,RECOMMENDED_ECONOMY} from '../src/config/economy.js';
-import {defeatBoss} from '../src/core/boss-manager.js';
+import {defeatBoss} from '../src/core/battle/boss-manager.js';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {enterCottage,leaveCottage,updateCottage} from '../src/core/cottage.js';
-import {cottageRestGuideActive} from '../src/core/cottage-guide.js';
-import {mainlineObjective,updateMainline} from '../src/core/mainline-manager.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
-import {repairFacility,updateRestoration} from '../src/core/town-restoration.js';
+import {enterCottage,leaveCottage,updateCottage} from '../src/core/home/cottage.js';
+import {cottageRestGuideActive} from '../src/core/camp/cottage-guide.js';
+import {mainlineObjective,updateMainline} from '../src/core/story/mainline-manager.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
+import {repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
 // 只准备教学前置与落点，建造和睡眠均调用正式核心入口。
 function scene(repaired=true){
  const p=freshProgress();p.arrival={version:2,phase:'complete',keys:true,parked:false};p.restoration.repaired=repaired?['clearing','cottage']:['clearing'];

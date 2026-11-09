@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {planQuestRoute,questLineClear,QUEST_ROUTE_BUDGET} from '../src/physics/quest-route.js';
-import {storyRouteState,storyRouteDots} from '../src/core/story-route.js';
+import {storyRouteState,storyRouteDots} from '../src/core/navigation/story-route.js';
 import {WORLD} from '../src/world/coordinates.js';
 
 // 所有返回边再次用正式碰撞扫掠，不能以折点不碰撞代替整段可通行。

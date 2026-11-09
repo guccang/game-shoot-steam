@@ -5,10 +5,10 @@ import {Game,freshProgress} from '../src/game.js';
 import {MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {LIVING_REQUESTS} from '../src/config/living-world.js';
-import {setFarmTool} from '../src/core/farm.js';
-import {setTaskNavigationEnabled} from '../src/core/task-navigation.js';
-import {worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
-import {livingRouteStates} from '../src/core/living-route.js';
+import {setFarmTool} from '../src/core/farming/farm.js';
+import {setTaskNavigationEnabled} from '../src/core/navigation/task-navigation.js';
+import {worldNavigationObjective,requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {livingRouteStates} from '../src/core/navigation/living-route.js';
 import {drawStoryGuidance,drawStoryDestination} from '../src/rendering/story-guidance.js';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
 

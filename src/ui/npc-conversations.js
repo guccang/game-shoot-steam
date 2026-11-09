@@ -1,9 +1,9 @@
 // 自愿闲聊共用底部对白；只有打开与接话触发事务，重绘、关闭和查看任务均不增加交情。
 import {NPC_DIALOGUE_STAGES} from '../config/npc-dialogue.js';
-import {converseWithNpc} from '../core/npc-dialogue.js';
-import {campResidents,campResidentsVisible} from '../core/camp-routines.js';
-import {mainlineTask} from '../core/mainline-manager.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {converseWithNpc} from '../core/camp/npc-dialogue.js';
+import {campResidents,campResidentsVisible} from '../core/camp/camp-routines.js';
+import {mainlineTask} from '../core/story/mainline-manager.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {worldDistance} from '../world/coordinates.js';
 import {createEventScope} from '../platform/events.js';
 import {dockNpcDialogue} from './npc-dialogue-layout.js';

@@ -5,12 +5,12 @@ import assert from 'node:assert/strict';
 import { Game, freshProgress, validateProgress, WEAPONS } from '../src/game.js';
 import { BOSSES } from '../src/config/bosses.js';
 import { MATERIAL_KEYS, MATERIAL_CAP } from '../src/config/materials.js';
-import { awardMaterials } from '../src/progression/material-loot.js';
-import { equipmentRecipe, canPurchaseEquipment, trackEquipment, equipmentRequirements } from '../src/progression/equipment-goals.js';
-import { transactProgress } from '../src/progression/transactions.js';
-import { transactVehicle } from '../src/progression/vehicles.js';
-import { capturePatrol } from '../src/core/patrol-session.js';
-import { unlockedWeaponProgress } from '../src/progression/unlock-weapons.js';
+import { awardMaterials } from '../src/progression/economy/material-loot.js';
+import { equipmentRecipe, canPurchaseEquipment, trackEquipment, equipmentRequirements } from '../src/progression/workshop/equipment-goals.js';
+import { transactProgress } from '../src/progression/economy/transactions.js';
+import { transactVehicle } from '../src/progression/vehicles/vehicles.js';
+import { capturePatrol } from '../src/core/battle/patrol-session.js';
+import { unlockedWeaponProgress } from '../src/progression/workshop/unlock-weapons.js';
 import { simulateEconomy, ECONOMY_ROUTE } from '../scripts/economy-sim.mjs';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 

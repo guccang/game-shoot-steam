@@ -13,7 +13,7 @@
 不新增车辆动作或角色帧。保留拖车前往/挂钩/返厂、猫真实连续帧、停车与独立操枪。修理占位期间禁止P自动停车覆盖，完工转为普通停车占位；玩家取走后释放，满位等待不计维修工时。
 
 ## 5 生成指令与入口
-本次扩展现有Canvas动态显示，不调用imagegen。正式入口 src/rendering/vehicle-repair.js、src/core/repair-parking.js，验收入口 inspectRepairParkingDisplay，designCriterion: repair-parking-display。
+本次扩展现有Canvas动态显示，不调用imagegen。正式入口 src/rendering/vehicle-repair.js、src/core/vehicles/repair-parking.js，验收入口 inspectRepairParkingDisplay，designCriterion: repair-parking-display。
 
 ## 6 初版验收记录（北场交付已由下方新规则替代）
 结论：通过。5项新增车位测试、10项既有维修测试、9项负重/自行牵引测试通过。覆盖双车独立泊位、第三辆满位等待不计时、访客/路边车/倒车预约占位、物理碰撞、存档泊位去重、暂停、救援/自行交车及北场满位保管与释放。

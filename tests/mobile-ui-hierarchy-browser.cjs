@@ -64,8 +64,8 @@ async page => {
    await p.setViewportSize({width,height:width===320?568:844});
    await p.evaluate(async phase=>{
     const g=a.game,e=a.environment;Object.assign(g.player,{x:810,y:965});
-    (await import('/src/core/clearing-guide.js')).acceptClearingPost(g);
-    Object.assign(g.player,(await import('/src/progression/clearing-site.js')).clearingSite(g.progress));
+    (await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g);
+    Object.assign(g.player,(await import('/src/progression/story/clearing-site.js')).clearingSite(g.progress));
     g.vehicle.active=true;g.progress.coins=99999999;g.progress.wood=99999999;
     g.spawnEnemy(0,0,{x:g.player.x+110,y:g.player.y+45},{ambient:true});
     e.livingPreview=true;e.time=phase;e.weather='sun';document.querySelector('[data-weather=sun]').click();document.querySelector('[data-time='+phase+']').click();
@@ -80,7 +80,7 @@ async page => {
   for(const width of [320,390]){
    await p.setViewportSize({width,height:width===320?568:844});
    await p.evaluate(async()=>{
-    const g=a.game,c=await import('/src/config/mainline.js'),m=await import('/src/core/mainline-manager.js');
+    const g=a.game,c=await import('/src/config/mainline.js'),m=await import('/src/core/story/mainline-manager.js');
     g.progress.living.patrolActive=false;g.enemies=[];g.vehicle.active=false;g.mainlineSpeech=null;
     g.progress.mainline=(await import('/src/progression/progress.js')).freshProgress().mainline;g.progress.taskTracking={kind:'mainline'};
     Object.assign(g.player,c.MAINLINE_SITES[m.mainlineTask(g).site]);g.mainlineTalkDelay=0;m.updateMainline(g,.1);a.refresh();
@@ -96,7 +96,7 @@ async page => {
    await p.setViewportSize({width,height:width===320?568:844});
    await p.evaluate(async()=>{
     const g=a.game;g.mainlineSpeech=null;g.mainlineTalkDelay=999;
-    const resident=(await import('/src/core/living-world.js')).residentFor(g,'cook');
+    const resident=(await import('/src/core/camp/living-world.js')).residentFor(g,'cook');
     Object.assign(g.player,{x:resident.x,y:resident.y+40});a.refresh();a.living.open('cook');
    });
    await inspect('#living-dialog');await p.screenshot({path:`output/playwright/mobile-ui-hierarchy/neighbor-${width}.png`});

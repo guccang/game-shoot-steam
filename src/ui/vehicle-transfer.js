@@ -1,9 +1,9 @@
-import {vehicleBoardingPoint} from '../core/vehicle-boarding.js';
-import {vehicleService,personalFleet} from '../core/vehicle-repair.js';
+import {vehicleBoardingPoint} from '../core/vehicles/vehicle-boarding.js';
+import {vehicleService,personalFleet} from '../core/vehicles/vehicle-repair.js';
 import {REPAIR_CENTER} from '../config/vehicle-repair.js';
 // 载具页面的换乘状态与正式停车规则同源，场景任务借车不使用这个营地入口。
-import {parkingFleetApplies,vehicleParkingSite,canSelectParkingVehicle} from '../core/camp-parking.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {parkingFleetApplies,vehicleParkingSite,canSelectParkingVehicle} from '../core/vehicles/camp-parking.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 // 驾驶时可下车，步行时只标明实际位置并引导到车旁。
 export function vehicleTransferState(game,index){
  const owned=!!game.progress.vehicleHulls[index],current=game.vehicle.index===index;

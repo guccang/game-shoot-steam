@@ -33,10 +33,10 @@ async(page)=>{
  await page.emulateMedia({reducedMotion:'reduce'});await page.screenshot({path:'output/playwright/quest-light-path/reduced-320.png'});await page.emulateMedia({reducedMotion:'no-preference'});
  // 暂停与关闭详情恢复，目标切换不残留；抵达范围收起光点。
  await page.locator('#settings-button').click();
- if(await page.evaluate(async()=> (await import('/src/core/story-route.js')).storyRouteState(questApp.game))!==null)throw Error('暂停残留路径');
+ if(await page.evaluate(async()=> (await import('/src/core/navigation/story-route.js')).storyRouteState(questApp.game))!==null)throw Error('暂停残留路径');
  await page.locator('#settings-done').click();await page.waitForFunction(()=>questApp.game.state==='playing');await inspect('resume');
  const lifecycle=await page.evaluate(async()=>{
-  const g=questApp.game,{storyRouteState}=await import('/src/core/story-route.js');
+  const g=questApp.game,{storyRouteState}=await import('/src/core/navigation/story-route.js');
   Object.assign(g.story,{stageId:'Q30',routeId:'road',group:0});g.time+=1;const next=storyRouteState(g);if(next.site!=='ROAD1')throw Error('旧目标残留');
   Object.assign(g.player,{x:630,y:1040});const near=storyRouteState(g);if(!near.near||near.points.length)throw Error('抵达不清理');
   g.story.phase='dialogue';if(storyRouteState(g)!==null)throw Error('对白不清理');

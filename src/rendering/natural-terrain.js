@@ -1,3 +1,4 @@
+import {drawEarthGround} from './earth-landforms.js';
 import { gustStrength } from '../world/gust.js';
 import { drawWindRipple } from './wind-ripple.js';
 import {createRenderCanvas} from './canvas-recovery.js';
@@ -7,6 +8,7 @@ import { releaseArtCache } from '../art-styles/cache.js';
 import { mixRaster } from './season-raster.js';
 import { snowCap, snowDrift } from './winter-art.js';
 import { NATURAL_TERRAIN } from '../world/natural-terrain.js';
+import {mountainPeaks} from '../world/mountain-peaks.js';
 import { oval, poly } from './primitives.js';
 import { nightTexture } from './river.js';
 import { drawMountainShape } from './mountain-shapes.js';
@@ -15,6 +17,14 @@ import { shoreStone } from './shore-art.js';
 // 自然地貌美术：湖岸进入地面缓存，草顶岩山按脚底排序并复用昼夜图集。
 
 const mountainAtlas = new Map();
+// 宽山地由正常比例的错落群峰组成，复用六张标准图集，不放大单座岩柱铺满山地。
+function drawRegionalMountain(c,item,night,player,winter,view){
+ for(const peak of mountainPeaks(item)){
+  const {x,y}=peak;
+  if(view&&(x-110>view.x+view.w||x+110<view.x||y-190>view.y+view.h||y+60<view.y))continue;
+  drawMountain(c,peak,night,player,winter);
+ }
+}
 // 共用绘制与动作输入，风格差异由配置提供。
 function outlinePath(c, points, scale = 1, dx = 0, dy = 0) {
   c.beginPath();
@@ -27,7 +37,7 @@ function outlinePath(c, points, scale = 1, dx = 0, dy = 0) {
   c.closePath();
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function lake(c, item, winter) {
+function lake(c, item, winter,view=null) {
   c.save();
   c.translate(item.x, item.y);
   const points = item.outline;
@@ -53,14 +63,17 @@ function lake(c, item, winter) {
   outlinePath(c, points, 0.59, -19, 14);
   c.fillStyle = style.naturalTerrain.lake_fillStyleColor4;
   c.fill();
+  const lowY=style.naturalTerrain.fineDetails?-item.ry*1.2:-item.ry,lowX=style.naturalTerrain.fineDetails?-item.rx*1.2:-item.rx;
+  const startRow=view?Math.max(0,Math.floor((view.y-item.y-40-lowY)/style.naturalTerrain.lakeValue)):0;
+  const startCol=view?Math.max(0,Math.floor((view.x-item.x-50-lowX)/style.naturalTerrain.lakeValue2)):0;
   for (
-    let y = style.naturalTerrain.fineDetails ? -item.ry * 1.2 : -item.ry, row = 0;
-    y < (style.naturalTerrain.fineDetails ? item.ry * 1.2 : item.ry);
+    let y=lowY+startRow*style.naturalTerrain.lakeValue,row=startRow;
+    y < Math.min(-lowY,view?view.y+view.h-item.y+40:Infinity);
     y += style.naturalTerrain.lakeValue, row++
   )
     for (
-      let x = style.naturalTerrain.fineDetails ? -item.rx * 1.2 : -item.rx;
-      x < (style.naturalTerrain.fineDetails ? item.rx * 1.2 : item.rx);
+      let x=lowX+startCol*style.naturalTerrain.lakeValue2;
+      x < Math.min(-lowX,view?view.x+view.w-item.x+50:Infinity);
       x += style.naturalTerrain.lakeValue2
     ) {
       const px =
@@ -115,7 +128,8 @@ export function drawNaturalGround(c, view = null, winter = false) {
   for (const item of NATURAL_TERRAIN.obstacles) {
     const b = item.visualBounds;
     if (view && (b.x > view.x + view.w || b.x + b.w < view.x || b.y > view.y + view.h || b.y + b.h < view.y)) continue;
-    if (item.kind === 'lake') lake(c, item, winter);
+    if(item.earth)drawEarthGround(c,item,winter);
+    else if (item.kind === 'lake') lake(c, item, winter,view);
     else {
       c.save();
       c.translate(item.x, item.y);
@@ -278,7 +292,7 @@ function mountain(c, item, winter) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 function mountainSprite(item, night, winter) {
-  const key = `${item.id}:${item.variant}:${item.rx}:${item.height}:${winter}`;
+  const key = `${item.atlasId||item.id}:${item.variant}:${item.rx}:${item.height}:${winter}`;
   let entry = mountainAtlas.get(key);
   if (!entry) {
     const width = Math.ceil(item.rx * 2.6 + 24),
@@ -297,7 +311,11 @@ function mountainSprite(item, night, winter) {
   return entry;
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-export function drawMountain(c, item, night = 0, player = null, winter = false) {
+export function drawMountain(c, item, night = 0, player = null, winter = false,view=null) {
+  // 群峰继续复用原有昼夜和融雪混合，山地宽度不影响单张图集尺寸。
+  if(item.regional){
+    drawRegionalMountain(c,item,night,player,winter,view);return;
+  }
   const snow = Number(winter),
     frozen = snow >= 1;
   const entry = mountainSprite(item, night, frozen);

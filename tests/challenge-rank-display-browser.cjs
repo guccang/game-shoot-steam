@@ -7,7 +7,7 @@ async page=>{
  // 略过怪潮耗时，接取、召唤、命中和重复死亡保护仍走实际游戏逻辑。
  async function win(){
   await page.waitForFunction(()=>a.game.state==='playing'&&!document.querySelector('dialog[open]'));
-  await page.evaluate(async()=>{const g=a.game,{CLEARING_APPROACH}=await import('/src/config/clearing.js'),{clearingSite}=await import('/src/progression/clearing-site.js');Object.assign(g.player,CLEARING_APPROACH);g.mainlineSpeech=null;if(!(await import('/src/core/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))(clearingSite(g.progress)));g.wave=g.bossWave;g.waveKills=g.waveSpawned=(await import('/src/config/waves.js')).waveDifficulty(g.wave).total;g.bossReady=true;if(!g.summonBoss())throw Error('领主未入场');const boss=g.boss;g.hit(boss,1e9);g.hit(boss,1e9);});
+  await page.evaluate(async()=>{const g=a.game,{CLEARING_APPROACH}=await import('/src/config/clearing.js'),{clearingSite}=await import('/src/progression/story/clearing-site.js');Object.assign(g.player,CLEARING_APPROACH);g.mainlineSpeech=null;if(!(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('接取失败');Object.assign(g.player,((s)=>({x:s.x,y:s.y}))(clearingSite(g.progress)));g.wave=g.bossWave;g.waveKills=g.waveSpawned=(await import('/src/config/waves.js')).waveDifficulty(g.wave).total;g.bossReady=true;if(!g.summonBoss())throw Error('领主未入场');const boss=g.boss;g.hit(boss,1e9);g.hit(boss,1e9);});
   await page.locator('#task-reward-dialog').waitFor({state:'visible'});
  }
  for(let count=1;count<=3;count++){

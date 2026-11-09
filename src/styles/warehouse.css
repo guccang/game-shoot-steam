@@ -1,6 +1,7 @@
-/* 两个库存始终同屏，各自滚动；沿用背包图标与统一手机底板。 */
+/* 库存保留完整可见行；辅助区超出短屏时整页可滚动，库存各自浏览全部物品。 */
 #warehouse-dialog{height:min(820px,calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom)))}
-#warehouse-dialog .ui-panel__body{display:flex;flex-direction:column;gap:6px;overflow:hidden;min-height:0;flex:1;padding:12px}
+#warehouse-dialog .ui-panel__body{display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;flex:1;padding:12px}
+#warehouse-dialog .ui-panel__body>*{flex-shrink:0}
 #warehouse-dialog .ui-panel__header{padding:8px 14px}
 #warehouse-source{width:100%;min-height:44px;flex:none}
 #warehouse-load,#warehouse-message,.warehouse-hint,.warehouse-note{margin:0;font-size:12px;line-height:1.4}
@@ -10,14 +11,14 @@
 #warehouse-dialog .warehouse-tabs{overflow-x:auto}
 #warehouse-dialog .warehouse-tabs button{flex:1;min-width:44px;padding:5px;min-height:44px}
 #warehouse-dialog .warehouse-tabs button[aria-pressed=true]{background:var(--ui-forest);color:var(--ui-paper)}
-.warehouse-stores{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
-.warehouse-store{display:flex;flex-direction:column;flex:1;min-height:0;border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);background:var(--ui-sage);overflow:hidden}
+.warehouse-stores{display:flex;flex-direction:column;gap:10px;flex:1 0 330px;min-height:330px}
+.warehouse-store{display:flex;flex-direction:column;flex:1;min-height:154px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-section);background:var(--ui-sage);overflow:hidden}
 .warehouse-store>header{display:flex;justify-content:space-between;align-items:center;gap:4px;padding:6px 10px;flex:none;border-bottom:1px solid var(--ui-line)}
 #warehouse-dialog .warehouse-store h3{margin:0;font-size:14px}
 .warehouse-store>header span{font-size:12px}
 .warehouse-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start;gap:6px;padding:8px;overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain}
 #warehouse-dialog .warehouse-slot{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;min-height:84px;padding:4px;border:1px solid var(--ui-line);border-radius:8px;background:var(--ui-paper);color:var(--ui-text);box-shadow:none;font-size:12px;touch-action:pan-y;user-select:none}
-.warehouse-slot__art{display:grid;place-items:center;position:relative;width:100%;min-height:48px;touch-action:none;cursor:grab}
+.warehouse-slot__art{display:grid;place-items:center;position:relative;width:100%;min-height:48px;touch-action:pan-y;cursor:grab}
 .warehouse-slot__art svg,.warehouse-slot__art canvas,.warehouse-slot__art .inventory-crop{width:44px;height:44px;display:block}
 .warehouse-slot__count{position:absolute;bottom:-2px;right:0;padding:1px 4px;border-radius:5px;background:var(--ui-forest);color:var(--ui-paper);font-size:12px;line-height:16px;font-variant-numeric:tabular-nums}
 .warehouse-slot__name{line-height:1.35;overflow-wrap:anywhere}
@@ -35,7 +36,7 @@
 /* 操作按钮明确采用点按手势，避免连续触摸被浏览器识别为双击缩放。 */
 #warehouse-quantity button,#warehouse-dialog .ui-close,#warehouse-dialog .warehouse-tabs button{touch-action:manipulation}
 /* 手机横屏并排展示库存，分类入口仍可使用，避免隐藏筛选后无法切换。 */
-@media(max-height:500px) and (min-width:500px){#warehouse-dialog .warehouse-tabs{display:flex}.warehouse-stores{flex-direction:row}.warehouse-store{min-width:0}.warehouse-store>header{align-items:flex-start;flex-direction:column;gap:0}.warehouse-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-height:500px) and (min-width:500px){#warehouse-dialog .warehouse-tabs{display:flex}.warehouse-stores{flex-direction:row;flex-basis:180px;min-height:180px}.warehouse-store{min-width:0}.warehouse-store>header{align-items:flex-start;flex-direction:column;gap:0}.warehouse-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* 金币只展示同一钱包，图标保留页面滚动手势，不暗示可以拖成另一份库存。 */
 [data-warehouse-currency] .warehouse-slot__art{touch-action:pan-y;cursor:pointer}

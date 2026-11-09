@@ -1,7 +1,7 @@
 import {drawWeapon} from './characters.js';
 // 小屋家具正式绘制：目录、摆放预览与室内共用独立主体，植物不烘焙进花盆。
 import {box,oval,poly} from './primitives.js';
-import {plantState} from '../progression/home-decor.js';
+import {plantState} from '../progression/home/home-decor.js';
 const INK='#315c43',WOOD='#c7a276',CREAM='#fff0c9',LEAF='#91ae86';
 
 // 细线只描述结构，保持正常手机尺寸的轮廓优先。

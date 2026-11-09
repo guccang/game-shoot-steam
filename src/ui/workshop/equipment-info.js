@@ -1,11 +1,11 @@
 import {eraVehicle,eraDonor,ERA_RESOURCES} from '../../config/vehicle-eras.js';
 // 工坊装备档案只读正式目录与拥有状态，不参与购买、试装和属性计算。
-import {equipmentQuestReason,equipmentQuest} from '../../progression/equipment-quests.js';
+import {equipmentQuestReason,equipmentQuest} from '../../progression/workshop/equipment-quests.js';
 import {WEAPONS} from '../../config/weapons.js';
 import {COLLECTED_VEHICLES} from '../../config/vehicles.js';
 import {VEHICLE_ARMAMENTS} from '../../config/vehicle-armaments.js';
 import {WEAPON_STORIES,VEHICLE_STORIES,ARMAMENT_STORIES} from '../../config/equipment-stories.js';
-import {storyEquipmentSource} from '../../progression/story-rewards.js';
+import {storyEquipmentSource} from '../../progression/story/story-rewards.js';
 
 // 先按车体校验专属主炮，避免与同编号的手持枪串档；已拥有时不再生成获取提示。
 export function workshopEquipmentInfo(progress,{kind,index,turret=null}){

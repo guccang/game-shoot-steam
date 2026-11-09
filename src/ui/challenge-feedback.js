@@ -1,5 +1,5 @@
 // 营地等级只提供购买折扣；保留原入口标识，避免破坏界面事件代理。
-import {campProgress,campDiscountText} from '../progression/camp-level.js';
+import {campProgress,campDiscountText} from '../progression/camp/camp-level.js';
 import {challengeRankIcon} from '../rendering/challenge-rank.js';
 // 胜利文本读取本次完成后的快照，不把战绩当作购买资格。
 export function challengeVictoryText(data){const q=data.qualification;return `${data.clearingComplete?'清缴完成':'领主已击败'}${q.gained?` · 营地经验 +${q.gained}`:''}`;}

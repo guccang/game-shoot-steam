@@ -1,5 +1,5 @@
 // 地下垂钓采样正式水界，抛投线不能跨过未开掘岩壁。
-import {mineLayer} from '../progression/mine-layers.js';
+import {mineLayer} from '../progression/mining/mine-layers.js';
 import {mineSurfaceAt} from './mine-surface.js';
 import {mineOccupancy,mineLineClear} from '../physics/mine-motion.js';
 import {OUTDOOR_RULES} from '../config/outdoors.js';

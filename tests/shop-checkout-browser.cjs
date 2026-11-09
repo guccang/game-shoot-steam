@@ -5,13 +5,13 @@ async page=>{
   window.a=(await import('/src/main.js')).application;await a.ready;
   const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();
   p.arrival={version:3,phase:'complete',keys:true};p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(s=>s.id);
-  p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.coins=1000;p.vehicleIndex=0;p.vehicleHulls[0]=1;p.farm.unlocked[1]=true;
+  p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.coins=4000;p.vehicleIndex=0;p.vehicleHulls[0]=1;p.farm.unlocked[1]=true;
   g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.spawnTimer=g.mainlineTalkDelay=99999;
   window.visitShop=async kind=>{
    g.cottage=null;g.mainlineSpeech=null;
    const room=(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS[kind];
    Object.assign(g.player,room.door);
-   if(!(await import('/src/core/cottage.js')).enterWorkshop(g,kind))throw Error('进店失败 '+kind);
+   if(!(await import('/src/core/home/cottage.js')).enterWorkshop(g,kind))throw Error('进店失败 '+kind);
    Object.assign(g.player,{x:150,y:260});g.progress.campParking.owned=[{...g.cottage.outside,mapId:g.mapId,hull:0,spot:null,hp:1,ammo:0,reload:0}];a.refresh();
   };
   await visitShop('seed');
@@ -33,15 +33,31 @@ async page=>{
  await seed.tap();if(await confirm.isVisible())throw Error('加购不应立即付款');await page.locator('dialog[open] > .shop-dropzone:visible').tap();await confirm.locator('[data-remove-line]').tap();await confirm.locator('[data-cancel]').tap();
  await drag(seed,false);if(await confirm.isVisible())throw Error('结账区外松手发起了购买');
  await drag(seed);await confirm.locator('[data-remove-line]').tap();await confirm.locator('[data-cancel]').tap();
- if(await page.evaluate(()=>a.game.progress.coins)!==1000)throw Error('取消扣款');
- for(const [place,mode] of [['载具仓库',0],['猫猫背包',1],['小屋仓库',2]]){
-  await page.evaluate(mode=>{const p=a.game.progress;if(mode>0)p.logistics.builds[0].wood=99999;if(mode>1)p.logistics.bagWood=999;},mode);
+ if(await page.evaluate(()=>a.game.progress.coins)!==4000)throw Error('取消扣款');
+ for(const [place,mode] of [['猫猫背包 10 粒',0],['猫猫背包 2 粒',1],['载具仓库 10 粒',2],['小屋仓库 10 粒',3]]){
+  await page.evaluate(async mode=>{
+   const p=a.game.progress;
+   if(mode===1){
+    const {catLoad}=await import('/src/progression/inventory/load-weight.js'),load=catLoad(a.game);
+    const {itemDefinition}=await import('/src/config/items.js');
+    p.farm.seeds[0]+=Math.round((load.capacity-load.weight)/itemDefinition('seed:0').mass)-3;
+   }
+   if(mode>=2)p.logistics.bagWood=999;
+   if(mode===3)p.logistics.builds[0].wood=99999;
+   a.refresh();
+  },mode);
   const before=await page.evaluate(()=>a.game.progress.coins);await drag(seed);
-  await confirm.locator('[data-order-amount="5"]').tap();
+  if(mode===0){
+   const labels=await confirm.locator('.cart-quantities button').allTextContents();if(labels.join(',')!=='10 粒,30 粒,100 粒')throw Error('种子快捷数量不符 '+labels);
+   for(const quantity of [10,30,100]){await confirm.locator('[data-order-amount="'+quantity+'"]').tap();const total=Number((await confirm.locator('[data-price]').innerText()).match(/\d+/)[0]);if(total!==40*quantity)throw Error('数量与总价不同步 '+quantity);}
+  }
+  await confirm.locator('[data-order-amount="10"]').tap();
   const price=Number((await confirm.locator('[data-price]').innerText()).match(/\d+/)[0]);
   if(!(await confirm.innerText()).includes(place)||await page.evaluate(()=>a.game.progress.coins)!==before)throw Error('报价错误 '+place);
+  if(mode===1&&!(await confirm.innerText()).includes('载具仓库 8 粒'))throw Error('清单没有显示余下八粒的去向');
   await pay.tap();await confirm.waitFor({state:'hidden'});
   if(await page.evaluate(()=>a.game.progress.coins)!==before-price)throw Error('扣款错误 '+place);
+  if(mode===1&&!await page.evaluate(()=>a.game.progress.farm.seeds[1]===12&&a.game.progress.shopStock[0]['seed:1']===8))throw Error('拆分交付与清单不一致');
  }
  await page.locator('#seed-shop-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
  await page.evaluate(()=>visitShop('outdoor'));await counter();await page.locator('#outdoor-dialog[open]').waitFor();

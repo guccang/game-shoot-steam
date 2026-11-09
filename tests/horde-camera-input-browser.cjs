@@ -4,7 +4,7 @@ async page => {
  await page.reload();await page.setViewportSize({width:390,height:900});await page.locator('#start').click();
  const transition=await page.evaluate(async()=>{
   const a=(await import('/src/main.js')).application;await a.ready;
-  const g=a.game,{startCampDefense,leaveCampDefense}=await import('/src/core/camp-defense.js');
+  const g=a.game,{startCampDefense,leaveCampDefense}=await import('/src/core/camp/camp-defense.js');
   const gate=(await import('/src/config/camp-defense.js')).CAMP_GATES.find(g=>g.id==='top');
   if(g.campDefense)leaveCampDefense(g);
   g.state='playing';g.boss=null;g.player.x=gate.x;g.player.y=gate.y+50;

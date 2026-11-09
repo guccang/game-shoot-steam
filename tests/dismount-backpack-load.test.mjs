@@ -6,7 +6,7 @@ import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {LOAD_RULES} from '../src/config/vehicle-load.js';
-import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/load-weight.js';
+import {catLoad,vehicleLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
 import {summonVehicle,dismountVehicle} from '../src/combat/vehicle.js';
 import {syncSupplyAmmo} from '../src/combat/supply-ammo.js';
 import {interiorLayout} from '../src/config/workshop-interiors.js';

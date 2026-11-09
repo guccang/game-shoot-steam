@@ -8,13 +8,13 @@ import {CLEARING_POST,CLEARING_APPROACH,CLEARING_STEPS,CLEARING_SITE_RULES,CLEAR
 import {challengeLevelMarkup} from './challenge-feedback.js';
 import {challengeProgress} from '../config/economy.js';
 import {clearingRound} from './clearing-round.js';
-import {clearingSite} from '../progression/clearing-site.js';
-import {canUseClearingPost,acceptClearingPost,clearingStage,clearingPostReason} from '../core/clearing-guide.js';
-import {setLivingPatrol} from '../core/living-world.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {clearingSite} from '../progression/story/clearing-site.js';
+import {canUseClearingPost,acceptClearingPost,clearingStage,clearingPostReason} from '../core/story/clearing-guide.js';
+import {setLivingPatrol} from '../core/camp/living-world.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {livingForest} from '../world/living-spaces.js';
 import {createEventScope} from '../platform/events.js';
-import {clearingCombatActive} from '../core/living-safety.js';
+import {clearingCombatActive} from '../core/camp/living-safety.js';
 // 简短节点使用SVG图形，避免稀有字符缺字导致教学图标空白。
 const icons={accept:'<path d="M10 33V6m0 1h22l-6 8 6 8H10"/>',travel:'<path d="M7 30c28 0-12-20 20-20m-5-5 7 5-7 5" stroke-dasharray="4 4"/>',battle:'<path d="M10 13 6 5l13 7 15-7-4 9v13l-10 8-10-8Z"/><path d="m14 19 4 2m8-2-4 2M16 27h8"/>'};
 // 面板、现场按钮与快捷键均走同一核心权限；卸载时清除所有监听。

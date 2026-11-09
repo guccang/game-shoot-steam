@@ -21,7 +21,7 @@ async page=>{
   await t.locator('#arrival-letter-done').tap();if(!await t.evaluate(()=>a.game.progress.arrival.phase==='ride-guide'))throw Error('读信后任务没有推进');checks.push('两种手机尺寸完整阅读、读信后进入上车任务');
   await t.evaluate(async()=>{const p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.phase='doing';a.game.progress=p;a.game.reset();a.game.state='playing';a.game.mainlineTalkDelay=99999;a.refresh();});
   await t.locator('#field-menu-toggle').tap();await t.locator('#map-button').tap();await t.locator('#close-map').tap();
-  await t.evaluate(async()=>{a.game.progress.mainline.distance=80;(await import('/src/core/mainline-manager.js')).updateMainline(a.game,.05);a.refresh();});
+  await t.evaluate(async()=>{a.game.progress.mainline.distance=80;(await import('/src/core/story/mainline-manager.js')).updateMainline(a.game,.05);a.refresh();});
   if(!await t.evaluate(()=>a.game.progress.mainline.phase==='report'&&a.game.progress.mainline.navigationEnabled!==false&&a.game.progress.mainline.seen.navigation===0))throw Error('完成任务仍要求切换寻路');
   if(await t.locator('#task-navigation-toggle.operation-source').count())throw Error('仍强制高亮寻路开关');
   await t.screenshot({path:'output/playwright/letter-navigation/navigation-optional.png'});

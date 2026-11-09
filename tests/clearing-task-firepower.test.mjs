@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_TASKS} from '../src/config/mainline.js';
 import {clearingBossHealth} from '../src/config/clearing-boss.js';
-import {createWorkshopTrial} from '../src/core/workshop-trial.js';
+import {createWorkshopTrial} from '../src/core/workshop/workshop-trial.js';
 
 // 从实际任务条件读取最低等级，避免任务升级要求变化后测试仍沿用旧装备。
 function taskLevel(id,path){

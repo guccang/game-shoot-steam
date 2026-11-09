@@ -8,7 +8,7 @@ async original=>{
  async function enter(kind,time){await page.evaluate(async({kind,time})=>{
   const {freshProgress}=await import('/src/progression/progress.js'),p=freshProgress();p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.vehicleHulls[6]=1;
   const g=a.game;g.progress=p;g.reset();g.start();g.vehicle.active=false;g.mainlineSpeech=null;g.enemies=[];g.attackTimer=g.spawnTimer=999;g.player.hp=20;
-  const layout=(await import('/src/config/workshop-interiors.js')).interiorLayout({kind});Object.assign(g.player,layout.door);const c=await import('/src/core/cottage.js');if(!(kind==='cottage'?c.enterCottage(g):c.enterWorkshop(g,kind)))throw Error('进屋失败 '+kind);
+  const layout=(await import('/src/config/workshop-interiors.js')).interiorLayout({kind});Object.assign(g.player,layout.door);const c=await import('/src/core/home/cottage.js');if(!(kind==='cottage'?c.enterCottage(g):c.enterWorkshop(g,kind)))throw Error('进屋失败 '+kind);
   g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time).start+1000;(await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();
  },{kind,time});}
  try{
@@ -25,7 +25,7 @@ async original=>{
   }
   for(const [kind,dialog,close] of [['seed','seed-shop-dialog','seed-shop-close'],['ammo','field-equipment-dialog','field-equipment-close'],['weapons','workshop-dialog','ws-close'],['vehicle','workshop-dialog','ws-close'],['repair','vehicle-repair-dialog','vehicle-repair-close'],['cat-home','cat-home-dialog','cat-home-close'],['furniture','home-decor-dialog','home-close']]){
    await page.setViewportSize({width:390,height:844});await enter(kind,'day');
-   const point=await page.evaluate(async()=>(await import('/src/core/workshop-display-entry.js')).shopkeeperApproach(a.game.cottage));
+   const point=await page.evaluate(async()=>(await import('/src/core/workshop/workshop-display-entry.js')).shopkeeperApproach(a.game.cottage));
    await walk('ArrowRight','x',point.x,1);await walk('ArrowUp','y',point.y,-1);await page.waitForFunction(()=>a.game.cottage.displayEntry?.elapsed>=.25);await page.evaluate(()=>a.game.pause());
    const badge=await page.evaluate(()=>a.renderer.actionCountdownView);if(badge?.icon!=='board')throw Error('售货员徽记缺失 '+kind);
    await page.screenshot({path:`output/playwright/room-dwell/seller-${kind}.png`});await page.evaluate(()=>a.game.start());await page.locator('#'+dialog).waitFor({state:'visible',timeout:5000});

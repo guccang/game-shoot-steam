@@ -16,7 +16,7 @@
 ## 3 技术交付
 - 尺寸：卡片最大280 CSS像素，小屏留右侧玩法按钮；气泡最大285，手册最大580、90dvh滚动。
 - 分层：沿用DOM HUD层与正式Canvas角色实体；透明区域不改。无新增碰撞。
-- 文件：src/config/mainline-guide.js、src/core/mainline-manager.js、src/ui/mainline.js、src/styles/mainline.css。
+- 文件：src/config/mainline-guide.js、src/core/story/mainline-manager.js、src/ui/mainline.js、src/styles/mainline.css。
 - 预算：0新增解码图像、无循环动画；只为当前操作加静态边框提示，窗口关闭和任务切换清理。
 
 ## 4 动画补充

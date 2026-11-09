@@ -5,10 +5,10 @@ import assert from 'node:assert/strict';
 import { Game, freshProgress } from '../src/game.js';
 import {waveDifficulty,WAVE_ARRIVAL} from '../src/config/waves.js';
 import {CLEARING_DENSITY} from '../src/config/clearing-difficulty.js';
-import { findArrivalSpot, arrivalRecycleRadius } from '../src/core/enemy-arrival.js';
+import { findArrivalSpot, arrivalRecycleRadius } from '../src/core/battle/enemy-arrival.js';
 import { worldDistance } from '../src/world/coordinates.js';
 import { isWaterBlocked } from '../src/world/river-geometry.js';
-import { capturePatrol } from '../src/core/patrol-session.js';
+import { capturePatrol } from '../src/core/battle/patrol-session.js';
 
 // 测试视口采用浮游炮广角，并保留真实地形和怪物工厂。
 function arena(width = 390, height = 844) {

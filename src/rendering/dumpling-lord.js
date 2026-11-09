@@ -22,7 +22,7 @@ export function drawDumplingLord(c,b,time,reduced=false){
   const weight=b.campDefense?pose.sway*side:0;
   oval(c,side*(40+weight),-Math.max(0,weight),19+weight,9-weight*.5,'#90a875',outline,2.5);
  }
- const body=drawDumplingBody(c,{width:53,height:86-crouch*13,pose,motion,color:'#9fc576',accent:'#dae8af',face:false,flash:b.flash>0});
+ const body=drawDumplingBody(c,{width:53,height:86-crouch*13,pose,motion,color:'#9fc576',accent:'#dae8af',face:false,flash:!b.campDefense&&b.flash>0});
  const top=body.top;
  // 团山以矿脊与琥珀腹部形成剪影，普通团子王佩戴三瓣叶冠和胸扣。
  if(b.campDefense){

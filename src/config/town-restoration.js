@@ -1,3 +1,4 @@
+import {ownsCampPoint,campPlotAt} from './camp-land.js';
 import {isCampaignTask} from './mainline-pacing.js';
 import {FIRE_STATION} from './fire-station-layout.js';
 // 小镇修复目录：主线前置、费用、功能和实体坐标共用配置，不以时间强制解锁。
@@ -19,6 +20,8 @@ const defenseLocations=CAMP_GATES.map(g=>{
 });
 // 找种改走野外营地，告示牌留到首轮清缴任务前修复。
 export const TOWN_RESTORATIONS=[
+ // 新营业设施使用原房门和施工事务，不另造一套建造系统。
+ ...['outdoor','ammo','cat-home','furniture','construction','repair','refinery','factory'].map(id=>{const room=WORKSHOP_INTERIORS[id];return {before:null,wood:['refinery','factory'].includes(id)?180:60,shape:'house',...room.site,id,name:room.name,site:room.door,benefit:'建成后开放'+room.name+'服务',minute:'自主建设'};}),
  {id:'clearing',name:'清缴告示牌',before:'first-patrol',wood:40,shape:'board',...T.clearing,site:at('clearing'),benefit:'接取清缴，挑战五批怪物与领主',minute:'1–3分钟'},
  {id:'cottage',name:'巡林小屋',before:'pistol-upgrade',wood:80,shape:'house',...T.cottage,width:140,height:150,site:COTTAGE.door,benefit:'进屋休息，恢复猫猫全部生命',minute:'3–5分钟'},
  {id:'story',name:'回信驿',before:'first-letter',wood:100,shape:'board',...T.story,site:at('post-sunleaf-post'),benefit:'接取森林来信与故事委托',minute:'10–15分钟'},
@@ -45,6 +48,7 @@ export function validateRestoration(raw){
 
 // 武器工坊沿用入职修复；随身地图、背包和设置不属于建筑功能。
 export function facilityOpen(progress,id){
+ const plotSite=TOWN_RESTORATIONS.find(f=>f.id===id);if(plotSite&&!(plotSite.locations||[plotSite]).some(site=>ownsCampPoint(progress,site)))return false;
  if(id==='weapons')return !progress?.arrival||['craft','crafting','complete'].includes(progress.arrival.phase);
  return !TOWN_RESTORATIONS.some(f=>f.id===id)||!!progress?.restoration?.repaired.includes(id);
 }
@@ -59,6 +63,6 @@ export function pendingRestoration(progress){
  return TOWN_RESTORATIONS.find(f=>!facilityOpen(progress,f.id)&&f.before===task?.id&&(!f.extra||!isCampaignTask(task)))||null;
 }
 // 所有入口共用同一锁定原因。
-export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
+export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'先购买'+campPlotAt(f).name+'，再投入木材建设。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
 // 角色培养共用武器工坊，炮塔整备共用载具工坊。
 export function workshopFacility(kind){return ['vehicle','turret'].includes(kind)?'garage':'weapons';}

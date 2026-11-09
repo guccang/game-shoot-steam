@@ -2,7 +2,7 @@
 
 ## 2026-10-30 兽潮获胜后的任务指引
 
-本轮只修复兽潮任务完成条件与状态切换：两次复习任务统一要求西门正式获胜并领取结算，取消武器、载具和专属主炮击杀门槛；保留任务交付、战斗、救场奖励、存档事务和原UI样式。结算成功后立即刷新交付目标并清除旧营门路线。计划验证步行、松果战车、结算前换枪、旧档恢复、失败重试和手机昼夜实际领取后的任务卡。入口src/core/camp-defense.js、src/progression/mainline-combat.js；designCriterion=mainline-learning。无新素材、画布、地形或动作修改。
+本轮只修复兽潮任务完成条件与状态切换：两次复习任务统一要求西门正式获胜并领取结算，取消武器、载具和专属主炮击杀门槛；保留任务交付、战斗、救场奖励、存档事务和原UI样式。结算成功后立即刷新交付目标并清除旧营门路线。计划验证步行、松果战车、结算前换枪、旧档恢复、失败重试和手机昼夜实际领取后的任务卡。入口src/core/camp/camp-defense.js、src/progression/story/mainline-combat.js；designCriterion=mainline-learning。无新素材、画布、地形或动作修改。
 
 验收通过：新增8项针对性回归通过，其他直接相关检查17项通过。旧营门入场夹具及主线顺序断言共9项已有失败，均在未修改master复现。浏览器以390×844白天和320×568夜晚触控视口完成两次实际领奖，任务阶段立即为report、导航目标garage、各自战绩为1；HUD显示“领取奖励 · 苔轮”，兽潮任务猫爪消失，站牌普通就近交互仍保留。浏览器错误为0，已逐张复核截图，非实体手机验收。
 
@@ -24,7 +24,7 @@ NPC使用已有真实连续待机帧，角色移动、载具动作与独立操�
 持续目标帮助玩家理解下一步为何行动、去哪里、怎样操作和能获得什么资源；装备必须实际支付，顶级装备同时要求资格任务与原配方。资源奖励最多三种，一次性提交。避免重复奖励、临时借用装备误判永久拥有和教程打断正在进行的故事。
 
 ## 6 验收记录
-结论：通过。designCriterion：`mainline-learning`。正式入口 `src/core/mainline-manager.js`、`src/ui/mainline.js`、`src/rendering/renderer.js`、`src/rendering/story-props.js`；读取器 `inspectMainline` 已加入 `visual-review.js` 和 `visual-contract.json`。
+结论：通过。designCriterion：`mainline-learning`。正式入口 `src/core/story/mainline-manager.js`、`src/ui/mainline.js`、`src/rendering/renderer.js`、`src/rendering/story-props.js`；读取器 `inspectMainline` 已加入 `visual-review.js` 和 `visual-contract.json`。
 
 | 项目 | 验收结果与证据 |
 |---|---|

@@ -3,17 +3,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
-import {commitWorkshop} from '../src/core/workshop.js';
-import {skipArrivalJourney,completeArrivalLetter} from '../src/core/ranger-arrival.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
+import {skipArrivalJourney,completeArrivalLetter} from '../src/core/camp/ranger-arrival.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 import {RESTORATION_FLIGHT,TOWN_RESTORATIONS,facilityOpen} from '../src/config/town-restoration.js';
 import {MAINLINE_TASKS,MAINLINE_IDS} from '../src/config/mainline.js';
-import {mainlineConditionCost,mainlineResourceHint} from '../src/progression/mainline-cost.js';
-import {mainlineSteps} from '../src/core/mainline-manager.js';
+import {mainlineConditionCost,mainlineResourceHint} from '../src/progression/story/mainline-cost.js';
+import {mainlineSteps} from '../src/core/story/mainline-manager.js';
 import {mainlineReward} from '../src/config/economy.js';
-import {boardParkedVehicle,parkedOwned} from '../src/core/camp-parking.js';
+import {boardParkedVehicle,parkedOwned} from '../src/core/vehicles/camp-parking.js';
 // 只快进原开场，80木料由测试提供，后续开工、报价和购枪均走真实事务。
 function rebuilt(){const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);completeArrivalLetter(g);g.progress.wood=80;Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});assert.ok(g.advanceArrival());g.attackTimer=999;for(let i=0;i<125;i++)g.update(.05);assert.equal(g.progress.arrival.phase,'craft');return g;}
 

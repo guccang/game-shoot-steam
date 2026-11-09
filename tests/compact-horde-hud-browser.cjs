@@ -20,13 +20,13 @@ async page=>{
   if(sample.order.join(',')!=='camp-hp,camp-boss,camp-wave-status,camp-help')throw Error('HP、领主、进度、详情顺序错误');
   states.push({label,...sample});return sample;}
  let s=await inspect('开始等待');if(s.time!==0||s.kills!==0||s.wave!=='1')throw Error('首波初始化错误');
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;(await import('/src/core/camp-defense.js')).updateCampDefense(a.game,1.5);a.refresh();});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;(await import('/src/core/camp/camp-defense.js')).updateCampDefense(a.game,1.5);a.refresh();});
  s=await inspect('等待一半');if(s.time!==50||s.timeOffset!==50||s.killOffset!==100)throw Error('等待环不独立');
  await page.screenshot({path:'output/playwright/compact-horde-hud/countdown-half.png'});
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;a.game.update=window.hudOriginalUpdate;a.game.state='paused';a.refresh();});
  await page.waitForTimeout(350);s=await inspect('暂停');if(s.time!==50)throw Error('暂停推进了倒计时');
  await page.evaluate(async()=>{
-  const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense,m=await import('/src/core/camp-defense.js');g.state='playing';g.update=()=>{};
+  const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense,m=await import('/src/core/camp/camp-defense.js');g.state='playing';g.update=()=>{};
   m.updateCampDefense(g,1.5);g.enemies=[];r.spawned=32;g.summonVehicle();g.player.angle=-Math.PI/2;
   for(let i=0;i<32;i++){const e=g.spawnEnemy(0,0,{x:g.player.x+(i%8-3.5)*28,y:g.player.y-145-Math.floor(i/8)*32},{ambient:true});
    Object.assign(e,{campDefense:true,arena:r.arena,hp:1000,maxHp:1000,speed:0,damage:0});if(i<16){e.hp=0;m.campDefenseKill(g,e);}}
@@ -49,14 +49,14 @@ async page=>{
  await page.locator('#camp-defense-dialog').waitFor({state:'visible'});
  if(!await page.locator('.camp-ring-key').isVisible()||!await page.locator('#camp-leave').isVisible())throw Error('说明或退出入口丢失');
  await page.screenshot({path:'output/playwright/compact-horde-hud/details.png'});await page.locator('#camp-close').click();
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,m=await import('/src/core/camp-defense.js');
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,m=await import('/src/core/camp/camp-defense.js');
   for(const e of g.enemies){e.hp=0;m.campDefenseKill(g,e);}g.enemies=[];m.updateCampDefense(g,0);a.refresh();});
  s=await inspect('进入第二波');if(s.wave!=='2'||s.time!==0||s.kills!==0||s.timeOffset!==100||s.killOffset!==100)throw Error('换波未重置');
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game,r=g.campDefense,c=(await import('/src/config/camp-defense.js')).CAMP_DEFENSE;
-  r.wave=10;r.cleared=9;r.timer=0;r.waveKills=r.spawned=c.waves[9].count;(await import('/src/core/camp-defense.js')).updateCampDefense(g,0);a.refresh();});
+  r.wave=10;r.cleared=9;r.timer=0;r.waveKills=r.spawned=c.waves[9].count;(await import('/src/core/camp/camp-defense.js')).updateCampDefense(g,0);a.refresh();});
  s=await inspect('领主登场');if(s.wave!=='10'||s.total!=='/10'||s.boss!=='active'||s.killOffset!==0)throw Error('领主阶段错误');
  await page.screenshot({path:'output/playwright/compact-horde-hud/boss.png'});
- await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;(await import('/src/core/camp-defense.js')).rescueCampDefense(a.game,'death');a.refresh();});
+ await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;(await import('/src/core/camp/camp-defense.js')).rescueCampDefense(a.game,'death');a.refresh();});
  s=await inspect('伙伴接应');if(s.boss!=='active')throw Error('接应误报领主已击败');
  await page.locator('#camp-help').click();await page.locator('#camp-leave').click();
  const exited=await page.evaluate(async()=>{const a=(await import('/src/main.js')).application;a.game.update=window.hudOriginalUpdate;

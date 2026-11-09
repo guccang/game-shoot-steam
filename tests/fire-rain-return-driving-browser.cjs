@@ -7,7 +7,7 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';
    const g=a.game;g.progress=p;g.random=()=>.4;g.reset();a.menu.enter();g.start();g.arrivalScene=null;g.mainlineSpeech=null;window.fireTick=g.update.bind(g);g.update=()=>{};
    Object.assign(a.environment,{time:'day',weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.refresh();g.livingWeather='sun';if(!g.requestFireRescue()||!g.startFireRescue())throw Error('接警失败');
-   const {updateFireRescue,fireObjective}=await import('/src/core/fire-rescue.js');for(let i=0;i<5000&&g.fireTransit;i++)updateFireRescue(g,.05);if(g.fireRescue.phase!=='active')throw Error('出库失败');
+   const {updateFireRescue,fireObjective}=await import('/src/core/activities/fire-rescue.js');for(let i=0;i<5000&&g.fireTransit;i++)updateFireRescue(g,.05);if(g.fireRescue.phase!=='active')throw Error('出库失败');
    const source=g.fireRescue.waters[0];Object.assign(g.player,{x:source.x,y:source.y,vx:0,vy:0});const from={x:g.player.x,y:g.player.y},truck=g.vehicle,hp=truck.hp,coins=g.progress.coins;
    Object.assign(a.environment,{weather:'rain'});a.refresh();g.livingWeather='rain';
    for(let i=0;i<130&&g.fireRescue.phase==='active';i++)updateFireRescue(g,.05);
@@ -38,7 +38,7 @@ async original=>{
   if(!drive.frames||drive.maxStep>15||drive.distance>34||drive.clears)throw Error(JSON.stringify(drive));
   await page.waitForFunction(()=>document.getElementById('nearby-interaction').dataset.target==='fire-parking'&&!document.getElementById('nearby-interaction').hidden);
   await page.locator('#nearby-interaction').tap();
-  const complete=await page.evaluate(async()=>{const g=a.game,{updateFireRescue}=await import('/src/core/fire-rescue.js');if(g.fireRescue.phase!=='parking')throw Error('入库点击未生效');for(let i=0;i<5000&&g.fireTransit;i++)updateFireRescue(g,.05);a.refresh();return {phase:g.fireRescue.phase,driving:g.vehicle.active,clears:g.progress.realms.records.fire.clears,xp:g.progress.campLevel.xp,coins:g.progress.coins};});
+  const complete=await page.evaluate(async()=>{const g=a.game,{updateFireRescue}=await import('/src/core/activities/fire-rescue.js');if(g.fireRescue.phase!=='parking')throw Error('入库点击未生效');for(let i=0;i<5000&&g.fireTransit;i++)updateFireRescue(g,.05);a.refresh();return {phase:g.fireRescue.phase,driving:g.vehicle.active,clears:g.progress.realms.records.fire.clears,xp:g.progress.campLevel.xp,coins:g.progress.coins};});
   if(complete.phase!=='won'||complete.driving||complete.clears!==1||complete.xp!==50||complete.coins<=returning.coins)throw Error(JSON.stringify(complete));
   // 结算保留任务记录与车库，但奖励面板内外都不应残留消防完成提示条。
   await page.locator('#task-reward-dialog').waitFor({state:'visible'});

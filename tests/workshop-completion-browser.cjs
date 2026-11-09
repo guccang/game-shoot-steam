@@ -15,7 +15,7 @@ async page=>{
     if(kind==='turret')await page.locator('#ws-turret-upgrade').click();
     await drag(`[data-ws-upgrade="${part}"]`);await page.waitForTimeout(1200);
     if(await page.locator('#ws-result').isVisible())throw Error('免费试装显示成功');
-    const expected=await page.evaluate(async([kind,index,part])=>{const a=(await import('/src/main.js')).application,{workshopUpgrade,applyPartPreview}=await import('/src/progression/workshop.js'),{workshopResultChanges,formatWorkshopResult}=await import('/src/ui/workshop/results.js'),p=a.game.progress,plan=workshopUpgrade(p,kind,index,part,2),next=structuredClone(p);applyPartPreview(next,plan);return workshopResultChanges(p,next,plan,a.game.maxHp()).map(r=>[formatWorkshopResult(r.old),formatWorkshopResult(r.value)]);},[kind,index,part]);
+    const expected=await page.evaluate(async([kind,index,part])=>{const a=(await import('/src/main.js')).application,{workshopUpgrade,applyPartPreview}=await import('/src/progression/workshop/workshop.js'),{workshopResultChanges,formatWorkshopResult}=await import('/src/ui/workshop/results.js'),p=a.game.progress,plan=workshopUpgrade(p,kind,index,part,2),next=structuredClone(p);applyPartPreview(next,plan);return workshopResultChanges(p,next,plan,a.game.maxHp()).map(r=>[formatWorkshopResult(r.old),formatWorkshopResult(r.value)]);},[kind,index,part]);
     await drag('#ws-tool');const h=await page.locator('#ws-hold').boundingBox();
     await touch('touchStart',h.x+h.width/2,h.y+h.height/2);
     await page.waitForFunction(()=>document.getElementById('ws-bench').dataset.completionPhase==='retract');

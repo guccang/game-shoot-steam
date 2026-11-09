@@ -24,13 +24,13 @@ async page=>{
   if(mode==='rogue')await page.evaluate(()=>{const g=hudApp.game;for(const kind of ['weapon','vehicle','turret'])g.rollRealmEquipment(kind);g.readyRealm();g.chooseRealmBlessing(g.realm.offers[0]);hudApp.refresh();});
   if(await page.locator('#realm-dialog').isVisible())await page.locator('[data-realm-resume]').click();
   await check(mode+' 预警时显示关卡及倒计时 '+width,()=>{const q=document.getElementById('quest');return !q.hidden&&q.getBoundingClientRect().height>0&&document.getElementById('quest-title').textContent.includes('1')&&document.getElementById('quest-count').textContent.includes('3')&&!q.classList.contains('wave-quest');});
-  await page.evaluate(async()=>{const g=hudApp.game,{updateRealm}=await import('/src/core/realm-manager.js');g.realm.warning=0;updateRealm(g,.1);g.hit(g.enemies[0],999999);hudApp.refresh();});
+  await page.evaluate(async()=>{const g=hudApp.game,{updateRealm}=await import('/src/core/realms/realm-manager.js');g.realm.warning=0;updateRealm(g,.1);g.hit(g.enemies[0],999999);hudApp.refresh();});
   await check(mode+' 击杀实时反映在进度计数 '+width,()=>{const r=hudApp.game.realm;return r.kills>0&&document.getElementById('quest-count').textContent===`${r.kills} / ${r.spec.total}`&&!document.getElementById('quest').hidden;});
   await page.screenshot({path:`output/playwright/realm-progress-horde-exit/${mode}-${width}-${night?'night':'day'}.png`});
   if(mode==='tower'){
-   await page.evaluate(async()=>{const g=hudApp.game,{updateRealm}=await import('/src/core/realm-manager.js');g.enemies=[];g.realm.kills=g.realm.spec.total;updateRealm(g,0);hudApp.refresh();});
+   await page.evaluate(async()=>{const g=hudApp.game,{updateRealm}=await import('/src/core/realms/realm-manager.js');g.enemies=[];g.realm.kills=g.realm.spec.total;updateRealm(g,0);hudApp.refresh();});
    await check('高塔休整进度不消失 '+width,()=>hudApp.game.realm.phase==='rest'&&!document.getElementById('quest').hidden&&document.getElementById('quest-count').textContent.includes('5'));
-   await page.evaluate(async()=>{const g=hudApp.game,{updateRealm,beginRealmStage}=await import('/src/core/realm-manager.js');g.realm.stage=5;beginRealmStage(g);g.realm.warning=0;g.realm.spawned=g.realm.spec.total-1;g.realm.kills=g.realm.spec.total-1;g.realm.spawnTimer=0;updateRealm(g,.1);hudApp.refresh();});
+   await page.evaluate(async()=>{const g=hudApp.game,{updateRealm,beginRealmStage}=await import('/src/core/realms/realm-manager.js');g.realm.stage=5;beginRealmStage(g);g.realm.warning=0;g.realm.spawned=g.realm.spec.total-1;g.realm.kills=g.realm.spec.total-1;g.realm.spawnTimer=0;updateRealm(g,.1);hudApp.refresh();});
    await check('高塔 Boss 血条与进度不重叠 '+width,()=>{const q=document.getElementById('quest'),b=document.getElementById('boss-hud');return !!hudApp.game.boss&&!q.hidden&&!b.hidden&&b.getBoundingClientRect().top>=q.getBoundingClientRect().bottom+7;});
    await page.screenshot({path:`output/playwright/realm-progress-horde-exit/tower-boss-${width}.png`});
   }

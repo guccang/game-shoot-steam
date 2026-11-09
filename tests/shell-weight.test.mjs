@@ -9,8 +9,8 @@ import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {vehicleWeapon} from '../src/config/vehicles.js';
 import {AMMO_TYPES,AMMO_SHOP,ammoKind} from '../src/config/supplies.js';
 import {itemDefinition} from '../src/config/items.js';
-import {vehicleLoad,catLoad,movementLoadFactor} from '../src/progression/load-weight.js';
-import {tradeSupply} from '../src/core/supplies.js';
+import {vehicleLoad,catLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
+import {tradeSupply} from '../src/core/vehicles/supplies.js';
 import {takeSupplyAmmo,supplyAmmoCount,syncSupplyAmmo} from '../src/combat/supply-ammo.js';
 import {advanceReload,consumeRound} from '../src/combat/magazine.js';
 

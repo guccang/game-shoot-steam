@@ -1,9 +1,10 @@
+import {escapeHtml as escape} from './shared/html.js';
 // 弹药货架的图标、适配和用途来自正式装备与物品目录，只负责可读展示。
 import {AMMO_TYPES} from '../config/supplies.js';
 import {itemDefinition} from '../config/items.js';
 import {ammoIcon} from './ammo-icons.js';
 // 配置名称先转义，避免商品文字被当成HTML。
-const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 选购页先显示当前装备与所用弹药，空炮位或近战明确不需实物弹药。
 export function ammoEquipmentMarkup(fit){return `<section class="ui-inset ammo-equipped" data-equipped-ammo="${fit.key||'none'}"><span class="ammo-symbol" aria-hidden="true">${fit.key?ammoIcon(fit.key):'—'}</span><div><small>${fit.target==='vehicle'?'当前载具':'当前武器'}</small><b>${escape(fit.name)}</b>${fit.target==='vehicle'&&fit.weapon?`<p>主炮：${escape(fit.weapon)}</p>`:''}<p>${fit.key?'使用：'+escape(fit.ammo):escape(fit.reason)}</p></div></section>`;}
 // 匹配商品排前；数量明确标为玩家背包或载具已拥有的弹药，避免误认为商店库存。

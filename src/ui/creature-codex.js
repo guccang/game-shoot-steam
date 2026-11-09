@@ -1,22 +1,24 @@
-import {finishFishing} from '../core/outdoors.js';
+import {finishFishing} from '../core/activities/outdoors.js';
+import {planFishStorage} from '../core/fishing/fish-storage.js';
+import {carriedFishCount} from '../progression/fishing/fish-storage.js';
 import {FISH_SPECIES} from '../config/outdoors.js';
-import {FISHING_RODS,FISHING_BAITS} from '../config/fishing-tackle.js';
-import {fishingPreview} from '../core/lake-fishing.js';
+import {FISHING_RODS,FISHING_BAITS,FISHING_CONTAINERS} from '../config/fishing-tackle.js';
+import {fishingPreview} from '../core/fishing/lake-fishing.js';
 import {FISH_STRUGGLES,fishStruggleKind} from '../config/fish-struggles.js';
 // 手机世界图鉴与收鱼介绍，共用正式底板、暂停管理和生物肖像。
 import {WORLD_CODEX,CODEX_TABS,worldCodexEntry as creatureEntry} from '../config/world-codex.js';
 import {codexOverview,worldCodexDetail,codexRecordLabel,codexHistoryNote} from './codex-records.js';
-import {codexRecord} from '../progression/world-codex.js';
+import {codexRecord} from '../progression/player/world-codex.js';
 import {drawCodexPortrait as drawCreaturePortrait} from '../rendering/codex-portraits.js';
 import {createEventScope} from '../platform/events.js';
 // 建立独立资料页；打开图鉴不推进战斗、钓鱼或游鱼时钟。
 export function createCreatureCodex({game,root,dialogs}){
- const scope=createEventScope(),entry=root.createElement('button'),panel=root.createElement('dialog'),catchPanel=root.createElement('dialog');let tab='fish',selected=null,query='',caught=null,page=0;
+ const scope=createEventScope(),entry=root.createElement('button'),panel=root.createElement('dialog'),catchPanel=root.createElement('dialog');let tab='fish',selected=null,query='',caught=null,page=0,destination='auto';
  entry.id='creature-codex-menu';entry.type='button';entry.setAttribute('aria-label','打开世界图鉴');entry.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 9q10-4 19 2 9-6 19-2v30q-10-4-19 2-9-6-19-2zM24 11v30" fill="#f6e6b6" stroke="#315c43" stroke-width="3"/></svg><span>图鉴</span>';root.getElementById('field-menu-items').append(entry);
  panel.id='creature-codex';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','creature-codex-title');panel.innerHTML='<header class="ui-panel__header"><h2 id="creature-codex-title" tabindex="-1">世界图鉴</h2><button class="ui-close" data-codex-close aria-label="关闭世界图鉴">×</button></header><div class="ui-panel__body"><nav class="codex-tabs" aria-label="图鉴分类">'+Object.entries(CODEX_TABS).map(([id,name])=>'<button class="ui-button" data-codex-tab="'+id+'">'+name+'</button>').join('')+'</nav><label class="codex-search">搜索名称<input id="codex-search" type="search" placeholder="输入名称"></label><div id="codex-content"></div></div><footer class="ui-panel__footer"><button class="ui-button" data-codex-back>返回列表</button><button class="ui-button" data-codex-close>回到游戏</button></footer>';
  catchPanel.id='fish-discovery';catchPanel.className='ui-panel ui-panel--compact ui-page';catchPanel.setAttribute('aria-labelledby','fish-discovery-title');catchPanel.innerHTML='<header class="ui-panel__header"><h2 id="fish-discovery-title" tabindex="-1">本次鱼获</h2></header><div class="ui-panel__body" id="fish-discovery-content"></div><p id="fish-catch-error" role="status" hidden></p><footer class="ui-panel__footer"><button type="button" class="ui-button" data-fish-release>放生</button><button type="button" class="ui-button ui-button--primary" data-fish-keep>收进鱼护</button></footer>';root.body.append(panel,catchPanel);
  // 基础信息来自配置，收集记录来自成功提交后的存档，出售不会清除历史。
- function detail(e){if(!['fish','monster'].includes(e.category))return worldCodexDetail(game.progress,e);const record=game.progress.outdoors.collection[e.id],fish=e.category==='fish';return `<section class="ui-section codex-detail"><canvas width="192" height="160" data-creature="${e.key}" role="img" aria-label="${e.name}外观"></canvas><h3>${e.name}</h3><p>${e.group}${fish?' · '+e.rarity:''}</p>${fish?`<p>每条重量 ${e.mass} 千克 · 售价 ${e.coins} 金币</p><p>已收集 ${record?.count||0} 条 · 鱼护 ${game.progress.outdoors.fish[e.id]||0} 条${record?.best?' · 最长 '+record.best+' 厘米':''}</p>`:''}${!fish?'<h4>累计记录</h4><p>击败 '+codexRecord(game.progress,e).kills+' 次</p>'+codexHistoryNote(game.progress):''}${fish?`<h4>钓具与概率</h4><p>至少${Object.values(FISHING_RODS).find(r=>r.tier===e.tier).name}（${e.tier}阶） · 偏好${FISHING_BAITS[e.favoriteBait].name}</p><p>当前湖岸与搭配预览：${(100*(fishingPreview(game).odds.find(row=>row.fish.id===e.id)?.probability||0)).toFixed(3)}% 咬钩鱼种概率。落漂点和附近鱼群会改变概率；靠近湖岸后可查看。</p>`:''}<h4>出没地点</h4><p>${e.habitat}</p><h4>基础介绍</h4><p>${e.description}</p><h4>${fish?'垂钓提示':'应对提示'}</h4><p>${e.tip}</p>${fish?`<p>${FISH_STRUGGLES[fishStruggleKind(e)].name}：${FISH_STRUGGLES[fishStruggleKind(e)].tip}</p>`:''}</section>`;}
+ function detail(e){if(!['fish','monster'].includes(e.category))return worldCodexDetail(game.progress,e);const record=game.progress.outdoors.collection[e.id],fish=e.category==='fish';return `<section class="ui-section codex-detail"><canvas width="192" height="160" data-creature="${e.key}" role="img" aria-label="${e.name}外观"></canvas><h3>${e.name}</h3><p>${e.group}${fish?' · '+e.rarity:''}</p>${fish?`<p>每条重量 ${e.mass} 千克 · 售价 ${e.coins} 金币</p><p>已收集 ${record?.count||0} 条 · 随身鱼获 ${carriedFishCount(game.progress.outdoors,e.id)} 条${record?.best?' · 最长 '+record.best+' 厘米':''}</p>`:''}${!fish?'<h4>累计记录</h4><p>击败 '+codexRecord(game.progress,e).kills+' 次</p>'+codexHistoryNote(game.progress):''}${fish?`<h4>钓具与概率</h4><p>至少${Object.values(FISHING_RODS).find(r=>r.tier===e.tier).name}（${e.tier}阶） · 偏好${FISHING_BAITS[e.favoriteBait].name}</p><p>当前湖岸与搭配预览：${(100*(fishingPreview(game).odds.find(row=>row.fish.id===e.id)?.probability||0)).toFixed(3)}% 咬钩鱼种概率。落漂点和附近鱼群会改变概率；靠近湖岸后可查看。</p>`:''}<h4>出没地点</h4><p>${e.habitat}</p><h4>基础介绍</h4><p>${e.description}</p><h4>${fish?'垂钓提示':'应对提示'}</h4><p>${e.tip}</p>${fish?`<p>${FISH_STRUGGLES[fishStruggleKind(e)].name}：${FISH_STRUGGLES[fishStruggleKind(e)].tip}</p>`:''}</section>`;}
  // 在实际DOM画布上调用正式肖像；缺失失败直接显示中文错误，不静默换图。
  function portraits(container){for(const canvas of container.querySelectorAll('[data-creature]')){try{drawCreaturePortrait(canvas,creatureEntry(canvas.dataset.creature));}catch{const error=root.createElement('p');error.textContent='图鉴插画加载失败，请重新打开图鉴。';canvas.replaceWith(error);}}}
  // 列表最多展示正式目录中的条目；搜索保留输入节点和手机键盘焦点。
@@ -31,8 +33,12 @@ export function createCreatureCodex({game,root,dialogs}){
   const content=catchPanel.querySelector('#fish-discovery-content');
   content.innerHTML=`<section class="ui-section"><div class="catch-species"><canvas width="160" height="128" data-creature="fish:${fish.id}" role="img" aria-label="${fish.name}外观"></canvas><div><h3>${fish.name}</h3><p>${fish.rarity} · ${fish.familyName}</p></div></div><dl class="catch-values"><div><dt>柜台售价</dt><dd>${fish.coins} 金币</dd></div><div><dt>本次体长</dt><dd>${caught.size} 厘米</dd></div><div><dt>入护重量</dt><dd>${fish.mass} 千克</dd></div></dl><p>${record?.count?'累计入护 '+record.count+' 条 · 最长 '+record.best+' 厘米':'首次入护后记入收集记录。'}</p><p>${fish.description}</p><button type="button" class="ui-button" data-catch-codex>查看图鉴</button></section>`;
   catchPanel.querySelector('#fish-catch-error').hidden=true;
+  const storage=root.createElement('section');storage.className='ui-section fishing-setup';storage.innerHTML=`<label>存放位置<select id="fish-catch-destination" aria-label="选择鱼获存放位置"><option value="auto">自动收纳</option>${Object.entries(FISHING_CONTAINERS).filter(([id])=>game.progress.outdoors.containers[id]).map(([id,g])=>`<option value="${id}">${g.name}</option>`).join('')}<option value="bag">背包鱼护</option><option value="vehicle">附近载具</option></select></label><p id="fish-catch-storage" role="status"></p>`;content.append(storage);storage.querySelector('select').value=destination;renderStorage();
   portraits(catchPanel);
  }
+ // 预览不写库存，确认时重算距离和载重；无法收纳仍能更换位置或放生。
+ function renderStorage(){const plan=planFishStorage(game,FISH_SPECIES[caught.species].id,destination);catchPanel.querySelector('#fish-catch-storage').textContent=plan.ok?'收下后放入：'+plan.label+'。':plan.message;const keep=catchPanel.querySelector('[data-fish-keep]');keep.disabled=!plan.ok;keep.textContent=plan.ok?'收进'+(Object.hasOwn(FISHING_CONTAINERS,plan.where)?FISHING_CONTAINERS[plan.where].name:plan.where==='bag'?'背包':'载具'):'暂无收纳空间';}
+ scope.on(catchPanel,'change',event=>{if(event.target.id==='fish-catch-destination'){destination=event.target.value;renderStorage();}});
  scope.on(entry,'click',()=>open());scope.on(panel,'click',event=>{const b=event.target.closest('button');if(!b)return;if(b.hasAttribute('data-codex-close'))dialogs.close(panel.id);else if(b.hasAttribute('data-codex-back')){selected=null;render();}else if(b.dataset.codexPage){page+=Number(b.dataset.codexPage);render();panel.querySelector('.ui-panel__body').scrollTop=0;}else if(b.dataset.codexTab){page=0;tab=b.dataset.codexTab;selected=null;query='';panel.querySelector('#codex-search').value='';render();}else if(b.dataset.codexEntry){selected=b.dataset.codexEntry;render();panel.querySelector('.ui-panel__body').scrollTop=0;}});
  scope.on(panel.querySelector('#codex-search'),'input',event=>{query=event.target.value;page=0;render();});
  // 收鱼结果须由玩家明确选择。查看图鉴后回到同一条鱼，保存失败可重试或放生。
@@ -41,12 +47,12 @@ export function createCreatureCodex({game,root,dialogs}){
   if(game.fishing!==caught||caught?.phase!=='landed'){dialogs.close(catchPanel.id);return;}
   if(event.target.closest('[data-catch-codex]')){open('fish:'+FISH_SPECIES[caught.species].id);return;}
   const choice=event.target.closest('[data-fish-keep],[data-fish-release]');if(!choice)return;
-  const result=finishFishing(game,choice.hasAttribute('data-fish-keep'));
+  const result=finishFishing(game,choice.hasAttribute('data-fish-keep'),destination);
   if(result.ok){dialogs.close(catchPanel.id);caught=null;return;}
   const error=catchPanel.querySelector('#fish-catch-error');error.hidden=false;error.textContent=result.message;
  });
  // 暂停户外场景后展示当前钓获，直到玩家确认才结算鱼护、调查与图鉴。
- function showCatch(fishing){caught=fishing;dialogs.open(catchPanel.id);}
+ function showCatch(fishing){caught=fishing;destination='auto';dialogs.open(catchPanel.id);}
  // 关闭资源时移除监听和所有肖像画布，不新增持续渲染循环。
  function dispose(){scope.dispose();entry.remove();panel.remove();catchPanel.remove();}
  return {open,showCatch,dispose};

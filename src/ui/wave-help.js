@@ -5,9 +5,9 @@ import {waveDifficulty} from '../config/waves.js';
 import {waveProgressState,updateWaveProgress} from './wave-progress.js';
 import {createEventScope} from '../platform/events.js';
 import {clearingRound} from './clearing-round.js';
-import {clearingCombatActive} from '../core/living-safety.js';
-import {claimClearingNotice} from '../core/clearing-notice.js';
-import {taskNavigationEnabled,toggleTaskNavigation} from '../core/task-navigation.js';
+import {clearingCombatActive} from '../core/camp/living-safety.js';
+import {claimClearingNotice} from '../core/story/clearing-notice.js';
+import {taskNavigationEnabled,toggleTaskNavigation} from '../core/navigation/task-navigation.js';
 
 // 详情展示当前已结算击杀；波间休整仍说明刚完成的波次和下一波。
 export function waveHelpState(game){
@@ -23,15 +23,13 @@ export function waveHelpState(game){
 export function createWaveHelp({game,root,dialogs}){
   const scope=createEventScope(),button=root.createElement('button'),dialog=root.createElement('dialog');
   const frame=root.getElementById('game-frame'),health=root.querySelector('.bottom-info'),quest=root.getElementById('quest');
-  const notice=root.createElement('section');notice.id='clearing-arrival-notice';notice.className='ui-panel ui-panel--compact';notice.hidden=true;notice.setAttribute('role','status');
-  notice.innerHTML='<header class="ui-panel__header"><b id="clearing-notice-round"></b><small id="clearing-notice-countdown"></small></header><div class="ui-panel__body"><p id="clearing-notice-progress"></p><div id="clearing-notice-track" inert></div></div>';health.append(notice);
-  const track=root.getElementById('wave-track'),noticeTrack=notice.querySelector('#clearing-notice-track');
-  let hideAt=0;
+  const track=root.getElementById('wave-track');
+  let automatic=false,hideAt=0,motion=null,hintMotion=null,closing=false,disposed=false;
   button.id='wave-help';button.type='button';button.setAttribute('aria-label',i18nText("ui.wave-help.6ec1f91040"));
   button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls','wave-help-dialog');button.innerHTML=HELP_EMBLEM;
   root.getElementById('quest').append(button);
   dialog.id='wave-help-dialog';dialog.className='wave-help-dialog';dialog.setAttribute('aria-labelledby','wave-help-title');
-  dialog.innerHTML=`<header><h2 id="wave-help-title">Boss 清缴任务</h2><button id="wave-help-close" aria-label="${i18nHtml("ui.wave-help.586c88a44f")}">×</button></header><p id="wave-help-wave"></p><div class="wave-help-counter"><span>${i18nHtml("ui.wave-help.054525de16")}</span><strong id="wave-help-count"></strong></div><p id="wave-help-group"></p><p id="wave-help-note"></p>`;
+  dialog.innerHTML=`<header><div><h2 id="wave-help-title">清缴任务</h2><small id="clearing-notice-countdown" hidden></small></div><button id="wave-help-close" aria-label="${i18nHtml("ui.wave-help.586c88a44f")}">×</button></header><p id="wave-help-wave"></p><div class="wave-help-counter"><span>${i18nHtml("ui.wave-help.054525de16")}</span><strong id="wave-help-count"></strong></div><p id="wave-help-group"></p><p id="wave-help-note"></p>`;
   root.body.append(dialog);
   // 直接移动正式轨道，保留唯一节点、头像画布与按钮事件，不复制静态快照。
   const detailTrack=root.createElement('div');detailTrack.id='wave-help-track';root.getElementById('wave-help-wave').after(detailTrack);
@@ -56,40 +54,80 @@ export function createWaveHelp({game,root,dialogs}){
     root.getElementById('wave-help-note').textContent=s.note;
     const enabled=taskNavigationEnabled(game);routeButton.textContent=enabled?'关闭寻路光点':'开启寻路光点';routeButton.setAttribute('aria-pressed',String(enabled));
   }
+  const countdown=root.getElementById('clearing-notice-countdown');
+  // 取消旧动画及其完成回调，快速重开时不让上一轮关闭新面板。
+  function clearMotion(){if(motion){motion.onfinish=null;motion.cancel();motion=null;}closing=false;delete dialog.dataset.collapsing;}
+  // 每次使用实际屏幕坐标，手机旋转和安全区变化后仍收向同一枚猫猫图标。
+  function endpoint(){
+    const from=dialog.getBoundingClientRect(),to=button.getBoundingClientRect();
+    if(!from.width||!from.height||!to.width||!to.height)return null;
+    return 'translate('+(to.x+to.width/2-from.x-from.width/2)+'px,'+(to.y+to.height/2-from.y-from.height/2)+'px) scale('+Math.min(to.width/from.width,to.height/from.height)+')';
+  }
+  // 关闭后统一归还暂停和焦点，落点短亮一次说明可在此继续查看。
+  function finishClose(highlight=false){
+    clearMotion();automatic=false;hideAt=0;countdown.hidden=true;
+    dialogs.close(dialog.id);
+    if(highlight&&!disposed&&button.getBoundingClientRect().width){
+      button.focus({preventScroll:true});
+      if(!root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        hintMotion?.cancel();hintMotion=button.animate([{boxShadow:'0 0 0 0 #edbd6399'},{boxShadow:'0 0 0 9px #edbd6300'}],{duration:500});
+        hintMotion.onfinish=()=>{hintMotion=null;};
+      }
+    }
+  }
+  // 倒计时、关闭按钮和Escape共用缩向入口的关闭路径。
+  function collapse(){
+    if(!dialog.open||closing)return;
+    clearMotion();closing=true;hideAt=0;dialog.dataset.collapsing='true';
+    const target=endpoint(),reduced=root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    motion=dialog.animate([{transform:'none',opacity:1},{transform:reduced||!target?'none':target,opacity:0}],{duration:reduced?100:440,easing:'cubic-bezier(.4,0,.8,1)',fill:'forwards'});
+    motion.onfinish=()=>finishClose(true);
+  }
+  // 首次与手动查看复用同一面板；手动接管会撤销自动收起。
+  function openDetail(auto=false){
+    clearMotion();hintMotion?.cancel();hintMotion=null;automatic=auto;hideAt=auto?root.defaultView.performance.now()+3000:0;
+    countdown.hidden=!auto;countdown.textContent=auto?'3秒后收起 · 点问号查看':'';
+    if(dialog.open){render();return;}
+    dialogs.open(dialog.id);
+    if(!auto&&!root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      const start=endpoint();if(start){motion=dialog.animate([{transform:start,opacity:.15},{transform:'none',opacity:1}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});motion.onfinish=()=>{motion=null;};}
+    }
+  }
   dialogs.register(dialog.id,{onOpen:render,focusId:'wave-help-close'});
-  scope.on(button,'click',()=>{if(!game.story&&!game.realm)dialogs.open(dialog.id);});
+  scope.on(button,'click',()=>{if(!game.story&&!game.realm)openDetail();});
   // 清缴任务正文打开当前波次数据；召唤领主等内嵌按钮保留自己的操作。
   for(const id of ['quest','boss-hud'])scope.on(root.getElementById(id),'click',event=>{
-    if(!game.story&&!game.realm&&!event.target.closest('button,a,input,summary'))dialogs.open(dialog.id);
+    if(!game.story&&!game.realm&&!event.target.closest('button,a,input,summary'))openDetail();
   });
-  scope.on(root.getElementById('wave-help-close'),'click',()=>dialogs.close(dialog.id));
-  // 原生关闭和Escape均归还轨道，避免详情关闭后原HUD丢失节点。
-  scope.on(dialog,'close',()=>{if(!dialog.open)placeTrack(quest);});
-  scope.on(routeButton,'click',()=>{toggleTaskNavigation(game);render();});
-  // 三秒提示仍读取实时击杀；关闭倒计时与波间准备圆环各自使用原时钟。
-  function renderNotice(now){
-    const s=waveHelpState(game);
-    const title=`第 ${s.round} 轮清缴 · ${s.status}`,progress=`已完成 ${s.completed} / ${s.count} 批 · 当前 ${s.kills} / ${s.total}`;
-    const heading=root.getElementById('clearing-notice-round'),detail=root.getElementById('clearing-notice-progress'),countdown=root.getElementById('clearing-notice-countdown');
-    if(heading.textContent!==title)heading.textContent=title;if(detail.textContent!==progress)detail.textContent=progress;
-    const remaining=`${Math.max(1,Math.ceil((hideAt-now)/1000))}秒后关闭`;
-    if(countdown.textContent!==remaining)countdown.textContent=remaining;
-  }
-  // 每帧只更新出现/消失与父容器变化；自动提示无弹窗遮罩、不夺焦点且不暂停战斗。
+  scope.on(root.getElementById('wave-help-close'),'click',collapse);
+  scope.on(dialog,'cancel',event=>{event.preventDefault();collapse();});
+  // 原生外部关闭也取消倒计时与动画，唯一轨道始终归还原HUD。
+  scope.on(dialog,'close',()=>{if(!dialog.open){clearMotion();automatic=false;hideAt=0;countdown.hidden=true;placeTrack(quest);}});
+  scope.on(routeButton,'click',()=>{automatic=false;hideAt=0;countdown.hidden=true;toggleTaskNavigation(game);render();});
+  // 使用页面时钟倒计时，弹窗暂停战斗时也能准时收起。
   function renderFrame(){
     const compact=clearingCombatActive(game),parent=compact?health:quest;
     if(button.parentElement!==parent)parent.append(button);
-    const hidden=!!root.querySelector('dialog[open]')||root.hidden||game.state!=='playing'||frame.dataset.page==='title'||!!game.mainlineSpeech;
-    const now=root.defaultView.performance.now();
-    if(hidden||!game.progress.living.patrolActive){if(!notice.hidden)notice.hidden=true;hideAt=0;placeTrack(dialog.open?detailTrack:quest);return;}
-    if(claimClearingNotice(game)){
-      hideAt=now+3000;notice.hidden=false;
+    if(dialog.open){
+      if(automatic){
+        const interrupted=root.hidden||!compact||!game.progress.living.patrolActive||!['playing','paused'].includes(game.state)||!!root.querySelector('dialog[open]:not(#wave-help-dialog)');
+        if(interrupted){finishClose();return;}
+        if(!closing){
+          const now=root.defaultView.performance.now();
+          countdown.textContent=Math.max(0,Math.ceil((hideAt-now)/1000))+'秒后收起 · 点问号查看';
+          if(now>=hideAt)collapse();
+        }
+      }
+      return;
     }
-    if(hideAt&&now>=hideAt){notice.hidden=true;hideAt=0;}
-    placeTrack(notice.hidden?quest:noticeTrack);
-    if(!notice.hidden)renderNotice(now);
+    placeTrack(quest);
+    if(root.hidden||game.state!=='playing'||frame.dataset.page==='title'||game.mainlineSpeech||root.querySelector('dialog[open]'))return;
+    if(claimClearingNotice(game))openDetail(true);
   }
-  // 与 HUD 一起卸载，重新挂载不会增加按钮或重复注册监听。
-  function dispose(){scope.dispose();placeTrack(quest);button.remove();dialog.remove();notice.remove();}
+  // 切后台或旋转期间取消飞行动画，避免返回时看到过期坐标。
+  scope.on(root,'visibilitychange',()=>{if(root.hidden&&automatic)finishClose();});
+  scope.on(root.defaultView,'resize',()=>{if(closing)finishClose(true);});
+  // 与 HUD 一起卸载，不留下倒计时、动画或第二份轨道。
+  function dispose(){disposed=true;clearMotion();hintMotion?.cancel();scope.dispose();placeTrack(quest);button.remove();dialog.remove();}
   return {dispose,renderFrame};
 }

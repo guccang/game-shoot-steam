@@ -5,11 +5,11 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {SPRINKLER,SPRINKLER_OFFSETS} from '../src/config/farm-production.js';
-import {sprinklerCovers} from '../src/progression/farm-production.js';
-import {farmAction} from '../src/core/farm.js';
-import {updateProduction,storeSprinkler,pickupSprinkler} from '../src/core/farm-production.js';
+import {sprinklerCovers} from '../src/progression/farming/farm-production.js';
+import {farmAction} from '../src/core/farming/farm.js';
+import {updateProduction,storeSprinkler,pickupSprinkler} from '../src/core/farming/farm-production.js';
 import {sprinklerPose} from '../src/rendering/farm-production.js';
-import {sprinklerHitDelay,sprinklerSoilWetness} from '../src/progression/sprinkler-sweep.js';
+import {sprinklerHitDelay,sprinklerSoilWetness} from '../src/progression/farming/sprinkler-sweep.js';
 import {WORLD} from '../src/world/coordinates.js';
 // 隔离真实进度，田块处于自种未成熟状态；不使用用户存档。
 function setup(){

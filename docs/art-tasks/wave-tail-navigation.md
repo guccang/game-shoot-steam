@@ -14,7 +14,7 @@
 - 原 SVG 逻辑坐标 36×36，CSS 显示 32×32；无位图、纹理缓存或昼夜副本。
 - 层级在战场上方、原有操作 UI 下方；pointer-events:none，不拦截鼠标和触屏。
 - 共用昼夜形体与奶油/深绿对比，保持夜间可读；最多复用 3 个节点。
-- 源码 src/core/wave-tail-targets.js、src/ui/wave-tail-navigation.js、src/styles/wave-tail-navigation.css。
+- 源码 src/core/battle/wave-tail-targets.js、src/ui/wave-tail-navigation.js、src/styles/wave-tail-navigation.css。
 ## 4 动画任务补充
 不适用：无新身体或部件动画。箭头实时跟随目标与镜头，不使用呼吸闪烁或自动镜头移动。
 ## 5 生成指令

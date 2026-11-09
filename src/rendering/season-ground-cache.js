@@ -22,6 +22,8 @@ export class SeasonGroundCache {
   }
   // 公开当前已发布的纹理，维持现有入场与诊断入口。
   get tiles(){return this.current.tiles;}
+  // 营地搬迁同步刷新当前与过渡中的地面，避免旧院落在换季时重新出现。
+  invalidateCampLayout(){for(const pool of this.pools())pool.invalidateCampLayout();}
   // 风格切换重建各季节的派生纹理，保留同一调度器、请求、遮罩与渐变时钟。
   refreshArtStyle(){
     if(this.disposed)return;
@@ -123,6 +125,8 @@ export class SeasonGroundCache {
   needsWarmup(){return this.current.needsWarmup()||!!this.source?.needsWarmup();}
   // 入场只等待当前可见区域，不为了尚未来临的季节阻塞首屏。
   ready(view){return !this.disposed&&this.current.ready(view);}
+  // 入场进度跟随当前季节的可见纹理，下一季后台缓存不参与加载百分比。
+  readiness(view){return this.disposed?0:this.current.readiness(view);}
   // 两季同一坐标与原精度纹理参与既有混合，保留昼夜矩阵和周期边界对齐。
   draw(c,view,night){
     if(this.disposed)return;if(this.view!==view)this.prepare(view,night);

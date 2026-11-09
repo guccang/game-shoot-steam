@@ -40,7 +40,7 @@ async page=>{
  // 正式试射与正式分层坦克同源连续帧；底部显示满级部件的连接关系。
  await page.setViewportSize({width:1280,height:960});
  await page.evaluate(async()=>{
-  const {renderVisualCase}=await import('/src/rendering/visual-review.js'),{drawVehicleTracks,drawVehicleArmor}=await import('/src/rendering/vehicle.js'),{createWorkshopTrial}=await import('/src/core/workshop-trial.js');
+  const {renderVisualCase}=await import('/src/rendering/visual-review.js'),{drawVehicleTracks,drawVehicleArmor}=await import('/src/rendering/vehicle.js'),{createWorkshopTrial}=await import('/src/core/workshop/workshop-trial.js');
   const canvas=document.createElement('canvas');canvas.id='tank-frames';canvas.width=1200;canvas.height=570;canvas.style.cssText='position:fixed;z-index:9999;left:0;top:0;background:#eee8c8';document.body.append(canvas);
   const c=canvas.getContext('2d'),tile=document.createElement('canvas');tile.width=300;tile.height=250;
   for(const [i,phase] of [.02,.10,.3,.8].entries()){

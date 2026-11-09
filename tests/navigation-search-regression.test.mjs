@@ -6,10 +6,10 @@ import {Game,freshProgress} from '../src/game.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {createQuestRouteSearch,questLineClear,planQuestRoute} from '../src/physics/quest-route.js';
-import {storyRouteState} from '../src/core/story-route.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
 import {summonVehicle,dismountVehicle} from '../src/combat/vehicle.js';
 import {SETTLEMENT_FENCES,settlementBlocked} from '../src/world/settlements.js';
 import {nearest,WORLD,canonical} from '../src/world/coordinates.js';
@@ -17,9 +17,9 @@ import {SpatialGrid} from '../src/world/spatial-grid.js';
 import {LIVING_PLACES} from '../src/config/living-world.js';
 import {FARM_SEED_SHOP} from '../src/config/farm.js';
 import {livingFacilityBlocked} from '../src/world/living-spaces.js';
-import {livingRouteStates} from '../src/core/living-route.js';
-import {updateLivingWorld} from '../src/core/living-world.js';
-import {playerNavigationBody,createPlayerNavigationIndex} from '../src/core/prepared-navigation.js';
+import {livingRouteStates} from '../src/core/navigation/living-route.js';
+import {updateLivingWorld} from '../src/core/camp/living-world.js';
+import {playerNavigationBody,createPlayerNavigationIndex} from '../src/core/navigation/prepared-navigation.js';
 
 // 固定种子6重现上下车后四秒空白的长途清缴路线，使用真实树木和正式任务目标。
 function scene(){

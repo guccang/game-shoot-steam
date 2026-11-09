@@ -11,9 +11,9 @@ async page=>{
  });
  await page.locator('#start').click();await page.waitForFunction(()=>a.menu.page==='game');
  await page.evaluate(async()=>{
-  const g=a.game,{CLEARING_APPROACH}=await import('/src/config/clearing.js');window.nav=await import('/src/core/story-route.js');
+  const g=a.game,{CLEARING_APPROACH}=await import('/src/config/clearing.js');window.nav=await import('/src/core/navigation/story-route.js');
   Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});g.mainlineSpeech=null;g.encounterTimer=999;g.mainlineTalkDelay=999;g.parkingVisitTimer=999;g.attack=()=>false;
-  if(!(await import('/src/core/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('未能接取验收路线');a.refresh();
+  if(!(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('未能接取验收路线');a.refresh();
  });
  await page.waitForFunction(()=>nav.storyRouteState(a.game)?.reachable);
  await page.evaluate(()=>{

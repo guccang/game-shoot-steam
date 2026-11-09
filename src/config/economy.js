@@ -1,6 +1,6 @@
 import {TREASURE_VEHICLES} from './treasure.js';
 import {legendaryUpgradeCost,equipmentLevelCap} from './legendary-workshop.js';
-import {campProgress} from '../progression/camp-level.js';
+import {campProgress} from '../progression/camp/camp-level.js';
 import taskContent from './content/mainline.json' with {type:'json'};
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
 import { i18nText } from "../i18n/index.js";

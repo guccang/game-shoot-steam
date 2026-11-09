@@ -1,5 +1,5 @@
 // 换季后台工作只使用稳定空闲帧；战斗与慢帧先保住现有场景，不承诺强行赶上历法。
-import {clearingCombatActive} from '../core/living-safety.js';
+import {clearingCombatActive} from '../core/camp/living-safety.js';
 import {worldDistance} from '../world/coordinates.js';
 
 // 显式战斗包含波次间隙；野外近敌也暂停预制，远处游荡怪物不阻塞营地预热。

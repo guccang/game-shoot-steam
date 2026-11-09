@@ -1,5 +1,6 @@
 // 四种实物弹药使用不同轮廓，购买页、背包与装备信息复用同一矢量图标。
 const drawings={
+ waterbag:'<path fill="#93bcb4" d="M24 15h16l10 12 4 22-8 9H18l-8-9 4-22Z"/><path fill="#fff6dc" d="M23 6h18v11H23Z"/><path fill="#d8eee2" d="M32 24c-3 6-8 10-8 15a8 8 0 0 0 16 0c0-5-5-9-8-15Z"/><path d="m17 49 4 4h22l4-4M27 11h10"/>',
  light:'<path fill="#d3b776" d="M11 27 19 11l8 16v29H11Zm26-5 8-15 8 15v34H37Z"/><path fill="#fff6dc" d="M11 27h16v6H11Zm26-5h16v6H37Z"/><path d="M11 49h16m10 0h16"/>',
  shell:'<path fill="#d3b776" d="M21 26h22v29H21Z"/><path fill="#8eab78" d="M21 26V20L32 6l11 14v6Z"/><path fill="#fff6dc" d="M21 31h22v6H21Z"/><path fill="#a78b53" d="M18 51h28v7H18Z"/><path d="M32 11v9"/>',
  heavy:'<path fill="#aebfb6" d="M15 26 20 18h24l5 8v29H15Z"/><path fill="#c98670" d="M20 18 25 6h14l5 12Z"/><path fill="#d3b776" d="M15 36h34v7H15Zm-3 14h40v8H12Z"/><path d="M23 28h18m-18 18h18"/>',

@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {RACE,RACE_TURN,racePoint} from '../src/config/forest-race.js';
 import {RACE_TRACK,raceFeatures,inRaceFeature} from '../src/config/forest-race-track.js';
-import {createRaceTrackState,tickRaceTrack,triggerRaceTrack,moveRaceRunner} from '../src/core/forest-race-track.js';
-import {syncRealm} from '../src/core/realm-manager.js';
+import {createRaceTrackState,tickRaceTrack,triggerRaceTrack,moveRaceRunner} from '../src/core/activities/forest-race-track.js';
+import {syncRealm} from '../src/core/realms/realm-manager.js';
 // 跳过入职，正式开赛后用固定帧率测试路线设施。
 function create(){const p=freshProgress();p.arrival=null;const g=new Game(p,()=>.5);g.state='playing';g.enterRealm('race');g.startRace();step(g,3.1);return g;}
 // 以60帧推进比赛，让倒计时、体力和对手使用同一时钟。

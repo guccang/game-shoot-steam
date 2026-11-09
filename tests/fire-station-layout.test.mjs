@@ -11,7 +11,7 @@ import {isWaterBlocked,riverXAt,riverHalfWidth} from '../src/world/river-geometr
 import {BUILDING_ENTRIES} from '../src/config/building-entries.js';
 
 import {blocked} from '../src/physics/motion.js';
-import {requestFireParking,updateFireRescue,fireObjective} from '../src/core/fire-rescue.js';
+import {requestFireParking,updateFireRescue,fireObjective} from '../src/core/activities/fire-rescue.js';
 import {worldDistance} from '../src/world/coordinates.js';
 
 test('西岸实体、修复和导航同位，完整站房与车道留出沿岸干地',()=>{

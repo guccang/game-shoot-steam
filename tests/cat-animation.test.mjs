@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { Game, freshProgress } from '../src/game.js';
-import { createCatMotion, updateCatMotion } from '../src/core/cat-motion.js';
+import { createCatMotion, updateCatMotion } from '../src/core/battle/cat-motion.js';
 import { catFrame, CatSpriteAtlas, validateCatManifest } from '../src/rendering/cat-animation.js';
 import { muzzlePosition } from '../src/combat/recoil.js';
 

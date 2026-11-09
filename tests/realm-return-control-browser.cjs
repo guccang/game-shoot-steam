@@ -18,7 +18,7 @@ async page=>{
    const {EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');
    a.renderer.light=new EnvironmentTransition(a.environment,0);a.renderer.tone=new SceneTone(a.environment,0);
    g.progress.living.calendar.elapsed=time==='night'?1100000:400000;
-   const {WORKSHOP_INTERIORS}=await import('/src/config/workshop-interiors.js'),{enterWorkshop}=await import('/src/core/cottage.js');
+   const {WORKSHOP_INTERIORS}=await import('/src/config/workshop-interiors.js'),{enterWorkshop}=await import('/src/core/home/cottage.js');
    g.state='playing';g.mainlineSpeech=null;g.cottage=null;g.vehicle.active=false;g.enemies=[];g.trees=[];
    g.spawnTimer=g.fireClock=g.parkingVisitTimer=999;g.player.invincible=999;
    Object.assign(g.player,WORKSHOP_INTERIORS.tower.door);if(!enterWorkshop(g,'tower'))throw Error('接待厅进入失败');a.refresh();

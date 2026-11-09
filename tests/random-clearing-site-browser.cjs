@@ -19,7 +19,7 @@ async page=>{
   const g=a.game,s=g.progress.living.clearingSite,{planQuestRoute}=await import('/src/physics/quest-route.js'),{moveBody}=await import('/src/physics/motion.js'),{worldDistance,WORLD}=await import('/src/world/coordinates.js');
   const route=planQuestRoute({...g.player,mapId:'forest',livingCollision:true,flying:false,amphibious:false},s,g.trees,16000);if(!route.reachable)throw Error('不可步行到达');
   for(const p of route.points.slice(1)){const dx=p.x-g.player.x,dy=p.y-g.player.y,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/8));for(let i=0;i<n;i++)moveBody(g.player,dx/n,dy/n,WORLD,12,g.trees);if(worldDistance(g.player,p)>1)throw Error('路径碰撞阻断');}
-  if(!(await import('/src/core/living-safety.js')).livingWaveAllowed(g))throw Error('到场未启动');g.updateWaves(4);g.updateWaves(1);if(!g.enemies.some(e=>e.wave===g.wave))throw Error('没有入场怪物');return {points:route.points.length,distance:worldDistance(s,s.origin),spawned:g.enemies.length};
+  if(!(await import('/src/core/camp/living-safety.js')).livingWaveAllowed(g))throw Error('到场未启动');g.updateWaves(4);g.updateWaves(1);if(!g.enemies.some(e=>e.wave===g.wave))throw Error('没有入场怪物');return {points:route.points.length,distance:worldDistance(s,s.origin),spawned:g.enemies.length};
  });
  for(const [width,height] of [[1280,900],[390,844],[320,568]])for(const phase of ['day','night']){
   await page.setViewportSize({width,height});

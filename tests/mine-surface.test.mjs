@@ -1,7 +1,7 @@
 // 连续地形同源验证：格心存档身份、画面轮廓、碰撞、桥梁和跨镜头接缝。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshMining,openBasement,normalizeMining} from '../src/progression/mining.js';
+import {freshMining,openBasement,normalizeMining} from '../src/progression/mining/mining.js';
 import {mineTerrain,mineCellOpen,mineHash} from '../src/config/mine-ecology.js';
 import {minePoint,mineCell,mineKey} from '../src/config/mining.js';
 import {mineSurfaceAt,buildMineSurface,mineLandscapeAnchor} from '../src/world/mine-surface.js';

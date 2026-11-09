@@ -2,7 +2,7 @@
 import { cameraOffsetLimits } from './view-safety.js';
 import {nearest} from '../world/coordinates.js';
 import { clamp } from '../core/math.js';
-import { CAMERA_VIEW, HORDE_CAMERA, DEFAULT_CAMERA_Y, defaultCombatZoom } from '../config/camera.js';
+import { CAMERA_VIEW, HORDE_CAMERA, DEFAULT_CAMERA_Y, defaultCombatZoom, BOARDING_CAMERA } from '../config/camera.js';
 
 // 沿稳定观察方向分配前后空间，不追随自动瞄准的瞬时枪口角度。
 function hordeOffset(angle, width, height, zoom) {
@@ -52,6 +52,7 @@ export class CombatCamera {
     this.hordeCandidate = null;
     this.hordeCandidateTime = 0;
     this.hordeSession = null;
+    this.boardingAnchor = null;
   }
   // 行进意图确认后才调整观察方向；原 vx/vy 由移动输入驱动，受击和后坐使用独立分量。
   updateHordeHeading(player, session, dt, entered) {
@@ -184,9 +185,21 @@ export class CombatCamera {
     this.time = time;
     this.width = width;
     this.height = height;
+    // 登乘时脚底会移到车位；独立缓动世界锚点，兼容渲染插值，避免抵消后又跳回。
+    let anchor=player;
+    if(this.boardingAnchor){
+      const a=this.boardingAnchor,target=nearest(a.body||player,player),seat=a.to||target,from=nearest(a,seat),distance=Math.hypot(from.x-seat.x,from.y-seat.y);
+      if(distance>BOARDING_CAMERA.maxDistance){this.boardingAnchor=null;}
+      else{
+        // 只消退登乘产生的位移，正常驾驶实时跟随，不在过渡末尾追赶整段车程。
+        a.elapsed+=dt;const remaining=Math.max(0,1-a.elapsed/BOARDING_CAMERA.seconds);
+        anchor={x:target.x+(from.x-seat.x)*remaining,y:target.y+(from.y-seat.y)*remaining};
+        if(a.elapsed>=BOARDING_CAMERA.seconds)this.boardingAnchor=null;
+      }
+    }
     return {
-      x: player.x + this.x - width / zoom / 2,
-      y: player.y + this.y - height / zoom / 2,
+      x: anchor.x + this.x - width / zoom / 2,
+      y: anchor.y + this.y - height / zoom / 2,
       w: width / zoom,
       h: height / zoom,
       width,

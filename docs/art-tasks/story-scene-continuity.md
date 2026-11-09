@@ -9,7 +9,7 @@
 维修车始终使用 repair-west / repair-east 的正式世界坐标与脚底，订单完工转为普通停车记录。NPC 沿用原人物脚底、外观、深度排序和待机时钟；仅保留人，不保留旧任务道具、气泡或可领奖入口。相同居民只画一次，不另设碰撞或挡住通路。沿用正式昼夜光照，无新轮廓、变体或世界场景。
 
 ## 3 技术交付
-维修逻辑 src/core/vehicle-repair.js；人物连续性 src/rendering/scene-npc-continuity.js，接入正式 renderer.js 深度队列。表现记录仅属于当前游戏实例和地图，进入其他活动、重开或离开可见区域后清理；不写进存档，不保留业务任务。图集、纹理和视频预算增加为零。
+维修逻辑 src/core/vehicles/vehicle-repair.js；人物连续性 src/rendering/scene-npc-continuity.js，接入正式 renderer.js 深度队列。表现记录仅属于当前游戏实例和地图，进入其他活动、重开或离开可见区域后清理；不写进存档，不保留业务任务。图集、纹理和视频预算增加为零。
 
 ## 4 动作和保留项
 继续使用正式 NPC 连续待机、猫身体与独立操枪、载具车体及拖车动作，不使用截图或静帧替代动画。此轮选择原地留驻，无需新增步行退场路径、帧表或动作时长。维修工时、付费、暂停、存档和满位排队继续走真实订单。
@@ -36,7 +36,7 @@
 
 造型与交付：只修复正式人物目录和缓存生命周期，不新增美术资源。继续使用原角色身份、俯视比例、脚底锚点、连续待机帧与正式深度排序。四个常驻岗位复用现有任务坐标；没有新增碰撞、通行边界、纹理、视频或动作。位图精修和新步行动作不适用。主线专属人物在室内、剧情及其他活动中隐藏，回森林重新从正式目录供给；临时剧情人物仍按原连续性规则留驻。
 
-入口：`src/config/mainline.js#MAINLINE_NPCS`、`src/core/mainline-manager.js#mainlineActors`、`src/rendering/scene-npc-continuity.js#sceneNpcObjects`；对应 `designCriterion: scene-npc-continuity`。
+入口：`src/config/mainline.js#MAINLINE_NPCS`、`src/core/story/mainline-manager.js#mainlineActors`、`src/rendering/scene-npc-continuity.js#sceneNpcObjects`；对应 `designCriterion: scene-npc-continuity`。
 
 验收结果：通过。
 

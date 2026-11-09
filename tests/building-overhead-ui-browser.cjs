@@ -24,7 +24,7 @@ async page=>{
   const info=await page.evaluate(async()=>{
    const b=document.getElementById('nearby-interaction'),r=b.getBoundingClientRect(),v=a.renderer.view,c=a.renderer.canvas.getBoundingClientRect(),hud=document.querySelector('.hud-resources').getBoundingClientRect();
    const review=await (await import('/src/rendering/visual-review.js')).inspectBuildingInteraction(a.renderer,document);
-   const entry=(await import('/src/core/nearby-interaction.js')).nearbyInteraction(a.game);
+   const entry=(await import('/src/core/navigation/nearby-interaction.js')).nearbyInteraction(a.game);
    return {key:entry.key,type:entry.type,target:b.dataset.target,cards:['ranger-arrival','mainline-hud'].filter(id=>{const n=document.getElementById(id);return n&&!n.hidden;}),hidden:b.hidden,placement:b.dataset.placement,anchorError:review.anchorError,color:getComputedStyle(b).backgroundColor,rect:{left:r.left,top:r.top,right:r.right,bottom:r.bottom,height:r.height},hudBottom:Math.max(hud.bottom,...[...document.querySelectorAll('#ranger-arrival,#mainline-hud')].filter(n=>!n.hidden).map(n=>n.getBoundingClientRect().bottom)),playerY:c.top+(a.game.player.y-v.y)*v.zoom,canvasBottom:c.bottom,zoom:v.zoom};
   });
   const target=id==='arrival-repair'?id:id.startsWith('upgrade-')?'workshop-'+id.slice(8):'restore-'+id;

@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {realmStageSpec,realmReward} from '../src/config/realms.js';
-import {updateRealm} from '../src/core/realm-manager.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {updateRealm} from '../src/core/realms/realm-manager.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 
 // 最高纪录使用已有存档字段，不伪造当前会话检查点。
 function setup(best=0){const p=freshProgress();p.realms.records.tower.best=best;const g=new Game(p,()=>.45);g.start();assert.ok(g.enterRealm('tower'));return g;}

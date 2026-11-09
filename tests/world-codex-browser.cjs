@@ -12,10 +12,10 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(r=>r.id);p.vehicleHulls[0]=1;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=999999;g.enemies=[];g.trees=[];g.cottage=null;Object.assign(g.player,{x:2000,y:2000});
    const e=g.spawnEnemy(0,0,{x:2100,y:2000});e.species='slime';e.hp=1;g.hit(e,999,false,{statisticsSource:{weapon:'pistol',vehicle:'pine-tank'}});g.enemies=[];
-   const farm=await import('/src/core/farm.js'),now=Date.now();g.progress.farm.plots=[{id:1,mapId:'forest',x:2000,y:2000,crop:null,plantedAt:0,readyAt:0,watered:false}];g.progress.farm.seeds[1]=2;
+   const farm=await import('/src/core/farming/farm.js'),now=Date.now();g.progress.farm.plots=[{id:1,mapId:'forest',x:2000,y:2000,crop:null,plantedAt:0,readyAt:0,watered:false}];g.progress.farm.seeds[1]=2;
    if(!farm.farmAction(g,'plant',{plot:1,crop:1,now}).ok||!farm.farmAction(g,'harvest',{plot:1,now:now+130000}).ok)throw Error('农作统计准备失败');
-   const outdoors=await import('/src/core/outdoors.js');g.fishing={phase:'landed',species:0,size:18};const fish=outdoors.finishFishing(g,true);if(!fish.ok)throw Error('鱼获统计准备失败：'+fish.message);window.fishKey=(await import('/src/config/world-codex.js')).WORLD_CODEX.find(e=>e.category==='fish').key;
-   window.expected=(await import('/src/progression/world-codex.js')).codexTotals(g.progress);g.livingPersist(g.progress);a.renderer.camera.time=null;a.refresh();
+   const outdoors=await import('/src/core/activities/outdoors.js');g.fishing={phase:'landed',species:0,size:18};const fish=outdoors.finishFishing(g,true);if(!fish.ok)throw Error('鱼获统计准备失败：'+fish.message);window.fishKey=(await import('/src/config/world-codex.js')).WORLD_CODEX.find(e=>e.category==='fish').key;
+   window.expected=(await import('/src/progression/player/world-codex.js')).codexTotals(g.progress);g.livingPersist(g.progress);a.renderer.camera.time=null;a.refresh();
   });
   for(const light of ['day','night']){await phase(light);await page.screenshot({path:out+'/scene-'+light+'.png'});await open();await page.locator('[data-codex-tab="overview"]').tap();const time=await page.evaluate(()=>a.game.time);await page.waitForTimeout(150);if(await page.evaluate(()=>a.game.time)!==time)throw Error('图鉴未暂停');await shot('overview-'+light);await page.locator('[data-codex-close]').first().tap();await page.waitForFunction(()=>a.game.state==='playing');}
   await open();
@@ -30,6 +30,6 @@ async original=>{
   await page.locator('[data-codex-tab="crop"]').tap();await page.locator('#codex-search').fill('不存在的名字');if(await page.locator('[data-codex-entry]').count())throw Error('空搜索未生效');await page.locator('[data-codex-tab="overview"]').tap();
   for(const size of [{width:320,height:568},{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(size);await shot('layout-'+size.width);}
   await page.locator('[data-codex-close]').first().tap();await page.waitForFunction(()=>a.game.state==='playing');await page.reload();await page.locator('#start').tap();await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;});
-  const totals=await page.evaluate(async()=>(await import('/src/progression/world-codex.js')).codexTotals(a.game.progress));if(totals.kills!==1||totals.fish!==1||totals.harvested!==1)throw Error('读档丢失统计 '+JSON.stringify(totals));if(errors.length)throw Error(errors.join(';'));return {counts,shots,errors,totals};
+  const totals=await page.evaluate(async()=>(await import('/src/progression/player/world-codex.js')).codexTotals(a.game.progress));if(totals.kills!==1||totals.fish!==1||totals.harvested!==1)throw Error('读档丢失统计 '+JSON.stringify(totals));if(errors.length)throw Error(errors.join(';'));return {counts,shots,errors,totals};
  }catch(e){await page.screenshot({path:out+'/failure.png'});throw e;}finally{await context.close();}
 }

@@ -19,7 +19,7 @@
 
 ## 3 技术交付
 
-配置、战斗、表现分别位于 `config/boss-skills.js`、`combat/boss-skills.js`、`core/boss-reinforcements.js`、`rendering/boss-skills.js`；接入原 Boss 状态机、召唤归属和正式绘制器。按世界逻辑单位绘制，原点为 Boss 脚底／锁定目标点，地面预警在实体下方，招式文字在主体上方。沿用运行时昼夜，无额外画布、纹理缓存或资源请求；危险区沿用 24 个硬上限，援兵上限 6、战场总怪上限 12。找不到安全出生点时放弃本次名额，不降级到玩家脚下出生。
+配置、战斗、表现分别位于 `config/boss-skills.js`、`combat/boss-skills.js`、`core/battle/boss-reinforcements.js`、`rendering/boss-skills.js`；接入原 Boss 状态机、召唤归属和正式绘制器。按世界逻辑单位绘制，原点为 Boss 脚底／锁定目标点，地面预警在实体下方，招式文字在主体上方。沿用运行时昼夜，无额外画布、纹理缓存或资源请求；危险区沿用 24 个硬上限，援兵上限 6、战场总怪上限 12。找不到安全出生点时放弃本次名额，不降级到玩家脚下出生。
 
 ## 4 动画与规则
 

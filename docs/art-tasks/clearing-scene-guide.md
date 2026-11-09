@@ -99,7 +99,7 @@
 
 - 目标：抵达站牌后离开未完成的清缴区域，重新显示到本轮站牌的路线；修复战斗前残留的普通访问意图在离开HUD范围后覆盖清缴目标的问题。
 - 保留项：主动点击其他目的地、返回营地告示牌管理、追踪邻里委托、找种与修复任务优先级以及手动关闭寻路均保留。无强制移动，不改变波次、场地、站牌锚点或存档结构。
-- 绘制与资源：沿用上述正式路线光点、任务卡与终点，无新增美术资源、Canvas、缓存或动画；尺寸、颜色、图层、世界坐标保持原样。designCriterion沿用clearing-scene-guide，逻辑入口为src/core/world-navigation.js。
+- 绘制与资源：沿用上述正式路线光点、任务卡与终点，无新增美术资源、Canvas、缓存或动画；尺寸、颜色、图层、世界坐标保持原样。designCriterion沿用clearing-scene-guide，逻辑入口为src/core/navigation/world-navigation.js。
 - 验证：clearing-sign-navigation.test.mjs的5项检查全部通过，包括抵达→离开→再次抵达、旧访问意图、主动目的地与关闭偏好。相关导航检查另有9项通过、7项失败；7项均在未修改主分支复现，本轮未修改对应旧测试与无关玩法。
 - 手机验收通过：320×568夜间、390×844白天共18个边界/离开采样，301、451、600单位处均恢复可达路线和可见光点，抵达收起、手动关闭有效，页面异常0。初始东侧离开夹具落在不可通行地形，改为西侧可通行位置验证，未改动路径规划或碰撞。
 - 人工复核output/playwright/clearing-sign-navigation/320-night-return.png与390-day-return.png，任务卡显示前往清缴场站牌附近，路线沿桥绕河，车辆、环境与导航同屏正常。完整记录：output/clearing-return-browser-result.txt。结论：通过。

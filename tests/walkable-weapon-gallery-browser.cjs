@@ -29,7 +29,7 @@ async page=>{
  await page.evaluate(()=>window.galleryStage='返回出口');await page.keyboard.down('ArrowDown');await page.waitForFunction(y=>a.game.player.y>=y,exitY,{timeout:20000});await page.keyboard.up('ArrowDown');
  await page.evaluate(()=>window.galleryStage='等待出门徽记');await page.waitForFunction(()=>a.renderer.actionCountdownView?.icon==='exit');
  await page.screenshot({path:'output/playwright/walkable-weapon-gallery/exit-countdown.png'});await page.waitForFunction(()=>!a.game.cottage,null,{timeout:6000});
- await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.weapons.door);if(!(await import('/src/core/cottage.js')).enterWorkshop(a.game,'weapons'))throw Error('再次进入失败');});
+ await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.weapons.door);if(!(await import('/src/core/home/cottage.js')).enterWorkshop(a.game,'weapons'))throw Error('再次进入失败');});
  // 真正触屏拖动穿过可见柜区域，不能把行走误当作打开装备。
  await page.evaluate(()=>window.galleryStage='触屏拖动');const cdp=await page.context().newCDPSession(page),box=await page.locator('[data-room-index="0"]').boundingBox(),beforeTouch=await page.evaluate(()=>a.game.player.y);
  await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true});

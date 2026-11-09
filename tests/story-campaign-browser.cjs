@@ -18,7 +18,7 @@ async(page)=>{
  // 公开意图与正式配额清场夹具用于走完重复战斗，不把这些击杀记为自然试射。
  await page.evaluate(async()=>{
   window.finishStoryFixture=async()=>{const a=(await import('/src/main.js')).application,g=a.game;
-   const {storyDefinition,storyNode}=await import('/src/core/story-definition.js'),{updateStory}=await import('/src/core/story-manager.js');
+   const {storyDefinition,storyNode}=await import('/src/core/story/story-definition.js'),{updateStory}=await import('/src/core/story/story-manager.js');
    for(const d of document.querySelectorAll('dialog[open]'))d.close();
    for(let i=0;i<20000&&g.story;i++){const r=g.story,n=storyNode(g),def=storyDefinition(g);
     if(r.dialogue){g.advanceStoryDialogue(true);continue;}

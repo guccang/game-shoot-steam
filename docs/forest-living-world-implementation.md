@@ -24,7 +24,7 @@
 
 ## 实现边界
 
-配置位于 `src/config/living-world.js`；历法与空间规则在 `src/world/living-*.js`；状态白名单在 `src/progression/living-world.js`；常驻规则和事务在 `src/core/living-world.js`。绘制、声音与界面分别位于 rendering、platform 与 ui，继续使用现有存档服务和弹窗暂停归属。
+配置位于 `src/config/living-world.js`；历法与空间规则在 `src/world/living-*.js`；状态白名单在 `src/progression/camp/living-world.js`；常驻规则和事务在 `src/core/camp/living-world.js`。绘制、声音与界面分别位于 rendering、platform 与 ui，继续使用现有存档服务和弹窗暂停归属。
 
 居民使用稳定标识和独立动作时钟。六人始终更新，不依赖第一次进入镜头才开始活动。当前未建设复杂经济、好感刷取、衰老、饥饿、离线灾难或全地图扩建。
 

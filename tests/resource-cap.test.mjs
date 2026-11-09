@@ -5,15 +5,15 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
 import {MATERIAL_CAP} from '../src/config/materials.js';
-import {creditResource} from '../src/progression/resource-wallet.js';
-import {debugGrantProgress} from '../src/progression/debug-grants.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
+import {creditResource} from '../src/progression/economy/resource-wallet.js';
+import {debugGrantProgress} from '../src/progression/player/debug-grants.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {storyPostApproach} from '../src/core/story-posts.js';
-import {claimStoryCollection} from '../src/progression/story-rewards.js';
-import {startCampDefense,claimCampDefense} from '../src/core/camp-defense.js';
+import {storyPostApproach} from '../src/core/story/story-posts.js';
+import {claimStoryCollection} from '../src/progression/story/story-rewards.js';
+import {startCampDefense,claimCampDefense} from '../src/core/camp/camp-defense.js';
 import {CAMP_GATES} from '../src/config/camp-defense.js';
-import {finishFootball} from '../src/core/slime-football.js';
+import {finishFootball} from '../src/core/activities/slime-football.js';
 
 // 使用正式进度和游戏对象，仅将钱包置于距离上限两份资源的位置。
 function nearCap(){const p=freshProgress();p.coins=p.wood=RESOURCE_CAP-2;return p;}

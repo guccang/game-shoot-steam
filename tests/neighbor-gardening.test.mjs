@@ -3,16 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {validateMainline} from '../src/progression/mainline-progress.js';
+import {validateMainline} from '../src/progression/story/mainline-progress.js';
 import {MAINLINE_IDS,MAINLINE_SITES,currentMainlineTask} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS,pendingRestoration} from '../src/config/town-restoration.js';
 import {MONSTER_CAMPS} from '../src/config/monster-camps.js';
-import {updateMonsterCamps} from '../src/core/monster-camps.js';
-import {updateMainline,advanceMainlineSpeech,completeMainline,mainlineObjective} from '../src/core/mainline-manager.js';
-import {awardFarmSeedDrop,buyFarmSeeds} from '../src/core/farm-seeds.js';
-import {farmAction} from '../src/core/farm.js';
-import {grantFarmSeeds} from '../src/progression/farm.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {updateMonsterCamps} from '../src/core/battle/monster-camps.js';
+import {updateMainline,advanceMainlineSpeech,completeMainline,mainlineObjective} from '../src/core/story/mainline-manager.js';
+import {awardFarmSeedDrop,buyFarmSeeds} from '../src/core/farming/farm-seeds.js';
+import {farmAction} from '../src/core/farming/farm.js';
+import {grantFarmSeeds} from '../src/progression/farming/farm.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {FARM_SEED_DOOR,FARM_CROPS} from '../src/config/farm.js';
 // 通过正式见面对白接取；修复夹具只隔离建筑前置，不代做委托目标。
 function scene(id,accept=true){

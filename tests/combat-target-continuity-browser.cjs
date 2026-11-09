@@ -27,7 +27,7 @@ async page=>{
   await setup(0,time,width,height);
   await t.evaluate(async side=>{
    const g=a.game;g.progress.bossChallenge={bosses:0,maxHp:10000,speed:0,damage:0,blastDamage:0};
-   (await import('/src/core/boss-manager.js')).restoreBoss(g,10000);
+   (await import('/src/core/battle/boss-manager.js')).restoreBoss(g,10000);
    Object.assign(g.boss,{x:g.player.x+(side>0?g.arrivalView.right-8:g.arrivalView.left+8),y:g.player.y,speed:0,attack:999,arena:{...g.player.arena}});
    if(g.findAttackTarget()!==g.boss)throw Error('已露出身体的野猪未被锁定');
    a.renderer.draw();

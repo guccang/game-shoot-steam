@@ -1,7 +1,7 @@
 // 入职工坊教学直接指向真实房屋和页面按钮，文案按阶段配置，不代替实际交易。
 import {RANGER,arrivalGiftHull,arrivalGiftName} from '../config/ranger-arrival.js';
-import {arrivalWorkReady,arrivalGuidanceVisible} from '../core/ranger-arrival.js';
-import {parkedOwned} from '../core/camp-parking.js';
+import {arrivalWorkReady,arrivalGuidanceVisible} from '../core/camp/ranger-arrival.js';
+import {parkedOwned} from '../core/vehicles/camp-parking.js';
 import {worldDistance} from '../world/coordinates.js';
 const STEPS={repair:{scene:'靠近自动修复武器工坊',action:'点击这里修复'},craft:{scene:'点击房屋购买手枪',action:'点击购买第一把手枪'}};
 

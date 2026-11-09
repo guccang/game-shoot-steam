@@ -2,15 +2,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
-import {setLivingPatrol,acceptNextClearing,canAcceptNextClearing} from '../src/core/living-world.js';
-import {clearingSite,clearingNavigationSite} from '../src/progression/clearing-site.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {setLivingPatrol,acceptNextClearing,canAcceptNextClearing} from '../src/core/camp/living-world.js';
+import {clearingSite,clearingNavigationSite} from '../src/progression/story/clearing-site.js';
 import {worldDistance} from '../src/world/coordinates.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {CLEARING_APPROACH,CLEARING_STARTER_RULES,CLEARING_SITE_RULES} from '../src/config/clearing.js';
 import {clearingEnemyLevel} from '../src/config/clearing-difficulty.js';
-import {livingWaveAllowed} from '../src/core/living-safety.js';
+import {livingWaveAllowed} from '../src/core/camp/living-safety.js';
 // 固定随机序列保证选点可复现，胜利收据仍由正式事件生成。
 function scene(){let seed=29;const events=[],p=freshProgress();p.arrival={version:2,phase:'complete',keys:true};p.restoration.repaired.push('clearing');const g=new Game(p,()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32),(type,data)=>{if(type==='victory')events.push(data);});g.start();g.mainlineSpeech=null;Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});assert.ok(acceptClearingPost(g).ok);return {g,events};}
 // 完整清掉五波后击败领主，重复致命命中不应再结算。

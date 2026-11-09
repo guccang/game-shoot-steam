@@ -1,13 +1,13 @@
 // 仓库定向验证：建筑、真实库存、负重、权限和失败回滚。
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {canUseWarehouse,warehouseVehicles,transferWarehouse,warehouseTransferPreview} from '../src/core/warehouse.js';
-import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
+import {canUseWarehouse,warehouseVehicles,transferWarehouse,warehouseTransferPreview} from '../src/core/inventory/warehouse.js';
+import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {updateCottage,enterWorkshop} from '../src/core/cottage.js';
+import {updateCottage,enterWorkshop} from '../src/core/home/cottage.js';
 import {WAREHOUSE} from '../src/config/warehouse.js';
 import {blocked} from '../src/physics/motion.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';

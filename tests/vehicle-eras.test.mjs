@@ -1,15 +1,15 @@
 import {PEN_GATE} from '../src/config/pasture.js';
-import {tendPasture} from '../src/core/farm-production.js';
+import {tendPasture} from '../src/core/farming/farm-production.js';
 import {advanceVehicleWheels} from '../src/combat/vehicle-motion.js';
-import {creditOre} from '../src/core/mine-transactions.js';
-// 升阶使用正式交易入口，覆盖两条路线、旧档与存储失败。
+import {creditOre} from '../src/core/mining/mine-transactions.js';
+// 精简运输车型使用正式交易入口，覆盖加工件、旧档与存储失败。
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {ERA_VEHICLES,eraDonor} from '../src/config/vehicle-eras.js';
-import {vehicleLoad} from '../src/progression/load-weight.js';
-import {equipmentRecipe} from '../src/progression/equipment-goals.js';
+import {ERA_VEHICLES} from '../src/config/vehicle-eras.js';
+import {vehicleLoad} from '../src/progression/inventory/load-weight.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 // 旧档没有金属、马匹或新车槽位，已有停车与驾驶选择必须正常恢复。
 function scene(){
@@ -19,40 +19,33 @@ function scene(){
  const g=new Game(validateProgress(raw));g.state='playing';g.livingPersist=()=>true;
  return g;
 }
-test('两条路线逐代打造，货物、车位、载荷、耐久与当前车都可恢复',()=>{
- const g=scene();assert.equal(g.progress.materials.iron,0);assert.equal(g.vehicles.length,23);
- Object.assign(g.progress.materials,{copper:300,iron:300,rareMetal:100,draftHorse:1});
- for(const model of ERA_VEHICLES){
-  const old=eraDonor(model),prior=g.progress.campParking.owned.find(r=>r.hull===old?.index);
-  if(old){g.progress.logistics.builds[old.index].wood=2;g.progress.vehicleIndex=old.index;g.vehicle=g.vehicles[old.index];g.vehicle.hp=g.vehicle.maxHp*.6;}
+test('只打造木制自行车与木马车，停车、载荷与旧档使用同一槽位',()=>{
+ const g=scene();Object.assign(g.progress.materials,{copperVehicle:2,draftHorse:1});
+ for(const model of ERA_VEHICLES.filter(v=>!v.retired)){
   const price=equipmentRecipe('vehicle',model.index,g.progress),wood=g.progress.wood;
-  assert.equal(g.buyVehicle(model.index),true,model.name);assert.equal(g.progress.wood,wood-price.wood);
-  assert.equal(vehicleLoad(g,model.index).capacity,model.payload);
-  const parked=g.progress.campParking.owned.find(r=>r.hull===model.index);assert.ok(parked);
-  if(old){assert.equal(parked.spot,prior.spot);assert.equal(g.progress.vehicleHulls[old.index],0);
-   assert.equal(g.progress.logistics.builds[model.index].wood,2);assert.equal(g.vehicle.index,model.index);
-   assert.ok(Math.abs(g.vehicle.hp/g.vehicle.maxHp-.6)<1e-9);}
+  assert.ok(g.buyVehicle(model.index),model.name);assert.equal(g.progress.wood,wood-price.wood);
+  assert.equal(vehicleLoad(g,model.index).capacity,model.payload);assert.ok(g.progress.campParking.owned.some(r=>r.hull===model.index));
   assert.equal(g.buyVehicle(model.index),false);assert.equal(validateProgress(g.progress).vehicleHulls[model.index],1);
  }
- assert.equal(g.progress.materials.draftHorse,0);
+ assert.equal(g.progress.materials.copperVehicle,0);assert.equal(g.progress.materials.draftHorse,0);
+ for(const old of ERA_VEHICLES.filter(v=>v.retired))assert.equal(g.buyVehicle(old.index),false);
 });
-test('缺少原车、材料、停车或写盘失败不改变进度',()=>{
- const g=scene();assert.equal(g.buyVehicle(12),false);assert.equal(g.buyVehicle(11),true);
- let before=structuredClone(g.progress);assert.equal(g.buyVehicle(12),false);assert.deepEqual(g.progress,before);
- g.progress.materials.copper=8;g.livingPersist=()=>false;before=structuredClone(g.progress);
- assert.equal(g.buyVehicle(12),false);assert.deepEqual(g.progress,before);
- g.livingPersist=()=>true;g.vehicles[11].active=true;assert.equal(g.buyVehicle(12),false);assert.deepEqual(g.progress,before);
+test('马车缺少加工件或写盘失败不改变进度，自行车可作为运输起步',()=>{
+ const g=scene();assert.ok(g.buyVehicle(19));g.progress.materials.draftHorse=1;
+ let before=structuredClone(g.progress);assert.equal(g.buyVehicle(13),false);assert.deepEqual(g.progress,before);
+ g.progress.materials.copperVehicle=2;g.livingPersist=()=>false;before=structuredClone(g.progress);
+ assert.equal(g.buyVehicle(13),false);assert.deepEqual(g.progress,before);
 });
 
-test('矿层分别产铜、铁与稀有金属，牧栏现场领马并随车交付',()=>{
+test('四种矿物分别入库，牧栏现场领马并随车交付',()=>{
  const g=scene();g.vehicle.active=false;
- for(const depth of [1,2,3,4])creditOre(g.progress,depth,5);
- assert.deepEqual(['copper','iron','rareMetal'].map(key=>g.progress.materials[key]),[5,5,10]);
+ for(const key of ['stone','copper','iron','rareMetal'])creditOre(g.progress,key,5);
+ assert.equal(g.progress.mining.ore,5);assert.deepEqual(['copper','iron','rareMetal'].map(key=>g.progress.industry.raw[key]),[5,5,5]);
  Object.assign(g.player,PEN_GATE);g.progress.coins=200;g.livingPersist=()=>false;
  assert.equal(tendPasture(g,'adopt-horse').ok,false);assert.equal(g.progress.coins,200);
  g.livingPersist=()=>true;assert.ok(tendPasture(g,'adopt-horse').ok);assert.equal(g.progress.coins,20);
- assert.equal(tendPasture(g,'adopt-horse').ok,false);g.progress.materials.copper=8;
- for(const i of [11,12,13])assert.ok(g.buyVehicle(i));
+ assert.equal(tendPasture(g,'adopt-horse').ok,false);g.progress.materials.copperVehicle=2;
+ assert.ok(g.buyVehicle(13));
  assert.equal(g.progress.materials.draftHorse,0);
 });
 test('牵引马行走和停车衔接同源连续帧，停车仍呼吸，暂停保持姿势',()=>{

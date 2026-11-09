@@ -4,7 +4,7 @@
 
 - 完成并保存章节后直接恢复巡林，再由现有奖励窗口接管临时暂停；领取按钮不再重新打开任务簿。手动关闭、三秒倒计时关闭、Esc关闭后自动继续游戏，不出现“休息一下”。营地经验与资源仍在同一份奖励收据中展示。
 - 保存失败继续显示原领取页的错误和重试按钮，不提前发奖；重复领奖事件不重开目录。已领章节重玩不重复发奖，主动暂离仍保留原暂停规则。
-- 正式入口：`src/core/story-manager.js#leaveStory`、`src/ui/story.js` 的领取处理。复用原弹窗、奖励队列、倒计时和视觉资源，无新增美术或布局。
+- 正式入口：`src/core/story/story-manager.js#leaveStory`、`src/ui/story.js` 的领取处理。复用原弹窗、奖励队列、倒计时和视觉资源，无新增美术或布局。
 - 验证：`tests/story-resource-limit.test.mjs`检查成功/失败/重玩结算；`tests/story-completion-flow-browser.cjs`通过正式按钮覆盖关闭方式、重复事件、保存拒绝与异常重试、重玩及暂离。390×844手机触摸模拟和逐帧记录确认结算只打开一次，额外任务簿/暂停帧为零。截图与日志在`output/playwright/story-completion-flow/`；4175已占用，本轮隔离验证使用4176。未连接物理手机。
 
 依据：[游戏美术资源生成标准](../art-generation-standard.md)。由美术生成任务单复制填写，制作前记录。

@@ -38,7 +38,7 @@ async page=>{
  const summary=await page.locator('#restoration-summary').textContent();if(!summary.includes('不受主线顺序限制')||!summary.includes('20 / 80')||!summary.includes('还差 60'))throw Error(summary);
  await page.screenshot({path:'output/playwright/boss-repair-flow/repair-panel-320.png'});
  await page.locator('#restoration-go').click();
- const route=await page.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game));if(route?.restoration!=='cottage'||!route.label.includes('20/80'))throw Error('自选修复采木导航错误');
+ const route=await page.evaluate(async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game));if(route?.restoration!=='cottage'||!route.label.includes('20/80'))throw Error('自选修复采木导航错误');
  // 由真实移动进入范围，完整施工后不重复收费，在已修复小屋门前站定能够进屋。
  await page.setViewportSize({width:390,height:844});
  await page.evaluate(()=>{const f=facilities.find(f=>f.id==='cottage'),g=a.game;g.progress.wood=80;g.progress.weapon=0;g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.attackTimer=g.fireClock=999;Object.assign(g.player,{x:f.x-160,y:f.y+55,vx:0,vy:0});g.update=normalUpdate;a.renderer.camera.time=null;a.refresh();});
@@ -49,7 +49,7 @@ async page=>{
  await page.screenshot({path:'output/playwright/boss-repair-flow/repaired-cottage.png'});
  await page.evaluate(()=>{const g=a.game,site=facilities.find(f=>f.id==='cottage').site;Object.assign(g.player,{x:site.x,y:site.y+20,vx:0,vy:0});g.cottageDoorLatch=false;g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.update=normalUpdate;a.refresh();});await page.waitForFunction(()=>a.game.cottage?.kind==='cottage');await page.evaluate(()=>{a.game.update=()=>{};});
  // 前、后、侧面实际步行录制，正式碰撞及遮挡不替换。
- await page.evaluate(async()=>{const g=a.game;(await import('/src/core/cottage.js')).leaveCottage(g);g.progress.restoration.repaired=g.progress.restoration.repaired.filter(id=>id!=='cottage');g.progress.wood=0;g.mainlineSpeech=null;g.mainlineTalkDelay=999;const f=facilities.find(f=>f.id==='cottage');Object.assign(g.player,{x:f.x-140,y:f.y+65,vx:0,vy:0});g.update=normalUpdate;a.renderer.camera.time=null;a.refresh();});
+ await page.evaluate(async()=>{const g=a.game;(await import('/src/core/home/cottage.js')).leaveCottage(g);g.progress.restoration.repaired=g.progress.restoration.repaired.filter(id=>id!=='cottage');g.progress.wood=0;g.mainlineSpeech=null;g.mainlineTalkDelay=999;const f=facilities.find(f=>f.id==='cottage');Object.assign(g.player,{x:f.x-140,y:f.y+65,vx:0,vy:0});g.update=normalUpdate;a.renderer.camera.time=null;a.refresh();});
  const path=[];
  for(const [key,ms,label] of [['ArrowRight',1300,'front'],['ArrowUp',1700,'side'],['ArrowLeft',1300,'back']]){
   const before=await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y}));await page.keyboard.down(key);await page.waitForTimeout(ms);await page.keyboard.up(key);

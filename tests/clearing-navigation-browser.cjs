@@ -34,12 +34,12 @@ async page=>{
  // 真实战场保持逐帧更新；主动导航不依赖强制任务，连续移动不能让缓存每帧重建。
  await page.evaluate(async()=>{
   const g=a.game;g.trees=[];Object.assign(g.player,{x:1600,y:400});
-  (await import('/src/core/world-navigation.js')).requestWorldNavigation(g,{id:'long-navigation-check',x:700,y:1600},'路线验收',{direct:true});
+  (await import('/src/core/navigation/world-navigation.js')).requestWorldNavigation(g,{id:'long-navigation-check',x:700,y:1600},'路线验收',{direct:true});
  });
  await waitForRoute();
  const start=await page.evaluate(()=>({x:a.game.player.x,y:a.game.player.y,time:a.game.time}));
  await page.keyboard.down('s');await page.waitForTimeout(400);await page.keyboard.up('s');
- const movement=await page.evaluate(async()=>({x:a.game.player.x,y:a.game.player.y,time:a.game.time,route:(await import('/src/core/story-route.js')).storyRouteState(a.game)}));
+ const movement=await page.evaluate(async()=>({x:a.game.player.x,y:a.game.player.y,time:a.game.time,route:(await import('/src/core/navigation/story-route.js')).storyRouteState(a.game)}));
  if(movement.y<=start.y||movement.time<=start.time||movement.route.searchStarts!==1)throw Error('真实移动未连续推进或反复重算');
  const samples=[];
  // 同屏夹具恢复正式森林树与载具，用现有工厂固定出生位置，仅冻结移动以比较布局。
@@ -65,7 +65,7 @@ async page=>{
  await page.evaluate(async()=>{
   const g=a.game;g.update=navUpdate;g.dismountVehicle();g.progress.living.patrolActive=false;g.enemies=[];
   Object.assign(g.player,{x:1600,y:400});g.encounterTimer=999;
-  (await import('/src/core/world-navigation.js')).requestWorldNavigation(g,{id:'long-navigation-check',x:700,y:1600},'路线验收',{direct:true});
+  (await import('/src/core/navigation/world-navigation.js')).requestWorldNavigation(g,{id:'long-navigation-check',x:700,y:1600},'路线验收',{direct:true});
  });
  await waitForRoute();
  for(const width of [1280,390,320])for(const time of ['day','night']){
@@ -84,11 +84,11 @@ async page=>{
  }
  // 真实点击设置暂停，再关闭恢复；旧目标切换时不残留路径。
  await page.locator('#settings-button').click();
- if(await page.evaluate(async()=> (await import('/src/core/story-route.js')).storyRouteState(a.game))!==null)throw Error('暂停残留路线');
+ if(await page.evaluate(async()=> (await import('/src/core/navigation/story-route.js')).storyRouteState(a.game))!==null)throw Error('暂停残留路线');
  await page.locator('#settings-done').click();
  await waitForRoute();
  await page.evaluate(async()=>{
-  const g=a.game,{requestWorldNavigation}=await import('/src/core/world-navigation.js'),{storyRouteState}=await import('/src/core/story-route.js');
+  const g=a.game,{requestWorldNavigation}=await import('/src/core/navigation/world-navigation.js'),{storyRouteState}=await import('/src/core/navigation/story-route.js');
   requestWorldNavigation(g,{id:'other-target',x:2100,y:1300},'切换目标',{direct:true});
   const r=storyRouteState(g);if(r.reachable||r.points.length)throw Error('目标切换残留旧路线');
  });

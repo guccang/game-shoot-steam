@@ -9,7 +9,7 @@ import {vehicleWeapon} from '../src/config/vehicles.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
 import {fireBallistics} from '../src/combat/ballistics.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {restoreBoss} from '../src/core/boss-manager.js';
+import {restoreBoss} from '../src/core/battle/boss-manager.js';
 import {stepBodies} from '../src/physics/motion.js';
 
 // 使用正式战斗实例与有界镜头，只移除随机场景和自动刷怪。

@@ -6,6 +6,6 @@
 
 保留现有木头图标、资源卡片、尺寸、锚点、字体和缩写形式；数量提示列出三类来源。建造及交易页继续使用实际可消费的仓库存量。无新增图案、动画、碰撞或缓存，不调用 imagegen，不涉及 PNG 替换。
 
-正式入口：`src/ui/hud.js#createHud`、`src/progression/resource-wallet.js#woodInventory`。设计目标 `wood-hud-total`，检查精确合计、自动入库守恒、实时刷新及手机昼夜数字可读。
+正式入口：`src/ui/hud.js#createHud`、`src/progression/economy/resource-wallet.js#woodInventory`。设计目标 `wood-hud-total`，检查精确合计、自动入库守恒、实时刷新及手机昼夜数字可读。
 
 验收通过：2 项既有资源格式测试、7 项真实浏览器检查通过，浏览器错误为空。覆盖三处合计、自有载具筛选、采集实时更新、装卸与自动入库守恒、清理、仓库消耗和超过单库存上限的合计；更新使用正常 HUD 刷新周期。已审查 390×844、320×568、844×390 昼夜截图，木头数字无裁切、资源栏无溢出。截图保存在 output/playwright/wood-hud-total/。本次只修改数据展示，原场景形态、通行和动作不变。

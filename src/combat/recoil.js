@@ -172,6 +172,8 @@ RECOIL_PROFILES.push({...RECOIL_PROFILES[15],muzzle:0,kick:0,maxKick:0});
 // 探索主炮使用独立后坐行程，短散射炮与长穿甲炮保持各自炮口。
 RECOIL_PROFILES[23]={...RECOIL_PROFILES[18],muzzle:82,kick:20,maxKick:24};
 RECOIL_PROFILES[24]={...RECOIL_PROFILES[21],muzzle:48,kick:16,maxKick:20};
+// 地区炮管长度与独立弹簧后坐共用配置，不使用手持枪的默认枪口。
+for(const [i,muzzle]of [49,68,90,49,58].entries())RECOIL_PROFILES[25+i]={...RECOIL_PROFILES[[17,18,18,17,21][i]],muzzle};
 export function createRecoil() {
   return { kick: 0, kickVelocity: 0, rise: 0, riseVelocity: 0, flash: 0 };
 }

@@ -37,9 +37,9 @@ async page=>{
   await page.setViewportSize({width:320,height:568});
   await page.evaluate(async kind=>{
    const g=a.game;g.state='playing';
-   if(g.cottage)(await import('/src/core/cottage.js')).leaveCottage(g);
+   if(g.cottage)(await import('/src/core/home/cottage.js')).leaveCottage(g);
    g.state='playing';g.vehicle.active=false;g.buildingEntry=null;g.cottageEntry=null;
-   const config=await import('/src/config/workshop-interiors.js'),core=await import('/src/core/cottage.js');Object.assign(g.player,config.interiorLayout({kind}).door);
+   const config=await import('/src/config/workshop-interiors.js'),core=await import('/src/core/home/cottage.js');Object.assign(g.player,config.interiorLayout({kind}).door);
    if(!(kind==='cottage'?core.enterCottage(g):core.enterWorkshop(g,kind)))throw Error('进入房间失败');
    const item=kind==='cottage'?(await import('/src/config/cottage.js')).COTTAGE.bed:config.interiorWorkshopTargets(g)[0];Object.assign(g.player,{x:item.x+25,y:item.y+20});a.refresh();
   },kind);await page.waitForTimeout(200);
@@ -50,7 +50,7 @@ async page=>{
  }
  // 屋面进门徽记与建筑升级按钮同时可见，检查固定间距，保留正式计时状态。
  await page.keyboard.press('Escape');
- await page.evaluate(async()=>{const g=a.game;g.state='playing';if(g.cottage)(await import('/src/core/cottage.js')).leaveCottage(g);g.vehicle.active=false;g.cottageEntryKind='weapons';g.cottageEntry=1;Object.assign(g.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.weapons.door);a.renderer.camera.time=null;a.refresh();});
+ await page.evaluate(async()=>{const g=a.game;g.state='playing';if(g.cottage)(await import('/src/core/home/cottage.js')).leaveCottage(g);g.vehicle.active=false;g.cottageEntryKind='weapons';g.cottageEntry=1;Object.assign(g.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.weapons.door);a.renderer.camera.time=null;a.refresh();});
  await page.waitForTimeout(200);
  const doorway=await page.evaluate(()=>{const badge=a.renderer.actionCountdownView,b=document.getElementById('nearby-interaction').getBoundingClientRect(),c=a.renderer.canvas.getBoundingClientRect();return {badge,gap:b.top-c.top-(badge.y+badge.height/2)};});
  if(doorway.gap<4)throw Error('进门徽记与升级按钮重叠 '+JSON.stringify(doorway));

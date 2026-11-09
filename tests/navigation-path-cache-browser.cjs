@@ -11,7 +11,7 @@ async page=>{
  });
  await page.locator('#start').click();await page.waitForFunction(()=>a.menu.page==='game');
  await page.evaluate(async()=>{
-  window.nav=await import('/src/core/story-route.js');window.review=await import('/src/rendering/visual-review.js');window.request=(await import('/src/core/world-navigation.js')).requestWorldNavigation;
+  window.nav=await import('/src/core/navigation/story-route.js');window.review=await import('/src/rendering/visual-review.js');window.request=(await import('/src/core/navigation/world-navigation.js')).requestWorldNavigation;
   const g=a.game;window.trees=g.trees;g.trees=[];g.enemies=[];g.encounterTimer=999;g.mainlineTalkDelay=999;g.mainlineSpeech=null;g.attack=()=>false;g.progress.living.patrolActive=false;
   Object.assign(g.player,{x:1600,y:400,invincible:999});request(g,{id:'cache-long',x:700,y:1600},'路线验收',{direct:true});
   Object.assign(a.environment,{time:'day',weather:'sun',autoTime:false,autoWeather:false});a.refresh();

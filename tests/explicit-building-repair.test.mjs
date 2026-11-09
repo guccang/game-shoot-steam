@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {TOWN_RESTORATIONS,RESTORATION_SECONDS} from '../src/config/town-restoration.js';
-import {updateRestoration,repairFacility,restorationStatus} from '../src/core/town-restoration.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {updateRestoration,repairFacility,restorationStatus} from '../src/core/camp/town-restoration.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 
 // 仅准备材料与进度，实际费用及施工均走生产方法。
 function scene(){const g=new Game(freshProgress(),()=>.5);g.start();g.progress.wood=9999;g.progress.restoration.repaired=[];g.restorationPersist=()=>true;g.mainlineSpeech=null;return g;}

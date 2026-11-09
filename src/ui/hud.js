@@ -1,13 +1,13 @@
-import {bossCombatActive} from '../core/boss-engagement.js';
-import {heroExperience} from '../progression/hero-experience.js';
-import {unreadMailCount} from '../progression/mailbox.js';
+import {bossCombatActive} from '../core/battle/boss-engagement.js';
+import {heroExperience} from '../progression/player/hero-experience.js';
+import {unreadMailCount} from '../progression/camp/mailbox.js';
 import { i18nText } from "../i18n/index.js";
 import {canvasRecoveryRevision} from '../rendering/canvas-recovery.js';
-import {deathCoinLoss} from '../core/death-penalty.js';
-import {livingWaveAllowed,livingProtected,clearingCombatActive} from '../core/living-safety.js';
+import {deathCoinLoss} from '../core/battle/death-penalty.js';
+import {livingWaveAllowed,clearingCombatActive} from '../core/camp/living-safety.js';
 // 战场 HUD 只读游戏状态，不执行购买、存储或战斗更新。
 import { updateFunnelSupply } from './funnel-supply.js';
-import {woodInventory} from '../progression/resource-wallet.js';
+import {woodInventory} from '../progression/economy/resource-wallet.js';
 import { compactWalletResource,compactTotalResource } from './resource-number.js';
 import { updateVehicleHud } from './vehicle-controls.js';
 import { ammoRingState, updateRing, statusIcon } from './status-rings.js';
@@ -94,7 +94,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     updateFunnelSupply(root, game, weapon);
     $('magazine-hud').hidden = !!weapon.independentSupply;
     const magazine = weapon.independentSupply ? null : game.magazines[p.weapon];
-    const reloading = !!magazine?.remaining;
+    const reloading = !!magazine?.remaining || !!magazine?.waterFilling;
     const skill = weapon.chargeTime
       ? game.pulse.charge / weapon.chargeTime
       : weapon.grenade && game.weaponCycle.firing
@@ -118,7 +118,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
           : game.state === 'ready'
             ? ['wait', i18nText("ui.hud.bb3cdc1737")]
             : reloading || busy
-              ? ['reload', i18nText("ui.hud.ae0489f7f6")]
+              ? ['reload', magazine?.waterFilling?'正在补充水袋':i18nText("ui.hud.ae0489f7f6")]
               : skill > 0
                 ? ['charge', i18nText("ui.hud.5475fb684d", { p0: (Math.round(skill * 100)) })]
                 : ['aim', i18nText("ui.hud.b1b7858810")];

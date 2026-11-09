@@ -29,7 +29,7 @@
 
 ## 5 生成指令
 
-未调用 imagegen：本次为既有任务流程、动态文本和高亮选点调整。正式入口为 `src/core/harvest-guide.js`、`src/ui/mainline.js`、`src/ui/operation-guide.js`、`src/ui/farm.js`。无需新增或替换贴图。
+未调用 imagegen：本次为既有任务流程、动态文本和高亮选点调整。正式入口为 `src/core/farming/harvest-guide.js`、`src/ui/mainline.js`、`src/ui/operation-guide.js`、`src/ui/farm.js`。无需新增或替换贴图。
 
 ## 6 验收记录
 

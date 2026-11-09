@@ -1,4 +1,4 @@
-import {carriedWeapon} from '../progression/weapon-storage.js';
+import {carriedWeapon} from '../progression/inventory/weapon-storage.js';
 import { vehicleCapacity } from './vehicle-capacity.js';
 // 浮游炮挂载目录：原生核心与已拥有的手持武器，禁止嵌套自动阵列。
 import { WEAPONS, WEAPON_DISPLAY_ORDER } from './weapons.js';

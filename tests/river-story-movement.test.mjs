@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {storyNode} from '../src/core/story-definition.js';
-import {updateStory} from '../src/core/story-manager.js';
-import {beginStoryWave,spawnStoryEnemy,updateStoryWave} from '../src/core/story-encounters.js';
-import {storyWorldBarriers} from '../src/core/story-world.js';
+import {storyNode} from '../src/core/story/story-definition.js';
+import {updateStory} from '../src/core/story/story-manager.js';
+import {beginStoryWave,spawnStoryEnemy,updateStoryWave} from '../src/core/story/story-encounters.js';
+import {storyWorldBarriers} from '../src/core/story/story-world.js';
 import {storyObjects,storyCast} from '../src/rendering/story-props.js';
 import {riverCrossingObjects} from '../src/rendering/river-crossing.js';
 import {RIVER_DELIVERY_SITES as sites} from '../src/config/river-crossing.js';
@@ -15,7 +15,7 @@ import {BRIDGE,riverXAt,isWaterBlocked} from '../src/world/river-geometry.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
 import {moveBody,blocked} from '../src/physics/motion.js';
 import {questLineClear,planQuestRoute} from '../src/physics/quest-route.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
 // 只补齐前置章节，当前章仍通过正式接取与装备动作进入。
 function enter(){const p=freshProgress();p.story.chapters['sunleaf-01'].completed=true;const g=new Game(p,()=>.5);g.start();const post=STORY_POSTS.find(p=>p.id==='sunleaf-post');Object.assign(g.player,{x:post.x+post.approach.dx,y:post.y+post.approach.dy});assert.ok(g.enterStory('sunleaf-02'));g.advanceStoryDialogue(true);g.chooseStoryLoadout('tide-arc');g.startStoryStage();return g;}
 // 交互由公开距离校验和计时触发，跳对白仍执行正式动作表。

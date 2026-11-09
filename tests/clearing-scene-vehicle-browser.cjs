@@ -7,7 +7,7 @@ async page=>{
  for(const phase of ['day','night']){
   await page.evaluate(async phase=>{const a=(await import('/src/main.js')).application;a.game.progress.living.calendar={day:1,elapsed:phase==='day'?400000:1100000};a.environment.autoWeather=false;a.environment.weather='sun';a.refresh();},phase);await page.waitForTimeout(21000);
   await page.setViewportSize({width:1280,height:900});await page.waitForTimeout(300);
-  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.enemies=[];(await import('/src/core/enemy-manager.js')).spawnEnemy(g,0,200,{x:1120,y:1020},{ambient:true});a.refresh();});await page.waitForTimeout(80);await page.screenshot({path:`output/playwright/clearing-scene-guide/vehicle-board-${phase}.png`});
+  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;g.enemies=[];(await import('/src/core/battle/enemy-manager.js')).spawnEnemy(g,0,200,{x:1120,y:1020},{ambient:true});a.refresh();});await page.waitForTimeout(80);await page.screenshot({path:`output/playwright/clearing-scene-guide/vehicle-board-${phase}.png`});
  }
  if(errors.length)throw Error(errors.join(';'));return {designCriterion:'clearing-scene-guide',management:true,vehicle:true,errors};
 }

@@ -20,8 +20,8 @@ async page => {
     await page.screenshot({path:`output/playwright/guardian-wave-effects/${time}-combat.png`});
     const before=await page.evaluate(async()=>{
       const a=(await import('/src/main.js')).application,g=a.game;
-      const {updateRealm}=await import('/src/core/realm-manager.js');
-      const {recycleEnemies}=await import('/src/core/enemy-manager.js');
+      const {updateRealm}=await import('/src/core/realms/realm-manager.js');
+      const {recycleEnemies}=await import('/src/core/battle/enemy-manager.js');
       g.realm.kills=g.realm.spec.total-1;g.realm.spawned=g.realm.spec.total;
       g.hit(g.enemies.find(e=>e.hp>0),999999);
       g.shots.push({x:g.player.x,y:g.player.y-20,ex:g.player.x+90,ey:g.player.y+60,life:1.2,lifetime:1.2});

@@ -7,7 +7,7 @@ async(page)=>{
  await page.locator('#start').click();
  await page.evaluate(async()=>{
   const a=ringApp,g=a.game;g.enterStory();g.advanceStoryDialogue(true);g.chooseStoryLoadout('frost-guard');g.startStoryStage();
-  Object.assign(g.player,{x:780,y:900,invincible:0});const {beginStoryWave,spawnStoryEnemy}=await import('/src/core/story-encounters.js');
+  Object.assign(g.player,{x:780,y:900,invincible:0});const {beginStoryWave,spawnStoryEnemy}=await import('/src/core/story/story-encounters.js');
   beginStoryWave(g,'SIGN',6,4);spawnStoryEnemy(g,g.player.arena,0);spawnStoryEnemy(g,g.player.arena,1);
   g.story.combat.spawned=2;g.story.combat.timer=999;g.enemies.forEach(e=>{e.hp=e.maxHp=1000;e.speed=0;});g.state='story';a.renderer.draw();a.refresh();
  });
@@ -34,12 +34,12 @@ async(page)=>{
   const corpse=g.remnants.at(-1),dead=[];if(!corpse?.burst)throw Error('死亡动画丢失');
   for(const life of [.6,.35,.08])for(const reduced of [false,true])dead.push(difference({...corpse,life},reduced));
   if(alive.some(n=>n===0)||dead.some(n=>n!==0))throw Error('冰冻白圈生命周期错误 '+JSON.stringify({alive,dead}));
-  const {updateEnemies,recycleEnemies}=await import('/src/core/enemy-manager.js');g.state='playing';
+  const {updateEnemies,recycleEnemies}=await import('/src/core/battle/enemy-manager.js');g.state='playing';
   for(let i=0;i<10;i++)updateEnemies(g,.05,g.player);recycleEnemies(g);g.state='story';ringApp.renderer.draw();ringApp.refresh();
   return {alive,dead,deathAnimationPreserved:!!g.remnants.length};
  });
  await page.screenshot({path:'output/playwright/story-rings-death/chilled-dead.png'});
- await page.evaluate(async()=>{const g=ringApp.game,{updateEnemies}=await import('/src/core/enemy-manager.js');g.state='playing';for(let i=0;i<4;i++)updateEnemies(g,.05,g.player);g.state='story';ringApp.renderer.draw();});
+ await page.evaluate(async()=>{const g=ringApp.game,{updateEnemies}=await import('/src/core/battle/enemy-manager.js');g.state='playing';for(let i=0;i<4;i++)updateEnemies(g,.05,g.player);g.state='story';ringApp.renderer.draw();});
  if(await page.evaluate(()=>ringApp.game.remnants.length))throw Error('死亡残影未按寿命回收');
  // 真实键盘移动进入旧圈之外，确认扩大的是可用空间而不仅是描边。
  await page.evaluate(()=>{const g=ringApp.game;Object.assign(g.player,{x:780,y:900,invincible:999});g.state='playing';g.attackTimer=999;g.enemies=[];g.story.combat.timer=999;});

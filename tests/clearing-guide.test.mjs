@@ -1,4 +1,4 @@
-import {clearingSite,clearingNavigationSite} from '../src/progression/clearing-site.js';
+import {clearingSite,clearingNavigationSite} from '../src/progression/story/clearing-site.js';
 // 清缴教学专项：只覆盖入口位置、接取事务、当前目标与波次激活边界。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,12 +6,12 @@ import {Game,freshProgress} from '../src/game.js';
 import {MAINLINE_TASKS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {CLEARING_POST,CLEARING_APPROACH} from '../src/config/clearing.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
-import {mainlineObjective} from '../src/core/mainline-manager.js';
-import {worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
-import {clearingStage,canUseClearingPost,acceptClearingPost} from '../src/core/clearing-guide.js';
-import {livingWaveAllowed} from '../src/core/living-safety.js';
+import {mainlineObjective} from '../src/core/story/mainline-manager.js';
+import {worldNavigationObjective,requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {clearingStage,canUseClearingPost,acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {livingWaveAllowed} from '../src/core/camp/living-safety.js';
 import {livingSafePoint} from '../src/world/living-spaces.js';
-import {storyRouteState} from '../src/core/story-route.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 // 从正式主线表推进到清缴教学，保留真实森林、树木与寻路碰撞。
 function scene(id='first-patrol'){

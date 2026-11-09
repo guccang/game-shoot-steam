@@ -14,7 +14,7 @@ async original=>{
    await page.setViewportSize({width,height});
    await page.evaluate(async ({mounted,time})=>{
     const p=fresh();Object.assign(p.arrival,{phase:'repair',keys:true,parked:false,elapsed:0,x:WORKSHOP.x,y:WORKSHOP.y+25});p.wood=RANGER.repairWood;p.vehicleHulls[RANGER.scooter]=1;p.vehicleIndex=RANGER.scooter;
-    const g=a.game;g.update=()=>{};g.progress=p;g.reset();(await import('/src/core/ranger-arrival.js')).restoreArrival(g);g.start();g.attackTimer=999;g.enemies=[];
+    const g=a.game;g.update=()=>{};g.progress=p;g.reset();(await import('/src/core/camp/ranger-arrival.js')).restoreArrival(g);g.start();g.attackTimer=999;g.enemies=[];
     if(mounted&&!g.summonVehicle())throw Error('骑乘准备失败');
     if(g.progress.arrival.phase!=='repairing'&&!g.advanceArrival())throw Error('开工失败 '+JSON.stringify({phase:g.progress.arrival.phase,state:g.state,x:g.player.x,y:g.player.y,error:g.arrivalError}));
     g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time).start+1000;

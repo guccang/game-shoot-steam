@@ -1,7 +1,7 @@
 // 空间裁剪与完整扫描对照，验证优化不改变环面碰撞、排序、即时死亡或绘制镜像。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SpatialGrid } from '../src/world/spatial-grid.js';
+import { SpatialGrid, treeGrid, treesInBounds } from '../src/world/spatial-grid.js';
 import { WORLD, viewBody, visibleBodies } from '../src/world/coordinates.js';
 import { traceTargets } from '../src/combat/collision.js';
 import { stepBodies, blocked } from '../src/physics/motion.js';
@@ -77,5 +77,20 @@ test('先裁剪后复制与原有周期镜像完全一致，包含前摇坐标�
           legacy.push(viewBody(base, { x: base.x + x * WORLD.width, y: base.y + y * WORLD.height }));
     }
     assert.deepEqual(visibleBodies(items, view), legacy);
+    const nearby = treesInBounds(items, view.x, view.y, view.x + view.w, view.y + view.h, 140);
+    assert.deepEqual(visibleBodies(nearby, view), legacy);
   }
+});
+
+test('静态树索引跨帧复用，补种、清场与矿井原地替换均能取得新目标', () => {
+  const trees = targets(), grid = treeGrid(trees);
+  assert.equal(treeGrid(trees), grid);
+  const sapling = {id: 10000, x: 90, y: 120, radius: 18, hp: 1};
+  trees.push(sapling);
+  assert.ok(treeGrid(trees).query(90,120,90,120).includes(sapling));
+  assert.ok(!treeGrid(trees.filter(t => t !== sapling)).query(90,120,90,120).includes(sapling));
+  const rocks = Object.assign([sapling], {mineScene: {}});
+  treeGrid(rocks);
+  rocks[0] = {...sapling, x: 9000};
+  assert.deepEqual(treeGrid(rocks).query(9000,120,9000,120), [rocks[0]]);
 });

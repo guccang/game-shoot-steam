@@ -43,8 +43,8 @@
 ## 配置、代码与验收
 
 - 参数：[farm-production.js](../src/config/farm-production.js)。
-- 存档与纯规则：[生产状态](../src/progression/farm-production.js)。
-- 事务：[生产核心](../src/core/farm-production.js)，真实行动接入[mining.js](../src/core/mining.js)。
+- 存档与纯规则：[生产状态](../src/progression/farming/farm-production.js)。
+- 事务：[生产核心](../src/core/farming/farm-production.js)，真实行动接入[mining.js](../src/core/mining/mining.js)。
 - 手机页面：[生产界面](../src/ui/farm-production.js)。
 - 绘制：[生产设施](../src/rendering/farm-production.js)，绑定`designCriterion: farm-mine-production`。
 - 验收任务单：[首批功能](art-tasks/farm-mine-production.md)。

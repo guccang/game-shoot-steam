@@ -51,7 +51,7 @@
 | 透明背景 | 目标区完全透明；小标签与箭头有实色，无新全屏遮罩 |
 | 碰撞与通行 | 不新增碰撞；实际目标旁与旧路点均在既有交互半径内可操作，调查取消使用同一检查 |
 | 昼夜处理 | 运行时同一形体与材质；不新增昼夜图集 |
-| 文件位置 | src/core/story-interaction.js、src/ui/story-interaction.js、src/styles/story.css；正式入口 createStoryPanel.renderFrame |
+| 文件位置 | src/core/story/story-interaction.js、src/ui/story-interaction.js、src/styles/story.css；正式入口 createStoryPanel.renderFrame |
 | 内存与缓存 | 一个复用按钮、一个内联 SVG；零新增图片、图集、离屏画布或定时器 |
 | 必需资源与失败行为 | 沿用现有场景素材；显式目标未出场时报告章节和阶段错误，不默默误指向陪同者 |
 

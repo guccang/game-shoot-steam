@@ -4,14 +4,14 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {storyPostApproach} from '../src/core/story-posts.js';
-import {claimStoryCollection} from '../src/progression/story-rewards.js';
+import {storyPostApproach} from '../src/core/story/story-posts.js';
+import {claimStoryCollection} from '../src/progression/story/story-rewards.js';
 import {nativeVehicleWeapon} from '../src/config/vehicle-armaments.js';
-import {failStory} from '../src/core/story-manager.js';
+import {failStory} from '../src/core/story/story-manager.js';
 import {LIVING_PLACES,LIVING_BATTLE_ENEMY_HP} from '../src/config/living-world.js';
-import {interactLivingRequest} from '../src/core/living-world.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
-import {beginStoryWave,spawnStoryEnemy} from '../src/core/story-encounters.js';
+import {interactLivingRequest} from '../src/core/camp/living-world.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
+import {beginStoryWave,spawnStoryEnemy} from '../src/core/story/story-encounters.js';
 import {pacingGame,measureStoryBoss,measureStoryEnemy} from './helpers/story-combat-pacing.mjs';
 
 for(const id of ['line-patrol','tide-arc','frost-guard'])test(id+'借装持续有效输出10～15秒击败野猪王，走位与半血援兵可正常交付',t=>{

@@ -13,7 +13,7 @@ async original=>{
    const now=Date.now();g.progress.farm.plots=[{...site,id:0,mapId:'forest',crop:7,plantedAt:now-500000,readyAt:now-1000,watered:false}];g.progress.farm.nextId=1;Object.assign(g.player,farmApproach(g,g.progress.farm.plots[0]),{vx:0,vy:0});
    for(const d of document.querySelectorAll('dialog[open]'))d.close();a.renderer.camera.time=null;a.refresh();window.beforeCoins=g.progress.coins;
    // 批量反馈通过正式收割事务产生，避免伪造收益信号或动画节点。
-   window.harvestNext=async crop=>{const g=a.game,now=Date.now(),id=g.progress.farm.nextId++,p={...site,id,mapId:'forest',crop,plantedAt:now-500000,readyAt:now-1000,watered:false};g.progress.farm.plots=[p];Object.assign(g.player,{x:p.x,y:p.y+50});const result=(await import('/src/core/farm.js')).farmAction(g,'harvest',{plot:id});if(!result.ok)throw Error(result.message);a.farm.render();return result.coins;};
+   window.harvestNext=async crop=>{const g=a.game,now=Date.now(),id=g.progress.farm.nextId++,p={...site,id,mapId:'forest',crop,plantedAt:now-500000,readyAt:now-1000,watered:false};g.progress.farm.plots=[p];Object.assign(g.player,{x:p.x,y:p.y+50});const result=(await import('/src/core/farming/farm.js')).farmAction(g,'harvest',{plot:id});if(!result.ok)throw Error(result.message);a.farm.render();return result.coins;};
   });
   await page.locator('#field-menu-toggle').tap();await page.locator('#farm-menu').tap();await page.waitForFunction(()=>!document.getElementById('farm-sickle').disabled);
   await page.locator('[data-farm-cell="0"]').tap();await page.waitForFunction(()=>document.querySelector('.farm-coin-flight'));

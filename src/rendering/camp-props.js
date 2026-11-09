@@ -2,10 +2,12 @@
 import { style } from '../art-styles/config.js';
 import { oval, poly } from './primitives.js';
 import { shorePlant } from './shore-art.js';
+import {plant} from './forest-floor-plants.js';
 
 // 营地小景物使用暖木、冷灰石与奶油色花朵，沿用树木的左上受光和简洁描边。
 
 export const CAMP_PROP_SIZES = {
+  fern:[64,54], mushrooms:[62,50],
   fence: [108, 72],
   logs: [86, 72],
   stones: [74, 64],
@@ -184,6 +186,10 @@ export function drawCampProp(c, kind) {
   else if (kind === 'logs') logs(c);
   else if (kind === 'stones') stones(c);
   else if (kind === 'flowers') flowers(c);
+  else if (kind === 'fern' || kind === 'mushrooms') {
+    const shape=kind==='fern'?0:1;
+    plant(c,-9,-3,shape,1.1);plant(c,10,1,shape,.82);
+  }
   else if (kind === 'reeds') reeds(c);
   else if (kind === 'driftwood') driftwood(c);
   else if (kind === 'bench') bench(c);

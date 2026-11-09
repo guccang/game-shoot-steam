@@ -1,7 +1,7 @@
 // 地下缓存按真实开掘内容失效，移动复用、事务换对象和边界碰撞保持正确。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshMining,openBasement} from '../src/progression/mining.js';
+import {freshMining,openBasement} from '../src/progression/mining/mining.js';
 import {minePoint,mineKey} from '../src/config/mining.js';
 import {mineTerrain,mineHash} from '../src/config/mine-ecology.js';
 import {buildMineSurface,mineSurfaceAt} from '../src/world/mine-surface.js';

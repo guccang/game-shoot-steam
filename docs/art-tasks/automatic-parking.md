@@ -38,7 +38,7 @@
 | 透明背景 | 程序绘制透明叠加，无不透明贴图底板 |
 | 碰撞与可通行性 | 沿用正式moveBody逐步碰撞；线路先检查，不穿建筑、树干或围栏 |
 | 昼夜处理 | 同一形体经现有色调处理，地面标线按夜色调低亮度 |
-| 文件格式与位置 | 配置src/config/parking.js、逻辑src/core/parking.js、绘制src/rendering/parking.js |
+| 文件格式与位置 | 配置src/config/parking.js、逻辑src/core/vehicles/parking.js、绘制src/rendering/parking.js |
 | 内存与缓存预算 | 无新增纹理或昼夜图集，10个泊位数据和单个停车状态；单独泊位按视野裁剪，公共地坪为固定矢量绘制 |
 
 ## 4 动画任务补充

@@ -45,14 +45,14 @@ async original=>{
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(async()=>{
    for(const d of document.querySelectorAll('dialog[open]'))d.close();
-   const posts=await import('/src/core/story-posts.js');Object.assign(a.game.player,posts.storyPostApproach(posts.storyPostForChapter(a.game,'equipment-shield')));
+   const posts=await import('/src/core/story/story-posts.js');Object.assign(a.game.player,posts.storyPostApproach(posts.storyPostForChapter(a.game,'equipment-shield')));
    a.environment.livingPreview=false;a.game.state='playing';a.workshop.open('weapons',18);a.refresh();
   });
   if(!await page.locator('#ws-purchase').isDisabled())throw Error('未交付已可购买');
   await page.locator('#ws-story-condition').tap();await page.locator('[data-selected-story="equipment-shield"] [data-story-command="enter"]').tap();
   await page.locator('#story-speech-skip').tap();await page.locator('[data-story-loadout="equipment-shield-loan"]').tap();await page.locator('[data-story-command="start"]').tap();
   // 每个站点仍需真实点击、等待照料或等待自动车炮完成清场，不改敌人血量。
-  async function arrive(){return page.evaluate(async()=>{const g=a.game,def=(await import('/src/core/story-definition.js')).storyDefinition(g),o=g.storyObjective();Object.assign(g.player,{x:def.world.sites[o.site].x,y:def.world.sites[o.site].y+45});a.refresh();return g.story.stageId;});}
+  async function arrive(){return page.evaluate(async()=>{const g=a.game,def=(await import('/src/core/story/story-definition.js')).storyDefinition(g),o=g.storyObjective();Object.assign(g.player,{x:def.world.sites[o.site].x,y:def.world.sites[o.site].y+45});a.refresh();return g.story.stageId;});}
   async function reply(){await page.locator('#story-speech-skip').waitFor({state:'visible',timeout:30000});await page.locator('#story-speech-skip').tap();}
   for(const expected of ['VISIT','CHECK']){
    if(await arrive()!==expected)throw Error('检测阶段顺序不符');await page.locator('#story-interact').tap();

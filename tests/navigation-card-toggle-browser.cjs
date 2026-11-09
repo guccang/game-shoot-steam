@@ -6,11 +6,11 @@ async original=>{
   try{
    await page.goto('http://localhost:4175');await page.locator('#start').tap();
    await page.evaluate(async time=>{
-    window.a=(await import('/src/main.js')).application;await a.ready;window.nav=await import('/src/core/world-navigation.js');
+    window.a=(await import('/src/main.js')).application;await a.ready;window.nav=await import('/src/core/navigation/world-navigation.js');
     const p=(await import('/src/progression/progress.js')).freshProgress();p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;
     p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice();p.mainline.phase='complete';p.mainline.trackingPaused=true;p.taskTracking={kind:'none'};p.living.patrolActive=true;
     const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.enemies=[];g.boss=null;g.update=()=>{};
-    window.site=(await import('/src/progression/clearing-site.js')).clearingSite(p);Object.assign(g.player,{x:site.x+600,y:site.y});a.renderer.camera.time=null;
+    window.site=(await import('/src/progression/story/clearing-site.js')).clearingSite(p);Object.assign(g.player,{x:site.x+600,y:site.y});a.renderer.camera.time=null;
     Object.assign(a.environment,{livingPreview:true,autoTime:false,autoWeather:false,time,weather:'sun'});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();
    },time);
    await page.waitForTimeout(150);
@@ -25,7 +25,7 @@ async original=>{
    await page.waitForTimeout(350);
    await page.waitForFunction(async()=>(await import('/src/rendering/visual-review.js')).inspectTaskNavigation(a.game,document).inside);
    if(!await card.isVisible()||!await toggle.isVisible()||await toggle.getAttribute('aria-pressed')!=='false'||await card.locator('b').textContent()!==title)throw Error('关闭后任务卡或开关消失');
-   const off=await page.evaluate(async()=>({objective:nav.worldNavigationObjective(a.game),route:(await import('/src/core/story-route.js')).storyRouteState(a.game),target:(await import('/src/rendering/story-guidance.js')).storyGuidanceState(a.game).target,review:(await import('/src/rendering/visual-review.js')).inspectTaskNavigation(a.game,document),progress:routeTaskSnapshot()}));
+   const off=await page.evaluate(async()=>({objective:nav.worldNavigationObjective(a.game),route:(await import('/src/core/navigation/story-route.js')).storyRouteState(a.game),target:(await import('/src/rendering/story-guidance.js')).storyGuidanceState(a.game).target,review:(await import('/src/rendering/visual-review.js')).inspectTaskNavigation(a.game,document),progress:routeTaskSnapshot()}));
    if(off.objective||off.route||off.target||off.progress!==before||!off.review.inside||off.review.button.width<44||off.review.button.height<44)throw Error('关闭状态不正确 '+JSON.stringify(off));
    await page.screenshot({path:`output/playwright/navigation-card-toggle/off-${width}-${time}.png`});
    await card.tap();await page.locator('#clearing-dialog').waitFor({state:'visible'});

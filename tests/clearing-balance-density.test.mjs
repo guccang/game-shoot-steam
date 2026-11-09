@@ -5,8 +5,8 @@ import {Game,freshProgress} from '../src/game.js';
 import {clearingDifficulty} from '../src/config/clearing-difficulty.js';
 import {clearingEnemyHealth} from '../src/config/clearing-damage.js';
 import {waveDifficulty,CLEARING_QUOTA_VERSION} from "../src/config/waves.js";
-import {validatePatrol} from '../src/progression/patrol-progress.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {validatePatrol} from '../src/progression/battle/patrol-progress.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 
 // 保留真实工厂与障碍选点，仅固定种子、清缴位置及目标轮数。
 function arena(round=7){

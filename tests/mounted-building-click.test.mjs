@@ -5,12 +5,12 @@ import {freshProgress} from '../src/progression/progress.js';
 import {FARM_DELIVERY,FARM_SEED_DOOR} from '../src/config/farm.js';
 import {BUILDING_ENTRIES} from '../src/config/building-entries.js';
 import {vehicleModel} from '../src/config/vehicles.js';
-import {canUseFarmDelivery,claimFarmParcel,updateFarmDelivery} from '../src/core/farm-delivery.js';
-import {canUseFarm,farmAction} from '../src/core/farm.js';
-import {buyFarmSeeds} from '../src/core/farm-seeds.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
-import {canInspectBuilding} from '../src/core/building-entry.js';
-import {canEnterCottage} from '../src/core/cottage.js';
+import {canUseFarmDelivery,claimFarmParcel,updateFarmDelivery} from '../src/core/farming/farm-delivery.js';
+import {canUseFarm,farmAction} from '../src/core/farming/farm.js';
+import {buyFarmSeeds} from '../src/core/farming/farm-seeds.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
+import {canInspectBuilding} from '../src/core/camp/building-entry.js';
+import {canEnterCottage} from '../src/core/home/cottage.js';
 
 // 柜台夹具保留存档事务和载具状态，避免把领取变成隐式上下车。
 function scene(index=0){

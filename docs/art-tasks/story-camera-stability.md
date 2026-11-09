@@ -74,7 +74,7 @@
 
 ## 7 剧情表驱动现状审查
 
-台词、标题、奖励、借用配置、路线和部分防守波次位于 src/config/story.js，站点坐标位于 src/world/story-sites.js。阶段触发、跳转和完成条件仍由 src/core/story-manager.js 内 Q10–Q80 条件分支控制；任务面板在 src/ui/story.js 判断阶段编号；人物出场位置在 src/rendering/story-props.js 判断阶段。现状为部分表驱动，并非完整的通用章节运行器。本次只修镜头，不宣称已完成流程表驱动迁移。
+台词、标题、奖励、借用配置、路线和部分防守波次位于 src/config/story.js，站点坐标位于 src/world/story-sites.js。阶段触发、跳转和完成条件仍由 src/core/story/story-manager.js 内 Q10–Q80 条件分支控制；任务面板在 src/ui/story.js 判断阶段编号；人物出场位置在 src/rendering/story-props.js 判断阶段。现状为部分表驱动，并非完整的通用章节运行器。本次只修镜头，不宣称已完成流程表驱动迁移。
 
 
 

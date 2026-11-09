@@ -1,5 +1,5 @@
 // 作物的视觉成长采样独立于存档与奖励，图集与根部锚点保持不变。
-import {farmGrowth} from '../progression/farm.js';
+import {farmGrowth} from '../progression/farming/farm.js';
 import {FARM_WATER} from '../config/farm.js';
 
 // 有界缓动用于萌芽和开花过渡，避免阶段边界突然换图。

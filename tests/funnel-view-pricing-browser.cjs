@@ -41,10 +41,10 @@ async original=>{
   const cost=await page.evaluate(async()=>{
    const g=a.game;g.progress.weapon=0;g.progress.weapons[12]=0;g.enemies=[];g.state='playing';g.boss=null;g.progress.bosses=999;
    for(const c of Object.values(g.progress.story.chapters))c.completed=true;
-   const cost=(await import('/src/progression/equipment-goals.js')).equipmentRecipe('weapons',12,g.progress);
+   const cost=(await import('/src/progression/workshop/equipment-goals.js')).equipmentRecipe('weapons',12,g.progress);
    g.progress.coins=cost.coins;g.progress.wood=cost.wood;for(const key of ['parts','crystal','core'])g.progress.materials[key]=cost[key];
    const layout=(await import('/src/config/workshop-interiors.js')).interiorLayout({kind:'weapons'});Object.assign(g.player,layout.door,{vx:0,vy:0});
-   if(!(await import('/src/core/cottage.js')).enterWorkshop(g,'weapons'))throw Error('无法进武器工坊');a.workshop.open('weapons',12);a.refresh();return cost.coins;
+   if(!(await import('/src/core/home/cottage.js')).enterWorkshop(g,'weapons'))throw Error('无法进武器工坊');a.workshop.open('weapons',12);a.refresh();return cost.coins;
   });
   await page.locator('#ws-purchase').waitFor({state:'visible'});
   const priceText=await page.locator('#ws-resources').innerText();if(!priceText.replaceAll(',','').includes(String(cost)))throw Error('界面未展示新报价 '+priceText);

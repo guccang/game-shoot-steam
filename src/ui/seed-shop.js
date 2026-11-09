@@ -1,14 +1,14 @@
 // 种子小屋商品与来源页，远程浏览不售卖，所有购买调用正式库存事务。
-import {sellCrops,canSellCrops} from '../core/cargo.js';
+import {sellCrops,canSellCrops} from '../core/inventory/cargo.js';
 import {MONSTER_CAMPS} from '../config/monster-camps.js';
-import {FARM_CROPS,FARM_CATEGORIES,FARM_SEED_DROP,FARM_SEED_DOOR,FARM_SEED_SHOP,farmSeedPool,farmSeedRequirement} from '../config/farm.js';
+import {FARM_CROPS,FARM_CATEGORIES,FARM_SEED_DROP,FARM_SEED_DOOR,farmSeedPool,farmSeedRequirement} from '../config/farm.js';
 import {farmCategoryMarkup,farmCategoryCrops} from './farm-categories.js';
 import {currentMainlineTask} from '../config/mainline.js';
-import {buyFarmSeeds,canBuyFarmSeeds} from '../core/farm-seeds.js';
+import {buyFarmSeeds,canBuyFarmSeeds} from '../core/farming/farm-seeds.js';
 import {farmCropMarkup} from '../rendering/farm.js';
-import {sceneHit,placeSceneHit} from './scene-hit.js';
+import {sceneHit} from './scene-hit.js';
 import {createEventScope} from '../platform/events.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 // 只有确实提供该种子的营地才显示固定奖励，新增随机掉落品种不虚构营地来源。
 function campSeedSource(index){const camps=MONSTER_CAMPS.filter(c=>c.seeds.includes(index)).map(c=>c.name);return camps.length?'固定营地：'+camps.join('、')+'。完整清空后，该品种已开放则必得一粒；打开「营地见闻」可导航。':'暂无固定营地来源，可从已开放的野外怪物掉落中收集。';}
 // 创建共用底板、商品操作与来源说明，并注册关闭和导航入口。

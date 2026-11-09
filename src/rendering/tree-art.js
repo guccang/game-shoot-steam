@@ -1,3 +1,5 @@
+import {EXTRA_TREE_SPECIES} from '../config/earth-biomes.js';
+import {drawExpandedTree} from './tree-expansion.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { releaseArtCache } from '../art-styles/cache.js';
@@ -9,7 +11,7 @@ import { SeasonAtlas } from './season-raster.js';
 
 // 卡通树木图集：圆润轮廓、统一描边与三级平涂，和角色及怪物保持同一绘本风格。
 
-const transitionAtlas = new SeasonAtlas();
+const transitionAtlas = new SeasonAtlas(96);
 const cache = new Map();
 let activeSeason = null;
 // 诊断只统计已生成图集，不触发预热，也不增加纹理内存。
@@ -31,9 +33,10 @@ function buildSprite(paletteIndex, species, variant, night, winter, season) {
     const leaf = seasonalLeafColor(hex, species, season);
     return night === true ? nightColor(leaf) : leaf;
   };
-  if (['birch', 'willow', 'maple', 'cypress'].includes(species)) drawSpeciesTree(c, species, variant, color, winter);
+  if(EXTRA_TREE_SPECIES.some(s=>s.id===species))drawExpandedTree(c,species,variant,color,winter);
+  else if (['birch', 'willow', 'maple', 'cypress'].includes(species)) drawSpeciesTree(c, species, variant, color, winter);
   else drawSampleTree(c, paletteIndex, species === 'pine', variant, color, winter);
-  drawSeasonCanopy(c, species, variant, season, (hex) => (night === true ? nightColor(hex) : hex));
+  if(!EXTRA_TREE_SPECIES.some(s=>s.id===species))drawSeasonCanopy(c, species, variant, season, (hex) => (night === true ? nightColor(hex) : hex));
   // 暖光图集只对已有树形着色，树冠外保持透明，避免矩形光斑。
   if (night === 'warm') {
     c.globalCompositeOperation = 'source-atop';
@@ -61,7 +64,7 @@ export function drawTreeSprite(c, tree, night, warmth = 0, winter = false, seaso
     cache.clear();
     activeSeason = next;
   }
-  const palette = Math.max(0, Math.min(3, tree.palette || 0)),
+  const palette = EXTRA_TREE_SPECIES.some(s=>s.id===tree.variant)?0:Math.max(0, Math.min(3, tree.palette || 0)),
     species = tree.variant || 'round',
     variant = Math.abs(tree.id || 0) % (['round', 'pine'].includes(species) ? 6 : 2);
   // 昼夜与暖光分别复用静态端点，来源快照包含快速重定向前的叶色。
@@ -71,8 +74,8 @@ export function drawTreeSprite(c, tree, night, warmth = 0, winter = false, seaso
       return transitionAtlas.image(key, transition, (value) =>
         buildSprite(palette, species, variant, lighting, value === 'winter', value),
       );
-    if (!cache.has(key)) cache.set(key, buildSprite(palette, species, variant, lighting, winter, next));
-    return cache.get(key);
+    if (!cache.has(key)) {if(cache.size>=96){const oldest=cache.keys().next().value,image=cache.get(oldest);image.width=image.height=1;cache.delete(oldest);}cache.set(key, buildSprite(palette, species, variant, lighting, winter, next));}
+    const image=cache.get(key);cache.delete(key);cache.set(key,image);return image;
   };
   const alpha = c.globalAlpha;
   c.drawImage(sprite(false), -64, -145, 128, 160);

@@ -16,7 +16,7 @@ async original=>{
   await page.goto(original.url()||'http://localhost:4175');await page.locator('#start').tap();await page.locator('#game-frame[data-page=game]').waitFor({timeout:60000});
   await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;});
   // 正式交接获得三件物品；格子点击后的首次读信仍保留失败重试。
-  await page.evaluate(async()=>{const g=a.game;g.progress=(await import('/src/progression/progress.js')).freshRangerProgress();g.reset();g.state='playing';if(!(await import('/src/core/ranger-arrival.js')).skipArrivalJourney(g))throw Error('跳过接送失败');a.refresh();});
+  await page.evaluate(async()=>{const g=a.game;g.progress=(await import('/src/progression/progress.js')).freshRangerProgress();g.reset();g.state='playing';if(!(await import('/src/core/camp/ranger-arrival.js')).skipArrivalJourney(g))throw Error('跳过接送失败');a.refresh();});
   await open('heroes-button');await page.locator('[data-cat-tab=items]').tap();
   if(await page.locator('#current-cat-dialog .keepsake-letter').count())throw Error('背包不应直接展示来信');
   await page.locator('[data-keepsake=elder-letter]').tap();await page.locator('#keepsake-dialog').waitFor({state:'visible'});
@@ -57,7 +57,7 @@ async original=>{
   if(!(await page.locator('.keepsake-call').textContent()).includes('通话已接通'))throw Error('电话未接通');
   const before=await page.evaluate(()=>JSON.stringify(a.game.progress.living.requests));
   await page.locator('[data-pack-action=visit]').tap();await page.waitForFunction(()=>a.game.state==='playing');
-  const nav=await page.evaluate(async()=>({target:(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game)?.site.id,requests:JSON.stringify(a.game.progress.living.requests)}));
+  const nav=await page.evaluate(async()=>({target:(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game)?.site.id,requests:JSON.stringify(a.game.progress.living.requests)}));
   if(nav.target!=='cook'||nav.requests!==before)throw Error('导航错误或远程更改委托');
   // 背包中的手机打开地图再逐层退出；Escape和按钮均不可提前恢复战场。
   await open('heroes-button');await page.locator('[data-cat-tab=items]').tap();await page.locator('[data-keepsake=patrol-phone]').tap();await page.locator('[data-pack-action=map]').tap();

@@ -12,7 +12,7 @@ import {
   storyValue,
   storyPosition,
   storySceneActive,
-} from '../core/story-definition.js';
+} from '../core/story/story-definition.js';
 import { box, oval, poly } from './primitives.js';
 import { catSprites, catFrame, RESIDENT_PORTRAIT_SCALE, scaleResidentForWorld } from './cat-animation.js';
 import { HEROES } from '../config/heroes.js';

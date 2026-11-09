@@ -1,3 +1,4 @@
+import {fishStorageIcon} from './fish-storage-icon.js';
 import {productionIcon} from '../rendering/farm-production.js';
 import {ammoIcon} from './ammo-icons.js';
 import {resourceIcon} from '../rendering/resource-icons.js';
@@ -27,6 +28,7 @@ const drawings={
 };
 // 图标只接受目录中的稳定字段，数量和文字由外部可访问按钮提供。
 export function inventoryIcon(item){const icon=item.icon;
+ if(icon?.kind==='fish-container')return fishStorageIcon(icon.key);
  if(icon.kind==='production')return productionIcon(icon.key);
  if(icon.kind==='ammo')return ammoIcon(icon.key);
  if(icon.kind==='resource')return resourceIcon(icon.key);

@@ -30,16 +30,12 @@
 #game-frame.clearing-compact-active #equipment-goal{display:none}
 #game-frame.clearing-compact-active #boss-hud{padding-top:8px;padding-right:10px}
 .clearing-compact-active .clearing-objective{display:none}
-/* 自动提示复用统一纸页材质，贴生命卡下沿；全程点击穿透，不挤动人物或镜头。 */
-#clearing-arrival-notice{position:absolute;top:calc(100% + 8px);left:0;margin:0;width:min(292px,calc(100vw - 28px));box-sizing:border-box;pointer-events:none;z-index:17}
-#clearing-arrival-notice[hidden]{display:none}
-#clearing-arrival-notice>.ui-panel__header{padding:8px 12px;font-size:13px;min-height:0}
-#clearing-arrival-notice>.ui-panel__body{padding:10px 12px}
-#clearing-notice-progress{margin:0 0 6px;font-size:12px;color:var(--ui-forest)}
-/* 关闭计时单独成行，窄屏标题可换行；波次仍使用原轨道和Boss头像。 */
-#clearing-notice-countdown{flex:none;white-space:nowrap;color:var(--ui-paper);font-size:11px}
-#clearing-notice-track{pointer-events:none}
-#clearing-notice-track *{pointer-events:none}
+/* 首次与手动详情使用同一纸页，倒计时不占用关闭按钮的触控宽度。 */
+#clearing-notice-countdown{display:block;font-size:12px;line-height:1.5;white-space:normal}
+#clearing-notice-countdown[hidden]{display:none}
+#wave-help-dialog{transform-origin:center center}
+#wave-help-dialog[data-collapsing]::backdrop{background:transparent;transition:background 440ms}
+#wave-help-dialog[data-collapsing]{pointer-events:none}
 #wave-help-track{margin:12px 0}
 /* 主操作固定在统一底栏，短横屏仅滚动任务正文。 */
 #clearing-detail-navigation{width:100%;margin:0}

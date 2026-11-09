@@ -1,10 +1,10 @@
 import {createHomeFloorPicker} from './home-floor-picker.js';
-import {constructionWood} from '../progression/resource-wallet.js';
+import {constructionWood} from '../progression/economy/resource-wallet.js';
 // 按层施工与场景乘梯共用手机底板，楼层再多也不创建全量按钮列表。
 import {createEventScope} from '../platform/events.js';
-import {buildHome,travelHomeFloor} from '../core/home-construction.js';
-import {approachCottageTarget} from '../core/scene-approach.js';
-import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,homeFloors,floorBalconies,homeElevatorPlan,hasHomeElevator} from '../config/home-construction.js';
+import {buildHome,travelHomeFloor} from '../core/home/home-construction.js';
+import {approachCottageTarget} from '../core/navigation/scene-approach.js';
+import {HOME_BUILD_PRICES,HOME_BUILD_RESOURCE_NAMES,HOME_DIRECTIONS,HOME_ELEVATOR,homeFloors,floorBalconies,homeElevatorPlan,hasHomeElevator} from '../config/home-construction.js';
 import {cottageFloor} from '../config/cottage.js';
 
 // 保存事务由规则层校验，电梯自动按顺序施工与拆除，面板保留按层费用和拆除确认。
@@ -22,15 +22,19 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
   get('title').textContent=mode==='build'?'森筑建筑公司':'小屋楼层设施';
   get('summary').textContent=`已建 ${floors} 层 · ${mode==='build'?`金币 ${game.progress.coins} · 木材 ${constructionWood(game.progress)}（背包 ${game.progress.logistics.bagWood}＋仓库 ${game.progress.wood}）`:`当前第 ${floor+1} 楼`}`;get('message').textContent=message;
   if(mode==='build'){
-   const price=kind=>`${HOME_BUILD_PRICES[kind].coins} 金币 + ${HOME_BUILD_PRICES[kind].wood} 木材`;
+   // 所有费用直接读取同一配方，避免按钮只展示币木而交易额外扣矿物。
+   const price=kind=>Object.entries(HOME_BUILD_PRICES[kind]).map(([key,amount])=>`${amount} ${HOME_BUILD_RESOURCE_NAMES[key]}`).join(' + ');
    const {lifts,installFloor,removeFloor:highest}=homeElevatorPlan(h);
    get('content').innerHTML=`<section class="ui-section"><h3>地下室与矿道</h3><p>小屋一楼接通地下室，自带矿锄。可持续挖矿、开地表洞口、铺轨与驾驶矿车。</p><button class="ui-button" data-build="basement" ${h.basement?'disabled':''}>${h.basement?'地下室已建成':'创建地下室 · '+price('basement')}</button></section><section class="ui-section"><h3>向上加盖</h3><p>一、二楼留给栗子。三楼起，每位新伙伴需要一层房间。加盖后可到猫窝招募。</p><button class="ui-button" data-build="floor">加盖第 ${floors+1} 楼 · ${price('floor')}</button></section>
     <section class="ui-section" id="home-elevator-section"><h3>电梯施工</h3><p>每次安装一层，从最高已装电梯层继续向上；拆除从最高已装层向下进行。每层单独付费，安装后替换该层楼梯，可直达全部已建楼层。</p><p id="home-elevator-status">${installFloor!==null?`下一层施工：第 ${installFloor+1} 楼`:'电梯已装至最高楼层，继续施工请先加盖楼层。'}</p>
     <button class="ui-button" data-build="elevator" ${installFloor===null?'disabled':''}>${installFloor===null?'已装至最高楼层':`安装第 ${installFloor+1} 楼电梯 · ${price('elevator')}`}</button>
     <button class="ui-button" data-remove-elevator ${highest===null?'disabled':''}>${highest===null?'暂无电梯可拆除':`拆除第 ${highest+1} 楼电梯`}</button>
-    <div id="home-elevator-removal">${removeFloor!==null&&removeFloor===highest?`<div class="ui-inset"><p>确认拆除第 ${removeFloor+1} 楼电梯？本层恢复楼梯，已花费的金币和木材不返还。</p><button class="ui-button ui-button--danger" data-build="remove-elevator">确认拆除第 ${removeFloor+1} 楼电梯</button><button class="ui-button" data-cancel-remove>保留电梯</button></div>`:''}</div>
+    <div id="home-elevator-removal">${removeFloor!==null&&removeFloor===highest?`<div class="ui-inset"><p>确认拆除第 ${removeFloor+1} 楼电梯？本层恢复楼梯，已花费的金币、木材、铁块和铜块不返还。</p><button class="ui-button ui-button--danger" data-build="remove-elevator">确认拆除第 ${removeFloor+1} 楼电梯</button><button class="ui-button" data-cancel-remove>保留电梯</button></div>`:''}</div>
     <p>已安装 ${lifts.length} 层${lifts.length?'：'+lifts.slice(0,8).map(f=>f+1+'楼').join('、')+(lifts.length>8?'…':''):''}</p></section>
     <section class="ui-section"><h3>四向大阳台</h3><p>每层可分别安装。走到门口即可出屋，眺望真实营地。</p><div id="home-balcony-floor-picker"></div><p id="home-balcony-status"></p><div id="home-build-side" class="home-balcony-directions" role="group" aria-label="阳台朝向" aria-describedby="home-balcony-status">${['east','south','west','north'].map(id=>`<button type="button" class="ui-button" data-balcony-side="${id}" aria-pressed="false"><span>${HOME_DIRECTIONS[id].name}</span><small></small></button>`).join('')}</div><button class="ui-button" data-build="balcony">加装大阳台 · ${price('balcony')}</button><p>已建阳台 ${Object.values(h.balconies||{}).reduce((n,s)=>n+s.length,0)} 处</p></section>`;
+   // 矿物余额独立放在滚动正文，窄屏标题栏不承载完整材料清单。
+   const stock=root.createElement('section');stock.className='ui-section';stock.id='home-construction-materials';
+   stock.innerHTML='<h3>仓库建材</h3><p>'+['stone','iron','copper'].map(key=>HOME_BUILD_RESOURCE_NAMES[key]+' '+(game.progress.materials?.[key]||0)).join(' · ')+'</p><p>加盖与电梯使用加工成品。请在提炼厂将原石切成石块、原矿提炼成金属块，再送入仓库。</p>';get('content').prepend(stock);
    // 施工窗口与乘梯窗口共用选择规则，重画时保留所选层与朝向。
    floorPicker=createHomeFloorPicker(root.getElementById('home-balcony-floor-picker'),{floors,value:balconyFloor,id:'home-build-floor',label:'阳台施工楼层',onChange:target=>{balconyFloor=target;updateBalconyDirections();}});
   }else{

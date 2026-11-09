@@ -16,9 +16,9 @@ async page=>{
   await page.evaluate(async({id,stage,time})=>{const a=(await import('/src/main.js')).application,g=a.game;
    for(const d of document.querySelectorAll('dialog[open]'))d.close();if(g.story)g.leaveStory();g.progress.story.run=null;g.state='playing';g.enemies=[];g.boss=null;g.mainlineTalkDelay=999;
    const {STORY_CAMPAIGN}=await import('/src/config/story-campaign.js'),def=STORY_CAMPAIGN[id];for(const key of def.requires)g.progress.story.chapters[key].completed=true;
-   const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,id)));
+   const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,id)));
    if(!g.enterStory(id))throw Error('接取失败 '+id);g.advanceStoryDialogue(true);g.chooseStoryLoadout(def.loadouts[0].id);g.startStoryStage();
-   (await import('/src/core/story-manager.js')).runStoryActions(g,[{type:'stage',id:stage,phase:'active'}]);const site=def.world.sites[def.nodes[stage].objective.site];Object.assign(g.player,{x:site.x,y:site.y+65});
+   (await import('/src/core/story/story-manager.js')).runStoryActions(g,[{type:'stage',id:stage,phase:'active'}]);const site=def.world.sites[def.nodes[stage].objective.site];Object.assign(g.player,{x:site.x,y:site.y+65});
    Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new (await import('/src/world/environment.js')).EnvironmentTransition(a.environment,performance.now()-20000);a.refresh();a.renderer.tone=new (await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,performance.now()-22000);a.renderer.draw();
   },{id,stage,time});
   if(['WATER','COOL'].includes(stage)){await page.locator('#story-interact').click();await page.waitForTimeout(250);}else await page.waitForTimeout(2200);

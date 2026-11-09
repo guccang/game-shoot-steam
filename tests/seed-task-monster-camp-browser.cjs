@@ -9,11 +9,11 @@ async original=>{
    const {freshProgress}=await import('/src/progression/progress.js'),{MAINLINE_SITES}=await import('/src/config/mainline.js');
    const p=freshProgress();p.mainline.completed=['first-map'];p.mainline.currentId='neighbor-seeds';p.mainline.phase='meet';p.coins=100;p.farm.wildMaps=['forest','jiuzhaigou'];p.farm.wildScatterVersion=1;
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=0;g.enemies=[];g.update=()=>{};Object.assign(g.player,MAINLINE_SITES.camp);
-   (await import('/src/core/mainline-manager.js')).updateMainline(g,0);a.renderer.camera.time=null;a.refresh();
+   (await import('/src/core/story/mainline-manager.js')).updateMainline(g,0);a.renderer.camera.time=null;a.refresh();
   });
   await page.locator('#mainline-speech-skip').waitFor({state:'visible'});await page.locator('#mainline-speech-skip').tap();
   const route=await page.evaluate(async()=>{
-   const g=a.game,{worldNavigationObjective}=await import('/src/core/world-navigation.js'),{mainlineObjective}=await import('/src/core/mainline-manager.js'),{storyGuidanceState}=await import('/src/rendering/story-guidance.js'),{storyRouteState}=await import('/src/core/story-route.js');
+   const g=a.game,{worldNavigationObjective}=await import('/src/core/navigation/world-navigation.js'),{mainlineObjective}=await import('/src/core/story/mainline-manager.js'),{storyGuidanceState}=await import('/src/rendering/story-guidance.js'),{storyRouteState}=await import('/src/core/navigation/story-route.js');
    const o=mainlineObjective(g),nav=worldNavigationObjective(g),target=storyGuidanceState(g).target;let route;
    for(let i=0;i<1800;i++){g.time+=.025;route=storyRouteState(g);if(route?.reachable)break;}
    return {objective:o.key,nav:nav.key,target,site:o.site,reachable:route?.reachable,route:route?.site,repaired:g.progress.restoration.repaired,patrol:g.progress.living.patrolActive};
@@ -27,15 +27,15 @@ async original=>{
   }
   await page.evaluate(async()=>{
    const g=a.game,c=(await import('/src/config/monster-camps.js')).MONSTER_CAMPS[0];Object.assign(g.player,{x:c.x,y:c.y+110});
-   (await import('/src/core/monster-camps.js')).updateMonsterCamps(g,.04);const enemies=g.enemies.filter(e=>e.monsterCamp===c.id);
+   (await import('/src/core/battle/monster-camps.js')).updateMonsterCamps(g,.04);const enemies=g.enemies.filter(e=>e.monsterCamp===c.id);
    if(enemies.length!==5)throw Error('营地怪物不完整');for(const e of enemies.slice(0,4))g.hit(e,99999);
    if(g.progress.mainline.gardening.seedDrops)throw Error('未清空营地提前完成');g.hit(enemies[4],99999);
-   (await import('/src/core/mainline-manager.js')).updateMainline(g,0);a.renderer.camera.time=null;a.refresh();
+   (await import('/src/core/story/mainline-manager.js')).updateMainline(g,0);a.renderer.camera.time=null;a.refresh();
   });
-  const reward=await page.evaluate(async()=>({seeds:a.game.progress.farm.seeds[0],fact:a.game.progress.mainline.gardening.seedDrops,phase:a.game.progress.mainline.phase,target:(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game)?.key}));
+  const reward=await page.evaluate(async()=>({seeds:a.game.progress.farm.seeds[0],fact:a.game.progress.mainline.gardening.seedDrops,phase:a.game.progress.mainline.phase,target:(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game)?.key}));
   if(reward.fact!==1||reward.seeds!==1||reward.phase!=='report'||reward.target!=='camp')throw Error(JSON.stringify(reward));
   await page.screenshot({path:'output/playwright/seed-task-monster-camp/seed-return.png'});
-  await page.evaluate(async()=>{const g=a.game;Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);g.enemies=[];g.mainlineTalkDelay=0;(await import('/src/core/mainline-manager.js')).updateMainline(g,0);a.renderer.camera.time=null;a.refresh();});
+  await page.evaluate(async()=>{const g=a.game;Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);g.enemies=[];g.mainlineTalkDelay=0;(await import('/src/core/story/mainline-manager.js')).updateMainline(g,0);a.renderer.camera.time=null;a.refresh();});
   await page.locator('#mainline-speech-skip').waitFor({state:'visible'});await page.locator('#mainline-speech-skip').tap();
   await page.locator('#task-reward-close').waitFor({state:'visible'});await page.locator('#task-reward-close').tap();
   const delivered=await page.evaluate(()=>({seeds:a.game.progress.farm.seeds[0],coins:a.game.progress.coins,completed:a.game.progress.mainline.completed.includes('neighbor-seeds'),patrol:a.game.progress.living.patrolActive}));

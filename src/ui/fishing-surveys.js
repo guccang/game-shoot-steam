@@ -1,7 +1,7 @@
 // 调查复用手机标准分区；不新增覆盖战场的常驻任务窗。
 import {FISH_SPECIES,FISH_WATERS} from '../config/fish-catalog.js';
-import {fishingSurveyDefinition,fishingSurveyProgress} from '../progression/fishing-surveys.js';
-import {fishingPreview} from '../core/lake-fishing.js';
+import {fishingSurveyDefinition,fishingSurveyProgress} from '../progression/fishing/fishing-surveys.js';
+import {fishingPreview} from '../core/fishing/lake-fishing.js';
 // 位置来自数值坐标与固定目录，存档文本不直接进入页面。
 export function fishingSurveyMarkup(game){
  const state=game.progress.outdoors.surveys,def=fishingSurveyDefinition(state),a=state.active,progress=fishingSurveyProgress(state);

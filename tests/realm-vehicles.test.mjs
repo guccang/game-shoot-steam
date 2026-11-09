@@ -4,11 +4,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
 import { freshProgress } from '../src/progression/progress.js';
-import { syncRealm, beginRealmStage, updateRealm } from '../src/core/realm-manager.js';
-import { capturePatrol } from '../src/core/patrol-session.js';
+import { syncRealm, beginRealmStage, updateRealm } from '../src/core/realms/realm-manager.js';
+import { capturePatrol } from '../src/core/battle/patrol-session.js';
 import { updateVehicle } from '../src/combat/vehicle.js';
 import { vehicleWeapon } from '../src/config/vehicles.js';
-import { validateRealmVehicles } from '../src/progression/realm-vehicles.js';
+import { validateRealmVehicles } from '../src/progression/realms/realm-vehicles.js';
 import { moveBody } from '../src/physics/motion.js';
 import { WORLD } from '../src/world/coordinates.js';
 

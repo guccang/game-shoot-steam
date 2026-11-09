@@ -1,9 +1,17 @@
 # 清缴 HUD 精简与一次性进场提示
 
+## 2026-11-08：统一详情与入口收拢引导（制作目标）
+
+首次进入清缴区直接打开正式 wave-help-dialog，保留其标题、当前击杀、波次轨道、说明和寻路开关；3 秒倒计时后整体等比缩向 HP 后的 wave-help 猫猫问号。该图标再次打开同一 DOM 面板，手动阅读不自动关闭。沿用手机统一底板、44px 图标触控、现有 SVG 与 Canvas 头像，不新建图片或复制轨道。自动打开与手动详情统一使用弹窗暂停归属，阅读期间保护玩家；以本节替代旧版不暂停的小提示。
+
+尺寸沿用 ui-sheet 的手机安全区与最大 480px 宽；动画锚点取实际图标中心，面板等比缩小且平移，持续 440ms。保留世界镜头、角色和怪物动画逻辑；减少动态模式只短暂淡出。正式入口 src/ui/wave-help.js 与 src/styles/clearing-flow.css，designCriterion 为 clearing-compact-hud。验收覆盖首次一次性、3秒关闭、手动常驻、Escape、窄屏昼夜、动画途中重开与生命周期清理。无需 imagegen 或 PNG 替换。
+
+本轮结论：通过。正式触屏接单与进入清缴区后只显示一次，完整显示和关闭动画共 3424.8ms，期间暂停保护、玩家位移为0；同任务重返和存档重建不重弹，实际五波清理并击败领主后点击续接显示第2轮。动画专项实测出现后3000.5ms开始收起，最终中心与问号图标误差为0px。手动常驻、寻路开关、Escape、快速重开、减少动态及12组手机/既有容器昼夜检查通过，无页面异常。入口、截图和完整范围见[本轮波次UI记录](boss-wave-ui.md)，正式脚本为 tests/clearing-compact-hud-browser.cjs、tests/boss-wave-ui-browser.cjs、tests/clearing-panel-motion-browser.cjs。手机为浏览器触控模拟，PNG替换不适用。
+
 ## 2026-11-02：远离领主后脱战整备
 按用户反馈修复回营仍被领主战斗锁住的问题。普通森林与Boss相距700世界单位或进入营地安全区后脱战，500单位内重新接战；保留原HP、波次、挑战资格与世界落点。Boss条在脱战时隐藏，返回后继续显示原血量，不增加常驻提示或强制弹窗；建筑、购买、主线交谈和邻里任务使用同一交战判定。原HP卡、问号猫猫图标、奶油／森林绿材质及44px触控区保持。取消本次Boss的未完成技能、援兵和援兵弹丸，不结算击杀；剧情和秘境等独立战斗不适用。
 
-沿用正式Boss绘制、动画、位置和UI节点，无新增位图、画布或动画预算。正式入口src/core/boss-engagement.js、src/combat/bosses.js、src/ui/hud.js；designCriterion为clearing-compact-hud。
+沿用正式Boss绘制、动画、位置和UI节点，无新增位图、画布或动画预算。正式入口src/core/battle/boss-engagement.js、src/combat/bosses.js、src/ui/hud.js；designCriterion为clearing-compact-hud。
 
 验收通过：新增8项脱战专项覆盖700／500边界、取消所属危险区与援兵而不计击杀、营地安全区进店购买、主线交谈、邻里接取／推进、Boss位置与HP存档、循环地图接缝、特殊活动隔离、暂停和正式游戏帧；手机导航定向用例确认清缴未结束但人在营地仍可回家导航。Boss技能／援兵、有效巡游存档、睡眠、建筑入口及索敌的相关检查通过。相关测试中另有13项原有失败，已在未改main逐项复现，未扩大改动：patrol-progress.test.mjs中两项旧配额迁移与一项存档控制器夹具、building-entry.test.mjs中床边／出口提示夹具、combat-perception.test.mjs中两项车炮／野猪夹具、living-world.test.mjs中七项旧委托／安全区夹具。未运行全量测试，也未恢复旧存档兼容。
 

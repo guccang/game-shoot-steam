@@ -1,13 +1,13 @@
 // 农田经济审计：调用正式播种、浇水和收割事务，显式计入逐块动作与回访时间。
 import {freshProgress} from '../progression/progress.js';
-import {grantFarmSeeds} from '../progression/farm.js';
-import {buyFarmSeeds} from '../core/farm-seeds.js';
-import {farmAction} from '../core/farm.js';
-import {updateFarmDelivery,claimFarmParcel} from '../core/farm-delivery.js';
+import {grantFarmSeeds} from '../progression/farming/farm.js';
+import {buyFarmSeeds} from '../core/farming/farm-seeds.js';
+import {farmAction} from '../core/farming/farm.js';
+import {updateFarmDelivery,claimFarmParcel} from '../core/farming/farm-delivery.js';
 import {FARM_CROPS,FARM_WATER,FARM_DELIVERY,FARM_SEED_DOOR,farmLevel} from '../config/farm.js';
 import {seededRandom} from './model-metrics.js';
 import {FARM_ACTION_TIMING} from '../config/farm-tools.js';
-import {equipmentRecipe} from '../progression/equipment-goals.js';
+import {equipmentRecipe} from '../progression/workshop/equipment-goals.js';
 import {economyUpgradeCost,RECOMMENDED_ECONOMY} from '../config/economy.js';
 
 // 标准情景从零金币及已获得的一轮雏菊种子开始，不把任务、秘境和随机快递算入种田收益；货架沿用初始营地98折。

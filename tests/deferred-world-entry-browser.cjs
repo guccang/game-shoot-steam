@@ -40,7 +40,7 @@ async (page) => {
   await enter();
   await check('进入过游戏后也能确认清档重新入职',()=>!!entryApp.game.arrivalPending&&entryApp.game.time<2&&!!entryApp.game.arrivalScene);
   const save=await page.evaluate(async()=>{
-    const {Game}=await import('/src/core/game.js'),{freshProgress}=await import('/src/progression/progress.js'),{capturePatrol}=await import('/src/core/patrol-session.js');
+    const {Game}=await import('/src/core/game.js'),{freshProgress}=await import('/src/progression/progress.js'),{capturePatrol}=await import('/src/core/battle/patrol-session.js');
     const g=new Game(freshProgress());g.state='playing';g.wave=7;g.waveGroupStart=6;g.bossWave=10;g.player.hp=33;g.progress.coins=4321;g.progress.patrol=capturePatrol(g);return g.progress;
   });
   await mount(save);await check('存档首页保留开始入口且未创建战场',()=>entryApp.game.trees.length===0&&entryApp.game.worldPending&&document.getElementById('start').textContent==='开始游戏');
@@ -48,7 +48,7 @@ async (page) => {
   for(const kind of ['story','realm']){
     const special=await page.evaluate(async kind=>{
       const {Game}=await import('/src/core/game.js'),{freshProgress}=await import('/src/progression/progress.js');const g=new Game(freshProgress());
-      if(kind==='story'){g.enterStory('sunleaf-01','sunleaf-post');g.syncStory();}else{g.enterRealm('rogue');const {syncRealm}=await import('/src/core/realm-manager.js');syncRealm(g);}return g.progress;
+      if(kind==='story'){g.enterStory('sunleaf-01','sunleaf-post');g.syncStory();}else{g.enterRealm('rogue');const {syncRealm}=await import('/src/core/realms/realm-manager.js');syncRealm(g);}return g.progress;
     },kind);
     await mount(special);await check(kind+' 存档首页不恢复场景或抢开面板',()=>entryApp.game.trees.length===0&&!entryApp.game.story&&!entryApp.game.realm&&!document.querySelector('dialog[open]'));
     await enter();await check(kind+' 点击后恢复对应玩法',()=>!!entryApp.game.story||!!entryApp.game.realm);

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
 import {clearingBossHealth,CLEARING_BOSS_HEALTH_VERSION} from '../src/config/clearing-boss.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 
 // 仅准备五波结束状态，领主属性和存档仍由正式入口创建。
 function challenge({round=4,hull=null}={}){

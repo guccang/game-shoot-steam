@@ -1,3 +1,4 @@
+import {visibilityRoute} from './visibility-route.js';
 // 野外追兵将聚落视为不可穿越的区域，沿外侧角点绕行，并修正栏杆内的重叠落点。
 import {SETTLEMENTS} from '../config/settlements.js';
 import {ARMORED} from '../config/armored-enemies.js';
@@ -36,15 +37,8 @@ function plan(body,goal,rects,radius){
  // 常见贴栏追击只绕一个角，先按总路程检查，避免整群同时扫描远端聚落边。
  const corners=nodes.slice(2).sort((a,b)=>worldDistance(body,a)+worldDistance(a,goal)-worldDistance(body,b)-worldDistance(b,goal));
  for(const corner of corners)if(clear(body,corner)&&clear(corner,goal))return [corner,goal];
- const costs=nodes.map(()=>Infinity),previous=nodes.map(()=>-1),done=new Set();costs[0]=0;
- for(let step=0;step<nodes.length;step++){
-  let current=-1;for(let i=0;i<nodes.length;i++)if(!done.has(i)&&(current<0||costs[i]<costs[current]))current=i;
-  if(current<0||!Number.isFinite(costs[current]))break;
-  if(current===1){const path=[];for(let i=1;i>0;i=previous[i])path.unshift(nodes[i]);return path;}
-  done.add(current);
-  for(let i=0;i<nodes.length;i++){const cost=costs[current]+worldDistance(nodes[current],nodes[i]);if(done.has(i)||cost>=costs[i]||!clear(nodes[current],nodes[i]))continue;costs[i]=cost;previous[i]=current;}
- }
- return [];
+ // 多角绕栏按周期世界距离优先，远端聚落的长边不再提前采样。
+ return visibilityRoute(nodes,worldDistance,clear);
 }
 // 无栅栏阻挡时交回原河岸寻路；绕栏路径按时间缓存，玩家回到安全区时不隔栏扑击。
 export function settlementPursuit(body,target,dt,navigate=true){

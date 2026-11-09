@@ -1,6 +1,6 @@
 // 正式巡林实物弹药按库存扣除；活动借用装备仍使用独立局内供给。
 import {ammoKind} from '../config/supplies.js';
-import {catAmmoRoom} from '../progression/load-weight.js';
+import {catAmmoRoom} from '../progression/inventory/load-weight.js';
 // 判断当前战斗是否使用玩家持久化弹药。
 export function finiteSupply(game){return !game.realm&&!game.story&&!game.campDefense&&!game.fireActive&&!game.workshopTrial&&!game.arrivalCinematic;}
 // 自动补给只连接当前自有载具，停车距离不限，不访问其他车或临时活动库存。

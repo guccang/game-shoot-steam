@@ -69,7 +69,7 @@ async page=>{
  // 领主栏保留原 44px 导航；退出后回到跨两行的任务栏。
  await page.evaluate(async()=>{
   const g=questApp.game;Object.assign(g.story,{trial:null,stageId:'Q60',phase:'active',dialogue:null,combat:null});g.enemies=[];
-  (await import('/src/core/story-encounters.js')).spawnStoryBoss(g);questApp.refresh();
+  (await import('/src/core/story/story-encounters.js')).spawnStoryBoss(g);questApp.refresh();
  });
  const boss=await page.evaluate(async()=>{const s=(await import('/src/rendering/visual-review.js')).inspectStoryNavigation(document);return {...s,questHidden:document.getElementById('quest').hidden};});
  if(boss.host!=='boss-hud'||boss.box.width!==44||!boss.questHidden)throw Error('领主栏导航被任务布局影响');

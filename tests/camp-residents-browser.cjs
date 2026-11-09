@@ -9,7 +9,7 @@ async page=>{
  }
  await page.setViewportSize({width:390,height:844});
  for(const id of ['ember-pot','snore-pine','late-mail','last-supper','valley-bowl'])for(const phase of ['day','night']){
-  await visit(id,phase);const sample=await page.evaluate(async id=>{const g=campApp.game,actors=(await import('/src/core/monster-camps.js')).monsterCampObjects(g).filter(e=>e.monsterCamp===id);return {id,state:g.state,species:actors.map(e=>e.species),alerts:actors.filter(e=>e.campState==='alert').length,bolts:g.enemyBolts.length,fighters:g.enemies.filter(e=>e.monsterCamp===id).length,phase:campApp.environment.time};},id);
+  await visit(id,phase);const sample=await page.evaluate(async id=>{const g=campApp.game,actors=(await import('/src/core/battle/monster-camps.js')).monsterCampObjects(g).filter(e=>e.monsterCamp===id);return {id,state:g.state,species:actors.map(e=>e.species),alerts:actors.filter(e=>e.campState==='alert').length,bolts:g.enemyBolts.length,fighters:g.enemies.filter(e=>e.monsterCamp===id).length,phase:campApp.environment.time};},id);
   if(sample.state!=='playing'||sample.alerts!==5||sample.fighters||sample.bolts||new Set(sample.species).size<3||sample.phase!==phase)throw Error(JSON.stringify(sample));samples.push(sample);await page.screenshot({path:`output/playwright/camp-residents/${id}-${phase}.png`});
  }
  for(const [width,height] of [[320,568],[1280,900]]){await page.setViewportSize({width,height});await visit('last-supper');await page.screenshot({path:`output/playwright/camp-residents/mixed-${width}.png`});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('页面溢出');}

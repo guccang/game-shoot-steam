@@ -1,6 +1,6 @@
 // 开放怪物营地正式绘制器：有限平涂、脚底排序与独立火焰，不生成常驻位图缓存。
 import {MONSTER_CAMPS,MONSTER_CAMP_RULES,campSignSite} from '../config/monster-camps.js';
-import {monsterCampsAvailable,monsterCampObjects,monsterCampLevel} from '../core/monster-camps.js';
+import {monsterCampsAvailable,monsterCampObjects,monsterCampLevel} from '../core/battle/monster-camps.js';
 import {visibleBodies} from '../world/coordinates.js';
 import {box,oval,poly} from './primitives.js';
 import {drawSlime} from './enemies.js';

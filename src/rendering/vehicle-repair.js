@@ -6,7 +6,7 @@ import {drawWheel} from './pine-wheels.js';
 import {nearest} from '../world/coordinates.js';
 // 维修建筑、残骸与拖车直接进入正式世界深度队列，不创建替代预览画面。
 import {REPAIR_CENTER,rescueTruckVisible,towLoadPoint,VEHICLE_REPAIR as C} from '../config/vehicle-repair.js';
-import {personalFleet} from '../core/vehicle-repair.js';
+import {personalFleet} from '../core/vehicles/vehicle-repair.js';
 import {drawParkedHull} from './parked-vehicles.js';
 import {box,oval,poly} from './primitives.js';
 // 在两个模拟步之间显示同一辆救援车。车轮、绞盘及载台上的残骸共享这个姿态。

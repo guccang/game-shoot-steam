@@ -1,6 +1,6 @@
 // 手机地下探索地图复用正式弹窗暂停与统一底板；查看不提交任何游戏事务。
 import {createEventScope} from '../platform/events.js';
-import {currentMineLayer} from '../core/mine-layers.js';
+import {currentMineLayer} from '../core/mining/mine-layers.js';
 import {buildMineMapModel,fitMineMap,clampMineMap,zoomMineMap} from '../world/mine-map.js';
 import {drawMineExplorationMap} from '../rendering/mine-map.js';
 // 独立控制器承载一次打开期间的地图快照、拖动与缩放，关闭时释放输入。

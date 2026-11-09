@@ -1,6 +1,6 @@
 // 农田热点只在语义状态改变时提交属性，避免静止田地反复触发浏览器样式计算。
 import {FARM_CROPS,FARM_PLOT_SHAPE,farmPosition} from '../config/farm.js';
-import {farmGrowth} from '../progression/farm.js';
+import {farmGrowth} from '../progression/farming/farm.js';
 import {sceneLayout} from './scene-layout.js';
 import {placeSceneHit} from './scene-hit.js';
 const states=new WeakMap();

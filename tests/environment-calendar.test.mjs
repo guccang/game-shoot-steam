@@ -6,7 +6,7 @@ import { normalizeEnvironment, advanceEnvironment, dayPhaseRemaining, weatherRem
 import { seasonRemaining } from '../src/world/seasons.js';
 import { normalizeChronicle, recordPlayTime, chronicleSummary } from '../src/world/play-chronicle.js';
 import { freshProgress } from '../src/progression/progress.js';
-import { debugGrantProgress } from '../src/progression/debug-grants.js';
+import { debugGrantProgress } from '../src/progression/player/debug-grants.js';
 import { createSaveStore } from '../src/platform/storage.js';
 import { createProgressController } from '../src/app/progress-controller.js';
 import { Game } from '../src/core/game.js';

@@ -8,11 +8,15 @@ import { hitCenter, traceTargets } from './collision.js';
 import { nearest, worldDistance } from '../world/coordinates.js';
 import { stepGrenade } from './grenades.js';
 import { fireArc } from './elemental.js';
-import { SpatialGrid } from '../world/spatial-grid.js';
+import { SpatialGrid, treeGrid } from '../world/spatial-grid.js';
 
 // 索敌、预览和弹道共用木材开关；炮口来源和武器自身的目标限制分别判断。
-export function liveTargets(game, targetTrees = true) {
-  return [...(targetTrees ? weaponTerrainTargets(game, true) : []), ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
+export function liveTargets(game, targetTrees = true, vehicleMounted = false) {
+  return livingTargets(game, targetTrees ? weaponTerrainTargets(game, true, vehicleMounted) : []);
+}
+// 多种来源的在途弹丸共用空间索引，碰撞时再按各自来源筛选树木。
+function livingTargets(game, terrain) {
+  return [...terrain, ...game.enemies, ...(game.boss ? [game.boss] : [])].filter(
     (t) => t.hp > 0,
   );
 }
@@ -52,8 +56,9 @@ export function fireBallistics(
 ) {
   if(game.combatLineClear&&!game.combatLineClear(independentMuzzle?muzzle:hitCenter(game.player),muzzle))return;
   const profile = GAMEPLAY_TABLES.projectileProfiles[weapon.id] || GAMEPLAY_TABLES.projectileProfiles.default;
-  const targetTrees = weapon.targetTrees !== false && (!independentMuzzle || !!game.trees.mineScene);
-  const all = liveTargets(game, targetTrees),
+  const vehicleMounted = !!(weapon.vehicleMounted || game.vehicleMounted);
+  const targetTrees = weapon.targetTrees !== false && (!independentMuzzle || vehicleMounted || !!game.trees.mineScene);
+  const all = liveTargets(game, targetTrees, vehicleMounted),
     // 独立炮口只检查自身重叠，不能误伤角色身体与浮游炮之间的实体。
     nearHits = traceTargets(
       independentMuzzle ? muzzle : hitCenter(game.player),
@@ -138,7 +143,7 @@ export function fireBallistics(
       age: 0,
       remaining: weapon.range,
       travelled: 0,
-      gravityRadius:weapon.gravityRadius,gravityDuration:weapon.gravityDuration,gravityPull:weapon.gravityPull,gravityMinDistance:weapon.gravityMinDistance,targetTrees,blastRadius:weapon.blastRadius,blastRatio:weapon.blastRatio,
+      vehicleMounted,gravityRadius:weapon.gravityRadius,gravityDuration:weapon.gravityDuration,gravityPull:weapon.gravityPull,gravityMinDistance:weapon.gravityMinDistance,targetTrees,blastRadius:weapon.blastRadius,blastRatio:weapon.blastRatio,
       amount,
       weaponIndex: weapon.weaponIndex,
       masteryOwnerIndex: weapon.masteryOwnerIndex,
@@ -217,7 +222,7 @@ function resolveHit(game, b, hit) {
     b.remaining = 0;
     return;
   }
-  const candidates = liveTargets(game, b.targetTrees).filter(
+  const candidates = liveTargets(game, b.targetTrees, b.vehicleMounted).filter(
     (t) => (!game.combatLineClear||game.combatLineClear(b,hitCenter(t))) && !b.hitIds.includes(t.id) && worldDistance(hitCenter(t), b) < GAMEPLAY_VALUES.projectile.bounceRange,
   );
   candidates.sort(
@@ -249,15 +254,24 @@ export function updateBallistics(game, dt) {
   let remaining = Math.max(0, dt);
   if (!game.projectiles.length || remaining <= 0) return;
   // 弹道阶段实体尚未移动；所有弹丸和 120Hz 小步共用索引，死亡即时读取原对象。
-  const targets = new SpatialGrid(liveTargets(game, game.projectiles.some(b => b.targetTrees !== false)), { offsetY: -8 });
+  const treeShots = new Set(game.projectiles.filter(b => b.targetTrees !== false && weaponTerrainTargets(game, true, b.vehicleMounted).length));
+  const targets = new SpatialGrid(livingTargets(game, []), { offsetY: -8 });
+  const trees = treeShots.size ? treeGrid(game.trees) : null;
+  // 树索引记录脚底；查询上移八单位的命中圆时，把弹道包围盒平移回脚底坐标。
+  const woodTargets = trees && {
+    query(left, top, right, bottom, width) {
+      return targets.query(left, top, right, bottom, width)
+        .concat(trees.query(left, top + 8, right, bottom + 8, width));
+    },
+  };
   while (remaining > 1e-8 && game.projectiles.length) {
     const step = Math.min(remaining, 1 / 120);
     remaining -= step;
-    stepBallistics(game, step, targets);
+    stepBallistics(game, step, targets, treeShots, woodTargets);
   }
 }
 // 分步处理下坠与扫掠，避免大帧先判落地而漏掉途中目标。
-function stepBallistics(game, dt, targets) {
+function stepBallistics(game, dt, targets, treeShots, woodTargets) {
   for (const b of game.projectiles) {
     if (b.kind === 'grenade-bomb') {
       stepGrenade(game, b, dt);
@@ -297,10 +311,10 @@ function stepBallistics(game, dt, targets) {
       const hit = traceTargets(
         b,
         end,
-        targets,
+        treeShots.has(b) ? woodTargets : targets,
         b.kind === 'flame' ? GAMEPLAY_VALUES.projectile.flameStartRadius + b.travelled * GAMEPLAY_VALUES.projectile.flameRadiusPerDistance : b.kind === 'water' ? GAMEPLAY_VALUES.projectile.waterHitRadius : b.hitRadius || GAMEPLAY_VALUES.projectile.defaultHitRadius,
         b.hitIds,
-      ).find(hit=>(b.targetTrees!==false||hit.target.type!=='tree')&&gravityPointSafe(game,b,hit));
+      ).find(hit=>(hit.target.type!=='tree'||treeShots.has(b))&&gravityPointSafe(game,b,hit));
       b.trail.push({ x: b.x, y: b.y, z: b.z });
       if (b.trail.length > 8) b.trail.shift();
       const used = hit ? actualTravel * hit.t : actualTravel;

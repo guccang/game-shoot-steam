@@ -20,7 +20,10 @@ export function mineFishLake(layer,point,depth=1){
 // 每座水域固定六至十二种鱼，至少两种入门鱼；其余按阶位分层抽取，换湖才改变常住种类。
 export function lakeFishPool(lake){
  if(!lake)return [];if(pools.has(lake.id))return pools.get(lake.id);
- const seed=fishLakeHash(lake.id),eligible=FISH_SPECIES.map((fish,index)=>({fish,index})).filter(e=>e.fish.waters.includes(lake.water)),lakes=surfaceLakes[lake.water],slot=lakes?.findIndex(l=>surfaceFishLake(lake.water,l).id===lake.id)??-1,chosen=slot>=0?eligible.filter((e,i)=>i%lakes.length===slot):[];
+ const seed=fishLakeHash(lake.id),eligible=FISH_SPECIES.map((fish,index)=>({fish,index})).filter(e=>e.fish.waters.includes(lake.water)),lakes=surfaceLakes[lake.water],slot=lakes?.findIndex(l=>surfaceFishLake(lake.water,l).id===lake.id)??-1;
+ // 老林区六座湖的常住鱼种沿用既有分配；新增山湖使用各自标识派生的鱼群。
+ const originalCount=lake.water==='forest'?6:lakes?.length;
+ const chosen=slot>=0&&slot<originalCount?eligible.filter((e,i)=>i%originalCount===slot):[];
  // 有限地表湖先均分百鱼目录的对应种类，保证没有鱼因独立随机池而永久失去栖地。
  for(let tier=1;tier<=5;tier++){
   const candidates=eligible.filter(e=>e.fish.tier===tier&&!chosen.includes(e)).sort((a,b)=>mineHash(a.index,tier,seed)-mineHash(b.index,tier,seed)||a.index-b.index);

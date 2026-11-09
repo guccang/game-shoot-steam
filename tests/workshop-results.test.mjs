@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshProgress } from '../src/progression/progress.js';
-import { workshopUpgrade, applyPartPreview } from '../src/progression/workshop.js';
+import { workshopUpgrade, applyPartPreview } from '../src/progression/workshop/workshop.js';
 import { effectiveWeapon } from '../src/config/weapon-mods.js';
 import { vehicleWeapon, vehicleMaxHp, vehicleSpeed } from '../src/config/vehicles.js';
 import { workshopResultChanges, formatWorkshopResult } from '../src/ui/workshop/results.js';

@@ -1,4 +1,4 @@
-import {enterFarmVehicle} from '../src/core/farm-vehicle.js';
+import {enterFarmVehicle} from '../src/core/farming/farm-vehicle.js';
 // 故事农活回归：永久田地与章节会话共存，收成保存不被退出或重试回滚。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,13 +7,13 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {FARM_CROPS,FARM_SEED_DOOR} from '../src/config/farm.js';
 import {FARM_COMBAT_RESUME_DELAY} from '../src/config/farm-tools.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
-import {storyDefinition} from '../src/core/story-definition.js';
-import {syncStory} from '../src/core/story-manager.js';
-import {canUseFarm,farmAction,farmMode,farmWorking,setFarmTool,queueFarmWork,updateFarmWork} from '../src/core/farm.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
+import {storyDefinition} from '../src/core/story/story-definition.js';
+import {syncStory} from '../src/core/story/story-manager.js';
+import {canUseFarm,farmAction,farmMode,farmWorking,setFarmTool,queueFarmWork,updateFarmWork} from '../src/core/farming/farm.js';
 import {farmObjects,farmVisible} from '../src/rendering/farm.js';
 import {farmCovers} from '../src/world/farm-land.js';
-import {canBuyFarmSeeds} from '../src/core/farm-seeds.js';
+import {canBuyFarmSeeds} from '../src/core/farming/farm-seeds.js';
 
 // 走正式章节入口和整备流程，农田保留在独立于故事阶段的永久进度中。
 function scene(chapter='sunleaf-01'){

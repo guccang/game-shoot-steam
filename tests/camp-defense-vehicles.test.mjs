@@ -5,9 +5,9 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {CAMP_GATES} from '../src/config/camp-defense.js';
 import {COLLECTED_VEHICLES,vehicleModel} from '../src/config/vehicles.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {startCampDefense,syncCampDefense,leaveCampDefense,claimCampDefense} from '../src/core/camp-defense.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {captureRealmVehicles} from '../src/core/realm-vehicles.js';
+import {startCampDefense,syncCampDefense,leaveCampDefense,claimCampDefense} from '../src/core/camp/camp-defense.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {captureRealmVehicles} from '../src/core/realms/realm-vehicles.js';
 
 // 通过正式拥有状态及召唤入口准备驾驶，不绕过载具的通行标记。
 function scene(index=0,mounted=true){
@@ -49,7 +49,7 @@ test('局内新召唤与切换车型按最新现场恢复，旧档按入场乘�
 for(const action of ['leave','claim'])test(action+' 读档后归还原森林驾驶状态，保存失败不退出且成功不重复结算',()=>{
  let g=scene();g.vehicle.hp-=23;const forest=captureRealmVehicles(g);startCampDefense(g,CAMP_GATES[0].id);
  assert.ok(g.selectVehicle(2));assert.ok(g.summonVehicle());g.vehicle.hp-=30;g=reload(g);
- if(action==='claim')Object.assign(g.campDefense,{phase:'result',cleared:10,bossDefeated:true});
+ if(action==='claim')Object.assign(g.campDefense,{phase:'result',cleared:5,bossDefeated:true});
  const finish=action==='claim'?claimCampDefense:leaveCampDefense;let stored;
  g.campDefensePersist=()=>false;assert.equal(finish(g),false);assert.equal(g.vehicle.index,2);assert.ok(g.campDefense);
  g.campDefensePersist=next=>{stored=structuredClone(next);return true;};assert.ok(finish(g));assert.deepEqual(captureRealmVehicles(g),forest);assert.equal(stored.vehicleIndex,0);assert.equal(g.progress.vehicleIndex,0);

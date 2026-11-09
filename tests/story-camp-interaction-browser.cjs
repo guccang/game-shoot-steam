@@ -9,7 +9,7 @@ async original=>{
     const a=window.a=(await import('/src/main.js')).application;await a.ready;
     const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:2,phase:'complete',keys:true};p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.restoration.cottageRested=true;p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.story.chapters['sunleaf-01'].completed=true;
     const g=a.game;g.progress=p;g.reset();a.menu.enter();g.start();g.arrivalScene=null;g.mainlineSpeech=null;
-    const {storyPostForChapter,storyPostApproach}=await import('/src/core/story-posts.js'),{storyDefinition}=await import('/src/core/story-definition.js');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,chapter)));
+    const {storyPostForChapter,storyPostApproach}=await import('/src/core/story/story-posts.js'),{storyDefinition}=await import('/src/core/story/story-definition.js');Object.assign(g.player,storyPostApproach(storyPostForChapter(g,chapter)));
     if(!g.enterStory(chapter))throw Error('章节未进入');g.advanceStoryDialogue(true);g.chooseStoryLoadout(storyDefinition(g).loadouts[0].id);g.startStoryStage();
     Object.assign(g.story,{stageId:stage,phase:'active',dialogue:null,interacting:0,combat:null,trial:null});g.story.flags.silenced=true;g.story.readLines=g.story.readLines.filter(s=>s!=='ending');g.state='playing';g.enemies=[];g.boss=null;
     Object.assign(g.player,storyDefinition(g).world.sites.CAMP);if(!mounted)g.dismountVehicle();
@@ -20,7 +20,7 @@ async original=>{
    await page.locator('#story-interact').waitFor({state:'visible'});await page.waitForTimeout(200);
    await page.waitForFunction(()=>!document.getElementById('toast').classList.contains('visible'));
    const geometry=await page.evaluate(async()=>{
-    const g=a.game,{storyCast}=await import('/src/rendering/story-props.js'),{storyInteractionTarget}=await import('/src/core/story-interaction.js'),{FARM_SEED_SHOP}=await import('/src/config/farm.js');
+    const g=a.game,{storyCast}=await import('/src/rendering/story-props.js'),{storyInteractionTarget}=await import('/src/core/story/story-interaction.js'),{FARM_SEED_SHOP}=await import('/src/config/farm.js');
     const actor=storyCast(g).find(p=>p.kind==='snow'),target=storyInteractionTarget(g),v=a.renderer.view,c=a.renderer.canvas.getBoundingClientRect(),button=document.getElementById('story-interact'),r=button.getBoundingClientRect(),cue=button.querySelector('.story-interact-cue').getBoundingClientRect();
     const x=c.left+(actor.x-v.x)*v.zoom,y=c.top+(actor.y-v.y)*v.zoom,headY=y-43*v.zoom;
     return {target,actor,button:{x:r.x,y:r.y,width:r.width,height:r.height},cueBottom:cue.bottom,x,y,headY,zoom:v.zoom,hit:document.elementFromPoint(x,headY)?.closest('#story-interact')===button,seedLeft:c.left+(FARM_SEED_SHOP.x-FARM_SEED_SHOP.width/2-v.x)*v.zoom};

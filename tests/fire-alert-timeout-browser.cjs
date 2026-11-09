@@ -25,7 +25,7 @@ async page=>{
  await page.waitForFunction(()=>!document.querySelector('#fire-notice').classList.contains('fire-notice-alert'));
  checks.push({detailPausedSeconds:remaining,accepted:true});await page.screenshot({path:'output/playwright/fire-alert-icon-timeout/accepted.png'});
  // 结束测试救援后新建邀请，保存剩余四秒并刷新，确认不重置为十秒。
- await page.evaluate(async()=>{const g=a.game;for(let i=0;i<4000&&g.fireTransit;i++)(await import('/src/core/fire-rescue.js')).updateFireRescue(g,.05);if(!g.dismissFireRescue())throw Error('测试救援无法结束');g.requestFireRescue('random');(await import('/src/core/fire-rescue.js')).updateFireRescue(g,6);a.save();});
+ await page.evaluate(async()=>{const g=a.game;for(let i=0;i<4000&&g.fireTransit;i++)(await import('/src/core/activities/fire-rescue.js')).updateFireRescue(g,.05);if(!g.dismissFireRescue())throw Error('测试救援无法结束');g.requestFireRescue('random');(await import('/src/core/activities/fire-rescue.js')).updateFireRescue(g,6);a.save();});
  await page.reload();await page.locator('#start').click();await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;window.savedFireTick=a.game.update.bind(a.game);a.game.update=()=>{};a.game.mainlineSpeech=null;a.game.mainlineTalkDelay=999;});
  const restored=await page.evaluate(()=>a.game.fireRescue?.offerRemaining);if(!(restored>3&&restored<=4))throw Error('刷新后余时错误 '+restored);checks.push({restored});
  // 画面采样冻结模拟，不改变正式图标、角色、载具或场景绘制入口。

@@ -1,3 +1,4 @@
+import {vehicleRefitStats} from './vehicle-refit.js';
 import {ERA_VEHICLES} from './vehicle-eras.js';
 import {TREASURE_VEHICLES} from './treasure.js';
 import {heroTalentMultiplier} from './hero-talents.js';
@@ -41,9 +42,9 @@ export function vehicleWeapon(progress, index = progress.vehicleLoadouts[progres
   if (!ownsVehicleWeapon(progress, index)) return null;
   // 守护支架使用手持目录，新枪编号不能被旧车载机枪解释。
   if(progress.guardianHandWeapons&&index>=17)return effectiveWeapon(progress,index);
-  if(isVehicleArmament(index))return applyWeaponParts({...VEHICLE_WEAPONS[index]},progress,index,'turret');
+  if(isVehicleArmament(index)){const w=applyWeaponParts({...VEHICLE_WEAPONS[index]},progress,index,'turret');return {...w,reloadTime:w.reloadTime/vehicleRefitStats(progress).strength.ammo};}
   const weapon=effectiveWeapon({ ...progress, weapons: progress.vehicleWeapons, weaponParts: progress.turretParts }, index, 'turret');
-  return vehicleCapacity(weapon,progress.vehicleAmmoBonus||GAMEPLAY_VALUES.vehicle.ammoMultiplier);
+  const w=vehicleCapacity(weapon,progress.vehicleAmmoBonus||GAMEPLAY_VALUES.vehicle.ammoMultiplier);return {...w,reloadTime:w.reloadTime/vehicleRefitStats(progress).strength.ammo};
 }
 // 独立炮塔伤害只读取炮塔等级，避免购买手持枪时免费提升炮塔。
 export function vehicleDamage(progress, index) {
@@ -103,15 +104,6 @@ export function vehicleModel(index = 0) {
 export function vehicleSpeed(progress, index = progress.vehicleIndex) { return vehicleModel(index).speed * engineMultiplier(progress, index) * heroTalentMultiplier(progress,'hullSpeed'); }
 // 仅调整货架顺序，所有权、挂载和场景仍使用固定目录编号。
 export const VEHICLE_DISPLAY_ORDER = Object.freeze([
-  // 入职赠车与木作：先展示能用木材打造的轻车，再到第一辆战车。
-  'ranger-scooter', 'wood-bicycle', 'wood-barrow', 'pine-tank',
-  // 一层铜矿与牧栏：两条改造路线各自先有原车，再换车轮或套上挽马。
-  'copper-bicycle', 'copper-barrow', 'wood-wagon', 'copper-wagon', 'police-car',
-  // 二层铁矿与动力部件：从铁架、蒸汽机过渡到电助力、内燃机与装甲。
-  'iron-bicycle', 'steam-freighter', 'assist-bicycle', 'combustion-freighter', 'heavy-tank',
-  // 专用载具：电驱运输、消防、水陆和邻里支援，再到深矿、航空及重炮。
-  'electric-freighter', 'fire-truck', 'hovercraft', 'jinbei-van',
-  'gravity-freighter', 'helicopter', 'red-wolf',
-  // 两款寻宝奖励放在图册末尾，展厅继续仅陈列可购买的车。
-  'moss-sentinel', 'amber-bastion',
-].map(id => COLLECTED_VEHICLES.findIndex(model => model.id === id)));
+ 'ranger-scooter','wood-bicycle','wood-wagon','pine-tank','police-car','heavy-tank',
+ 'fire-truck','hovercraft','jinbei-van','helicopter','red-wolf','moss-sentinel','amber-bastion',
+].map(id=>COLLECTED_VEHICLES.findIndex(model=>model.id===id)));

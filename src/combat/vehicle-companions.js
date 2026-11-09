@@ -1,3 +1,4 @@
+import {vehicleRefitStats} from '../config/vehicle-refit.js';
 import {createCatCrewState,updateCatCrew} from './cat-crew.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { createSpiderState, updateSpider } from './spider.js';
@@ -24,6 +25,7 @@ export function vehicleCompanionContext(game) {
   const weapon = realmWeapon(vehicleWeapon(progress, v.weaponIndex), game.realm?.buffs);
   if (!weapon?.controller) return null;
   const local = Object.create(game);
+  local.vehicleMounted=true;
   local.statisticsVehicleIndex=game.statisticsVehicleIndex!==undefined?game.statisticsVehicleIndex:v.index;
   // 浮游炮的原生核心使用车载等级，外挂枪仍继承手持枪成长。
   const mounted = { ...progress, weapons: [...progress.weapons], weaponParts: [...progress.weaponParts] };
@@ -32,8 +34,8 @@ export function vehicleCompanionContext(game) {
   Object.defineProperty(local, 'loadout', { value: mounted });
   local.progress = mounted;mounted.vehicleAmmoBonus=GAMEPLAY_VALUES.vehicle.ammoMultiplier;local.vehicleAmmoBonus=GAMEPLAY_VALUES.vehicle.ammoMultiplier;
   local.weapon = index => index === undefined || index === v.weaponIndex ? weapon : realmWeapon(effectiveWeapon(progress, index), game.realm?.buffs);
-  local.damage = index => index === undefined || index === v.weaponIndex ? vehicleDamage(progress, v.weaponIndex) * (1 + (game.realm?.buffs.power || 0) * GAMEPLAY_VALUES.blessings.powerPerStack) : weaponDamage(progress, index, game.realm?.buffs.power || 0);
-  local.mountedGunDamage = index => weaponDamage(progress, index, game.realm?.buffs.power || 0);
+  local.damage = index => index === undefined || index === v.weaponIndex ? vehicleRefitStats(progress,v.index).strength.secondary * vehicleDamage(progress, v.weaponIndex) * (1 + (game.realm?.buffs.power || 0) * GAMEPLAY_VALUES.blessings.powerPerStack) : weaponDamage(progress, index, game.realm?.buffs.power || 0);
+  local.mountedGunDamage = index => vehicleRefitStats(progress,v.index).strength.secondary * weaponDamage(progress, index, game.realm?.buffs.power || 0);
   local.magazines = [...game.magazines]; local.magazines[v.weaponIndex] = m.magazine;
   local[weapon.controller] = m.companions;
   local.hit = game.hit.bind(game); local.float = game.float.bind(game);

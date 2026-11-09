@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {TOWN_RESTORATIONS,facilityOpen} from '../src/config/town-restoration.js';
-import {debugGrantProgress,debugBuildingsUnlocked} from '../src/progression/debug-grants.js';
+import {debugGrantProgress,debugBuildingsUnlocked} from '../src/progression/player/debug-grants.js';
 import {createProgressController} from '../src/app/progress-controller.js';
-import {workshopBuildView} from '../src/core/ranger-arrival.js';
+import {workshopBuildView} from '../src/core/camp/ranger-arrival.js';
 test('新档与施工中解锁全部建筑，重复执行及刷新稳定，经济装备和主线不变',()=>{
  for(const phase of ['bus','gather','repairing','complete']){
   const p=validateProgress(freshProgress());p.arrival={version:3,phase,keys:true,elapsed:1,workWood:80};p.restoration.build={id:'cottage',elapsed:1,x:10,y:20};

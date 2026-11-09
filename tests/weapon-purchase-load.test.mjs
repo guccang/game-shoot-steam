@@ -5,13 +5,15 @@ import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {catLoad,movementLoadFactor} from '../src/progression/load-weight.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
-import {weaponPurchaseQuote} from '../src/core/weapon-purchase-load.js';
-import {commitWorkshop} from '../src/core/workshop.js';
-import {collectShopStock} from '../src/core/shop-delivery.js';
-import {carriedWeapon} from '../src/progression/weapon-storage.js';
-import {discardLoad} from '../src/core/load-cleanup.js';
+import {catLoad,movementLoadFactor} from '../src/progression/inventory/load-weight.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
+import {weaponPurchaseQuote} from '../src/core/inventory/weapon-purchase-load.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
+import {collectShopStock} from '../src/core/economy/shop-delivery.js';
+import {carriedWeapon} from '../src/progression/inventory/weapon-storage.js';
+import {discardLoad} from '../src/core/inventory/load-cleanup.js';
+import {WOOD_ITEM} from '../src/config/wood-storage.js';
 import {AMMO_TYPES} from '../src/config/supplies.js';
 
 const plan={kind:'weapons',index:1,action:'buy'};
@@ -20,7 +22,8 @@ function scene(){
   const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};
   p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';
   p.restoration.repaired=TOWN_RESTORATIONS.map(r=>r.id);p.coins=p.wood=100000;p.bosses=50;
-  p.materials={parts:10000,crystal:10000,core:10000};
+  // 购枪负重夹具提供现行工业配方的部件，避免资源资格掩盖容量检查。
+  p.materials={...p.materials,parts:10000,crystal:10000,core:10000,copperGun:10000};
   p.weapons.fill(0);p.weapons[0]=1;p.weapon=0;
   const g=new Game(p);g.state='playing';g.vehicle.active=false;g.cottage={kind:'weapons'};g.livingPersist=()=>true;
   return g;
@@ -75,17 +78,20 @@ test('背包有余量时即使店外有车也优先随身携带',()=>{
 });
 
 test('背包与门外车辆都装不下时交付小屋仓库',()=>{
- const g=parkOutside();g.progress.logistics.bagWood=100;
+ const g=parkOutside();g.progress.logistics.bagWood=Math.ceil(catLoad(g).capacity/WOOD_ITEM.mass);
+ // 扣掉制造木材后仍然满载，才应触发仓库交付。
+ g.progress.logistics.bagWood+=equipmentRecipe('weapons',1,g.progress).wood;
  g.progress.logistics.builds[1].wood=99999;
  assert.equal(commitWorkshop(g,plan,()=>true).place,'小屋仓库');
  assert.deepEqual(g.progress.warehouse.weapons,[1]);
 });
 
 test('背包装不下才交付门外车辆，读档后可从同车取回',()=>{
- const g=parkOutside();g.progress.logistics.bagWood=100;
+ const g=parkOutside();g.progress.logistics.bagWood=Math.ceil(catLoad(g).capacity/WOOD_ITEM.mass);
+ const paidWood=equipmentRecipe('weapons',1,g.progress).wood;g.progress.logistics.bagWood+=paidWood;
  const before=catLoad(g).weight;let saved;
  const result=commitWorkshop(g,plan,p=>{saved=structuredClone(p);return true;});
- assert.ok(result.ok);assert.match(result.place,/载具仓库/);assert.equal(catLoad(g).weight,before);
+ assert.ok(result.ok);assert.match(result.place,/载具仓库/);assert.ok(Math.abs(catLoad(g).weight-(before-paidWood*WOOD_ITEM.mass))<1e-6);
  const restored=new Game(saved);restored.state='paused';restored.vehicle.active=false;
  restored.livingPersist=()=>true;Object.assign(restored.player,{x:2010,y:2010});
  assert.equal(carriedWeapon(restored.progress,1),false);assert.equal(restored.progress.weapon,0);
@@ -96,14 +102,22 @@ test('背包装不下才交付门外车辆，读档后可从同车取回',()=>{
 });
 
 test('已经满载可在工坊原地整理，清理后重算购枪资格并恢复移动',()=>{
-  const g=scene();g.progress.logistics.bagWood=100;assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);
+  const g=scene();g.progress.logistics.bagWood=Math.ceil(catLoad(g).capacity/WOOD_ITEM.mass);assert.ok(movementLoadFactor(g)>0&&movementLoadFactor(g)<1);
+  g.progress.logistics.bagWood+=equipmentRecipe('weapons',1,g.progress).wood;
   assert.equal(commitWorkshop(g,plan,()=>true).place,'小屋仓库');
-  assert.ok(discardLoad(g,{id:'material:wood',count:100}).ok);assert.ok(movementLoadFactor(g)>0);
+  assert.ok(discardLoad(g,{id:'material:wood',count:g.progress.logistics.bagWood}).ok);assert.ok(movementLoadFactor(g)>0);
   assert.equal(commitWorkshop(g,plan,()=>true).ok,false);assert.ok(movementLoadFactor(g)>0);
 });
 
+test('制造消耗背包材料释放空间后，整枪优先放入背包',()=>{
+ const g=parkOutside();g.progress.logistics.bagWood=Math.ceil(catLoad(g).capacity/WOOD_ITEM.mass);
+ const wood=g.progress.logistics.bagWood,paid=equipmentRecipe('weapons',1,g.progress).wood,home=g.progress.wood;
+ const result=commitWorkshop(g,plan,()=>true);assert.ok(result.ok);assert.equal(result.place,'猫猫背包');
+ assert.equal(g.progress.logistics.bagWood,wood-paid);assert.equal(g.progress.wood,home);assert.ok(carriedWeapon(g.progress,1));
+});
+
 test('负重限制不干扰已拥有武器的换装与升级',()=>{
-  const g=scene();g.progress.logistics.bagWood=100;
+  const g=scene();g.progress.logistics.bagWood=Math.ceil(catLoad(g).capacity/WOOD_ITEM.mass);
   assert.equal(g.transact('weapons',0,'equip'),true);
   assert.ok(commitWorkshop(g,{kind:'weapons',index:0,action:'upgrade'},()=>true).ok);
 });

@@ -1,6 +1,6 @@
 // 手机回收页固定展示目标与原价返还，二次确认后再回到场景提交事务。
 import {createEventScope} from '../platform/events.js';
-import {mineRemovalChoices,removeMineFacility} from '../core/mine-demolition.js';
+import {mineRemovalChoices,removeMineFacility} from '../core/mining/mine-demolition.js';
 // 与现有工具折叠栏、弹窗暂停和输入生命周期共用同一套接口。
 export function createMineDemolition({game,root,controls,input,dialogs}){
  const scope=createEventScope(),button=root.createElement('button'),dialog=root.createElement('dialog');

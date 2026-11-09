@@ -9,8 +9,8 @@ async page=>{
   const g=a.game;g.progress=p;g.reset();g.state='playing';document.querySelectorAll('dialog[open]').forEach(d=>d.close());
   const {CLEARING_APPROACH}=await import('/src/config/clearing.js');Object.assign(g.player,CLEARING_APPROACH);
   g.mainlineSpeech=null;g.encounterTimer=999;g.parkingVisitTimer=999;g.attack=()=>false;
-  if(!(await import('/src/core/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('清缴接取失败');
-  window.nav=await import('/src/core/story-route.js');a.refresh();
+  if(!(await import('/src/core/story/clearing-guide.js')).acceptClearingPost(g).ok)throw Error('清缴接取失败');
+  window.nav=await import('/src/core/navigation/story-route.js');a.refresh();
  });
  await page.waitForFunction(()=>nav.storyRouteState(a.game)?.reachable);
  await page.evaluate(()=>{
@@ -28,7 +28,7 @@ async page=>{
  await page.waitForFunction(()=>movement.next>=Math.min(10,movement.path.length-2),null,{timeout:30000});
  const sample=await page.evaluate(async()=>{
   movement.active=false;const g=a.game;g.update=()=>{};
-  const {questLineClear}=await import('/src/physics/quest-route.js'),{createPlayerNavigationIndex,playerNavigationBody}=await import('/src/core/prepared-navigation.js');
+  const {questLineClear}=await import('/src/physics/quest-route.js'),{createPlayerNavigationIndex,playerNavigationBody}=await import('/src/core/navigation/prepared-navigation.js');
   const index=createPlayerNavigationIndex(g.trees),at={x:g.player.x,y:g.player.y};window.routeAt=at;
   // 选择真实可站立的偏离位置，冻结时钟保留搜索等待帧，检查正式绘制读取的缓存。
   for(const distance of [180,240,300,360])for(let n=0;n<16;n++){

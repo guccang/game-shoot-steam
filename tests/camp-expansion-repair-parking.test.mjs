@@ -1,8 +1,8 @@
-import {parkingRecordSite} from '../src/progression/roadside-parking.js';
+import {parkingRecordSite} from '../src/progression/vehicles/roadside-parking.js';
 // 营地扩建验证正式碰撞、循环镜像、泊车、维修与在途旧档，不使用替代地图。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {monsterCampLevel} from '../src/core/monster-camps.js';
+import {monsterCampLevel} from '../src/core/battle/monster-camps.js';
 import {Game} from '../src/core/game.js';
 import {ownedPineProgress} from './helpers/owned-pine-progress.mjs';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
@@ -13,11 +13,11 @@ import {PARKING_SPOTS} from '../src/config/parking.js';
 import {WORLD,canonical,worldDistance} from '../src/world/coordinates.js';
 import {blocked} from '../src/physics/motion.js';
 import {planQuestRoute,questLineClear} from '../src/physics/quest-route.js';
-import {requestParking,updateParking} from '../src/core/parking.js';
-import {boardParkedVehicle} from '../src/core/camp-parking.js';
-import {requestVehicleRepair,updateVehicleRepair,collectRepairedVehicle} from '../src/core/vehicle-repair.js';
+import {requestParking,updateParking} from '../src/core/vehicles/parking.js';
+import {boardParkedVehicle} from '../src/core/vehicles/camp-parking.js';
+import {requestVehicleRepair,updateVehicleRepair,collectRepairedVehicle} from '../src/core/vehicles/vehicle-repair.js';
 import {validateProgress} from '../src/progression/progress.js';
-import {leaveCottage} from '../src/core/cottage.js';
+import {leaveCottage} from '../src/core/home/cottage.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
 import {parkedVehicleObjects} from '../src/rendering/parked-vehicles.js';
 import {parkingGaragePose} from '../src/rendering/parking.js';

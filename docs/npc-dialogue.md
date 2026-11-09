@@ -55,11 +55,11 @@
 
 | 话题 | 正式来源 | 内容边界 |
 | --- | --- | --- |
-| 六处埋藏点 | src/config/treasure.js、src/core/treasure.js | 同一目录绑定线索，手机寻宝记录；出土坦克报废待修，部件需运输安装 |
-| 红狼与传奇工坊 | src/config/equipment-quests.js、src/config/equipment-story-chapters.js、src/progression/equipment-quests.js、src/core/legendary-workshop.js | 铁牙的木料护送故事开放购买；借车不等于拥有，工坊另有所有权及到场条件 |
-| 灰堆 | src/config/monster-camps.js、src/core/monster-camps.js | 只记录线索，保留时段、清场、现场距离与唯一奖励条件 |
-| 种田收入 | src/ui/mainline.js 的正式种田备忘、src/core/farm.js | 一茬浇水一次最多缩短25%，收成运回小屋仓库才结算金币 |
-| 猫猫弹药 | src/core/supplies.js | 背包装不下转存当前载具且仍受载重约束；装填按库存来源取弹 |
+| 六处埋藏点 | src/config/treasure.js、src/core/activities/treasure.js | 同一目录绑定线索，手机寻宝记录；出土坦克报废待修，部件需运输安装 |
+| 红狼与传奇工坊 | src/config/equipment-quests.js、src/config/equipment-story-chapters.js、src/progression/workshop/equipment-quests.js、src/core/workshop/legendary-workshop.js | 铁牙的木料护送故事开放购买；借车不等于拥有，工坊另有所有权及到场条件 |
+| 灰堆 | src/config/monster-camps.js、src/core/battle/monster-camps.js | 只记录线索，保留时段、清场、现场距离与唯一奖励条件 |
+| 种田收入 | src/ui/mainline.js 的正式种田备忘、src/core/farming/farm.js | 一茬浇水一次最多缩短25%，收成运回小屋仓库才结算金币 |
+| 猫猫弹药 | src/core/vehicles/supplies.js | 背包装不下转存当前载具且仍受载重约束；装填按库存来源取弹 |
 | 车炮搭配 | src/config/treasure.js、src/config/vehicle-armaments.js | 长枝穿透、蜂巢散射与弹种如实描述，不虚构强化或伤害加成 |
 
 ## 验证结果

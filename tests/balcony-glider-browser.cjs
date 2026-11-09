@@ -10,9 +10,9 @@ async page=>{
    p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(v=>v.id);
    p.homeDecor.floors=8;p.homeDecor.balconies[floor]=[side];g.progress=p;g.reset();g.start();g.vehicle.active=false;g.mainlineSpeech=null;
    const {COTTAGE}=await import('/src/config/cottage.js');Object.assign(g.player,COTTAGE.door);
-   if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('小屋入口失败');
+   if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('小屋入口失败');
    g.cottage.floor=floor;Object.assign(g.player,(await import('/src/config/home-construction.js')).HOME_DIRECTIONS[side].door);
-   if(!(await import('/src/core/home-construction.js')).enterHomeBalcony(g,side))throw Error('阳台入口失败');
+   if(!(await import('/src/core/home/home-construction.js')).enterHomeBalcony(g,side))throw Error('阳台入口失败');
    const phase=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time);p.living.calendar.elapsed=phase.start+phase.duration*.5;
    (await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,p.living.calendar);
    // 同一屏保留停驻载具和怪物，核对翼布、地影与下方实体的遮挡。
@@ -28,7 +28,7 @@ async page=>{
   await page.waitForTimeout(750);await page.screenshot({path:`output/balcony-glider/${width}-${time}.png`});
   if(floor>1){await launch.tap();await page.waitForFunction(()=>a.game.cottage?.glide?.approach||!a.game.cottage);}
   await page.waitForFunction(()=>!a.game.cottage,null,{timeout:18000});
-  const safe=await page.evaluate(async()=>{const g=a.game,p=g.player,q=(await import('/src/core/town-layout.js')).townStandingPoint(g,p);return q&&Math.hypot(p.x-q.x,p.y-q.y)<.01;});
+  const safe=await page.evaluate(async()=>{const g=a.game,p=g.player,q=(await import('/src/core/camp/town-layout.js')).townStandingPoint(g,p);return q&&Math.hypot(p.x-q.x,p.y-q.y)<.01;});
   if(!safe)throw Error('着陆位置无法步行');
  }
  if(errors.length)throw Error(errors.join('；'));return true;

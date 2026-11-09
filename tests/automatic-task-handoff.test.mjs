@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
-import {updateStory} from '../src/core/story-manager.js';
+import {updateStory} from '../src/core/story/story-manager.js';
 
 // 为各章构造已结束战斗、尚未回营的交付检查点，不直接标记通关。
 function returning(id='sunleaf-01'){

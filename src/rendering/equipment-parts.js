@@ -7,7 +7,7 @@ import { drawUpgradePart } from './weapon-upgrade-art.js';
 import { VEHICLE_WEAPONS } from '../config/vehicle-armaments.js';
 import { box, oval, poly, outline } from './primitives.js';
 import { equipmentParts, partLevel } from '../config/equipment-parts.js';
-import { WEAPONS } from '../config/weapons.js';
+
 
 // 装备可替换部件的正式绘制：局部结构独立，工坊和战斗共用同一入口。
 

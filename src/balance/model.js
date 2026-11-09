@@ -3,7 +3,7 @@ export {wallet,growthCadence,seededRandom} from './model-metrics.js';
 import {simulateCampaign} from './campaign-model.js';
 import {i18nText} from '../i18n/index.js';
 import {RECOMMENDED_ECONOMY,ORIGINAL_ECONOMY} from '../config/economy.js';
-import {equipmentRecipe} from '../progression/equipment-goals.js';
+import {equipmentRecipe} from '../progression/workshop/equipment-goals.js';
 
 export const DEFAULT_ROUTE=[['weapons',3],['vehicle',0],['vehicle',3],['vehicle',2],['weapons',12]];
 export const ROUTE_PRESETS={

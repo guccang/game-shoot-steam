@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 import {STORY_ID} from '../src/config/story.js';
 import {storyObjects} from '../src/rendering/story-props.js';
 // 建立真实营地会话；不推进与本次修改无关的战斗流程。

@@ -1,6 +1,6 @@
 // 红狼专属传承页与坦克设计台；预览只修改草稿，保存与解锁走原子事务。
 import {LEGENDARY_STORY,TANK_PAINTS,TANK_BADGES,normalizeTankDesign} from "../config/legendary-workshop.js";
-import {legendaryAccessReason,legendaryNavigationReason,legendaryNearby,travelLegendary,commitLegendary} from "../core/legendary-workshop.js";
+import {legendaryAccessReason,legendaryNavigationReason,legendaryNearby,travelLegendary,commitLegendary} from "../core/workshop/legendary-workshop.js";
 import {COLLECTED_VEHICLES} from '../config/vehicles.js';
 import {createVehicle} from '../combat/vehicle.js';
 import {drawVehicleTracks,drawVehicleArmor} from '../rendering/vehicle.js';

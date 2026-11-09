@@ -1,10 +1,10 @@
 import {displayMeters} from '../world/distance-units.js';
-import {taskNavigationEnabled} from '../core/task-navigation.js';
+import {taskNavigationEnabled} from '../core/navigation/task-navigation.js';
 import { i18nText } from "../i18n/index.js";
 // 章节罗盘复用任务地标，以最近世界镜像计算方位；不创建寻路或碰撞实体。
 import { nearest } from '../world/coordinates.js';
-import {storyDefinition,storySceneActive} from '../core/story-definition.js';
-import {storyInteractionTarget,storyInteractionNear} from '../core/story-interaction.js';
+import {storyDefinition,storySceneActive} from '../core/story/story-definition.js';
+import {storyInteractionTarget,storyInteractionNear} from '../core/story/story-interaction.js';
 
 // SVG箭头默认朝上，屏幕坐标向下为正；重合时不伪造方向。
 export function storyBearing(player, site, radius=storyDefinition().interaction.radius) {

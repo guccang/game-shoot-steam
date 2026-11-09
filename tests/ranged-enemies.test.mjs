@@ -5,7 +5,7 @@ import { Game } from '../src/core/game.js';
 import { freshProgress } from '../src/progression/progress.js';
 import { rangedSpawn, rangedSpecies, RANGED_ENEMIES, RANGED_LIMITS } from '../src/config/ranged-enemies.js';
 import { updateRangedAttack, updateEnemyBolts } from '../src/combat/ranged-enemies.js';
-import { updateEnemies } from '../src/core/enemy-manager.js';
+import { updateEnemies } from '../src/core/battle/enemy-manager.js';
 import { applyImpulse } from '../src/physics/motion.js';
 import { viewBody } from '../src/world/coordinates.js';
 import { drawEnemyBolts } from '../src/rendering/ranged-enemies.js';

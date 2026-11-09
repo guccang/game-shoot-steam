@@ -3,13 +3,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
-import {openBasement,normalizeMining} from '../src/progression/mining.js';
+import {openBasement,normalizeMining} from '../src/progression/mining/mining.js';
 import {MINING,minePoint,mineKey} from '../src/config/mining.js';
 import {mineAnimalStats,mineThreatLimit,mineTerrain} from '../src/config/mine-ecology.js';
-import {currentMineLayer} from '../src/core/mine-layers.js';
-import {freshMineLayer} from '../src/progression/mine-layers.js';
-import {enterMine,leaveMine,updateMining} from '../src/core/mining.js';
-import {hitMineAnimal,readyMineWeapon,updateMineCombat,clipMineCombatLine} from '../src/core/mine-combat.js';
+import {currentMineLayer} from '../src/core/mining/mine-layers.js';
+import {freshMineLayer} from '../src/progression/mining/mine-layers.js';
+import {enterMine,leaveMine,updateMining} from '../src/core/mining/mining.js';
+import {hitMineAnimal,readyMineWeapon,updateMineCombat,clipMineCombatLine} from '../src/core/mining/mine-combat.js';
 import {WEAPONS} from '../src/config/weapons.js';
 import {mineOccupancy} from '../src/physics/mine-motion.js';
 import {launchGrenade,explodeGrenade} from '../src/combat/grenades.js';
@@ -29,7 +29,7 @@ function animal(g,cell={x:32,y:20},kind='spore',hp=60){const key=mineKey(cell),a
 function tick(g,n){for(let i=0;i<n;i++)updateMining(g,.05,{x:0,y:0});}
 
 test('默认手枪地下扣真实弹药并击杀，不改变地表敌人和飞弹',()=>{const g=setup(),a=animal(g),ore=g.progress.mining.ore,ammo=g.magazines[0].ammo,enemies=g.enemies,bullets=g.projectiles;tick(g,100);assert.equal(currentMineLayer(g).animals[a.key].hp,0);assert.equal(g.progress.mining.ore,ore+4);assert.ok(g.magazines[0].ammo<ammo);assert.strictEqual(g.enemies,enemies);assert.strictEqual(g.projectiles,bullets);assert.equal(bullets.length,0);assert.ok(g.cottage.weaponReady);assert.equal(g.progress.statistics.codex.monsters['mine:spore'],1);assert.equal(g.progress.statistics.equipment.weapons.pistol.kills,1);});
-test('施工停枪，矿镐防卫与拿起武器互斥；暂停冻结弹丸和装填',()=>{const g=setup(),a=animal(g),ammo=g.magazines[0].ammo;g.cottage.tool='pick';tick(g,30);assert.equal(a.hp,60);assert.equal(g.magazines[0].ammo,ammo);readyMineWeapon(g);tick(g,4);assert.ok(g.magazines[0].ammo<ammo);g.state='paused';const before=JSON.stringify({bullets:g.cottage.combat.projectiles,mag:g.magazines[0],age:currentMineLayer(g).age});tick(g,40);assert.equal(JSON.stringify({bullets:g.cottage.combat.projectiles,mag:g.magazines[0],age:currentMineLayer(g).age}),before);});
+test('施工遇敌自动持枪，手动拿起武器取消恢复；暂停冻结弹丸和装填',()=>{const g=setup(),a=animal(g),ammo=g.magazines[0].ammo;g.cottage.tool='pick';g.cottage.autoDig=true;tick(g,4);assert.ok(g.magazines[0].ammo<ammo);assert.equal(g.cottage.combatWork.tool,'pick');assert.equal(g.cottage.tool,null);readyMineWeapon(g);assert.equal(g.cottage.combatWork,null);g.state='paused';const before=JSON.stringify({bullets:g.cottage.combat.projectiles,mag:g.magazines[0],age:currentMineLayer(g).age});tick(g,40);assert.equal(JSON.stringify({bullets:g.cottage.combat.projectiles,mag:g.magazines[0],age:currentMineLayer(g).age}),before);});
 test('死亡事务替换进度后多目标和重复命中只奖励一次；失败可重试',()=>{const g=setup(),a=animal(g),b=animal(g,{x:31,y:21}),ore=g.progress.mining.ore;hitMineAnimal(g,a,999);hitMineAnimal(g,a,999);hitMineAnimal(g,b,999);assert.equal(g.progress.mining.ore,ore+8);const c=animal(g,{x:30,y:21});g.livingPersist=()=>false;assert.equal(hitMineAnimal(g,c,999),false);assert.equal(c.hp,1);assert.equal(g.progress.mining.ore,ore+8);g.livingPersist=()=>true;hitMineAnimal(g,c,999);assert.equal(g.progress.mining.ore,ore+12);});
 test('成长第九层封顶，前两层轻量且受伤的深层怪读档不截回一级血量',()=>{assert.deepEqual(mineAnimalStats('spore',9),mineAnimalStats('spore',1000));assert.deepEqual([1,2,3,5,6,99].map(mineThreatLimit),[2,2,3,3,4,4]);assert.equal(mineAnimalStats('beetle').hp,48);const g=setup();g.progress.mining.layers[2]=freshMineLayer(2,{x:0,y:0},()=>.5);const l=g.progress.mining.layers[2];l.dug['1,0']=true;l.animals['1,0']={key:'1,0',kind:'spore',...minePoint({x:1,y:0}),hp:65,respawn:0};assert.equal(normalizeMining(g.progress.mining).layers[2].animals['1,0'].hp,65);});
 test('近身六怪最多两只同时蓄力，入口会取消蓄力且阻挡已飞孢子伤害',()=>{const g=setup();g.cottage.tool='pick';for(let i=0;i<6;i++){const a=animal(g,{x:30+i%3,y:20+Math.floor(i/3)},'spore');a.x=g.player.x+40+i;a.y=g.player.y;a.phase='roam';a.timer=0;}tick(g,1);assert.equal(Object.values(currentMineLayer(g).animals).filter(a=>a.phase==='windup').length,2);Object.assign(g.player,MINING.home);g.cottage.bolts=[{x:g.player.x-1,y:g.player.y,vx:20,vy:0,enemy:true,damage:99,life:2}];const hp=g.player.hp;tick(g,1);assert.equal(g.player.hp,hp);});

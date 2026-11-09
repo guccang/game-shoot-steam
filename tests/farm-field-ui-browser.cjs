@@ -11,7 +11,7 @@ async page=>{
  for(const [width,height] of [[320,568],[390,844],[844,390]])for(const time of ['day','night'])for(const action of ['plant','water','dig']){
   await page.setViewportSize({width,height});
   await page.evaluate(async({time,action})=>{
-   const g=a.game,{setFarmTool,queueFarmWork}=await import('/src/core/farm.js');setFarmTool(g,action==='water'?'water':'hoe');g.farmCursor=null;
+   const g=a.game,{setFarmTool,queueFarmWork}=await import('/src/core/farming/farm.js');setFarmTool(g,action==='water'?'water':'hoe');g.farmCursor=null;
    for(const p of g.progress.farm.plots){p.crop=action==='water'?0:null;p.plantedAt=Date.now();p.readyAt=Date.now()+45000;p.watered=false;if(action!=='dig')queueFarmWork(g,action,{plot:p.id,crop:0});}
    if(action==='dig')g.farmCursor={x:837,y:568,mapId:'forest'};else g.farmWork.job=g.farmWork.queue.shift();
    const phase=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time);g.progress.living.calendar={day:1,elapsed:phase.start+phase.duration/2};Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new (await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new (await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.renderer.camera.time=null;a.refresh();
@@ -21,7 +21,7 @@ async page=>{
   samples.push({width,height,time,action,info});await page.screenshot({path:`output/playwright/farm-field-ui/${width}-${time}-${action}.png`});
  }
  // 真实鼠标选择种子、点击空田入队，确认透明热点没有被视觉调整破坏。
- await page.setViewportSize({width:390,height:844});await page.evaluate(async()=>{const g=a.game;g.farmCursor=null;(await import('/src/core/farm.js')).setFarmTool(g,null);for(const p of g.progress.farm.plots)p.crop=null;a.refresh();});await page.waitForTimeout(150);
+ await page.setViewportSize({width:390,height:844});await page.evaluate(async()=>{const g=a.game;g.farmCursor=null;(await import('/src/core/farming/farm.js')).setFarmTool(g,null);for(const p of g.progress.farm.plots)p.crop=null;a.refresh();});await page.waitForTimeout(150);
  const cell=page.locator('[data-farm-cell="1"]');await cell.hover();const hover=await cell.evaluate(n=>getComputedStyle(n).outlineStyle);if(hover==='dashed')throw Error('悬停仍显示虚线');
  await cell.click();await page.locator('#farm-picker').waitFor({state:'visible'});await page.locator('[data-farm-seed="0"]').click();await cell.click();
  const queued=await page.evaluate(()=>a.game.farmWork?.queue.some(j=>j.id===1&&j.action==='plant'));if(!queued)throw Error('播种点击未进入正式队列');

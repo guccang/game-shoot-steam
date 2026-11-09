@@ -56,7 +56,7 @@ Windows 本地测试：安装 Node.js 后，双击根目录的 [start-game-4175.
 - 清关奖励即时入账；失败、撤退保留已获奖励，森林波次不回退。秘境击杀不计入森林击杀、领主资格、材料保底或武器熟练度。
 - 同页面返回时恢复森林坐标、弹药、载具和敌人现场。刷新采用关卡检查点：未完成关卡从该关开始时的生命、女神生命、祝福和载具耐久／供给／修复时间重试；已完成关卡不重复发奖。森林仍按原有巡游存档恢复。
 - 抽取结果在点击时立即保存，刷新不会重抽；补给转轮按逐渐放慢的机械卡嗒节奏滚动，以和弦揭晓结果。音效遵循声音开关和音效音量，首次点击进入后默认开启。永久装备所有权、等级和配置不受远征试用影响；旧版正在进行的远征仍按原装备继续。
-- 模式配置与祝福在 `src/config/realms.js`，会话和结算在 `src/core/realm-manager.js`，存档校验在 `src/progression/realm-progress.js`，独立平台与女神绘制在 `src/rendering/realms.js`。
+- 模式配置与祝福在 `src/config/realms.js`，会话和结算在 `src/core/realms/realm-manager.js`，存档校验在 `src/progression/realms/realm-progress.js`，独立平台与女神绘制在 `src/rendering/realms.js`。
 - `tests/realms.test.mjs` 覆盖三模式完整流程与存档隔离，`tests/realms-browser.cjs` 验证手机入口、实际选择、结算和刷新；`node scripts/simulate-realms.mjs` 可运行固定种子、自动走位的实战模拟（远征按新规则抽取装备）。初版数值仍需结合人工试玩调整。
 - `tests/expedition.test.mjs` 验证全目录实战、抽取存档和升级隔离；`tests/expedition-browser.cjs` 在隔离端口 4197 检查真实点击、音效、320/390/1280 布局及昼夜设置下的同屏效果。补给绘制绑定及 `designCriterion` 见 `visual-contract.json`，连续相位入口见 `src/rendering/visual-review.js`。秘境保留原有恒定照明。
 
@@ -72,7 +72,7 @@ Windows 本地测试：安装 Node.js 后，双击根目录的 [start-game-4175.
 
 - 参考同目录 `char-animation` 的首帧生视频和源时间抽帧方法，从本游戏原有无枪主体导出首帧，生成两段 10 秒原片。蓝幕抠像保留绿色衣服；每名角色采用固定脚底、统一缩放和 160×160 帧格，不逐帧拉伸或底部对齐。原片、参考图、请求及服务结果保留在 `assets/cat-front/source/`。
 - `assets/cat-front/animations.json` 记录原片 SHA-256、源帧编号、源时间、裁切与缩放、动作帧率、固定锚点和姿态匹配表。栗子待机 45 帧 / 移动 24 帧，薄荷待机 39 帧 / 移动 30 帧；各一张 1280×1440 PNG，解码 RGBA 总量约 14.1 MiB，不在游戏中播放视频。
-- `src/core/cat-motion.js` 按实际位移切换动作，阻挡、停车和驾驶使用待机；暂停与死亡冻结动作。`src/rendering/cat-animation.js` 选择相近姿态衔接并短暂平滑校正位置，每次只绘制一个主体，不淡入淡出叠加双重轮廓。减少动态模式固定待机首帧，资源缺失则回退原矢量角色。
+- `src/core/battle/cat-motion.js` 按实际位移切换动作，阻挡、停车和驾驶使用待机；暂停与死亡冻结动作。`src/rendering/cat-animation.js` 选择相近姿态衔接并短暂平滑校正位置，每次只绘制一个主体，不淡入淡出叠加双重轮廓。减少动态模式固定待机首帧，资源缺失则回退原矢量角色。
 - 复现首帧：在隔离端口 4174 运行 `scripts/cat-reference-browser.cjs`；`python scripts/cat-video.py collect` 只查询既有请求并获取原片。`submit` 会真实计费，已有请求记录时不会重复提交；本机客户端路径沿用 `char-animation`，其他机器需配置 `GENERATE_CLIENT`。
 - 已有原片重新抽帧：`python scripts/extract-cat-frames.py`，需要 Python、Pillow、NumPy、OpenCV。无需重新生成视频；循环选段依据首尾轮廓和速度相似性自动选择，仍应检查输出预览。联系表、GIF 和录制预览位于忽略目录 `output/cat-front/`。
 - 验证：`tests/cat-animation.test.mjs` 覆盖动作时钟、真实图集与源片哈希、枪口规则和失败回退；`tests/cat-animation-browser.cjs` 检查实际图集播放、起停、八方向持枪、载具待机、减少动态和 320/390/580 宽度，使用正式绘制链输出 `preview.webm`。
@@ -420,7 +420,7 @@ npx --yes --package @playwright/cli playwright-cli -s=environment run-code --fil
 
 熟练度 2 级解锁该枪的两个互斥分支。每次改装或换分支消耗 180 金币 + 60 木材，恢复原厂免费，重新装回仍要付费。十四把武器共 28 个分支，均有属性取舍，例如手枪快速射击/重弹、狙击轻型枪栓/钨芯穿甲、脉冲速充/过载、电弧分叉/聚能、冰晶深寒/霰射。改装不补弹，不叠加旧分支，也不改变在途弹丸；手持枪改装会清空尚未释放的蓄能。
 
-`src/config/weapon-mods.js` 定义分支与统一有效参数，`src/progression/mastery.js` 负责奖励及扣费事务，`src/combat/elemental.js` 负责连锁判定。规则、工坊和 HUD 使用同一组有效属性。旧存档保留既有装备，补齐熟练度和改装字段，无需清空进度。
+`src/config/weapon-mods.js` 定义分支与统一有效参数，`src/progression/player/mastery.js` 负责奖励及扣费事务，`src/combat/elemental.js` 负责连锁判定。规则、工坊和 HUD 使用同一组有效属性。旧存档保留既有装备，补齐熟练度和改装字段，无需清空进度。
 
 `tests/mastery-mods.test.mjs` 与 `tests/elemental-weapons.test.mjs` 覆盖存档、门槛、事务原子性、分支参数、在途归属、连锁、冰冻与暂停。使用独立 4174 端口运行 `tests/forest-mastery-browser.cjs` 可验证真实购买、改装及刷新保存，生成手机工坊、昼夜河流和元素弹道截图；不使用正式 4173 端口或正式进度。
 
@@ -511,7 +511,7 @@ HP 下方的一行图标显示武器与载具：弹药环内为剩余数量，�
 `tests/vehicle-roster.test.mjs` 验证三车型购买、升级、供给隔离、后台修复、飞行地形规则、安全落地、循环边界和旧档迁移。`tests/vehicle-roster-browser.cjs` 在 4174 隔离端口验收三车型 UI 操作、存档恢复、320/390/580 像素画面，以及直升机夜雨与减少动态模式。新载具使用 Canvas 平涂造型，直升机旋翼和尾桨在减少动态模式下停止旋转。
 
 
-`src/core/wave-manager.js` 管理波次、配额和休整；`src/core/enemy-manager.js` 管理怪物出生、移动攻击、死亡残块和远处回收；`src/core/boss-manager.js` 管理领主召唤、挑战快照和胜利生命周期。`Game` 保留兼容调用入口并调度更新顺序。`tests/boss-wave-management.test.mjs` 验证战中冻结、重复击杀、五领主死亡重试与快照校验；`tests/boss-waves-arsenal-browser.cjs` 在隔离端口验证 320/390/580 像素 Boss HUD、图像分类和真实存档流程。
+`src/core/battle/wave-manager.js` 管理波次、配额和休整；`src/core/battle/enemy-manager.js` 管理怪物出生、移动攻击、死亡残块和远处回收；`src/core/battle/boss-manager.js` 管理领主召唤、挑战快照和胜利生命周期。`Game` 保留兼容调用入口并调度更新顺序。`tests/boss-wave-management.test.mjs` 验证战中冻结、重复击杀、五领主死亡重试与快照校验；`tests/boss-waves-arsenal-browser.cjs` 在隔离端口验证 320/390/580 像素 Boss HUD、图像分类和真实存档流程。
 
 Boss 承受分级枪械击退：普通枪冲量系数 0.6、质量至少 6，合速度上限 55、阻尼 10，单次最大滑移约 5.5 世界单位。狙击与脉冲的冲量系数分别为 1.1／1.3，短时速度上限 125／180，增强窗口为 0.4 秒，之后恢复普通阻尼和限速。重击增加局部亮芯、定向冲击波与短促身体形变，额外特效每 0.09 秒最多一组；减少动态模式关闭形变与扩散环。以实际弹丸类型识别重击，浮游炮、载具挂载和切枪后的在途弹仍保持对应能力。所有枪械均不使 Boss 腾空、滚地或打断施法，撞树及河岸停止；被击飞的小怪不能间接撞退 Boss。野猪冲锋提示同步受击平移。参数在 `config/boss-combat.js`，绘制在 `rendering/boss-impact.js`。
 

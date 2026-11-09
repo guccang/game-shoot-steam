@@ -4,7 +4,7 @@ import {Game,freshProgress} from '../src/game.js';
 import {nearest,worldDistance} from '../src/world/coordinates.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 import {blocked} from '../src/physics/motion.js';
-import {vehicleParkingSite} from '../src/core/camp-parking.js';
+import {vehicleParkingSite} from '../src/core/vehicles/camp-parking.js';
 import {writeFileSync,mkdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';

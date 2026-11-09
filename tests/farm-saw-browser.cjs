@@ -13,7 +13,7 @@ async original=>{
    // 固定光照方便同屏复核，不替换正式场景或工具绘制。
    window.light=async time=>{Object.assign(a.environment,{time,weather:'sun',autoTime:false,autoWeather:false,livingPreview:true});a.renderer.light=new (await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new (await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();};
   });
-  await page.locator('#field-menu-toggle').tap();await page.locator('#farm-menu').tap();await page.evaluate(async()=>{(await import('/src/core/farm.js')).setFarmTool(a.game,'saw');});
+  await page.locator('#field-menu-toggle').tap();await page.locator('#farm-menu').tap();await page.evaluate(async()=>{(await import('/src/core/farming/farm.js')).setFarmTool(a.game,'saw');});
   if(await page.evaluate(()=>a.game.farmWork?.tool!=='saw'||!!document.querySelector('#farm-saw')))throw Error('电锯未选中');
   for(const [width,height] of [[320,568],[390,844],[844,390],[1280,900]]){
    await page.setViewportSize({width,height});await page.waitForTimeout(180);
@@ -39,7 +39,7 @@ async original=>{
   await page.waitForFunction(()=>a.game.farmWork?.autoCombat&&target.hp<100000);
   if(await page.evaluate(()=>tree2.hp<=0||a.game.farmWork.tool!=='saw'))throw Error('迎敌未暂停电锯');
   await page.evaluate(()=>{a.game.hit(target,target.hp+1,false);});await page.waitForFunction(()=>tree2.hp<=0&&!a.game.farmWork.autoCombat,null,{timeout:15000});
-  await page.locator('#farm-hoe').tap();await page.evaluate(async()=>{(await import('/src/core/farm.js')).setFarmTool(a.game,'saw');});
+  await page.locator('#farm-hoe').tap();await page.evaluate(async()=>{(await import('/src/core/farming/farm.js')).setFarmTool(a.game,'saw');});
   if(await page.evaluate(()=>a.game.farmWork.tool!=='saw'||a.game.chopped!==beforeChopped+2))throw Error('内部工具切换或重复结算错误');
   await page.locator('#farm-exit').tap();if(await page.locator('#farm-tools').isVisible())throw Error('退出未收起工具栏');
   if(errors.length)throw Error(errors.join('\n'));return {designCriterion:'world-farm-delivery',layouts:8,touchSaw:true,emptyFeedback:true,combatResume:true,internalTool:true,errors};

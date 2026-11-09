@@ -1,33 +1,34 @@
+import {escapeOptionalHtml as escapeText} from './shared/html.js';
 import {EQUIPMENT_QUESTS} from '../config/equipment-quests.js';
 import {equipmentQuestCards,equipmentQuestStatus} from './equipment-quests.js';
-import {canEnterEquipmentQuest,equipmentQuestDestination} from '../core/equipment-quest-entry.js';
-import {requestWorldNavigation} from '../core/world-navigation.js';
+import {canEnterEquipmentQuest,equipmentQuestDestination} from '../core/workshop/equipment-quest-entry.js';
+import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import { HELP_EMBLEM } from './help-emblem.js';
-import {facilityOpen,workshopFacility} from '../config/town-restoration.js';
+import {facilityOpen} from '../config/town-restoration.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 import {storyCatalogRow,storyChapterHelp} from './story-catalog.js';
 import {storyTypeIcon} from './story-icons.js';
 import {createStoryPostMarkers} from './story-posts.js';
 import {storyRewardMarkup,storyCollectionMarkup,storyCollectionHelp} from './story-rewards.js';
-import {claimStoryCollection} from '../progression/story-rewards.js';
+import {claimStoryCollection} from '../progression/story/story-rewards.js';
 import {STORY_POSTS} from '../config/story-posts.js';
-import {storyPostForChapter,canUseStoryPost} from '../core/story-posts.js';
+import {storyPostForChapter,canUseStoryPost} from '../core/story/story-posts.js';
 // 多章目录与界面只发送规则意图：接取、对话、路线、整备和日志复用统一暂停归属。
-import {storyDefinition,storyUnlocked,storyNode,storyText,storyTarget,storyDeliveryReady} from '../core/story-definition.js';
+import {storyDefinition,storyUnlocked,storyNode,storyText,storyTarget,storyDeliveryReady} from '../core/story/story-definition.js';
 import {STORY_CAMPAIGN} from '../config/story-campaign.js';
 import { worldDistance } from '../world/coordinates.js';
 import { createEventScope } from '../platform/events.js';
 import { catSprites } from '../rendering/cat-animation.js';
 import { createStoryNavigation } from './story-navigation.js';
-import {loadoutExperience,storyExperienceGoal,storyDialogueLines} from '../core/story-journey.js';
+import {loadoutExperience,storyExperienceGoal,storyDialogueLines} from '../core/story/story-journey.js';
 import {createStoryChatter} from './story-chatter.js';
 import { createStorySpeech } from './story-speech.js';
 import {taskCatalog} from './task-catalog.js';
 import {createStoryInteraction} from './story-interaction.js';
-import {storyInteractionReady,storyInteractionNear} from '../core/story-interaction.js';
-import {cancelStory} from '../core/story-manager.js';
+import {storyInteractionReady,storyInteractionNear} from '../core/story/story-interaction.js';
+import {cancelStory} from '../core/story/story-manager.js';
 // 动态文本按普通文字插入，不把存档或错误内容解释为标记。
-function escapeText(value) {return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 // 创建一个章节弹窗和一个临近交互按钮，关闭或卸载时释放所有监听。
 export function createStoryPanel({game,root,dialogs,renderer,onChange,openWorkshop,onLiving}) {
   let selected=game.story?.chapterId||game.progress.story.run?.chapterId||'sunleaf-01',def=storyDefinition(selected);

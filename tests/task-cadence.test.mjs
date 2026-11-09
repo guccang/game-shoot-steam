@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import {MAINLINE_TASKS,MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {RECOMMENDED_ECONOMY as C,bindEconomy,validateEconomy,mainlineReward,RESOURCE_KEYS} from '../src/config/economy.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {awardMainline} from '../src/progression/mainline-reward.js';
-import {completeMainline,mainlineCondition,mainlineOperation,mainlineAction,mainlineObjective} from '../src/core/mainline-manager.js';
+import {awardMainline} from '../src/progression/story/mainline-reward.js';
+import {completeMainline,mainlineCondition,mainlineOperation,mainlineAction,mainlineObjective} from '../src/core/story/mainline-manager.js';
 import {nativeVehicleWeapon,grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {simulateEconomy} from '../src/balance/model.js';
 // 仅将夹具放到指定任务，目标条件仍须真实满足。

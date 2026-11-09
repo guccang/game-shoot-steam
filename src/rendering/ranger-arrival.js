@@ -7,7 +7,7 @@ import { drawScooterRear, drawScooterFront } from './scooter.js';
 import { box, oval, poly } from './primitives.js';
 import {drawParkedHull} from './parked-vehicles.js';
 import { RANGER,arrivalGiftHull } from '../config/ranger-arrival.js';
-import { arrivalTarget, arrivalRiders, arrivalWorkshopObjective, workshopBuildView } from '../core/ranger-arrival.js';
+import { arrivalTarget, arrivalRiders, arrivalWorkshopObjective, workshopBuildView } from '../core/camp/ranger-arrival.js';
 import { WORKSHOP } from '../world/workshop.js';
 import { nearest } from '../world/coordinates.js';
 

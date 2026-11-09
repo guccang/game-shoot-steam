@@ -1,7 +1,7 @@
 // 地块移除使用统一确认底板；取消不提交，确认后走近并在动作命中时保存。
 import {createEventScope} from '../platform/events.js';
 import {FARM_CROPS} from '../config/farm.js';
-import {queueFarmWork,setFarmTool} from '../core/farm.js';
+import {queueFarmWork,setFarmTool} from '../core/farming/farm.js';
 export function createFarmRemoval({game,root,dialogs,onChange,onNotice}){
  const scope=createEventScope(),dialog=root.createElement('dialog');let selected=null,confirmed=false;
  dialog.id='farm-remove-dialog';dialog.className='ui-panel ui-panel--compact';dialog.setAttribute('aria-labelledby','farm-remove-title');

@@ -17,7 +17,7 @@ async page=>{
   if(!await t.locator('#unlock-buildings').isDisabled())throw Error('解锁后按钮没有禁用');
   await t.locator('#unlock-feedback').scrollIntoViewIfNeeded();await t.screenshot({path:'output/playwright/monster-death/debug-success.png'});
   await t.locator('#settings-done').tap();await t.reload();await t.locator('#start').tap();
-  await t.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;const {debugBuildingsUnlocked}=await import('/src/progression/debug-grants.js');if(!debugBuildingsUnlocked(a.game.progress)||a.game.progress.restoration.build)throw Error('刷新丢失解锁');a.game.update=()=>{};a.game.mainlineSpeech=null;a.game.mainlineTalkDelay=99999;});
+  await t.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;const {debugBuildingsUnlocked}=await import('/src/progression/player/debug-grants.js');if(!debugBuildingsUnlocked(a.game.progress)||a.game.progress.restoration.build)throw Error('刷新丢失解锁');a.game.update=()=>{};a.game.mainlineSpeech=null;a.game.mainlineTalkDelay=99999;});
   // 每帧保持原生绘制入口；角色、载具、活怪、死亡怪、场景及UI实际同屏。
   for(const [width,height] of [[320,568],[390,844],[1280,900]])for(const phase of ['day','night']){
    await t.setViewportSize({width,height});
@@ -28,7 +28,7 @@ async page=>{
     for(const [x,y,species,ember] of [[1510,345,'slime',false],[1600,290,armored,false],[1690,345,'leaf-bat',false]]){
      const e=g.spawnEnemy(0,0,{x,y},{ambient:true});Object.assign(e,{species,ember});g.hit(e,e.hp+1);
     }
-    (await import('/src/core/enemy-manager.js')).recycleEnemies(g);g.numbers=[];g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===phase).start+1000;
+    (await import('/src/core/battle/enemy-manager.js')).recycleEnemies(g);g.numbers=[];g.progress.living.calendar.elapsed=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===phase).start+1000;
     (await import('/src/world/living-calendar.js')).projectLivingCalendar(a.environment,g.progress.living.calendar);Object.assign(a.environment,{weather:'sun',autoWeather:false});
     a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.renderer.camera.time=null;a.refresh();a.renderer.draw();window.deathCopies=structuredClone(g.remnants);window.deathFx=structuredClone(g.fx.items);
    },phase);

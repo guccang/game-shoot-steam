@@ -1,6 +1,6 @@
 // 补给达到负重上限时交给玩家决定；复用原生模态、交易事务和中文手机底板。
 import {createEventScope} from '../platform/events.js';
-import {tradeSupply} from '../core/supplies.js';
+import {tradeSupply} from '../core/vehicles/supplies.js';
 import {vehicleModel} from '../config/vehicles.js';
 // 统一保留足够小数，避免临界负重四舍五入后看不出变化。
 const kg=value=>Number(value).toFixed(3).replace(/0$/,'');

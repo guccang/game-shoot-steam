@@ -25,7 +25,7 @@
 ## 验收记录
 日期：2026-10-22。UI与同屏视觉验收通过；经济体验的限制另见 `docs/economy-workbench.md`，不得将本表解释为全部节奏目标通过。
 对应 designCriterion：economy-workbench-feedback。
-正式入口：src/rendering/visual-review.js#inspectEconomyFeedback、src/core/workshop-trial.js。
+正式入口：src/rendering/visual-review.js#inspectEconomyFeedback、src/core/workshop/workshop-trial.js。
 
 | 检查项 | 实际结果与证据 |
 |---|---|

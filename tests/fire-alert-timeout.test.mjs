@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {updateFireRescue} from '../src/core/fire-rescue.js';
+import {updateFireRescue} from '../src/core/activities/fire-rescue.js';
 import {FIRE_RESCUE as C} from '../src/config/fire-rescue.js';
 // 使用真实森林与真实起火树，记录正式事件以校验静默收起。
 function scene(){const events=[],p=freshProgress();p.restoration.repaired.push('fire');const g=new Game(p,()=>.4);g.start();g.onEvent=(type,data)=>events.push({type,data});assert.ok(g.requestFireRescue('random'));return {g,events};}

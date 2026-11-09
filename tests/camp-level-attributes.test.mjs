@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {MONSTER_CAMPS,MONSTER_CAMP_RULES as RULES,monsterCampTerritoryAt} from '../src/config/monster-camps.js';
-import {monsterCampLevel,updateMonsterCamps} from '../src/core/monster-camps.js';
+import {monsterCampLevel,updateMonsterCamps} from '../src/core/battle/monster-camps.js';
 import {enemyIdentity} from '../src/world/biomes.js';
 import {forestThreatAt} from '../src/world/forest-levels.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';

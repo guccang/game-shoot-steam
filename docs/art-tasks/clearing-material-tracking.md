@@ -36,7 +36,7 @@ tests/clearing-material-hud-browser.cjs通过；语法、差异和文档链接�
 
 - 目标：显示半径由场地半径的1倍改为1.5倍，即300米→450米；波次栏、清缴标题与材料追踪共用显示条件。安全区、其他活动和未接取状态继续隐藏清缴展示。
 - 本次仅调整显示判断，刷怪、领主挑战、场地选点与碰撞范围保持原条件。沿用原布局、尺寸、颜色、锚点、分层和素材，无新增美术资源。
-- 正式入口：src/core/living-safety.js#clearingCombatActive、src/ui/hud.js、src/ui/wave-progress.js；继续使用clearing-material-tracking设计目标与正式材料检查入口。
+- 正式入口：src/core/camp/living-safety.js#clearingCombatActive、src/ui/hud.js、src/ui/wave-progress.js；继续使用clearing-material-tracking设计目标与正式材料检查入口。
 - 验收：tests/clearing-hud-range.test.mjs的3项边界/优先级测试、tests/wave-progress.test.mjs的6项波次进度测试通过。
 - 实际页面：tests/clearing-hud-range-browser.cjs通过36次边界检查，覆盖300/301/375/450/451米及返回375米；320×568、390×844和1280×900既有竖版容器的昼夜布局均通过，共30次可见布局采样，无页面错误。
 - 截图与日志：主工作区output/playwright/clearing-hud-range/。复核320-day.png与390-night.png，卡片保持原层级且没有重叠；本次不改变角色或载具动作。4175已有服务，隔离验证使用4176。

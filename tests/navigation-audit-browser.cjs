@@ -6,7 +6,7 @@ async page=>{
  if(await page.locator('#start').isVisible())await page.locator('#start').click();
  await page.evaluate(async()=>{
   window.a=(await import('/src/main.js')).application;await a.ready;
-  window.navModule=await import('/src/core/world-navigation.js');window.mainModule=await import('/src/core/mainline-manager.js');
+  window.navModule=await import('/src/core/navigation/world-navigation.js');window.mainModule=await import('/src/core/story/mainline-manager.js');
   // 只提供已接取后再次从任务簿恢复的检查点，任务选择始终通过真实按钮。
   window.navigationCheckpoint=async id=>{
    const g=a.game;g.progress=(await import('/src/progression/progress.js')).freshProgress();
@@ -25,7 +25,7 @@ async page=>{
   const selected=await page.evaluate(()=>a.game.progress.mainline.currentId);if(selected!==id)throw Error('选择错误任务：'+selected);
   await page.locator('#mainline-close').click();await page.waitForTimeout(150);
   if(id==='pistol-upgrade')await page.evaluate(()=>{a.game.progress.weapons[0]=3;a.refresh();});
-  if(id==='upgrade-harvest')await page.evaluate(async()=>{(await import('/src/core/wild-farm.js')).ensureWildFarms(a.game);a.refresh();});
+  if(id==='upgrade-harvest')await page.evaluate(async()=>{(await import('/src/core/farming/wild-farm.js')).ensureWildFarms(a.game);a.refresh();});
   await page.waitForTimeout(200);
   const state=await page.evaluate(async id=>{
    const g=a.game,nav=navModule.worldNavigationObjective(g),action=mainModule.mainlineAction(g),expected=id==='long-patrol'?'garageEntry':id==='upgrade-harvest'?'harvest-plot-':null;
@@ -33,7 +33,7 @@ async page=>{
    if(!expected&&(nav!==null||action?.id!=='heroes-button'))throw Error('角色升级不应指向工坊');
    const target=(await import('/src/rendering/story-guidance.js')).storyGuidanceState(a.renderer.renderGame).target;
    if(JSON.stringify(target)!==JSON.stringify(nav?.site||null))throw Error('画面和逻辑目标不同');
-   let route=null;if(nav){const {storyRouteState}=await import('/src/core/story-route.js');for(let i=0;i<400;i++){g.time+=.025;route=storyRouteState(g);if(route?.reachable)break;}if(!route?.reachable)throw Error('真实路线不可达');}
+   let route=null;if(nav){const {storyRouteState}=await import('/src/core/navigation/story-route.js');for(let i=0;i<400;i++){g.time+=.025;route=storyRouteState(g);if(route?.reachable)break;}if(!route?.reachable)throw Error('真实路线不可达');}
    return {id,key:nav?.key||null,action:action?.id||action?.type,reachable:route?.reachable??null,hud:document.getElementById('mainline-hud').dataset.taskId};
   },id);
   if(state.hud!==id)throw Error('HUD 未跟随选择');results.push(state);

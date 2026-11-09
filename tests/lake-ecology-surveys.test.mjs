@@ -11,9 +11,9 @@ import {surfaceFishLake,mineFishLake,lakeFishPool} from '../src/world/fish-ecolo
 import {surfaceAmbientFish,mineAmbientFish} from '../src/world/ambient-fish.js';
 import {fishingShores} from '../src/world/outdoor-sites.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {fishingPreview,lakeFishingContext,fishingCastPoint} from '../src/core/lake-fishing.js';
-import {beginFishing,fishingControl,updateOutdoors,finishFishing,acceptFishingSurvey,claimFishingSurvey} from '../src/core/outdoors.js';
-import {fishingSurveyProgress,normalizeFishingSurveys} from '../src/progression/fishing-surveys.js';
+import {fishingPreview,lakeFishingContext,fishingCastPoint} from '../src/core/fishing/lake-fishing.js';
+import {beginFishing,fishingControl,updateOutdoors,finishFishing,acceptFishingSurvey,claimFishingSurvey} from '../src/core/activities/outdoors.js';
+import {fishingSurveyProgress,normalizeFishingSurveys} from '../src/progression/fishing/fishing-surveys.js';
 // 正式自由巡林环境，进度和金币使用独立测试档。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.outdoors.rod=true;p.outdoors.rods.star=true;p.outdoors.selectedRod='star';p.outdoors.bait=150;const g=new Game(p,()=>.4);g.state='playing';g.vehicle.active=false;g.enemies=[];g.boss=null;g.mainlineSpeech=null;g.progress.living.patrolActive=false;g.livingPersist=()=>true;Object.assign(g.player,fishingShores(g)[0]);return g;}
 // 用真实收放线推进完整溜鱼，禁止直接跳过实际力道。
@@ -50,5 +50,5 @@ test('接单、真实收鱼和领奖同事务；失败、旧鱼、放流、别�
  for(let i=0;i<2;i++){cast(g);land(g);assert.ok(finishFishing(g,true).ok);}const coins=g.progress.coins;g.livingPersist=()=>false;assert.equal(claimFishingSurvey(g).ok,false);assert.equal(g.progress.coins,coins);g.livingPersist=()=>true;assert.ok(claimFishingSurvey(g).ok);assert.equal(g.progress.coins,coins+180);assert.equal(g.progress.outdoors.surveys.active,null);assert.equal(claimFishingSurvey(g).ok,false);
 });
 test('非法调查存档清理；重复鱼不增加多样性，指定鱼委托只计目标',async()=>{
- const {creditFishingSurvey}=await import('../src/progression/fishing-surveys.js');assert.deepEqual(normalizeFishingSurveys({active:{lakeId:'<img>'}}),{completed:0,active:null});const g=scene();g.progress.outdoors.surveys.completed=1;assert.ok(acceptFishingSurvey(g).ok);const state=g.progress.outdoors.surveys,id=state.active.lakeId;creditFishingSurvey(state,id,'carp');creditFishingSurvey(state,id,'carp');assert.equal(fishingSurveyProgress(state),1);creditFishingSurvey(state,id,'perch');assert.equal(fishingSurveyProgress(state),2);assert.ok(claimFishingSurvey(g).ok);assert.ok(acceptFishingSurvey(g).ok);const focus=g.progress.outdoors.surveys;creditFishingSurvey(focus,focus.active.lakeId,'unknown');assert.equal(fishingSurveyProgress(focus),0);creditFishingSurvey(focus,focus.active.lakeId,focus.active.target);assert.equal(fishingSurveyProgress(focus),1);assert.deepEqual(normalizeFishingSurveys(focus),focus);
+ const {creditFishingSurvey}=await import('../src/progression/fishing/fishing-surveys.js');assert.deepEqual(normalizeFishingSurveys({active:{lakeId:'<img>'}}),{completed:0,active:null});const g=scene();g.progress.outdoors.surveys.completed=1;assert.ok(acceptFishingSurvey(g).ok);const state=g.progress.outdoors.surveys,id=state.active.lakeId;creditFishingSurvey(state,id,'carp');creditFishingSurvey(state,id,'carp');assert.equal(fishingSurveyProgress(state),1);creditFishingSurvey(state,id,'perch');assert.equal(fishingSurveyProgress(state),2);assert.ok(claimFishingSurvey(g).ok);assert.ok(acceptFishingSurvey(g).ok);const focus=g.progress.outdoors.surveys;creditFishingSurvey(focus,focus.active.lakeId,'unknown');assert.equal(fishingSurveyProgress(focus),0);creditFishingSurvey(focus,focus.active.lakeId,focus.active.target);assert.equal(fishingSurveyProgress(focus),1);assert.deepEqual(normalizeFishingSurveys(focus),focus);
 });

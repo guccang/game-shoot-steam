@@ -7,7 +7,7 @@ async page=>{
   g.progress.restoration.repaired=['clearing','story'];g.progress.mainline.currentId='first-map';g.progress.mainline.phase='report';g.progress.mainline.seen.map=1;g.progress.mainline.distance=80;
   Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);
   window.realUpdate=g.update.bind(g);g.update=()=>{};
-  if(!(await import('/src/core/mainline-manager.js')).completeMainline(g))throw Error('交付失败');
+  if(!(await import('/src/core/story/mainline-manager.js')).completeMainline(g))throw Error('交付失败');
   Object.assign(a.environment,{livingPreview:true,weather:'sun',autoSeason:false,autoTime:false,autoWeather:false,time:'day',forestSeason:'summer'});a.refresh();
  });
  // 从用户可见菜单进入巡林簿，关闭任务卡后仍有主动恢复入口。

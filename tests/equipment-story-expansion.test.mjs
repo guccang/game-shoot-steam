@@ -6,8 +6,8 @@ import * as lore from '../src/config/equipment-stories.js';
 import {EQUIPMENT_QUESTS} from '../src/config/equipment-quests.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {Game,freshProgress} from '../src/game.js';
-import {storyPostApproach,storyPostForChapter} from '../src/core/story-posts.js';
-import {runStoryActions,updateStory} from '../src/core/story-manager.js';
+import {storyPostApproach,storyPostForChapter} from '../src/core/story/story-posts.js';
+import {runStoryActions,updateStory} from '../src/core/story/story-manager.js';
 const BASE={ARMAMENT_STORIES:{'vehicle-machinegun':63,'tank-125':64,'vehicle-vulcan':63,'hover-tide':62,'wolf-256':109,'cat-crew':102},VEHICLE_STORIES:{'pine-tank':127,'heavy-tank':122,helicopter:127,hovercraft:124,'fire-truck':120,'ranger-scooter':111,'red-wolf':347,'jinbei-van':171,'police-car':126},WEAPON_STORIES:{pistol:127,laser:116,gatling:108,shotgun:119,ricochet:131,water:110,grenade:123,flame:125,sniper:118,pulse:115,arc:120,frost:121,funnel:112,drone:121,chainsaw:122,'mechanical-core':116,'mechanical-spider':122,'energy-shield':226,'gravity-gun':130}};
 const DIALOGUE_BASE={'equipment-gravity':157,'equipment-water':217,'equipment-frost':164,'equipment-spider':194,'equipment-red-wolf':168,'equipment-jinbei':212};
 

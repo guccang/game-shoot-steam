@@ -7,7 +7,7 @@ async original=>{
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
    window.readTrial=(await import('/src/ui/workshop/trial-scene.js')).inspectWeaponTrialScene;
-   window.mainline=await import('/src/core/mainline-manager.js');
+   window.mainline=await import('/src/core/story/mainline-manager.js');
   });
   for(const [id,kind,index,record,width,time] of [['own-hover','vehicle',3,'hoverTrial',390,'day'],['own-aircraft','vehicle',2,'aircraftTrial',320,'night'],['own-controller','weapons',15,'controllerTrial',390,'day']]){
    await page.setViewportSize({width,height:844});

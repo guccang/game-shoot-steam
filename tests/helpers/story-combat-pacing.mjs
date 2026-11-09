@@ -1,9 +1,9 @@
 // 故事战斗时长夹具：真实配装、出生、移动、命中、装填、领主技能与援兵全部使用正式规则。
 import {Game,freshProgress} from '../../src/game.js';
 import {STORY_CAMPAIGN} from '../../src/config/story-campaign.js';
-import {storyPostForChapter,storyPostApproach} from '../../src/core/story-posts.js';
-import {enterStory} from '../../src/core/story-manager.js';
-import {spawnStoryEnemy} from '../../src/core/story-encounters.js';
+import {storyPostForChapter,storyPostApproach} from '../../src/core/story/story-posts.js';
+import {enterStory} from '../../src/core/story/story-manager.js';
+import {spawnStoryEnemy} from '../../src/core/story/story-encounters.js';
 // 固定随机种子保留实际暴击与物理随机数，便于改动前后对照。
 function seeded(seed){return()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}
 // 测试账号仅开放相关设施与章节前置，不添加武器成长或伤害增益。

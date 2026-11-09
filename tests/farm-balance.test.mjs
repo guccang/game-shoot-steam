@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FARM_CROPS,FARM_LEVEL_XP,farmLevel,farmLevelProgress} from '../src/config/farm.js';
-import {freshFarm,validateFarm} from '../src/progression/farm.js';
+import {freshFarm,validateFarm} from '../src/progression/farming/farm.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {RECOMMENDED_ECONOMY as economy,economyUpgradeCost} from '../src/config/economy.js';
 import {simulateFarmEconomy,farmEconomyCatalog} from '../src/balance/farm-model.js';

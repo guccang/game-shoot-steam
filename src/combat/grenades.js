@@ -30,9 +30,11 @@ export function launchGrenade(game, weapon, muzzle, target, amount, handheld = f
   if(game.clipCombatLine)Object.assign(end,game.clipCombatLine(muzzle,end));
   const distance = Math.hypot(end.x - muzzle.x, end.y - muzzle.y);
   const duration = Math.max(GAMEPLAY_VALUES.grenade.minFlightSeconds, distance / weapon.grenade.speed);
+  const vehicleMounted = !!(weapon.vehicleMounted || game.vehicleMounted);
   game.projectiles.push({
     kind: 'grenade-bomb',
-    allowWood: handheld && weapon.targetTrees !== false,
+    vehicleMounted,
+    allowWood: (handheld || vehicleMounted) && weapon.targetTrees !== false,
     x: muzzle.x,
     y: muzzle.y,
     originX: muzzle.x,
@@ -64,7 +66,7 @@ export function explodeGrenade(game, grenade) {
   if (grenade.exploded) return;
   grenade.exploded = true;
   grenade.remaining = 0;
-  const targets = [...weaponTerrainTargets(game, grenade.allowWood), ...game.enemies, ...(game.boss ? [game.boss] : [])];
+  const targets = [...weaponTerrainTargets(game, grenade.allowWood, grenade.vehicleMounted), ...game.enemies, ...(game.boss ? [game.boss] : [])];
   for (const target of targets) {
     if (target.hp <= 0) continue;
     const center = nearest(hitCenter(target), grenade);

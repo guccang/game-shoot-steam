@@ -5,7 +5,7 @@
 本页替代旧版全屏农田验收。用户最新要求为营地内挥锄逐块开地，点击空田选种、拖动播种、成熟后点击收割并直接取得金币。
 
 - 稳定验收标识：`camp-world-farming`，合同 `visual-contract.json#farmEconomy`。
-- 正式入口：`src/ui/farm.js:createFarmPanel`；世界表现：`src/rendering/farm.js`；规则与存档：`src/core/farm.js`、`src/progression/farm.js`。
+- 正式入口：`src/ui/farm.js:createFarmPanel`；世界表现：`src/rendering/farm.js`；规则与存档：`src/core/farming/farm.js`、`src/progression/farming/farm.js`。
 - 地点：营地原装饰麦田，四列三行；未开垦保持原草地，拿锄头才显示候选格。
 - 动作：既有角色站立/走路动画不变，手持锄头独立挥动；猫猫走近后，锄头落地才保存土地。操作期间不自动射击，不暂停世界。
 - 图像来源：`game-slg@c57eb86`，沿用 `assets/farm/manifest.json` 与两张透明作物图集，没有新增位图。八种作物各有种子、幼苗、成熟独立图像；正式运行缓存两张，共 3,145,056 像素。

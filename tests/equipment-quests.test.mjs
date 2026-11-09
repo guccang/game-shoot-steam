@@ -8,19 +8,19 @@ import {EQUIPMENT_STORY_CHAPTERS} from '../src/config/equipment-story-chapters.j
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {WEAPONS} from '../src/config/weapons.js';
 import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
-import {equipmentQuestReason} from '../src/progression/equipment-quests.js';
-import {canPurchaseEquipment} from '../src/progression/equipment-goals.js';
-import {transactProgress} from '../src/progression/transactions.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
-import {quoteWorkshop} from '../src/progression/workshop.js';
+import {equipmentQuestReason} from '../src/progression/workshop/equipment-quests.js';
+import {canPurchaseEquipment} from '../src/progression/workshop/equipment-goals.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
+import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 import {validateProgress} from '../src/progression/progress.js';
-import {storyNode,storyUnlocked} from '../src/core/story-definition.js';
-import {updateStory,runStoryActions,syncStory,cancelStory} from '../src/core/story-manager.js';
-import {equipmentQuestDestination,canEnterEquipmentQuest} from '../src/core/equipment-quest-entry.js';
-import {storyPostApproach,storyPostForChapter,worldStoryPosts,canManageStoryPost} from '../src/core/story-posts.js';
+import {storyNode,storyUnlocked} from '../src/core/story/story-definition.js';
+import {updateStory,runStoryActions,syncStory,cancelStory} from '../src/core/story/story-manager.js';
+import {equipmentQuestDestination,canEnterEquipmentQuest} from '../src/core/workshop/equipment-quest-entry.js';
+import {storyPostApproach,storyPostForChapter,worldStoryPosts,canManageStoryPost} from '../src/core/story/story-posts.js';
 import {equipmentQuestStatus} from '../src/ui/equipment-quests.js';
 import {crushVehicleTrees} from '../src/combat/vehicle.js';
-import {storyCollectionStatus} from '../src/progression/story-rewards.js';
+import {storyCollectionStatus} from '../src/progression/story/story-rewards.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
 
 // 丰富材料仅隔离购买前提，既不完成目标任务，也不授予目标装备。

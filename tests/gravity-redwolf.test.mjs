@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {landGravityField,updateGravityFields,currentGravityFields} from '../src/combat/gravity-field.js';
 import {updateVehicle} from '../src/combat/vehicle.js';
-import {transactProgress} from '../src/progression/transactions.js';
-import {transactVehicle} from '../src/progression/vehicles.js';
-import {awardAttackMastery} from '../src/progression/mastery.js';
+import {transactProgress} from '../src/progression/economy/transactions.js';
+import {transactVehicle} from '../src/progression/vehicles/vehicles.js';
+import {awardAttackMastery} from '../src/progression/player/mastery.js';
 import {guardianOwnsWeapon} from '../src/config/guardian.js';
 import {guardianWeaponStats} from '../src/config/guardian-equipment.js';
-import {equipmentRecipe} from '../src/progression/equipment-goals.js';
-import {workshopUpgrade,quoteWorkshop} from '../src/progression/workshop.js';
+import {equipmentRecipe} from '../src/progression/workshop/equipment-goals.js';
+import {workshopUpgrade,quoteWorkshop} from '../src/progression/workshop/workshop.js';
 import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
 // 隔离测试场保留正式攻击和目标对象，只移除任务、波次与外部存档。
 function arena(){const p=freshProgress();p.arrival=null;p.coins=p.wood=99990000;p.materials={parts:99999,crystal:99999,core:99999};p.weapons[17]=1;p.weapon=17;p.vehicleHulls[6]=1;p.vehicleIndex=6;p.vehicleWeapons[21]=1;p.vehicleLoadouts[6]=21;p.supplies.vehicleMags[6]={weapon:21,ammo:1,remaining:0};const g=new Game(p,()=>.5);g.state='playing';g.workshopTrial=true;g.trees=[];g.enemies=[];g.boss=null;g.updateWaves=()=>{};Object.assign(g.player,{x:900,y:750,arena:{x:900,y:750,radius:1000}});return g;}

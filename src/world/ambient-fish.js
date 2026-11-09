@@ -25,7 +25,19 @@ function lakeAnchors(lake){
 // 地表水域与正式地貌共用轮廓，周期地图使用镜像坐标保持岸线一致。
 export function surfaceAmbientFish(mapId,view,time){
  const lakes=mapId==='forest'?NATURAL_TERRAIN.lakes:mapId==='jiuzhaigou'?JIUZHAIGOU_LAKES.filter(l=>l.kind==='lake'):[],result=[],center={x:view.x+view.w/2,y:view.y+view.h/2};
- for(const lake of lakes)for(const a of lakeAnchors(lake)){const p=ambientFishPose(a,time),q=nearest(p,center);if(visible(q,view))result.push({...p,x:q.x,y:q.y,species:lakeFishSpecies(surfaceFishLake(mapId,lake),mineHash(a.seed,Math.floor(a.x),Math.floor(a.y))),lakeId:lake.id,waterId:surfaceFishLake(mapId,lake).id,schoolId:lake.id+':'+a.seed});if(result.length===AMBIENT_FISH_LIMIT)return result;}return result;
+ for(const lake of lakes){
+  // 先检查镜像湖岸包围盒，镜头经过湖边才生成栖点和更新摆尾。
+  const shore=nearest(lake,center),b=lake.bounds;
+  if(shore.x+b.x>view.x+view.w+54 || shore.x+b.x+b.w<view.x-54 ||
+     shore.y+b.y>view.y+view.h+54 || shore.y+b.y+b.h<view.y-54)continue;
+  const water=surfaceFishLake(mapId,lake);
+  for(const a of lakeAnchors(lake)){
+   const p=ambientFishPose(a,time),q=nearest(p,center);
+   if(visible(q,view))result.push({...p,...q,species:lakeFishSpecies(water,mineHash(a.seed,Math.floor(a.x),Math.floor(a.y))),lakeId:lake.id,waterId:water.id,schoolId:lake.id+':'+a.seed});
+   if(result.length===AMBIENT_FISH_LIMIT)return result;
+  }
+ }
+ return result;
 }
 // 地下只查询视野中的96单位网格，缓存有界；真实开放水界决定能否存在鱼群。
 export function mineAmbientFish(layer,view,time,depth=1){

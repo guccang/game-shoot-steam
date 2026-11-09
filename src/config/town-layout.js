@@ -10,7 +10,9 @@ export const TOWN_LAYOUT = {
   race: {x:510,y:1100},
   football: {x:470,y:1350},
   travel: {x:1040,y:690},
-  bounds: {left:-480,right:1090,top:-58,bottom:1400},
+  bounds: {left:-820,right:1090,top:-58,bottom:1400},
+  refinery: {x:-650,y:300,width:200,height:140},
+  factory: {x:-650,y:650,width:200,height:140},
   weapons: {x:350,y:570,width:150,height:135,scale:.95},
   garage: {x:350,y:990,width:220,height:175},
   outdoor: {x:-140,y:300,width:220,height:175},
@@ -35,6 +37,9 @@ export const TOWN_LAYOUT = {
 for(const [id,p] of Object.entries(TOWN_LAYOUT))TOWN_LAYOUT[id]=id==='bounds'?{...p,left:p.left+TOWN_SHIFT_X,right:p.right+TOWN_SHIFT_X}:townPoint(p);
 // 小径端点与原纵路相接；车位判断仍只使用原干道，不把院内支路误判为禁停区。
 export const TOWN_PATHS = [
+  [{x:-650,y:365},{x:-340,y:365}],
+  [{x:-650,y:365},{x:-490,y:365},{x:-490,y:715},{x:-650,y:715}],
+  [{x:-490,y:715},{x:-340,y:729}],
   // 建筑公司支路连接小屋院前，不占用原停车位。
   [{x:1015,y:560},{x:1050,y:560},{x:1050,y:729}],
   [{x:-140,y:365},{x:-340,y:365},{x:-340,y:729}],

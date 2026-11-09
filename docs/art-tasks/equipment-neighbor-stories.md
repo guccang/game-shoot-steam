@@ -52,7 +52,7 @@
 | 透明背景 | 复用原透明资源，无新背景图 |
 | 碰撞与可通行性 | 原山湖、水界与树干碰撞；借车使用真实通行能力 |
 | 昼夜处理 | 复用环境夜色，UI共用奶油色手机框架 |
-| 文件格式与位置 | src/config/equipment-story-chapters.js；src/ui/equipment-quests.js；src/core/equipment-story-actions.js |
+| 文件格式与位置 | src/config/equipment-story-chapters.js；src/ui/equipment-quests.js；src/core/story/equipment-story-actions.js |
 | 内存与缓存预算 | 新增位图0字节；复用原有有界效果与设施缓存，新增6个运行源码文件约22.3 KiB；每次运木最多3棵临时任务树 |
 | 必需资源与失败行为 | 原猫图集和武器/载具资源；沿用资源加载失败明确报错 |
 

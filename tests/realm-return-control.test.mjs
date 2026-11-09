@@ -6,9 +6,9 @@ import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
-import {enterWorkshop,updateCottage,leaveCottage} from '../src/core/cottage.js';
-import {syncRealm,finishRealm} from '../src/core/realm-manager.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {enterWorkshop,updateCottage,leaveCottage} from '../src/core/home/cottage.js';
+import {syncRealm,finishRealm} from '../src/core/realms/realm-manager.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {nativeVehicleWeapon} from '../src/config/vehicle-armaments.js';
 
 // 清除无关教学，保留正式游戏更新、停车和秘境逻辑。

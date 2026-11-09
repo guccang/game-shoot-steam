@@ -6,15 +6,15 @@ import {CLEARING_APPROACH,CLEARING_SITE_RULES} from '../src/config/clearing.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {settlementAt} from '../src/world/settlements.js';
-import {acceptClearingPost,clearingStage} from '../src/core/clearing-guide.js';
-import {chooseClearingSite,clearingSiteOpen} from '../src/core/clearing-site.js';
-import {clearingSite,normalizeClearingSite} from '../src/progression/clearing-site.js';
-import {setLivingPatrol} from '../src/core/living-world.js';
-import {livingWaveAllowed} from '../src/core/living-safety.js';
-import {worldNavigationObjective} from '../src/core/world-navigation.js';
+import {acceptClearingPost,clearingStage} from '../src/core/story/clearing-guide.js';
+import {chooseClearingSite,clearingSiteOpen} from '../src/core/story/clearing-site.js';
+import {clearingSite,normalizeClearingSite} from '../src/progression/story/clearing-site.js';
+import {setLivingPatrol} from '../src/core/camp/living-world.js';
+import {livingWaveAllowed} from '../src/core/camp/living-safety.js';
+import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {settlementObjects} from '../src/rendering/settlements.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {biomeAt} from '../src/world/biomes.js';
 // 可重复随机序列只服务测试，仍使用正式树木、地形与接取事务。
 function scene(seed=9){const g=new Game(freshProgress(),()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32));g.start();g.mainlineSpeech=null;Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});return g;}

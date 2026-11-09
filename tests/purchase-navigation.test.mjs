@@ -4,10 +4,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {MAINLINE_TASKS,MAINLINE_IDS,MAINLINE_SITES} from '../src/config/mainline.js';
-import {mainlineOperation} from '../src/core/mainline-manager.js';
-import {requestMainlineNavigation,worldNavigationObjective,requestWorldNavigation} from '../src/core/world-navigation.js';
-import {storyRouteState} from '../src/core/story-route.js';
-import {equipmentRequirements,canPurchaseEquipment} from '../src/progression/equipment-goals.js';
+import {mainlineOperation} from '../src/core/story/mainline-manager.js';
+import {requestMainlineNavigation,worldNavigationObjective,requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {storyRouteState} from '../src/core/navigation/story-route.js';
+import {equipmentRequirements,canPurchaseEquipment} from '../src/progression/workshop/equipment-goals.js';
 const purchases=MAINLINE_TASKS.filter(t=>t.guide.steps[0].operation?.type==='buy');
 // 从正式存档与游戏实例构造购买阶段，余额恰好覆盖当前营地等级的折后需求。
 function setup(task,xp=0){

@@ -1,3 +1,4 @@
+import {campBoundaryBlocked} from '../world/camp-boundary.js';
 import {PASTURE,PEN_RAILS} from '../config/pasture.js';
 import {worldBuildingBlocked} from '../world/building-collision.js';
 import {monsterHitProfile} from '../config/monster-hit-reactions.js';
@@ -7,7 +8,7 @@ import { isWaterBlocked, BRIDGE, riverXAt } from '../world/river-geometry.js';
 import {livingFacilityBlocked} from '../world/living-spaces.js';
 import {settlementAt,settlementBlocked} from '../world/settlements.js';
 import { canonical, nearest, delta, WORLD } from '../world/coordinates.js';
-import { SpatialGrid } from '../world/spatial-grid.js';
+import { treeGrid } from '../world/spatial-grid.js';
 import { terrainBlocked, terrainLineClear, naturalWaypoint, nearestDryTerrain } from './terrain-navigation.js';
 import { BodyGrid } from './body-grid.js';
 import { isMountainBlocked } from '../world/natural-terrain.js';
@@ -30,8 +31,8 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
   if(!body?.flying&&(body?.parkingBarriers||[]).some(b=>Math.abs(delta(x-b.x,WORLD.width))<b.width/2+radius&&Math.abs(delta(y-b.y,WORLD.height))<b.height/2+radius))return true;
   // 维修护栏只阻挡地面实体，位置与地图镜像一致，气垫船也不能穿过木栏。
   if(!body?.flying&&(body?.worldBarriers||[]).some(b=>Math.abs(delta(x-b.x,WORLD.width))<b.width/2+radius&&Math.abs(delta(y-b.y,WORLD.height))<b.height/2+radius))return true;
-  if(body?.mapId==='forest'&&!body.flying&&(!body.arena||body.arena.terrain==='forest')&&settlementBlocked(x,y,radius))return true;
-  if(body?.livingCollision&&!body.flying&&livingFacilityBlocked(x,y,radius))return true;
+  if(body?.mapId==='forest'&&!body.flying&&(!body.arena||body.arena.terrain==='forest')&&(body.campProgress&&!body.arena&&!body.story?campBoundaryBlocked(x,y,radius,body.campProgress):settlementBlocked(x,y,radius)))return true;
+  if(body?.livingCollision&&!body.flying&&livingFacilityBlocked(x,y,radius,body))return true;
   // 主场景秘境同时遵守圆形区域与森林碰撞；旧平台夹具保留兼容路径。
   if (body?.arena) {
     if (Math.hypot(delta(x-body.arena.x,WORLD.width),delta(y-body.arena.y,WORLD.height)) > body.arena.radius - radius) return true;
@@ -43,7 +44,8 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
     : body?.amphibious ? isMountainBlocked(x, y, radius) : terrainBlocked(x, y, radius)) return true;
   // 红狼可碾压树干；此处只判断通行，实际驶过后才毁树，寻路查询不能破坏环境。
   if(body?.treePass)return false;
-  const candidates = trees.query ? trees.query(x, y, x, y, radius) : trees;
+  const index = trees.query ? trees : trees.length > 24 ? treeGrid(trees) : null;
+  const candidates = index ? index.query(x, y, x, y, radius) : trees;
   for (const t of candidates) {
     if (t.hp <= 0) continue;
     const dx = delta(t.x - x, WORLD.width), dy = delta(t.y - y, WORLD.height);
@@ -164,7 +166,7 @@ export function stepBodies(bodies, dt, bounds, onImpact = () => {}, trees = []) 
   // 空战场、空残块和零步长没有碰撞任务，不为这些调用建立整片树林索引。
   if (!bodies.length || dt <= 1e-8) return;
   // 同一物理帧的树干不移动，只建一次索引供所有碰撞小步复用；死树在精查时排除。
-  if (trees.length > 24) trees = new SpatialGrid(trees);
+  if (trees.length > 24) trees = treeGrid(trees);
   let remaining = dt;
   const contacts = new Set();
   while (remaining > 1e-8) {

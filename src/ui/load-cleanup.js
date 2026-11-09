@@ -1,11 +1,12 @@
+import {escapeHtml as escape} from './shared/html.js';
 // 清理页用实物拖出、滑条选量与原子减重方案，复用手机底板和正式物品目录。
 import {createEventScope} from '../platform/events.js';
-import {cleanupEntries,cleanupAvailable,cleanupLoad,cleanupUnitMass,discardLoad,planLoadCleanup,discardForMobility} from '../core/load-cleanup.js';
+import {cleanupEntries,cleanupAvailable,cleanupLoad,cleanupUnitMass,discardLoad,planLoadCleanup,discardForMobility} from '../core/inventory/load-cleanup.js';
 import {vehicleModel} from '../config/vehicles.js';
 import {inventoryIcon,paintInventoryIcons} from './inventory-icons.js';
 import {createCleanupDrag} from './load-cleanup-drag.js';
 // 目录与动态文字先转义，身份保持稳定ID。
-const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 重量统一显示两位，限重临界处保留三位避免视觉上仍像满载。
 const kg=value=>Number(value).toFixed(3).replace(/0$/,'');
 // 从角色或载具入口确定整理来源，拖拽或点选只打开数量面板，确认才丢弃。

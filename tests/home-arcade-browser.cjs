@@ -7,8 +7,8 @@ async original=>{
  async function review(name){await page.screenshot({path:`output/playwright/home-mine-minigames/${name}.png`});const r=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectHomeArcade(a.game,a.renderer,document));if(r.overflow||r.buttons.some(b=>b.width<44||b.height<44))throw Error('手机界面尺寸不合格 '+JSON.stringify(r));reviews.push(r);}
  try{
   await page.goto('http://localhost:4175');await page.locator('#start').tap();await page.evaluate(async()=>{
-   window.a=(await import('/src/main.js')).application;await a.ready;window.arc=await import('/src/core/home-arcade.js');window.hc=await import('/src/core/home-construction.js');window.hcfg=await import('/src/config/home-construction.js');
-   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.coins=100000;p.wood=10000;p.homeDecor.floors=9;p.homeDecor.balconies={8:['east']};
+   window.a=(await import('/src/main.js')).application;await a.ready;window.arc=await import('/src/core/home/home-arcade.js');window.hc=await import('/src/core/home/home-construction.js');window.hcfg=await import('/src/config/home-construction.js');
+   const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.coins=100000;p.wood=10000;Object.assign(p.materials,{stone:1000,iron:1000,copper:1000});p.homeDecor.floors=9;p.homeDecor.balconies={8:['east']};
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.enemies=[];g.spawnTimer=999999;g.cottage={kind:'cottage',floor:8,outside:{x:600,y:370}};Object.assign(g.player,hcfg.HOME_DIRECTIONS.east.door);if(!hc.enterHomeBalcony(g,'east'))throw Error('九楼阳台入口失败');a.refresh();
   });
   if(!await page.locator('#home-bird-game').isDisabled())throw Error('九楼不应解锁');await page.screenshot({path:'output/playwright/home-mine-minigames/ninth-floor-locked.png'});
@@ -28,7 +28,7 @@ async original=>{
   await page.evaluate(()=>a.game.pause());await page.waitForFunction(()=>document.querySelector('#arcade-pause').textContent==='继续');await page.locator('#arcade-pause').tap();if(await page.evaluate(()=>a.game.state)!=='playing')throw Error('系统暂停无法继续');
   // 已通过真实命中达标，仅缩短剩余等待，结算仍由正式倒计时完成。
   await page.evaluate(()=>{a.game.cottage.arcade.remaining=.1;});await page.waitForFunction(()=>a.game.cottage.arcade.phase==='result');await review('birds-result');await page.locator('#arcade-exit').tap();await page.waitForFunction(()=>!a.game.cottage.arcade);
-  await page.evaluate(async()=>{const g=a.game,mc=await import('/src/config/mining.js'),mi=await import('/src/core/mining.js');g.cottage={kind:'cottage',floor:0,outside:{x:600,y:370}};Object.assign(g.player,mc.MINING.hatch.goal);if(!mi.enterMine(g))throw Error('地下一层入口失败');});
+  await page.evaluate(async()=>{const g=a.game,mc=await import('/src/config/mining.js'),mi=await import('/src/core/mining/mining.js');g.cottage={kind:'cottage',floor:0,outside:{x:600,y:370}};Object.assign(g.player,mc.MINING.hatch.goal);if(!mi.enterMine(g))throw Error('地下一层入口失败');});
   await page.locator('#mine-gold-game').tap();await review('gold-ready');await page.locator('#arcade-action').tap();
   // 从实际生成的矿物选无遮挡的高价值路径，真实摆动经过目标角度才按放钩。
   for(let turn=0;turn<8;turn++){

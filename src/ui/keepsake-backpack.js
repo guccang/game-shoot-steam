@@ -1,29 +1,31 @@
+import {escapeHtml as escape} from './shared/html.js';
+import {transferItem} from '../core/inventory/inventory-transfer.js';
 import {appendRangerLetter} from './ranger-letter.js';
 import {drawPhoneResidentPortrait} from '../rendering/living-world.js';
 import {drawVehicleIcon} from '../rendering/vehicle.js';
 import {ITEM_CATEGORIES} from '../config/items.js';
-import {backpackEntries} from '../progression/backpack.js';
-import {catLoad} from '../progression/load-weight.js';
+import {backpackEntries} from '../progression/inventory/backpack.js';
+import {catLoad} from '../progression/inventory/load-weight.js';
 import {inventoryIcon,paintInventoryIcons} from './inventory-icons.js';
-import {useSupplyItem} from '../core/supplies.js';
-import {vehicleLocations,locateVehicle} from '../core/vehicle-location.js';
+import {useSupplyItem} from '../core/vehicles/supplies.js';
+import {vehicleLocations,locateVehicle} from '../core/vehicles/vehicle-location.js';
 import {createMailbox} from './mailbox.js';
-import {unreadMailCount} from '../progression/mailbox.js';
+import {unreadMailCount} from '../progression/camp/mailbox.js';
 import {CAMP_CHARACTERS,MONSTER_CAMPS} from '../config/monster-camps.js';
 import {FARM_CROPS} from '../config/farm.js';
 // 小背包复用手机底板、正式来信与地图，物品详情只在用户操作时更新。
 import {createEventScope} from '../platform/events.js';
-import {ownsKeepsake} from '../progression/keepsakes.js';
+import {ownsKeepsake} from '../progression/inventory/keepsakes.js';
 import {keepsakeIcon} from './keepsake-icons.js';
 import {RANGER_LETTER} from '../config/ranger-arrival.js';
-import {completeArrivalLetter} from '../core/ranger-arrival.js';
+import {completeArrivalLetter} from '../core/camp/ranger-arrival.js';
 import {facilityOpen} from '../config/town-restoration.js';
-import {phoneContacts,phoneUnavailable,callNeighbor,navigatePhone} from '../core/patrol-phone.js';
+import {phoneContacts,phoneUnavailable,callNeighbor,navigatePhone} from '../core/battle/patrol-phone.js';
 import {calendarView} from '../world/living-calendar.js';
 // 运行时文本转义后插入，联系人、对白和存档内容不能变成HTML。
-const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // 随身格子嵌入角色页，物品详情和手机使用子弹窗，逐层返回保留暂停归属。
-export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreferences,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler}){
+export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,savePreferences,onChange,onNotice,onRepair,onTreasure,onPlaceSprinkler,onTransfer,onCargo}){
  const scope=createEventScope(),phoneTrigger=root.getElementById('phone-button');
  // 所有层级共用统一底板，关闭只退出当前层，不用隐藏正文模拟弹窗。
  function panel(id,title,subtitle){
@@ -47,14 +49,14 @@ export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreference
  // 实际库存按分类自然扩展，不限制格子，也不显示空物品。
  function renderBag(){
   const items=backpackEntries(game),load=catLoad(game);
-  bag.querySelector('.keepsake-content').innerHTML=`<section class="ui-inset inventory-load"><b>背包 ${load.weight.toFixed(2)} / ${load.capacity} kg</b><p>${load.overloaded?'载荷已满，只能缓慢行走；存放或清理物品后恢复正常速度。':'随身物品均计入负重。'}载具货舱另计。</p></section>`+Object.entries(ITEM_CATEGORIES).map(([category,name])=>{const group=items.filter(r=>r.category===category);return group.length?`<section class="inventory-group"><h3>${name} <small>${group.length} 种</small></h3><div class="keepsake-pockets" aria-label="${name}">`+group.map(item=>`<button type="button" class="keepsake-pocket" data-keepsake="${item.id}" aria-haspopup="dialog" aria-controls="keepsake-dialog" aria-label="${escape(item.name)}，数量${item.count}，查看信息与重量">${inventoryIcon(item)}<span>${escape(item.name)}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')+'</div></section>':'';}).join('');
+  bag.querySelector('.keepsake-content').innerHTML=`<section class="ui-inset inventory-load"><b>背包 ${load.weight.toFixed(2)} / ${load.capacity} kg</b><p>${load.overloaded?'载荷已满，只能缓慢行走；存放或清理物品后恢复正常速度。':'随身物品均计入负重。'}载具货舱另计。</p><button class="ui-button" data-pack-cargo>查看载具仓库</button></section>`+Object.entries(ITEM_CATEGORIES).map(([category,name])=>{const group=items.filter(r=>r.category===category);return group.length?`<section class="inventory-group"><h3>${name} <small>${group.length} 种</small></h3><div class="keepsake-pockets" aria-label="${name}">`+group.map(item=>`<button type="button" class="keepsake-pocket" data-keepsake="${item.id}" aria-haspopup="dialog" aria-controls="keepsake-dialog" aria-label="${escape(item.name)}，数量${item.count}，查看信息与重量">${inventoryIcon(item)}<span>${escape(item.name)}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')+'</div></section>':'';}).join('');
   paintInventoryIcons(bag,game.progress);
  }
  // 每个物品都先展示目录说明、用途和重量；重要物品原有功能保留为详情操作。
  function renderInventoryItem(){
   const item=backpackEntries(game).find(r=>r.id===selected);if(!item)return false;
   detail.innerHTML=`<section class="ui-section inventory-detail"><div class="inventory-detail-icon">${inventoryIcon(item)}</div><small>${ITEM_CATEGORIES[item.category]}</small><h3>${escape(item.name)}</h3><p>${escape(item.description)}</p><div class="ui-inset"><p>数量 ${item.count} · 单件 ${item.mass.toFixed(2)} kg</p><b>总重 ${item.weight.toFixed(2)} kg</b>${item.note?`<p>${escape(item.note)}</p>`:''}</div><h3>用途</h3><p>${escape(item.use)}</p></section>`;
-  actions.innerHTML=(selected==='facility:sprinkler'?button('place-sprinkler','选择位置放置',true):item.category==='supply'?button('use-item','使用'+item.name,true):selected==='patrol-phone'?button('open-phone','打开手机',true):selected==='elder-letter'?button('read-letter','阅读来信',true):selected==='house-key'?button('home','标出回家的路',true):'')+button('close','返回随身物品');paintInventoryIcons(detail,game.progress);return true;
+  actions.innerHTML=(selected==='facility:sprinkler'?button('place-sprinkler','选择位置放置',true):item.category==='supply'?button('use-item','使用'+item.name,true):selected==='patrol-phone'?button('open-phone','打开手机',true):selected==='elder-letter'?button('read-letter','阅读来信',true):selected==='house-key'?button('home','标出回家的路',true):'')+(transferItem(selected)?button('transfer','移到载具'): '')+button('close','返回随身物品');paintInventoryIcons(detail,game.progress);return true;
  }
  // 物品详情与手机按用户操作更新，正文不再常驻背包页。
  function render(){
@@ -91,10 +93,12 @@ export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreference
     </button>`).join('');
    detail.innerHTML=`<section class="keepsake-phone">
     <div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div>
-    <div class="keepsake-apps">${button('trade','订单与商路')}${button('treasure','寻宝')}${button('map','看地图')}${button('home','回小屋')}${button('repair','载具救援')}</div>
+    <div class="keepsake-apps">${button('trade','订单与商路')}${button('treasure','寻宝')}${button('map','看地图')}${button('waystations','驿站')}${button('home','回小屋')}${button('repair','载具救援')}</div>
     <h3>索敌设定</h3>
     <label class="ui-choice phone-wood"><input type="checkbox" data-target-wood aria-labelledby="phone-wood-label" aria-describedby="phone-wood-help" ${game.gameplayPreferences.targetWood?'checked':''}>
      <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">勾选后，手持枪械优先打敌人，周围没有敌人时打树。手持电锯优先锯树。</small></span></label>
+    <label class="ui-choice phone-wood"><input type="checkbox" data-vehicle-target-wood aria-labelledby="phone-vehicle-wood-label" aria-describedby="phone-vehicle-wood-help" ${game.gameplayPreferences.vehicleTargetWood!==false?'checked':''}>
+     <span><b id="phone-vehicle-wood-label">车载武器攻击树木</b><small id="phone-vehicle-wood-help">射程内没有敌人时，车载武器会自动攻击树木。</small></span></label>
     <h3>载具定位</h3><div class="keepsake-contacts">${vehicles||'<p>还没有自有载具。</p>'}</div>
     <h3>邻居通讯录</h3>${reason?`<p class="ui-inset">${escape(reason)}</p>`:''}<div class="keepsake-contacts">${contacts}</div>
    </section>`;
@@ -115,14 +119,16 @@ export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreference
  function show(panel){if(!panel.open)root.body.append(panel);dialogs.open(panel.id);}
  // 成功保存后立即更新战斗偏好，失败则恢复勾选。
  scope.on(phone,'change',event=>{
-  const input=event.target;if(!input.matches('[data-target-wood]'))return;
-  if(savePreferences({...game.gameplayPreferences,targetWood:input.checked})){
-   game.gameplayPreferences.targetWood=input.checked;
-  }else{input.checked=game.gameplayPreferences.targetWood;onNotice('索敌设定保存失败，请重试。');}
+  const input=event.target;if(!input.matches('[data-target-wood],[data-vehicle-target-wood]'))return;
+  const key=input.hasAttribute('data-vehicle-target-wood')?'vehicleTargetWood':'targetWood';
+  if(savePreferences({...game.gameplayPreferences,[key]:input.checked})){
+   game.gameplayPreferences[key]=input.checked;
+  }else{input.checked=game.gameplayPreferences[key]!==false;onNotice('索敌设定保存失败，请重试。');}
  });
  scope.on(phoneTrigger,'click',()=>{if(!game.arrivalCinematic)show(phone);});
  // 格子打开真实弹窗；返回后原背包的滚动与焦点由原生dialog保留。
  scope.on(bag,'click',event=>{
+  if(event.target.closest('[data-pack-cargo]')){onCargo();return;}
   const item=event.target.closest('[data-keepsake]');if(item){selected=item.dataset.keepsake;call=null;inventoryView=true;show(itemPanel);return;}
 
  });
@@ -136,10 +142,12 @@ export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreference
 
   // 先验证选址资格，再退出背包层级；此时设备仍保存在背包。
   if(action==='place-sprinkler'){if(onPlaceSprinkler?.()){for(const p of [itemPanel,bag])if(p.open)dialogs.close(p.id);}return;}
+  if(action==='transfer'){onTransfer(selected,'load');return;}
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);show(phone);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
   if(action==='trade'){onTrade();return;}
+  if(action==='waystations'){onWaystations?.();return;}
   if(action==='treasure'&&ownsKeepsake(game.progress,'patrol-phone')){onTreasure();return;}
   if(action==='mail'&&ownsKeepsake(game.progress,'patrol-phone')){mailbox.open();return;}
   if(action==='repair'&&ownsKeepsake(game.progress,'patrol-phone')){onRepair();return;}
@@ -150,7 +158,7 @@ export function createKeepsakeBackpack({onTrade,game,root,dialogs,savePreference
   dialogs.close(node.id);onChange();
  }
  // 装卸货舱后返回随身物品，立即同步真实库存与负重。
- scope.on(root,'close',event=>{if(bag.open&&['logistics-dialog','field-equipment-dialog','load-cleanup-dialog'].includes(event.target.id)){renderBag();if(itemPanel.open&&inventoryView)render();}},true);
+ scope.on(root,'close',event=>{if(bag.open&&['logistics-dialog','field-equipment-dialog','load-cleanup-dialog','inventory-transfer-dialog'].includes(event.target.id)){renderBag();if(itemPanel.open&&inventoryView)render();}},true);
  scope.on(itemPanel,'click',act);scope.on(phone,'click',act);
  // 应用销毁清除本实例节点与监听，重载存档不会沿用旧通话。
  function dispose(){scope.dispose();environmentStatus.hidden=true;wallet.hidden=true;root.getElementById('game-frame').append(wallet,environmentStatus);for(const panel of [itemPanel,phone])panel.remove();phoneTrigger.querySelector('.phone-symbol').replaceChildren();}

@@ -3,16 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game, freshProgress, validateProgress} from '../src/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {validatePatrol} from '../src/progression/patrol-progress.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {validatePatrol} from '../src/progression/battle/patrol-progress.js';
 import {COLLECTED_VEHICLES, vehicleModel} from '../src/config/vehicles.js';
 import {createGameEventHandler} from '../src/app/game-events.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {skipArrivalJourney} from '../src/core/ranger-arrival.js';
-import {parkedOwned} from '../src/core/camp-parking.js';
+import {skipArrivalJourney} from '../src/core/camp/ranger-arrival.js';
+import {parkedOwned} from '../src/core/vehicles/camp-parking.js';
 import {absorbVehicleHit} from '../src/combat/vehicle.js';
-import {syncRealm} from '../src/core/realm-manager.js';
+import {syncRealm} from '../src/core/realms/realm-manager.js';
 
 // 以已拥有的当前车型开始正式巡游，其他车辆仍留在停车场。
 function mounted(index=5) {

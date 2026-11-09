@@ -1,15 +1,15 @@
 // 手机修复页复用公共底板；任务建筑靠近自动开工，自选建筑在门前点击确认。
 import {TOWN_RESTORATIONS,facilityOpen} from '../config/town-restoration.js';
 import {FIRST_HOUR_PLAN,forestRuleLines} from '../config/forest-rules.js';
-import {restorationStatus,repairFacility,trackRestoration} from '../core/town-restoration.js';
-import {setTaskNavigationEnabled} from '../core/task-navigation.js';
-import {requestWorldNavigation,clearWorldNavigation} from '../core/world-navigation.js';
+import {restorationStatus,repairFacility,trackRestoration} from '../core/camp/town-restoration.js';
+import {setTaskNavigationEnabled} from '../core/navigation/task-navigation.js';
+import {requestWorldNavigation,clearWorldNavigation} from '../core/navigation/world-navigation.js';
 import {createEventScope} from '../platform/events.js';
 // 标准页面只读取核心状态，不直接增减资源或改解锁。
 export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
  const scope=createEventScope(),dialog=root.createElement('dialog');let selected=null,message='',useOnClose=null;
  dialog.id='restoration-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','restoration-title');
- dialog.innerHTML='<header class="ui-panel__header"><div><small>营地 · 修复设施</small><h2 id="restoration-title">修复设施</h2></div><button class="ui-close" id="restoration-close" aria-label="关闭修复任务">×</button></header><div class="ui-panel__body"><section class="ui-section" id="restoration-summary"></section><p role="status" id="restoration-message"></p><details class="ui-section"><summary>为什么不能使用其他功能？</summary><p>备齐木头后，步行或骑乘到达当前任务的建筑修复区，会自动投料开工。其他建筑需要点击本页的修复按钮，也可提前修复。修好后永久开放，主线会跳过已完成的修复步骤。地图、背包和设置始终可用。</p><div id="restoration-roadmap"></div></details><details class="ui-section"><summary>野外怪物怎样出现？</summary><div id="restoration-rules"></div></details><details class="ui-section"><summary>第1、10、60分钟玩什么？</summary><div id="restoration-pacing"></div><p>这是体验节奏目标；可自行选择修复顺序，不需要挂机等解锁。</p></details></div><footer class="ui-panel__footer"><button class="ui-button" id="restoration-go">前往设施</button><button class="ui-button ui-button--primary" id="restoration-repair">修复</button></footer>';
+ dialog.innerHTML='<header class="ui-panel__header"><div><small>营地 · 建设设施</small><h2 id="restoration-title">建设设施</h2></div><button class="ui-close" id="restoration-close" aria-label="关闭修复任务">×</button></header><div class="ui-panel__body"><section class="ui-section" id="restoration-summary"></section><p role="status" id="restoration-message"></p><details class="ui-section"><summary>为什么不能使用其他功能？</summary><p>备齐木头后，步行或骑乘到达当前任务的建筑修复区，会自动投料开工。其他建筑需要点击本页的修复按钮，也可提前修复。修好后永久开放，主线会跳过已完成的修复步骤。地图、背包和设置始终可用。</p><div id="restoration-roadmap"></div></details><details class="ui-section"><summary>野外怪物怎样出现？</summary><div id="restoration-rules"></div></details><details class="ui-section"><summary>第1、10、60分钟玩什么？</summary><div id="restoration-pacing"></div><p>这是体验节奏目标；可自行选择修复顺序，不需要挂机等解锁。</p></details></div><footer class="ui-panel__footer"><button class="ui-button" id="restoration-go">前往设施</button><button class="ui-button ui-button--primary" id="restoration-repair">修复</button></footer>';
  root.body.append(dialog);
  const get=id=>root.getElementById(id);
  // 目录为固定中文配置，动态数字和提示用 textContent 输出。
@@ -23,15 +23,15 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
    const p=root.createElement('p');p.textContent=text;summary.append(p);
   }
   get('restoration-message').textContent=message||game.restorationError;
-  get('restoration-repair').textContent=s.ready?'使用功能':building?'正在修复':!s.active?'完成入营引导后修复':!s.near?'请先到达修复区':!s.enough?'木头不足':'修复 · 消耗 '+f.wood+' 木头';
+  get('restoration-repair').textContent=s.ready?'使用功能':building?'正在修复':!s.active?'完成入营引导后修复':!s.near?'请先到达修复区':!s.enough?'木头不足':'建设 · 消耗 '+f.wood+' 木头';
   get('restoration-repair').disabled=!s.ready&&!s.canRepair;
   get('restoration-go').textContent=s.ready||s.enough?'前往设施':s.wood.destination?(s.wood.destination.kind==='store'?'前往仓库':'取回木材'):'前往采木';
   get('restoration-roadmap').replaceChildren();
-  for(const f of TOWN_RESTORATIONS){const p=root.createElement('p');p.textContent=(facilityOpen(game.progress,f.id)?'✓ 已修复 · ':'待修复 · ')+f.name+' · '+f.wood+' 木头';get('restoration-roadmap').append(p);}
+  for(const f of TOWN_RESTORATIONS){const p=root.createElement('p');p.textContent=(facilityOpen(game.progress,f.id)?'✓ 已修复 · ':'待建设 · ')+f.name+' · '+f.wood+' 木头';get('restoration-roadmap').append(p);}
  }
  // 已有面板转交暂停归属，返回后恢复原游玩状态。
  function open(id){
-  if(!TOWN_RESTORATIONS.some(f=>f.id===id))return false;selected=id;message='';
+  if(!TOWN_RESTORATIONS.some(f=>f.id===id))return false;const land=restorationStatus(game,id);if(!land.landOwned)return game.openCampLand?.(land.plot.id)||false;selected=id;message='';
   if(!facilityOpen(game.progress,id)){
    if(trackRestoration(game,id)){clearWorldNavigation(game);message='正在追踪修复'+restorationStatus(game,id).facility.name+'。';}
    else message='修复任务未保存，请点击下方导航按钮重试。';
@@ -40,7 +40,7 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
   dialogs.open(dialog.id);for(const id of previous){dialogs.transferResume(id,dialog.id);dialogs.close(id);}render();return true;
  }
  dialogs.register(dialog.id,{onOpen:render,focusId:'restoration-close'});
- // 自选修复设施有独立导航，不把玩家送回尚未推进到此处的主线建筑。
+ // 自选建设设施有独立导航，不把玩家送回尚未推进到此处的主线建筑。
  function navigate(){
   const s=restorationStatus(game,selected),f=s.facility;
   if(s.ready)requestWorldNavigation(game,{...f.site,repairArea:s.area},'前往'+f.name,{direct:true});

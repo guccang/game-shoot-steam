@@ -12,7 +12,7 @@ async original=>{
    const g=a.game;g.progress=p;g.reset();a.menu.enter();g.start();g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=999999;g.updateWaves=()=>{};g.enemies=[];g.boss=null;g.vehicle.active=false;
    Object.assign(g.player,{x:1677,y:800,invincible:9999});a.renderer.camera.time=null;
    Object.assign(a.environment,{time:'day',livingPreview:true,weather:'sun',autoTime:false,autoWeather:false});
-   await(await import('/src/rendering/farm.js')).loadFarmArt();a.farm.open();(await import('/src/core/farm.js')).setFarmTool(g,'water');
+   await(await import('/src/rendering/farm.js')).loadFarmArt();a.farm.open();(await import('/src/core/farming/farm.js')).setFarmTool(g,'water');
    const render=a.farm.renderFrame.bind(a.farm);window.farmCosts=[];
    a.farm.renderFrame=()=>{if(window.skipFarmPanel)return;const t=performance.now();render();window.farmCosts.push(performance.now()-t);};
   });

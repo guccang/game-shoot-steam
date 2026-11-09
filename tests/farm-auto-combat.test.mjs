@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {farmMode,farmWorking,farmThreat,farmInteractionBlocked,setFarmTool,queueFarmWork,updateFarmWork,FARM_ACTION_TIMING} from '../src/core/farm.js';
+import {farmMode,farmWorking,farmThreat,farmInteractionBlocked,setFarmTool,queueFarmWork,updateFarmWork,FARM_ACTION_TIMING} from '../src/core/farming/farm.js';
 import {farmApproach} from '../src/world/farm-land.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 import {FARM_CROPS,FARM_SEED_DOOR} from '../src/config/farm.js';
 import {FARM_COMBAT_RESUME_DELAY} from '../src/config/farm-tools.js';
 

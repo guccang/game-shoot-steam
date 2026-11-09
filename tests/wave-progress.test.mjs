@@ -1,5 +1,5 @@
-import {clearingSite} from '../src/progression/clearing-site.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 // 组进度回归覆盖清波、保存、领主重试和换组；不运行无关战斗数值测试。
@@ -8,10 +8,10 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {waveDifficulty} from '../src/config/waves.js';
 import {CLEARING_DENSITY} from '../src/config/clearing-difficulty.js';
-import {livingProtected,livingWaveAllowed} from '../src/core/living-safety.js';
-import {setLivingPatrol} from '../src/core/living-world.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
-import {validatePatrol} from '../src/progression/patrol-progress.js';
+import {livingProtected,livingWaveAllowed} from '../src/core/camp/living-safety.js';
+import {setLivingPatrol} from '../src/core/camp/living-world.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
+import {validatePatrol} from '../src/progression/battle/patrol-progress.js';
 import {waveProgressState} from '../src/ui/wave-progress.js';
 
 // 正式致死结算清除一波，跳过等待动画以专门验证进度状态。

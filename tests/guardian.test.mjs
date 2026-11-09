@@ -5,12 +5,12 @@ import { Game } from '../src/core/game.js';
 import { freshProgress } from '../src/progression/progress.js';
 import { guardianPads } from '../src/config/guardian.js';
 import { WEAPONS } from '../src/config/weapons.js';
-import { updateGuardianDefenses } from '../src/core/guardian-defense.js';
-import { guardianSpawnPoint } from '../src/core/guardian-spawns.js';
-import { realmSites, prepareRealmTrees } from '../src/core/realm-region.js';
+import { updateGuardianDefenses } from '../src/core/battle/guardian-defense.js';
+import { guardianSpawnPoint } from '../src/core/battle/guardian-spawns.js';
+import { realmSites, prepareRealmTrees } from '../src/core/realms/realm-region.js';
 import { blocked } from '../src/physics/motion.js';
-import { updateRealm } from '../src/core/realm-manager.js';
-import { validateRealms } from '../src/progression/realm-progress.js';
+import { updateRealm } from '../src/core/realms/realm-manager.js';
+import { validateRealms } from '../src/progression/realms/realm-progress.js';
 
 // 使用默认新手拥有权，选择性解锁供装备覆盖测试。
 function create(all = false) {

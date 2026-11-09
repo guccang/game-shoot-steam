@@ -5,6 +5,7 @@ import { pathDistance } from './paths.js';
 import { isWaterBlocked } from './river-geometry.js';
 import { beachLobe } from './landscape-variants.js';
 import { REALM_ENTRANCES } from './realm-entrances.js';
+import { SpatialGrid } from './spatial-grid.js';
 
 // 独立细节噪声不消耗战斗随机数，移动镜头和刷新存档不会重新洗牌景点组合。
 function noise(seed, index) {
@@ -95,6 +96,7 @@ export function generateLandscapeCompositions(terrain = NATURAL_TERRAIN, { reser
 }
 
 export const LANDSCAPES = generateLandscapeCompositions();
+const propGrid = new SpatialGrid(LANDSCAPES.props);
 
 // 查询可走干沙供随机草花避让，避免把大沙滩又盖回普通草地材质。
 export function inLandscapeBeach(x,y) {
@@ -115,6 +117,6 @@ export function inLandscapeBeach(x,y) {
 // 只让高树避开沙滩及精选小景，外围树林继续保留，低矮花草不新增碰撞。
 export function coversLandscape(x,y) {
   if([y-120,y-60,y].some(sy=>inLandscapeBeach(x,sy)))return true;
-  return LANDSCAPES.props.some(p=>Math.abs(delta(x-p.x,WORLD.width))<58 &&
+  return propGrid.query(x-58,y-145,x+58,y+15).some(p=>Math.abs(delta(x-p.x,WORLD.width))<58 &&
     delta(y-p.y,WORLD.height)>-15 && delta(y-p.y,WORLD.height)<145);
 }

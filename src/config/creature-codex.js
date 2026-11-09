@@ -11,7 +11,7 @@ const rangedText={
  'bramble-buggy':['驾驶小型装甲车的团子，车体结实并携带远程武器。','留出移动空间，绕开正面火力。'],
  'stump-bombard':['拖着重炮的慢速团子，炮弹会威胁落点周围。','看到炮击准备时离开原地，避免聚在落点。']
 };
-const mineText={beetle:['背着坚硬岩壳的六足甲虫，常在根木和遗迹间爬行。','近身时会扑击，蓄力时拉开距离。'],bat:['适应洞穴昏暗环境的小蝙蝠，常在水岸和石厅附近活动。','移动较快，注意它靠近时的攻击预兆。'],spore:['伞盖厚实的地下菌类生物，喜欢潮湿的苔藓与荧菇林。','会从远处发射孢子，利用岩壁遮挡弹道。']};
+const mineText={beetle:['地下金属灰团子，有小、中、大体型与盾卫外观，常在根木和遗迹间活动。','近身时会扑击，蓄力时拉开距离。'],bat:['长着金属灰叶翼的圆团子，与地表叶翼飞团同族，常在地下水岸和石厅附近活动。','移动较快，注意它靠近时的攻击预兆。'],spore:['金属灰的喷团、投团、弩团、装甲车团和重炮团，沿用地表同族的装备造型，喜欢地下苔藓与荧菇林。','会从远处发射孢子，利用岩壁遮挡弹道。']};
 export const CREATURE_FISH=FISH_SPECIES.map(f=>({...f,key:'fish:'+f.id,category:'fish',group:'鱼类',portrait:'fish',tip:f.tip}));
 export const CREATURE_MONSTERS=[
  {id:'slime',key:'monster:slime',name:'森林团子',category:'monster',group:'地表怪物',portrait:'monster',habitat:'森林与湖谷的各片林区',description:'柔软圆润的林间生物，有小、中、大三种体型；不同地区会呈现不同草木颜色。',tip:'留意蓄力后的近身扑击，侧移避开后再反击。'},

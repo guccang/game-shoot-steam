@@ -1,6 +1,6 @@
 // 营地详情展示六档购买优惠与统一经验表，浏览不修改存档。
-import {challengeCatalog} from '../progression/challenge-catalog.js';
-import {campProgress,campDiscountText} from '../progression/camp-level.js';
+import {challengeCatalog} from '../progression/realms/challenge-catalog.js';
+import {campProgress,campDiscountText} from '../progression/camp/camp-level.js';
 import {CAMP_ACTIVITY_XP,CAMP_BATCHES} from '../config/camp-level.js';
 // 原生嵌套弹窗沿用暂停和焦点管理，保留稳定节点标识。
 export function createChallengeCatalog({game,root,dialogs,scope}){

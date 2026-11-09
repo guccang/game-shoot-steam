@@ -6,9 +6,9 @@ import {STORY_CHAPTER as def} from '../src/config/story.js';
 import {WEAPONS} from '../src/config/weapons.js';
 import {fireBallistics} from '../src/combat/ballistics.js';
 import {updateBoss} from '../src/combat/bosses.js';
-import {recordStoryEvent,updateStoryCues,storyDialogueLines,storyExperienceGoal} from '../src/core/story-journey.js';
-import {validateStory} from '../src/progression/story-progress.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
+import {recordStoryEvent,updateStoryCues,storyDialogueLines,storyExperienceGoal} from '../src/core/story/story-journey.js';
+import {validateStory} from '../src/progression/story/story-progress.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
 import {storySpeechInfo} from '../src/rendering/story-guidance.js';
 
 // 正式入口使用固定随机数，排除永久成长和随机出生差异。

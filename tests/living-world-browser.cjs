@@ -25,7 +25,7 @@ async page => {
     if(await button.isDisabled()){
       await close();
       // 居民会换班移动，沿正式生活道路追踪当前目标，而非假定固定站桩。
-      const route=await page.evaluate(async id=>{const g=(await import('/src/main.js')).application.game,c=await import('/src/config/living-world.js'),t=(await import('/src/core/living-world.js')).livingRequestTarget(g,c.LIVING_REQUESTS.find(q=>q.id===id));const nodes=[],edges=[];
+      const route=await page.evaluate(async id=>{const g=(await import('/src/main.js')).application.game,c=await import('/src/config/living-world.js'),t=(await import('/src/core/camp/living-world.js')).livingRequestTarget(g,c.LIVING_REQUESTS.find(q=>q.id===id));const nodes=[],edges=[];
         function add(p){let i=nodes.findIndex(n=>n.x===p.x&&n.y===p.y);if(i<0){i=nodes.length;nodes.push(p);edges.push([]);}return i;}
         for(const road of c.LIVING_ROADS)for(let i=1;i<road.length;i++){const a=add(road[i-1]),b=add(road[i]);edges[a].push(b);edges[b].push(a);}
         const near=p=>nodes.reduce((best,n,i)=>Math.hypot(p.x-n.x,p.y-n.y)<Math.hypot(p.x-nodes[best].x,p.y-nodes[best].y)?i:best,0),start=near(g.player),end=near(t),queue=[start],prev=new Map([[start,null]]);

@@ -1,4 +1,4 @@
-import {carriedWeapon} from '../progression/weapon-storage.js';
+import {carriedWeapon} from '../progression/inventory/weapon-storage.js';
 // 蜘蛛单枪架仅接收已拥有的远程枪；空槽表示自带脉冲炮，旧档始终可用。
 import { WEAPONS, WEAPON_DISPLAY_ORDER } from './weapons.js';
 import { effectiveWeapon, weaponDamage } from './weapon-mods.js';

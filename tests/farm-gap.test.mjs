@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress} from '../src/progression/progress.js';
 import {farmDigTarget} from '../src/world/farm-land.js';
-import {queueFarmWork,farmAction} from '../src/core/farm.js';
+import {queueFarmWork,farmAction} from '../src/core/farming/farm.js';
 import {WORLD} from '../src/world/coordinates.js';
 // 旧档田格围住一块完整空地，整体相对全局网格偏移20单位。
 function scene(offset=20){

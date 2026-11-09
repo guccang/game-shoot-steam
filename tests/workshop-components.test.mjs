@@ -5,12 +5,12 @@ import { freshProgress, validateProgress } from '../src/progression/progress.js'
 import { equipmentParts, partLevel } from '../src/config/equipment-parts.js';
 import { effectiveWeapon, weaponDamage } from '../src/config/weapon-mods.js';
 import { vehicleWeapon, vehicleSpeed } from '../src/config/vehicles.js';
-import { workshopUpgrade, quoteWorkshop, applyPartPreview } from '../src/progression/workshop.js';
-import { commitWorkshop } from '../src/core/workshop.js';
+import { workshopUpgrade, quoteWorkshop, applyPartPreview } from '../src/progression/workshop/workshop.js';
+import { commitWorkshop } from '../src/core/workshop/workshop.js';
 import { Game } from '../src/core/game.js';
 import { expeditionEquipment } from '../src/config/expedition.js';
 import { guardianProgress } from '../src/config/guardian-equipment.js';
-import { createWorkshopTrial } from '../src/core/workshop-trial.js';
+import { createWorkshopTrial } from '../src/core/workshop/workshop-trial.js';
 import { WEAPONS } from '../src/config/weapons.js';
 
 // 全目录隔离进度，不访问浏览器存档或玩家资源。

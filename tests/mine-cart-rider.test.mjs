@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRenderInterpolation} from '../src/rendering/render-interpolation.js';
 import {createFixedStep} from '../src/platform/fixed-step.js';
-import {updateCatMotion} from '../src/core/cat-motion.js';
+import {updateCatMotion} from '../src/core/battle/cat-motion.js';
 // 最小乘坐现场保留正式进度层级与动画，排除与坐标采样无关的随机战斗。
 function scene(){return {state:'playing',mapId:'forest',time:0,player:{x:550,y:312,bodyAnimation:{idleTime:0,moveTime:0,moveWeight:0}},cottage:{kind:'mine',depth:1,ride:1,running:true},progress:{mining:{seed:1847,carts:[{id:1,x:550,y:312,wheel:0,heading:1}],layers:{}}}};}
 // 正式绘制器修复前回退到存档矿车，可用同一断言复现旧版每逻辑步的跳动。

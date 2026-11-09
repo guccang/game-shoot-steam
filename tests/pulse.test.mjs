@@ -1,5 +1,5 @@
 import {upgradeCost} from '../src/progression/progress.js';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 import { WORLD } from '../src/world/coordinates.js';
 // 验证重型脉冲的蓄能、贯穿、反冲碰撞、成长兼容与缓冲镜头。
 import test from 'node:test';

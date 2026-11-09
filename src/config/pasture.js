@@ -1,5 +1,5 @@
 // 营地东侧固定牧栏，北侧中央留门；场景向北时世界纵坐标减小。
-export const PASTURE=Object.freeze({mapId:'forest',x:990,y:880,halfWidth:130,halfHeight:52,gate:104,oxPrice:48,sheepPrice:24,callRange:165,walkSpeed:68});
+export const PASTURE=Object.freeze({mapId:'forest',x:990,y:880,halfWidth:130,halfHeight:52,gate:104,oxPrice:48,sheepPrice:24,callRange:165,walkSpeed:68,idleReturnSeconds:60});
 export const PEN_OX=Object.freeze({mapId:'forest',x:PASTURE.x-84,y:PASTURE.y-15,facing:1});
 export const PEN_GATE=Object.freeze({mapId:'forest',x:PASTURE.x,y:PASTURE.y-PASTURE.halfHeight-18});
 // 牧栏东南的三块林间草地轮流长出甜穗草，牛在草丛斜后方吃草。
@@ -21,7 +21,7 @@ export function oxSiteFromFoot(foot,yaw){
  const offset=oxFoot({x:0,y:0,yaw});
  return {x:foot.x-offset.x,y:foot.y-offset.y};
 }
-// 正面牛犁共用一个落地点，猫站在后方，扶柄随转弯轻微偏向外侧。
+// 骑手固定在牛背中心；这是绘制座位高度，碰撞与开田仍共用牛蹄的一格坐标。
 export function oxHandler(foot,yaw){
- return {x:foot.x-28*Math.cos(yaw),y:foot.y-83};
+ return {x:foot.x,y:foot.y-96};
 }

@@ -7,10 +7,10 @@ import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {WAREHOUSE} from '../src/config/warehouse.js';
 import {RESOURCE_CAP} from '../src/config/resource-limits.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {updateWarehouseWood,transferWarehouse} from '../src/core/warehouse.js';
+import {updateWarehouseWood,transferWarehouse} from '../src/core/inventory/warehouse.js';
 import {resourcePickupPoses} from '../src/combat/resource-pickup.js';
 import {updateCombatTraces} from '../src/combat/transient-effects.js';
-import {movementLoadFactor} from '../src/progression/load-weight.js';
+import {movementLoadFactor} from '../src/progression/inventory/load-weight.js';
 
 // 只准备场景和存档回调，存量、资格和飞行均使用正式实现。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls.fill(1);p.vehicleIndex=0;p.wood=0;p.logistics.bagWood=8;p.logistics.builds[0].wood=12;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.spawnTimer=g.fireClock=g.mainlineTalkDelay=999;g.enemies=[];g.trees=[];Object.assign(g.player,{x:WAREHOUSE.x,y:WAREHOUSE.y+105,vx:0,vy:0});g.progress.campParking.owned=g.vehicles.map(v=>({hull:v.index,spot:null,mapId:'forest',x:WAREHOUSE.x+(v.index?600:95),y:WAREHOUSE.y+80,hp:1,ammo:0}));const saved=[];g.livingPersist=p=>{saved.push(structuredClone(p));return true;};return {g,saved};}

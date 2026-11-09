@@ -4,7 +4,7 @@ import { canvasFont } from './text-style.js';
 import { i18nText } from '../i18n/index.js';
 import { box, oval, poly, outline } from './primitives.js';
 import { nearest, worldDistance } from '../world/coordinates.js';
-import { fireObjective } from '../core/fire-rescue.js';
+import { fireObjective } from '../core/activities/fire-rescue.js';
 
 // 原树燃烧、河岸取水设备和世界救援路径；全部按正式世界坐标绘制。
 

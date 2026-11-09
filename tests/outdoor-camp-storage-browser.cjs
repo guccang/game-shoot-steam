@@ -9,7 +9,7 @@ async page=>{
   p.vehicleHulls[0]=1;p.vehicleIndex=0;p.outdoors.tent=true;
   g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;
   g.mainlineTalkDelay=g.spawnTimer=g.fireClock=99999;g.enemies=[];g.boss=null;
-  const {deployCamp}=await import('/src/core/outdoors.js');
+  const {deployCamp}=await import('/src/core/activities/outdoors.js');
   for(let y=1900;y<7000&&!g.progress.outdoors.camp;y+=300)for(let x=1900;x<9000;x+=300){
    Object.assign(g.player,{x,y});if(deployCamp(g).ok)break;
   }

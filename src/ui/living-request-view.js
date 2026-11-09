@@ -1,7 +1,7 @@
 // 邻居交接筛选只读取正式任务和居民身份，不创建第二份进度。
 import {LIVING_REQUESTS} from '../config/living-world.js';
-import {livingRequestTarget,residentFor} from '../core/living-world.js';
-import {trackedLivingRequest} from '../core/task-tracking.js';
+import {livingRequestTarget,residentFor} from '../core/camp/living-world.js';
+import {trackedLivingRequest} from '../core/navigation/task-tracking.js';
 
 // 当前交谈对象关联的委托，使用角色替代后的真实居民身份。
 export function residentRequestChoices(game,person){

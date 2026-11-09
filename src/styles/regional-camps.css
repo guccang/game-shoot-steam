@@ -1,0 +1,6 @@
+/* 营地服务只沿用手机底板，短屏滚动内容并保留底部反馈。 */
+#regional-camps-dialog .regional-camp-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+#regional-camps-dialog .regional-camp-tabs button{flex:1 1 42%;min-height:44px}
+#regional-camps-dialog .regional-camp-tabs [aria-pressed="true"]{background:#e8d59c}
+#regional-camps-dialog .ui-section button{min-height:44px;margin:4px 8px 4px 0;max-width:100%;white-space:normal}
+#regional-camps-dialog select{max-width:100%;width:100%;font:inherit}

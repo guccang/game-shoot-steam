@@ -18,7 +18,7 @@
 
 ## 5 实现与数值
 
-逻辑入口为 `src/core/mainline-manager.js`、`src/core/workshop-guide.js`；UI 为 `src/ui/operation-guide.js`、`src/ui/workshop/trial-scene.js`；绘制器仍使用 `drawWeaponTrialScene`。
+逻辑入口为 `src/core/story/mainline-manager.js`、`src/core/workshop/workshop-guide.js`；UI 为 `src/ui/operation-guide.js`、`src/ui/workshop/trial-scene.js`；绘制器仍使用 `drawWeaponTrialScene`。
 
 | 奖励节点 | 原金币 | 新金币 |
 | --- | ---: | ---: |

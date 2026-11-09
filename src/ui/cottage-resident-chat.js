@@ -1,6 +1,6 @@
 // 住户对话由点击走近触发，仅同一房间的有效对话可以完成换班。
 import {HEROES} from '../config/heroes.js';
-import {canRelieveResident} from '../core/cat-home.js';
+import {canRelieveResident} from '../core/home/cat-home.js';
 import {createEventScope} from '../platform/events.js';
 
 export function createResidentChat({game,root,dialogs,onChange}){

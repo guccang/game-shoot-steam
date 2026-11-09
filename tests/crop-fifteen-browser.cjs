@@ -7,7 +7,7 @@ async original=>{
   await page.evaluate(async()=>{
    window.a=(await import('/src/main.js')).application;await a.ready;await document.fonts.ready;
    let p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS;p.mainline.phase='complete';p.mainline.currentId=null;p.coins=100000;p.farm.wildMaps=['forest'];p.farm.lessonRewarded=true;
-   p=(await import('/src/progression/debug-grants.js')).debugGrantProgress(p,'seed-purchases');p.farm.seeds.fill(3);const g=a.game;g.progress=p;g.reset();g.state='playing';g.update=()=>{};g.arrivalScene=null;g.mainlineSpeech=null;g.enemies=[];g.boss=null;g.vehicle.active=false;
+   p=(await import('/src/progression/player/debug-grants.js')).debugGrantProgress(p,'seed-purchases');p.farm.seeds.fill(3);const g=a.game;g.progress=p;g.reset();g.state='playing';g.update=()=>{};g.arrivalScene=null;g.mainlineSpeech=null;g.enemies=[];g.boss=null;g.vehicle.active=false;
    Object.assign(g.player,{x:921,y:2855});a.renderer.camera.time=null;a.refresh();await(await import('/src/rendering/farm.js')).loadFarmArt();
   });
   for(const [width,height,phase] of [[390,844,'day'],[320,568,'night']]){

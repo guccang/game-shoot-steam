@@ -15,7 +15,7 @@
 停稳1秒完成，移动或离开门口取消，暂停冻结。成功下车后才切换室内坐标，车辆耐久、弹药、装填进度与轮相保留。自动倒车期间不抢占；事件战斗与未开放房屋不触发。复用角色真实连续帧和载具独立车轮、履带、旋翼动画。
 
 ## 5 生成指令
-本轮只复用正式程序绘制，无imagegen或PNG替换任务。正式绘制器为src/rendering/player-action-countdown.js、src/rendering/parked-vehicles.js；入口为src/core/cottage.js。
+本轮只复用正式程序绘制，无imagegen或PNG替换任务。正式绘制器为src/rendering/player-action-countdown.js、src/rendering/parked-vehicles.js；入口为src/core/home/cottage.js。
 
 ## 6 验收记录
 本轮动态交互验收通过。designCriterion为vehicle-door-entry，运行证据存放output/playwright/vehicle-door-entry/。

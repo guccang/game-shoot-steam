@@ -1,8 +1,8 @@
 // 猫窝只负责获取、查看经验与安排入住，不提供付费升级。
 import {HEROES} from '../config/heroes.js';
-import {heroExperience} from '../progression/hero-experience.js';
-import {campPurchasePrice} from '../progression/camp-level.js';
-import {adoptCat} from '../core/cat-home.js';
+import {heroExperience} from '../progression/player/hero-experience.js';
+import {campPurchasePrice} from '../progression/camp/camp-level.js';
+import {adoptCat} from '../core/home/cat-home.js';
 import {heroGrowthMarkup} from './hero-growth.js';
 import {drawCat} from '../rendering/characters.js';
 import {createEventScope} from '../platform/events.js';

@@ -2,7 +2,7 @@
 import {createEventScope} from '../platform/events.js';
 import {sceneHit} from './scene-hit.js';
 import {interiorShopkeeper} from '../config/workshop-interiors.js';
-import {requestShopkeeperService} from '../core/workshop-display-entry.js';
+import {requestShopkeeperService} from '../core/workshop/workshop-display-entry.js';
 
 // 热点只存在于当前营业房，面板关闭与倒计时共用防重开状态。
 export function createShopkeeperInteraction({game,renderer,root,panel,input,openService,onTalk}){

@@ -26,7 +26,7 @@ async original=>{
   if(await dialog.isVisible())throw Error('拖动误打开种子屋');
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});if(await dialog.isVisible())throw Error('取消触摸误打开');
   // 种田时直接点击屋身，工作状态暂停后保留，不开新田、不消耗种子。
-  const before=await page.evaluate(async()=>{(await import('/src/core/farm.js')).setFarmTool(a.game,'hoe');a.refresh();return a.game.progress.farm.plots.length;});await hit.tap();await dialog.waitFor({state:'visible'});
+  const before=await page.evaluate(async()=>{(await import('/src/core/farming/farm.js')).setFarmTool(a.game,'hoe');a.refresh();return a.game.progress.farm.plots.length;});await hit.tap();await dialog.waitFor({state:'visible'});
   if(await page.evaluate(before=>a.game.progress.farm.plots.length!==before||a.game.farmWork?.tool!=='hoe',before))throw Error('种田点击屋身被开地截获');
   await page.locator('#seed-shop-close').tap();await page.waitForFunction(()=>a.game.state==='playing');
   // 改变角色位置后热点仍逐帧跟随镜头，并保留原生键盘操作。

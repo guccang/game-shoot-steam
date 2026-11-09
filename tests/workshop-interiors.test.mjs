@@ -8,9 +8,9 @@ import {COLLECTED_VEHICLES} from '../src/config/vehicles.js';
 import {WEAPONS} from '../src/config/weapons.js';
 import {VISITOR_MODELS,SCIENCE_VEHICLES} from '../src/config/parking-visitors.js';
 import {WORKSHOP_INTERIORS,interiorWeaponDisplays,garageVehicleRecord,interiorLayout,VEHICLE_BAY,VEHICLE_GALLERY,interiorVehicleDisplays} from '../src/config/workshop-interiors.js';
-import {enterWorkshop,updateCottage,leaveCottage,cottageBlocked,sleepInCottage} from '../src/core/cottage.js';
-import {updateParkingVisitors,boardParkedVehicle} from '../src/core/camp-parking.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {enterWorkshop,updateCottage,leaveCottage,cottageBlocked,sleepInCottage} from '../src/core/home/cottage.js';
+import {updateParkingVisitors,boardParkedVehicle} from '../src/core/vehicles/camp-parking.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 // 所有测试从完成入职的真实营地开始，保留正式碰撞和装备实例。
 function setup(){const p=freshProgress();p.arrival={version:2,phase:'complete',keys:true,parked:false};p.mainline.completed=[...MAINLINE_IDS];const g=new Game(p,()=>0);g.start();g.enemies=[];g.spawnTimer=g.fireClock=999;return g;}
 // 独立推进候门控制器，避免战斗和任务无关计时混入断言。

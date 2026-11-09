@@ -6,7 +6,7 @@ import {SeasonGroundCache} from '../src/rendering/season-ground-cache.js';
 import {GroundCache} from '../src/rendering/ground-cache.js';
 import {SEASON_FADE_DURATION} from '../src/world/season-transition.js';
 import {freshProgress} from '../src/progression/progress.js';
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 const view={x:400,y:280,w:240,h:240};
 // 使用可释放的轻量像素对象模拟已构建地块；正式浏览器仍使用原生成器。
 function fill(pool){for(const key of pool.desired)pool.publish({day:{width:388,height:388},night:{width:388,height:388}},{key});pool.pending=[];}

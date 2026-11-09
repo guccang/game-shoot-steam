@@ -1,4 +1,4 @@
-import {requestParking} from '../src/core/parking.js';
+import {requestParking} from '../src/core/vehicles/parking.js';
 // 停车下车、展示轮换与小屋状态专项测试，使用真实Game及正式存档迁移。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,11 +6,11 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress,freshRangerProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {PARKING_SPOTS} from '../src/config/parking.js';
-import {boardParkedVehicle,updateParkingVisitors,parkedOwned} from '../src/core/camp-parking.js';
+import {boardParkedVehicle,updateParkingVisitors,parkedOwned} from '../src/core/vehicles/camp-parking.js';
 import {parkedVehicleObjects} from '../src/rendering/parked-vehicles.js';
 import {arrivalObjects} from '../src/rendering/ranger-arrival.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {enterCottage,leaveCottage} from '../src/core/cottage.js';
+import {enterCottage,leaveCottage} from '../src/core/home/cottage.js';
 import {blocked} from '../src/physics/motion.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 // 准备已完成主线的营地，不跳过正式停车和房屋更新。

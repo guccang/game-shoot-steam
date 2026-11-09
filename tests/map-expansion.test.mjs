@@ -3,14 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {WORLD,ORIGINAL_WORLD,canonical,worldDistance} from '../src/world/coordinates.js';
 import {PATHS,pathDistance} from '../src/world/paths.js';
-import {forestLayout} from '../src/world/biomes.js';
+import {forestLayout,biomeAt} from '../src/world/biomes.js';
 import {groundDetails} from '../src/world/ground-details.js';
 import {groundTiles,GROUND_CACHE_LIMIT} from '../src/rendering/ground-cache.js';
 import {TreeSpacingIndex} from '../src/world/forest-expansion.js';
 import {forestUnderstory} from '../src/world/forest-understory.js';
 import {BUS_STOP_TREES} from '../src/world/bus-stop-landscape.js';
+import {HABITATS,forestHabitat} from '../src/world/forest-habitats.js';
+import {MONSTER_CAMPS} from '../src/config/monster-camps.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {normalizeLivingWorld} from '../src/progression/living-world.js';
+import {normalizeLivingWorld} from '../src/progression/camp/living-world.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {SETTLEMENTS} from '../src/config/settlements.js';
 import {riverSamples,BRIDGE,isWaterBlocked} from '../src/world/river-geometry.js';
@@ -44,6 +46,20 @@ test('地表查询只返回当前局部，跨块重复点一致且缓存上限�
  const keys=new Map([...groundDetails(b,'grass')].map(p=>[p.index,p]));for(const p of points.filter(p=>p.x>=7192))assert.deepEqual(keys.get(p.index),p);
  assert.equal(GROUND_CACHE_LIMIT,64);assert.ok(groundTiles(a).length<=9);assert.ok(groundTiles({x:WORLD.width-50,y:WORLD.height-50,w:200,h:200}).some(t=>t.ox===WORLD.width&&t.oy===WORLD.height));
 });
+test('地图生态名称与实景树种、环面地色一致，营地形成聚落和空地',()=>{
+ for(const [id,{label:[x,y]}] of Object.entries(HABITATS)){
+  const tint=[0,0,0],mirrorTint=[0,0,0];
+  assert.equal(forestHabitat(x,y,tint).dominant.id,id);
+  assert.equal(biomeAt(x,y).id,id);
+  forestHabitat(x-WORLD.width,y+WORLD.height,mirrorTint);
+  assert.deepEqual(tint.map(Math.round),mirrorTint.map(Math.round));
+ }
+ const sectors=Array(180).fill(0),camps=MONSTER_CAMPS.filter(c=>c.mapId==='forest');
+ assert.equal(camps.length,185);
+ for(const c of camps)sectors[Math.floor(c.y/3000)*15+Math.floor(c.x/3200)]++;
+ assert.ok(sectors.filter(n=>n===0).length>=40);
+ assert.ok(sectors.filter(n=>n>=3).length>=10);
+});
 test('野外手机视野能遇到树木或低景，公交站树位与跨界景物稳定',()=>{
  const trees=forestLayout();
  assert.ok(BUS_STOP_TREES.every(p=>trees.some(t=>t.x===p.x&&t.y===p.y)&&pathDistance(p.x,p.y)>66));
@@ -62,6 +78,16 @@ test('野外手机视野能遇到树木或低景，公交站树位与跨界景�
   assert.equal(p.kind,mirror[i].kind);assert.equal(p.y,mirror[i].y);
   assert.ok(Math.abs(mirror[i].x-p.x-WORLD.width)<1e-8);
  });
+});
+test('营门外有连片林冠，主路和桥头留白',()=>{
+ const trees=forestLayout();
+ for(const center of [{x:-985,y:530},{x:-1000,y:986},{x:90,y:-242},{x:605,y:-225},{x:985,y:405}]){
+  const grove=trees.filter(t=>t.woodland&&worldDistance(t,center)<250);
+  assert.ok(grove.length>=10,JSON.stringify(center));
+  assert.ok(grove.every(t=>pathDistance(t.x,t.y)>=66));
+ }
+ const east=trees.filter(t=>t.woodland&&t.x>850&&t.x<1100&&t.y<800);
+ assert.ok(east.every(t=>t.y<665));
 });
 test('新区域坐标保存并恢复，非法边界仍拒绝',()=>{
  const p=normalizeLivingWorld({position:{x:9800,y:7600}});assert.deepEqual(p.position,{x:9800,y:7600});

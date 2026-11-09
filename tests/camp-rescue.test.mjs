@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {CAMP_DEFENSE,CAMP_GATES,campDefenseGrade} from '../src/config/camp-defense.js';
-import {startCampDefense,rescueCampDefense,syncCampDefense} from '../src/core/camp-defense.js';
-import {campRescuePower} from '../src/core/camp-rescue.js';
+import {startCampDefense,rescueCampDefense,syncCampDefense} from '../src/core/camp/camp-defense.js';
+import {campRescuePower} from '../src/core/camp/camp-rescue.js';
 import {campDefenseObjects} from '../src/rendering/camp-defense.js';
 import {RESIDENT_CHATTER} from '../src/config/resident-chatter.js';
 // 场地使用真实营门，玩家不射击，以便单独观察援军的出场与战斗效率。

@@ -2,7 +2,7 @@ import {MINING} from '../config/mining.js';
 import {MINE_ENTRANCE,mineEntrances} from '../world/mine-entrances.js';
 import {HOME_DIRECTIONS,HOME_BALCONY,HOME_ELEVATOR} from '../config/home-construction.js';
 import {COTTAGE,COTTAGE_STAIRS,cottageFloor} from '../config/cottage.js';
-import {VEHICLE_BOARDING,vehicleBoardingPoint} from '../core/vehicle-boarding.js';
+import {VEHICLE_BOARDING,vehicleBoardingPoint} from '../core/vehicles/vehicle-boarding.js';
 // 房间与地图共用门口徽记，固定屏幕尺寸和目标门的位置。
 import {drawActionCountdown} from './action-countdown.js';
 import {interiorLayout,SHOPKEEPER_ENTRY} from '../config/workshop-interiors.js';

@@ -14,7 +14,7 @@ async page=>{
  });
  await page.locator('#start').click();await page.evaluate(()=>a.ready);
  await page.evaluate(async()=>{
-  const g=a.game,{storyPostApproach,storyPostForChapter}=await import('/src/core/story-posts.js');
+  const g=a.game,{storyPostApproach,storyPostForChapter}=await import('/src/core/story/story-posts.js');
   Object.assign(g.player,storyPostApproach(storyPostForChapter(g,'sunleaf-01')));if(!g.enterStory())throw Error('未进入章节');
   g.advanceStoryDialogue(true);a.refresh();
  });
@@ -52,12 +52,12 @@ async page=>{
  await page.evaluate(async()=>{
   const g=a.game;window.originalUpdate=g.update;g.update=()=>{};
   const {STORY_SITES}=await import('/src/config/story.js');
-  (await import('/src/core/story-encounters.js')).spawnStoryEnemy(g,STORY_SITES.RELAY,0);
+  (await import('/src/core/story/story-encounters.js')).spawnStoryEnemy(g,STORY_SITES.RELAY,0);
   // 走近同伴后保留头顶阅读空间，画外和极短屏另外检查隐藏。
   Object.assign(g.player,{x:STORY_SITES.RELAY.x,y:STORY_SITES.RELAY.y-30});
   Object.assign(g.enemies[0],{x:STORY_SITES.RELAY.x+110,y:STORY_SITES.RELAY.y-100});
   Object.assign(g.story,{activeCue:null,cueQueue:[],cueGap:0,experiences:{},seenCues:[]});
-  const j=await import('/src/core/story-journey.js');j.recordStoryEvent(g,'charge-end',{hit:false,travel:80});j.updateStoryCues(g,.01);a.renderer.camera.time=null;a.refresh();
+  const j=await import('/src/core/story/story-journey.js');j.recordStoryEvent(g,'charge-end',{hit:false,travel:80});j.updateStoryCues(g,.01);a.renderer.camera.time=null;a.refresh();
  });
  for(const [width,height] of [[320,568],[390,844],[1280,900]])for(const phase of ['day','night']){
   await page.setViewportSize({width,height});await page.evaluate(async phase=>{
@@ -82,7 +82,7 @@ async page=>{
  // 避让和隐藏不消耗阅读进度，角色在画外不会冒出底部通知。
  await page.evaluate(()=>{a.game.player.x+=1200;a.renderer.camera.time=null;a.refresh();});await page.waitForTimeout(200);
  if(!await page.locator('#story-chatter').evaluate(n=>n.hidden)||!await page.evaluate(()=>a.game.story.activeCue.visible===false))throw Error('画外短句仍然显示');
- const remaining=await page.evaluate(()=>a.game.story.activeCue.remaining);await page.evaluate(async()=>(await import('/src/core/story-journey.js')).updateStoryCues(a.game,.5));
+ const remaining=await page.evaluate(()=>a.game.story.activeCue.remaining);await page.evaluate(async()=>(await import('/src/core/story/story-journey.js')).updateStoryCues(a.game,.5));
  if(await page.evaluate(()=>a.game.story.activeCue.remaining)!==remaining)throw Error('隐藏时消耗阅读时间');checks.push('镜头跟随与画外隐藏、不消耗阅读时间');
  await page.evaluate(async()=>{const p=(await import('/src/config/story.js')).STORY_SITES.RELAY;Object.assign(a.game.player,{x:p.x,y:p.y+95});a.renderer.camera.time=null;a.refresh();});
  await page.setViewportSize({width:320,height:296});await page.waitForTimeout(150);if(!await page.locator('#story-chatter').evaluate(n=>n.hidden))throw Error('短屏空间不足仍显示');checks.push('短屏不遮挡操作');

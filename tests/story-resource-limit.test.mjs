@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {STORY_POSTS} from '../src/config/story-posts.js';
-import {validateStoryDefinition} from '../src/core/story-schema.js';
-import {validateStoryPosts} from '../src/core/story-posts.js';
+import {validateStoryDefinition} from '../src/core/story/story-schema.js';
+import {validateStoryPosts} from '../src/core/story/story-posts.js';
 import {validateProgress} from '../src/progression/progress.js';
 import {storyRewardMarkup} from '../src/ui/story-rewards.js';
 test('全部单篇与礼包最多三种正数资源，第四种明确拒绝而零值不占种类',()=>{

@@ -11,8 +11,8 @@ import {clearingBossHealth} from '../src/config/clearing-boss.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {vehicleDamage,vehicleWeapon} from '../src/config/vehicles.js';
 import {AMMO_TYPES,ammoKind,AMMO_SHOP} from '../src/config/supplies.js';
-import {catLoad,vehicleLoad} from '../src/progression/load-weight.js';
-import {tradeSupply} from '../src/core/supplies.js';
+import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
+import {tradeSupply} from '../src/core/vehicles/supplies.js';
 import {takeSupplyAmmo,supplyAmmoCount} from '../src/combat/supply-ammo.js';
 import {advanceReload,consumeRound} from '../src/combat/magazine.js';
 // 采用同轮成长装备，基础手枪和五种耗弹主炮均单独承担整轮，不借另一武器分摊。

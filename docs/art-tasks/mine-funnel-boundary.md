@@ -8,7 +8,7 @@
 原轮廓、森林绿描边、色彩、比例、地面衔接和左上光向不变；调整飞行目标与边缘约束。原地形、通道、桥梁及碰撞空间保留。主次、邻接组合和分层沿用正式场景，不新增景观或摆件。
 
 ## 3 技术交付
-HTML/JavaScript 与 Canvas 2D 原尺寸、原锚点、原层级；三门炮位置相对角色坐标，统一沿用14世界单位边缘余量。无新增位图、画布或派生缓存；透明图像、SVG视框不适用。行为由程序输入、目标与原飞行时钟驱动。涉及 src/core/mine-combat.js、src/combat/funnel-movement.js、src/combat/funnel.js；正式渲染沿用 src/rendering/mining.js 和浮游炮绘制器，不隐藏缺失素材。
+HTML/JavaScript 与 Canvas 2D 原尺寸、原锚点、原层级；三门炮位置相对角色坐标，统一沿用14世界单位边缘余量。无新增位图、画布或派生缓存；透明图像、SVG视框不适用。行为由程序输入、目标与原飞行时钟驱动。涉及 src/core/mining/mine-combat.js、src/combat/funnel-movement.js、src/combat/funnel.js；正式渲染沿用 src/rendering/mining.js 和浮游炮绘制器，不隐藏缺失素材。
 
 ## 4 动画任务补充
 维持原120Hz积分、独立飞行/射击时钟与炮体部件；只消除边缘拉回，不用静帧、整体旋转或拉伸替代运动。停止、暂停、低动态和返航供给继续适用。序列帧来源未修改，新增视频素材不适用。
@@ -28,7 +28,7 @@ HTML/JavaScript 与 Canvas 2D 原尺寸、原锚点、原层级；三门炮位�
 | 手机与原容器 | 390×844昼夜、320×568短屏，无横向溢出，保留现有折叠UI。本轮不改布局，未新增桌面布局。 |
 | 资源、缓存与交付 | 无新图片、画布或图集；仅WeakMap记录活动飞行炮体的上一帧位置，不进入存档；正式资源无页面错误。PNG替换、透明边缘和新视频序列不适用。 |
 
-正式绘制器保持 src/rendering/mining.js 及原浮游炮绘制；规则入口 src/core/mine-combat.js#projectMineFlyingPoint / constrainMineFlyingNode、src/combat/funnel-movement.js#updateFunnelMovement、src/combat/funnel.js#updateFunnel。
+正式绘制器保持 src/rendering/mining.js 及原浮游炮绘制；规则入口 src/core/mining/mine-combat.js#projectMineFlyingPoint / constrainMineFlyingNode、src/combat/funnel-movement.js#updateFunnelMovement、src/combat/funnel.js#updateFunnel。
 验收入口 src/rendering/visual-review.js#inspectMineFunnelBoundary；designCriterion：mine-funnel-boundary，登记于 visual-contract.json。
 
 针对性验证：

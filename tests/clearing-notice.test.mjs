@@ -5,9 +5,9 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
-import {acceptClearingPost} from '../src/core/clearing-guide.js';
-import {setLivingPatrol,acceptNextClearing} from '../src/core/living-world.js';
-import {claimClearingNotice} from '../src/core/clearing-notice.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {setLivingPatrol,acceptNextClearing} from '../src/core/camp/living-world.js';
+import {claimClearingNotice} from '../src/core/story/clearing-notice.js';
 import {createGameEventHandler} from '../src/app/game-events.js';
 
 // 使用完成入职的真实森林，避开与展示无关的教程及建筑锁定。

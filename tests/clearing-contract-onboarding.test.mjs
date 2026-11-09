@@ -1,4 +1,4 @@
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 // 清缴结束重接与入职可执行操作提示的针对性回归。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -6,15 +6,15 @@ import {Game,freshProgress} from '../src/game.js';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 import {CLEARING_APPROACH} from '../src/config/clearing.js';
-import {acceptClearingPost,clearingStage} from '../src/core/clearing-guide.js';
-import {clearingCombatActive} from '../src/core/living-safety.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {acceptClearingPost,clearingStage} from '../src/core/story/clearing-guide.js';
+import {clearingCombatActive} from '../src/core/camp/living-safety.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {waveDifficulty} from '../src/config/waves.js';
 import {arrivalWorkshopGuide} from '../src/ui/arrival-workshop-guide.js';
-import {arrivalWorkReady,advanceArrival} from '../src/core/ranger-arrival.js';
+import {arrivalWorkReady,advanceArrival} from '../src/core/camp/ranger-arrival.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {RESTORATION_FLIGHT} from '../src/config/town-restoration.js';
-import {commitWorkshop} from '../src/core/workshop.js';
+import {commitWorkshop} from '../src/core/workshop/workshop.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 // 现场接取后走到真实清缴场，使用正式Boss击杀和保存快照。
 function clearing(){const g=new Game(freshProgress(),()=>.5);g.start();Object.assign(g.player,CLEARING_APPROACH);assert.ok(acceptClearingPost(g).ok);Object.assign(g.player,{x:clearingSite(g.progress).x,y:clearingSite(g.progress).y});g.wave=g.bossWave;g.waveKills=g.waveSpawned=waveDifficulty(g.wave).total;g.bossReady=true;g.waveWarning=0;return g;}

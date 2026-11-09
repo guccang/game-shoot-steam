@@ -1,0 +1,25 @@
+/* 附近地图与设置共用右侧安全区，左侧生命和任务为小地图留白。 */
+#game-frame{--local-map-size:104px}
+#local-minimap{position:absolute;z-index:17;top:max(12px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));width:var(--local-map-size);height:var(--local-map-size);padding:3px;display:block;overflow:hidden;background:var(--ui-paper);color:var(--ui-forest);border:2px solid var(--ui-line);border-radius:50%;box-shadow:0 3px 0 #315c4326;pointer-events:auto;touch-action:manipulation}
+#local-minimap[hidden]{display:none}
+#local-minimap canvas{display:block;width:100%;height:100%;border-radius:50%}
+/* 设置作为独立44px按钮贴在圆周右下，地图隐藏时恢复原有顶部位置。 */
+#game-frame.has-local-minimap>.hud-resources{top:calc(max(12px,env(safe-area-inset-top)) + var(--local-map-size) - 22px);z-index:19}
+#game-frame.has-local-minimap #settings-button{border-radius:50%}
+#game-frame.has-local-minimap{--hud-card-width:min(248px,calc(100% - var(--local-map-size) - 28px))}
+#game-frame.has-local-minimap>.bottom-info,#game-frame.has-local-minimap:is(.clearing-compact-active)>.bottom-info{max-width:calc(100% - var(--local-map-size) - 28px)}
+#game-frame.has-local-minimap :is(#mainline-hud,#ranger-arrival){max-width:calc(100% - var(--local-map-size) - 28px)}
+/* 同一个载具按钮迁到左下，保留仓库水位、装填圆环和弹药数字。 */
+#game-frame>#vehicle-button{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));top:auto;right:auto;z-index:18;width:66px;height:66px;min-width:66px;min-height:66px;padding:0;border:2px solid var(--ui-line);border-radius:50%;background:var(--ui-paper);color:var(--ui-forest);box-shadow:0 3px 0 #315c4326;touch-action:manipulation}
+#game-frame>#vehicle-button[hidden]{display:none}
+#game-frame>#vehicle-button[aria-pressed=true]{background:var(--ui-sage);border-color:var(--ui-forest)}
+#game-frame>#vehicle-button .vehicle-load-picture{left:5px;top:1px;width:52px;height:52px}
+#game-frame>#vehicle-button .vehicle-load-art{inset:6px}
+#game-frame>#vehicle-button .vehicle-load-art canvas{display:block;width:100%;height:100%}
+#game-frame>#vehicle-button .vehicle-ammo-count{bottom:2px;font-size:10px;line-height:12px}
+#game-frame>#vehicle-button .vehicle-hud-state{right:5px;top:4px}
+#game-frame>#vehicle-button .vehicle-action-icon{position:absolute;bottom:3px;right:-3px;width:22px;height:22px;border:1px solid var(--ui-line);border-radius:50%;background:var(--ui-paper);pointer-events:none}
+#game-frame>#vehicle-button .vehicle-action-icon svg{display:block;width:100%;height:100%;fill:none;stroke:var(--ui-forest);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#game-frame:has(#farm-tools:not([hidden]),#farm-ox-controls:not([hidden]))>#vehicle-button{bottom:calc(170px + env(safe-area-inset-bottom))}
+#game-frame.guardian-active>#vehicle-button{bottom:calc(94px + env(safe-area-inset-bottom))}
+@media(max-width:360px),(max-height:500px){#game-frame{--local-map-size:88px}}

@@ -15,7 +15,7 @@ async page=>{
   for(const node of nodes){
     await page.evaluate(async node=>{
       const g=a.game,{LIVING_REQUESTS}=await import('/src/config/living-world.js');
-      const {livingRequestTarget}=await import('/src/core/living-world.js');
+      const {livingRequestTarget}=await import('/src/core/camp/living-world.js');
       g.state='playing';g.livingBattle=null;g.enemies=[];g.boss=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999;
       g.progress.living.patrolActive=false;g.livingPreview=false;a.environment.livingPreview=false;
       for(const q of Object.values(g.progress.living.requests)){q.stage=-1;q.completed=false;q.battleKills=0;}
@@ -35,7 +35,7 @@ async page=>{
     // 同一节点离开后再次靠近，允许重新打开。
     await page.evaluate(async node=>{
       const spec=(await import('/src/config/living-world.js')).LIVING_REQUESTS.find(q=>q.id===node.id);
-      const target=(await import('/src/core/living-world.js')).livingRequestTarget(a.game,spec);
+      const target=(await import('/src/core/camp/living-world.js')).livingRequestTarget(a.game,spec);
       Object.assign(a.game.player,{x:target.x+200,y:target.y});a.living.renderFrame();
       Object.assign(a.game.player,{x:target.x+30,y:target.y});a.living.renderFrame();
     },node);
@@ -47,7 +47,7 @@ async page=>{
         const g=a.game,count=g.enemies.filter(e=>e.livingRequest==='neighbors-night').length;
         a.living.renderFrame();if(document.getElementById('living-dialog').open)throw Error('战斗中自动弹窗');
         for(const e of [...g.enemies].filter(e=>e.livingRequest==='neighbors-night'))g.hit(e,1e6);
-        (await import('/src/core/living-world.js')).updateLivingWorld(g,0);a.living.renderFrame();return count;
+        (await import('/src/core/camp/living-world.js')).updateLivingWorld(g,0);a.living.renderFrame();return count;
       });
       if(!fought)throw Error('护路没有生成敌人');
       await page.locator('#living-dialog').waitFor({state:'visible'});

@@ -52,7 +52,7 @@ async page=>{
  await page.locator('#cottage-exit').click();await page.waitForTimeout(3500);
  if(!await page.evaluate(()=>!a.game.cottage))throw Error('出门自动弹回室内');
  // 实际访客调度只在镜头外生成，随后走到停车场查看。
- await page.evaluate(async()=>{const g=a.game;g.parkingVisitTimer=0;g.parkingView={x:700,y:700,w:300,h:300};g.random=()=>.7;(await import('/src/core/camp-parking.js')).updateParkingVisitors(g,.05);Object.assign(g.player,{x:410,y:480,vx:0,vy:0});a.renderer.camera.time=null;});
+ await page.evaluate(async()=>{const g=a.game;g.parkingVisitTimer=0;g.parkingView={x:700,y:700,w:300,h:300};g.random=()=>.7;(await import('/src/core/vehicles/camp-parking.js')).updateParkingVisitors(g,.05);Object.assign(g.player,{x:410,y:480,vx:0,vy:0});a.renderer.camera.time=null;});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(300);await page.screenshot({path:'output/playwright/camp-home/visitors.png'});
  if(errors.length)throw Error(errors.join('\n'));
  return {designCriterion:'camp-home-parking',results,errors};

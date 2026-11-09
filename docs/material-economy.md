@@ -64,8 +64,8 @@
 - 保持 `forest-patrol-v1` 与版本号，添加 `materials`、`materialPity`、`materialBosses`、`equipmentGoal`。
 - 旧存档补齐零材料和零保底；已击败过的 Boss 形象按累计胜场迁移，不补发历史材料，也不追扣已解锁装备。
 - 保留金币、木材、武器等级、载具等级、熟练度、改装、波次及死亡回退三波规则。
-- `progression/material-loot.js`：随机掉落、保底、首胜奖励。
-- `progression/equipment-goals.js`：配方查询、缺口、原子扣费和目标。
+- `progression/economy/material-loot.js`：随机掉落、保底、首胜奖励。
+- `progression/workshop/equipment-goals.js`：配方查询、缺口、原子扣费和目标。
 - `ui/equipment-goals.js`：共用需求卡、材料钱包、战场单行追踪与工坊跳转。
 - `rendering/resource-icons.js`：金币、原木束、齿轮零件、晶簇、首领核心的共用矢量图案；工坊输出 SVG，战场缓存 Path2D。钱包与需求卡只显示图标和数量，点击查看名称与来源。
 - `tests/material-economy.test.mjs`：经济事务、迁移、死亡、重复奖励和保底。

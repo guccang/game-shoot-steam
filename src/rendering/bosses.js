@@ -3,7 +3,7 @@ import {drawBossSkillHazard,drawBossSkillCue} from './boss-skills.js';
 import { canvasFont } from './text-style.js';
 import { i18nText } from "../i18n/index.js";
 // 四种森林领主的卡通剪影及技能预警，画布只读取战斗状态。
-import { bossProfile } from '../config/bosses.js';
+import { bossProfile,isHordeGiant } from '../config/bosses.js';
 import { box, oval, poly, outline } from './primitives.js';
 import { applyBossImpact } from './boss-impact.js';
 
@@ -263,7 +263,8 @@ export function drawNewBoss(c, b, time, reduced = false) {
     c.scale(1.05, 0.94);
   }
   if(b.kind!=='dumpling')applyBossImpact(c, b, reduced);
-  if (b.flash && !(b.heavyHit > 0)) c.globalAlpha = 0.68;
+  // 团山用胶体回弹表达命中，连射时维持原色和不透明度。
+  if (b.flash && !(b.heavyHit > 0) && !isHordeGiant(b)) c.globalAlpha = 0.68;
   if(b.kind==='dumpling')drawDumplingLord(c,b,time,reduced);
   else (({ boar, mushroom, owl, turtle })[b.kind] || boar)(c, phase, motion);
   c.restore();

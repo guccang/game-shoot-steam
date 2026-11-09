@@ -2,10 +2,10 @@ import { ORIGINAL_ECONOMY, bindEconomy } from '../src/config/economy.js';
 // 离线经济节奏模拟：复用真实掉落与购买规则，击杀频率是假设，不代替真人战斗测试。
 import { pathToFileURL } from 'node:url';
 import { freshProgress } from '../src/progression/progress.js';
-import { awardMaterials } from '../src/progression/material-loot.js';
-import { transactProgress } from '../src/progression/transactions.js';
-import { transactVehicle } from '../src/progression/vehicles.js';
-import { equipmentRecipe } from '../src/progression/equipment-goals.js';
+import { awardMaterials } from '../src/progression/economy/material-loot.js';
+import { transactProgress } from '../src/progression/economy/transactions.js';
+import { transactVehicle } from '../src/progression/vehicles/vehicles.js';
+import { equipmentRecipe } from '../src/progression/workshop/equipment-goals.js';
 import { BOSSES } from '../src/config/bosses.js';
 import { TREE_REWARD, enemyWoodReward } from '../src/config/rewards.js';
 

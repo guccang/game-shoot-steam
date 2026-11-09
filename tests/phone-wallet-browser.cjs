@@ -38,7 +38,7 @@ async original=>{
   }
   await phone();
   // 使用正式资源入账并等待普通HUD刷新，不手工触发render掩盖余额不同步。
-  await page.evaluate(async()=>{(await import('/src/progression/resource-wallet.js')).creditResource(a.game.progress,'coins',100);a.game.progress.logistics.bagWood+=6;});
+  await page.evaluate(async()=>{(await import('/src/progression/economy/resource-wallet.js')).creditResource(a.game.progress,'coins',100);a.game.progress.logistics.bagWood+=6;});
   await page.waitForFunction(()=>document.querySelector('[data-coins]').textContent==='1065'&&document.querySelector('[data-wood]').textContent==='350');
   if(!(await page.locator('[data-wood]').getAttribute('title')).includes('载具 24'))throw Error('木材库存明细丢失');
   await page.locator('#phone-close').tap();

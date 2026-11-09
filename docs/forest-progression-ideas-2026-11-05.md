@@ -23,8 +23,8 @@
 
 - [营地等级配置](../src/config/camp-level.js)已有六档经验和首购系数。[长期主线](mainline-learning.md)已有高级装备试用。
 - [农矿生产](farm-mine-production.md)已有采矿解锁洒水器、建加工台和便当辅助开掘。[种田与装备经济](farm-equipment-balance.md)已区分农产金币与战斗掉落。
-- [车辆负载配置](../src/config/vehicle-load.js)已有承载、牵引和发动机倍率。[弹药适配](../src/progression/ammo-fit.js)已按实装主炮判断弹种。
-- [野外营地](../src/progression/outdoors.js)和[家园街机](../src/progression/home-arcade.js)均有独立进度，可承接后续内容。
+- [车辆负载配置](../src/config/vehicle-load.js)已有承载、牵引和发动机倍率。[弹药适配](../src/progression/workshop/ammo-fit.js)已按实装主炮判断弹种。
+- [野外营地](../src/progression/activities/outdoors.js)和[家园街机](../src/progression/home/home-arcade.js)均有独立进度，可承接后续内容。
 
 ## 第二轮深化：材料如何改变操作
 

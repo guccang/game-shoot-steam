@@ -13,7 +13,7 @@
 适配读取正式ammoKind、game.weapon()与vehicleWeapon；主炮换装后按当前主炮匹配，不按车型名猜测。背包／载具分流、价格、制作、负重确认、保存与真实弹药消耗不变。无世界锚点／碰撞／动画变更；此任务不用生成位图，沿用SVG入口，PNG精修不适用。
 
 ## 正式入口与验收
-src/ui/ammo-icons.js、src/progression/ammo-fit.js、src/ui/ammo-shop-view.js、src/ui/inventory-icons.js、src/ui/field-equipment.js；designCriterion：ammo-fit-icons。
+src/ui/ammo-icons.js、src/progression/workshop/ammo-fit.js、src/ui/ammo-shop-view.js、src/ui/inventory-icons.js、src/ui/field-equipment.js；designCriterion：ammo-fit-icons。
 通过。
 
 - 4项定向Node检查通过：全部车型推荐与实际主炮弹药一致；重坦换红狼主炮后改为重弹、拆炮后不推荐；手枪与电锯区分；四类图形不同且物品目录与商店共享同一SVG。

@@ -19,7 +19,7 @@ async page=>{
    const g=a.game;g.progress=p;g.reset();g.arrivalScene=null;g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=99999;
    g.progress.living.patrolActive=true;g.wave=round*5+1;g.waveGroupStart=g.wave;g.bossWave=g.wave+4;
    g.waveWarning=0;g.waveRest=g.waveKills=g.waveSpawned=0;g.enemies=[];g.boss=null;g.bossReady=false;
-   if(mounted){Object.assign(g.player,(await import('/src/core/camp-parking.js')).vehicleParkingSite(g,0));if(!g.summonVehicle())throw Error('正式上车失败');}
+   if(mounted){Object.assign(g.player,(await import('/src/core/vehicles/camp-parking.js')).vehicleParkingSite(g,0));if(!g.summonVehicle())throw Error('正式上车失败');}
    Object.assign(g.player,{x:1600,y:400});g.attackTimer=0;
    const phase=(await import('/src/config/living-world.js')).LIVING_PHASES.find(p=>p.id===time);g.progress.living.calendar={day:1,elapsed:phase.start+phase.duration/2};
    const {EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');

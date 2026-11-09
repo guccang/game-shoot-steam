@@ -12,7 +12,7 @@ async page=>{
  for(const mode of ['gun','tank'])for(const width of [1280,390,320])for(const time of ['day','night']){
   await page.setViewportSize({width,height:width===1280?960:844});
   await page.evaluate(async({mode,time})=>{
-   const a=reviewApp,g=a.game,{validateProgress}=await import('/src/progression/progress.js'),{restoreArrival}=await import('/src/core/ranger-arrival.js'),{EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');
+   const a=reviewApp,g=a.game,{validateProgress}=await import('/src/progression/progress.js'),{restoreArrival}=await import('/src/core/camp/ranger-arrival.js'),{EnvironmentTransition}=await import('/src/world/environment.js'),{SceneTone}=await import('/src/rendering/scene-tone.js');
    if(g.reviewUpdate){g.update=g.reviewUpdate;delete g.reviewUpdate;}
    g.progress.vehicleIndex=6;g.progress.weapon=17;g.progress=validateProgress(g.progress);g.reset();restoreArrival(g);g.start();if(mode==='tank')g.summonVehicle();
    g.updateWaves=()=>{};g.enemies=[];g.boss=null;g.waveWarning=0;g.spawnTimer=9999;g.workshopTrial=true;

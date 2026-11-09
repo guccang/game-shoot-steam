@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
-import {skipArrivalJourney} from '../src/core/ranger-arrival.js';
+import {skipArrivalJourney} from '../src/core/camp/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 import {BOSS_CLEARING} from '../src/config/settlements.js';
 import {waveDifficulty} from '../src/config/waves.js';

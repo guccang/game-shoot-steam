@@ -52,3 +52,10 @@
 .ranger-letter-map{margin:12px 0 16px}
 .ranger-letter-map img{display:block;width:100%;height:auto;border-radius:6px}
 .ranger-letter-map figcaption{margin-top:5px;text-align:center;color:var(--ui-muted);font-size:.85em}
+
+/* 移物页沿用手机底板材质，仅补充数量与车辆字段的触控布局。 */
+.inventory-transfer-field{display:grid;gap:6px;margin:12px 0;min-width:0}
+.inventory-transfer-field select,.inventory-transfer-field input{box-sizing:border-box;min-height:44px;width:100%;max-width:100%;font:inherit}
+.inventory-transfer .inventory-detail-icon{width:64px;height:64px;margin:auto}
+.inventory-transfer .logistics-actions{display:flex;gap:8px;flex-wrap:wrap}
+.inventory-transfer .logistics-actions button{flex:1;min-height:44px}

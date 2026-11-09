@@ -1,5 +1,5 @@
 import {prepareBossNode} from './helpers/boss-node.mjs';
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 import {waveDifficulty,clearingWaveBudget} from '../src/config/waves.js';
 import { forestReward } from '../src/config/economy.js';
 // 当前资源职责回归：采树只产木材，怪物与领主只产金币，清缴按正式波次配额分摊。

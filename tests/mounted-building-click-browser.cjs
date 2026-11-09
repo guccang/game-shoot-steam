@@ -56,7 +56,7 @@ async original=>{
   // 远处只铺路线，不远程领取；离开柜台和进入战斗时关闭正在查看的快递。
   await page.evaluate(()=>{a.game.player.y=delivery.y+190;a.renderer.camera.time=null;a.refresh();a.renderer.draw();});
   await page.locator('#farm-delivery-hit').tap();
-  const remote=await page.evaluate(async()=>({mail:!document.getElementById('farm-mail').hidden,nav:(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.game)?.label,active:a.game.vehicle.active}));
+  const remote=await page.evaluate(async()=>({mail:!document.getElementById('farm-mail').hidden,nav:(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.game)?.label,active:a.game.vehicle.active}));
   if(remote.mail||!remote.nav||!remote.active)throw Error('远程点击不正确');
   await page.evaluate(()=>{a.game.player.y=delivery.y+80;a.renderer.camera.time=null;a.refresh();a.renderer.draw();});
   await page.locator('#farm-delivery-hit').tap();await page.locator('#farm-mail').waitFor({state:'visible'});

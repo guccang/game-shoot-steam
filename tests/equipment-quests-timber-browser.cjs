@@ -4,8 +4,8 @@ async page=>{
  await page.reload();await page.locator('#start').click();await page.evaluate(async()=>await(await import('/src/main.js')).application.ready);await page.setViewportSize({width:390,height:844});
  await page.evaluate(async()=>{const a=(await import('/src/main.js')).application,g=a.game;for(const d of document.querySelectorAll('dialog[open]'))d.close();if(g.story)g.leaveStory();g.progress.story.run=null;g.state='playing';g.mainlineTalkDelay=999;
   const def=(await import('/src/config/story-campaign.js')).STORY_CAMPAIGN['equipment-red-wolf'];for(const key of def.requires)g.progress.story.chapters[key].completed=true;
-  const posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,def.id)));if(!g.enterStory(def.id))throw Error('接取失败');g.advanceStoryDialogue(true);g.chooseStoryLoadout(def.loadouts[0].id);g.startStoryStage();
-  (await import('/src/core/story-manager.js')).runStoryActions(g,[{type:'stage',id:'TIMBER',phase:'active'}]);const site=def.world.sites.FIRST;Object.assign(g.player,{x:site.x,y:site.y+65});a.refresh();
+  const posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,def.id)));if(!g.enterStory(def.id))throw Error('接取失败');g.advanceStoryDialogue(true);g.chooseStoryLoadout(def.loadouts[0].id);g.startStoryStage();
+  (await import('/src/core/story/story-manager.js')).runStoryActions(g,[{type:'stage',id:'TIMBER',phase:'active'}]);const site=def.world.sites.FIRST;Object.assign(g.player,{x:site.x,y:site.y+65});a.refresh();
  });
  await page.waitForTimeout(2500);
  const samples=[];for(const time of ['day','night']){

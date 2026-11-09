@@ -16,7 +16,7 @@ HTML/CSS/JS与Canvas2D，正式目标和最近世界镜像；通行使用既有b
 距离跟随当前任务目标实时更新，箭头仍指向目标；光点按通行路径指路。活跃任务移动时显示，进入对白、试射、暂停、切图、暂离/结束后隐藏；抵达交互范围后收起光点，保留距离/抵达提示。不增加自动行走或新玩法开关。
 
 ## 6 验收记录
-结论：通过。designCriterion：`quest-light-path`（visual-contract.json）。正式入口：`src/ui/story-navigation.js`、`src/core/story-route.js`、`src/physics/quest-route.js`、`src/rendering/story-guidance.js#drawStoryGuidance`；取样使用 `src/rendering/visual-review.js#inspectQuestLightPath`。
+结论：通过。designCriterion：`quest-light-path`（visual-contract.json）。正式入口：`src/ui/story-navigation.js`、`src/core/navigation/story-route.js`、`src/physics/quest-route.js`、`src/rendering/story-guidance.js#drawStoryGuidance`；取样使用 `src/rendering/visual-review.js#inspectQuestLightPath`。
 
 - 相关测试：`node --test tests/quest-route.test.mjs tests/story-navigation.test.mjs`，8项通过。验证直线/树干绕行、桥梁与两栖/飞行通行、世界镜像、战斗圈、预算耗尽不穿墙、光点锚定与数量、目标变化及退出清理。未运行全量测试。
 - 实机交互：`tests/quest-light-path-browser.cjs` 在隔离端口4247运行，通过正式游戏键盘移动，距离从234米减到200米；路中加入正式树对象后产生折线路线，逐段扫掠无碰撞。暂停、对白、抵达、目标切换及退出清理通过，无页面异常。

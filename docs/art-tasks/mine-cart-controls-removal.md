@@ -46,4 +46,4 @@ designCriterion：mine-cart-controls-removal，已登记 visual-contract.json。
 
 补充验收结果：通过。新增7项实时驾驶测试，加上直接关联的停车/路口及回收测试，共25项通过。修正行驶提示后复跑7项实时驾驶检查，通过。真实浏览器4个场景（WASD白天320×568、方向键夜晚390×844、摇杆夜晚390×844、提前松开恢复路口设置）均通过，无页面错误；人工查看昼夜驾驶截图，提示条完整可读，角色、车轮、环境和摇杆继续采用正式绘制器。
 本轮无新增图片/画布/缓存，原武器、怪物与身体动作资产未改。新增中文说明沿用原底板正文，无布局修改。测试在入口附近隔离轨网上进行，未引入主动怪物；无需重验无改动的怪物美术。
-证据：主工作区 output/playwright/mine-cart-live-steering/ 下 browser-result.txt、browser-review.json、wasd-day.png、arrows-night.png、joystick-night.png、released-uses-junction.png 与 video/ 连续录制。正式输入入口 src/core/mining.js#cartStep；选路 src/config/mine-rail-routes.js#nextCartExit；designCriterion 继续为 mine-cart-controls-removal。
+证据：主工作区 output/playwright/mine-cart-live-steering/ 下 browser-result.txt、browser-review.json、wasd-day.png、arrows-night.png、joystick-night.png、released-uses-junction.png 与 video/ 连续录制。正式输入入口 src/core/mining/mining.js#cartStep；选路 src/config/mine-rail-routes.js#nextCartExit；designCriterion 继续为 mine-cart-controls-removal。

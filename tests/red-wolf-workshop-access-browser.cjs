@@ -8,7 +8,7 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;
    const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival=null;p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[6]=1;p.keepsakes.items.push('patrol-phone');p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=999999;g.updateWaves=()=>{};g.enemies=[];g.boss=null;g.player.invincible=9999;
-   const room=(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.vehicle;Object.assign(g.player,room.door);if(!(await import('/src/core/cottage.js')).enterWorkshop(g,'vehicle'))throw Error('载具工坊真实入室失败');a.refresh();a.workshop.open('vehicle',6);
+   const room=(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.vehicle;Object.assign(g.player,room.door);if(!(await import('/src/core/home/cottage.js')).enterWorkshop(g,'vehicle'))throw Error('载具工坊真实入室失败');a.refresh();a.workshop.open('vehicle',6);
   });
   await page.locator('[data-legendary-trait]').tap();
   if(!await page.locator('#legendary-primary').isEnabled())throw Error('室内钥匙入口仍被禁用');
@@ -16,7 +16,7 @@ async original=>{
   await page.screenshot({path:'output/playwright/red-wolf-workshop-access/trait-390.png'});
   await page.locator('#legendary-primary').tap();await page.waitForFunction(()=>a.game.state==='playing');
   await page.evaluate(async()=>{
-   const g=a.game,d=(await import('/src/core/world-navigation.js')).worldNavigationDiagnostics(g);if(g.cottage?.kind!=='vehicle'||d.intent?.site.id!=='legendary-workshop-door'||g.progress.legendaryWorkshop.unlocked)throw Error('标记路线误传送或远程解锁');
+   const g=a.game,d=(await import('/src/core/navigation/world-navigation.js')).worldNavigationDiagnostics(g);if(g.cottage?.kind!=='vehicle'||d.intent?.site.id!=='legendary-workshop-door'||g.progress.legendaryWorkshop.unlocked)throw Error('标记路线误传送或远程解锁');
    Object.assign(g.player,(await import('/src/config/workshop-interiors.js')).WORKSHOP_INTERIORS.vehicle.exit,{vx:0,vy:0});
   });
   await page.waitForFunction(()=>!a.game.cottage);
@@ -31,7 +31,7 @@ async original=>{
    await page.waitForTimeout(250);await page.screenshot({path:`output/playwright/red-wolf-workshop-access/world-${time}.png`});
   }
   await page.keyboard.down('ArrowUp');await page.waitForFunction(()=>a.game.player.y<1645);await page.keyboard.up('ArrowUp');await page.waitForFunction(()=>a.game.cottage?.kind==='legendary');
-  await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/core/workshop-display-entry.js')).shopkeeperApproach(a.game.cottage),{vx:0,vy:0});});
+  await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/core/workshop/workshop-display-entry.js')).shopkeeperApproach(a.game.cottage),{vx:0,vy:0});});
   await page.locator('#legendary-dialog').waitFor({state:'visible'});await page.locator('#legendary-primary').tap();
   if(!await page.evaluate(()=>a.game.progress.legendaryWorkshop.unlocked))throw Error('匠人未解锁工坊');
   await page.setViewportSize({width:320,height:568});await page.screenshot({path:'output/playwright/red-wolf-workshop-access/unlocked-320.png'});

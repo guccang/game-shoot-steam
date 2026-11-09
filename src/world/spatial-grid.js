@@ -1,6 +1,30 @@
 // 环形地图的只读空间分桶：只缩小候选集合，精确碰撞仍由原规则判定。
 import { WORLD, wrap } from './coordinates.js';
 
+const forestIndices = new WeakMap();
+
+// 树干坐标固定。砍倒后读实时血量，清场会替换数组，补种会追加；矿井岩壁可原地换批。
+export function treeGrid(trees) {
+  if (trees.mineScene) return new SpatialGrid(trees);
+  let entry = forestIndices.get(trees);
+  if (!entry || entry.length !== trees.length) {
+    const grid = new SpatialGrid(trees);
+    const order = new Map();
+    trees.forEach((tree, index) => order.set(tree, index));
+    entry = { grid, order, length: trees.length };
+    forestIndices.set(trees, entry);
+  }
+  return entry.grid;
+}
+
+// 先缩小森林候选，再按原数组顺序交给可见性或瞄准精查，重叠遮挡和等距目标保持一致。
+export function treesInBounds(trees, x, y, right, bottom, padding) {
+  if (trees.length <= 24 || trees.mineScene) return trees;
+  const nearby = treeGrid(trees).query(x, y, right, bottom, padding);
+  const {order} = forestIndices.get(trees);
+  return nearby.sort((a,b) => order.get(a) - order.get(b));
+}
+
 export class SpatialGrid {
   // 单个实体只放入一个格子；最大半径用于查询扩边，跨边界不会复制实体。
   constructor(items, { cellSize = 96, offsetY = 0 } = {}) {

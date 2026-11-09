@@ -11,7 +11,7 @@ async page=>{
   await page.screenshot({path:`output/playwright/trial-manual-close-countdown/build-${width}-${phase}.png`});
   await page.evaluate(async()=>{const g=a.game,{COTTAGE}=await import('/src/config/cottage.js');g.progress.arrival.phase='complete';Object.assign(g.player,COTTAGE.door);g.cottageEntry=1.5;a.renderer.camera.time=null;a.renderer.draw();a.refresh();});
   await page.screenshot({path:`output/playwright/trial-manual-close-countdown/entry-${width}-${phase}.png`});
-  await page.evaluate(async()=>{const g=a.game,{COTTAGE}=await import('/src/config/cottage.js');if(!(await import('/src/core/cottage.js')).enterCottage(g))throw Error('进入小屋失败');Object.assign(g.player,COTTAGE.exit);g.cottage.exitElapsed=1.5;a.renderer.draw();a.refresh();});
+  await page.evaluate(async()=>{const g=a.game,{COTTAGE}=await import('/src/config/cottage.js');if(!(await import('/src/core/home/cottage.js')).enterCottage(g))throw Error('进入小屋失败');Object.assign(g.player,COTTAGE.exit);g.cottage.exitElapsed=1.5;a.renderer.draw();a.refresh();});
   await page.screenshot({path:`output/playwright/trial-manual-close-countdown/exit-${width}-${phase}.png`});
   await page.locator('#cottage-exit').click();checks.push({width,phase,build:true,entry:true,exit:true});
  }

@@ -14,7 +14,7 @@ async original=>{
    if(await page.locator('#living-dialog').isVisible())await page.locator('#living-close').tap();
    await page.waitForTimeout(40);
    await page.evaluate(async({id,stage,time})=>{
-    const {freshProgress,validateProgress}=await import('/src/progression/progress.js'),{LIVING_REQUESTS,LIVING_PHASES}=await import('/src/config/living-world.js'),core=await import('/src/core/living-world.js');
+    const {freshProgress,validateProgress}=await import('/src/progression/progress.js'),{LIVING_REQUESTS,LIVING_PHASES}=await import('/src/config/living-world.js'),core=await import('/src/core/camp/living-world.js');
     const p=freshProgress();p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);
     p.living.requests[id].stage=stage;p.taskTracking={kind:'living',id};
     if(id==='neighbors-market')for(const key of ['neighbors-lunch','neighbors-night'])Object.assign(p.living.requests[key],{stage:99,completed:true});

@@ -7,9 +7,9 @@ import {validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {WORKSHOP_INTERIORS,interiorLayout} from '../src/config/workshop-interiors.js';
-import {updateCottage,enterCottage,enterWorkshop,leaveCottage} from '../src/core/cottage.js';
-import {vehicleParkingSite} from '../src/core/camp-parking.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {updateCottage,enterCottage,enterWorkshop,leaveCottage} from '../src/core/home/cottage.js';
+import {vehicleParkingSite} from '../src/core/vehicles/camp-parking.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {canonical,WORLD,worldDistance} from '../src/world/coordinates.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 

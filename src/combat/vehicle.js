@@ -2,8 +2,9 @@ import {weaponTerrainTargets} from './terrain-targets.js';
 import {applyVehicleFault} from './vehicle-faults.js';
 import {takeSupplyAmmo,finiteSupply,supplyAmmoCount} from './supply-ammo.js';
 import {ammoKind,vehicleFaults} from '../config/supplies.js';
-import {parkAtPosition} from '../progression/roadside-parking.js';
-import {personalFleet,vehicleRequiresService,vehicleService,markVehicleWreck,syncVehicleService} from '../core/vehicle-repair.js';
+import {parkAtPosition,roadsideParkingRecord} from '../progression/vehicles/roadside-parking.js';
+import {parkingCollisionBarriers} from '../core/vehicles/camp-parking.js';
+import {personalFleet,vehicleRequiresService,vehicleService,markVehicleWreck,syncVehicleService} from '../core/vehicles/vehicle-repair.js';
 import {RED_WOLF_HULL} from '../config/red-wolf-geometry.js';
 import {breakTreesAlong} from './boss-terrain.js';
 import {statisticsSource} from './statistics-source.js';
@@ -25,10 +26,10 @@ import {
   ownsVehicleWeapon,
   vehicleModel,
 } from '../config/vehicles.js';
-import { landVehicle,landingPoint } from './vehicle-landing.js';
+import { landingPoint } from './vehicle-landing.js';
 import { realmWeapon } from '../config/realms.js';
 import { worldDistance, nearest } from '../world/coordinates.js';
-import {attackTargetKnown,rememberCombatTarget} from './perception.js';
+import {attackTargetDistance,attackTargetKnown,rememberCombatTarget} from './perception.js';
 import { hitCenter } from './collision.js';
 import { createRecoil, triggerRecoil, updateRecoil, RECOIL_PROFILES } from './recoil.js';
 import { advancePulse } from './pulse.js';
@@ -66,7 +67,7 @@ export function createVehicle(progress, index = progress.vehicleIndex || 0) {
   };
   // 车体读取实际安装主炮，守护支架沿用临时挂载记录。
   const weaponIndex = progress.vehicleLoadouts?.[index];
-  const weapon = vehicleWeapon(progress, weaponIndex ?? null);
+  const weapon = vehicleWeapon(selected, weaponIndex ?? null);
   const module = weapon ? createModule(weapon, !progress.supplies||!!progress.temporaryGrowth||!ammoKind(weapon), progress) : null;
   const saved=progress.supplies?.vehicleMags[index];
   if(module&&ammoKind(weapon)&&!progress.temporaryGrowth&&saved?.weapon===weaponIndex)Object.assign(module.magazine,{ammo:Math.min(weapon.magazineSize,saved.ammo),remaining:saved.remaining});
@@ -109,19 +110,32 @@ export function summonVehicle(game) {
 }
 
 // 下车保留驾驶员生命与武器；特殊通行载具先找安全步行落点，避免红狼下车后卡进树干。
-export function dismountVehicle(game) {
+export function dismountVehicle(game,{forced=false}={}) {
   // 地下没有地表停车点，避免下车把车辆存到同坐标的森林里。
   if(game.cottage?.kind==='mine'){game.cottage.notice='请沿矿洞坡道开回地表后下战车；地下开路请步行进入。';return false;}
   const parkedPosition={x:game.player.x,y:game.player.y};
   if (!game.vehicle.active) return false;
-  if ((!game.player.arena || game.player.arena.terrain === 'forest') && (game.player.flying || game.player.amphibious || game.player.treePass) && !landVehicle(game)) return false;
+  const record=roadsideParkingRecord(game,parkedPosition);
+  const special=(!game.player.arena||game.player.arena.terrain==='forest')&&(game.player.flying||game.player.amphibious||game.player.treePass);
+  let point=parkedPosition,barriers=game.player.parkingBarriers;
+  if(record||special){
+    // 按下车后的车身碰撞预检；不能先找岸，再把一辆实体车生成在角色脚下。
+    const probe=Object.assign(Object.create(game),{progress:{...game.progress,campParking:{...game.progress.campParking,
+      owned:[...(game.progress.campParking?.owned||[]).filter(r=>r.hull!==record?.hull),...(record?[record]:[])]}}});
+    if(record)barriers=parkingCollisionBarriers(probe);
+    const walking={...game.player,mapId:game.mapId,campProgress:game.progress,parkingBarriers:barriers};
+    const preferred=record?{...walking,x:parkedPosition.x+72,y:parkedPosition.y+20}:walking;
+    point=landingPoint(preferred,game.trees,{origin:parkedPosition,nearbyOnly:!forced,clearance:record?16:12});
+    if(!point){game.onEvent('story-hint',{text:'附近没有安全的下车位置，请先移到开阔岸边。'});return false;}
+  }
+  Object.assign(game.player,point,{parkingBarriers:barriers,vx:0,vy:0,pushX:0,pushY:0,recoilX:0,recoilY:0});
   game.player.flying = false;
   game.player.amphibious = false;
   game.player.treePass = false;
   game.vehicle.active = false;
   if(game.vehicle.index===5)clampRiderSupply(game);
   game.vehicle.targetId = null;
-  if(parkAtPosition(game,parkedPosition)&&worldDistance(game.player,parkedPosition)<60){const side=landingPoint({...game.player,x:parkedPosition.x+72,y:parkedPosition.y+20},game.trees);if(side)Object.assign(game.player,side);}
+  if(record)parkAtPosition(game,parkedPosition);
   game.player.vx=game.player.vy=0;
   // 下车后若仍落在车辆接近范围，须先移开，防止一秒后被自动送回车上。
   game.vehicleBoarding=null;game.vehicleBoardingBlocked={hull:game.vehicle.index,mapId:game.mapId};
@@ -142,7 +156,7 @@ export function absorbVehicleHit(game, amount, source=null) {
   if (!v.hp) {
     const permanent=markVehicleWreck(game,game.player);
     // 报废必须解除驾驶；特殊地形仍优先走既有安全落地流程。
-    if(!dismountVehicle(game)){v.active=false;game.player.flying=false;game.player.amphibious=false;game.player.treePass=false;v.targetId=null;}
+    if(!dismountVehicle(game,{forced:true})){v.active=false;game.player.flying=false;game.player.amphibious=false;game.player.treePass=false;v.targetId=null;}
     // 残骸留在原点，驾驶员移至旁侧安全步行点，画面不会仍像坐在废车上。
     if(permanent&&worldDistance(game.player,vehicleService(game,v.index).position)<70){const side=landingPoint({...game.player,x:game.player.x+72,y:game.player.y+20},game.trees);if(side)Object.assign(game.player,side);}
     game.player.vx=game.player.vy=game.player.pushX=game.player.pushY=0;
@@ -208,10 +222,10 @@ export function vehicleMuzzle(player, vehicle, reduced = false) {
 // 怪物优先、Boss 集火；有效锁定不被更近目标抢占，循环地图按最近镜像瞄准。
 function vehicleTarget(game, weapon) {
   // 运木障碍交给履带处理，炮塔不会反复锁定无法射毁的任务树。
-  const valid = (t) => !t.equipmentObstacle && t.hp > 0 && attackTargetKnown(game,t) && worldDistance(t, game.player) <= weapon.range;
+  const valid = (t) => !t.equipmentObstacle && t.hp > 0 && attackTargetDistance(game,t,weapon.range) <= weapon.range && attackTargetKnown(game,t);
   if (game.boss && valid(game.boss)) return game.boss;
   const enemies = game.enemies.filter(valid),
-    pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : weaponTerrainTargets(game).filter(valid);
+    pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : weaponTerrainTargets(game,true,true).filter(valid);
   return (
     pool.find((t) => t.id === game.vehicle.targetId) ||
     pool.sort(
@@ -234,7 +248,7 @@ export function updateVehicle(game, dt, holdFire = false) {
   // 完全损坏的主炮停止装填和攻击，活动借用装备不使用永久故障。
   if (finiteSupply(game)&&vehicleFaults(game.progress,v.index).gun>=100){v.targetId=null;return;}
   const baseWeapon = realmWeapon(vehicleWeapon((game.loadout || game.progress), v.weaponIndex), game.realm?.buffs),
-    w = baseWeapon && {...baseWeapon,interval:baseWeapon.interval*(1+(finiteSupply(game)?vehicleFaults(game.progress,v.index).gun:0)/100),statisticsSource:statisticsSource(game,baseWeapon,game.statisticsVehicleIndex!==undefined?game.statisticsVehicleIndex:v.index)},
+    w = baseWeapon && {...baseWeapon,vehicleMounted:true,interval:baseWeapon.interval*(1+(finiteSupply(game)?vehicleFaults(game.progress,v.index).gun:0)/100),statisticsSource:statisticsSource(game,baseWeapon,game.statisticsVehicleIndex!==undefined?game.statisticsVehicleIndex:v.index)},
     m = v.module;
   if (!w || !m) {
     v.targetId = null;
@@ -293,7 +307,7 @@ export function updateVehicle(game, dt, holdFire = false) {
   );
   // 潮汐炮由两根独立喷管后坐，避免整座炮架随任一喷口抖动。
   if(w.id!=='hover-tide')triggerRecoil(v.recoil, v.weaponIndex);
-  if(['tank-125','wolf-256','longbranch','honeycomb'].includes(w.id))v.recoil.tankAngle=v.angle;
+  if(w.regional&&w.artBase==='tank-125'||['tank-125','wolf-256','longbranch','honeycomb'].includes(w.id))v.recoil.tankAngle=v.angle;
   m.cooldown += w.interval;
   m.cycle.firing = m.magazine.remaining === 0;
   if (!m.cycle.firing) m.cycle.charge = 0;

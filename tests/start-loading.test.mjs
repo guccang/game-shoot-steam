@@ -1,53 +1,15 @@
-// 过场时钟与真实准备信号的边界检查，避免假完成、重复进入或销毁后回调。
-import test from 'node:test';
-import assert from 'node:assert/strict';
+// 实际任务驱动进度，验证暂停等待、乱序上报、就绪门禁与销毁边界。
+import test from 'node:test';import assert from 'node:assert/strict';
 import {createStartLoading} from '../src/ui/start-loading.js';
-
-// 用受控时钟驱动正式控制器，动画对象只记录取消，不模拟游戏加载。
-function fixture(reduced=false){
-  let now=0,id=0;const frames=new Map(),nodes=new Map(),animations=[];
-  const root={getElementById(key){if(!nodes.has(key))nodes.set(key,{hidden:true,textContent:'',attrs:{},dataset:{},focus(){},setAttribute(k,v){this.attrs[k]=v;},animate(keyframes,options){const a={keyframes,options,cancelled:false,cancel(){this.cancelled=true;}};animations.push(a);return a;}});return nodes.get(key);}};
-  const host={performance:{now:()=>now},matchMedia:()=>({matches:reduced}),requestAnimationFrame(fn){frames.set(++id,fn);return id;},cancelAnimationFrame(key){frames.delete(key);}};
-  const loader=createStartLoading({root,host});
-  // 每次只推进已经排队的一帧，新排队回调留待下一次时钟。
-  function step(time,frameTime=time){now=time;const pending=[...frames.values()];frames.clear();for(const fn of pending)fn(frameTime);}
-  return {loader,step,frames,animations,panel:root.getElementById('start-loading'),bar:root.getElementById('start-loading-progress'),label:root.getElementById('start-loading-percent')};
-}
-
-test('准备很快也展示0、途中、100%，短暂停留后才进入',()=>{
-  const f=fixture();let entered=0;f.loader.start();f.loader.complete(()=>entered++);
-  assert.equal(f.bar.attrs['aria-valuenow'],'0');assert.equal(f.panel.hidden,false);
-  f.step(800);assert.equal(f.bar.attrs['aria-valuenow'],'45');assert.equal(entered,0);
-  f.step(1600);f.step(1860);assert.equal(f.bar.attrs['aria-valuenow'],'100');assert.equal(f.panel.hidden,false);assert.equal(entered,0);
-  f.step(1980);assert.equal(entered,1);assert.equal(f.panel.hidden,true);assert.equal(f.frames.size,0);assert.ok(f.animations.every(a=>a.cancelled));
-});
-test('慢加载超过三秒也不会假报100%或提前进入',()=>{
-  const f=fixture();let entered=0;f.loader.start();f.step(4000);assert.equal(f.bar.attrs['aria-valuenow'],'90');assert.equal(f.panel.dataset.phase,'waiting');
-  f.loader.complete(()=>entered++);f.step(4100);assert.equal(f.panel.dataset.phase,'finishing');f.step(4360);assert.equal(f.bar.attrs['aria-valuenow'],'100');assert.equal(entered,0);
-  f.step(4480);assert.equal(entered,1);
-});
-test('失败停止和销毁均清理动画并取消进入回调',()=>{
-  for(const method of ['stop','dispose']){const f=fixture();let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.step(1600);f.loader[method]();f.step(5000);assert.equal(entered,0);assert.equal(f.panel.hidden,true);assert.equal(f.frames.size,0);assert.ok(f.animations.every(a=>a.cancelled));}
-});
-test('重新开始清掉上一次时序，减少动态仅保留进度填充',()=>{
-  const f=fixture(true);let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.step(800);f.loader.start();
-  assert.equal(f.bar.attrs['aria-valuenow'],'0');assert.equal(f.animations.length,2);assert.equal(f.animations[0].cancelled,true);
-  f.step(3000);assert.equal(entered,0);assert.equal(f.bar.attrs['aria-valuenow'],'90');f.loader.dispose();
-});
-
-// 同帧较晚点击时，回调携带的帧时间可能早于点击时读取的高精度时间。
-test('首个动画帧早于开始时间时，显示和读屏保持0且不提前完成',()=>{
-  for(const reduced of [false,true]){
-    const f=fixture(reduced);let entered=0;f.step(1000);f.loader.start();f.loader.complete(()=>entered++);
-    f.step(1002,984);assert.equal(f.label.textContent,'0%');assert.equal(f.bar.attrs['aria-valuenow'],'0');assert.equal(f.panel.dataset.phase,'moving');assert.equal(entered,0);
-    f.step(1800);assert.equal(f.label.textContent,'45%');
-    f.step(2600);f.step(2860);assert.equal(f.label.textContent,'100%');assert.equal(entered,0);
-    f.step(2980);assert.equal(entered,1);assert.equal(f.panel.hidden,true);
-  }
-});
-// 重开会重新读取点击时钟，同样不能让略早的帧时间显示负数或继承完成态。
-test('重新开始后的较早帧保持0，慢加载仍停在90',()=>{
-  const f=fixture();let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.step(1600);f.step(1700);f.loader.start();
-  f.step(1702,1699.9);assert.equal(f.label.textContent,'0%');assert.equal(f.bar.attrs['aria-valuenow'],'0');
-  f.step(6000);assert.equal(f.label.textContent,'90%');assert.equal(f.panel.dataset.phase,'waiting');assert.equal(entered,0);f.loader.dispose();
-});
+// 受控帧时钟只驱动界面，不伪造后台完成通知。
+function fixture(reduced=false){let now=0,id=0;const frames=new Map(),nodes=new Map();const root={getElementById(key){if(!nodes.has(key))nodes.set(key,{hidden:true,textContent:'',attrs:{},dataset:{},style:{},focus(){},setAttribute(k,v){this.attrs[k]=v;}});return nodes.get(key);}};const host={performance:{now:()=>now},matchMedia:()=>({matches:reduced}),requestAnimationFrame(fn){frames.set(++id,fn);return id;},cancelAnimationFrame(key){frames.delete(key);}};const loader=createStartLoading({root,host});
+ // 只消费已排队帧，模拟真实浏览器回调顺序。
+ function step(time,stamp=time){now=time;const pending=[...frames.values()];frames.clear();for(const fn of pending)fn(stamp);}
+ return {loader,step,frames,panel:root.getElementById('start-loading'),bar:root.getElementById('start-loading-progress'),fill:root.getElementById('start-loading-fill'),road:root.getElementById('start-loading-road')};}
+test('时间流逝不生成假进度，完成量决定数字和填充',()=>{const f=fixture();f.loader.start();f.step(5000);assert.equal(f.bar.attrs['aria-valuenow'],'0');f.loader.update(40);f.step(5060);assert.equal(f.bar.attrs['aria-valuenow'],'20');assert.equal(f.fill.style.transform,'scaleX(0.2)');assert.equal(f.road.style.transform,'translateX(20%)');f.step(5120);assert.equal(f.bar.attrs['aria-valuenow'],'40');f.step(20000);assert.equal(f.bar.attrs['aria-valuenow'],'40');assert.equal(f.panel.dataset.phase,'waiting');});
+test('进度只能递增，非法或100上报不能替代真实就绪',()=>{const f=fixture();f.loader.start();f.loader.update(50);f.step(120);for(const value of [30,-1,NaN,Infinity])f.loader.update(value);f.step(300);assert.equal(f.bar.attrs['aria-valuenow'],'50');f.loader.update(100);f.step(500);assert.equal(f.bar.attrs['aria-valuenow'],'99');assert.equal(f.panel.hidden,false);});
+test('100%后继续驶出，车体连续向右且完全退出才回调一次',()=>{const f=fixture();let entered=0;f.loader.start();f.loader.update(75);f.step(120);f.loader.complete(()=>entered++);f.loader.complete(()=>entered+=10);f.step(240);assert.equal(f.bar.attrs['aria-valuenow'],'100');assert.equal(f.road.style.transform,'translateX(100%)');assert.equal(entered,0);assert.equal(f.panel.hidden,false);f.step(450);assert.equal(f.road.style.transform,'translateX(calc(100% + 56px))');assert.equal(f.fill.style.transform,'scaleX(1)');assert.equal(entered,0);assert.equal(f.panel.hidden,false);f.step(660);assert.equal(f.road.style.transform,'translateX(calc(100% + 112px))');f.step(800);assert.equal(entered,1);assert.equal(f.panel.hidden,true);assert.equal(f.frames.size,0);});
+test('驶出期间取消或重新开始不执行旧回调，减少动态保持静止',()=>{for(const action of ['stop','dispose','start']){const f=fixture();let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.step(120);f.step(330);f.loader[action]();f.step(900);assert.equal(entered,0);if(action==='start')assert.equal(f.bar.attrs['aria-valuenow'],'0');f.loader.dispose();}const f=fixture(true);let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.step(120);assert.equal(f.road.style.transform,'');f.step(240);assert.equal(entered,1);});
+test('失败停止和销毁取消入场，迟到的进度通知无效',()=>{for(const method of ['stop','dispose']){const f=fixture();let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.loader[method]();f.loader.update(80);f.step(1000);assert.equal(entered,0);assert.equal(f.frames.size,0);assert.equal(f.panel.hidden,true);}});
+test('重新进入从0开始且不继承旧回调，减少动态不移动车体',()=>{const f=fixture(true);let entered=0;f.loader.start();f.loader.complete(()=>entered++);f.step(60);f.loader.start();assert.equal(f.bar.attrs['aria-valuenow'],'0');f.loader.update(60);f.step(180);assert.equal(f.bar.attrs['aria-valuenow'],'60');assert.equal(f.road.style.transform,'');assert.equal(entered,0);f.loader.dispose();});
+test('首帧时间略早于点击时钟，不显示负数也不提前完成',()=>{const f=fixture();f.step(1000);f.loader.start();f.loader.update(30);f.step(1002,984);assert.equal(f.bar.attrs['aria-valuenow'],'0');f.step(1120);assert.equal(f.bar.attrs['aria-valuenow'],'30');});

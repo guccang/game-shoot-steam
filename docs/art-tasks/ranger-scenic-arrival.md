@@ -18,7 +18,7 @@
 - 电动车约 66×94 世界单位；脚底/车轮接地点不变。公交站约 120×115，锚点为棚脚；工坊沿用 130×120。
 - 分层为地面影、后轮后座、乘客、司机与独立手、前罩前轮；车库内以门洞裁切和前框遮挡。
 - 程序绘制直接透明合成，沿用场景昼夜色调；不新建全屏纹理或昼夜副本。公交站纯装饰，路线共享正式道路和地形通行检查。
-- 运行路径 src/config/ranger-arrival.js、src/core/ranger-arrival.js、src/rendering/scooter.js、src/rendering/ranger-arrival.js；中文气泡由 UI 层显示。
+- 运行路径 src/config/ranger-arrival.js、src/core/camp/ranger-arrival.js、src/rendering/scooter.js、src/rendering/ranger-arrival.js；中文气泡由 UI 层显示。
 - 新增位图/解码预算为 0；单个随世界锚点投影的 DOM 气泡和任务卡，沿用原图集与缓存预算。
 
 ## 4 动画任务补充

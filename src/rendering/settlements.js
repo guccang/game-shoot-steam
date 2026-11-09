@@ -1,10 +1,11 @@
+import {campBoundary} from '../world/camp-boundary.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { SETTLEMENT_FENCES } from '../world/settlements.js';
-import { worldDistance } from '../world/coordinates.js';
+import { nearest } from '../world/coordinates.js';
 import { box, oval, poly } from './primitives.js';
 import { canvasFont } from './text-style.js';
-import { clearingSite } from '../progression/clearing-site.js';
+import { clearingSite } from '../progression/story/clearing-site.js';
 
 // 木护栏与双扇门参与正式脚底排序，独立门叶绕门柱开启。
 
@@ -13,7 +14,7 @@ import { clearingSite } from '../progression/clearing-site.js';
 export function settlementObjects(game) {
   return game.mapId === 'forest' && !game.realm
     ? [
-        ...SETTLEMENT_FENCES,
+        ...(game.campDefense||game.story?SETTLEMENT_FENCES:campBoundary(game.progress).objects),
         ...(game.progress.living.patrolActive
           ? [{ ...clearingSite(game.progress), type: 'story-prop', kind: 'route', label: '清缴场' }]
           : []),
@@ -111,16 +112,23 @@ export function drawSettlement(c, item, game, night) {
   c.stroke();
   c.restore();
   if (item.type === 'settlement-gate') {
-    const open = Math.max(0, Math.min(1, (180 - worldDistance(game.player, item)) / 85)),
-      angle = open * Math.PI * 0.47,
+    // 宽门按到门洞线段的距离开启，拖挂尚在门口时保持敞开。
+    const tail=game.progress?.logistics?.tow&&game.progress.vehicleService?.[game.progress.logistics.tow.target]?.position;
+    const distance=Math.min(...[game.player,tail].filter(Boolean).map(body=>{const p=nearest(body,item),along=item.horizontal?Math.abs(p.x-item.x):Math.abs(p.y-item.y),across=item.horizontal?Math.abs(p.y-item.y):Math.abs(p.x-item.x);return Math.hypot(Math.max(0,along-half+20),across);}));
+    const open = Math.max(0, Math.min(1, (320 - distance) / 150)),
+      angle = open * Math.PI * 0.49,
       span = half - 13;
     for (let i = 0; i < 2; i++) {
       const a = ends[i],
         sign = i === 0 ? 1 : -1,
+        // 宽门拆为同源两段折叠木叶，开门不再让整根长门叶扫进院内屋顶。
+        fold = item.horizontal
+          ? { x: a.x + sign * Math.cos(angle) * span/2, y: a.y - Math.sin(angle) * span/2 }
+          : { x: a.x + Math.sin(angle) * span/2, y: a.y + sign * Math.cos(angle) * span/2 },
         b = item.horizontal
-          ? { x: a.x + sign * Math.cos(angle) * span, y: a.y - Math.sin(angle) * span }
-          : { x: a.x + Math.sin(angle) * span, y: a.y + sign * Math.cos(angle) * span };
-      gateLeaf(c, a, b, palette);
+          ? { x: a.x + sign * Math.cos(angle) * span, y: a.y }
+          : { x: a.x, y: a.y + sign * Math.cos(angle) * span };
+      gateLeaf(c, a, fold, palette);gateLeaf(c, fold, b, palette);
     }
   } else {
     timber(c, ends[0], ends[1], 13, 7, palette);

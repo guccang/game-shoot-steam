@@ -9,7 +9,7 @@ async page=>{
   const before=await t.evaluate(async activity=>{
    const {freshProgress,validateProgress}=await import('/src/progression/progress.js'),p=freshProgress();p.arrival={version:2,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.mainline.seen.trial=1;p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);
    const g=a.game;g.story=null;g.storyForest=null;g.realm=null;g.progress=validateProgress(p);g.reset();g.state='playing';g.mainlineSpeech=null;
-   if(activity==='story'){const {STORY_ID}=await import('/src/config/story.js'),posts=await import('/src/core/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,STORY_ID)));if(!g.enterStory())throw Error('剧情前置失败');}
+   if(activity==='story'){const {STORY_ID}=await import('/src/config/story.js'),posts=await import('/src/core/story/story-posts.js');Object.assign(g.player,posts.storyPostApproach(posts.storyPostForChapter(g,STORY_ID)));if(!g.enterStory())throw Error('剧情前置失败');}
    if(activity==='fire'){if(!g.requestFireRescue()||!g.startFireRescue()||!g.fireTransit)throw Error('消防转场前置失败');}
    // 冻结底层正式现场，已完成试驾引导；独立演练仍由真实战斗帧循环推进。
    g.update=()=>{};for(const d of document.querySelectorAll('dialog[open]'))d.close();a.workshop.open('vehicle',6);a.refresh();

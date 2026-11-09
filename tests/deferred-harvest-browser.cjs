@@ -6,7 +6,7 @@ async page=>{
  await page.evaluate(async()=>{
   window.guideApp=(await import('/src/main.js')).application;await guideApp.ready;
   const {freshRangerProgress}=await import('/src/progression/progress.js'),{MAINLINE_SITES}=await import('/src/config/mainline.js');
-  const p=freshRangerProgress();(await import('/src/progression/farm.js')).grantFarmSeeds(p.farm,0,1);p.arrival=null;p.coins=0;p.wood=0;p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice(0,(await import('/src/config/mainline.js')).MAINLINE_IDS.indexOf('first-farm'));p.restoration.repaired.push('clearing');p.mainline.phase='doing';p.farm.delivery.nextAt=Date.now()+3600000;
+  const p=freshRangerProgress();(await import('/src/progression/farming/farm.js')).grantFarmSeeds(p.farm,0,1);p.arrival=null;p.coins=0;p.wood=0;p.mainline.completed=(await import('/src/config/mainline.js')).MAINLINE_IDS.slice(0,(await import('/src/config/mainline.js')).MAINLINE_IDS.indexOf('first-farm'));p.restoration.repaired.push('clearing');p.mainline.phase='doing';p.farm.delivery.nextAt=Date.now()+3600000;
   const g=guideApp.game;/* 单项农活夹具不额外放置示范田。 */p.farm.wildMaps=['forest','jiuzhaigou'];g.progress=p;g.mapId='forest';g.reset();g.state='playing';g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=999999;g.enemies=[];
   Object.assign(g.player,MAINLINE_SITES.camp,{vx:0,vy:0,invincible:99999});for(const d of document.querySelectorAll('dialog[open]'))d.close();guideApp.renderer.camera.time=null;guideApp.refresh();
  });await page.waitForTimeout(500);
@@ -45,7 +45,7 @@ async page=>{
  await page.waitForTimeout(150);
  if(!await page.evaluate(async()=>(await import('/src/config/mainline.js')).currentMainlineTask(guideApp.game.progress.mainline).id==='first-patrol'))throw Error('成熟抢占了巡护');
  // 此处只注入一波完成事件来验收交接调度，不冒充战斗通关。
- await page.evaluate(async()=>{const g=guideApp.game;Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);(await import('/src/core/mainline-manager.js')).markMainline(g,'wave');g.mainlineTalkDelay=0;guideApp.renderer.camera.time=null;guideApp.refresh();});
+ await page.evaluate(async()=>{const g=guideApp.game;Object.assign(g.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.camp);(await import('/src/core/story/mainline-manager.js')).markMainline(g,'wave');g.mainlineTalkDelay=0;guideApp.renderer.camera.time=null;guideApp.refresh();});
  await page.locator('#mainline-speech-skip').waitFor({state:'visible'});await page.locator('#mainline-speech-skip').click();await page.locator('#task-reward-close').click();
  await page.waitForFunction(()=>guideApp.game.progress.mainline.currentId==='pistol-upgrade');
  await page.evaluate(()=>{guideApp.game.mainlineSpeech=null;guideApp.game.mainlineTalkDelay=99999;});

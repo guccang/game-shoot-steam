@@ -50,7 +50,7 @@ export class FireflyField {
       point.homeY = point.y;
       point.driftX=30;point.driftY=23;
       if(i>=SOLITARY_FIREFLIES-shoreCount) {
-        const habitat=habitats[(i-SOLITARY_FIREFLIES+shoreCount)%habitats.length];
+        const habitat=habitats[Math.floor((i-SOLITARY_FIREFLIES+shoreCount)*habitats.length/shoreCount)];
         point.habitat=habitat.id;
         point.homeX=habitat.x+(point.x/WORLD.width-.5)*42;
         point.homeY=habitat.y+(point.y/WORLD.height-.5)*30;

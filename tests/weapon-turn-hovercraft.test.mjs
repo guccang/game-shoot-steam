@@ -8,7 +8,7 @@ import { effectiveWeapon } from '../src/config/weapon-mods.js';
 import { vehicleWeapon } from '../src/config/vehicles.js';
 import { updateVehicle } from '../src/combat/vehicle.js';
 import { advanceReload,consumeRound } from '../src/combat/magazine.js';
-import { captureRealmVehicles,restoreRealmVehicles } from '../src/core/realm-vehicles.js';
+import { captureRealmVehicles,restoreRealmVehicles } from '../src/core/realms/realm-vehicles.js';
 import { shotSolution } from '../src/combat/aim.js';
 
 // 隔离地图波次，所有目标保持不动，用正式 Game、武器和碰撞状态。

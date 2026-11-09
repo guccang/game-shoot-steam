@@ -1,4 +1,4 @@
-import {campPurchasePrice} from '../src/progression/camp-level.js';
+import {campPurchasePrice} from '../src/progression/camp/camp-level.js';
 import {weaponDamage} from '../src/config/weapon-mods.js';
 // 角色招募、旧档扩容、独立成长和逐帧毛色的回归验证。
 import test from 'node:test';

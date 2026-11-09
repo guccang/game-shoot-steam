@@ -32,12 +32,12 @@ async original=>{
   for(const time of ['day','night']){
    await page.evaluate(()=>a.game.state='playing');await phase(time);
    await page.evaluate(async()=>{
-    const c=await import('/src/core/farm-production.js'),g=a.game;g.productionSpray=null;g.livingWeather='sun';for(const p of g.progress.farm.plots){p.watered=false;p.sprinklerWatered=false;p.plantedAt=p.crop===null?0:Date.now();p.readyAt=p.crop===null?0:Date.now()+120000;}
+    const c=await import('/src/core/farming/farm-production.js'),g=a.game;g.productionSpray=null;g.livingWeather='sun';for(const p of g.progress.farm.plots){p.watered=false;p.sprinklerWatered=false;p.plantedAt=p.crop===null?0:Date.now();p.readyAt=p.crop===null?0:Date.now()+120000;}
     c.updateProduction(g);if(!g.productionSpray?.devices.length||g.progress.farm.plots.some(p=>p.watered))throw Error('扫描未开始或提前浇湿');
     // 连续游玩已录像；固定模拟时刻采样正式绘制器，避免暂停底板遮住喷头。
     window.simulationUpdate??=g.update;g.update=()=>{};g.state='playing';Object.assign(g.player,{x:site.x-10,y:site.y+80});g.enemies=[];g.progress.campParking.owned=[{hull:0,spot:null,mapId:'forest',x:site.x+100,y:site.y+90,hp:1,ammo:0}];g.spawnEnemy(0,150,{x:site.x+125,y:site.y-90},{ambient:true});a.renderer.camera.time=null;
    });
-   for(const t of [.25,.65,1.1,1.4]){await page.evaluate(async t=>{const g=a.game,c=await import('/src/core/farm-production.js'),end=g.productionSpray.devices[0].time+t;while(g.time<end){g.time=Math.min(end,g.time+.02);c.updateProduction(g);}a.refresh();},t);await page.waitForTimeout(120);await shot('spray-'+time+'-'+t);}
+   for(const t of [.25,.65,1.1,1.4]){await page.evaluate(async t=>{const g=a.game,c=await import('/src/core/farming/farm-production.js'),end=g.productionSpray.devices[0].time+t;while(g.time<end){g.time=Math.min(end,g.time+.02);c.updateProduction(g);}a.refresh();},t);await page.waitForTimeout(120);await shot('spray-'+time+'-'+t);}
    const frames=reviews.filter(r=>r.name.startsWith('spray-'+time+'-')),counts=frames.map(r=>r.plots.slice(0,24).filter(p=>p.watered).length);
    if(counts[0]!==4||counts.at(-1)!==24||new Set(counts).size<3||!frames.some(r=>r.plots.some(p=>p.wetness>0&&p.wetness<1)))throw Error('土壤未随扫描逐格渐湿：'+counts);
 

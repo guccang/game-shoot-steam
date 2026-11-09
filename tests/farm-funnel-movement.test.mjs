@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {farmWorking,setFarmTool} from '../src/core/farm.js';
+import {farmWorking,setFarmTool} from '../src/core/farming/farm.js';
 
 // 关闭额外刷怪和剧情演出，保留移动、农活、伙伴飞控和真实弹道。
 function scene(index){

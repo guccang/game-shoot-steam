@@ -1,10 +1,10 @@
 // 操作指引专项：状态解释、配置绑定、真实进度与草稿隔离。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workshopGuideCue} from '../src/core/workshop-guide.js';
+import {workshopGuideCue} from '../src/core/workshop/workshop-guide.js';
 import {MAINLINE_OPERATIONS} from '../src/config/mainline-operations.js';
 import {MAINLINE_TASKS,MAINLINE_IDS} from '../src/config/mainline.js';
-import {mainlineOperation,mainlineAction} from '../src/core/mainline-manager.js';
+import {mainlineOperation,mainlineAction} from '../src/core/story/mainline-manager.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 const operation={type:'upgrade',kind:'weapons',index:0,part:'capacity'};

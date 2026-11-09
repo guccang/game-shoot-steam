@@ -1,4 +1,4 @@
-import {clearingSite} from '../src/progression/clearing-site.js';
+import {clearingSite} from '../src/progression/story/clearing-site.js';
 // 聚落、清缴、远行和按需导航专项；不运行无关装备与数值测试。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,13 +7,13 @@ import {freshRangerProgress} from '../src/progression/progress.js';
 import {BOSS_CLEARING,SETTLEMENTS} from '../src/config/settlements.js';
 import {settlementAt,settlementBlocked} from '../src/world/settlements.js';
 import {livingSafePoint,livingBoltBlocked} from '../src/world/living-spaces.js';
-import {livingWaveAllowed} from '../src/core/living-safety.js';
-import {setLivingPatrol} from '../src/core/living-world.js';
-import {updateEncounters} from '../src/core/encounter-manager.js';
-import {updateBossSupport} from '../src/core/boss-reinforcements.js';
-import {worldNavigationObjective,requestMainlineNavigation} from '../src/core/world-navigation.js';
+import {livingWaveAllowed} from '../src/core/camp/living-safety.js';
+import {setLivingPatrol} from '../src/core/camp/living-world.js';
+import {updateEncounters} from '../src/core/battle/encounter-manager.js';
+import {updateBossSupport} from '../src/core/battle/boss-reinforcements.js';
+import {worldNavigationObjective,requestMainlineNavigation} from '../src/core/navigation/world-navigation.js';
 import {MAINLINE_TASKS,MAINLINE_SITES} from '../src/config/mainline.js';
-import {skipArrivalJourney,arrivalRoute} from '../src/core/ranger-arrival.js';
+import {skipArrivalJourney,arrivalRoute} from '../src/core/camp/ranger-arrival.js';
 import {RANGER,RANGER_STAGES} from '../src/config/ranger-arrival.js';
 import {STORY_CAMPAIGN} from '../src/config/story-campaign.js';
 import {storyTrees} from '../src/world/story-sites.js';

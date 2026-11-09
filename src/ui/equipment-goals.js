@@ -2,16 +2,16 @@ import {ERA_RESOURCES,eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 import {createChallengeCatalog} from './challenge-catalog.js';
 import { challengeLevelMarkup } from './challenge-feedback.js';
 import {combatHudVisible} from './task-combat-layout.js';
-import {clearingCombatActive} from '../core/living-safety.js';
+import {clearingCombatActive} from '../core/camp/living-safety.js';
 import {compactResource} from './resource-number.js';
 import { i18nText, i18nHtml } from "../i18n/index.js";
 // 工坊需求、材料背包和战场追踪共用展示模块，不自行扣除材料。
 import { MATERIALS, MATERIAL_KEYS } from '../config/materials.js';
 import { eraCraftReason,equipmentRecipe, equipmentRequirements, canPurchaseEquipment, trackEquipment,
-  ownsEquipment } from '../progression/equipment-goals.js';
+  ownsEquipment } from '../progression/workshop/equipment-goals.js';
 import { createEventScope } from '../platform/events.js';
-import {storyEquipmentSource} from '../progression/story-rewards.js';
-import {equipmentQuestReason} from '../progression/equipment-quests.js';
+import {storyEquipmentSource} from '../progression/story/story-rewards.js';
+import {equipmentQuestReason} from '../progression/workshop/equipment-quests.js';
 import {mainlinePurchaseReason} from '../config/mainline-gates.js';
 import { resourceIcon, resourceButton, resourceName } from '../rendering/resource-icons.js';
 
@@ -70,7 +70,7 @@ export function createEquipmentGoals({ game, root, dialogs, onChange }) {
     pill.hidden = !!game.campDefense || !active || !!game.realm || combatHudVisible(root)&&!clearing || !!game.story || game.state!=='playing' || !!root.querySelector('dialog[open]');
     if(pill.classList.contains('clearing-material-goal')!==clearing)pill.classList.toggle('clearing-material-goal',clearing);
     const blocker=goal&&(eraCraftReason(p,goal.kind,goal.index)||equipmentQuestReason(p,goal.kind,goal.index));
-    const key = JSON.stringify([p.materials, blocker, goal, p.coins, p.wood, p.bosses, p.campLevel?.xp, !!owned, !!game.realm, clearing]);
+    const key = JSON.stringify([p.materials, blocker, goal, goal&&equipmentRequirements(p,goal.kind,goal.index), p.coins, p.wood, p.bosses, p.campLevel?.xp, !!owned, !!game.realm, clearing]);
     if (key === signature) return;
     signature = key;
     for (const node of root.querySelectorAll('[data-material-wallet]')) {

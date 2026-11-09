@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {pickupSprinkler,carriedSprinkler,productionPlacement,placeProduction,updateProduction,removeProduction} from '../src/core/farm-production.js';
+import {pickupSprinkler,carriedSprinkler,productionPlacement,placeProduction,updateProduction,removeProduction} from '../src/core/farming/farm-production.js';
 import {productionObjects} from '../src/rendering/farm-production.js';
 // 清除战斗与教学阻塞，在真实地形中找到两处可用搬移位置。
 function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.production.returned=true;p.production.minedOre=12;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.trees=[];g.enemies=[];g.mainlineSpeech=null;

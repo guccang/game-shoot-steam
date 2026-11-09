@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress} from '../src/progression/progress.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {enterCottage,updateCottage,sleepInCottage,cottageBlocked} from '../src/core/cottage.js';
+import {enterCottage,updateCottage,sleepInCottage,cottageBlocked} from '../src/core/home/cottage.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
-import {nearbyInteraction} from '../src/core/nearby-interaction.js';
+import {nearbyInteraction} from '../src/core/navigation/nearby-interaction.js';
 // 从正式房门进入，床边使用可通行脚底位置。
 function scene(){const p=freshProgress();p.restoration.repaired=['cottage'];const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;Object.assign(g.player,COTTAGE.door);assert.ok(enterCottage(g));Object.assign(g.player,COTTAGE.bed);g.player.hp=20;g.livingPersist=()=>true;return g;}
 // 固定步长严格累计；不以一次超长帧补满等待时间。

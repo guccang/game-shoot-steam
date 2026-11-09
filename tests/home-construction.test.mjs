@@ -8,13 +8,13 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {COTTAGE,COTTAGE_STAIRS} from '../src/config/cottage.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
 import {HOME_BUILD_PRICES,HOME_DIRECTIONS,HOME_ELEVATOR,HOME_BALCONY,homeElevatorPlan,hasHomeElevator,homeStairRoutes} from '../src/config/home-construction.js';
-import {buildHome,travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from '../src/core/home-construction.js';
-import {enterWorkshop,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/cottage.js';
-import {buyDecor,moveDecor} from '../src/core/home-decor.js';
-import {accessibleWeaponRack} from '../src/core/weapon-storage.js';
+import {buildHome,travelHomeFloor,enterHomeBalcony,leaveHomeBalcony} from '../src/core/home/home-construction.js';
+import {enterWorkshop,updateCottage,cottageBlocked,leaveCottage,sleepInCottage} from '../src/core/home/cottage.js';
+import {buyDecor,moveDecor} from '../src/core/home/home-decor.js';
+import {accessibleWeaponRack} from '../src/core/inventory/weapon-storage.js';
 import {homeBalconyView,balconySceneGame,balconyProject,balconyObjectVisible,balconyWorldTransform,balconyUpright} from '../src/rendering/home-balcony.js';
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
-import {normalizeHome} from '../src/progression/home-decor.js';
+import {normalizeHome} from '../src/progression/home/home-decor.js';
 import {worldDistance} from '../src/world/coordinates.js';
 import {WORLD} from '../src/world/coordinates.js';
 import {RANGER_COTTAGE} from '../src/world/workshop.js';
@@ -23,9 +23,33 @@ import {planQuestRoute} from '../src/physics/quest-route.js';
 import {blocked} from '../src/physics/motion.js';
 
 // 门口实际进入公司，保留真实树、碰撞、扣款和快照流程。
-function setup(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.coins=100000;p.wood=10000;const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;Object.assign(g.player,WORKSHOP_INTERIORS.construction.door);assert.ok(enterWorkshop(g,'construction'));g.livingPersist=()=>true;return g;}
+function setup(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.coins=100000;p.wood=10000;Object.assign(p.materials,{stone:1000,iron:1000,copper:1000});const g=new Game(p,()=>.5);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;Object.assign(g.player,WORKSHOP_INTERIORS.construction.door);assert.ok(enterWorkshop(g,'construction'));g.livingPersist=()=>true;return g;}
 // 等待使用正式固定步长，阳台触发和解除闩锁均经过控制器。
 function tick(g,n,input={x:0,y:0}){for(let i=0;i<n;i++)updateCottage(g,.05,input);}
+
+// 真实事务验证矿物身份、精确扣款、旧资产和保存失败，不以报价快照替代消费结果。
+test('加盖与电梯准确扣仓库成品，原石和原矿不能抵扣，拆除不退矿',()=>{
+ const g=setup();Object.assign(g.progress.materials,{stone:80,iron:20,copper:4});g.progress.mining.ore=1000;g.progress.industry.raw.iron=1000;
+ assert.ok(buildHome(g,'floor').ok);assert.equal(g.progress.materials.stone,0);assert.equal(g.progress.materials.iron,12);
+ assert.ok(buildHome(g,'elevator').ok);assert.equal(g.progress.materials.iron,0);assert.equal(g.progress.materials.copper,0);
+ assert.equal(g.progress.mining.ore,1000);assert.equal(g.progress.industry.raw.iron,1000);
+ const reloaded=validateProgress(g.progress);assert.deepEqual(reloaded.materials,g.progress.materials);assert.deepEqual(reloaded.homeDecor,g.progress.homeDecor);
+ const before=structuredClone(g.progress);const result=buildHome(g,'floor');assert.equal(result.ok,false);assert.match(result.message,/石块 80、铁块 8/);assert.deepEqual(g.progress,before);
+ assert.ok(buildHome(g,'remove-elevator').ok);assert.deepEqual(g.progress.materials,before.materials);
+ assert.equal(buildHome(g,'elevator').ok,false);assert.deepEqual(g.progress.materials,before.materials);
+});
+test('每种矿物单独不足及保存异常均不扣任何费用',()=>{
+ for(const [kind,keys] of [['floor',['stone','iron']],['elevator',['iron','copper']]]){
+  for(const key of keys){const g=setup();g.progress.materials[key]=HOME_BUILD_PRICES[kind][key]-1;const before=structuredClone(g.progress);assert.equal(buildHome(g,kind).ok,false);assert.deepEqual(g.progress,before);}
+  for(const persist of [()=>false,()=>{throw Error('保存中断');}]){const g=setup();g.livingPersist=persist;const before=structuredClone(g.progress);assert.equal(buildHome(g,kind).ok,false);assert.deepEqual(g.progress,before);}
+ }
+});
+test('旧档缺矿物字段不补扣已建设施，地下室与阳台仍只收币木',()=>{
+ const g=setup();g.progress.homeDecor.floors=4;g.progress.homeDecor.elevators=[0];delete g.progress.materials.stone;delete g.progress.materials.iron;delete g.progress.materials.copper;
+ g.progress=validateProgress(g.progress);assert.equal(g.progress.homeDecor.floors,4);assert.deepEqual(g.progress.homeDecor.elevators,[0]);
+ assert.equal(buildHome(g,'floor').ok,false);assert.equal(buildHome(g,'elevator').ok,false);assert.ok(buildHome(g,'basement').ok);assert.ok(buildHome(g,'balcony').ok);
+ assert.equal(g.progress.materials.stone,0);assert.equal(g.progress.materials.iron,0);assert.equal(g.progress.materials.copper,0);
+});
 
 test('施工仅限公司，扣料一次，设施重复购买不扣款，重载保留',()=>{
  const g=setup(),before={coins:g.progress.coins,wood:g.progress.wood};

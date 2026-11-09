@@ -10,7 +10,7 @@ async original=>{
    const g=a.game;g.progress=p;g.mapId='forest';g.reset();g.state='playing';g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=999999;g.fireClock=999999;g.wildFarmRetryAt=0;
    let seed=17;g.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
    for(const d of document.querySelectorAll('dialog[open]'))d.close();
-   (await import('/src/core/wild-farm.js')).ensureWildFarms(g);
+   (await import('/src/core/farming/wild-farm.js')).ensureWildFarms(g);
    window.plotId=g.progress.farm.plots[0].id;window.site={...g.progress.farm.plots[0]};
    const {farmApproach}=await import('/src/world/farm-land.js');Object.assign(g.player,farmApproach(g,site),{vx:0,vy:0,invincible:0});g.enemies=[];
    a.renderer.camera.time=null;await (await import('/src/rendering/farm.js')).loadFarmArt();
@@ -40,7 +40,7 @@ async original=>{
   // 两图三种尺寸都采样正式方田，检查完整田埂、邻接环境和昼夜根部遮挡。
   await page.setViewportSize({width:390,height:844});
   for(const mapId of ['forest','jiuzhaigou']){
-   await page.evaluate(async mapId=>{const g=a.game;g.progress.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);g.boss=null;if(g.mapId!==mapId&&!g.switchMap(mapId))throw Error('切图失败');g.wildFarmRetryAt=0;(await import('/src/core/wild-farm.js')).ensureWildFarms(g);},mapId);
+   await page.evaluate(async mapId=>{const g=a.game;g.progress.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);g.boss=null;if(g.mapId!==mapId&&!g.switchMap(mapId))throw Error('切图失败');g.wildFarmRetryAt=0;(await import('/src/core/farming/wild-farm.js')).ensureWildFarms(g);},mapId);
    for(let index=0;index<3;index++){
     await page.evaluate(async index=>{const g=a.game,field=(await import('/src/config/wild-farm.js')).WILD_FARM_SITES[g.mapId][index];Object.assign(g.player,{x:field.x+(field.size-1)*28,y:field.y+(field.size-1)*52+62,vx:0,vy:0,invincible:0});g.enemies=[];a.renderer.camera.time=null;},index);
     for(const time of ['day','night']){await page.evaluate(time=>light(time),time);await page.waitForTimeout(400);await page.screenshot({path:`output/playwright/wild-farm/${mapId}-${index+2}x${index+2}-${time}.png`});}

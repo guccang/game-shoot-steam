@@ -38,7 +38,7 @@ async (page) => {
   await page.evaluate(async()=>{
     const {drawCat}=await import('/src/rendering/characters.js');
     const {HEROES}=await import('/src/config/heroes.js');
-    const {createCatMotion,updateCatMotion}=await import('/src/core/cat-motion.js');
+    const {createCatMotion,updateCatMotion}=await import('/src/core/battle/cat-motion.js');
     const {createRecoil,triggerRecoil,updateRecoil}=await import('/src/combat/recoil.js');
     const canvas=document.createElement('canvas');canvas.id='shape-motion-review';canvas.width=900;canvas.height=560;
     canvas.style.cssText='position:fixed;inset:0;z-index:99999;width:900px;height:560px';document.body.append(canvas);

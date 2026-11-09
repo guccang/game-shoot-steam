@@ -1,4 +1,21 @@
+import {REGIONAL_CAMPS as REVIEW_REGIONAL_CAMPS} from '../config/regional-camps.js';
+import {regionalCampObjects as reviewRegionalObjects} from './regional-camps.js';
+import {NATURAL_TERRAIN as EARTH_TERRAIN} from '../world/natural-terrain.js';
+import {EXTRA_TREE_SPECIES} from '../config/earth-biomes.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
+import {TERRAIN_COVERAGE,TERRAIN_LAYOUT_VERSION} from '../config/terrain-coverage.js';
+import {forestCoverAt} from '../world/forest-cover.js';
+// 移动裁剪验收采样正式镜头、插值和小地图，不替代真实昼夜移动与像素复核。
+export function inspectMovementRenderCulling(renderer,root=document){
+ return {designCriterion:'movement-render-culling',time:renderer.environment.time,
+  view:renderer.view,interpolation:inspectFixedStep(renderer),minimap:renderer.localMinimap?.stats(),
+  ground:renderer.diagnosticInfo().groundCache,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+// 面积由独立离线审计确认，此入口只记录正式场景地表、角色和有界缓存证据。
+export function inspectTerrainCoverage(renderer,root=document){
+ const g=renderer.game;
+ return {designCriterion:'terrain-coverage',version:TERRAIN_LAYOUT_VERSION,targets:TERRAIN_COVERAGE,cover:forestCoverAt(g.player.x,g.player.y),player:{x:g.player.x,y:g.player.y},time:renderer.environment.time,trees:g.trees.length,enemies:g.enemies.length,vehicle:g.vehicle.index,cache:renderer.diagnosticInfo().groundCache,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
 import {outdoorObjects} from './outdoors.js';
 // 验收读取正式缓存与连续帧统计，不另画一套建筑预览。
 export function inspectCampBuildingCache(renderer,root=document){
@@ -23,7 +40,7 @@ export function inspectEquipmentStoryExpansion(renderer,root){
   image:img?{src:img.getAttribute('src'),loaded:img.complete&&img.naturalWidth>0,width:img.naturalWidth,height:img.naturalHeight}:null,
   overflow:!!dialog&&dialog.scrollWidth>dialog.clientWidth+1};
 }
-import {placedDecor,homeFurniture,plantState} from '../progression/home-decor.js';
+import {placedDecor,homeFurniture,plantState} from '../progression/home/home-decor.js';
 // 装扮验收直接读取正式房间、存档和页面，不提供另画的漂亮预览替身。
 export function inspectHomeDecor(renderer,root){
  const game=renderer.game,items=placedDecor(game.progress.homeDecor),dialog=root.getElementById('home-decor-dialog');
@@ -172,14 +189,14 @@ export function inspectSettingsFingerprint(root){
  const dialog=root.getElementById('settings-dialog'),code=root.getElementById('settings-git-fingerprint');
  return {designCriterion:'settings-git-fingerprint',fingerprint:code.textContent,status:root.getElementById('settings-git-state').textContent,overflow:dialog.scrollWidth>dialog.clientWidth+1};
 }
-import {clearingSite} from '../progression/clearing-site.js';
+import {clearingSite} from '../progression/story/clearing-site.js';
 // 读取正式档案节点和持久化统计，不复制统计公式或另画验收示意页。
 export function inspectGameStatistics(game,root){
  const dialog=root.getElementById('chronicle-dialog');
  return {designCriterion:'game-profile-statistics',statistics:structuredClone(game.progress.statistics),equipmentTab:root.querySelector('[data-equipment-tab][aria-pressed="true"]')?.dataset.equipmentTab,equipmentRows:root.querySelectorAll('[data-equipment-id]').length,resources:root.querySelectorAll('[data-stat-resource]').length,activities:root.querySelectorAll('[data-stat-play]').length,overflow:[dialog,dialog.querySelector('.chronicle-scroll')].filter(Boolean).some(node=>node.scrollWidth>node.clientWidth+1)};
 }
 import {PARKING_SPOTS} from '../config/parking.js';
-import {nearestParkingSpot} from '../core/parking.js';
+import {nearestParkingSpot} from '../core/vehicles/parking.js';
 import {pathDistance} from '../world/paths.js';
 // 停车布局验收读取正式车位、道路距离与实时判定，不单独重画示意停车场。
 export function inspectParkingRoadClearance(game,root){
@@ -188,7 +205,7 @@ export function inspectParkingRoadClearance(game,root){
   phase:game.parking?.phase||null,mounted:game.vehicle.active,room:game.cottage?.kind||null,
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
-import {workshopBuildView} from '../core/ranger-arrival.js';
+import {workshopBuildView} from '../core/camp/ranger-arrival.js';
 import {RANGER,RANGER_STAGES} from '../config/ranger-arrival.js';
 // 入口徽记验收直接读取正式最终屏幕层的位置、图标和进度，结合真实候停状态。
 export function inspectBuildingEntry(game,root,renderer){
@@ -215,7 +232,7 @@ export function inspectWorkshopInteriors(game,root,renderer){
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 import {clearingPostObjects} from './clearing-post.js';
-import {clearingStage,canUseClearingPost} from '../core/clearing-guide.js';
+import {clearingStage,canUseClearingPost} from '../core/story/clearing-guide.js';
 import {riverCrossingObjects} from './river-crossing.js';
 // 第二章验收绑定正式场景设施和玩家碰撞，不使用单独的概念图。
 export function inspectRiverStory(game,root){return {designCriterion:'river-story-movement',stage:game.story?.stageId,phase:game.story?.phase,position:{x:game.player.x,y:game.player.y},arena:game.player.arena||null,amphibious:game.player.amphibious,facilities:riverCrossingObjects(game),barriers:game.player.worldBarriers||[],overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
@@ -237,8 +254,8 @@ export function inspectArrivalWorld(game,root){
 }
 import { riderPosition } from '../config/vehicle-rider.js';
 import {settlementObjects} from './settlements.js';
-import {livingWaveAllowed} from '../core/living-safety.js';
-import {worldNavigationObjective} from '../core/world-navigation.js';
+import {livingWaveAllowed} from '../core/camp/living-safety.js';
+import {worldNavigationObjective} from '../core/navigation/world-navigation.js';
 // 直接读取正式聚落绘制对象与玩家界面，不用独立示意图代替验收。
 export function inspectForestExploration(game,root){
  const dialog=root.getElementById('living-dialog'),bubble=root.getElementById('resident-chatter'),quest=root.getElementById('quest');
@@ -247,10 +264,10 @@ export function inspectForestExploration(game,root){
   navigation:worldNavigationObjective(game)?.label||null,chatter:!bubble.hidden?bubble.textContent:null,
   dialogOverflow:dialog.open&&dialog.scrollWidth>dialog.clientWidth,viewportOverflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
-import {livingRouteStates} from '../core/living-route.js';
+import {livingRouteStates} from '../core/navigation/living-route.js';
 import {visibleLivingRoads} from '../world/living-road-view.js';
-import {trackedLivingRequest} from '../core/task-tracking.js';
-import {mainlineObjective} from '../core/mainline-manager.js';
+import {trackedLivingRequest} from '../core/navigation/task-tracking.js';
+import {mainlineObjective} from '../core/story/mainline-manager.js';
 // 验收追踪来源、卡片与路线的统一身份，使用正式界面节点而非测试预览。
 export function inspectActiveTask(game,root){
  const card=root.getElementById('mainline-hud');
@@ -335,7 +352,7 @@ export function inspectStoryCatalog(root){
   help:root.getElementById('story-help-dialog').open,headerButtons:[...dialog.querySelectorAll('.story-heading button')].map(n=>n.id),
   rows:[...dialog.querySelectorAll('[data-story-chapter]')].map(n=>{const r=n.getBoundingClientRect();return {id:n.dataset.storyChapter,title:n.querySelector('b').textContent,label:n.getAttribute('aria-label'),icon:!!n.querySelector('svg'),top:r.top,left:r.left,width:r.width,height:r.height};})};
 }
-import {worldStoryPosts,canUseStoryPost,canManageStoryPost,storyPostApproach} from '../core/story-posts.js';
+import {worldStoryPosts,canUseStoryPost,canManageStoryPost,storyPostApproach} from '../core/story/story-posts.js';
 // 委托板赠礼复核只读取正式目录和按钮，避免以另画示意图替代领取界面。
 export function inspectStoryBoardGifts(root){
  const panel=root.querySelector('.story-collection');
@@ -368,15 +385,15 @@ export function inspectWaveProgress(root) {
 }
 // 清缴详情与进场提示读取同一正式轨道，同时核对所在容器、倒计时与唯一性。
 export function inspectBossWaveUi(root){
- const track=root.getElementById('wave-track'),notice=root.getElementById('clearing-arrival-notice');
+ const track=root.getElementById('wave-track'),notice=root.getElementById('wave-help-dialog'),countdown=root.getElementById('clearing-notice-countdown');
  return {...inspectWaveProgress(root),designCriterion:'boss-wave-ui',host:track.parentElement.id,
-  trackCount:root.querySelectorAll('#wave-track').length,noticeVisible:!notice.hidden,
+  trackCount:root.querySelectorAll('#wave-track').length,noticeVisible:notice.open&&!countdown.hidden,collapsing:notice.dataset.collapsing==='true',
   closeCountdown:root.getElementById('clearing-notice-countdown').textContent,
   dialogOpen:root.getElementById('wave-help-dialog').open,
   noticeBox:notice.getBoundingClientRect().toJSON(),trackBox:track.getBoundingClientRect().toJSON()};
 }
 import {STORY_POSTS} from '../config/story-posts.js';
-import {storyCollectionStatus} from '../progression/story-rewards.js';
+import {storyCollectionStatus} from '../progression/story/story-rewards.js';
 // 怪物委托复核绑定正式人物列表、奖励存档与界面，无独立展示假数据。
 export function inspectMonsterStories(game,root){
  const post=STORY_POSTS.find(p=>p.id==='monster-neighbors');
@@ -386,7 +403,7 @@ export function inspectMonsterStories(game,root){
   rewards:root.querySelector('.story-collection')?.textContent||'',
   overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth+1};
 }
-import {storyDefinition} from '../core/story-definition.js';
+import {storyDefinition} from '../core/story/story-definition.js';
 import { WEAPONS } from '../config/weapons.js';
 import {storyArtStats,storyObjects} from './story-props.js';
 import {storyGuidanceState,storySpeechInfo} from './story-guidance.js';
@@ -672,7 +689,7 @@ export async function renderVisualCase(c,id,phase){
   }
   if(id.startsWith('vehicle-armament-')) {
     const index=Number(id.slice('vehicle-armament-'.length));
-    const {freshProgress}=await import('../progression/progress.js'),{createWorkshopTrial}=await import('../core/workshop-trial.js'),{drawWorkshopTrial}=await import('./workshop.js');
+    const {freshProgress}=await import('../progression/progress.js'),{createWorkshopTrial}=await import('../core/workshop/workshop-trial.js'),{drawWorkshopTrial}=await import('./workshop.js');
     const p=freshProgress();p.vehicleHulls[index]=1;
     const session=createWorkshopTrial(p,'vehicle',index,false,{hp:5000});
     for(let t=0;t<phase%3.5;t+=1/120)session.advance(Math.min(1/120,phase%3.5-t));
@@ -972,7 +989,7 @@ export async function renderVisualCase(c,id,phase){
     const {drawScenery}=await import('./scenery.js');
     const {FireflyRenderer}=await import('./fireflies.js');
     const {SceneTone}=await import('./scene-tone.js');
-    const groupMatch=id.match(/^landscape-group-([0-5])(?:-(spring|summer|autumn|winter))?(?:-to-(spring|summer|autumn|winter))?(?:-night)?$/);
+    const groupMatch=id.match(/^landscape-group-([0-9]+)(?:-(spring|summer|autumn|winter))?(?:-to-(spring|summer|autumn|winter))?(?:-night)?$/);
     const season=groupMatch?.[3]||groupMatch?.[2]||'summer';
     let transition=null;
     // 连续采样共用运行时季节模型和材质缓存，不另画过渡示意图。
@@ -1308,7 +1325,7 @@ export function inspectOpenScooter(game,root){
   active:game.vehicle.active,index:game.vehicle.index,armor:game.progress.vehicleHulls[5],
   engine:game.progress.vehicleParts[5].engine,wheel:game.vehicle.wheelPhase};
 }
-import {storyRouteState,storyRouteDots,visibleRouteDots} from '../core/story-route.js';
+import {storyRouteState,storyRouteDots,visibleRouteDots} from '../core/navigation/story-route.js';
 // 工坊任务验收读取正式路线和场景目标，不另造预览点位。
 export function inspectWorkshopNavigation(game,root){
  const route=storyRouteState(game);
@@ -1611,7 +1628,7 @@ export function inspectNearbyInteraction(game,root){
 
 // 建筑操作验收核对本体热点的真实世界投影，不调整镜头换取提示可见。
 export async function inspectBuildingInteraction(renderer,root){
- const {nearbyInteraction}=await import('../core/nearby-interaction.js');
+ const {nearbyInteraction}=await import('../core/navigation/nearby-interaction.js');
  const {nearbyInteractionAnchor,projectInteractionAnchor}=await import('../world/interaction-anchors.js');
  const game=renderer.game,entry=nearbyInteraction(game),anchor=nearbyInteractionAnchor(game,entry),point=projectInteractionAnchor(anchor,renderer.view,renderer.cottageView);
  const button=root.getElementById('nearby-interaction'),rect=button.getBoundingClientRect(),canvas=renderer.canvas.getBoundingClientRect();
@@ -1799,7 +1816,7 @@ export async function inspectShopkeeperCounters(game){
 
 // 猫窝验收读取正式角色经验与房间存档，不伪造角色或购买结果。
 export async function inspectCatHome(game,root){
- const {heroExperience}=await import('../progression/hero-experience.js');
+ const {heroExperience}=await import('../progression/player/hero-experience.js');
  return {designCriterion:'cat-home-progression',room:game.cottage?.kind,hero:game.progress.hero,experience:heroExperience(game.progress),owned:game.progress.heroes.filter(level=>level>0).length,oldHeroTab:!!root.getElementById('tab-heroes'),dialog:!!root.getElementById('cat-home-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
@@ -1811,13 +1828,13 @@ export function inspectCottageResidents(game,root){
 
 // 邮箱验收读取实际合同与正式页面，核对未读、独立快递包裹和触控边界。
 export async function inspectMailbox(game,root){
- const {unreadMailCount}=await import('../progression/mailbox.js');
+ const {unreadMailCount}=await import('../progression/camp/mailbox.js');
  return {designCriterion:'phone-mail',unread:unreadMailCount(game.progress),count:game.progress.mailbox.items.length,parcels:game.progress.farm.delivery.parcels.length,open:!!root.getElementById('mailbox-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
 // 负重验收读取正式重量、装配、牵引和页面边界，不生成替代展示状态。
 export async function inspectVehicleLoadoutWeight(game,root){
- const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
+ const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/inventory/load-weight.js');
  return {designCriterion:'vehicle-loadout-weight',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),tow:game.progress.logistics.tow,build:game.progress.logistics.builds[game.vehicle.index],open:!!root.getElementById('logistics-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
@@ -1831,7 +1848,7 @@ export async function inspectVehicleSupplies(game,root){
 // 维修泊位验收直接读取正式深度队列，核对多车位置、剩余工时和占位。
 export async function inspectRepairParkingDisplay(game){
  const {vehicleServiceObjects}=await import('./vehicle-repair.js');
- const {parkingOccupied}=await import('../core/camp-parking.js');
+ const {parkingOccupied}=await import('../core/vehicles/camp-parking.js');
  const {VEHICLE_REPAIR}=await import('../config/vehicle-repair.js');
  return {designCriterion:'repair-parking-display',bays:vehicleServiceObjects(game).filter(o=>o.type==='repair-bay').map(o=>({id:o.id,hull:o.hull,x:o.x,y:o.y,phase:o.order.phase,remaining:Math.ceil(VEHICLE_REPAIR.repairSeconds-o.order.timer),occupied:parkingOccupied(game,o.id)})),waiting:game.progress.vehicleService.filter(r=>r?.phase==='repairing'&&!r.repairSpot).length};
 }
@@ -1847,18 +1864,18 @@ export function inspectCatWoodStorage(game,root){return {designCriterion:'cat-de
 
 // 满载清理验收读取真实重量和正式确认页，不生成替代画面。
 export async function inspectLoadCleanup(game,root){
- const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');
+ const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/inventory/load-weight.js');
  return {designCriterion:'load-capacity-cleanup',cat:catLoad(game),vehicle:vehicleLoad(game),speed:movementLoadFactor(game),open:!!root.getElementById('load-cleanup-dialog')?.open,confirmation:!!root.getElementById('load-cleanup-quantity')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
 // 两层小屋检查直接采样正式房间、家具存档和碰撞对象，不用独立示意场景。
 export async function inspectCottageWeaponRacks(game,renderer,root){
- const {placedDecor}=await import('../progression/home-decor.js'),{cottageFloor}=await import('../config/cottage.js'),{catLoad}=await import('../progression/load-weight.js'),floor=cottageFloor(game.cottage);
+ const {placedDecor}=await import('../progression/home/home-decor.js'),{cottageFloor}=await import('../config/cottage.js'),{catLoad}=await import('../progression/inventory/load-weight.js'),floor=cottageFloor(game.cottage);
  return {designCriterion:'cottage-weapon-racks',floor,room:game.cottage?.kind,player:{x:game.player.x,y:game.player.y},view:renderer.cottageView,racks:placedDecor(game.progress.homeDecor,floor).filter(i=>i.type==='weapon-rack').map(i=>({uid:i.uid,x:i.x,y:i.y,weapons:i.weapons})),load:catLoad(game).weight,current:game.progress.weapon,dialog:root.getElementById('weapon-rack-dialog')?.open,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
 // 木材直收检查读取正式飞行、真实库存与载重，满载时不得生成图标或倒计时。
-export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/load-weight.js');const {resourcePickupPoses}=await import('../combat/resource-pickup.js');return {designCriterion:'wood-direct-pickup',flying:resourcePickupPoses(game.drops,game.player).filter(p=>p.kind==='wood').length,countdown:renderer.actionCountdownView,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds[game.vehicle.index].wood,load:game.vehicle.active?vehicleLoad(game):catLoad(game),speed:movementLoadFactor(game)};}
+export async function inspectWoodPickup(game,renderer){const {catLoad,vehicleLoad,movementLoadFactor}=await import('../progression/inventory/load-weight.js');const {resourcePickupPoses}=await import('../combat/resource-pickup.js');return {designCriterion:'wood-direct-pickup',flying:resourcePickupPoses(game.drops,game.player).filter(p=>p.kind==='wood').length,countdown:renderer.actionCountdownView,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds[game.vehicle.index].wood,load:game.vehicle.active?vehicleLoad(game):catLoad(game),speed:movementLoadFactor(game)};}
 
 // 快捷清理与一级种地入口读取正式DOM，记录真实数量、来源及拖拽浮标。
 export async function inspectCleanupDrag(game,root){return {...await inspectLoadCleanup(game,root),designCriterion:'load-cleanup-drag',source:root.getElementById('load-cleanup-dialog')?.dataset.source,range:root.getElementById('cleanup-quantity-range')?.value,ghosts:root.querySelectorAll('.cleanup-ghost').length,farmPrimary:root.getElementById('farm-menu')?.parentElement?.classList.contains('field-menu'),farmOpen:!root.getElementById('farm-tools')?.hidden};}
@@ -1874,13 +1891,13 @@ export async function inspectVehicleLoadHud(game,root){const {vehicleLoadHudStat
 
 // 分类购弹验收读取正式库存、负重和按钮目标，避免界面分类与实际收货位置脱节。
 export async function inspectAmmoPurchaseStorage(game,root){
- const {catLoad,vehicleLoad}=await import('../progression/load-weight.js'),base=await inspectVehicleSupplies(game,root),panel=root.getElementById('field-equipment-dialog'),body=root.getElementById('field-equipment-body');
+ const {catLoad,vehicleLoad}=await import('../progression/inventory/load-weight.js'),base=await inspectVehicleSupplies(game,root),panel=root.getElementById('field-equipment-dialog'),body=root.getElementById('field-equipment-body');
  return {...base,designCriterion:'ammo-purchase-storage',target:panel.querySelector('[data-supply-target][aria-pressed="true"]')?.dataset.supplyTarget,hand:{...game.progress.supplies.hand},catWeight:catLoad(game).weight,vehicleWeight:vehicleLoad(game).payload,bodyOverflow:body.scrollWidth>body.clientWidth+1,products:[...panel.querySelectorAll('[data-ammo-buy]')].map(b=>({id:b.dataset.ammoBuy,target:b.dataset.ammoTarget,disabled:b.disabled}))};
 }
 
 // 室内自救入口必须原地可点，直接读取真实房间、按钮命中与背包负重。
 export async function inspectIndoorBackpack(game,root){
- const {catLoad}=await import('../progression/load-weight.js'),load=catLoad(game),view=root.defaultView;
+ const {catLoad}=await import('../progression/inventory/load-weight.js'),load=catLoad(game),view=root.defaultView;
  const buttons=['cottage-character'].map(id=>{const n=root.getElementById(id),r=n.getBoundingClientRect();return {id,hidden:n.hidden,disabled:n.disabled,width:r.width,height:r.height,inBounds:r.left>=0&&r.top>=0&&r.right<=view.innerWidth&&r.bottom<=view.innerHeight,hit:n.contains(root.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};});
  return {designCriterion:'indoor-backpack-cleanup',room:game.cottage?.kind,floor:game.cottage?.floor,overloaded:load.overloaded,weight:load.weight,buttons,notice:root.getElementById('cottage-notice').textContent};
 }
@@ -1910,7 +1927,7 @@ export function inspectCharacterVehicleStorage(game,root){const cat=root.getElem
 export function inspectWarehouseAutoWood(game){const batches=game.drops.filter(d=>d.warehouseWood);return {designCriterion:"warehouse-auto-wood",stored:game.progress.wood,bag:game.progress.logistics.bagWood,cargo:game.progress.logistics.builds.map(b=>b.wood),batches:batches.map(d=>({origin:{x:d.originX,y:d.originY},destination:d.destination,count:d.wood,age:d.age})),icons:resourcePickupPoses(batches,game.player).length,held:game.warehouseAutoWood?.held||[]};}
 
 // 对照正式库存合计与HUD文本，记录三处来源及完整提示。
-export async function inspectWoodHudTotal(game,root){const {woodInventory}=await import("../progression/resource-wallet.js"),node=root.querySelector("[data-wood]");return {designCriterion:"wood-hud-total",...woodInventory(game.progress),text:node?.textContent,title:node?.title};}
+export async function inspectWoodHudTotal(game,root){const {woodInventory}=await import("../progression/economy/resource-wallet.js"),node=root.querySelector("[data-wood]");return {designCriterion:"wood-hud-total",...woodInventory(game.progress),text:node?.textContent,title:node?.title};}
 
 // 农作物入库验收读取真实作物批次、钱包、经济账本与仓库金币格。
 export function inspectWarehouseHarvest(game,root){
@@ -1964,7 +1981,10 @@ export function inspectMineLandscapeQuality(game,renderer,root){return {...inspe
 export function inspectMineRailJunctions(game,renderer,root){return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-rail-junctions',railGeometryVariants:16,newBitmapBytes:0};}
 
 // 乘坐稳定性只消费正式矿车、猫座位和镜头锚点，连续采样用于发现模拟步跳动。
-export function inspectMineCartRider(game,renderer,root){return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-cart-rider-stability',rider:renderer.mineCartRiderReview};}
+export function inspectMineCartRider(game,renderer,root){
+ const train=Array.from(renderer.renderGame?.mineCarts?.values()||[],c=>({id:c.id,x:c.x,y:c.y,wheel:c.wheel}));
+ return {...inspectMineCartDirections(game,renderer,root),designCriterion:'mine-cart-rider-stability',rider:renderer.mineCartRiderReview,train};
+}
 
 // 边界验收同时读取正式岩层、地形几何和镜头，不用矩形遮挡数量替代视觉复核。
 export function inspectMineNaturalBoundary(game,renderer,root=document){return {...inspectMining(game,renderer,root),designCriterion:'mine-natural-boundary',boundary:renderer.mineBoundaryReview,landscape:renderer.mineLandscapeReview,player:{x:game.player.x,y:game.player.y},notice:game.cottage?.notice};}
@@ -2015,7 +2035,7 @@ export function inspectMineFunnelBoundary(game,renderer){
 
 // 检查正式洒水器的半径、独立喷头动作与手机视口，供连续帧验收使用。
 export async function inspectSprinklerRotation(game,root=document){
- const {productionObjects,sprinklerPose}=await import('./farm-production.js'),{SPRINKLER_OFFSETS}=await import('../config/farm-production.js'),{sprinklerSoilWetness}=await import('../progression/sprinkler-sweep.js');
+ const {productionObjects,sprinklerPose}=await import('./farm-production.js'),{SPRINKLER_OFFSETS}=await import('../config/farm-production.js'),{sprinklerSoilWetness}=await import('../progression/farming/sprinkler-sweep.js');
  return {designCriterion:'sprinkler-radius-rotation',time:game.time,devices:productionObjects(game).filter(d=>d.kind==='sprinkler').map(d=>({id:d.id,...sprinklerPose(d,game.time,game.productionSpray,root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches)})),plots:game.progress.farm.plots.map(p=>({id:p.id,watered:p.watered,sprinklerWatered:p.sprinklerWatered,wetness:sprinklerSoilWetness(p,game.time,game.productionSpray,root.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches)})),coverageCells:SPRINKLER_OFFSETS.length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
 }
 
@@ -2029,39 +2049,44 @@ export async function inspectSprinklerPickup(game,renderer,root=document){
 export function inspectFishCreatureCodex(game,renderer,root=document){return {designCriterion:'fish-creature-codex',fish:renderer.ambientFishReview||[],fishing:!!game.fishing,state:game.state,collection:structuredClone(game.progress.outdoors.collection),statistics:structuredClone(game.progress.statistics),categories:[...root.querySelectorAll('[data-codex-tab]')].map(b=>({id:b.dataset.codexTab,selected:b.getAttribute('aria-pressed')==='true'})),codexOpen:!!root.getElementById('creature-codex')?.open,catchOpen:!!root.getElementById('fish-discovery')?.open,portraits:root.querySelectorAll('#creature-codex canvas,#fish-discovery canvas').length};}
 // 背包数量与正式场景实体同屏核对，不构造替代图案。
 export async function inspectSprinklerBackpack(game,root=document){
- const {backpackEntries}=await import('../progression/backpack.js'),{productionObjects}=await import('./farm-production.js');
+ const {backpackEntries}=await import('../progression/inventory/backpack.js'),{productionObjects}=await import('./farm-production.js');
  return {designCriterion:'sprinkler-backpack',inventory:game.progress.production.sprinklerInventory,bag:backpackEntries(game).filter(i=>i.id==='facility:sprinkler'),devices:productionObjects(game),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
 
 // 百鱼钓具验收直接读取正式选择、真实概率池与当前页面画布预算。
 export async function inspectHundredFishTackle(game,renderer,root=document){
- const {FISH_SPECIES}=await import('../config/fish-catalog.js'),{fishingSetup}=await import('../core/fishing-tackle.js'),{fishingPreview}=await import('../core/lake-fishing.js'),setup=fishingSetup(game);
+ const {FISH_SPECIES}=await import('../config/fish-catalog.js'),{fishingSetup}=await import('../core/fishing/fishing-tackle.js'),{fishingPreview}=await import('../core/fishing/lake-fishing.js'),setup=fishingSetup(game);
  return {designCriterion:'hundred-fish-tackle',species:FISH_SPECIES.length,setup,odds:fishingPreview(game).odds.map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],portraits:root.querySelectorAll('#codex-content canvas').length,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
 }
 
 // 独立湖泊验收读取正式鱼群、锁定概率与调查存档，不创建另一套预览鱼。
 export async function inspectLakeEcologySurveys(game,renderer,root=document){
- const {fishingPreview}=await import('../core/lake-fishing.js'),preview=fishingPreview(game),f=game.fishing;
+ const {fishingPreview}=await import('../core/fishing/lake-fishing.js'),preview=fishingPreview(game),f=game.fishing;
  return {designCriterion:'lake-ecology-surveys',lake:preview.lake,odds:(f?.odds||preview.odds).map(e=>({id:e.fish.id,probability:e.probability})),fish:renderer.ambientFishReview||[],behavior:f?.behavior,phase:f?.phase,surveys:structuredClone(game.progress.outdoors.surveys),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
 }
 
 // 读取与正式场景共用的觅食地、草丛和牧栏状态。
 export async function inspectWildPasture(renderer){
- const game=renderer.game,{wildPastureObjects}=await import('../core/wild-pasture.js');
+ const game=renderer.game,{wildPastureObjects}=await import('../core/farming/wild-pasture.js');
  return {designCriterion:'wild-ox-forage',sites:wildPastureObjects(game),forage:game.progress.farm.forage,owned:game.progress.farm.oxPlow};
 }
 
-// 读取正式场景的推镰方向、刀片行程与收割结果，供昼夜连续采样。
+// 条播机采样沿用实际工具、落种时钟与田块队列。
+export function inspectRowSeeder(renderer){
+ const game=renderer.renderGame||renderer.game,work=game.farmWork;
+ return {designCriterion:'row-seeder',axis:game.progress.farm.axis,active:work?.tool==='seeder',travel:work?.travel||0,plot:work?.job?.id,elapsed:work?.job?.farmPoseTime||0,queued:work?.queue.map(job=>job.id)||[]};
+}
+// 取推镰的实际行程与收割计数。
 export function inspectRowReaper(renderer){
  const game=renderer.renderGame||renderer.game,r=game.farmWork?.reaper;
- return {designCriterion:'row-reaper-harvest',held:!!r?.held,facing:r?.facing,travel:r?.travel,targets:r?.preview,harvested:game.progress.farm.harvested};
+ return {designCriterion:'row-reaper-harvest',axis:r?.axis,automatic:!!r?.auto,remaining:r?.line?.length||0,held:!!r?.held,facing:r?.facing,travel:r?.travel,targets:r?.preview,harvested:game.progress.farm.harvested};
 }
 import {oxHandler} from '../config/pasture.js';
 // 取正式绘制器的牛犁步态及田块数，供连续帧和停止状态对照。
 export function inspectOxPlow(renderer){
  const game=renderer.renderGame||renderer.game,work=game.farmWork;
  const ox=work?.ox,hitched=!!ox&&!ox.approach&&!work.autoCombat;
- return {designCriterion:'ox-plow-row',foot:hitched?{x:game.player.x,y:game.player.y}:null,handler:hitched?oxHandler(game.player,ox.yaw):null,active:work?.tool==='ox'&&!work.autoCombat,yaw:work?.ox?.yaw,turn:work?.ox?.turn?.elapsed,targets:work?.ox?.preview,phase:work?.ox?.phase??0,facing:work?.ox?.facing??1,dug:game.progress.farm.dug};
+ return {designCriterion:'ox-plow-row',axis:game.progress.farm.axis,foot:hitched?{x:game.player.x,y:game.player.y}:null,handler:hitched?oxHandler(game.player,ox.yaw):null,active:work?.tool==='ox'&&!work.autoCombat,automatic:!!ox?.auto,remaining:ox?.auto?.line.length||0,yaw:work?.ox?.yaw,turn:work?.ox?.turn?.elapsed,targets:work?.ox?.preview,phase:work?.ox?.phase??0,facing:work?.ox?.facing??1,dug:game.progress.farm.dug};
 }
 
 // 连续采样正式座位、轮相和手持弹匣，图稿预览不能代替真实驾驶。
@@ -2110,3 +2135,82 @@ export async function inspectCampTrade(game,root=document){
   cart:objects.some(o=>o.type==='trade-cart'),horseFrame:game.tradeMotion?.horseFrame,
   wheelPhase:game.tradeMotion?.wheelPhase,boardTouch:box&&box.width>=44&&box.height>=44};
 }
+// 工厂正式实体、墙体、厂门、现场按钮和库存共享同一验收目标。
+export async function inspectIndustry(game,root=document){
+ const {industryObjects}=await import('./industry.js'),{INDUSTRY_SITES,industryDoor,industryVehicles}=await import('../core/industry/industry.js'),{worldBuildingBlocked}=await import('../world/building-collision.js');
+ const sites=Object.values(INDUSTRY_SITES).map(s=>({id:s.id,wall:worldBuildingBlocked(s.x,s.y-30,12,{mapId:'forest'}),doorClear:!worldBuildingBlocked(s.x,s.y+55,32,{mapId:'forest'}),door:industryDoor(s)}));
+ const controls=[...root.querySelectorAll('#industry-dialog button,#industry-dialog input,#industry-dialog select')].filter(n=>n.getClientRects().length).map(n=>({label:n.getAttribute('aria-label')||n.textContent,height:n.getBoundingClientRect().height}));
+ return {designCriterion:'industry-chain',room:game.cottage?.kind,parked:industryVehicles(game),manualSource:!!root.querySelector('[data-industry-source]'),visible:industryObjects(game).map(s=>s.id),sites,controls,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,stock:structuredClone(game.progress.industry)};
+}
+
+// 从正式水袋 HUD 和最终屏幕指示层采样，不使用单独的预览数值。
+export function inspectWaterBag(game,renderer,root=document){
+ const node=root.getElementById('magazine-hud'),r=node?.getBoundingClientRect(),w=game.weapon(),m=game.magazines[game.loadout.weapon];
+ return {designCriterion:'water-bag-refill',waterBag:w.id==='water',ammo:m.ammo,capacity:w.magazineSize,refillSeconds:w.reloadTime,filling:!!m.waterFilling,indicator:renderer.waterBagView,icon:node?.querySelector('.ring-icon')?.dataset.kind,label:node?.getAttribute('aria-label'),touch:!!r&&r.width>=44&&r.height>=44,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+
+// 地下正式实体与地表绘制器共用外观快照，验收不创建另一套动画。
+export async function inspectMineMetalDumplings(game,renderer,root=document){
+ const {mineDumplingForm}=await import('../config/mine-dumplings.js');
+ return {designCriterion:'mine-metal-dumplings',actors:(game.cottage?.ecologyActors||[]).map(a=>({key:a.key,...mineDumplingForm(a),hp:a.hp,phase:a.phase,walk:a.walk||0,gelStep:a.gelStep||0,gelHitAge:a.gelHitAge,death:a.death})),view:renderer.mineView,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+
+// 读取正式移物底板和货格，不创建替代UI用于验收。
+export function inspectInventoryTransfer(game,root=document){
+ const panel=root.getElementById('inventory-transfer-dialog'),r=panel?.open?panel.getBoundingClientRect():null,w=root.defaultView;
+ return {designCriterion:'inventory-transfer',open:!!panel?.open,overflow:!!r&&(r.x<0||r.y<0||r.right>w.innerWidth+1||r.bottom>w.innerHeight+1||panel.scrollWidth>panel.clientWidth+1),controls:panel?.open?[...panel.querySelectorAll('button,input,select')].map(n=>{const b=n.getBoundingClientRect();return {label:n.getAttribute('aria-label')||n.textContent,width:b.width,height:b.height};}):[],cargoCells:root.querySelectorAll('[data-cargo-item]').length,state:game.state,newBitmapBytes:0};
+}
+
+// 正式改造页读取真实DOM与保存配置，不生成验收专用替代画面。
+export function inspectVehicleRefitZones(renderer,root=document){const panel=root.getElementById('logistics-dialog');return {designCriterion:'vehicle-refit-zones',open:!!panel?.open,time:renderer.environment.time,tab:panel?.querySelector('[data-refit-tab][aria-pressed="true"]')?.dataset.refitTab,zones:[...panel?.querySelectorAll('[data-refit-zone]')||[]].map(n=>({id:n.dataset.refitZone,value:Number(n.value)})),overflow:!!panel&&panel.scrollWidth>panel.clientWidth+1,newBitmapBytes:0};}
+
+// 地契验收读取正式对象、施工和页面状态，连续帧由浏览器采样。
+export async function inspectCampLand(game,renderer,root=document){const {campLandObjects}=await import('./camp-land.js');const p=root.getElementById('camp-land-dialog');return {designCriterion:'camp-land-growth',owned:game.progress.campLand?.owned,build:game.progress.restoration.build,objects:campLandObjects(game),view:renderer.view,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:p?.open?[...p.querySelectorAll('button')].map(b=>({label:b.textContent||b.getAttribute('aria-label'),height:b.getBoundingClientRect().height})):[]};}
+
+// 围栏、道路和编辑器读取正式运行数据；截图负责昼夜及同屏审美复核。
+export async function inspectCampLayoutPlanner(game,renderer,root=document){const {campBoundary}=await import('../world/camp-boundary.js'),{campRoadView}=await import('./camp-layout.js'),boundary=campBoundary(game.progress),roads=campRoadView(game),panel=root.getElementById('camp-layout-dialog'),canvas=panel?.querySelector('canvas'),r=panel?.open?panel.getBoundingClientRect():null,w=root.defaultView;return {designCriterion:'camp-layout-planner',gateWidths:boundary.gates.map(g=>g.length),fenceCount:boundary.objects.length,unreachable:roads.unreachable,roadPoints:roads.paths.reduce((n,p)=>n+p.length,0),layout:game.progress.campLayout,time:renderer.environment.time,overflow:!!r&&(r.x<0||r.y<0||r.right>w.innerWidth+1||r.bottom>w.innerHeight+1||panel.scrollWidth>panel.clientWidth+1),controls:panel?.open?[...panel.querySelectorAll('button,select')].map(n=>{const b=n.getBoundingClientRect();return {label:n.getAttribute('aria-label')||n.textContent,width:b.width,height:b.height};}):[],canvasBytes:canvas?canvas.width*canvas.height*4:0,newBitmapBytes:0};}
+
+// 闲置归栏验收读取正式牛蹄、路径与游玩计时，不创建替代动作。
+export async function inspectOxIdleReturn(renderer){const game=renderer.renderGame||renderer.game,{oxFoot,PASTURE}=await import('../config/pasture.js'),farm=game.progress.farm;return {designCriterion:'ox-idle-return',idleSeconds:farm.oxIdleSeconds,threshold:PASTURE.idleReturnSeconds,returning:farm.oxReturn,foot:farm.oxSite&&oxFoot(farm.oxSite),moving:!!game.oxArrival?.moving,phase:game.oxArrival?.phase||0,newBitmapBytes:0};}
+
+// 自动农活与返车工作台读取正式队列、世界脚底和候停状态，不创建演示替身。
+export function inspectFarmAutoWork(renderer){
+ const game=renderer.renderGame||renderer.game;
+ return {designCriterion:'farm-auto-work',ox:inspectOxPlow(renderer),reaper:inspectRowReaper(renderer),player:{x:game.player.x,y:game.player.y},walkingBack:game.sceneApproach?.id==='farm-vehicle',boarding:game.vehicleBoarding?.elapsed??null,mounted:game.vehicle.active,cameraBoarding:!!renderer.camera.boardingAnchor};
+}
+
+// 驿站验收只读取正式存档、导航及手机DOM，不创建演示站点。
+export function inspectWaystations(renderer,root=document){
+ const game=renderer.renderGame||renderer.game,panel=root.getElementById('waystations-dialog');
+ return {designCriterion:'waystations',stations:game.progress.waystations?.sites||[],travel:game.waystationTravel?{id:game.waystationTravel.id,phase:game.waystationTravel.phase,retries:game.waystationTravel.retries}:null,player:{x:game.player.x,y:game.player.y},newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:panel?.open?[...panel.querySelectorAll('button,input')].map(b=>({label:b.getAttribute('aria-label')||b.textContent,height:b.getBoundingClientRect().height})):[]};
+}
+
+// 地块性能读取正式缓存与主循环采样，记录视野及同步补建，不以逻辑帧率代替渲染耗时。
+export function inspectMovementGroundPerformance(renderer){
+ return {designCriterion:'movement-ground-performance',view:renderer.view,ground:renderer.ground.stats(),river:renderer.river.stats(),frames:renderer.profiler?.summary(),newBitmapBytes:0};
+}
+
+// 小地图与左下快捷键从正式DOM和绘制统计验收，不创建第二套HUD。
+export function inspectLocalMinimapControls(renderer,root=document){
+ const rect=id=>{const n=root.getElementById(id),r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom,hidden:n.hidden,label:n.getAttribute('aria-label')};};
+ const map=root.getElementById('local-minimap'),vehicle=root.getElementById('vehicle-button'),art=vehicle.querySelector('.vehicle-load-art canvas');
+ return {designCriterion:'local-minimap-controls',map:rect('local-minimap'),settings:rect('settings-button'),mapRadius:root.defaultView.getComputedStyle(map).borderRadius,mapText:map.textContent,vehicle:rect('vehicle-button'),vehicleAction:vehicle.querySelector('.vehicle-action-icon')?.dataset.action,vehicleArt:vehicle.dataset.vehicleArt,vehicleArtBytes:art?art.width*art.height*4:0,hp:rect('player-name'),mapStats:renderer.localMinimap?.stats(),duplicateVehicle:root.querySelectorAll('#vehicle-button').length,vehicleInHp:!!root.querySelector('.player-hud #vehicle-button'),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}
+
+// 从正式收鱼弹窗与货架读取图标、目标和触控尺寸，不另画验收替身。
+export function inspectFishStorage(root=document){
+ const panel=root.getElementById('fish-discovery'),select=root.getElementById('fish-catch-destination');
+ return {designCriterion:'fish-storage',icons:[...root.querySelectorAll('[data-fish-container-icon]')].map(n=>({id:n.dataset.fishContainerIcon,viewBox:n.getAttribute('viewBox')})),catchOpen:panel?.open,destination:select?.value,selectHeight:select?.getBoundingClientRect().height,notice:root.getElementById('fish-catch-storage')?.textContent,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};
+}
+
+// 新地貌验收读取正式世界、绘制器和缓存，截图由真实手机战场生成。
+export function inspectEarthLandforms(renderer,root=document){const g=renderer.game;return {designCriterion:'earth-landforms-trees',features:EARTH_TERRAIN.earth.map(({id,kind,x,y})=>({id,kind,x,y})),species:EXTRA_TREE_SPECIES.map(s=>({id:s.id,count:g.trees.filter(t=>t.variant===s.id).length})),time:renderer.environment.time,player:{x:g.player.x,y:g.player.y},actors:renderer.visibleStats,cache:renderer.diagnosticInfo(),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 五方营地验收读取正式场景和存档，保持工作台与运行时入口一致。
+export function inspectRegionalCamps(renderer,root=document){const g=renderer.game;return {designCriterion:'regional-camps',camps:REVIEW_REGIONAL_CAMPS.map(c=>({id:c.id,x:c.x,y:c.y,stage:g.progress.regionalCamps[c.id].stage})),objects:reviewRegionalObjects(g).length,time:renderer.environment.time,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
+
+// 动态工厂验收读取正式操作画布、真实批次与可访问控件，不构造独立预览。
+export function inspectIndustryMachineScene(game,root=document){const panel=root.getElementById('industry-dialog'),canvas=panel.querySelector('canvas');return {designCriterion:'industry-machine-scene',state:panel.dataset.machineState,sites:structuredClone(game.progress.industry.sites),canvas:{width:canvas.width,height:canvas.height,bytes:canvas.width*canvas.height*4},overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:[...panel.querySelectorAll('button,input,select,summary')].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent,height:b.getBoundingClientRect().height})),materials:[...panel.querySelectorAll('[data-industry-material]')].map(b=>({key:b.dataset.industryMaterial,loaded:b.dataset.loaded})),progress:panel.querySelector('[data-industry-duration]').textContent};}
+
+// 地下真实候停与屏幕徽记同源采样，验收不另建模拟矿车。
+export function inspectMineCartBoarding(game,renderer,root=document){return {designCriterion:'mine-cart-nearby-boarding',boarding:game.cottage?.cartBoarding?{...game.cottage.cartBoarding}:null,ride:game.cottage?.ride,countdown:renderer.actionCountdownView?{...renderer.actionCountdownView}:null,player:{x:game.player.x,y:game.player.y},overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}

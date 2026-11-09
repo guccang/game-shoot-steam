@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import {Game,freshProgress} from '../src/game.js';
 import {waveCountdownState,waveProgressState} from '../src/ui/wave-progress.js';
 import {waveDifficulty,WAVE_REST_SECONDS} from '../src/config/waves.js';
-import {WAVE_WARNING_SECONDS} from '../src/core/wave-manager.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {WAVE_WARNING_SECONDS} from '../src/core/battle/wave-manager.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 // 固定当前波数量以独立检查计时展示，不重跑战斗平衡。
 function game(){const g=new Game(clearingProgress(),()=>.5);g.start();return g;}
 // 进入正式清波结算，使用已消灭名额夹具避免射击时长干扰。

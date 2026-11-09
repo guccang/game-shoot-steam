@@ -2,7 +2,7 @@
 import {MINING,mineCell,mineKey} from '../config/mining.js';
 import {mineBounds} from '../config/mine-ecology.js';
 import {mineSurfaceAt} from '../world/mine-surface.js';
-import {mineLayer} from '../progression/mine-layers.js';
+import {mineLayer} from '../progression/mining/mine-layers.js';
 // 车体需要更宽通道；重型战车至少挖宽两格，步行和矿车保持原脚底半径。
 export function mineBodyRadius(game){return game.vehicle?.active?game.vehicle.index===1||game.vehicle.index===6?35:26:MINING.radius;}
 // 圆周八点检查同时限制层边界、水面和未开掘岩壁，两栖只跨水不穿墙。

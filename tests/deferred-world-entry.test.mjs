@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,freshRangerProgress} from '../src/progression/progress.js';
-import {syncRealm} from '../src/core/realm-manager.js';
-import {capturePatrol} from '../src/core/patrol-session.js';
+import {syncRealm} from '../src/core/realms/realm-manager.js';
+import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {titleSummary} from '../src/ui/title-menu.js';
 // 用固定随机数比较立即初始化与点击后初始化的正式结果。
 function deferred(progress){return new Game(progress,()=>.5,()=>{},{deferWorld:true});}

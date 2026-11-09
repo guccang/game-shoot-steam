@@ -21,7 +21,7 @@ async page=>{
     const e=g.spawnEnemy(0,0,{x:g.player.x+60,y:g.player.y+45});e.realm=true;g.hit(e,99999);
     g.shots.push({x:g.player.x,y:g.player.y,tx:g.player.x+50,ty:g.player.y,life:.6,lifetime:.6,color:'#edce91',width:3});
     g.fx.add('ring',g.player.x,g.player.y,.6);g.float(g.player.x,g.player.y-30,'20','#f4dca0');
-    (await import('/src/core/realm-manager.js')).updateRealm(g,0);app.refresh();
+    (await import('/src/core/realms/realm-manager.js')).updateRealm(g,0);app.refresh();
    },time);
    const before=await page.evaluate(async()=>{const g=app.game;return {...(await import('/src/rendering/visual-review.js')).inspectTowerIntermission(g,document),coins:g.progress.coins,arena:{...g.realm.arena},ammo:g.magazines[g.loadout.weapon].ammo};});
    if(before.phase!=='rest'||before.realmDialog||before.extraSettings)throw Error('休整状态错误');

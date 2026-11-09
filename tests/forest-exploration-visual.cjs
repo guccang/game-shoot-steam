@@ -31,7 +31,7 @@ async page=>{
  if(!before||await page.locator('#living-dialog').evaluate(n=>n.open))throw Error('触摸无法关闭面板');
  // 验证购船任务世界路线按需出现，完成购买条件后无需按钮确认就清除旧路线。
  const navigation=await page.evaluate(async()=>{
-  const a=(await import('/src/main.js')).application,g=a.game,{MAINLINE_TASKS}=await import('/src/config/mainline.js'),n=await import('/src/core/world-navigation.js');
+  const a=(await import('/src/main.js')).application,g=a.game,{MAINLINE_TASKS}=await import('/src/config/mainline.js'),n=await import('/src/core/navigation/world-navigation.js');
   g.progress.taskTracking={kind:'mainline'};g.progress.mainline.completed=MAINLINE_TASKS.slice(0,MAINLINE_TASKS.findIndex(t=>t.id==='own-hover')).map(t=>t.id);g.progress.mainline.phase='doing';g.progress.vehicleHulls[3]=0;
   const before=n.worldNavigationObjective(g);n.requestMainlineNavigation(g);const selected=n.worldNavigationObjective(g);g.progress.vehicleHulls[3]=1;const after=n.worldNavigationObjective(g);return {before,selected:!!selected,after};
  });

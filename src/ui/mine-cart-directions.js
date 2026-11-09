@@ -2,8 +2,9 @@
 import {createEventScope} from '../platform/events.js';
 import {MINE_DIRECTIONS} from '../config/mining.js';
 import {railExits} from '../config/mine-rail-routes.js';
-import {currentMineLayer} from '../core/mine-layers.js';
-import {mineInputDirection,nearbyJunction,stoppedCartChoices,setMineCartDirection,setMineJunctionDirection} from '../core/mine-cart-directions.js';
+import {currentMineLayer} from '../core/mining/mine-layers.js';
+import {mineCartCanDrive} from '../core/mining/mine-train.js';
+import {mineInputDirection,nearbyJunction,stoppedCartChoices,setMineCartDirection,setMineJunctionDirection} from '../core/mining/mine-cart-directions.js';
 // 稳定节点承载方向和禁用状态，只有打开页面时读取候选出口。
 export function createMineCartDirections({game,root,controls,input,dialogs}){
  const scope=createEventScope(),button=root.createElement('button'),dialog=root.createElement('dialog');
@@ -77,8 +78,8 @@ export function createMineCartDirections({game,root,controls,input,dialogs}){
    }
   }
   button.textContent=room.ride?'开车方向':'路口方向';
-  button.disabled=room.ride?!!room.running:!nearbyJunction(game);
-  button.title=room.ride?'停车后选择起步方向':'下车并靠近三岔或十字路口后设置';
+  button.disabled=room.ride?!!room.running||!mineCartCanDrive(game):!nearbyJunction(game);
+  button.title=room.ride?'请在列车首端或尾端停车后选择方向':'下车并靠近三岔或十字路口后设置';
  }
  // 统一注销监听与弹窗，不留下额外输入或计时器。
  function dispose(){if(dialog.open)dialogs.close(dialog.id);scope.dispose();button.remove();dialog.remove();}

@@ -5,9 +5,9 @@ import {Game,freshProgress} from '../src/game.js';
 import {STORY_ID,STORY_LOADOUTS} from '../src/config/story.js';
 import {STORY_SITES,validateStorySites} from '../src/world/story-sites.js';
 import {blocked} from '../src/physics/motion.js';
-import {validateStory} from '../src/progression/story-progress.js';
-import {updateStory} from '../src/core/story-manager.js';
-import {storyPostForChapter,storyPostApproach} from '../src/core/story-posts.js';
+import {validateStory} from '../src/progression/story/story-progress.js';
+import {updateStory} from '../src/core/story/story-manager.js';
+import {storyPostForChapter,storyPostApproach} from '../src/core/story/story-posts.js';
 // 补齐正式驿牌修复与到场前置，章节流程仍通过公开入口执行。
 function chapter(id='line-patrol',p=freshProgress()){
   p.restoration.repaired=[...new Set([...p.restoration.repaired,'story'])];

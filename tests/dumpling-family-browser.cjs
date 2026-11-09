@@ -16,7 +16,7 @@ async page=>{
    Object.assign(e,{reviewId:i,species,flying:species==='leaf-bat',biome:'meadow',hp:1e6,maxHp:1e6,speed:32,damage:1,radius:species==='ironwood-bulwark'?25:RANGED_ENEMIES[species]?.bodyRadius||17,arena:g.player.arena,level:0,rank:0,tough:false});
   }
   g.progress.bossChallenge={kind:'dumpling',bosses:0,maxHp:1200,damage:5,blastDamage:10,speed:34};
-  (await import('/src/core/boss-manager.js')).restoreBoss(g,1200);Object.assign(g.boss,{x:1600,y:185,attack:0,arena:g.player.arena});
+  (await import('/src/core/battle/boss-manager.js')).restoreBoss(g,1200);Object.assign(g.boss,{x:1600,y:185,attack:0,arena:g.player.arena});
   Object.assign(a.environment,{time:'day',weather:'sun',autoTime:false,autoWeather:false,autoSeason:false,forestSeason:'summer'});a.renderer.seasons.reset('summer',performance.now());a.refresh();
  });
  await page.setViewportSize({width:390,height:844});

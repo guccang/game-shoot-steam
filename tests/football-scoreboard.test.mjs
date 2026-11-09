@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {finishFootball} from '../src/core/slime-football.js';
+import {finishFootball} from '../src/core/activities/slime-football.js';
 import {drawRestorationObject} from '../src/rendering/town-restoration.js';
 
 test('累计两场并保留最高分，离场及刷新不会重复计分',()=>{

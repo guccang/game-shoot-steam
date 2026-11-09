@@ -1,5 +1,6 @@
 // 户外用品的货架、详情和购物车共用同一组矢量小图。
 import {inventoryIcon} from './inventory-icons.js';
+import {fishStorageIcon} from './fish-storage-icon.js';
 
 const rodFinishes=['#d1ac73','#97b783','#af8259','#9cbec2','#d5b369'];
 const baitMarks={
@@ -13,6 +14,7 @@ const baitMarks={
 
 // 竿梢、轮座与饵盒保持同系列轮廓，局部材料纹样识别具体型号。
 export function outdoorGearIcon(g){
+ if(g.kind==='fish-container')return fishStorageIcon(g.tackleId);
  if(g.kind==='tent')return inventoryIcon({icon:{kind:'tent'}});
  const rod=g.kind==='rod';
  const art=rod?`<path d="M10 54Q25 30 42 10q8-4 11 3l1 27" stroke-width="1.8"/><path d="M11 53 37 17" stroke="${rodFinishes[g.tier-1]}" stroke-width="5"/><path d="m9 55 9-13" stroke-width="6"/><circle cx="23" cy="42" r="6" fill="${rodFinishes[g.tier-1]}"/><circle cx="23" cy="42" r="2"/><path fill="#c87e62" d="m54 36 3 6-3 5-3-5Z"/>`:

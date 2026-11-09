@@ -28,7 +28,7 @@
 
 ## 正式入口与设计目标
 
-`src/config/monster-camps.js`统一尺寸和锚点；`src/core/monster-camps.js`负责状态与可见性；`src/rendering/monster-camps.js`绘制站牌和预警；`dumpling-body.js`只偏移局部面部；原`Game.hit`负责友善居民保护与追击状态命中资格。
+`src/config/monster-camps.js`统一尺寸和锚点；`src/core/battle/monster-camps.js`负责状态与可见性；`src/rendering/monster-camps.js`绘制站牌和预警；`dumpling-body.js`只偏移局部面部；原`Game.hit`负责友善居民保护与追击状态命中资格。
 
 `visual-contract.json#monsterCampsCriterion`与`src/rendering/visual-review.js#inspectMonsterCamps`绑定上述正式绘制器。designCriterion：**破败小木牌仅名称等级、面积增加30%、无警戒圈、边缘驻足注视预警、深入攻击与离屏返营、营内具名居民免伤、手机昼夜可读**。
 
@@ -52,4 +52,4 @@
 - 保留项：使用原任务卡、地图、营地、怪物、字体、色板与层级，无新增图像、尺寸或碰撞；保留正常战斗及营地清空奖励，不新增单怪种子来源。独立美术生成及动作重制不适用。
 - 验收：content-config 18项、seed-progression 6项、neighbor-gardening 8项、mainline-navigation-audit 4项、monster-camps 21项，共57项通过。旧测试夹具补齐已完成小屋休息状态，寻路起点从现已被建筑占用的旧坐标改为真实青芽交谈点，收获预期引用当前已减半的正式作物收益。
 - 实际浏览器：tests/seed-task-monster-camp-browser.cjs通过，真实页面接取与交付，真实营地五名怪物及Game.hit结算；部分击杀不完成，清空后seedDrops=1且库存1，返程目标camp，交付库存0且金币100→140，patrolActive始终false。320白天、390夜晚任务文字完整；正式可行路线、插值快照与终点目标一致，页面错误0。
-- 正式入口：src/config/content/mainline.json、src/config/mainline.js、src/core/world-navigation.js、src/core/monster-camps.js#settleMonsterCampKill；继续使用monster-camps验收目标及src/rendering/story-guidance.js正式目标。证据保存在主工作区output/playwright/seed-task-monster-camp/。4175、4176已有服务，隔离验证使用4177。结论：通过。
+- 正式入口：src/config/content/mainline.json、src/config/mainline.js、src/core/navigation/world-navigation.js、src/core/battle/monster-camps.js#settleMonsterCampKill；继续使用monster-camps验收目标及src/rendering/story-guidance.js正式目标。证据保存在主工作区output/playwright/seed-task-monster-camp/。4175、4176已有服务，隔离验证使用4177。结论：通过。

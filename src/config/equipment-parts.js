@@ -1,3 +1,4 @@
+import {WATER_BAG} from './water-bag.js';
 import {equipmentLevelCap} from './legendary-workshop.js';
 import {installedEngine,vehicleBuild} from './vehicle-load.js';
 import { GAMEPLAY_VALUES } from './gameplay-values.js';
@@ -34,7 +35,8 @@ export function equipmentParts(kind, index, progress=null) {
     : w?.id === 'chainsaw' ? { damage: i18nText("config.equipment-parts.3c318da595"), rate: i18nText("config.equipment-parts.4d09c1f63a"), capacity: i18nText("config.equipment-parts.19a35d7ca5"), reload: i18nText("config.equipment-parts.64570400ca"), range: i18nText("config.equipment-parts.71b3322595") }
     : w?.controller ? { damage: i18nText("config.equipment-parts.fb198574f1"), rate: i18nText("config.equipment-parts.335fee8d3f"), capacity: i18nText("config.equipment-parts.9332ac42c6"), reload: i18nText("config.equipment-parts.1152488270"), range: i18nText("config.equipment-parts.4b1fafb584") }
     : ['laser', 'pulse', 'arc', 'frost'].includes(w?.id) ? { damage: i18nText("config.equipment-parts.8a62eccf86"), rate: i18nText("config.equipment-parts.629a26d5e0"), capacity: i18nText("config.equipment-parts.71f533f751"), reload: i18nText("config.equipment-parts.afd9992a27"), range: i18nText("config.equipment-parts.2cd28a2b62") }
-    : ['water', 'flame'].includes(w?.id) ? { damage: i18nText("config.equipment-parts.9d44465c99"), rate: i18nText("config.equipment-parts.979ff1074c"), capacity: i18nText("config.equipment-parts.a8ffa81210"), reload: i18nText("config.equipment-parts.1190bc9047"), range: i18nText("config.equipment-parts.29ba484b26"), accuracy: i18nText("config.equipment-parts.981da66691") }
+    : w?.id==='water' ? {damage:'水压泵',rate:'出水阀',capacity:'水袋',reload:'补水泵',range:'喷管',accuracy:'喷嘴'}
+    : w?.id==='flame' ? { damage: i18nText("config.equipment-parts.9d44465c99"), rate: i18nText("config.equipment-parts.979ff1074c"), capacity: i18nText("config.equipment-parts.a8ffa81210"), reload: i18nText("config.equipment-parts.1190bc9047"), range: i18nText("config.equipment-parts.29ba484b26"), accuracy: i18nText("config.equipment-parts.981da66691") }
     : { damage: i18nText("config.equipment-parts.81df2c0ebd"), rate: i18nText("config.equipment-parts.fbff3b536e"), capacity: i18nText("config.equipment-parts.89397d8072"), reload: i18nText("config.equipment-parts.db51eb202c"), range: i18nText("config.equipment-parts.fe8edf80bd"), accuracy: i18nText("config.equipment-parts.37dcc6dcc3") };
   // 小型手枪、长枪、液体罐和锯板按原始结构分别定位，避免通用坐标造成悬空。
   const mounts = w?.attackKind==='defense'?{damage:[0,0,.7],reload:[-12,0,.6]}:w?.crew?{damage:[12,0,.8],rate:[-18,-12,.7],capacity:[-20,12,.7],reload:[-28,0,.6],range:[25,-7,.7],coordination:[0,16,.8]}:w?.id==='wolf-256'?{damage:[12,0,.8],rate:[-18,-8,.7],capacity:[-20,12,.7],reload:[-25,0,.7],range:[69,0,.8]}:w?.id==='gravity-gun'?{damage:[-7,0,.65],rate:[10,-10,.6],capacity:[-21,8,.6],reload:[-25,-6,.6],range:[32,0,.6]}:index===20?{damage:[2,0,.7],rate:[-12,0,.7],capacity:[-14,13,.7],reload:[-23,0,.6],range:[25,0,.7],accuracy:[38,0,.6]}:index===18 ? {damage:[15,0,.8],rate:[-12,-6,.8],capacity:[-12,12,.8],reload:[-20,0,.7],range:[55,0,.8]} : index===17||index===19 ? {damage:[12,0,.7],rate:[-7,-2,.7],capacity:[-8,13,.7],reload:[-17,4,.6],range:[32,0,.7],accuracy:[38,0,.7]} : kind === 'vehicle' ? VEHICLE_UPGRADE_MOUNTS[index] || {} : index === 16 ? {damage:[5,-32,.8],rate:[-16,-24,.8],capacity:[-9,-14,.8],reload:[11,-13,.7],range:[28,-30,.8],coordination:[0,0,1]} : index === 0 ? { damage:[6,-4,.65],rate:[-5,-5,.65],capacity:[0,13,.65],reload:[-4,4,.55],range:[16,-2,.65] }
@@ -65,7 +67,8 @@ export function applyWeaponParts(weapon, progress, index, kind = 'weapons') {
   weapon.interval /= rate;
   if (weapon.chargeTime) { weapon.chargeTime /= rate; weapon.cooldown /= rate; }
   weapon.magazineSize += Math.max(1, Math.floor((kind==='turret'?VEHICLE_WEAPONS:WEAPONS)[index].magazineSize * GAMEPLAY_VALUES.parts.capacityPerLevel)) * (levels.capacity - 1);
-  weapon.reloadTime /= 1 + GAMEPLAY_VALUES.parts.reloadPerLevel * (levels.reload - 1);
+  // 水泵每级均缩短补满时间，满级仍需三秒；扩容不增加等待时间。
+  weapon.reloadTime = weapon.id==='water'?WATER_BAG.refillSeconds-(WATER_BAG.refillSeconds-WATER_BAG.fastestSeconds)*(levels.reload-1)/(GAMEPLAY_VALUES.progress.maxPartLevel-1):weapon.reloadTime/(1 + GAMEPLAY_VALUES.parts.reloadPerLevel * (levels.reload - 1));
   weapon.range *= 1 + GAMEPLAY_VALUES.parts.rangePerLevel * (levels.range - 1);
   if (levels.accuracy) weapon.spread *= 1 - GAMEPLAY_VALUES.parts.accuracyPerLevel * (levels.accuracy - 1);
   if (['mechanical','spider'].includes(weapon.controller)) weapon.summonCount = (weapon.crew?3:weapon.controller==='spider'?SPIDER_INITIAL_MINIONS-1:2) + levels.coordination;

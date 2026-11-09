@@ -4,6 +4,6 @@
 ## 实现与验收
 - 阳台按钮沿用手机操作栏。每层 3 米，滑翔比 6∶1，理论航程每层 18 米。起点取当前阳台外沿，按朝向在前方寻找可步行空地，先检查足额航程，再尝试较近落点。空中显示离地高度与剩余距离，并允许就近降落。室内时钟负责飞行，暂停冻结；落地后才切回室外步行。
 - 翼展约 132 世界单位，中脊、拼色翼布、两侧吊索、独立握杆双爪、视频猫身及地影按层绘制。降低动态设置停用翼布摆动，保留航程和着陆。沿用身体图集、姿态与现有缓存，新增运行位图及离屏画布均为零；本次为程序绘制，PNG 替换与新源视频不适用。
-- 正式入口为 src/core/home-glider.js 的 launchHomeGlider、updateHomeGlider 和 src/rendering/home-glider.js 的 drawHomeGlider。工作台 renderVisualCase 绑定 balcony-glider，designCriterion 位于 visual-contract.json 的 balconyGliderCriterion。
+- 正式入口为 src/core/home/home-glider.js 的 launchHomeGlider、updateHomeGlider 和 src/rendering/home-glider.js 的 drawHomeGlider。工作台 renderVisualCase 绑定 balcony-glider，designCriterion 位于 visual-contract.json 的 balconyGliderCriterion。
 - 4175 实际运行。390×844 从二楼东侧起飞并自然落地；320×568 从六楼南侧起飞并就近降落；580×844 竖版容器从四楼西侧起飞并就近降落。实际距离均在标称航程内，落点通过正式步行碰撞检查。触屏浏览器点按起飞与降落，飞行途中查看树林、建筑、载具、怪物与 HUD 同屏，白天和夜间均可辨识翼面、吊带及地影。
 - 证据为 output/balcony-glider/390-day.png、320-night.png、580-day.png 与 glide.gif。手机浏览器流程通过，阳台原有朝向、房间互斥、暂停与小游戏相关单测 6 项通过。本轮动态效果通过。

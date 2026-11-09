@@ -5,12 +5,12 @@ import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS,MAINLINE_TASKS,MAINLINE_SITES} from '../src/config/mainline.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
-import {LOGISTICS_LESSONS,inspectLogisticsLesson} from '../src/progression/mainline-logistics.js';
-import {mainlineCondition,mainlineTask,mainlineObjective,mainlineAction,updateMainline,completeMainline} from '../src/core/mainline-manager.js';
-import {tradeSupply} from '../src/core/supplies.js';
-import {transferWarehouse,warehouseTransferPreview,updateWarehouseWood} from '../src/core/warehouse.js';
-import {discardLoad} from '../src/core/load-cleanup.js';
-import {requestVehicleRepair,updateVehicleRepair} from '../src/core/vehicle-repair.js';
+import {LOGISTICS_LESSONS,inspectLogisticsLesson} from '../src/progression/story/mainline-logistics.js';
+import {mainlineCondition,mainlineTask,mainlineObjective,mainlineAction,updateMainline,completeMainline} from '../src/core/story/mainline-manager.js';
+import {tradeSupply} from '../src/core/vehicles/supplies.js';
+import {transferWarehouse,warehouseTransferPreview,updateWarehouseWood} from '../src/core/inventory/warehouse.js';
+import {discardLoad} from '../src/core/inventory/load-cleanup.js';
+import {requestVehicleRepair,updateVehicleRepair} from '../src/core/vehicles/vehicle-repair.js';
 import {REPAIR_CENTER} from '../src/config/vehicle-repair.js';
 import {blocked} from '../src/physics/motion.js';
 

@@ -28,7 +28,7 @@
 - 土壤50×36，田牌116×24、木杆6×74；牌子整体116×91逻辑单位，无新增位图。
 - 原牌面世界位置(775,507)、杆底(775,598)不变，转成局部坐标；循环镜像由visibleBodies统一处理。
 - 分层：地面土壤 → 按底座排序的田牌/作物/人物 → UI。田牌不再进入drawFarmGround。
-- 正式入口：src/rendering/farm.js的drawCampFarmSign、farmObjects；src/rendering/renderer.js实体循环；src/core/nearby-interaction.js统一候选。
+- 正式入口：src/rendering/farm.js的drawCampFarmSign、farmObjects；src/rendering/renderer.js实体循环；src/core/navigation/nearby-interaction.js统一候选。
 - 程序继续处理状态、交互和动画；提示隐藏期间不为建筑预留镜头空间，恢复时继续原来的屋顶定位。
 - 透明、碰撞：Canvas透明绘制，无新碰撞；资源：无新图片、无新缓存，图集仍最多两张。
 - 必需资源与失败方式沿用现有正式场景；没有素材替换或备用画面。

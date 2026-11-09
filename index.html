@@ -32,8 +32,13 @@
   <link rel="stylesheet" href="/src/styles/workshop-focus.css">
   <link rel="stylesheet" href="/src/styles/help-emblem.css">
 <link rel="stylesheet" href="/src/styles/outdoors.css">
+<link rel="stylesheet" href="/src/styles/waystations.css">
+<link rel="stylesheet" href="/src/styles/local-minimap.css">
 <link rel="stylesheet" href="/src/styles/shop-checkout.css">
 <link rel="stylesheet" href="/src/styles/creature-codex.css">
+<link rel="stylesheet" href="/src/styles/vehicle-refit.css">
+<link rel="stylesheet" href="src/styles/regional-camps.css">
+<link rel="stylesheet" href="src/styles/industry.css">
 </head>
 <body>
   <main class="portrait-shell" data-i18n-aria-label="index.d75694ae48">
@@ -47,6 +52,10 @@
         <div class="title-tools utility-buttons"><button id="title-settings" class="icon-button" type="button" data-i18n-title="ui.title-menu.57444f5c18" data-i18n-aria-label="ui.title-menu.57444f5c18" aria-haspopup="dialog" aria-controls="settings-dialog">⚙</button></div>
         <header class="title-heading"><span class="title-leaf" aria-hidden="true">❧</span><h1 id="title-name">森林巡游</h1></header>
         <div class="title-actions">
+          <div class="title-player">
+            <input id="login-name" maxlength="24" autocomplete="username" enterkeyhint="go" placeholder="输入用户名" aria-label="用户名">
+            <button id="random-player" class="ui-button" type="button">随机取名</button>
+          </div>
           <button id="start" class="title-primary" disabled>开始游戏</button>
           <!-- 媒体异常独立定位，正常加载不显示文案，也不推挤开始按钮。 -->
           <div class="title-media-feedback">
@@ -121,7 +130,8 @@
         <button id="field-menu-toggle" data-i18n-aria-label="ui.mobile-hud.d9b0e615ad" aria-expanded="false" aria-controls="field-menu-items"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="15" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="15" width="6" height="6" rx="1.5"/><rect x="15" y="15" width="6" height="6" rx="1.5"/></svg><span class="menu-close-mark" aria-hidden="true">×</span></button>
       </nav>
       <div class="joystick" id="joystick" hidden aria-hidden="true"><span class="joystick-cross">＋</span><span id="stick"></span></div>
-        <div class="bottom-info"><div class="player-hud"><div class="player-heading"><b id="player-name"><!--i18n:config.heroes.10cb799373--></b><span id="auto-label" role="img" data-i18n-aria-label="ui.hud.bb3cdc1737"></span><span id="player-health">120 / 120</span></div><div class="player-bars"><div class="bar"><i id="health-fill"></i></div><progress id="hero-experience-hud" max="100" value="0" aria-label="出战猫经验"></progress></div><div class="combat-instruments" data-i18n-aria-label="index.ce4ac11687"><div id="magazine-hud" class="status-ring" tabindex="0"></div><div id="funnel-supply" hidden></div><button id="vehicle-button" class="status-ring" data-i18n-aria-label="index.f7e72750ce" aria-pressed="false"></button></div></div></div>
+        <div class="bottom-info"><div class="player-hud"><div class="player-heading"><b id="player-name"><!--i18n:config.heroes.10cb799373--></b><span id="auto-label" role="img" data-i18n-aria-label="ui.hud.bb3cdc1737"></span><span id="player-health">120 / 120</span></div><div class="player-bars"><div class="bar"><i id="health-fill"></i></div><progress id="hero-experience-hud" max="100" value="0" aria-label="出战猫经验"></progress></div><div class="combat-instruments" data-i18n-aria-label="index.ce4ac11687"><button id="magazine-hud" class="status-ring" type="button" aria-label="当前武器弹仓"></button><div id="funnel-supply" hidden></div></div></div></div>
+        <button id="vehicle-button" class="status-ring" type="button" aria-label="上下载具" aria-pressed="false"></button>
       <div class="game-bottom">
       </div>
       <!-- 出发前展示实际装备，画像与战场共用绘制，换枪后同步更新。 -->

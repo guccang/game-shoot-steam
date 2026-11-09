@@ -11,7 +11,7 @@ import {WEAPONS} from '../src/config/weapons.js';
 import {fireBallistics} from '../src/combat/ballistics.js';
 import {applyImpulse,stepBodies} from '../src/physics/motion.js';
 import {WORLD} from '../src/world/coordinates.js';
-import {updateRealm} from '../src/core/realm-manager.js';
+import {updateRealm} from '../src/core/realms/realm-manager.js';
 
 // 清缴第三批的稳定编号覆盖普通、车载及铁甲；随机值补偿本批阶级加成。
 function setup(roll=.5){const g=new Game(freshProgress(),()=>roll);g.start();g.wave=38;g.enemies=[];g.trees=[];return g;}

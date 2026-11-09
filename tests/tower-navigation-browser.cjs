@@ -25,7 +25,7 @@ async page=>{
     },{phase,place});
     await t.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const info=await t.evaluate(async()=>{
-     const {worldNavigationObjective}=await import('/src/core/world-navigation.js'),{storyGuidanceState}=await import('/src/rendering/story-guidance.js');
+     const {worldNavigationObjective}=await import('/src/core/navigation/world-navigation.js'),{storyGuidanceState}=await import('/src/rendering/story-guidance.js');
      const source=a.renderer.renderGame,nav=worldNavigationObjective(source),hud=worldNavigationObjective(a.game);
      return {interpolated:source!==a.game,hudKey:hud.key,renderKey:nav.key,target:storyGuidanceState(source).target,label:document.querySelector('#mainline-hud b').textContent};
     });
@@ -36,7 +36,7 @@ async page=>{
   // 任务开关关闭再开启后仍指向时空塔，不能恢复旧的工坊步骤。
   await t.locator('#task-navigation-toggle').tap();await t.locator('#task-navigation-toggle').tap();
   await t.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-  const key=await t.evaluate(async()=>(await import('/src/core/world-navigation.js')).worldNavigationObjective(a.renderer.renderGame)?.key);
+  const key=await t.evaluate(async()=>(await import('/src/core/navigation/world-navigation.js')).worldNavigationObjective(a.renderer.renderGame)?.key);
   if(key!=='towerEntry'||errors.length)throw Error(JSON.stringify({key,errors}));return {checks,toggleTarget:key,errors};
  }finally{await context.close();}
 }
