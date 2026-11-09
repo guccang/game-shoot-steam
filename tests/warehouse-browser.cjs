@@ -5,7 +5,7 @@ async original=>{
  const cdp=await context.newCDPSession(page);
  // 通过浏览器原生触摸事件验证指针捕获、拖动门槛和两个库存区落点。
  async function drag(id,direction,target=direction==='deposit'?'withdraw':'deposit',cancel=false){
-  const grip=page.locator('[data-item="'+id+'"][data-direction="'+direction+'"] [data-warehouse-grip]');await grip.scrollIntoViewIfNeeded();const b=await grip.boundingBox(),zone=await page.locator('[data-warehouse-zone="'+target+'"]').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2,tx=zone.x+zone.width/2,ty=zone.y+zone.height/2;
+  const grip=page.locator('[data-item="'+id+'"][data-direction="'+direction+'"] [data-warehouse-grip]');await grip.scrollIntoViewIfNeeded();const b=await grip.boundingBox(),zone=await page.locator('button[data-warehouse-zone="'+target+'"]').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2,tx=zone.x+zone.width/2,ty=zone.y+zone.height/2;
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
   // 先横向拖出；垂直手势现在用于原生滚动列表。
   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+30,y,id:1}]});

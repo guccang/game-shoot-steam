@@ -1,5 +1,8 @@
 // 工厂输入、输出和在途货物分别保存，旧档的已精炼金属沿用现有材料钱包。
 import {INDUSTRY_GOODS,RAW_INDUSTRY,INDUSTRY_RECIPES,INDUSTRY_CAP} from '../../config/industry.js';
+import {RESOURCE_CAP} from '../../config/resource-limits.js';
+// 自动入库沿用各真实库存的限额，原石继续使用矿井的安全整数范围。
+export function industryHomeCapacity(key){return key==='wood'?RESOURCE_CAP:key==='rawStone'?Number.MAX_SAFE_INTEGER:INDUSTRY_CAP;}
 // 只接收已定义的实物与有限正整数，空仓也拥有完整键。
 export function industryStock(raw){
  return Object.fromEntries(Object.keys(INDUSTRY_GOODS).map(key=>[key,Math.max(0,Math.min(INDUSTRY_CAP,Math.floor(Number(raw?.[key])||0)))]));

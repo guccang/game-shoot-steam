@@ -27,7 +27,7 @@ async original=>{
    await page.setViewportSize({width,height});await page.locator('[data-industry-recipe]').scrollIntoViewIfNeeded();await page.waitForTimeout(280);
    const review=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectIndustry(g,document));assert.equal(review.overflow,false);assert.ok(review.controls.every(c=>c.height>=44));await page.screenshot({path:out+'/factory-'+width+'.png'});
   }
-  await page.waitForFunction(()=>!g.progress.industry.sites.factory.job,null,{timeout:15000});assert.equal(await page.evaluate(()=>g.progress.industry.sites.factory.output.farmParts),2);assert.ok(await page.locator('[data-industry-output]').isDisabled());
+  await page.waitForFunction(()=>!g.progress.industry.sites.factory.job,null,{timeout:15000});assert.equal(await page.evaluate(()=>g.progress.materials.farmParts),2);assert.ok(await page.locator('[data-industry-output]').isDisabled());
   assert.deepEqual(errors,[]);fs.writeFileSync(out+'/result.json',JSON.stringify({refinery:await page.evaluate(()=>g.progress.industry.sites.refinery),factory:await page.evaluate(()=>g.progress.industry.sites.factory),errors},null,2));return {noVehicleProduction:true,errors};
  }catch(e){await page.screenshot({path:out+'/failure.png'});throw e;}finally{await context.close();}
 }

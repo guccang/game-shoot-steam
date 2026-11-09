@@ -14,6 +14,7 @@ import {transferWarehouse} from '../src/core/inventory/warehouse.js';
 import {creditOre} from '../src/core/mining/mine-transactions.js';
 import {equipmentRequirements,equipmentRecipe,payEquipment} from '../src/progression/workshop/equipment-goals.js';
 import {industryStore,industryStock} from '../src/progression/industry/industry.js';
+import {INDUSTRY_CAP} from '../src/config/industry.js';
 import {enterWorkshop,leaveCottage,updateCottage} from '../src/core/home/cottage.js';
 import {vehicleLoad} from '../src/progression/inventory/load-weight.js';
 // 隔离存档完成教程，正式持久化回调可注入失败。
@@ -32,7 +33,7 @@ test('无停靠车辆时两厂全部配方均可直接扣小屋仓库原料',asy
   for(const [key,n] of Object.entries(r.input)){const [stock,k]=industryStore(g.progress,key,'home');stock[k]=n*2;assert.equal(industryMaterialSources(g,r.site,key).home,n*2);}
   assert.deepEqual(industryVehicles(g),[]);const result=startIndustry(g,r.site,r.id,2,1000);assert.ok(result.ok,result.message);
   for(const key of Object.keys(r.input)){const [stock,k]=industryStore(g.progress,key,'home');assert.equal(stock[k],0,r.id+':'+key);}
-  assert.ok(updateIndustry(g,1000+r.seconds*2*1000));assert.equal(g.progress.industry.sites[r.site].output[r.output],r.count*2);
+  assert.ok(updateIndustry(g,1000+r.seconds*2*1000));assert.equal(industryStore(g.progress,r.output,'home')[0][industryStore(g.progress,r.output,'home')[1]],r.count*2);assert.equal(g.progress.industry.sites[r.site].output[r.output],0);
  }
 });
 
@@ -47,21 +48,21 @@ test('合计缺料或保存失败保留所有来源，不能先扣原矿再因�
  const g=scene();at(g,'refinery');g.progress.industry.raw.copper=4;g.progress.wood=1;
  let before=JSON.stringify(g.progress),result=startIndustry(g,'refinery','refine-copper',2,1000);assert.equal(result.ok,false);assert.match(result.message,/木材需要 2，合计可用 1，还缺 1/);assert.equal(JSON.stringify(g.progress),before);
  g.progress.wood=2;before=JSON.stringify(g.progress);g.livingPersist=()=>false;assert.equal(startIndustry(g,'refinery','refine-copper',2,1000).ok,false);assert.equal(JSON.stringify(g.progress),before);
- g.livingPersist=()=>true;assert.ok(startIndustry(g,'refinery','refine-copper',2,1000).ok);g.progress=validateProgress(structuredClone(g.progress));assert.equal(startIndustry(g,'refinery','refine-copper',2,1000).ok,false);assert.equal(g.progress.industry.raw.copper,0);assert.equal(g.progress.wood,0);assert.ok(updateIndustry(g,7000));assert.equal(updateIndustry(g,8000),false);assert.equal(g.progress.industry.sites.refinery.output.copper,2);
+ g.livingPersist=()=>true;assert.ok(startIndustry(g,'refinery','refine-copper',2,1000).ok);g.progress=validateProgress(structuredClone(g.progress));assert.equal(startIndustry(g,'refinery','refine-copper',2,1000).ok,false);assert.equal(g.progress.industry.raw.copper,0);assert.equal(g.progress.wood,0);assert.ok(updateIndustry(g,7000));assert.equal(updateIndustry(g,8000),false);assert.equal(g.progress.materials.copper,2);assert.equal(g.progress.industry.sites.refinery.output.copper,0);
 });
 
-test('小屋供料不绕过进厂权限，原料投入和成品装车保持原规则',()=>{
+test('小屋供料不绕过进厂权限，原料投入保持规则且成品自动入库',()=>{
  const g=scene();g.progress.industry.raw.copper=10;assert.equal(startIndustry(g,'refinery','refine-copper').ok,false);at(g,'refinery');assert.equal(startIndustry(g,'factory','make-farmParts').ok,false);
- const before=JSON.stringify(g.progress);assert.equal(transferIndustry(g,'refinery','rawCopper',2,'deposit').ok,false);assert.equal(JSON.stringify(g.progress),before);assert.ok(startIndustry(g,'refinery','refine-copper',1,1000).ok);assert.ok(updateIndustry(g,4000));assert.equal(transferIndustry(g,'refinery','copper',1,'collect').ok,false);assert.equal(g.progress.industry.sites.refinery.output.copper,1);
+ const before=JSON.stringify(g.progress);assert.equal(transferIndustry(g,'refinery','rawCopper',2,'deposit').ok,false);assert.equal(JSON.stringify(g.progress),before);assert.ok(startIndustry(g,'refinery','refine-copper',1,1000).ok);assert.ok(updateIndustry(g,4000));assert.equal(transferIndustry(g,'refinery','copper',1,'collect').ok,false);assert.equal(g.progress.materials.copper,1);assert.equal(g.progress.industry.sites.refinery.output.copper,0);
 });
 
-test('仓库装车后入厂直接提炼，再运加工厂，成品运回仓库用于枪械',()=>{
+test('仓库原矿装车提炼，产物自动入库供加工与枪械制造',()=>{
  const g=scene();g.progress.wood=2000;park(g,13,WAREHOUSE);creditOre(g.progress,'copper',8);assert.equal(g.progress.materials.copper,0);
  assert.ok(transferWarehouse(g,13,'industry:rawCopper',8,'withdraw').ok);assert.ok(transferWarehouse(g,13,'material:wood',6,'withdraw').ok);
  park(g,13,INDUSTRY_SITES.refinery);at(g,'refinery');assert.deepEqual(industryVehicles(g),[13]);assert.ok(startIndustry(g,'refinery','refine-copper',4,1000).ok);assert.equal(g.progress.industry.vehicles[13].rawCopper,0);assert.equal(g.progress.logistics.builds[13].wood,2);
- assert.equal(updateIndustry(g,12999),false);assert.ok(updateIndustry(g,13000));assert.equal(updateIndustry(g,14000),false);assert.ok(transferIndustry(g,'refinery','copper',4,'collect').ok);assert.equal(g.progress.industry.bag.copper,0);
- park(g,13,INDUSTRY_SITES.factory);at(g,'factory');assert.ok(startIndustry(g,'factory','make-copperGun',2,15000).ok);assert.ok(updateIndustry(g,23000));assert.ok(transferIndustry(g,'factory','copperGun',2,'collect').ok);assert.equal(equipmentRequirements(g.progress,'weapons',1).find(r=>r.key==='copperGun').have,0);
- home(g);assert.ok(transferWarehouse(g,13,'industry:copperGun',2,'deposit').ok);g.progress.coins=g.progress.wood=999999;g.progress.materials.parts=g.progress.materials.crystal=g.progress.materials.core=999;assert.ok(payEquipment(g.progress,'weapons',1));assert.equal(g.progress.materials.copperGun,0);
+ assert.equal(updateIndustry(g,12999),false);assert.ok(updateIndustry(g,13000));assert.equal(updateIndustry(g,14000),false);assert.equal(g.progress.materials.copper,4);assert.equal(g.progress.industry.sites.refinery.output.copper,0);assert.equal(g.progress.industry.bag.copper,0);
+ park(g,13,INDUSTRY_SITES.factory);at(g,'factory');assert.ok(startIndustry(g,'factory','make-copperGun',2,15000).ok);assert.ok(updateIndustry(g,23000));assert.equal(g.progress.materials.copperGun,2);assert.equal(equipmentRequirements(g.progress,'weapons',1).find(r=>r.key==='copperGun').have,2);
+ home(g);g.progress.coins=g.progress.wood=999999;g.progress.materials.parts=g.progress.materials.crystal=g.progress.materials.core=999;assert.ok(payEquipment(g.progress,'weapons',1));assert.equal(g.progress.materials.copperGun,0);
 });
 
 test('只汇总本厂实际停靠车辆，背包、远车、驾驶中、异地图和维修车均排除',()=>{
@@ -77,7 +78,7 @@ test('多车拆分原料扣除、缺料和保存失败回滚，旧厂内原料�
  let before=JSON.stringify(g.progress);assert.equal(startIndustry(g,'refinery','refine-copper',2).ok,false);assert.equal(JSON.stringify(g.progress),before);
  g.progress.logistics.builds[19].wood=2;before=JSON.stringify(g.progress);g.livingPersist=()=>false;assert.equal(startIndustry(g,'refinery','refine-copper',2).ok,false);assert.equal(JSON.stringify(g.progress),before);g.livingPersist=()=>true;assert.ok(startIndustry(g,'refinery','refine-copper',2,1000).ok);
  assert.equal(g.progress.industry.vehicles[13].rawCopper,0);assert.equal(g.progress.industry.vehicles[19].rawCopper,0);assert.equal(g.progress.logistics.builds[19].wood,0);assert.equal(g.progress.industry.sites.refinery.input.rawCopper,0);
- g.progress=validateProgress(structuredClone(g.progress));g.livingPersist=()=>false;assert.equal(updateIndustry(g,7000),false);assert.ok(g.progress.industry.sites.refinery.job);g.livingPersist=()=>true;assert.ok(updateIndustry(g,10000));assert.equal(g.progress.industry.sites.refinery.output.copper,2);
+ g.progress=validateProgress(structuredClone(g.progress));g.livingPersist=()=>false;assert.equal(updateIndustry(g,7000),false);assert.ok(g.progress.industry.sites.refinery.job);g.livingPersist=()=>true;assert.ok(updateIndustry(g,10000));assert.equal(g.progress.materials.copper,2);assert.equal(g.progress.industry.sites.refinery.output.copper,0);
 });
 
 test('成品按停靠车辆空余载荷分装，装不下或保存失败完全保留',()=>{
@@ -93,8 +94,8 @@ test('两厂复用门口候停、管理员、房间碰撞和正常出门，不�
 
 test('所有工业配方及农具使用真实车载原料，入库启用成品并保留存档',async()=>{
  const {INDUSTRY_RECIPES}=await import('../src/config/industry.js'),{farmToolReady}=await import('../src/config/farm-tools.js');const g=scene();
- for(const r of INDUSTRY_RECIPES){park(g,13,INDUSTRY_SITES[r.site]);at(g,r.site);for(const [k,n] of Object.entries(r.input)){const [stock,key]=industryStore(g.progress,k,13,true);stock[key]=n;}assert.ok(startIndustry(g,r.site,r.id,1,1000).ok,r.id);assert.ok(updateIndustry(g,1000+r.seconds*1000));assert.equal(g.progress.industry.sites[r.site].output[r.output],1);}
- assert.equal(farmToolReady(g.progress,'seeder'),false);assert.ok(transferIndustry(g,'factory','seederKit',1,'collect').ok);home(g);assert.ok(transferWarehouse(g,13,'industry:seederKit',1,'deposit').ok);assert.equal(farmToolReady(validateProgress(g.progress),'seeder'),true);
+ for(const r of INDUSTRY_RECIPES){park(g,13,INDUSTRY_SITES[r.site]);at(g,r.site);for(const [k,n] of Object.entries(r.input)){const [stock,key]=industryStore(g.progress,k,13,true);stock[key]=n;}assert.ok(startIndustry(g,r.site,r.id,1,1000).ok,r.id);assert.ok(updateIndustry(g,1000+r.seconds*1000));assert.ok(industryStore(g.progress,r.output,'home')[0][industryStore(g.progress,r.output,'home')[1]]>=1);assert.equal(g.progress.industry.sites[r.site].output[r.output],0);}
+ assert.equal(farmToolReady(g.progress,'seeder'),true);home(g);assert.equal(farmToolReady(validateProgress(g.progress),'seeder'),true);
 });
 
 test('车型配方保留单金属要求，旧运输车归并货物后读档不重复迁移',()=>{
@@ -102,6 +103,34 @@ test('车型配方保留单金属要求，旧运输车归并货物后读档不�
  const old=ERA_VEHICLES.find(v=>v.id==='steam-freighter').index;p.vehicleHulls[old]=1;p.vehicleHulls[13]=1;p.vehicleIndex=old;p.logistics.builds[old].wood=25;p.logistics.builds[13].wood=6;p.logistics.builds[old].cargo[0]=3;p.supplies.vehicles[old].light=50;
  const q=validateProgress(p);assert.equal(q.vehicleHulls[old],0);assert.equal(q.vehicleIndex,13);assert.equal(q.logistics.builds[13].wood,31);assert.equal(q.logistics.builds[13].cargo[0],3);assert.equal(q.supplies.vehicles[13].light,50);assert.equal(validateProgress(q).logistics.builds[13].wood,31);
  for(const v of ERA_VEHICLES.filter(v=>v.retired))assert.equal(equipmentRecipe('vehicle',v.index,p),null);
+});
+
+test('双厂同时到期和旧成品自动入小屋，离线读档后不重复到账',()=>{
+ const g=scene();g.cottage=null;g.state='paused';g.progress.industry.sites.refinery.job={recipe:'refine-copper',count:3,readyAt:1000};g.progress.industry.sites.factory.job={recipe:'make-farmParts',count:4,readyAt:1000};
+ g.progress.industry.sites.refinery.output.iron=5;g.progress.industry.sites.factory.output.seederKit=2;let saves=0;g.livingPersist=()=>{saves++;return true;};
+ assert.ok(updateIndustry(g,2000));assert.equal(saves,1);assert.equal(g.progress.materials.copper,3);assert.equal(g.progress.materials.farmParts,4);assert.equal(g.progress.materials.iron,5);assert.equal(g.progress.materials.seederKit,2);
+ assert.ok(Object.values(g.progress.industry.sites).every(s=>!s.job&&Object.values(s.output).every(n=>n===0)));
+ g.progress=validateProgress(structuredClone(g.progress));assert.equal(updateIndustry(g,999999),false);assert.equal(saves,1);assert.equal(g.progress.materials.copper,3);
+});
+
+test('自动入库保存失败或异常原子回滚，到期任务与旧成品可重试',()=>{
+ for(const persist of [()=>false,()=>{throw Error('保存失败');}]){
+  const g=scene();g.progress.industry.sites.refinery.job={recipe:'refine-copper',count:2,readyAt:1000};g.progress.industry.sites.factory.output.ironGun=3;g.livingPersist=persist;
+  const before=structuredClone(g.progress);assert.equal(updateIndustry(g,2000),false);assert.deepEqual(g.progress,before);g.livingPersist=()=>true;assert.equal(updateIndustry(g,3000),false);assert.ok(updateIndustry(g,4000));assert.equal(g.progress.materials.copper,2);assert.equal(g.progress.materials.ironGun,3);assert.equal(updateIndustry(g,5000),false);
+ }
+});
+
+test('小屋满额时保留剩余产物，腾出空间后自动补入且新批次不能超额预订',()=>{
+ const g=scene();at(g,'refinery');g.progress.materials.copper=INDUSTRY_CAP-1;g.progress.industry.sites.refinery.output.copper=3;
+ assert.ok(updateIndustry(g,1000));assert.equal(g.progress.materials.copper,INDUSTRY_CAP);assert.equal(g.progress.industry.sites.refinery.output.copper,2);assert.equal(startIndustry(g,'refinery','refine-copper',1,1000).ok,false);
+ g.progress.materials.copper-=2;assert.ok(updateIndustry(g,2000));assert.equal(g.progress.materials.copper,INDUSTRY_CAP);assert.equal(g.progress.industry.sites.refinery.output.copper,0);
+});
+
+test('生产中小屋被填满仍保留本批产量，双端均满时保留待完成任务',()=>{
+ const g=scene();g.progress.materials.copper=INDUSTRY_CAP;g.progress.industry.sites.refinery.job={recipe:'refine-copper',count:2,readyAt:1000};
+ assert.ok(updateIndustry(g,2000));assert.equal(g.progress.materials.copper,INDUSTRY_CAP);assert.equal(g.progress.industry.sites.refinery.output.copper,2);assert.equal(g.progress.industry.sites.refinery.job,null);
+ g.progress.industry.sites.refinery.output.copper=INDUSTRY_CAP;g.progress.industry.sites.refinery.job={recipe:'refine-copper',count:2,readyAt:1000};assert.equal(updateIndustry(g,3000),false);assert.ok(g.progress.industry.sites.refinery.job);
+ g.progress.materials.copper-=4;assert.ok(updateIndustry(g,5000));assert.equal(g.progress.materials.copper,INDUSTRY_CAP);assert.equal(g.progress.industry.sites.refinery.output.copper,INDUSTRY_CAP-2);assert.equal(g.progress.industry.sites.refinery.job,null);
 });
 
 test('点厂房主动走近不会被门前货车抢上车，出门后仍能正常登车',async()=>{

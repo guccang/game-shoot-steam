@@ -5,7 +5,7 @@ export const ERA_FIRST = 11;
 export const HORSE_PRICE = 180;
 import {INDUSTRY_MATERIALS} from './industry.js';
 export const ERA_RESOURCES = {
-  ...Object.fromEntries(Object.entries(INDUSTRY_MATERIALS).map(([id,m])=>[id,{...m,source:['copper','iron','rareMetal','stone'].includes(id)?'进入营地西侧提炼厂，可直接使用小屋仓库原矿提炼后领取。':'进入加工厂，可直接使用小屋仓库的金属块和木材制作后领取。'}])),
+  ...Object.fromEntries(Object.entries(INDUSTRY_MATERIALS).map(([id,m])=>[id,{...m,source:['copper','iron','rareMetal','stone'].includes(id)?'进入营地西侧提炼厂，可直接使用小屋仓库原矿提炼，产物自动存入小屋仓库。':'进入加工厂，可直接使用小屋仓库的金属块和木材制作，产物自动存入小屋仓库。'}])),
   draftHorse: {name:'挽马',source:'走到营地牧栏门口，领养一匹挽马后去工坊套车。'},
 };
 // 车体静重与额定货载分别计量；座位使用250单位原画的车把或车斗前缘。

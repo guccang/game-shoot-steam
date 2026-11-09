@@ -641,7 +641,7 @@ export function createApplication({
         profiler.start('render.panels.fire'); firePanel.renderFrame(); profiler.end('render.panels.fire');
         profiler.start('render.panels.story'); storyPanel.renderFrame(dt); profiler.end('render.panels.story');
         profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
-        profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); industryPanel.render(); profiler.end('render.panels.farm');
+        profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); industryPanel.render(); warehouse.renderFrame(); profiler.end('render.panels.farm');
         legendaryWorkshop.renderFrame();
         seedShop.renderFrame();tradePanel.renderFrame();
         outdoors.renderFrame();

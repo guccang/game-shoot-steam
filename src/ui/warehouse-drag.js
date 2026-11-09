@@ -18,5 +18,6 @@ export function createWarehouseDrag({panel,onTransfer}){
  scope.on(panel.ownerDocument.defaultView,'blur',cancel);
  // 销毁页面时移除所有手势监听器。
  function dispose(){cancel();scope.dispose();}
- return {cancel,dispose};
+ // 库存变化时等待指针和松手后的确认排队结束，避免刷新清掉待处理的拖放。
+ return {cancel,dispose,get active(){return !!gesture||pending!==null;}};
 }

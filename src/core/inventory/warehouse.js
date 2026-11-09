@@ -1,5 +1,6 @@
 import {warehouseNotice as warehouseWoodNotice} from './warehouse-notice.js';
 import {INDUSTRY_GOODS} from '../../config/industry.js';
+import {MATERIALS} from '../../config/materials.js';
 import {industryStore} from '../../progression/industry/industry.js';
 import {WEAPONS} from '../../config/weapons.js';
 import {carriedWeapon,storedWarehouseWeapon} from '../../progression/inventory/weapon-storage.js';
@@ -37,8 +38,8 @@ function stores(p,id,source,create=false){
  if(car)return null;
  return {item,carry:p.farm.seeds,key:item.index,store:p.warehouse.seeds,storeKey:item.index,cap:FARM_STOCK_CAP};
 }
-// 列表只展示有货的条目；弹药数量不含已装填弹匣，避免复制或拆走正在使用的弹药。
-export function warehouseRows(game,source='bag'){return [{...itemDefinition('currency:coins'),carried:0,stored:game.progress.coins,readonly:true},...WEAPONS.flatMap((_,i)=>source==='bag'?[{...itemDefinition('weapon:'+i),carried:carriedWeapon(game.progress,i)?1:0,stored:storedWarehouseWeapon(game.progress,i)?1:0}]:[]),...WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key]||0,stored:s.store[s.storeKey]||0}]:[];})];}
+// 公共材料只读同一余额，不生成可搬运副本；弹药不含已装填弹匣。
+export function warehouseRows(game,source='bag'){return [{...itemDefinition('currency:coins'),carried:0,stored:game.progress.coins,readonly:true},...Object.entries(MATERIALS).map(([key,item])=>({id:'warehouse-balance:'+key,key,name:item.name,category:'material',mass:0,icon:{kind:'resource',key},carried:0,stored:game.progress.materials[key]||0,readonly:true})),...WEAPONS.flatMap((_,i)=>source==='bag'?[{...itemDefinition('weapon:'+i),carried:carriedWeapon(game.progress,i)?1:0,stored:storedWarehouseWeapon(game.progress,i)?1:0}]:[]),...WAREHOUSE_ITEMS.flatMap(id=>{const s=stores(game.progress,id,source);return s?[{...s.item,carried:s.carry[s.key]||0,stored:s.store[s.storeKey]||0}]:[];})];}
 // 预演与提交共用校验，并给出取出后的实际负重；满载需要玩家再次明确确认。
 export function warehouseTransferPreview(game,source,id,count,direction){
  if(!canUseWarehouse(game)||source!=='bag'&&!warehouseVehicles(game).includes(source))return {ok:false,message:'请靠近仓库打开存取页面；载具需位于仓库附近。'};

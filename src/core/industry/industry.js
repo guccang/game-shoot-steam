@@ -2,7 +2,7 @@
 import {INDUSTRY_SITES} from '../../config/industry.js';
 export {INDUSTRY_SITES} from '../../config/industry.js';
 import {INDUSTRY_GOODS,INDUSTRY_RECIPES,INDUSTRY_CAP} from '../../config/industry.js';
-import {industryStore} from '../../progression/industry/industry.js';
+import {industryStore,industryHomeCapacity} from '../../progression/industry/industry.js';
 import {validateProgress} from '../../progression/progress.js';
 import {commitCargo} from '../inventory/cargo.js';
 import {vehicleLoad} from '../../progression/inventory/load-weight.js';
@@ -62,7 +62,8 @@ export function startIndustry(game,id,recipeId,count=1,now=Date.now()){
  const recipe=INDUSTRY_RECIPES.find(r=>r.id===recipeId&&r.site===id),site=game.progress.industry.sites[id];
  if(!recipe||!Number.isSafeInteger(count)||count<1||count>99)return {ok:false,message:'每批请选择1至99份。'};
  if(site.job)return {ok:false,message:'当前批次正在生产。'};
- if(site.output[recipe.output]+recipe.count*count>INDUSTRY_CAP)return {ok:false,message:'成品仓已满，请先取货。'};
+ const [homeOutput,homeKey]=industryStore(game.progress,recipe.output,'home');
+ if((homeOutput[homeKey]||0)+site.output[recipe.output]+recipe.count*count>industryHomeCapacity(recipe.output))return {ok:false,message:'小屋仓库的该类成品已满，请先使用或取出一部分。'};
  const cars=industryVehicles(game,id),next=validateProgress(structuredClone(game.progress)),s=next.industry.sites[id];
  for(const [key,n] of Object.entries(recipe.input)){
   const needed=n*count,local=Math.min(s.input[key],needed);s.input[key]-=local;
@@ -71,17 +72,34 @@ export function startIndustry(game,id,recipeId,count=1,now=Date.now()){
   home[homeKey]-=remaining;
  }
  s.job={recipe:recipe.id,count,readyAt:now+recipe.seconds*count*1000};
- return commitCargo(game,next,'已开始'+recipe.name+'，原料已扣除，完成后可装回停靠载具。');
+ return commitCargo(game,next,'已开始'+recipe.name+'，完成后自动存入小屋仓库。');
 }
 const retry=new WeakMap();
-// 仅到期任务写盘一次，保存失败保留原任务，防止刷新或重试重复产出。
+// 历史暂存与新成品都写入正式小屋库存，目标满额时仅保留尚未入库的部分。
+function deliverIndustryOutput(progress){
+ let moved=0;
+ for(const site of Object.values(progress.industry.sites))for(const [key,count]of Object.entries(site.output)){
+  if(!count)continue;const [home,k]=industryStore(progress,key,'home'),n=Math.min(count,Math.max(0,industryHomeCapacity(key)-(home[k]||0)));
+  if(n){home[k]=(home[k]||0)+n;site.output[key]-=n;moved+=n;}
+ }
+ return moved;
+}
+// 到期与旧成品迁入同一存档事务，保存失败不清任务也不重复增加小屋库存。
 export function updateIndustry(game,now=Date.now()){
  if(!['playing','paused'].includes(game.state)||now<(retry.get(game)||0))return false;
  const due=Object.entries(game.progress.industry.sites).filter(([,s])=>s.job&&s.job.readyAt<=now);
- if(!due.length)return false;
+ const pending=Object.values(game.progress.industry.sites).some(s=>Object.entries(s.output).some(([key,n])=>{if(!n)return false;const [home,k]=industryStore(game.progress,key,'home');return (home[k]||0)<industryHomeCapacity(key);}));
+ if(!due.length&&!pending)return false;
  const next=validateProgress(structuredClone(game.progress));
- for(const [id] of due){const s=next.industry.sites[id],r=INDUSTRY_RECIPES.find(r=>r.id===s.job.recipe);s.output[r.output]+=r.count*s.job.count;s.job=null;}
- const result=commitCargo(game,next,'工厂生产已完成。');
+ let changed=deliverIndustryOutput(next)>0;
+ for(const [id] of due){const s=next.industry.sites[id],r=INDUSTRY_RECIPES.find(r=>r.id===s.job.recipe),n=r.count*s.job.count;
+  if(s.output[r.output]+n>INDUSTRY_CAP)continue;
+  s.output[r.output]+=n;s.job=null;changed=true;
+ }
+ if(!changed){retry.set(game,now+2000);return false;}
+ deliverIndustryOutput(next);
+ const waiting=Object.values(next.industry.sites).some(s=>Object.values(s.output).some(n=>n>0));
+ const result=commitCargo(game,next,waiting?'小屋仓库已满，剩余产物暂存在厂内，腾出空间后自动入库。':'工厂产物已自动存入小屋仓库。');
  if(!result.ok)retry.set(game,now+2000);
  return result.ok;
 }

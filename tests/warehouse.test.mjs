@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
-import {canUseWarehouse,warehouseVehicles,transferWarehouse,warehouseTransferPreview} from '../src/core/inventory/warehouse.js';
+import {canUseWarehouse,warehouseVehicles,warehouseRows,transferWarehouse,warehouseTransferPreview} from '../src/core/inventory/warehouse.js';
 import {catLoad,vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
 import {updateCottage,enterWorkshop} from '../src/core/home/cottage.js';
@@ -46,3 +46,9 @@ test('满载提示、上限、非法数量和保存失败均不吞货',()=>{
 
 // 室外许可覆盖步行、骑乘和暂停，拒绝远程、跨地图、其他房屋及事件战斗。
 test('室外打开不改坐标或驾驶，远处与其他场景不能存取',()=>{const g=setup(),position={x:g.player.x,y:g.player.y};g.vehicle.active=true;assert.ok(canUseWarehouse(g));g.state='paused';assert.ok(canUseWarehouse(g));assert.equal(g.vehicle.active,true);assert.deepEqual({x:g.player.x,y:g.player.y},position);g.player.x+=200;assert.equal(canUseWarehouse(g),false);Object.assign(g.player,position);g.mapId='jiuzhaigou';assert.equal(canUseWarehouse(g),false);g.mapId='forest';g.cottage={kind:'cottage'};assert.equal(canUseWarehouse(g),false);g.cottage=null;g.boss={};assert.equal(canUseWarehouse(g),false);g.boss=null;g.player.hp=0;assert.equal(canUseWarehouse(g),false);});
+
+test('仓库列出公共材料真实余额，只读展示不能复制到背包或载具',()=>{
+ const g=setup();Object.assign(g.progress.materials,{parts:12,crystal:7,core:3});const before=structuredClone(g.progress);
+ for(const key of ['parts','crystal','core']){const row=warehouseRows(g).find(r=>r.id==='warehouse-balance:'+key);assert.equal(row.stored,g.progress.materials[key]);assert.equal(row.carried,0);assert.equal(row.readonly,true);assert.equal(transferWarehouse(g,'bag',row.id,1,'withdraw',true).ok,false);}
+ assert.deepEqual(g.progress,before);
+});

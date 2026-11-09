@@ -47,7 +47,7 @@ export function drawIndustryMachineScene(c,{site,recipe,count,loaded=[],job=null
   gear(c,237,59,22,t*2);box(c,166,48,39,15,3,'#e7d5a2',EDGE,1.5);
  }
  // 状态灯与出料器只表达真实生产状态，成品数量来自已提交的库存。
- oval(c,338,17,6,6,output?'#e1bd63':active?'#a8c781':'#7e8f76',EDGE,1.5);c.fillStyle=dark?'#f1e8c8':EDGE;c.textAlign='right';c.font=canvasFont(12);c.fillText(job?(motion.remaining?'运转中':'正在保存产物'):output?'成品可取':'等待投料',326,21);
+ oval(c,338,17,6,6,output?'#e1bd63':active?'#a8c781':'#7e8f76',EDGE,1.5);c.fillStyle=dark?'#f1e8c8':EDGE;c.textAlign='right';c.font=canvasFont(12);c.fillText(job?(motion.remaining?'运转中':'正在保存产物'):output?'等待入库':'自动入库',326,21);
  if(active&&!reduced&&motion.ratio>.45){const u=(t*.5)%1;drawResourceIcon(c,recipe.output,244+u*63,181,25);}
  box(c,271,205,73,39,5,dark?'#a18d67':'#d8bd86',EDGE,2);box(c,267,202,81,10,3,'#e9d39d',EDGE,2);if(output){drawResourceIcon(c,recipe.output,305,190,39);c.fillStyle=EDGE;c.font=canvasFont(13);c.textAlign='center';c.fillText('×'+output,307,235);}
  // 细进度轨由实际已耗时填充；启动按钮与产物命中区由DOM提供无障碍语义。

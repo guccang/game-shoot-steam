@@ -17,7 +17,7 @@ const ammoUses={light:'供使用实物子弹的枪械及机枪装填。',shell:'
 // 每件可堆叠物品只定义单位重量，数量由实际存档读取。
 const entries=[
  WOOD_ITEM,
- ...Object.entries(INDUSTRY_GOODS).filter(([key])=>key!=='wood').map(([key,r])=>({id:'industry:'+key,name:r.name,key,category:'material',mass:.5,icon:{kind:'resource',key},description:'工业生产实物。',use:'进入提炼厂或加工厂可直接使用小屋仓库原料，也可用停靠载具供料；制品装车运回仓库供工坊和农具使用。'})),
+ ...Object.entries(INDUSTRY_GOODS).filter(([key])=>key!=='wood').map(([key,r])=>({id:'industry:'+key,name:r.name,key,category:'material',mass:.5,icon:{kind:'resource',key},description:'工业生产实物。',use:'进入提炼厂或加工厂可直接使用小屋仓库原料，也可用停靠载具供料；产物自动存入小屋仓库，可直接供工坊和农具使用，也可按需取出或装车。'})),
  {id:'trade:cargo-tag',name:'遗失的货签',category:'keepsake',mass:0,icon:{kind:'keepsake',key:'elder-letter'},description:'商队托你找回的货物标签。',use:'集齐三张后，回营地订单板交还商队领取报酬。'},
  ...ORE_KEYS.map(key=>({id:'ore:'+key,name:ORE_NAMES[key],category:'material',mass:ORE_MASS,icon:{kind:'resource',key},description:'地下开采的原矿。',use:'可在库存矿石不足时铺轨或造矿车。到仓库升井卸下后，石矿用于施工或切制石块，金属原矿用于提炼。'})),
  {id:FORAGE_ID,name:'甜穗草',category:'material',mass:.1,icon:{kind:'forage'},description:'一束带着甜香的金穗牧草，常长在营地牧栏东南的草地上。',use:'走近野牛，喂它一束就能领回牧栏。也可以留给栏里的耕牛吃。'},
