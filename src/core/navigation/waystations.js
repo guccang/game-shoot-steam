@@ -1,5 +1,5 @@
 // 驿站事务与自动行进共用正式碰撞和分帧寻路，绝不传送或修改地形。
-import {WAYSTATIONS as W} from '../../config/waystations.js';
+import {WAYSTATIONS as W,waystationPurpose} from '../../config/waystations.js';
 import {canonical,nearest,worldDistance} from '../../world/coordinates.js';
 import {blocked} from '../../physics/motion.js';
 import {questLineClear} from '../../physics/quest-route.js';
@@ -43,11 +43,25 @@ export function waystationBuildReason(g){
  return '';
 }
 // 再次检查当前位置后才写入；编号不使用玩家名称作为逻辑键。
-export function buildWaystation(g){
+export function buildWaystation(g,options={}){
  const message=waystationBuildReason(g);if(message)return {ok:false,message};
  const data=g.progress.waystations??=normalizeWaystations(null),id=data.nextId++;
- const site={id,name:randomWaystationName(data.sites,g.random||Math.random),...canonical(g.player),mapId:'forest'};
+ const site={id,name:randomWaystationName(data.sites,g.random||Math.random),purpose:waystationPurpose(options?.purpose).id,...canonical(g.player),mapId:'forest'};
  data.sites.push(site);return {ok:true,message:`已建立${site.name}。`,site};
+}
+// 手机可远程移除记录，落盘成功后才终止相关行程；失败不改变站点、编号或运动。
+export function removeWaystation(g,id,persist=()=>true){
+ if(g.player.hp<=0||!['playing','paused'].includes(g.state))return {ok:false,message:'当前无法移除驿站。'};
+ const old=g.progress.waystations,site=old?.sites.find(s=>s.id===id);
+ if(!site)return {ok:false,message:'找不到这座驿站，可能已经移除。'};
+ g.progress.waystations={...old,sites:old.sites.filter(s=>s.id!==id)};
+ try{
+  if(!persist(g.progress))throw Error('保存失败');
+ }catch{
+  g.progress.waystations=old;return {ok:false,message:'保存失败，驿站未移除，请重试。'};
+ }
+ if(g.waystationTravel?.id===id)stopWaystationTravel(g,'目的驿站已移除，已停止自动行进。');
+ return {ok:true,message:`已移除${site.id}号驿站 · ${site.name}。`,site};
 }
 // 终止时清除惯性，手动接管仍由当前帧的真实方向输入继续驱动。
 export function stopWaystationTravel(g,message='已停止驿站导航。'){

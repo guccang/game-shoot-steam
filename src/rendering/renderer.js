@@ -246,6 +246,7 @@ export class Renderer {
     if(!this.recoverContext())return;
       this.syncCampLayout(renderGame.progress);
     this.renderGame = renderGame;
+    this.waystationReview=[];
     const profiler = this.profiler;
     profiler?.start('render.prepare');
     const c = this.c,
@@ -530,7 +531,7 @@ export class Renderer {
       else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
       else if(item.type.startsWith('regional-'))drawRegionalCamp(c,item,source,light.night,winter);
-      else if(item.type==='waystation')drawWaystation(c,item,light.night);
+      else if(item.type==='waystation')this.waystationReview.push(drawWaystation(c,item,light.night));
       else if(item.type.startsWith('repair-'))drawVehicleServiceObject(c,item,camp,light.night,this.reduced.matches,g.player);
       else if(item.type==='legendary-workshop')drawLegendaryWorkshop(c,item,light.night);
       else if(item.type==='river-dock'||item.type==='river-barrier')drawRiverCrossing(c,item,light.night,g.player);

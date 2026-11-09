@@ -3,4 +3,16 @@
 #waystation-travel[hidden]{display:none}
 #waystation-travel span{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}
 #waystation-travel button{flex:none;min-height:44px}
-#waystation-list .ui-button{width:100%}
+/* 用途单选与列表动作沿用手机底板的表面、圆角和森林绿选中态。 */
+.waystation-purposes{min-width:0;margin:12px 0;border:0;padding:0}
+.waystation-purposes legend{margin-bottom:8px;font-weight:700}
+#waystation-purposes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#waystation-purposes label{position:relative;min-width:0;min-height:44px}
+#waystation-purposes input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+#waystation-purposes span{display:grid;place-items:center;min-height:44px;padding:6px 4px;border:2px solid var(--ui-line);border-radius:var(--ui-radius-button);background:var(--ui-sage);color:var(--ui-forest);font-weight:700}
+#waystation-purposes input:checked+span{background:var(--ui-forest);border-color:var(--ui-forest);color:var(--ui-paper)}
+#waystation-purposes input:focus-visible+span{outline:2px solid var(--ui-gold);outline-offset:2px}
+.waystation-actions{display:flex;gap:8px}
+.waystation-actions .ui-button{min-width:0;flex:1;padding-inline:8px}
+.waystation-confirm{margin-top:14px}
+#waystation-list h3,#waystation-list p{overflow-wrap:anywhere}

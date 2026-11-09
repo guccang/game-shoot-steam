@@ -3,7 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {normalizeWaystations,randomWaystationName} from '../src/progression/navigation/waystations.js';
-import {buildWaystation,travelToWaystation,updateWaystationTravel,waystationBuildReason} from '../src/core/navigation/waystations.js';
+import {buildWaystation,removeWaystation,travelToWaystation,updateWaystationTravel,waystationBuildReason} from '../src/core/navigation/waystations.js';
+import {WAYSTATION_PURPOSES} from '../src/config/waystations.js';
 import {blocked,moveBody} from '../src/physics/motion.js';
 import {WORLD,worldDistance} from '../src/world/coordinates.js';
 import {NATURAL_TERRAIN} from '../src/world/natural-terrain.js';
@@ -53,6 +54,35 @@ test('随机中文名称不重复，编号从1连续递增，读档后继续编�
  g.progress=validateProgress(JSON.parse(JSON.stringify(g.progress)));assert.equal(g.progress.waystations.sites[0].name,a.name);g.player.x+=180;const c=buildWaystation(g).site;assert.equal(c.id,3);
  assert.notEqual(randomWaystationName([],()=>0),randomWaystationName([],()=>.5));
  const sites=[];for(let i=0;i<32;i++)sites.push({name:randomWaystationName(sites,()=>0)});assert.equal(new Set(sites.map(s=>s.name)).size,32);
+});
+
+test('每种驿站用途可创建和读档，旧档与未知用途归通用，名称编号保留',()=>{
+ for(const purpose of WAYSTATION_PURPOSES){const g=fixture(),site=buildWaystation(g,{purpose:purpose.id}).site;assert.equal(site.purpose,purpose.id);assert.deepEqual(validateProgress(JSON.parse(JSON.stringify(g.progress))).waystations,g.progress.waystations);}
+ const old={id:8,name:'旧林间站',x:100,y:200};
+ const normalized=normalizeWaystations({nextId:12,sites:[old,{...old,id:9,purpose:'unknown'},{...old,id:10,purpose:'fishing'}]});
+ assert.deepEqual(normalized.sites.map(s=>s.purpose),['general','general','fishing']);assert.equal(normalized.sites[0].name,old.name);assert.equal(normalized.nextId,12);
+});
+
+test('手机远程移除驿站保留其他站和后续编号，可读档且不能重复移除',()=>{
+ const g=fixture(),a=buildWaystation(g,{purpose:'farm'}).site;g.player.x+=220;const b=buildWaystation(g,{purpose:'camp'}).site;
+ const count=g.progress.waystations.nextId;g.state='paused';g.cottage={kind:'mine'};let saves=0;
+ assert.ok(removeWaystation(g,a.id,()=>{saves++;return true;}).ok);assert.deepEqual(g.progress.waystations.sites,[b]);assert.equal(g.progress.waystations.nextId,count);assert.equal(saves,1);
+ assert.equal(removeWaystation(g,a.id,()=>{saves++;return true;}).ok,false);assert.equal(saves,1);assert.deepEqual(normalizeWaystations(g.progress.waystations),g.progress.waystations);
+ g.cottage=null;g.state='playing';g.player.x+=220;assert.equal(buildWaystation(g).site.id,count);
+});
+
+test('移除目的地仅在保存成功后终止行程，失败或异常不影响站点和惯性',()=>{
+ for(const save of [()=>false,()=>{throw Error('磁盘错误');}]){
+  const g=fixture(),site=buildWaystation(g).site;g.player.x+=240;travelToWaystation(g,site.id);g.player.vx=17;g.player.vy=9;
+  const stations=g.progress.waystations,trip=g.waystationTravel;assert.equal(removeWaystation(g,site.id,save).ok,false);assert.equal(g.progress.waystations,stations);assert.equal(g.waystationTravel,trip);assert.equal(g.player.vx,17);assert.equal(g.player.vy,9);
+  assert.ok(removeWaystation(g,site.id,()=>true).ok);assert.equal(g.waystationTravel,null);assert.equal(g.player.vx,0);assert.equal(g.player.vy,0);assert.match(g.waystationMessage,/目的驿站已移除/);
+ }
+});
+
+test('移除其他站不打断当前行程，死亡或无效状态不得移除',()=>{
+ const g=fixture(),a=buildWaystation(g).site;g.player.x+=240;const b=buildWaystation(g).site;g.player.x+=240;travelToWaystation(g,a.id);const trip=g.waystationTravel;
+ assert.ok(removeWaystation(g,b.id).ok);assert.equal(g.waystationTravel,trip);
+ for(const reason of ['dead','state']){if(reason==='dead')g.player.hp=0;else{g.player.hp=120;g.state='lost';}const before=structuredClone(g.progress.waystations);assert.equal(removeWaystation(g,a.id).ok,false);assert.deepEqual(g.progress.waystations,before);}
 });
 test('长途稀疏网格依然逐段检查树木，不能以较大步长穿过障碍',()=>{
  const g=fixture(),body=playerNavigationBody(g),goal={x:g.player.x+400,y:g.player.y};g.trees=[{x:g.player.x+190,y:g.player.y,radius:38,hp:100}];

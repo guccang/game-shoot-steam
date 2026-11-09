@@ -2190,7 +2190,7 @@ export function inspectFarmAutoWork(renderer){
 // 驿站验收只读取正式存档、导航及手机DOM，不创建演示站点。
 export function inspectWaystations(renderer,root=document){
  const game=renderer.renderGame||renderer.game,panel=root.getElementById('waystations-dialog');
- return {designCriterion:'waystations',stations:game.progress.waystations?.sites||[],travel:game.waystationTravel?{id:game.waystationTravel.id,phase:game.waystationTravel.phase,retries:game.waystationTravel.retries}:null,player:{x:game.player.x,y:game.player.y},newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:panel?.open?[...panel.querySelectorAll('button,input')].map(b=>({label:b.getAttribute('aria-label')||b.textContent,height:b.getBoundingClientRect().height})):[]};
+ return {designCriterion:'waystations',stations:game.progress.waystations?.sites||[],signs:renderer.waystationReview||[],purpose:panel?.querySelector('[name="waystation-purpose"]:checked')?.value,removing:panel?.querySelector('[data-station-confirm]')?.dataset.stationConfirm||null,travel:game.waystationTravel?{id:game.waystationTravel.id,phase:game.waystationTravel.phase,retries:game.waystationTravel.retries}:null,player:{x:game.player.x,y:game.player.y},newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:panel?.open?[...panel.querySelectorAll('button,input')].map(b=>({label:b.getAttribute('aria-label')||b.textContent,height:b.getBoundingClientRect().height})):[]};
 }
 
 // 地块性能读取正式缓存与主循环采样，记录视野及同步补建，不以逻辑帧率代替渲染耗时。
