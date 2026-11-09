@@ -42,7 +42,7 @@ async original=>{
  await page.evaluate(async()=>{await lessonCheckpoint('vehicle-weight','garage');});await page.locator('#mainline-hud').tap();await page.locator('#logistics-dialog[open]').waitFor();await shot('vehicle-weight');
  if(!await page.evaluate(()=>a.game.progress.mainline.seen.vehicleLoadViewed))throw Error('载重浏览未记账');await page.locator('#logistics-close').tap();
  await page.evaluate(async()=>{Object.assign(a.game.player,(await import('/src/config/mainline.js')).MAINLINE_SITES.warehouseEntry);a.renderer.camera.time=null;a.refresh();});
- await page.locator('#mainline-hud').tap();await page.locator('#warehouse-source').selectOption('0');await page.locator('[data-item="material:wood"][data-direction="withdraw"]').tap();await page.locator('#warehouse-quantity [data-confirm]').tap();await shot('cargo-loaded');
+ await page.locator('#mainline-hud').tap();await page.locator('[data-warehouse-source="0"]').tap();await page.locator('[data-item="material:wood"][data-direction="withdraw"]').tap();await page.locator('#warehouse-quantity [data-confirm]').tap();await shot('cargo-loaded');
  if(!await page.evaluate(()=>a.game.progress.mainline.seen.cargoLoaded))throw Error('车库装载未记账');await page.locator('#warehouse-dialog [data-close]').tap();
  await page.evaluate(async()=>{await lessonCheckpoint('cargo-cleanup','garage');a.game.progress.logistics.builds[0].wood=1;a.refresh();});
  await page.locator('#mainline-hud').tap();await page.locator('#load-cleanup-dialog[data-source="vehicle"][open]').waitFor();await page.locator('[data-cleanup-item="material:wood"]').tap();await page.locator('[data-quantity-confirm]').tap();await shot('cargo-cleanup');

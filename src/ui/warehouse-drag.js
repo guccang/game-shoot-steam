@@ -12,7 +12,8 @@ export function createWarehouseDrag({panel,onTransfer}){
  scope.on(panel,'pointermove',e=>{const g=gesture;if(!g||g.pointer!==e.pointerId)return;if(!g.ghost&&Math.hypot(e.clientX-g.x,e.clientY-g.y)<8)return;if(g.touch&&!g.ghost&&Math.abs(e.clientY-g.y)>=Math.abs(e.clientX-g.x)){cancel();return;}e.preventDefault();if(!g.ghost){g.ghost=g.card.cloneNode(true);g.ghost.removeAttribute('data-item');g.ghost.setAttribute('aria-hidden','true');g.ghost.tabIndex=-1;g.ghost.classList.add('warehouse-ghost');panel.append(g.ghost);g.card.classList.add('warehouse-dragging');}g.ghost.style.left=e.clientX+'px';g.ghost.style.top=e.clientY+'px';const target=targetAt(e.clientX,e.clientY);panel.querySelectorAll('[data-warehouse-zone]').forEach(n=>n.toggleAttribute('data-over',n===target));});
  // 等触摸序列结束再显示顶层确认框，避免浏览器将本次触摸重新命中弹窗。
  scope.on(panel,'pointerup',e=>{const g=gesture;if(!g||g.pointer!==e.pointerId)return;const accept=!g.ghost||!!targetAt(e.clientX,e.clientY);suppressUntil=Date.now()+500;cancel();e.preventDefault();if(accept)pending=setTimeout(()=>{pending=null;if(panel.open)onTransfer(g.id,g.direction);},50);});
- scope.on(panel,'click',e=>{if(Date.now()<suppressUntil&&(e.target===panel||e.target.closest('[data-item]'))){e.preventDefault();e.stopImmediatePropagation();}},true);
+ // 拖到页签松手后的合成点击不能再次切换来源，否则会取消已排队的数量确认。
+ scope.on(panel,'click',e=>{if(Date.now()<suppressUntil&&(e.target===panel||e.target.closest('[data-item],[data-warehouse-source],[data-warehouse-jump]'))){e.preventDefault();e.stopImmediatePropagation();}},true);
  for(const event of ['pointercancel','close'])scope.on(panel,event,cancel);
  scope.on(panel,'lostpointercapture',()=>{if(gesture)cancel();});
  scope.on(panel.ownerDocument.defaultView,'blur',cancel);
