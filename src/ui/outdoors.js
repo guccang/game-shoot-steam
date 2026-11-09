@@ -137,7 +137,7 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  // 低成本刷新文字、进度和显隐，不每帧重建按住中的按钮。
  function renderFrame(){
   const dialogOpen=!!root.querySelector('dialog[open]'),now=performance.now();
-  if(game.state!=='playing'||dialogOpen||outdoorBusy(game)||game.vehicle.active||fishingSetup(game).reason){setHidden(nearby,true);nextShoreCheck=0;}
+  if(game.state!=='playing'||dialogOpen||outdoorBusy(game)||game.vehicle.active||(game.cottage&&game.cottage.kind!=='mine')||fishingSetup(game).reason){setHidden(nearby,true);nextShoreCheck=0;}
   else if(now>=nextShoreCheck){setHidden(nearby,!fishingAvailability(game).ok);nextShoreCheck=now+OUTDOOR_RULES.shoreRefreshMs;}
   const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||dialogOpen;setHidden(hud,hidden);if(hidden){release(true);return;}
   if(f?.phase==='landed'){setHidden(hud,true);release(true);onFishCaught(f);return;}

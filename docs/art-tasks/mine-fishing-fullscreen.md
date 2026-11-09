@@ -38,3 +38,13 @@ designCriterion：mineFishingFullscreenCriterion；正式数据入口 inspectMin
 证据目录：output/playwright/mine-fishing/，browser-review.json、motion-review.json保存正式采样，视频在video/。矿车昼夜截图位于output/playwright/mine-motion/。
 开发阶段结论：通过。地图、工具折叠和地下垂钓完成，截图已实际查看；未改变怪物成长和素材来源。默认4175已有用户服务，本次隔离服务使用4187。
 
+
+## 地下湖岸自动入口修订（2026-11-09，制作前）
+目标：地下与地表统一使用靠岸自动出现的“钓鱼”入口，离岸收起；点击后显示正式抛竿/收线UI。保留移除后的地下常驻工具栏，不恢复钓鱼和钓具常驻按钮。定位到室内总隐藏规则漏掉fishing-nearby；仅修订显隐规则，并使普通室内立即隐藏旧岸边入口。沿用本任务单的程序/UI阶段、颜色、44px触区、层次和原动画，无新图片或PNG，不更改钓鱼数值、鱼竿鱼饵需求、危险判定及水域采样。计划用真实地下湖岸验证出现/离岸收起、触控备竿与取消、缺饵隐藏、昼夜短屏及原竖版布局。
+
+### 自动入口修订验收（通过）
+- 正式入口：src/ui/outdoors.js#createOutdoors 的 renderFrame、src/styles/cottage.css；复用 drawMining、drawOutdoorFishing 与 inspectMineFishingFullscreen，designCriterion 为 mineFishingFullscreenCriterion。
+- 真实地下湖岸使用触摸移动进入提示范围后自动出现入口；触控点击打开正式备竿 UI，收竿恢复挖矿工具栏。离岸及鱼饵不足均收起入口。tests/mine-shore-entry-browser.cjs 检查通过，无 frame-error。
+- 已查看 320×568 白天、390×844 夜晚截图，检查短屏、角色、湖岸、迷雾、入口和工具栏同屏；1280×900 白天/夜晚沿用原手机容器验证通过，不新增桌面布局。入口触区 88×45.59px，无工具栏遮挡。使用浏览器触摸模拟，未做物理手机安装包验收。
+- 证据：output/mine-shore-entry/shore-*.png、ready-*.png、review.json 与 video/。服务端口 4175，测试上下文将 src 请求映射至任务 worktree。
+- 原水岸碰撞、可通行性及钓鱼动作不变；仅增加样式白名单和普通室内立即隐藏条件，无新增图片、绘制层、动画、缓存或每帧岸点采样。不适用新 PNG、剪影与动作资产验收。
