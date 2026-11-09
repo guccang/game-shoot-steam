@@ -3,6 +3,8 @@
 ## 矿灯回收修订准备（2026-11-09）
 
 在原手机回收底板追加“回收附近矿灯”，沿用现有44px按钮、滚动内容区、材料说明、取消及二次确认。只扫描附近九格，固定矿灯格键，确认时复核距离与通行，按原价返还1矿石和1木材。保留同格轨道、桥梁和其他设施，不新增素材、尺寸或动画。参考现有回收页，验收320/390手机昼夜、取消/确认、保存失败、层间隔离，正式入口createMineDemolition/removeMineFacility，designCriterion仍为mine-cart-controls-removal；完成后补记结果。
+
+本轮验收：通过。`tests/mine-lamp-recycle-performance-browser.cjs` 实际触屏打开回收页，取消不消耗，确认只移除选定矿灯并返还1矿石、1木材，同格轨道和另一盏矿灯保留。320×568/390×844昼夜四组回收底板无横向溢出、44px触区与固定页脚可用；人工检查 `output/playwright/mine-lamp-rail-stability/recycle-320-night.png`、`recycle-390-day.png`，选项、材料、确认文案及滚动正文可读。核心定向10项通过，含新增矿灯选择/重复回收、确认时设施变化、范围/通行、保存失败和层间隔离；无新增图片或缓存。正式底板和renderer保持同屏，designCriterion `mine-cart-controls-removal` 通过，无待修订项。
 依据：[美术标准](../art-generation-standard.md)、[项目合同](../../AGENTS.md)。
 
 ## 1 目标与范围

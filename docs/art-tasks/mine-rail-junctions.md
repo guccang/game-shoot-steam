@@ -4,6 +4,8 @@
 
 本轮定位移动时铁轨抖动，只调整正式绘制的稳定性和必要的显示坐标衔接。参考既有矿道昼夜实景，保留64格、20轨距、枕木/钢轨形状、森林绿描边、昼夜配色、地面层级、角色脚底与矿车动作；不新增PNG、图集或碰撞。先采样实际镜头与轨道坐标，再针对根因修订。验收使用4175隔离存档，检查步行、驾驶、横纵与转弯、停车和320/390手机昼夜，正式入口仍为drawMining/drawMineRail，designCriterion仍为mine-rail-junctions；结果在完成后补记。
 
+本轮结论：通过。后续确认用户反馈为整幅矿井画面间歇停顿，最终修订主循环的地表后台隔离及地形近邻预取，轨道几何和镜头投影均保留；挂钩改读与车身同一插值显示帧，消除25Hz权威坐标对平滑画面的追赶。轨道4项几何检查、矿车4项插值检查通过；手机12组实景、400个连续移动样本和原矿车转弯/起停/暂停回归通过。证据在 `output/playwright/mine-lamp-rail-stability/` 与 `output/playwright/mine-cart-rider-stability/current-report.json`。人工复核昼夜车轮、轨道接缝、猫与团子同屏、同格桥面和前后分层；新增位图与画布为0，几何缓存维持48块。具体耗时见[地下移动性能任务单](mine-motion-performance.md)，designCriterion `mine-rail-junctions` 通过，无新增PNG阶段或待修订项。
+
 依据[美术标准](../art-generation-standard.md)与[项目合同](../../AGENTS.md)，由任务模板复制后按本次范围填写。
 
 ## 1 目标与范围
