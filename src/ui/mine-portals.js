@@ -11,15 +11,15 @@ import {createEventScope} from '../platform/events.js';
 export function createMinePortals({game,renderer,root,panel}){
  const scope=createEventScope(),nodes=new Map();let targets=[];
  // 世界入口的触区投影沿用矿区显示镜头，最小四十四像素。
- function bounds(p){const v=renderer.mineView,w=Math.max(44,60*v.zoom),h=Math.max(44,100*v.zoom);return {left:(p.hitX-v.x)*v.zoom-w/2,top:(p.hitY-v.y)*v.zoom-h/2,width:w,height:h};}
+ function bounds(p){const v=renderer.mineView,w=Math.max(44,(p.hitWidth||60)*v.zoom),h=Math.max(44,(p.hitHeight||100)*v.zoom);return {left:(p.hitX-v.x)*v.zoom-w/2,top:(p.hitY-v.y)*v.zoom-h/2,width:w,height:h};}
  // 短按命中入口才提交意图，角色继续沿真实矿道移动。
  function tap(event){if(game.cottage?.kind!=='mine'||game.state!=='playing'||root.querySelector('dialog[open]'))return false;const c=renderer.canvas.getBoundingClientRect();for(const p of targets){const b=bounds(p);if(event.clientX>=c.left+b.left&&event.clientX<=c.left+b.left+b.width&&event.clientY>=c.top+b.top&&event.clientY<=c.top+b.top+b.height)return approachMinePortal(game,p.id);}return false;}
  // 只测量一次容器，更新后的热点跟随每帧相机位置。
  function render(){
-  targets=game.cottage?.kind==='mine'&&game.state==='playing'&&!root.querySelector('dialog[open]')&&renderer.mineView?minePortals(currentMineLayer(game),game.cottage.depth||1).filter(p=>minePointLit(p,renderer.mineFogReview?.sources||[])):[];
+  targets=game.cottage?.kind==='mine'&&game.state==='playing'&&!root.querySelector('dialog[open]')&&renderer.mineView?minePortals(currentMineLayer(game),game.cottage.depth||1).flatMap(p=>[{...p,nodeKey:p.id},{...p,nodeKey:p.id+':sign',sign:true,hitX:p.signX,hitY:p.signY,hitWidth:Math.max(68,p.signText.length*11+16),hitHeight:32}]).filter(p=>minePointLit(p.sign?{x:p.signX,y:p.signY}:p,renderer.mineFogReview?.sources||[])):[];
   const canvas=targets.length&&renderer.canvas.getBoundingClientRect(),parent=targets.length&&panel.getBoundingClientRect();
-  for(const [id,node]of nodes)setHidden(node,!targets.some(p=>p.id===id));
-  for(const p of targets){let node=nodes.get(p.id);if(!node){node=root.createElement('button');sceneHit(node,'走到'+p.label+'，站定1秒通行');node.dataset.minePortal=p.id;scope.on(node,'click',e=>{if(e.detail===0)approachMinePortal(game,p.id);});panel.append(node);nodes.set(p.id,node);}
+  for(const [id,node]of nodes)setHidden(node,!targets.some(p=>p.nodeKey===id));
+  for(const p of targets){let node=nodes.get(p.nodeKey);if(!node){node=root.createElement('button');sceneHit(node,'走到'+p.label+'，站定1秒通行');if(p.sign)node.dataset.mineSign=p.id;else node.dataset.minePortal=p.id;scope.on(node,'click',e=>{if(e.detail===0)approachMinePortal(game,p.id);});panel.append(node);nodes.set(p.nodeKey,node);}
    const label='走到'+p.label+'，站定1秒通行';if(node.getAttribute('aria-label')!==label)node.setAttribute('aria-label',label);
    const b=bounds(p);setHidden(node,b.left+b.width<0||b.left>renderer.width||b.top+b.height<0||b.top>renderer.height);Object.assign(node.style,{left:canvas.left-parent.left+b.left+'px',top:canvas.top-parent.top+b.top+'px',width:b.width+'px',height:b.height+'px',transform:'none'});
   }

@@ -43,3 +43,12 @@ test('仓库升井走近后候停，移动取消且重置不会留下旧请求',
  for(let i=0;i<6;i++)updateMineEntrance(g,.04,{x:0,y:0});assert.equal(g.cottage?.kind,'mine');assert.ok(g.cottage.warehouse);
  g.cottage=null;approachWarehouseMine(g);g.sceneApproach=null;updateMineEntrance(g,.04,{x:1,y:0});assert.equal(g.mineWarehouseIntent,false);g.reset();assert.equal(g.mineWarehouseIntent,false);
 });
+
+// 相邻、同格和横向入口使用同一侧牌布局，牌体不能落进任意梯井。
+test('侧牌避开相邻梯井，同格上下行保留独立目的地',()=>{
+ for(const [entry,descent,shafts]of [['6,0','6,1',[]],['6,0','6,0',[]],['5,0','6,0',['7,0']]]){
+  const layer={entry,descent,shafts,depotRow:2};const portals=minePortals(layer,1);
+  for(const p of portals){const width=Math.max(68,p.signText.length*11+16);for(const q of portals)assert.ok(Math.abs(p.signX-q.x)>=width/2+34||p.signY+21<=q.y-34||p.signY-12>=q.y+34,`${p.id}的牌子挡住${q.id}`);}
+  assert.equal(portals.find(p=>p.id==='up').signText,'↑ 小屋');assert.equal(portals.find(p=>p.id==='down').signText,'↓ 2层');
+ }
+});
