@@ -6,7 +6,7 @@ import {rescueTruckVisible} from '../config/vehicle-repair.js';
 
 const ROOTS = ['player', 'vehicle', 'enemies', 'boss', 'enemyBolts', 'hazards', 'projectiles',
   'shots', 'particles', 'numbers', 'drops', 'remnants', 'fx', 'realm', 'funnel', 'drone',
-  'mechanical', 'spider', 'magazines', 'arrivalScene', 'farmWork', 'livingActors', 'campActors', 'story', 'fireRescue'];
+  'mechanical', 'spider', 'magazines', 'arrivalScene', 'farmWork', 'livingActors', 'campActors', 'story', 'fireRescue', 'tradeMotion'];
 const CHILDREN = ['motion', 'bodyAnimation', 'recoil', 'assault', 'trail', 'nodes', 'mother', 'gun',
   'module', 'companions', 'items', 'rivals', 'defenses', 'runtime', 'player', 'vehicle',
   'mechanical', 'spider', 'funnel', 'drone', 'elder', 'bus', 'scooter', 'actors', 'goddess', 'magazine', 'flight', 'stream', 'job'];
@@ -50,6 +50,8 @@ export function createRenderInterpolation() {
       for (const key of root ? ROOTS : CHILDREN) visit(value[key]);
     }
     visit(game, true);
+    // 护送车存于进度而非动态根节点，仅捕获车身，不递归复制或修改存档。
+    visit(game.progress?.trade?.escort);
     visit(game.progress?.vehicleService?.[game.progress?.logistics?.tow?.target]?.position);
   }
   // 清理插值历史，表现对象身份仍保留，猫身体姿态匹配不会在暂停后重建轨道。
@@ -95,7 +97,9 @@ export function createRenderInterpolation() {
         const current = value[field], old = previous?.[field];
         if (!Number.isFinite(current)) continue;
         if (!Number.isFinite(old) || blend === 1) { view[field] = current; continue; }
-        const change = field === 'x' ? dx : field === 'y' ? dy : ANGLES.has(field) ? delta(current - old, Math.PI * 2) : current - old;
+        // 商队轮相按整周取短方向，避免过零时反转一圈；其他已有载具沿用原表现规则。
+        const angle = ANGLES.has(field) || field === 'wheelPhase' && value === game.tradeMotion;
+        const change = field === 'x' ? dx : field === 'y' ? dy : angle ? delta(current - old, Math.PI * 2) : current - old;
         // 年龄、寿命重置属于新事件，不从旧状态反向播放。
         const resetClock = RESET_CLOCKS.has(field) && current < old;
         view[field] = resetClock ? current : current - change * (1 - blend);
@@ -111,6 +115,8 @@ export function createRenderInterpolation() {
     // 条件解释器只读取自有字段；显式共享最新存档，让地面导航与任务栏使用同一进度。
     // 每帧更新引用以覆盖保存后的整份替换，不复制或插值任务完成条件。
     view.progress = game.progress;
+    // 世界排序、车身和名牌共享同一时刻，避免马车沿25Hz台阶相对平滑镜头回跳。
+    view.tradeEscort = project(game.progress?.trade?.escort);
     view.rescueHistory = rescueHistory;
     view.rescueAlpha = amount;
     // 残骸与绳端共用镜头所在的显示帧，只投影已挂接的位置。

@@ -2133,6 +2133,8 @@ export async function inspectCampTrade(game,root=document){
  return {designCriterion:'camp-trade',sites:objects.filter(o=>o.type==='trade-post').length,
   outpost:objects.some(o=>o.type==='outdoor-camp'&&o.part==='tent'),
   cart:objects.some(o=>o.type==='trade-cart'),horseFrame:game.tradeMotion?.horseFrame,
+  cartPosition:objects.filter(o=>o.type==='trade-cart').map(o=>({x:o.x,y:o.y})),
+  interpolated:Object.hasOwn(game,'tradeEscort'),authoritativeCart:game.progress.trade?.escort&&{x:game.progress.trade.escort.x,y:game.progress.trade.escort.y},
   wheelPhase:game.tradeMotion?.wheelPhase,boardTouch:box&&box.width>=44&&box.height>=44};
 }
 // 工厂正式实体、墙体、厂门、现场按钮和库存共享同一验收目标。

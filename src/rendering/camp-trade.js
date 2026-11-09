@@ -27,7 +27,8 @@ function drawOrderBoard(c,item,trade,night){
 // 只在真实森林地面展示，护送单位从当前存档读取位置。
 export function tradeObjects(game){
  if(!tradeField(game))return [];
- const sites=TRADE_SITES.map(s=>({...s,type:'trade-post'})),cart=game.progress.trade?.escort;
+ // 正式帧优先使用表现坐标；逻辑查询及未启用插值的工作台仍读取权威存档。
+ const sites=TRADE_SITES.map(s=>({...s,type:'trade-post'})),cart=Object.hasOwn(game,'tradeEscort')?game.tradeEscort:game.progress.trade?.escort;
  // 远站在林中设有收货帐篷、桌台与营灯，各自按脚底排序。近站沿用旧哨站原建筑。
  const outpost=TRADE_STATIONS.find(s=>s.id==='trade-amber');
  for(const [part,dx,dy] of [['tent',-76,-38],['table',32,-32],['lamp',61,-37]])sites.push({type:'outdoor-camp',part,x:outpost.x+dx,y:outpost.y+dy});
