@@ -12,10 +12,14 @@ function dependencies(rect){
 // 编译接口可生成正式 Path2D，规则测试直接消费同一三角网格，不复制地形算法。
 export function createMineSurfaceCache(compile=mesh=>mesh){
  const chunks=new Map();let tag=null,builds=0;
- // 每帧只检查当前视口的少量依赖格；移动跨块只生成新进入的边缘条带。
- function sample(layer,rect){
+ // 正常采样与帧尾预取共享失效条件，切层和原位地理变更不复用旧形体。
+ function sync(layer){
   const b=mineBounds(layer),nextTag=`${layer.seed}:${layer.entry}:${layer.depotRow??''}:${b.left},${b.top},${b.right},${b.bottom}`;
   if(tag!==nextTag){chunks.clear();tag=nextTag;}
+ }
+ // 每帧只检查当前视口的少量依赖格；移动跨块只生成新进入的边缘条带。
+ function sample(layer,rect){
+  sync(layer);
   const size=MINE_SURFACE_CHUNK,left=Math.floor(rect.x/size),top=Math.floor(rect.y/size),right=Math.ceil((rect.x+rect.w)/size),bottom=Math.ceil((rect.y+rect.h)/size),items=[];let rebuilt=0;
   for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
    const key=`${x},${y}`,area={x:x*size,y:y*size,w:size,h:size};let cached=chunks.get(key);
@@ -26,7 +30,20 @@ export function createMineSurfaceCache(compile=mesh=>mesh){
   while(chunks.size>MINE_SURFACE_CACHE_LIMIT)chunks.delete(chunks.keys().next().value);
   return {items,rect:{x:left*size,y:top*size,w:(right-left)*size,h:(bottom-top)*size},rebuilt,builds,cached:chunks.size};
  }
- return {sample};
+ // 提前准备视口外一圈，每次最多编译一块，避免跨边界同帧突建整条地形。
+ // 广角视口超过固定容量时不预取，防止可选工作淘汰当前必需路径。
+ function warm(layer,rect){
+  sync(layer);const size=MINE_SURFACE_CHUNK,left=Math.floor(rect.x/size),top=Math.floor(rect.y/size),right=Math.ceil((rect.x+rect.w)/size),bottom=Math.ceil((rect.y+rect.h)/size);
+  if((right-left+2)*(bottom-top+2)>MINE_SURFACE_CACHE_LIMIT)return 0;
+  for(let y=top-1;y<=bottom;y++)for(let x=left-1;x<=right;x++){
+   if(x>=left&&x<right&&y>=top&&y<bottom)continue;
+   const cached=chunks.get(`${x},${y}`);
+   if(cached&&cached.signature===cached.keys.map(k=>layer.dug?.[k]?'1':'0').join(''))continue;
+   return sample(layer,{x:x*size,y:y*size,w:size,h:size}).rebuilt;
+  }
+  return 0;
+ }
+ return {sample,warm};
 }
 
 // 相邻三角面的内部边互相抵消，只提交实际外轮廓和孔洞，保持原顶点位置与绕向。

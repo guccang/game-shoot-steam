@@ -16,9 +16,11 @@ async original=>{
    window.a=(await import('/src/main.js')).application;await a.ready;window.mc=await import('/src/config/mining.js');window.mi=await import('/src/core/mining/mining.js');
    const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(f=>f.id);p.homeDecor.basement=true;(await import('/src/progression/mining/mining.js')).openBasement(p.mining);p.mining.seed=1847;
    const ec=await import('/src/config/mine-ecology.js');let origin=null;
-   for(let y=6;y<50&&!origin;y++)for(let x=6;x<50&&!origin;x++)if([-1,0,1].every(dy=>[-1,0,1].every(dx=>!ec.mineTerrain({x:x+dx,y:y+dy},p.mining).water)))origin={x,y};
+   for(let y=80;y<100&&!origin;y++)for(let x=6;x<50&&!origin;x++)if([-1,0,1].every(dy=>[-1,0,1].every(dx=>!ec.mineTerrain({x:x+dx,y:y+dy},p.mining).water)))origin={x,y};
    if(!origin)throw Error('缺少干燥路口');window.site=mc.minePoint(origin);window.junctionKey=mc.mineKey(origin);
    for(let dx=-5;dx<=5;dx++)for(let dy=-5;dy<=5;dy++){const cell={x:origin.x+dx,y:origin.y+dy},key=mc.mineKey(cell);p.mining.dug[key]=true;if(ec.mineTerrain(cell,p.mining).water)p.mining.bridges[key]=true;if(dx===0||dy===0)p.mining.rails[key]=true;}
+   // 尽头停车后不再自动折返，延长真实走廊以保证昼夜与尺寸采样始终包含驾驶。
+   for(let i=-64;i<=64;i++)for(const cell of [{x:origin.x+i,y:origin.y},{x:origin.x,y:origin.y+i}]){const point=mc.minePoint(cell);if(!ec.mineInsideBounds(p.mining,point.x,point.y))continue;const key=mc.mineKey(cell);p.mining.dug[key]=p.mining.bridges[key]=p.mining.rails[key]=true;}
    p.mining.carts=[{id:1,x:site.x-128,y:site.y,heading:1,departure:null,wheel:0}];
    const g=a.game;g.progress=p;g.reset();g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.cottage={kind:'cottage',floor:0,outside:mc.MINING.home};Object.assign(g.player,mc.MINING.hatch.goal);mi.enterMine(g);g.cottage.scanWait=999;g.cottage.hurtWait=999;g.progress.mining.animals={};Object.assign(g.player,site);a.refresh();
   });

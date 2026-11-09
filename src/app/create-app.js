@@ -671,18 +671,27 @@ export function createApplication({
         }
         // 必需地面保留极小时间片，防止忙帧持续饿死预热、跨块时一次补建全部纹理。
         profiler.start('cache.warmup');
-        warmupClock += dt;
-        if (warmupClock >= .2) { navigationWarmup.prepare({ ...game.player, mapId: game.mapId }); warmupClock = 0; }
-        const remaining = Math.max(0, 12 - (host.performance.now() - frameStart));
-        const seasonBudget=seasonPrewarm.budget(host.performance.now()-frameStart,host.performance.now());
-        renderer.ground.setPrewarmPolicy(seasonPrewarm.allowed,seasonPrewarm.reason);
-        renderer.ground.advance(Math.max(renderer.ground.needsWarmup() ? .75 : 0, Math.min(2, remaining)),()=>host.performance.now(),seasonBudget);
-        seasonPrewarm.record(renderer.ground.backgroundMs,host.performance.now());
-        navigationWarmup.advance(Math.min(1, Math.max(0, 12 - (host.performance.now() - frameStart))));
-        mapPanel.advance();
-        profiler.start('cache.campBuildings');
-        renderer.advanceCampBuildings();
-        profiler.end('cache.campBuildings');
+        // 地下使用独立地形与寻路；暂停不可见地表的整图预览、导航边和纹理预热。
+        // 保留队列供返回地面后继续，避免后台全图计算挤占地下移动帧。
+        if(game.cottage?.kind!=='mine'){
+          warmupClock += dt;
+          if (warmupClock >= .2) { navigationWarmup.prepare({ ...game.player, mapId: game.mapId }); warmupClock = 0; }
+          const remaining = Math.max(0, 12 - (host.performance.now() - frameStart));
+          const seasonBudget=seasonPrewarm.budget(host.performance.now()-frameStart,host.performance.now());
+          renderer.ground.setPrewarmPolicy(seasonPrewarm.allowed,seasonPrewarm.reason);
+          renderer.ground.advance(Math.max(renderer.ground.needsWarmup() ? .75 : 0, Math.min(2, remaining)),()=>host.performance.now(),seasonBudget);
+          seasonPrewarm.record(renderer.ground.backgroundMs,host.performance.now());
+          navigationWarmup.advance(Math.min(1, Math.max(0, 12 - (host.performance.now() - frameStart))));
+          mapPanel.advance();
+          profiler.start('cache.campBuildings');
+          renderer.advanceCampBuildings();
+          profiler.end('cache.campBuildings');
+        }else{
+          warmupClock=0;
+          if(host.performance.now()-frameStart<10){
+            profiler.start('cache.mineGround');renderer.advanceMineGround();profiler.end('cache.mineGround');
+          }
+        }
         profiler.end('cache.warmup');
       } catch (error) {
         profiler.event('frame-error', { phase: [...profiler.active.keys()],

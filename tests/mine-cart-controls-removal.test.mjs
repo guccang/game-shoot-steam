@@ -64,6 +64,34 @@ test('拆除空铁轨返还原价，保留桥梁与探索，停止自动铺轨',
  assert.equal(g.progress.mining.ore,ore+M.prices.rail.ore);assert.equal(g.progress.wood,wood+M.prices.rail.wood);assert.equal(g.cottage.tool,null);assert.equal(g.cottage.autoDig,false);
  assert.equal(removeMineFacility(g,{kind:'rail',key:'1,0'}).ok,false);assert.equal(g.progress.mining.ore,ore+1);
 });
+
+test('附近矿灯按距离选择，固定目标回收原价且不拆同格轨道桥梁',()=>{
+ const g=setup(),m=g.progress.mining;m.decor['0,0']='lamp';m.decor['1,0']='lamp';m.decor['-1,0']='sign';
+ const target=mineRemovalChoices(g).find(c=>c.kind==='lamp');assert.equal(target.key,'0,0');assert.equal(target.ok,true);
+ const before={ore:m.ore,wood:g.progress.wood};assert.ok(removeMineFacility(g,target).ok);
+ assert.equal(g.progress.mining.decor['0,0'],undefined);assert.equal(g.progress.mining.decor['1,0'],'lamp');assert.equal(g.progress.mining.decor['-1,0'],'sign');
+ assert.ok(g.progress.mining.rails['0,0']);assert.ok(g.progress.mining.bridges['0,0']);assert.ok(g.progress.mining.dug['0,0']);
+ assert.equal(g.progress.mining.ore,before.ore+1);assert.equal(g.progress.wood,before.wood+1);assert.equal(removeMineFacility(g,target).ok,false);
+ assert.equal(g.progress.mining.ore,before.ore+1);
+});
+
+test('矿灯确认复查目标、距离与通行，保存失败或乘坐中不得返还材料',()=>{
+ for(const reason of ['save','missing','changed','far','wall','riding']){
+  const g=setup(),m=g.progress.mining;m.decor['1,0']='lamp';const target={kind:'lamp',key:'1,0'};
+  if(reason==='save')g.livingPersist=()=>false;
+  if(reason==='missing')delete m.decor['1,0'];if(reason==='changed')m.decor['1,0']='sign';
+  if(reason==='far')Object.assign(g.player,minePoint({x:4,y:0}));
+  if(reason==='wall'){delete m.dug['1,0'];m.bounds={left:0,top:0,right:M.home.x+32,bottom:1000};}
+  if(reason==='riding')rideMineCart(g);
+  const before=structuredClone(g.progress);assert.equal(removeMineFacility(g,target).ok,false,reason);assert.deepEqual(g.progress,before,reason);
+ }
+});
+
+test('深层矿灯回收只改当前层，重读不会复活已回收矿灯',()=>{
+ const g=setup(),m=g.progress.mining;m.decor['0,0']='lamp';m.layers[2]={...structuredClone(m),layers:{}};g.cottage.depth=2;
+ assert.ok(removeMineFacility(g,{kind:'lamp',key:'0,0'}).ok);assert.equal(g.progress.mining.decor['0,0'],'lamp');
+ assert.equal(normalizeMining(g.progress.mining).layers[2].decor['0,0'],undefined);
+});
 test('拆轨清除失效路口与起步出口，保留其他合法规则',()=>{
  const g=setup(),l=g.progress.mining;l.junctions['0,0']=1;cart(g).departure=1;cart(g).previous='1,0';
  assert.ok(removeMineFacility(g,{kind:'rail',key:'1,0'}).ok);assert.equal(g.progress.mining.junctions['0,0'],undefined);assert.equal(cart(g).departure,null);assert.equal(cart(g).previous,null);

@@ -9,6 +9,7 @@ import {drawAmbientFish} from './ambient-fish.js';
 import {drawHomeArcade} from './home-arcade.js';
 import {drawHomeBalcony,balconyProject,balconyWorldTransform,balconyUpright,balconyObjectVisible} from './home-balcony.js';
 import {drawMining,drawMineShaft} from './mining.js';
+import {advanceMineLandscapeGround} from './mine-landscape-ground.js';
 import {mineShaftObjects} from '../core/mining/mining.js';
 import {constructionObjects,drawConstructionCompany} from './construction-company.js';
 import {campBuildingCache} from './camp-building-cache.js';
@@ -203,6 +204,8 @@ export class Renderer {
   }
   // 帧尾最多生成一张已入镜建筑，不让新区域一次触发全部静态立面生成。
   advanceCampBuildings(){return campBuildingCache.advance();}
+  // 地下只预取当前矿道近邻，每帧最多编译一个连续地形块。
+  advanceMineGround(){return advanceMineLandscapeGround(this);}
   // 按设备像素比调整画布，限制倍率以兼顾移动设备性能。
   resize() {
     const rect = this.canvas.getBoundingClientRect();

@@ -92,7 +92,8 @@ export function drawMining(renderer,g=renderer.game){
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
  const first=mineCell({x:v.x-64,y:v.y+top/zoom-64}),last=mineCell({x:v.x+w/zoom+64,y:v.y+bottom/zoom+64});let tiles=0;const railKinds={};
- const landscapeTime=renderer.reduced.matches?0:m.age;drawMineLandscapeGround(renderer,m,first,last,night,landscapeTime);
+ const landscapeTime=renderer.reduced.matches?0:m.age;renderer.profiler?.start('render.mine.ground');drawMineLandscapeGround(renderer,m,first,last,night,landscapeTime);renderer.profiler?.end('render.mine.ground');
+ renderer.profiler?.start('render.mine.facilities');
  renderer.ambientFishReview=drawAmbientFish(c,g,{x:v.x,y:v.y,w:w/zoom,h:h/zoom},renderer.reduced.matches,night?1:0,m);
  renderer.mineBoundaryReview=drawMineBoundary(c,m,{x:v.x,y:v.y+top/zoom,w:w/zoom,h:(bottom-top)/zoom},night);
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){
@@ -102,6 +103,7 @@ export function drawMining(renderer,g=renderer.game){
   drawMineTerrain(c,cell,m,night,m.age);
   if(m.rails[key]){const kind=drawMineRail(c,cell,m,night);railKinds[kind]=(railKinds[kind]||0)+1;}
  }
+ renderer.profiler?.end('render.mine.facilities');renderer.profiler?.start('render.mine.entities');
  const targetCell=mineTarget(g),target=minePoint(targetCell);if((g.cottage.tool||g.cottage.autoDig)&&mineInsideBounds(m,target.x,target.y)){c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);}
  const depth=g.cottage.depth||1,entry=minePoint(parseKey(m.entry)),layerSigns=[entry],portals=minePortals(m,depth);drawLadder(c,entry.x,entry.y,night,'');
  if(m.descent&&m.descent!==m.entry){const down=minePoint(parseKey(m.descent));drawLadder(c,down.x,down.y,night,'');layerSigns.push(down);}
@@ -115,7 +117,8 @@ export function drawMining(renderer,g=renderer.game){
  if(!g.cottage.ride)entities.push({y:g.player.y,kind:'player'});
  const depot=minePoint(mineFreightCell(m,g.cottage.depth||1));
  if((g.cottage.depth||1)===1)drawLadder(c,depot.x,depot.y,night,'');
- for(const cart of m.carts){const parent=cart.leader&&m.carts.find(c=>c.id===cart.leader);if(parent){c.beginPath();c.moveTo(cart.x,cart.y-6);c.lineTo(parent.x,parent.y-6);c.strokeStyle='#736c52';c.lineWidth=4;c.stroke();}}
+ // 挂钩与车身共用显示帧，不能用25Hz存档位置在平滑轨面上来回追赶。
+ for(const stored of m.carts){const cart=g.mineCarts?.get(stored.id)||stored,parent=cart.leader&&(g.mineCarts?.get(cart.leader)||m.carts.find(c=>c.id===cart.leader));if(parent){c.beginPath();c.moveTo(cart.x,cart.y-6);c.lineTo(parent.x,parent.y-6);c.strokeStyle='#736c52';c.lineWidth=4;c.stroke();}}
  for(const e of entities.sort((a,b)=>a.y-b.y)){
   if(e.kind==='landscape'){
    // 高景物遮住角色时只淡化前景实体，地形、水流和真实脚底排序保持不变。
@@ -149,7 +152,7 @@ export function drawMining(renderer,g=renderer.game){
   oval(c,q.x+(shipment.station.x-q.x)*t+i*2,q.y+(shipment.station.y-q.y)*t-18-55*Math.sin(t*Math.PI/2),4,3,'#d7ba89','#53664b',1);
  }}}}
  c.restore();
- drawMineFog(renderer,g,m);
+ renderer.profiler?.end('render.mine.entities');renderer.profiler?.start('render.mine.fog');drawMineFog(renderer,g,m);renderer.profiler?.end('render.mine.fog');
  const portal=g.cottage.portalWait;if(portal){const progress=portal.elapsed,px=(g.player.x-v.x)*zoom,py=Math.max(100,(g.player.y-v.y)*zoom-86);c.save();c.setTransform(dpr,0,0,dpr,0,0);c.translate(px,py);drawActionCountdown(c,{progress,label:'1秒',icon:portal.id==='down'?'stairs-down':'stairs-up',width:90});c.restore();renderer.actionCountdownView={x:px,y:py,width:90,height:34,progress,label:'1秒'};}
  // 头顶徽记在屏幕坐标绘制，手机缩放不缩小数字，也不遮住猫脸与工具栏。
  const boarding=g.cottage.cartBoarding;if(boarding&&!g.cottage.ride){const progress=boarding.elapsed/MINE_CART_BOARDING.wait,x=Math.max(44,Math.min(w-44,(g.player.x-v.x)*zoom)),y=Math.max(100,Math.min((renderer.mineControlsTop||h)-28,(g.player.y-v.y)*zoom-85)),label=Math.max(1,Math.ceil(MINE_CART_BOARDING.wait-boarding.elapsed))+'秒';renderer.actionCountdownView={x,y,width:90,height:34,icon:'vehicle',label,progress};c.save();c.setTransform(dpr,0,0,dpr,0,0);c.translate(x,y);drawActionCountdown(c,{progress,label,icon:'vehicle',width:90});c.restore();}

@@ -19,3 +19,20 @@ test('种子和原位边界变化重新编译，远行不会无限增加缓存',
 test('零半径查询与正式三角采样一致，原位开掘、换种子、边界与桥梁立即生效',()=>{const l=layer(),g={progress:{mining:l},cottage:{depth:1},player:{},vehicle:{active:false}};for(let y=3;y<15;y++)for(let x=3;x<15;x++){const p=minePoint({x,y}),s=mineSurfaceAt(l,p.x,p.y);assert.equal(mineOccupancy(g,p.x,p.y,0,true),s.open);assert.equal(mineOccupancy(g,p.x,p.y,0,false),s.open&&!s.water);if(!mineTerrain({x,y},l).natural){l.dug[mineKey({x,y})]=true;assert.ok(mineOccupancy(g,p.x,p.y,0,true));}l.bridges[mineKey({x,y})]=true;assert.equal(mineOccupancy(g,p.x,p.y,0,false),mineSurfaceAt(l,p.x,p.y).open);}l.bounds.right=100;assert.equal(mineOccupancy(g,101,50,0,true),false);});
 
 test('轮廓合并保留孔洞、边缘和分离地块，路径顶点显著减少',()=>{const l=layer(),p=minePoint({x:63,y:8}),r={x:p.x-180,y:p.y-180,w:360,h:360},mesh=buildMineSurface(l,r);for(const kind of ['open','water']){const contours=mineSurfaceContours(mesh[kind]);assert.ok(contours.flat().length<mesh[kind].flat().length/3);for(let i=0;i<700;i++){const x=r.x+mineHash(i,29)%360+.023,y=r.y+mineHash(33,i)%360+.019;assert.equal(contours.filter(poly=>contains(poly,x,y)).length%2===1,mesh[kind].some(poly=>contains(poly,x,y)),kind+' '+x+','+y);}}const square=(x,y)=>[{x,y},{x:x+1,y},{x:x+1,y:y+1},{x,y:y+1}];const ring=[];for(let y=0;y<3;y++)for(let x=0;x<3;x++)if(x!==1||y!==1)ring.push(square(x,y));const contours=mineSurfaceContours(ring);assert.equal(contours.length,2);assert.equal(contours.filter(poly=>contains(poly,1.5,1.5)).length%2,0);assert.equal(contours.filter(poly=>contains(poly,.5,.5)).length%2,1);});
+
+test('近邻预取每次最多编译一块，跨边界直接复用且不淘汰必需地形',()=>{
+ const l=layer(),cache=createMineSurfaceCache(),rect={x:512,y:512,w:512,h:768};cache.sample(l,rect);
+ for(let i=0;i<24;i++)assert.ok(cache.warm(l,rect)<=1);
+ assert.equal(cache.warm(l,rect),0);assert.equal(cache.sample(l,rect).rebuilt,0);
+ assert.equal(cache.sample(l,{...rect,x:rect.x+256}).rebuilt,0);
+ assert.equal(cache.sample(l,{...rect,y:rect.y+256}).rebuilt,0);
+ assert.ok(cache.sample(l,rect).cached<=MINE_SURFACE_CACHE_LIMIT);
+});
+
+test('预取不忽略施工和种子变化，超大广角不争抢固定几何容量',()=>{
+ const l=layer(),cache=createMineSurfaceCache(),rect={x:512,y:512,w:256,h:256};cache.sample(l,rect);while(cache.warm(l,rect)){}
+ const old=cache.sample(l,rect).builds;l.dug[mineKey({x:1,y:-2})]=true;
+ assert.equal(cache.warm(l,rect),1);assert.equal(cache.sample(l,rect).builds,old+1);
+ l.seed++;assert.equal(cache.warm(l,rect),1);assert.equal(cache.sample(l,rect).rebuilt,1);
+ const before=cache.sample(l,rect).builds;assert.equal(cache.warm(l,{x:0,y:0,w:3000,h:3000}),0);assert.equal(cache.sample(l,rect).builds,before);
+});

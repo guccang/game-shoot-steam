@@ -13,6 +13,7 @@ function edgePath(edges){const path=new Path2D();for(const [a,b] of edges){path.
 // 每个绘制器保留有界分块路径，跨格只合并路径，不重建整个视口的三角面。
 function geometry(renderer,layer,first,last){
  let cache=caches.get(renderer);if(!cache){cache={chunks:createMineSurfaceCache(mesh=>({open:surfacePath(mesh.open),water:surfacePath(mesh.water),walls:edgePath(mesh.walls),shores:edgePath(mesh.shores)}))};caches.set(renderer,cache);}
+ cache.layer=layer;
  const p=minePoint(first),q=minePoint(last),sample=cache.chunks.sample(layer,{x:p.x-64,y:p.y-64,w:q.x-p.x+128,h:q.y-p.y+128});
  if(!cache.items||cache.items.length!==sample.items.length||sample.items.some((item,i)=>item!==cache.items[i])){
   const value={open:new Path2D(),water:new Path2D(),walls:new Path2D(),shores:new Path2D(),rect:sample.rect,nodes:0,edges:0};
@@ -20,6 +21,11 @@ function geometry(renderer,layer,first,last){
   cache.items=sample.items;cache.value=value;
  }
  Object.assign(cache.value,{chunkCaches:sample.cached,chunkRebuilds:sample.rebuilt,totalChunkBuilds:sample.builds});return cache.value;
+}
+// 仅在地下帧尾有余量时推进一个近邻块，不生成位图或扩大几何缓存容量。
+export function advanceMineLandscapeGround(renderer){
+ const cache=caches.get(renderer);if(!cache?.value)return 0;
+ const built=cache.chunks.warm(cache.layer,cache.value.rect);cache.warmBuilds=(cache.warmBuilds||0)+built;return built;
 }
 // 与地表草坡相同的中点曲线，宽窄变化由世界种子决定而非镜头随机。
 function patch(c,x,y,rx,ry,seed,color){
@@ -72,5 +78,5 @@ export function drawMineLandscapeGround(renderer,layer,first,last,night,time){
  // 深水色块轻微偏移，沿用地表湖泊的有限层次，不使用重渐变。
  c.globalAlpha=.14;for(let y=Math.floor(first.y/3)*3;y<=last.y+3;y+=3)for(let x=Math.floor(first.x/4)*4;x<=last.x+4;x+=4){const p=minePoint({x,y});patch(c,p.x-28,p.y+14,94,48,x+y,night?'#245c70':'#287e9c');}c.restore();
  const waves=waterMotion(c,layer,mesh,night,time),stones=shoreDetails(c,layer,first,last,night,time);c.restore();
- renderer.mineLandscapeReview={designCriterion:'underground-landscape-quality',continuous:true,sharedCollision:true,nodes:mesh.nodes,edges:mesh.edges,waves,stones,animationTime:time,newBitmapBytes:0,geometryCaches:1,chunkCaches:mesh.chunkCaches,chunkRebuilds:mesh.chunkRebuilds,totalChunkBuilds:mesh.totalChunkBuilds};
+ renderer.mineLandscapeReview={designCriterion:'underground-landscape-quality',continuous:true,sharedCollision:true,nodes:mesh.nodes,edges:mesh.edges,waves,stones,animationTime:time,newBitmapBytes:0,geometryCaches:1,chunkCaches:mesh.chunkCaches,chunkRebuilds:mesh.chunkRebuilds,totalChunkBuilds:mesh.totalChunkBuilds,chunkWarmBuilds:caches.get(renderer).warmBuilds||0};
 }

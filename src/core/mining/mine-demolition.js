@@ -28,21 +28,32 @@ export function mineRemovalCheck(game,target){
   const point=minePoint(railCell(target.key));
   if(!mineInsideBounds(layer,point.x,point.y)||!reachable(game,point,80))return {ok:false,message:'请走近这段铁轨，不能隔墙拆除。'};
   if(occupied(layer,target.key))return {ok:false,message:'铁轨被矿车占用，请先移走或回收矿车。'};
+ }else if(target?.kind==='lamp'){
+  if(typeof target.key!=='string'||layer.decor[target.key]!=='lamp')return {ok:false,message:'这里没有可回收的矿灯。'};
+  const point=minePoint(railCell(target.key));
+  if(!mineInsideBounds(layer,point.x,point.y)||!reachable(game,point,80))return {ok:false,message:'请走近这盏矿灯，不能隔墙回收。'};
  }else if(target?.kind==='cart'){
   const cart=layer.carts.find(c=>c.id===target.id);
   if(cart&&(oreCount(cart.cargo)||cart.leader||layer.carts.some(c=>c.leader===cart.id)))return {ok:false,message:'先卸空货物并解开挂钩，再回收矿车。'};
   if(!cart||!reachable(game,cart,56))return {ok:false,message:'请走近要回收的空矿车。'};
- }else return {ok:false,message:'请选择铁轨或矿车。'};
+ }else return {ok:false,message:'请选择铁轨、矿车或矿灯。'};
  const refund=MINING.prices[target.kind];
  return {ok:true,message:'回收后返还 '+refund.ore+' 矿石、'+refund.wood+' 木材。',refund};
 }
-// 确认页明确列出脚下、前方和最近空车，固定标识避免确认时换目标。
+// 确认页明确列出脚下、前方、最近空车与矿灯，固定标识避免确认时换目标。
 export function mineRemovalChoices(game){
  if(game.cottage?.kind!=='mine')return [];
  const cell=mineCell(game.player),direction=MINE_DIRECTIONS[game.cottage.direction??1];
  const here={kind:'rail',key:mineKey(cell),label:'拆除脚下铁轨'},ahead={kind:'rail',key:mineKey({x:cell.x+direction.x,y:cell.y+direction.y}),label:'拆除前方铁轨'};
- const cart=currentMineLayer(game).carts.filter(c=>reachable(game,c,56)).sort((a,b)=>Math.hypot(a.x-game.player.x,a.y-game.player.y)-Math.hypot(b.x-game.player.x,b.y-game.player.y)||a.id-b.id)[0];
- return [here,ahead,{kind:'cart',id:cart?.id,label:'回收附近矿车'}].map(target=>({...target,...mineRemovalCheck(game,target)}));
+ const layer=currentMineLayer(game),cart=layer.carts.filter(c=>reachable(game,c,56)).sort((a,b)=>Math.hypot(a.x-game.player.x,a.y-game.player.y)-Math.hypot(b.x-game.player.x,b.y-game.player.y)||a.id-b.id)[0];
+ // 只检查周围九格，不随已放置矿灯数量增加全图扫描。
+ const lamps=[];
+ for(let y=cell.y-1;y<=cell.y+1;y++)for(let x=cell.x-1;x<=cell.x+1;x++){
+  const key=mineKey({x,y}),point=minePoint({x,y});
+  if(layer.decor[key]==='lamp'&&reachable(game,point,80))lamps.push({key,distance:Math.hypot(point.x-game.player.x,point.y-game.player.y)});
+ }
+ lamps.sort((a,b)=>a.distance-b.distance||a.key.localeCompare(b.key));
+ return [here,ahead,{kind:'cart',id:cart?.id,label:'回收附近矿车'},{kind:'lamp',key:lamps[0]?.key,label:'回收附近矿灯'}].map(target=>({...target,...mineRemovalCheck(game,target)}));
 }
 // 回收原价材料，不返还消耗过的燃料；存档失败时设施、库存和工具均不改变。
 export function removeMineFacility(game,target){
@@ -50,6 +61,7 @@ export function removeMineFacility(game,target){
  const check=mineRemovalCheck(game,target);if(!check.ok)return mineNotice(game,check.message);
  const result=miningCommit(game,(mining,progress,layer)=>{
   if(target.kind==='cart')layer.carts=layer.carts.filter(c=>c.id!==target.id);
+  else if(target.kind==='lamp')delete layer.decor[target.key];
   else{
    delete layer.rails[target.key];
    // 拆掉出口或三岔变两岔时清除失效路口规则，只遍历该层已有规则。
@@ -64,7 +76,7 @@ export function removeMineFacility(game,target){
    }
   }
   mining.ore+=check.refund.ore;progress.wood+=check.refund.wood;
- },(target.kind==='cart'?'矿车已回收。':'铁轨已拆除，通道保留。')+check.message);
+ },(target.kind==='cart'?'矿车已回收。':target.kind==='lamp'?'矿灯已回收。':'铁轨已拆除，通道保留。')+check.message);
  if(result.ok)Object.assign(game.cottage,{tool:null,autoDig:false,dig:null,shaftWork:0,autoBuildKey:null});
  return result;
 }
