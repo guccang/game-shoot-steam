@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {farmToolReady} from '../config/farm-tools.js';
 import {industrialToolKey} from '../config/industry.js';
 import {createFarmToolGroups,farmGroupMarkup} from './farm-tool-groups.js';
@@ -83,9 +84,9 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  // 简短提示独立于底部农具，不再撑出一整块说明底板。
  function say(message){if(!message)return;notice=message;get('notice').textContent=message;onNotice?.(message);}
  // 收起或手动取消不会改动已经成功保存的田块和收益。
- function stop(restoreVehicle=true){releaseGesture();opened=false;combat=false;input.reset();popup=null;mailOpen=false;anchor=null;setFarmTool(game,null);game.farmCursor=null;get('ghost').hidden=true;if(restoreVehicle&&restoreFarmVehicle(game)){say('正在走回载具，靠近后倒计时上车；摇杆可取消返车');onChange();}render();}
+ function stop(restoreVehicle=true){releaseGesture();opened=false;combat=false;input.reset();popup=null;mailOpen=false;anchor=null;setFarmTool(game,null);game.farmCursor=null;setHidden(get('ghost'),true);if(restoreVehicle&&restoreFarmVehicle(game)){say('正在走回载具，靠近后倒计时上车；摇杆可取消返车');onChange();}render();}
  // 失焦只释放手势与输入，保留工具和农活队列；后台暂停由全局偏好控制。
- function releaseGesture(){groups.cancel();groups.close();const pointer=gesture?.pointer;gesture=null;game.farmDragging=false;get('ghost').hidden=true;if(pointer!==undefined&&layer.hasPointerCapture(pointer))layer.releasePointerCapture(pointer);}
+ function releaseGesture(){groups.cancel();groups.close();const pointer=gesture?.pointer;gesture=null;game.farmDragging=false;setHidden(get('ghost'),true);if(pointer!==undefined&&layer.hasPointerCapture(pointer))layer.releasePointerCapture(pointer);}
  // 图集失败给出明确提示，下一次打开可以原地重试。
  async function prepare(){try{await loadFarmArt();if(disposed)return;loaded=true;render();}catch(e){loaded=false;say(e.message+'，再次点击种地重试。');}}
  // 打开种地或明确短按田块才允许安全下车，普通拖动不改变驾驶状态。
@@ -319,7 +320,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(gesture?.mode==='water'&&p&&p.crop!==null&&farmGrowth(p)<1)act('water',id);
  }
  // 拖到田格时由右下角圆点确认选择，文字只跟随空白处的手指，避免盖住邻田标记。
- function ghost(x,y){const r=frame.getBoundingClientRect(),g=get('ghost');g.hidden=!!root.elementFromPoint(x,y)?.closest('[data-farm-cell]');g.style.left=x-r.left+12+'px';g.style.top=y-r.top-42+'px';g.textContent=gesture?.mode==='harvest'?'安排收割':gesture?.mode==='water'?'安排浇水':FARM_CROPS[selected].name+'种子';}
+ function ghost(x,y){const r=frame.getBoundingClientRect(),g=get('ghost');setHidden(g,!!root.elementFromPoint(x,y)?.closest('[data-farm-cell]'));g.style.left=x-r.left+12+'px';g.style.top=y-r.top-42+'px';g.textContent=gesture?.mode==='harvest'?'安排收割':gesture?.mode==='water'?'安排浇水':FARM_CROPS[selected].name+'种子';}
  scope.on(layer,'pointerdown',e=>{
   if(e.button!==0||gesture)return;const seed=e.target.closest('[data-farm-seed]'),cell=e.target.closest('[data-farm-cell]'),harvest=e.target.closest('#farm-harvest');
   // 普通田地由统一输入在短按松手后激活，拖动和长按只移动；主动选中农具才接管批量拖动。
@@ -335,7 +336,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  });
  scope.on(layer,'pointermove',e=>{if(gesture?.pointer!==e.pointerId)return;e.preventDefault();e.stopPropagation();const g=gesture,dx=e.clientX-g.x,dy=e.clientY-g.y,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5));g.moved ||= Math.hypot(e.clientX-g.startX,e.clientY-g.startY)>7;if(g.mode){for(let i=1;i<=n&&gesture;i++)visit(g.x+dx*i/n,g.y+dy*i/n);if(gesture)ghost(e.clientX,e.clientY);}g.x=e.clientX;g.y=e.clientY;});
  // 系统取消触摸时清除尚未执行的安排，正常松手后开始逐格农活。
- function finish(e){if(gesture?.pointer!==e.pointerId)return;const g=gesture;gesture=null;game.farmDragging=false;get('ghost').hidden=true;if(e.type==='pointercancel'){if(game.farmWork){game.farmWork.queue=[];game.farmWork.job=null;}}else if(e.type==='pointerup'&&(!g.mode||g.emptyHarvest)&&!g.moved&&g.id!==null)tap(g.id);}
+ function finish(e){if(gesture?.pointer!==e.pointerId)return;const g=gesture;gesture=null;game.farmDragging=false;setHidden(get('ghost'),true);if(e.type==='pointercancel'){if(game.farmWork){game.farmWork.queue=[];game.farmWork.job=null;}}else if(e.type==='pointerup'&&(!g.mode||g.emptyHarvest)&&!g.moved&&g.id!==null)tap(g.id);}
  for(const type of ['pointerup','pointercancel','lostpointercapture'])scope.on(layer,type,finish);
  scope.on(layer,'click',e=>{
   // 关闭仅收起选种并归还焦点，保留农具、种子库存及已安排的农活。

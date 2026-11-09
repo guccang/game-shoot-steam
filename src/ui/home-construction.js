@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {createHomeFloorPicker} from './home-floor-picker.js';
 import {constructionWood} from '../progression/economy/resource-wallet.js';
 // 按层施工与场景乘梯共用手机底板，楼层再多也不创建全量按钮列表。
@@ -88,7 +89,7 @@ export function createHomeConstruction({game,root,panel,dialogs,input,onChange})
  });
  // 关闭说明后由统一弹窗恢复游戏，再安排走近；正式候停请求只消费一次。
  function render(){
-  const room=game.cottage;entry.hidden=room?.kind!=='cottage'||!!room.balcony;entry.disabled=!!room?.sleep;
+  const room=game.cottage;setHidden(entry,room?.kind!=='cottage'||!!room.balcony);entry.disabled=!!room?.sleep;
   if(pendingWalk&&(pendingWalk.room!==room||pendingWalk.floor!==cottageFloor(room)))pendingWalk=null;
   if(pendingWalk&&!dialog.open&&game.state==='playing'){pendingWalk=null;approachCottageTarget(game,'elevator');}
   if(room?.elevatorRequest&&game.state==='playing'&&!root.querySelector('dialog[open]')){room.elevatorRequest=false;open('travel');}

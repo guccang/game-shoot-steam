@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 开垦预览复用正式选址和地图镜像；纯显示，不排队、不扣费或改变摇杆手势。
 import {farmDigTarget} from '../world/farm-land.js';
 import {nearest} from '../world/coordinates.js';
@@ -6,7 +7,7 @@ import {createEventScope} from '../platform/events.js';
 
 // 一个世界矩形随指针预选；触屏未选位置时显示角色前方地面。
 export function createFarmPlacement({game,root,renderer,frame,layer}){
- const scope=createEventScope(),node=root.createElement('div');node.id='farm-placement';node.hidden=true;node.setAttribute('aria-hidden','true');
+ const scope=createEventScope(),node=root.createElement('div');node.id='farm-placement';setHidden(node,true);node.setAttribute('aria-hidden','true');
  // 种子袋是空田的选种提示，复用原预览层并让触摸穿透到正式田块。
  node.innerHTML='<svg class="farm-placement-seed" viewBox="0 0 40 44" aria-hidden="true"><g stroke="#365a42" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 4Q20 7 28 4L25 14Q34 24 34 33Q34 40 20 40Q6 40 6 33Q6 24 15 14Z" fill="#f7e5b1"/><path d="M15 14Q20 16 25 14M14 17Q20 19 26 17" fill="none"/><path d="M24 16q8-3 8 2m-8-2 5 6" fill="none" stroke="#b58b51"/><path d="M20 33V25m0 4Q11 29 12 22Q19 21 20 29m0-3Q20 19 28 20Q29 27 20 27" fill="#92b477"/></g></svg><span></span>';layer.append(node);
  let enabled=false,point=null;
@@ -24,11 +25,11 @@ export function createFarmPlacement({game,root,renderer,frame,layer}){
  scope.on(frame,'pointercancel',()=>{point=null;},{capture:true});
  // 每次刷新重新核对土地，砍树、开地、切图后颜色不会停留在旧状态。
  function render(show){
-  enabled=show;node.hidden=!show||!renderer.view;
+  enabled=show;setHidden(node,!show||!renderer.view);
   if(node.hidden){point=null;return;}
   const v=renderer.view,raw=point?.mapId===game.mapId?point:{x:game.player.x,y:game.player.y-68};
   const target=farmDigTarget(game,raw,v),reason=target.reason||(game.progress.farm.plots.length>=FARM_MAX_PLOTS?'田块数量已达上限':null);
-  if(!target.point){node.hidden=true;return;}
+  if(!target.point){setHidden(node,true);return;}
   const plot=game.progress.farm.plots.find(p=>p.id===target.point.id&&p.mapId===game.mapId),seed=plot?.crop===null;
   const p=nearest(target.point,{x:v.x+v.w/2,y:v.y+v.h/2}),c=renderer.canvas.getBoundingClientRect(),f=frame.getBoundingClientRect(),sx=c.width/v.w,sy=c.height/v.h;
   node.style.left=(p.x-v.x)*sx+c.left-f.left+'px';node.style.top=(p.y-v.y)*sy+c.top-f.top+'px';

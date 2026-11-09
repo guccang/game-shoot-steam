@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 红狼专属传承页与坦克设计台；预览只修改草稿，保存与解锁走原子事务。
 import {LEGENDARY_STORY,TANK_PAINTS,TANK_BADGES,normalizeTankDesign} from "../config/legendary-workshop.js";
 import {legendaryAccessReason,legendaryNavigationReason,legendaryNearby,travelLegendary,commitLegendary} from "../core/workshop/legendary-workshop.js";
@@ -11,7 +12,7 @@ export function createLegendaryWorkshop({game,root,renderer,dialogs,persist,onCh
  const scope=createEventScope(),dialog=root.createElement('dialog'),entry=root.createElement('button'),frame=root.getElementById('game-frame');
  dialog.id='legendary-dialog';dialog.innerHTML='<header><div><small>红狼传承</small><h2>传奇工坊</h2></div><button id="legendary-close" aria-label="关闭传奇工坊">×</button></header><div id="legendary-content"></div><p id="legendary-status" role="status"></p><button id="legendary-primary" class="ui-button"></button>';
  root.body.append(dialog);dialogs.register(dialog.id,{focusId:'legendary-close'});
- entry.id='legendary-entry';entry.className='legendary-entry';entry.textContent='传奇工坊 · 点击';entry.hidden=true;frame.append(entry);
+ entry.id='legendary-entry';entry.className='legendary-entry';entry.textContent='传奇工坊 · 点击';setHidden(entry,true);frame.append(entry);
  const $=id=>root.getElementById(id);let page='story',vehicle=6,draft=normalizeTankDesign();
  // 当前资格每次操作重新校验，打开面板后切换场景也不能绕过所有权和现场门槛。
  function submit(action){const r=commitLegendary(game,action,persist);$('legendary-status').textContent=r.ok?action.type==='unlock'?'传奇工坊已解锁，枪械最高等级提升至 LV30。':action.type==='paint'?'配色已应用到坦克。':'外观方案已保存。':r.reason;if(r.ok){render();onChange();}return r.ok;}
@@ -46,7 +47,7 @@ export function createLegendaryWorkshop({game,root,renderer,dialogs,persist,onCh
   if(b.dataset.schemeLoad!==undefined){const s=game.progress.legendaryWorkshop.schemes[Number(b.dataset.schemeLoad)];if(s&&game.progress.vehicleHulls[s.vehicle]){vehicle=s.vehicle;draft=normalizeTankDesign(s.design);render();$('legendary-status').textContent='已载入方案预览，点击应用后更换实战外观。';}}
  });
  // 室外沿用统一门口候停，保留旧接口但不重复显示已停用的浮动门牌。
- function renderFrame(){entry.hidden=true;}
+ function renderFrame(){setHidden(entry,true);}
  // 卸载时释放入口、模态和全部监听。
  function dispose(){scope.dispose();if(dialog.open)dialogs.close(dialog.id);dialog.remove();entry.remove();}
  return {open,renderFrame,dispose};

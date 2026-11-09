@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import { i18nText } from "../i18n/index.js";
 // 地面方格的可访问点击层与底部建造栏；只操作 UI 选择，不持有战斗资源副本。
 import { GUARDIAN_PADS, GUARDIAN_ECONOMY, guardianPads } from '../config/guardian.js';
@@ -9,7 +10,7 @@ import { createDragScroll } from '../platform/drag-scroll.js';
 // 每个点击区跟随正式镜头投影，保留触摸拖动取消、键盘操作与应用卸载清理。
 export function createGuardianBuild({game,renderer,root,onChange}) {
   const scope=createEventScope(), layer=root.createElement('div'), panel=root.createElement('section');
-  const status=root.createElement('div');status.className='guardian-live-status';status.hidden=true;
+  const status=root.createElement('div');status.className='guardian-live-status';setHidden(status,true);
   root.getElementById('quest').append(status);
   const frame=root.getElementById('game-frame'), dock=root.createElement('section');
   dock.className='guardian-wave-controls';dock.setAttribute('aria-label',i18nText("ui.guardian-build.e31dcb7326"));
@@ -96,21 +97,21 @@ export function createGuardianBuild({game,renderer,root,onChange}) {
   // 只在内容变化时重建目录；地面按钮保留 DOM 与焦点，位置逐帧更新。
   function render() {
     const active=game.realm?.mode==='guardian';frame.classList.toggle('guardian-active',active);
-    status.hidden=!active;
+    setHidden(status,!active);
     if(active){
-      root.getElementById('quest').hidden=false;
+      setHidden(root.getElementById('quest'),false);
       const markup=guardianStatusMarkup(game);if(status.innerHTML!==markup)status.innerHTML=markup;
     }
     const shown=available()&&!!renderer.view;
-    layer.hidden=!shown;
-    if(!active){run=null;panel.hidden=dock.hidden=true;catalogDrag.reset();return;}
+    setHidden(layer,!shown);
+    if(!active){run=null;setHidden(panel,setHidden(dock,true));catalogDrag.reset();return;}
     if(run!==game.realm){run=game.realm;collapse();lastMarkup='';phase=game.realm.phase;}
     if(phase!==game.realm.phase){phase=game.realm.phase;collapse();}
-    panel.hidden=!shown||!expanded;
+    setHidden(panel,!shown||!expanded);
     if(panel.hidden)catalogDrag.reset();
     const canStart=['build','rest'].includes(game.realm.phase);
-    dock.hidden=!shown||expanded||(!canStart&&!selection);
-    nextWave.hidden=!canStart;
+    setHidden(dock,!shown||expanded||(!canStart&&!selection));
+    setHidden(nextWave,!canStart);
     // 按钮节点保持不变，倒计时刷新不打断触摸按下或键盘焦点。
     nextWave.textContent=game.realm.phase==='build'?i18nText("ui.guardian-build.ff17673be2"):i18nText("ui.guardian-build.ef0eb3dc3e", { p0: (Math.ceil(game.realm.restRemaining)) });
     nextWave.setAttribute('aria-label',game.realm.phase==='build'?i18nText("ui.guardian-build.931b6f330a"):i18nText("ui.guardian-build.f69ff249e5", { p0: (Math.ceil(game.realm.restRemaining)) }));
@@ -140,7 +141,7 @@ export function createGuardianBuild({game,renderer,root,onChange}) {
     const v=renderer.view, pads=guardianPads(game.realm.arena);
     buttons.forEach((b,i)=>{
       const x=(pads[i].x-v.x)*v.zoom, y=(pads[i].y-v.y)*v.zoom;
-      b.hidden=x<0||x>v.width||y<0||y>v.height;
+      setHidden(b,x<0||x>v.width||y<0||y>v.height);
       b.style.left=`${(pads[i].x-v.x)*v.zoom}px`;
       b.style.top=`${(pads[i].y-v.y)*v.zoom}px`;
       b.style.width=b.style.height=`${Math.max(44,68*v.zoom)}px`;

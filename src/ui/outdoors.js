@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {fishingSurveyMarkup} from './fishing-surveys.js';
 import {fishingTackleMarkup} from './fishing-tackle.js';
 import {fishingStorageMarkup} from './fish-storage.js';
@@ -36,8 +37,8 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  const scope=createEventScope(),panel=root.createElement('dialog'),hud=root.createElement('section'),entry=root.createElement('button');
  entry.id='outdoor-menu';entry.setAttribute('aria-controls','outdoor-dialog');entry.setAttribute('aria-haspopup','dialog');entry.type='button';entry.setAttribute('aria-label','打开野外露营与钓鱼');entry.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 39 23 8 43 39Z" fill="#c8d39b" stroke="#315c43" stroke-width="3"/><path d="m14 39 9-18 10 18" fill="#f6e6b6" stroke="#315c43" stroke-width="2"/></svg><span>野外</span>';root.getElementById('field-menu-items').append(entry);
  panel.id='outdoor-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','outdoor-title');panel.innerHTML='<header class="ui-panel__header"><div><h2 id="outdoor-title">露营与垂钓</h2><p>把一天留给湖水和晚风</p></div><button class="ui-close" id="outdoor-close" aria-label="关闭野外装备">×</button></header><div class="ui-panel__body" id="outdoor-content"></div><footer class="ui-panel__footer"><p id="outdoor-message" role="status"></p></footer>';root.body.append(panel);
- hud.id='fishing-hud';hud.hidden=true;hud.setAttribute('aria-label','湖岸钓鱼操作');hud.innerHTML='<div class="fishing-heading"><b id="fishing-phase">湖岸垂钓</b><button class="ui-button" id="fishing-cancel">收竿</button></div><p id="fishing-message" role="status"></p><div id="fishing-meters"><label>鱼线张力 <meter id="fishing-tension" min="0" max="1" low="0.16" high="0.78" optimum="0.45"></meter></label><label>收线进度 <progress id="fishing-progress" max="1"></progress></label></div><label id="fishing-lean-label">左控竿 ← <input id="fishing-lean" type="range" min="-1" max="1" step="0.05" value="0" aria-label="左右控制鱼竿"> → 右控竿</label><button class="ui-button ui-button--primary" id="fishing-control">按住蓄力 · 松手抛竿</button>';root.getElementById('game-frame').append(hud);
- const nearby=root.createElement('button');nearby.id='fishing-nearby';nearby.type='button';nearby.className='ui-button ui-button--primary';nearby.textContent='钓鱼';nearby.setAttribute('aria-label','在湖边钓鱼');nearby.hidden=true;root.getElementById('game-frame').append(nearby);
+ hud.id='fishing-hud';setHidden(hud,true);hud.setAttribute('aria-label','湖岸钓鱼操作');hud.innerHTML='<div class="fishing-heading"><b id="fishing-phase">湖岸垂钓</b><button class="ui-button" id="fishing-cancel">收竿</button></div><p id="fishing-message" role="status"></p><div id="fishing-meters"><label>鱼线张力 <meter id="fishing-tension" min="0" max="1" low="0.16" high="0.78" optimum="0.45"></meter></label><label>收线进度 <progress id="fishing-progress" max="1"></progress></label></div><label id="fishing-lean-label">左控竿 ← <input id="fishing-lean" type="range" min="-1" max="1" step="0.05" value="0" aria-label="左右控制鱼竿"> → 右控竿</label><button class="ui-button ui-button--primary" id="fishing-control">按住蓄力 · 松手抛竿</button>';root.getElementById('game-frame').append(hud);
+ const nearby=root.createElement('button');nearby.id='fishing-nearby';nearby.type='button';nearby.className='ui-button ui-button--primary';nearby.textContent='钓鱼';nearby.setAttribute('aria-label','在湖边钓鱼');setHidden(nearby,true);root.getElementById('game-frame').append(nearby);
  let campOnly=false,message='',held=false,lastPhase='',nextShoreCheck=0;const get=id=>root.getElementById(id);
  const detail=root.createElement('dialog');
  detail.id='outdoor-gear-detail';detail.className='ui-panel ui-panel--compact';detail.setAttribute('aria-labelledby','outdoor-detail-name');
@@ -67,7 +68,7 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
   const expanded=[...get('outdoor-content').querySelectorAll('details')].map(d=>d.open),scroll=get('outdoor-content').scrollTop;
   const p=game.progress.outdoors,camp=p.camp,shop=game.cottage?.kind==='outdoor';
   get('outdoor-title').textContent=campOnly?'野外营地':'露营与垂钓';
-  get('outdoor-title').nextElementSibling.hidden=campOnly;
+  setHidden(get('outdoor-title').nextElementSibling,campOnly);
   const campSection=`<section class="ui-section">${campOnly?'':`<h3>${camp?'野外营地':'今晚住哪里'}</h3>`}${camp?'':'<p>请在开阔草地上展开套装，或在战车旁驻营。</p>'}${p.tentHull!=null?'<p>露营套装存放在'+vehicleModel(p.tentHull).name+'的仓库中。</p>':storedShopGood(game.progress,'outdoor:tent')?'<p>露营套装已送到小屋仓库，可到仓库取回。</p>':''}${camp?`<p>营地已搭好 · ${camp.mode==='vehicle'?'战车驻营':'帐篷露营'} · ${camp.mapId==='forest'?'晴叶森林':'九寨沟'}</p><div class="outdoor-actions">${campOnly&&worldDistance(game.player,camp)<=OUTDOOR_RULES.campReach?'':'<button class="ui-button" data-outdoor-action="camp-nav">返回营地</button>'}<button class="ui-button" data-outdoor-action="sleep">睡到明早</button><button class="ui-button" data-outdoor-action="nap">休息到下一时段</button><button class="ui-button" data-outdoor-action="pack">收回营地</button></div>`:'<div class="outdoor-actions"><button class="ui-button" data-outdoor-action="vehicle">战车旁驻营</button><button class="ui-button" data-outdoor-action="tent" '+(!p.tent?'disabled':'')+'>展开露营套装</button></div>'}</section>`;
   // 购置后直接装备，已拥有的型号可以在同一柜台免费换装。
   const gliderSection=shop?'<section class="ui-section"><details><summary>选购与更换滑翔伞</summary>'+Object.entries(GLIDERS).map(([id,m])=>{
@@ -122,7 +123,7 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  scope.on(entry,'click',open);scope.on(get('outdoor-close'),'click',()=>dialogs.close(panel.id));
  // 就地入口直接备竿，实际按下时重新验证装备、危险与位置，防止沿用旧岸点。
  scope.on(nearby,'pointerdown',e=>e.stopPropagation());
- scope.on(nearby,'click',e=>{e.stopPropagation();const result=beginFishing(game);nearby.hidden=true;nextShoreCheck=0;if(!result.ok)onNotice(result.message);onChange();});
+ scope.on(nearby,'click',e=>{e.stopPropagation();const result=beginFishing(game);setHidden(nearby,true);nextShoreCheck=0;if(!result.ok)onNotice(result.message);onChange();});
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.gearDetail){showGearDetail(b.dataset.gearDetail);return;}if(b.dataset.gliderModel){message=selectOutdoorGlider(game,b.dataset.gliderModel).message;renderPanel();onChange();return;}if(b.dataset.outdoorBuy){const result=buyOutdoorGear(game,b.dataset.outdoorBuy);message=result.message;renderPanel();onChange();}if(b.dataset.outdoorAction)perform(b.dataset.outdoorAction);});
  // 取消手势和窗口失焦只释放卷线轮，不把未完成蓄力误判为一次抛竿。
  function release(cancel=false){if(!held)return;held=false;if(cancel||game.state!=='playing'){if(game.fishing){game.fishing.reeling=false;if(game.fishing.phase==='charging')game.fishing.phase='ready';}}else fishingControl(game,'release');}
@@ -136,13 +137,13 @@ export function createOutdoors({game,root,renderer,dialogs,onChange,onFishCaught
  // 低成本刷新文字、进度和显隐，不每帧重建按住中的按钮。
  function renderFrame(){
   const dialogOpen=!!root.querySelector('dialog[open]'),now=performance.now();
-  if(game.state!=='playing'||dialogOpen||outdoorBusy(game)||game.vehicle.active||fishingSetup(game).reason){nearby.hidden=true;nextShoreCheck=0;}
-  else if(now>=nextShoreCheck){nearby.hidden=!fishingAvailability(game).ok;nextShoreCheck=now+OUTDOOR_RULES.shoreRefreshMs;}
-  const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||dialogOpen;hud.hidden=hidden;if(hidden){release(true);return;}
-  if(f?.phase==='landed'){hud.hidden=true;release(true);onFishCaught(f);return;}
+  if(game.state!=='playing'||dialogOpen||outdoorBusy(game)||game.vehicle.active||fishingSetup(game).reason){setHidden(nearby,true);nextShoreCheck=0;}
+  else if(now>=nextShoreCheck){setHidden(nearby,!fishingAvailability(game).ok);nextShoreCheck=now+OUTDOOR_RULES.shoreRefreshMs;}
+  const f=game.fishing,s=game.campSleep,hidden=!outdoorBusy(game)||game.state!=='playing'||dialogOpen;setHidden(hud,hidden);if(hidden){release(true);return;}
+  if(f?.phase==='landed'){setHidden(hud,true);release(true);onFishCaught(f);return;}
   const phase=s?'sleeping':f.phase;get('fishing-phase').textContent=s?'林间好梦':({ready:'湖岸垂钓',charging:'蓄力抛竿',casting:'浮漂入水',waiting:'静候鱼讯',nibble:'鱼儿试探',bite:'浮漂下沉！',fight:'稳住鱼竿',landed:'鱼儿上岸',missed:'下次再来'})[phase];
   get('fishing-message').textContent=s?'睡袋暖暖的，天光正在变化……':f.message+(['ready','charging'].includes(phase)?(f.mode==='school'?' 附近鱼群：'+[...new Set(f.schools.map(s=>FISH_SPECIES[s.species].name))].join('、')+'，更容易咬钩。':' 本湖常住鱼正在等待。'):'');
-  get('fishing-meters').hidden=phase!=='fight';get('fishing-lean-label').hidden=phase!=='fight';control.hidden=['sleeping','landed','missed'].includes(phase);
+  setHidden(get('fishing-meters'),phase!=='fight');setHidden(get('fishing-lean-label'),phase!=='fight');setHidden(control,['sleeping','landed','missed'].includes(phase));
   if(f){get('fishing-tension').value=f.tension;get('fishing-progress').value=f.progress;control.textContent=phase==='charging'?`蓄力 ${Math.round(f.charge*100)}% · 松手抛竿`:phase==='bite'?'现在扬竿！':phase==='fight'?(f.reeling?'正在收线 · 松手放线':'按住收线 · 左右拖动控竿'):phase==='ready'?'按住蓄力 · 松手抛竿':'等黑漂 · 暂时不要提竿';control.disabled=phase==='casting';hud.dataset.phase=phase;}
   if(lastPhase!==phase){if(phase==='bite')root.defaultView.navigator.vibrate?.([35,35,65]);lastPhase=phase;}
  }

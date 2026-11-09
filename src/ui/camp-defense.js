@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import { HELP_EMBLEM } from './help-emblem.js';
 import {facilityOpen} from '../config/town-restoration.js';
 import {BUILDING_ENTRIES} from '../config/building-entries.js';
@@ -20,7 +21,7 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),hud=root.createElement('section'),dialog=root.createElement('dialog');
  let selected=CAMP_GATES[0],shownResult=null;
  const markers=CAMP_GATES.map(g=>{const node=root.createElement('button');node.dataset.campGate=g.id;sceneHit(node,g.name+'怪潮守门');frame.append(node);scope.on(node,'click',e=>{if(e.detail===0)visit(g);});return node;});
- hud.id='camp-defense-hud';hud.hidden=true;
+ hud.id='camp-defense-hud';setHidden(hud,true);
  // 左侧上下区分累计场次与本场拒马，右侧双环继续表示当前波次。
  hud.innerHTML='<div class="camp-hp"><span class="camp-completed" role="img" aria-label="已完成兽潮0次">已完成 <b>0</b> 次</span><div class="camp-barricade"><span>拒马</span><div role="progressbar" aria-label="拒马耐久" aria-valuemin="0"><i></i></div></div></div>'+
   '<button id="camp-boss" aria-label="领主尚未登场"><canvas width="64" height="64" aria-hidden="true"></canvas></button>'+
@@ -46,7 +47,7 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
   html=(r?`<p>第 ${r.rounds+1} 次兽潮 · 已完成 ${game.progress.campDefense.runs} 次</p>`:`<p>已完成 ${game.progress.campDefense.runs} 次兽潮 · 下一次为第 ${game.progress.campDefense.runs+1} 次</p>`)+html;
   html+='<p class="camp-ring-key">波次数字外圈：金色表示开波等待进度，绿色内圈表示本波清怪进度。</p><details><summary>评分与奖励</summary><p>S：守住五波与领主，拒马至少剩一半。A：完成防守，或守住三波后获救。B：其余守门表现。救场击杀不计成绩。</p>'+Object.entries(CAMP_DEFENSE.grades).map(([grade,r])=>`<p>${grade} · 金币 ${r.coins} / 木材 ${r.wood} / 零件 ${r.parts}</p>`).join('')+'</details>';
   const blocked=!r&&worldDistance(game.player,selected)<=160&&!canStartCampDefense(game,selected);
-  const canLeave=!!r&&r.phase!=='result'&&r.phase!=='spoils';$('camp-leave').hidden=!canLeave;$('camp-leave-note').hidden=!canLeave;
+  const canLeave=!!r&&r.phase!=='result'&&r.phase!=='spoils';setHidden($('camp-leave'),!canLeave);setHidden($('camp-leave-note'),!canLeave);
   $('camp-content').innerHTML=html;$('camp-error').textContent=r?.error||(blocked?'先完成当前清缴或活动，再来守门。':'');$('camp-primary').disabled=blocked;$('camp-primary').textContent=!r?(blocked?'当前活动进行中':canStartCampDefense(game,selected)?'开始守门':'前往'+selected.name):r.phase==='result'?'领取奖励，回到营地':'继续守门';
  }
  // 远处点盾牌只规划到候停点，现场点击仍可立即打开。
@@ -74,14 +75,14 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
   if(game.campDefense&&!$('boss-hud').hidden)$('boss-hud').style.top=(hud.offsetTop+hud.offsetHeight+8)+'px';
  }
  // 同行显示防线、当前波次和领主；双环读取正式计时与清怪数量，不增加战斗限时。
- function render(){const r=game.campDefense;frame.classList.toggle('camp-defending',!!r);hud.hidden=!r||!!root.querySelector('dialog[open]');
+ function render(){const r=game.campDefense;frame.classList.toggle('camp-defending',!!r);setHidden(hud,!r||!!root.querySelector('dialog[open]'));
   if(!r){shownResult=null;return;}
   // 只显示已领取结算的次数，当前波次、救场与待领奖状态不会提前加一。
   const completed=hud.querySelector('.camp-completed'),runs=game.progress.campDefense.runs;
   completed.querySelector('b').textContent=runs;completed.setAttribute('aria-label',`已完成兽潮${runs}次`);
-  for(const id of ['quest','mainline-hud','equipment-goal'])$(id).hidden=true;
+  for(const id of ['quest','mainline-hud','equipment-goal'])setHidden($(id),true);
   // 基础HUD已更新领主名称、生命数值及条宽；兽潮只接管显隐和排布。
-  $('boss-hud').hidden=hud.hidden||!game.boss?.campDefense||game.boss.hp<=0;
+  setHidden($('boss-hud'),hud.hidden||!game.boss?.campDefense||game.boss.hp<=0);
   positionHud();
   const hp=hud.querySelector('.camp-hp i');hp.style.width=r.gateHp/CAMP_DEFENSE.gateHp*100+'%';hp.parentElement.setAttribute('aria-valuenow',Math.ceil(r.gateHp));hp.parentElement.setAttribute('aria-valuemax',CAMP_DEFENSE.gateHp);
   const wave=Math.min(CAMP_DEFENSE.waves.length,Math.max(1,r.wave)),count=CAMP_DEFENSE.waves[wave-1].count;
@@ -102,8 +103,8 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
  }
  // 命中区跟随原镜头，救援短句以头顶小气泡显示，不改变缩放或重新对焦。
  function renderFrame(){const available=game.state==='playing'&&!root.hidden&&!root.querySelector('dialog[open]')&&frame.dataset.page!=='title';
-  const objects=campDefenseObjects(game);markers.forEach((n,i)=>{const site=objects.find(o=>o.kind==='marker'&&o.id===CAMP_GATES[i].id);n.hidden=true;if(site)n.setAttribute('aria-label',`${site.name}兽潮守门，已完成${site.completed}次`);if(available&&site)placeSceneHit(n,site,renderer,frame,{width:96,height:150});});
-  const r=game.campDefense;speech.node.hidden=true;if(!r)return;
+  const objects=campDefenseObjects(game);markers.forEach((n,i)=>{const site=objects.find(o=>o.kind==='marker'&&o.id===CAMP_GATES[i].id);if(site)n.setAttribute('aria-label',`${site.name}兽潮守门，已完成${site.completed}次`);if(available&&site)placeSceneHit(n,site,renderer,frame,{width:96,height:150});else setHidden(n,true);});
+  const r=game.campDefense;setHidden(speech.node,true);if(!r)return;
   positionHud();
   if(r.phase==='rescue'&&available){
    const helper=r.helpers.filter(h=>h.entered&&r.rescueTime-h.enterAt<CAMP_DEFENSE.rescue.bubbleSeconds).at(-1);

@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {ownsCampPoint} from '../config/camp-land.js';
 import {BUILDING_ENTRIES} from '../config/building-entries.js';
 import { i18nText } from "../i18n/index.js";
@@ -43,12 +44,12 @@ export function createWorldRealms({ game, renderer, root, onEnter }) {
   // 入库后不把浮动门牌压在下车猫猫头上；建筑本体与菜单仍可接警。
   // 门牌只显示短名称，交互区域至少四十四像素，玩法说明继续由原菜单问号承载。
   function render() {
-    layer.hidden = !available() || !renderer.view;
+    setHidden(layer,!available() || !renderer.view);
     if (layer.hidden) return;
     REALM_ENTRANCES.forEach((entry,i)=>{
-      if(!ownsCampPoint(game.progress,entry)||['fire','tower'].includes(entry.mode)){buttons[i].hidden=true;return;}
+      if(!ownsCampPoint(game.progress,entry)||['fire','tower'].includes(entry.mode)){setHidden(buttons[i],true);return;}
       placeSceneHit(buttons[i],entry,renderer,root.getElementById('game-frame'),{width:entry.width,height:entry.height});
-      if(entry.mode==='fire'&&(game.fireActive||game.fireGarageParked||game.fireRescue?.phase==='won'))buttons[i].hidden=true;
+      if(entry.mode==='fire'&&(game.fireActive||game.fireGarageParked||game.fireRescue?.phase==='won'))setHidden(buttons[i],true);
     });
   }
   // 卸载时同时移除动态门牌与监听器，重新挂载应用不会产生重复入口。

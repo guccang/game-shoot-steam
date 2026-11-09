@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 手机寻宝只展示实际听到的线索；探测表读取正式距离，操作使用同一事务入口。
 import {TREASURE_SITES,TREASURE_PARTS} from '../config/treasure.js';
 import {detectorSignal,treasureAvailable,excavateTreasure,collectTreasurePart} from '../core/activities/treasure.js';
@@ -15,7 +16,7 @@ import {worldDistance} from '../world/coordinates.js';
 export function createTreasure({game,root,dialogs,onChange,onNotice}){
  const scope=createEventScope(),panel=root.createElement('dialog'),hud=root.createElement('button');let message='',signature='';
  panel.id='treasure-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','treasure-title');panel.innerHTML='<header class="ui-panel__header"><div><h2 id="treasure-title">寻宝手记</h2><p>听邻居说，沿着线索找</p></div><button class="ui-close" data-treasure-close aria-label="关闭寻宝">×</button></header><div class="ui-panel__body" id="treasure-body"></div><footer class="ui-panel__footer"><p id="treasure-message" role="status"></p><button class="ui-button ui-button--primary" data-detector-toggle></button></footer>';root.body.append(panel);
- hud.id='detector-hud';hud.className='ui-button detector-hud';hud.hidden=true;hud.setAttribute('aria-label','金属探测信号，点击查看或挖掘');root.getElementById('game-frame').append(hud);
+ hud.id='detector-hud';hud.className='ui-button detector-hud';setHidden(hud,true);hud.setAttribute('aria-label','金属探测信号，点击查看或挖掘');root.getElementById('game-frame').append(hud);
  // 收起手机及其子页，归还游戏暂停归属，原世界位置保持不变。
  function closeAll(){for(const id of [panel.id,'phone-dialog','keepsake-dialog','current-cat-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);}
  // 出土以后才展示具体物品；未出土只记录邻居的原话与粗略区域。
@@ -36,7 +37,7 @@ export function createTreasure({game,root,dialogs,onChange,onNotice}){
   if(result){message=result.message;render();onChange();}
  });
  // 每帧只更新变化的信号文案；暂停、进屋和活动会自动收起探测表。
- function update(){const signal=game.state==='playing'&&!root.querySelector('dialog[open]')?detectorSignal(game):null;hud.hidden=!signal;if(!signal)return;const text=signal.site?`${signal.dig?'强信号 · 点击挖掘':'金属信号'} ${signal.strength}%`:'探测中 · 暂无信号';if(signature!==text){signature=text;hud.innerHTML=inventoryIcon(itemDefinition('metal-detector'))+`<span>${text}<progress max="100" value="${signal.strength}"></progress></span>`;}}
+ function update(){const signal=game.state==='playing'&&!root.querySelector('dialog[open]')?detectorSignal(game):null;setHidden(hud,!signal);if(!signal)return;const text=signal.site?`${signal.dig?'强信号 · 点击挖掘':'金属信号'} ${signal.strength}%`:'探测中 · 暂无信号';if(signature!==text){signature=text;hud.innerHTML=inventoryIcon(itemDefinition('metal-detector'))+`<span>${text}<progress max="100" value="${signal.strength}"></progress></span>`;}}
  // 应用卸载释放节点及事件，探测开启状态不写入持久档。
  function dispose(){scope.dispose();panel.remove();hud.remove();game.detectorActive=false;}
  return {open,update,dispose};

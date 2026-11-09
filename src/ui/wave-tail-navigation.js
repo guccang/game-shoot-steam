@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {displayMeters} from '../world/distance-units.js';
 // 尾怪方向使用正式镜头投影，界面不改变镜头或输入；几何计算可独立验证。
 import {nearest} from '../world/coordinates.js';
@@ -29,9 +30,9 @@ export function placeTailMarker(target,width,height,blocked=[]){
 // 只复用三个只读提示，不添加按钮，不抢夺触控，也不持续播报距离变化。
 export function createWaveTailNavigation({game,root,renderer}){
  const frame=root.getElementById('game-frame'),layer=root.createElement('div');
- layer.id='wave-tail-navigation';layer.hidden=true;frame.append(layer);
+ layer.id='wave-tail-navigation';setHidden(layer,true);frame.append(layer);
  const nodes=Array.from({length:STYLE.remaining},()=>{
-  const node=root.createElement('div');node.className='wave-tail-marker';node.hidden=true;node.setAttribute('role','img');
+  const node=root.createElement('div');node.className='wave-tail-marker';setHidden(node,true);node.setAttribute('role','img');
   node.innerHTML='<svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16"/><path d="M18 6 27 25 18 21 9 25Z"/></svg><span></span>';layer.append(node);return node;
  });
  // 读取正式控件的可见矩形，兼容手机菜单展开和任务卡高度变化。
@@ -42,7 +43,7 @@ export function createWaveTailNavigation({game,root,renderer}){
  }
  // 每帧在正式镜头更新后跟随目标，离开战斗立即清空旧提示。
  function renderFrame(){
-  nodes.forEach(n=>n.hidden=true);layer.hidden=true;
+  nodes.forEach(n=>setHidden(n,true));setHidden(layer,true);
   if(root.hidden||frame.dataset.page!=='game'||root.querySelector('dialog[open]')||!renderer.view)return;
   const targets=waveTailTargets(game);if(!targets.length)return;
   const view=renderer.view,c=renderer.canvas.getBoundingClientRect(),f=frame.getBoundingClientRect(),blocked=blockers(c);
@@ -50,12 +51,12 @@ export function createWaveTailNavigation({game,root,renderer}){
   for(const {enemy,distance} of targets){
    const target=projectTailTarget(enemy,view);if(target.visible)continue;
    const point=placeTailMarker(target,c.width,c.height,blocked);if(!point)continue;
-   const meters=displayMeters(distance),node=nodes[shown++];node.hidden=false;node.style.left=(point.x+c.left-f.left)+'px';node.style.top=(point.y+c.top-f.top)+'px';
+   const meters=displayMeters(distance),node=nodes[shown++];setHidden(node,false);node.style.left=(point.x+c.left-f.left)+'px';node.style.top=(point.y+c.top-f.top)+'px';
    node.querySelector('path').setAttribute('transform',`rotate(${point.angle} 18 18)`);node.querySelector('span').textContent=meters+'米';
    node.dataset.enemy=String(enemy.id);node.dataset.angle=String(point.angle);node.dataset.distance=String(meters);node.setAttribute('aria-label','剩余怪物，直线距离'+meters+'米');
    blocked.push({left:point.x-STYLE.width/2,right:point.x+STYLE.width/2,top:point.y-STYLE.height/2,bottom:point.y+STYLE.height/2});
   }
-  layer.hidden=shown===0;
+  setHidden(layer,shown===0);
  }
  // 应用重建时释放提示层，防止重复挂载。
  function dispose(){layer.remove();}

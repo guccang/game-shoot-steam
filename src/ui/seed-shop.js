@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 种子小屋商品与来源页，远程浏览不售卖，所有购买调用正式库存事务。
 import {sellCrops,canSellCrops} from '../core/inventory/cargo.js';
 import {MONSTER_CAMPS} from '../config/monster-camps.js';
@@ -17,17 +18,17 @@ export function createSeedShop({game,root,renderer,dialogs,onChange}){
  dialog.id='seed-shop-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','seed-shop-title');
  dialog.innerHTML='<header class="ui-panel__header"><h2 id="seed-shop-title">种子小屋</h2><button id="seed-shop-close" class="ui-close" aria-label="关闭种子小屋">×</button></header><div id="seed-shop-categories"></div><div class="ui-panel__body"><p id="seed-shop-wallet"></p><p>完成清剿逐步开放掉落品种，首次获得后永久解锁购买。播种消耗库存。</p><p id="seed-shop-location"></p><p id="seed-shop-message" role="status"></p><p id="seed-shop-category-note"></p><div id="seed-shop-goods"></div></div><footer class="ui-panel__footer"><button id="seed-shop-sell" class="ui-button">出售背包作物</button><button id="seed-shop-go" class="ui-button">前往种子小屋</button></footer>';
  root.body.append(dialog);
- hit.id='seed-shop-hit';hit.hidden=true;sceneHit(hit,'打开种子小屋');frame.append(hit);
+ hit.id='seed-shop-hit';setHidden(hit,true);sceneHit(hit,'打开种子小屋');frame.append(hit);
  // 屋身在正常森林可点击，种田与骑乘不变；副本、室内和其他弹窗期间不接收场景点击。
  function available(){return false;}
  // 门口不再有点击层，进入后通过售货员打开页面。
- function renderFrame(){hit.hidden=true;}
+ function renderFrame(){setHidden(hit,true);}
 
  const get=id=>root.getElementById('seed-shop-'+id);
  scope.on(get('sell'),'click',()=>{const result=sellCrops(game);message=result.message;signature='';render();onChange();});
  // 数据来自同一价格和掉落配置；锁定品种也显示来源，玩家可以提前查看目标。
  function render(){
-  renderFrame();if(!dialog.open)return;get('sell').disabled=!canSellCrops(game);get('go').hidden=canBuyFarmSeeds(game);
+  renderFrame();if(!dialog.open)return;get('sell').disabled=!canSellCrops(game);setHidden(get('go'),canBuyFarmSeeds(game));
   const f=game.progress.farm,near=canBuyFarmSeeds(game),key=JSON.stringify([category,f.seeds,f.unlocked,game.progress.coins,game.progress.bosses,near,message]);if(key===signature)return;signature=key;
   const pool=farmSeedPool(game.progress),weight=pool.reduce((sum,c)=>sum+c.weight,0),group=FARM_CATEGORIES.find(c=>c.id===category);
   get('categories').innerHTML=farmCategoryMarkup(category,'data-seed-shop-category',f.seeds,f.unlocked);get('category-note').textContent=group.name+(group.note?' · '+group.note:'');

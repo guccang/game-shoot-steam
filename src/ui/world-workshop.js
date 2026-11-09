@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 建筑本体与门前空地都是透明入口，短按走到门口，拖动继续使用摇杆。
 import {CLICK_BUILDINGS,clickableBuildings,buildingContains,buildingClickHeight,approachBuilding,approachMineEntrance} from '../core/navigation/scene-approach.js';
 import {mineShaftObjects} from '../core/mining/mining.js';
@@ -34,9 +35,9 @@ export function createWorldWorkshop({game,renderer,root,kind,onLocked}){
  }
  // 屋顶至门前合并为透明触控区，保留中文无障碍名称与44像素最小边界。
  function render(){
-  const available=clickableBuildings(game);layer.hidden=root.hidden||!!root.querySelector('dialog[open]')||!available.length;
+  const available=clickableBuildings(game);setHidden(layer,root.hidden||!!root.querySelector('dialog[open]')||!available.length);
   if(layer.hidden)return;
-  buildings.forEach((b,i)=>{const button=buttons[i];if(!available.some(item=>item.id===b.id)){button.hidden=true;return;}const foot=b.door.y-b.site.y+SCENE_APPROACH.doorDepth;placeSceneHit(button,b.site,renderer,frame,{width:b.site.width,height:buildingClickHeight(b,game)+foot,foot});});
+  buildings.forEach((b,i)=>{const button=buttons[i];if(!available.some(item=>item.id===b.id)){setHidden(button,true);return;}const foot=b.door.y-b.site.y+SCENE_APPROACH.doorDepth;placeSceneHit(button,b.site,renderer,frame,{width:b.site.width,height:buildingClickHeight(b,game)+foot,foot});});
   const shafts=kind==='vehicle'?[]:mineShaftObjects(game),keys=new Set(shafts.map(s=>s.key));
   for(const [key,button] of mineButtons)if(!keys.has(key)){button.remove();mineButtons.delete(key);}
   for(const site of shafts){let button=mineButtons.get(site.key);if(!button){button=root.createElement('button');sceneHit(button,`走到矿洞 ${site.number}，站定后进入地下一层`);button.dataset.mineEntrance=site.key;button.style.pointerEvents='auto';button.style.zIndex='6';scope.on(button,'click',event=>{if(event.detail===0)activateMine(site.key);});mineButtons.set(site.key,button);layer.append(button);}placeSceneHit(button,site,renderer,frame,MINE_ENTRANCE);}

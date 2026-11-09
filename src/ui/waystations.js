@@ -1,3 +1,4 @@
+import {setHidden,setText} from './shared/dom-state.js';
 // 驿站页复用手机底板；建站落盘后反馈，自动行程始终由正式更新循环驱动。
 import {createEventScope} from '../platform/events.js';
 import {WAYSTATIONS} from '../config/waystations.js';
@@ -14,11 +15,11 @@ export function createWaystations({game,root,renderer,dialogs,persist,onChange,o
  // 站名使用textContent，读档中的文字不会进入HTML模板。
  function render(){
   const sites=game.progress.waystations?.sites||[],reason=waystationBuildReason(game);
-  get('waystation-count').textContent=`已建驿站 ${sites.length} / ${WAYSTATIONS.limit}`;
-  get('waystation-build-note').textContent=reason||'免费建立，保存在当前落脚点。';get('waystation-build').disabled=!!reason;
-  get('waystation-message').textContent=message;get('waystation-list').replaceChildren();
-  if(!sites.length){const empty=root.createElement('p');empty.textContent='还没有驿站。在这里建立第一座吧。';get('waystation-list').append(empty);}
-  for(const site of sites){const row=root.createElement('section');row.className='ui-section';const title=root.createElement('h3'),note=root.createElement('p'),go=root.createElement('button');title.textContent=`${site.id} · ${site.name}`;const distance=worldDistance(game.player,site);note.textContent=distance<=WAYSTATIONS.arrival?'当前驿站':`距离 ${displayMeters(distance)}米`;go.type='button';go.className='ui-button';go.textContent='自动前往';go.dataset.stationGo=site.id;go.disabled=!!waystationUnavailable(game)||distance<=WAYSTATIONS.arrival;go.setAttribute('aria-label','自动前往'+site.name);row.append(title,note,go);get('waystation-list').append(row);}
+  setText(get('waystation-count'),`已建驿站 ${sites.length} / ${WAYSTATIONS.limit}`);
+  setText(get('waystation-build-note'),reason||'免费建立，保存在当前落脚点。');get('waystation-build').disabled=!!reason;
+  setText(get('waystation-message'),message);get('waystation-list').replaceChildren();
+  if(!sites.length){const empty=root.createElement('p');setText(empty,'还没有驿站。在这里建立第一座吧。');get('waystation-list').append(empty);}
+  for(const site of sites){const row=root.createElement('section');row.className='ui-section';const title=root.createElement('h3'),note=root.createElement('p'),go=root.createElement('button');setText(title,`${site.id} · ${site.name}`);const distance=worldDistance(game.player,site);setText(note,distance<=WAYSTATIONS.arrival?'当前驿站':`距离 ${displayMeters(distance)}米`);go.type='button';go.className='ui-button';setText(go,'自动前往');go.dataset.stationGo=site.id;go.disabled=!!waystationUnavailable(game)||distance<=WAYSTATIONS.arrival;go.setAttribute('aria-label','自动前往'+site.name);row.append(title,note,go);get('waystation-list').append(row);}
  }
  dialogs.register(panel.id,{onOpen:render});
  // 从手机转交暂停归属，离开驿站页不会留下覆盖战场的旧页面。
@@ -43,8 +44,8 @@ export function createWaystations({game,root,renderer,dialogs,persist,onChange,o
  // HUD每帧只更新短状态，不重建长列表或触发存档。
  function renderFrame(){
   const trip=game.waystationTravel,site=trip&&game.progress.waystations?.sites.find(s=>s.id===trip.id);
-  hud.hidden=!site||game.state!=='playing'||!!root.querySelector('dialog[open]');
-  if(site)hud.querySelector('span').textContent=(trip.phase==='planning'?'正在寻路 · ':trip.moving?'自动前往 · ':'正在起步 · ')+site.name+' · '+displayMeters(worldDistance(game.player,site))+'米';
+  setHidden(hud,!site||game.state!=='playing'||!!root.querySelector('dialog[open]'));
+  if(site)setText(hud.querySelector('span'),(trip.phase==='planning'?'正在寻路 · ':trip.moving?'自动前往 · ':'正在起步 · ')+site.name+' · '+displayMeters(worldDistance(game.player,site))+'米');
   const notice=game.waystationMessage;if(notice&&notice!==lastNotice){onNotice(notice);lastNotice=notice;}if(!notice)lastNotice='';
  }
  return {open,tapWorld,renderFrame,dispose(){scope.dispose();panel.remove();hud.remove();}};

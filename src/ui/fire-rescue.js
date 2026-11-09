@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {isRainWeather} from '../world/season-weather.js';
 import {displayMeters} from '../world/distance-units.js';
 import {facilityOpen} from '../config/town-restoration.js';
@@ -22,9 +23,9 @@ export function createFirePanel({game,root,dialogs,onChange}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),dialog=root.createElement('dialog'),notice=root.createElement('section');
  dialog.id='fire-dialog';dialog.className='fire-dialog';dialog.setAttribute('aria-labelledby','fire-title');
  dialog.innerHTML=`<div class="fire-dialog-head"><h2 id="fire-title">${i18nHtml("ui.fire-rescue.b8d855109d")}</h2><button data-fire-close aria-label="${i18nHtml("ui.fire-rescue.4f5bb0bfa5")}">×</button></div><div id="fire-content"></div>`;
- notice.className='fire-notice';notice.id='fire-notice';notice.setAttribute('aria-label',i18nText("ui.fire-rescue.3f5f6a6614"));notice.hidden=true;frame.append(notice);root.body.append(dialog);
+ notice.className='fire-notice';notice.id='fire-notice';notice.setAttribute('aria-label',i18nText("ui.fire-rescue.3f5f6a6614"));setHidden(notice,true);frame.append(notice);root.body.append(dialog);
  // 黑屏只覆盖游戏视口；独立节点阻止转场期间误点，不增加图片或动画资源。
- const transfer=root.createElement('div');transfer.id='fire-town-transfer';transfer.hidden=true;transfer.setAttribute('role','status');transfer.setAttribute('aria-label','正在返回小镇，随后前往消防站');frame.append(transfer);
+ const transfer=root.createElement('div');transfer.id='fire-town-transfer';setHidden(transfer,true);transfer.setAttribute('role','status');transfer.setAttribute('aria-label','正在返回小镇，随后前往消防站');frame.append(transfer);
  dialogs.register('fire-dialog');let key='';
  const countdown=createActionCountdown(root,{action:'关闭火警提示'});countdown.node.setAttribute('data-fire-countdown','');
  // 从目录转入消防时交接暂停归属，关闭详情后能恢复原先的巡逻状态。
@@ -34,7 +35,7 @@ export function createFirePanel({game,root,dialogs,onChange}){
   renderFrame();
   const r=game.fireRescue,active=game.fireActive,available=!game.realm&&!game.story&&game.mapId==='forest';
   // 成功交接由奖励面板展示结果，保留存档与车库状态时也不再留下常驻消防提示。
-  notice.hidden=!r||r.phase==='won'||!available||game.state==='dead';frame.classList.toggle('fire-world-active',active);
+  setHidden(notice,!r||r.phase==='won'||!available||game.state==='dead');frame.classList.toggle('fire-world-active',active);
   if(!r){key='';return;}
   const current=r.phase+':'+r.source;
   if(key!==current){key=current;root.getElementById('fire-title').textContent=r.phase==='won'?i18nText("ui.fire-rescue.3783ef3b39"):r.phase==='lost'?i18nText("ui.fire-rescue.a688834686"):i18nText("ui.fire-rescue.b8d855109d");
@@ -54,7 +55,7 @@ export function createFirePanel({game,root,dialogs,onChange}){
    button.setAttribute('aria-label',`森林火警，${Math.max(1,Math.ceil(remaining))}秒后自动关闭，点击查看火情`);
   }else notice.querySelector('[data-fire-notice-text]').textContent=description;
   const status=dialog.querySelector('[data-fire-status]');if(status)status.textContent=description;
-  if(active){const $=id=>root.getElementById(id);$('quest').hidden=false;$('quest').classList.remove('incoming','wave-quest');$('quest-title').textContent=game.fireTransit?description:r.phase==='returning'?i18nText("ui.fire-rescue.568ff05d9e"):i18nText("ui.fire-rescue.3821a1ec3e", { p0: (o.left) });$('quest-detail').textContent=r.phase==='active'&&isRainWeather(game.livingWeather)?'雨水正在灭火 · 扑灭后驾车返站':game.fireTransit?i18nText('fire.motion.automatic'):!game.vehicle.active?i18nText("ui.fire-rescue.750036b981"):r.phase==='returning'&&Math.round(distance)<=C.dockRadius?i18nText("ui.fire-rescue.d8f3c6a7b8"):i18nText("ui.fire-rescue.a6531b79bd", { p0: (o.name) });$('quest-count').textContent=game.fireTransit?'':r.phase==='returning'?i18nText("ui.fire-rescue.c567d4af4d", { p0: (meters) }):i18nText("ui.fire-rescue.b7ec775f60", { p0: (Math.ceil(r.water)) });$('boss-button').hidden=true;$('wave-track').hidden=true;}
+  if(active){const $=id=>root.getElementById(id);setHidden($('quest'),false);$('quest').classList.remove('incoming','wave-quest');$('quest-title').textContent=game.fireTransit?description:r.phase==='returning'?i18nText("ui.fire-rescue.568ff05d9e"):i18nText("ui.fire-rescue.3821a1ec3e", { p0: (o.left) });$('quest-detail').textContent=r.phase==='active'&&isRainWeather(game.livingWeather)?'雨水正在灭火 · 扑灭后驾车返站':game.fireTransit?i18nText('fire.motion.automatic'):!game.vehicle.active?i18nText("ui.fire-rescue.750036b981"):r.phase==='returning'&&Math.round(distance)<=C.dockRadius?i18nText("ui.fire-rescue.d8f3c6a7b8"):i18nText("ui.fire-rescue.a6531b79bd", { p0: (o.name) });$('quest-count').textContent=game.fireTransit?'':r.phase==='returning'?i18nText("ui.fire-rescue.c567d4af4d", { p0: (meters) }):i18nText("ui.fire-rescue.b7ec775f60", { p0: (Math.ceil(r.water)) });setHidden($('boss-button'),true);setHidden($('wave-track'),true);}
  }
  // 点击响应沿用原生弹窗暂停归属，拒绝不会立即再次弹警。
  function action(event){const b=event.target.closest('button');if(!b)return;
@@ -68,6 +69,6 @@ export function createFirePanel({game,root,dialogs,onChange}){
  // 动态界面随应用卸载，重复挂载不遗留门牌和监听器。
  function dispose(){scope.dispose();dialog.remove();notice.remove();transfer.remove();}
  // 每帧同步遮罩与换位时刻，不能等待低频 HUD 刷新才遮住原场景。
- function renderFrame(){transfer.hidden=game.fireRescue?.phase!=='transferring';transfer.style.opacity=String(fireTransferOpacity(game));}
+ function renderFrame(){setHidden(transfer,game.fireRescue?.phase!=='transferring');transfer.style.opacity=String(fireTransferOpacity(game));}
  return {open,render,renderFrame,dispose};
 }

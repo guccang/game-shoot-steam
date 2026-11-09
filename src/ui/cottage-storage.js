@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {escapeHtml as escape} from './shared/html.js';
 // 小屋武器架使用真实场景热点，楼梯由站定倒计时控制；存取面板沿用手机底板与暂停管理。
 import {createEventScope} from '../platform/events.js';
@@ -48,12 +49,12 @@ export function createCottageStorage({game,renderer,root,panel,dialogs,input,onC
  }
  // 与正式镜头同步裁切，短屏与横屏中隐藏不可见热点，保持至少44px可操作范围。
  function render(){
-  const list=targets(),v=renderer.cottageView,key=list.map(i=>i.id+':'+i.x+':'+i.y+':'+i.label).join('|');hits.hidden=!list.length||!!root.querySelector('dialog[open]');
+  const list=targets(),v=renderer.cottageView,key=list.map(i=>i.id+':'+i.x+':'+i.y+':'+i.label).join('|');setHidden(hits,!list.length||!!root.querySelector('dialog[open]'));
   if(dialog.open&&!accessibleWeaponRack(game,uid))dialogs.close(dialog.id);
   if(key!==signature){signature=key;hits.replaceChildren();for(const item of list){const b=root.createElement('button');sceneHit(b,item.label);b.dataset.cottageTarget=item.id;hits.append(b);}}
   if(!v)return;const bounds=panel.getBoundingClientRect(),canvas=renderer.canvas.getBoundingClientRect(),clip=v.clip||{x:0,y:0,width:canvas.width,height:canvas.height};
   for(const b of hits.children){const item=list.find(i=>i.id===b.dataset.cottageTarget),width=Math.max(44,item.width*v.zoom),height=Math.max(44,item.height*v.zoom),left=v.x+item.x*v.zoom-width/2,top=v.y+(item.y+16)*v.zoom-height;
-   b.hidden=left<clip.x||left+width>clip.x+clip.width||top<clip.y||top+height>clip.y+clip.height;
+   setHidden(b,left<clip.x||left+width>clip.x+clip.width||top<clip.y||top+height>clip.y+clip.height);
    Object.assign(b.style,{left:canvas.left-bounds.left+left+'px',top:canvas.top-bounds.top+top+'px',width:width+'px',height:height+'px',transform:'none'});
   }
  }

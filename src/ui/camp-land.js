@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 购地页复用手机底板；木牌短按、导航与保存共用正式地契事务。
 import {CAMP_PLOTS,availableCampPlots,ownsCampPlot,campPlotAt} from '../config/camp-land.js';
 import {campLandStatus,purchaseCampLand} from '../core/camp/camp-land.js';
@@ -33,7 +34,7 @@ export function createCampLandPanel({game,root,renderer,dialogs,onChange}){
  scope.on(find('[data-land-buy]'),'click',()=>{const result=purchaseCampLand(game,selected);message=result.message;renderPanel();onChange();});
  scope.on(find('[data-land-go]'),'click',()=>{const s=campLandStatus(game,selected);if(s?.plot.sign){dialogs.close(dialog.id);requestWorldNavigation(game,{...s.plot.sign,mapId:'forest'},'前往'+s.plot.name+'地界',{direct:true});onChange();}});
  // 地界热点只随当前相邻地块出现，购地后原木牌立即移除。
- function render(){const plots=canInspectBuilding(game)&&game.state==='playing'&&!root.querySelector('dialog[open]')?[{id:'core',sign:{x:440,y:720}},...availableCampPlots(game.progress)]:[];layer.hidden=!plots.length;for(const b of buttons){const plot=plots.find(p=>p.id===b.dataset.campPlot);if(!plot)b.hidden=true;else placeSceneHit(b,plot.sign,renderer,frame,{width:110,height:65});}renderPanel();}
+ function render(){const plots=canInspectBuilding(game)&&game.state==='playing'&&!root.querySelector('dialog[open]')?[{id:'core',sign:{x:440,y:720}},...availableCampPlots(game.progress)]:[];setHidden(layer,!plots.length);for(const b of buttons){const plot=plots.find(p=>p.id===b.dataset.campPlot);if(!plot)setHidden(b,true);else placeSceneHit(b,plot.sign,renderer,frame,{width:110,height:65});}renderPanel();}
  function tap(e){if(!canInspectBuilding(game)||game.state!=='playing'||root.querySelector('dialog[open]')||!renderer.view)return false;const r=renderer.canvas.getBoundingClientRect(),v=renderer.view,q={x:v.x+(e.clientX-r.left)/r.width*v.w,y:v.y+(e.clientY-r.top)/r.height*v.h};for(const p of [{id:'core',sign:{x:440,y:720}},...availableCampPlots(game.progress)]){const s=nearest(p.sign,q);if(Math.abs(q.x-s.x)<55&&q.y>s.y-65&&q.y<s.y+10)return open(p.id);}return false;}
  function dispose(){scope.dispose();dialog.remove();layer.remove();delete game.openCampLand;}
  game.openCampLand=open;return {open,render,tap,dispose};
