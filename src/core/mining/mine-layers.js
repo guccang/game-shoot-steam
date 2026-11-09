@@ -31,6 +31,6 @@ export function travelMineLayer(game,direction){
    next=mineLayer(game.progress.mining,nextDepth);
   }
  }else return mineNotice(game,'请选择上行或下行。');
- room.combatWork=null;room.combatRecovery=0;room.depth=nextDepth;room.autoDig=false;room.tool=null;room.dig=null;room.shaftWork=0;room.running=false;room.combat=null;room.bolts=[];room.scanWait=0;room.attackWait=0;room.ecologyActors=[];room.entryKey=direction===1?next.entry:currentMineLayer(game).descent;game.sceneApproach=null;
+ room.portalLatch=nextDepth+':'+key;room.portalWait=null;room.portalIntent=null;room.combatWork=null;room.combatRecovery=0;room.depth=nextDepth;room.autoDig=false;room.tool=null;room.dig=null;room.shaftWork=0;room.running=false;room.combat=null;room.bolts=[];room.scanWait=0;room.attackWait=0;room.ecologyActors=[];room.entryKey=direction===1?next.entry:currentMineLayer(game).descent;game.sceneApproach=null;
  Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return mineNotice(game,`已到地下 ${nextDepth} 层 · 覆盖地表 ${next.coverage.toFixed(0)}%。`,true);
 }

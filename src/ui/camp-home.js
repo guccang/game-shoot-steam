@@ -39,7 +39,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  // 室内入口不依赖移动或接近售货员，超载时也能整理随身物品。
  scope.on(panel.querySelector('#cottage-character'),'click',()=>{input.reset();onCharacter();});
  // 售货员与家具都保留短按，柜台前固定步长候停继续自动打开服务。
- function tap(e){if(game.cottage?.glide)return true;if(arcade.tap(e))return true;if(game.cottage?.kind==='mine')return true;if(game.cottage){if(!approach.tap(e)&&!shopkeeper.tap(e))storage.tap(e);return true;}return false;}
+ function tap(e){if(game.cottage?.glide)return true;if(arcade.tap(e))return true;if(game.cottage?.kind==='mine'){mining.tap(e);return true;}if(game.cottage){if(!approach.tap(e)&&!shopkeeper.tap(e))storage.tap(e);return true;}return false;}
  // 猫窝与家具服务也沿用统一候停，其他房间交给原应用服务路由。
  function openService(kind,index){if(kind==='construction')construction.open('build');else if(kind==='cat-home')catHome.open();else if(kind==='furniture')homeDecor.open();else openWorkshop(kind,index);}
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。

@@ -1,3 +1,5 @@
+import {WORKSHOP_INTERIORS} from '../../config/workshop-interiors.js';
+import {minePortals} from '../../world/mine-portals.js';
 import {cancelMineWorkCombat,updateMineWorkCombat} from './mine-work-combat.js';
 import {mineTrain,moveWagons,mineCartCanDrive,reverseMineTrain,MINE_CART_DRIVER_NOTICE} from './mine-train.js';
 import {ORE_KEYS,oreCount} from '../../config/mine-freight.js';
@@ -41,7 +43,7 @@ export function enterMine(game,shaft=null,warehouse=false){
  else if(room?.kind!=='cottage'||room.floor!==0||room.sleep||room.balcony||Math.hypot(game.player.x-M.hatch.goal.x,game.player.y-M.hatch.goal.y)>28)return false;
  const point=warehouse?minePoint(mineFreightCell(game.progress.mining,1)):shaft?minePoint(parseKey(shaft)):M.home,outside=(shaft||warehouse)?{x:game.player.x,y:game.player.y}:room.outside;
  game.cottage={kind:'mine',depth:1,outside,warehouse,returnRoom:(shaft||warehouse)?null:room,direction:1,tool:null,autoDig:false,dig:null,shaftWork:0,ride:null,running:false,notice:game.vehicle.active?'战车已进入矿道。沿天然洞厅和宽通道行驶，主炮自动迎敌；开回地表后可以下车挖路。':'已装备武器自动迎敌；点击「挖矿」开始作业，遇敌自动拿起武器，安全后继续挖矿。'};
- game.mineEntranceWait=0;game.mineEntranceKey=null;game.sceneApproach=null;game.parking=null;Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
+ game.mineWarehouseIntent=false;game.cottage.portalLatch='1:'+mineKey(mineCell(point));game.mineEntranceWait=0;game.mineEntranceKey=null;game.sceneApproach=null;game.parking=null;Object.assign(game.player,point,{vx:0,vy:0,pushX:0,pushY:0});game.onEvent?.('cottage-change');return true;
 }
 // 稳定网格键还原为整数坐标，仅消费本模块或已验证存档产生的键。
 export function parseKey(key){const [x,y]=key.split(',').map(Number);return {x,y};}
@@ -64,7 +66,7 @@ export function startMineShaft(game){
 // 洞口只有站在原格并完整施工四秒才提交，失败不扣资源。
 function finishShaft(game){
  if(!canOpenShaft(game)||!afford(game,'shaft'))return notice(game,'上方暂不可通行或材料不足，开洞已取消。');
- const key=game.cottage.shaftKey;return commit(game,(m,p)=>{pay(m,p,'shaft');m.shafts.push(key);for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++){const cell=mineCell(minePoint(parseKey(key)));cell.x+=x;cell.y+=y;if(mineCellArea(cell,m)>0){m.dug[mineKey(cell)]=true;if(mineTerrain(cell,m).water)m.bridges[mineKey(cell)]=true;}}},'洞口已打通，站在梯口点击「返回地面」。');
+ const key=game.cottage.shaftKey;return commit(game,(m,p)=>{pay(m,p,'shaft');m.shafts.push(key);for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++){const cell=mineCell(minePoint(parseKey(key)));cell.x+=x;cell.y+=y;if(mineCellArea(cell,m)>0){m.dug[mineKey(cell)]=true;if(mineTerrain(cell,m).water)m.bridges[mineKey(cell)]=true;}}},'洞口已打通，点击梯口走近，站定1秒返回地面。');
 }
 // 小屋地下入口和地表洞口分别核验距离，不能在矿道中远程传送。
 export function leaveMine(game){
@@ -171,7 +173,7 @@ function nearMineCart(game,cart){
 }
 // 任意车厢均可登乘，挖矿模式也可候停；施工、钓鱼和迎敌保留当前操作。
 export function mineCartBoardingTarget(game){
- const room=game.cottage;if(room?.kind!=='mine'||room.ride||game.vehicle.active||game.player.hp<=0||game.mainlineSpeech||game.fishing||(room.tool&&room.tool!=='pick')||room.shaftWork||room.combatWork||room.weaponTarget)return null;
+ const room=game.cottage;if(room?.kind!=='mine'||room.ride||room.portalWait||game.sceneApproach?.id?.startsWith('underground:')||game.vehicle.active||game.player.hp<=0||game.mainlineSpeech||game.fishing||(room.tool&&room.tool!=='pick')||room.shaftWork||room.combatWork||room.weaponTarget)return null;
  const layer=currentMineLayer(game);return layer.carts.filter(c=>nearMineCart(game,c)).sort((a,b)=>Math.hypot(a.x-game.player.x,a.y-game.player.y)-Math.hypot(b.x-game.player.x,b.y-game.player.y)||a.id-b.id)[0]||null;
 }
 // 候停属于当前房间而非存档；失败需先走开再重试，避免连续每帧写盘。
@@ -281,6 +283,7 @@ export function updateMining(game,dt,input){
  receiveStationFreight(game,room);
  updateMineEcology(game,dt);
  autoLoadMineFreight(game);
+ if(updateMinePortal(game,dt,input))return true;
  updateMineCartBoarding(game,dt);
  const riding = Boolean(room.ride || game.vehicle.active);
  updateCatMotion(p.bodyAnimation,dt,Math.hypot(p.vx,p.vy),!riding,riding);game.time+=dt;return true;
@@ -288,13 +291,30 @@ export function updateMining(game,dt,input){
 // 地表洞口按原世界最近镜像候停进入；离开后需先移开，避免反复进出。
 export function updateMineEntrance(game,dt,input){
  if(game.cottage||game.state!=='playing')return false;
+ // 仓库通行来自一次明确意图，手动离开后不能保留待触发请求。
+ if(!game.sceneApproach&&Math.hypot(input.x,input.y)>.01)game.mineWarehouseIntent=false;
  const eligible=game.mapId==='forest'&&game.player.hp>0&&game.progress.homeDecor.basement&&!game.realm&&!game.story&&!game.farmWork?.tool;
- const shaft=eligible&&game.progress.mining?.shafts.find(k=>worldDistance(game.player,minePoint(parseKey(k)))<=MINE_ENTRANCE.radius);
+ const warehouse=eligible&&game.mineWarehouseIntent&&!game.vehicle.active&&worldDistance(game.player,WORKSHOP_INTERIORS.warehouse.door)<=MINE_ENTRANCE.radius;
+ const shaft=warehouse?'warehouse':eligible&&game.progress.mining?.shafts.find(k=>worldDistance(game.player,minePoint(parseKey(k)))<=MINE_ENTRANCE.radius);
  if(game.mineEntranceLatch&&!shaft)game.mineEntranceLatch=null;
  if(!shaft||game.mineEntranceLatch===shaft||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>3){game.mineEntranceWait=0;game.mineEntranceKey=null;return false;}
  if(game.mineEntranceKey!==shaft){game.mineEntranceKey=shaft;game.mineEntranceWait=0;}
  game.mineEntranceWait=(game.mineEntranceWait||0)+Math.max(0,Number.isFinite(dt)?dt:0);
- if(game.mineEntranceWait+1e-9<MINE_ENTRANCE.wait)return false;return enterMine(game,shaft);
+ if(game.mineEntranceWait+1e-9<MINE_ENTRANCE.wait)return false;return warehouse?enterMine(game,null,true):enterMine(game,shaft);
 }
 // 正式地表绘制器消费洞口实体，不另造脱离实际通路的预览。
 export function mineShaftObjects(game){return game.mapId==='forest'&&!game.cottage&&!game.realm&&!game.story?mineEntrances(game.progress.mining).map(site=>({...site,type:'mine-shaft'})):[];}
+
+// 真实梯口候停一秒，移动清零、暂停冻结；抵达新层和失败都锁住原入口直到走开。
+export function updateMinePortal(game,dt,input={x:0,y:0}){
+ const room=game.cottage;if(room?.kind!=='mine'||game.state!=='playing')return false;
+ const portals=minePortals(currentMineLayer(game),room.depth||1),near=portals.filter(p=>Math.hypot(p.x-game.player.x,p.y-game.player.y)<=MINE_ENTRANCE.radius);
+ const target=near.find(p=>p.id===room.portalIntent)||near[0];
+ if(room.portalLatch&&!near.some(p=>room.portalLatch===(room.depth||1)+':'+p.key))room.portalLatch=null;
+ if(!target||room.ride||game.fishing||room.shaftWork||game.sceneApproach||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>3||room.portalLatch===(room.depth||1)+':'+target.key){room.portalWait=null;return false;}
+ const wait=room.portalWait?.id===target.id?room.portalWait:{...target,elapsed:0};
+ wait.elapsed+=Math.max(0,Math.min(.05,Number.isFinite(dt)?dt:0));room.portalWait=wait;
+ if(wait.elapsed+1e-9<MINE_ENTRANCE.wait)return false;
+ room.portalWait=null;room.portalIntent=null;room.portalLatch=(room.depth||1)+':'+target.key;
+ const result=target.id==='down'?travelMineLayer(game,1):leaveMine(game);return !!result?.ok;
+}

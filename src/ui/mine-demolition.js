@@ -5,7 +5,7 @@ import {mineRemovalChoices,removeMineFacility} from '../core/mining/mine-demolit
 export function createMineDemolition({game,root,controls,input,dialogs}){
  const scope=createEventScope(),button=root.createElement('button'),dialog=root.createElement('dialog');
  let context=null,choices=[],selected=null,pending=null;
- button.id='mine-remove';button.className='ui-button';button.textContent='拆除 / 回收';controls.querySelector('.mine-actions').append(button);
+ button.id='mine-remove';button.className='ui-button';button.textContent='回收';button.setAttribute('aria-label','拆除与回收附近设施');controls.querySelector('#mine-recycle-slot').replaceWith(button);
  dialog.id='mine-removal-dialog';dialog.className='ui-panel ui-panel--compact';dialog.setAttribute('aria-labelledby','mine-removal-title');
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="mine-removal-title" tabindex="-1">拆除与回收</h2><p>先停车下车，再选择附近设施。</p></div><button class="ui-close" data-remove-close aria-label="关闭拆除页面">×</button></header><div class="ui-panel__body"><section class="ui-section"><div id="mine-removal-choices"></div><p id="mine-removal-detail" role="status">选择要回收的设施。铁轨拆除后保留通道和桥梁。</p></section></div><footer class="ui-panel__footer"><button class="ui-button" data-remove-close>取消</button><button class="ui-button ui-button--danger" data-remove-confirm disabled>确认回收</button></footer>';
  root.body.append(dialog);dialogs.register(dialog.id,{focusId:'mine-removal-title'});

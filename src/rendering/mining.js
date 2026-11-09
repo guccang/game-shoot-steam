@@ -1,3 +1,4 @@
+import {drawMineFog} from './mine-fog.js';
 import {drawActionCountdown} from './action-countdown.js';
 import {oreCount} from '../config/mine-freight.js';
 import {mineCargoDisplay,MINE_ORE_COLORS} from './mine-cargo.js';
@@ -97,7 +98,8 @@ export function drawMining(renderer,g=renderer.game){
   if(m.rails[key]){const kind=drawMineRail(c,cell,m,night);railKinds[kind]=(railKinds[kind]||0)+1;}
  }
  const targetCell=mineTarget(g),target=minePoint(targetCell);if((g.cottage.tool||g.cottage.autoDig)&&mineInsideBounds(m,target.x,target.y)){c.strokeStyle='#f6df9b';c.lineWidth=2;c.setLineDash([6,4]);c.strokeRect(target.x-29,target.y-29,58,58);c.setLineDash([]);}
- const depth=g.cottage.depth||1,entry=minePoint(parseKey(m.entry)),layerSigns=[entry];drawLadder(c,entry.x,entry.y,night,m.descent===m.entry?'上行 ↑ · 下层 ↓':depth===1?'小屋 ↑':`地下 ${depth-1} 层 ↑`);
+ const depth=g.cottage.depth||1,entry=minePoint(parseKey(m.entry)),layerSigns=[entry];drawLadder(c,entry.x,entry.y,night,m.descent===m.entry?'':depth===1?'小屋 ↑':`地下 ${depth-1} 层 ↑`);
+ if(m.descent===m.entry){label(c,'上行 ↑',entry.x-34,entry.y+38,10);label(c,'下层 ↓',entry.x+34,entry.y+38,10);}
  if(m.descent&&m.descent!==m.entry){const down=minePoint(parseKey(m.descent));drawLadder(c,down.x,down.y,night,`地下 ${depth+1} 层 ↓`);layerSigns.push(down);}
  const entities=layerSigns.map(point=>({y:point.y-24,kind:'layer-sign',point})),displayedCargo=[];
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){const cell={x,y},key=mineKey(cell);if(mineCellOpen(cell,m))entities.push({y:mineLandscapeAnchor(cell,mineTerrain(cell,m).hash,m).y,kind:'landscape',cell});if(m.decor[key])entities.push({y:minePoint(cell).y+8,kind:'decor',cell,value:m.decor[key]});}
@@ -147,6 +149,8 @@ export function drawMining(renderer,g=renderer.game){
   oval(c,q.x+(shipment.station.x-q.x)*t+i*2,q.y+(shipment.station.y-q.y)*t-18-55*Math.sin(t*Math.PI/2),4,3,'#d7ba89','#53664b',1);
  }}}}
  c.restore();
+ drawMineFog(renderer,g,m);
+ const portal=g.cottage.portalWait;if(portal){const progress=portal.elapsed,px=(g.player.x-v.x)*zoom,py=Math.max(100,(g.player.y-v.y)*zoom-86);c.save();c.setTransform(dpr,0,0,dpr,0,0);c.translate(px,py);drawActionCountdown(c,{progress,label:'1秒',icon:portal.id==='down'?'stairs-down':'stairs-up',width:90});c.restore();renderer.actionCountdownView={x:px,y:py,width:90,height:34,progress,label:'1秒'};}
  // 头顶徽记在屏幕坐标绘制，手机缩放不缩小数字，也不遮住猫脸与工具栏。
  const boarding=g.cottage.cartBoarding;if(boarding&&!g.cottage.ride){const progress=boarding.elapsed/MINE_CART_BOARDING.wait,x=Math.max(44,Math.min(w-44,(g.player.x-v.x)*zoom)),y=Math.max(100,Math.min((renderer.mineControlsTop||h)-28,(g.player.y-v.y)*zoom-85)),label=Math.max(1,Math.ceil(MINE_CART_BOARDING.wait-boarding.elapsed))+'秒';renderer.actionCountdownView={x,y,width:90,height:34,icon:'vehicle',label,progress};c.save();c.setTransform(dpr,0,0,dpr,0,0);c.translate(x,y);drawActionCountdown(c,{progress,label,icon:'vehicle',width:90});c.restore();}
  renderer.mineReview={freight:{station:{...depot},loads:m.carts.map(cart=>oreCount(cart.cargo)),cargo:displayedCargo,shipping:!!shipment&&g.time-shipment.time<1.2},layerSigns:layerSigns.map(point=>({...point,depth})),weaponReady:!!g.cottage.weaponReady,weapon:g.weapon().id,ammo:g.magazines[g.loadout.weapon].ammo,projectiles:g.cottage.combat?.projectiles.length||0,tiles,night,railKinds,visibleShafts:visibleShafts.map(p=>({key:p.key,number:p.number})),shaftMarkers:mineEntranceMarkers(m,mineCell(g.player)),cartCount:m.carts.length,toolIndependent:true,depth:g.cottage.depth||1,seed:m.seed,naturalLandscape:true,prebuiltRoads:false,selectedTool:g.cottage.tool,coverage:m.coverage,biomes:9,animals:(g.cottage.ecologyActors||[]).map(a=>({kind:a.kind,phase:a.phase,clock:a.clock})),vehicle:g.vehicle.active};
@@ -155,7 +159,7 @@ export function drawMining(renderer,g=renderer.game){
 export function drawMineMap(canvas,g){
  const c=canvas.getContext('2d'),s=112,scale=5,center=mineCell(g.player),m=currentMineLayer(g);c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,s,s);box(c,1,1,110,110,12,'#efe3bc','#47694e',2);
  c.save();c.beginPath();c.rect(10,21,92,78);c.clip();
- for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#8d997e');else if(mineCellOpen(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
+ for(let y=-8;y<=8;y++)for(let x=-9;x<=9;x++){const key=mineKey({x:center.x+x,y:center.y+y});const cell={x:center.x+x,y:center.y+y};if(!m.dug[key]&&!m.rails[key]&&!m.decor[key])continue;if(!mineCellArea(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,'#8d997e');else if(mineCellOpen(cell,m))box(c,54+x*scale,58+y*scale,scale,scale,0,m.rails[key]?'#80976c':mineTerrain(cell,m).water&&!m.bridges[key]?'#729c99':'#c0b38c');}
  c.restore();
  const dx=-center.x,dy=-center.y,factor=Math.min(1,38/Math.max(1,Math.abs(dx*scale)),32/Math.max(1,Math.abs(dy*scale))),hx=56+dx*scale*factor,hy=60+dy*scale*factor;
  poly(c,[[hx-5,hy],[hx,hy-6],[hx+5,hy],[hx+4,hy+5],[hx-4,hy+5]],'#ddaa62','#42644a',1);

@@ -1,3 +1,4 @@
+import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
 import {MINING} from '../config/mining.js';
 import {MINE_ENTRANCE,mineEntrances} from '../world/mine-entrances.js';
 import {HOME_DIRECTIONS,HOME_BALCONY,HOME_ELEVATOR} from '../config/home-construction.js';
@@ -22,7 +23,7 @@ export function playerActionCountdown(game){
  if(room?.displayEntry&&!room.sleep)return {elapsed:room.displayEntry.elapsed,wait:SHOPKEEPER_ENTRY.wait,icon:'board',anchor:{x:room.displayEntry.site.x-90,y:room.displayEntry.site.y-60,space:'room'}};
  if(room)return !room.sleep&&room.exitElapsed?{elapsed:room.exitElapsed,wait:interiorLayout(room).exitWait,icon:'exit'}:null;
  // 矿洞沿用入室倒计时，徽记放在洞口侧边，步行和战车均可辨认。
- if(game.mineEntranceWait>0){const site=mineEntrances(game.progress.mining).find(s=>s.key===game.mineEntranceKey);if(site)return {elapsed:game.mineEntranceWait,wait:MINE_ENTRANCE.wait,icon:'stairs-down',anchor:{x:site.x+68,y:site.y-36,space:'world'}};}
+ if(game.mineEntranceWait>0){const site=game.mineEntranceKey==='warehouse'?WORKSHOP_INTERIORS.warehouse.door:mineEntrances(game.progress.mining).find(s=>s.key===game.mineEntranceKey);if(site)return {elapsed:game.mineEntranceWait,wait:MINE_ENTRANCE.wait,icon:'stairs-down',anchor:{x:site.x+68,y:site.y-36,space:'world'}};}
  // 驾驶时也显示房门候停进度，载具自身的上车徽记仍只用于步行状态。
  if(game.vehicle.active&&!game.cottageEntry)return null;
  // 车头侧边徽记避开猫猫身体和短屏顶部HUD，仍固定于车辆而不随玩家漂移。

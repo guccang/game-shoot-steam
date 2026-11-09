@@ -1,10 +1,14 @@
+import {minePortals} from '../../world/mine-portals.js';
+import {currentMineLayer} from '../mining/mine-layers.js';
+import {mineBounds} from '../../config/mine-ecology.js';
+import {mineOccupancy} from '../../physics/mine-motion.js';
 import {ownsCampPoint} from '../../config/camp-land.js';
 // 场景短按只安排真实行走；抵达后的入屋、上楼和睡眠仍由正式候停规则提交。
 import {roomResident,RESIDENT_SPOT,RESIDENT_VISITOR} from '../../config/cottage-residents.js';
 import {HEROES} from '../../config/heroes.js';
 import {MINING} from '../../config/mining.js';
 import {COTTAGE,COTTAGE_FURNITURE,cottageFloor} from '../../config/cottage.js';
-import {interiorLayout} from '../../config/workshop-interiors.js';
+import {interiorLayout,WORKSHOP_INTERIORS} from '../../config/workshop-interiors.js';
 import {CLICK_BUILDINGS,SCENE_APPROACH as A} from '../../config/scene-approach.js';
 import {nearest,worldDistance} from '../../world/coordinates.js';
 import {canInspectBuilding} from '../camp/building-entry.js';
@@ -46,7 +50,7 @@ export function cottageClickTargets(game){
 // 一个意图只属于当前角色、地图和楼层；不写入存档，不跨场景继续移动。
 function request(game,id,goal,allowPaused=false){
  if(!(game.state==='playing'||allowPaused&&game.state==='paused')||game.player.hp<=0)return false;
- game.sceneApproach={id,goal:{...goal},player:game.player,room:game.cottage,floor:cottageFloor(game.cottage),mapId:game.mapId,search:null,points:null,index:1,frame:0,elapsed:0,still:0,last:{x:game.player.x,y:game.player.y}};
+ game.mineWarehouseIntent=false;game.sceneApproach={id,goal:{...goal},player:game.player,room:game.cottage,floor:cottageFloor(game.cottage),depth:game.cottage?.depth,mapId:game.mapId,search:null,points:null,index:1,frame:0,elapsed:0,still:0,last:{x:game.player.x,y:game.player.y}};
  return true;
 }
 // 返车仅追踪实际停驻记录，沿步行碰撞寻路，暂停时保留意图。
@@ -70,6 +74,18 @@ export function approachMineEntrance(game,key){
  if(!request(game,'mine:'+key,nearest(site,game.player)))return false;
  game.mineEntranceLatch=null;game.mineEntranceWait=0;game.mineEntranceKey=null;return true;
 }
+// 仓库升井由明确点击启动，沿原门前落脚点行走，再与矿洞共用一秒候停。
+export function approachWarehouseMine(game){
+ if(game.cottage||game.vehicle.active||!game.progress.homeDecor.basement||!request(game,'mine-warehouse',nearest(WORKSHOP_INTERIORS.warehouse.door,game.player)))return false;
+ game.mineWarehouseIntent=true;game.mineEntranceWait=0;return true;
+}
+// 地下入口走实际可通行矿道；点击只安排移动，抵达后交给一秒候停。
+export function approachMinePortal(game,id){
+ const room=game.cottage;if(room?.kind!=='mine'||room.ride||game.fishing)return false;
+ const target=minePortals(currentMineLayer(game),room.depth||1).find(p=>p.id===id);
+ if(!target||!request(game,'underground:'+id,target))return false;
+ room.portalIntent=id;room.portalLatch=null;room.portalWait=null;room.tool=null;room.autoDig=false;room.shaftWork=0;room.combatWork=null;return true;
+}
 // 再次明确点击可重新上下楼或睡觉，切层与醒来仍自动锁住重复触发。
 export function approachCottageTarget(game,id){
  // 旧调用的楼梯标识只作兼容；正式场景始终分别给出向上与向下的目标。
@@ -87,9 +103,9 @@ export function approachCottageTarget(game,id){
 export function updateSceneApproach(game,dt,input){
  const walk=game.sceneApproach;if(!walk)return input;
  const allowed=walk.vehicle?canEnterFarm(game,true)&&!farmInteractionBlocked(game):canInspectBuilding(game)&&canEnterCottage(game);
- const invalid=walk.player!==game.player||walk.room!==game.cottage||walk.floor!==cottageFloor(game.cottage)||walk.mapId!==game.mapId||game.player.hp<=0||game.cottage?.sleep||game.cottage?.balcony||(!game.cottage&&(!allowed||farmMode(game)||game.progress.restoration?.build));
+ const invalid=walk.player!==game.player||walk.room!==game.cottage||walk.floor!==cottageFloor(game.cottage)||walk.depth!==game.cottage?.depth||walk.mapId!==game.mapId||game.player.hp<=0||game.cottage?.sleep||game.cottage?.balcony||(!game.cottage&&(!allowed||farmMode(game)||game.progress.restoration?.build));
  const parked=walk.vehicle&&boardingVehicles(game).find(s=>s.hull===walk.vehicle.hull);
- if(invalid||walk.vehicle&&(!parked||worldDistance(parked,walk.vehicle.site)>.01)||Math.hypot(input.x,input.y)>.01){game.sceneApproach=null;return input;}
+ if(invalid||walk.vehicle&&(!parked||worldDistance(parked,walk.vehicle.site)>.01)||Math.hypot(input.x,input.y)>.01){game.sceneApproach=null;game.mineWarehouseIntent=false;if(game.cottage?.kind==='mine'){game.cottage.portalIntent=null;game.cottage.portalWait=null;}return input;}
  if(game.state!=='playing')return input;
  const p=game.player,goal=walk.goal,distance=worldDistance(p,goal);
  if(distance<=A.arrivalRadius){
@@ -102,8 +118,8 @@ export function updateSceneApproach(game,dt,input){
  walk.elapsed+=dt;walk.still=worldDistance(p,walk.last)<.05?walk.still+dt:0;walk.last={x:p.x,y:p.y};
  if(walk.elapsed>A.maxTravel||walk.still>A.blockedWait){game.sceneApproach=null;if(walk.vehicle)game.onEvent?.('story-hint',{text:'返车路线受阻，请靠近载具后上车。'});return {x:0,y:0};}
  if(!walk.search){
-  const layout=game.cottage&&interiorLayout(game.cottage);
-  walk.search=createQuestRouteSearch(playerNavigationBody(game),goal,game.trees,A.searchBudget,layout?{bounds:{left:22,right:layout.width-22,top:76,bottom:layout.height-20},canOccupy:(x,y)=>!cottageBlocked(x,y,game)}:{});
+  const mine=game.cottage?.kind==='mine',layout=!mine&&game.cottage&&interiorLayout(game.cottage);
+  walk.search=createQuestRouteSearch(playerNavigationBody(game),goal,game.trees,A.searchBudget,mine?{bounds:mineBounds(currentMineLayer(game)),canOccupy:(x,y)=>mineOccupancy(game,x,y)}:layout?{bounds:{left:22,right:layout.width-22,top:76,bottom:layout.height-20},canOccupy:(x,y)=>!cottageBlocked(x,y,game)}:{});
  }
  if(!walk.points){const result=walk.search.advance(++walk.frame);if(!result)return {x:0,y:0};if(!result.reachable){game.sceneApproach=null;if(walk.vehicle)game.onEvent?.('story-hint',{text:'暂时找不到返车路线，请先清理障碍。'});return {x:0,y:0};}walk.points=result.points;}
  while(walk.index<walk.points.length-1&&worldDistance(p,walk.points[walk.index])<A.waypointRadius)walk.index++;

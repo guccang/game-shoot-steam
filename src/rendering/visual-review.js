@@ -1,3 +1,5 @@
+// 地下视野验收读取正式雾层、入口候停和手机操作栏，不另画一套预览。
+export function inspectMineFog(renderer,root=document){return {designCriterion:'mine-fog-entrances',fog:renderer.mineFogReview,countdown:renderer.actionCountdownView,scene:renderer.mineReview,buttons:[...root.querySelectorAll('.mine-compact button')].map(b=>({text:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 import {REGIONAL_CAMPS as REVIEW_REGIONAL_CAMPS} from '../config/regional-camps.js';
 import {regionalCampObjects as reviewRegionalObjects} from './regional-camps.js';
 import {NATURAL_TERRAIN as EARTH_TERRAIN} from '../world/natural-terrain.js';
