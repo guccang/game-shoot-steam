@@ -3,6 +3,7 @@ import {CAMP_PLOTS,availableCampPlots,ownsCampPlot,ownsCampPoint} from '../confi
 import {nearest} from '../world/coordinates.js';
 import {box,oval} from './primitives.js';
 import {drawWorldSign} from './world-signs.js';
+import {drawCampGrass} from './ground-depth.js';
 // 室内与独立战斗场景不叠加地契图层。
 export function campLandActive(game){return game.mapId==='forest'&&!game.story&&!game.realm&&!game.cottage&&!game.campDefense;}
 // 实体白名单保留人、怪物、车辆、植物，隐藏未购地的建筑与常驻营业陈设。
@@ -16,16 +17,16 @@ export function campLandObjects(game){
  const objects=[{x:440,y:720,id:'core',type:'camp-land-sign',name:'营地建设'},...availableCampPlots(game.progress).map(p=>({...p.sign,id:p.id,type:'camp-land-sign',name:p.name}))];
  return objects;
 }
-// 覆盖未开发院落与铺路；不创建第二套地面缓存，购买后的下一帧立即恢复原地面。
-export function drawCampLandGround(c,game,view,night){
+// 覆盖未开发院落与铺路，复用两张小草地纹理；购买后的下一帧立即恢复原地面。
+export function drawCampLandGround(c,game,view,night,season='summer'){
  if(!campLandActive(game))return;
  for(const plot of CAMP_PLOTS){if(ownsCampPlot(game.progress,plot.id))continue;
   const center=nearest({x:(plot.left+plot.right)/2,y:(plot.top+plot.bottom)/2},{x:view.x+view.w/2,y:view.y+view.h/2});
   const w=plot.right-plot.left,h=plot.bottom-plot.top,x=center.x-w/2,y=center.y-h/2;
   if(x>view.x+view.w||x+w<view.x||y>view.y+view.h||y+h<view.y)continue;
-  c.save();c.fillStyle=night>.5?'#879174':'#cdd797';c.fillRect(x,y,w,h);
+  c.save();drawCampGrass(c,{x,y,w,h},night,season);
   // 稀疏草簇采用固定位置，镜头移动不会闪烁或重新随机分布。
-  for(let row=0;row<h;row+=92)for(let col=0;col<w;col+=104){const px=x+col+24+(row%3)*7,py=y+row+25;oval(c,px,py,10,3,night>.5?'#72836b':'#afc285');
+  for(let row=0;row<h;row+=92)for(let col=0;col<w;col+=104){const px=x+col+24+(row%3)*7,py=y+row+25;
    // 低矮林草只作装饰，疏密变化承接外围森林，保持通路开放。
    if((Math.round(row/92)*7+Math.round(col/104)*3)%11===3){oval(c,px+8,py+4,25,7,'#52764b20');for(const [dx,dy,rx,ry] of [[-11,-3,12,7],[5,-7,15,10],[19,-1,10,6]])oval(c,px+dx,py+dy,rx,ry,night>.5?'#71916e':'#9ab975','#6f965c',1.2);}}
   c.restore();

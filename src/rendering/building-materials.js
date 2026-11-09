@@ -39,8 +39,8 @@ export function drawInsetWindow(c,x,y,w,h,night=false){
 // 墙体使用微弧转角与连续暖色立面，保留原底座、侧墙和高层高度。
 export function drawHouseWall(c,left,right,top){
  c.save();c.beginPath();c.moveTo(left+12,top);c.lineTo(right-15,top-6);c.quadraticCurveTo(right+1,top-1,right,top+15);c.lineTo(right-1,-8);c.quadraticCurveTo(right,1,right-13,2);c.quadraticCurveTo(0,6,left+11,0);c.quadraticCurveTo(left+3,-1,left+4,-12);c.lineTo(left+5,top+12);c.quadraticCurveTo(left+5,top,left+12,top);c.closePath();c.fillStyle='#efdfb1';c.fill();c.save();c.clip();
- c.beginPath();c.moveTo(right-19,top-10);c.quadraticCurveTo(right-22,top*.5,right-19,3);c.lineTo(right+10,10);c.lineTo(right+10,top-10);c.closePath();c.fillStyle='#a6ad7c';c.fill();
- c.beginPath();c.moveTo(left,top);c.lineTo(right,top-8);c.lineTo(right,top+20);c.quadraticCurveTo(0,top+9,left,top+23);c.closePath();c.fillStyle='#c8c08a';c.fill();
+ c.beginPath();c.moveTo(right-25,top-10);c.quadraticCurveTo(right-28,top*.5,right-25,3);c.lineTo(right+10,10);c.lineTo(right+10,top-10);c.closePath();c.fillStyle='#8d9b78';c.fill();
+ c.beginPath();c.moveTo(left,top);c.lineTo(right,top-8);c.lineTo(right,top+20);c.quadraticCurveTo(0,top+9,left,top+23);c.closePath();c.fillStyle='#a7ab7d';c.fill();
  c.beginPath();c.moveTo(left,-17);c.quadraticCurveTo(-12,-10,right,-15);c.lineTo(right,10);c.lineTo(left,10);c.closePath();c.fillStyle='#dac99a';c.fill();c.restore();
  c.strokeStyle=EDGE;c.lineWidth=2.2;
  // 外轮廓重新勾画，不给亮面与暗面再加一圈硬边。

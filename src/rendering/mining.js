@@ -1,4 +1,7 @@
 import {minePortals} from '../world/mine-portals.js';
+import {mineLightSources} from '../world/mine-vision.js';
+import {sampleSceneLight} from '../world/scene-depth.js';
+import {drawActorCastShadow,sceneDepthStats} from './scene-depth.js';
 import {drawMineFog} from './mine-fog.js';
 import {drawActionCountdown} from './action-countdown.js';
 import {oreCount} from '../config/mine-freight.js';
@@ -89,6 +92,9 @@ export function drawMining(renderer,g=renderer.game){
  const camera=outdoorFishingView(g,{x:g.player.x-cx/baseZoom,y:g.player.y-cy/baseZoom,zoom:baseZoom},w,h),zoom=camera.zoom;
  renderer.cottageView=null;renderer.actionCountdownView=null;renderer.mineCartRiderReview=null;renderer.mineView={...camera,top,bottom,width:w,height:h};
  const v=renderer.mineView,m=currentMineLayer(g);
+ const lightSources=mineLightSources(g,m,{x:v.x,y:v.y,w:w/zoom,h:h/zoom});
+ const playerLighting=sampleSceneLight(g.player,{night:1},[],lightSources.filter(p=>p.kind==='lamp').map(p=>({...p,power:1,offset:0})));
+ renderer.sceneDepthReview={designCriterion:'scene-light-depth',light:playerLighting,...sceneDepthStats()};
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle=night?'#263f38':'#3c5945';c.fillRect(0,0,w,h);
  c.save();c.beginPath();c.rect(0,top,w,Math.max(30,bottom-top));c.clip();c.translate(-v.x*zoom,-v.y*zoom);c.scale(zoom,zoom);
  const first=mineCell({x:v.x-64,y:v.y+top/zoom-64}),last=mineCell({x:v.x+w/zoom+64,y:v.y+bottom/zoom+64});let tiles=0;const railKinds={};
@@ -119,6 +125,7 @@ export function drawMining(renderer,g=renderer.game){
  if((g.cottage.depth||1)===1)drawLadder(c,depot.x,depot.y,night,'');
  // 挂钩与车身共用显示帧，不能用25Hz存档位置在平滑轨面上来回追赶。
  for(const stored of m.carts){const cart=g.mineCarts?.get(stored.id)||stored,parent=cart.leader&&(g.mineCarts?.get(cart.leader)||m.carts.find(c=>c.id===cart.leader));if(parent){c.beginPath();c.moveTo(cart.x,cart.y-6);c.lineTo(parent.x,parent.y-6);c.strokeStyle='#736c52';c.lineWidth=4;c.stroke();}}
+ if(!g.vehicle.active&&!g.cottage.ride)drawActorCastShadow(c,g.player,playerLighting);
  for(const e of entities.sort((a,b)=>a.y-b.y)){
   if(e.kind==='landscape'){
    // 高景物遮住角色时只淡化前景实体，地形、水流和真实脚底排序保持不变。
@@ -132,13 +139,13 @@ export function drawMining(renderer,g=renderer.game){
    if(g.vehicle.active)drawVehicleTracks(c,g.player,g.vehicle,renderer.reduced.matches,g.time,g.progress);
    const rider=g.vehicle.active?riderPosition(g.player,g.vehicle):g.player;
    const era=g.vehicle.active&&eraVehicle(g.vehicle.index);c.save();clipEraSeat(c,g.player,g.vehicle);
-   if(!era&&!g.fishing&&g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   if(!era&&!g.fishing&&g.cottage.weaponReady&&!g.cottage.strike)drawMineArmedCat(c,g,rider.x,rider.y,playerLighting);else drawCat(c,rider.x,rider.y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true,0,false,playerLighting);
    c.restore();
    if(g.vehicle.active)drawVehicleArmor(c,g.player,g.vehicle,g.progress,g.time,renderer.reduced.matches);else if(g.fishing)drawOutdoorFishing(c,g,rider,night?1:0);else if(!g.cottage.weaponReady||g.cottage.strike)drawMiningPickaxe(c,g);
    if(era&&g.cottage.weaponReady)drawRiderWeapon(c,rider,g.progress.hero,g.loadout.weapon,{scale:PLAYER_SCALE,parts:g.weapon().parts,modChoice:g.weapon().modChoice});
   }
   else{const minerals=cartBody(c,e.cart);displayedCargo.push({id:e.cart.id,colors:minerals.map(key=>MINE_ORE_COLORS[key])});if(e.cart.id===g.cottage.ride){
-   if(g.cottage.weaponReady)drawMineArmedCat(c,g,e.cart.x,e.cart.y-8);else drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true);
+   if(g.cottage.weaponReady)drawMineArmedCat(c,g,e.cart.x,e.cart.y-8,playerLighting);else drawCat(c,e.cart.x,e.cart.y-8,g.progress.hero,0,PLAYER_SCALE,0,0,null,renderer.reduced.matches?.35:1,null,0,false,false,g.player.bodyAnimation,0,null,0,true,0,false,playerLighting);
    // 验收读取实际绘制锚点；保留真实待机连续帧，不以静帧掩盖位移抖动。
    renderer.mineCartRiderReview={id:e.cart.id,x:e.cart.x,y:e.cart.y,wheel:e.cart.wheel,screenX:(e.cart.x-v.x)*zoom,screenY:(e.cart.y-8-v.y)*zoom,seatOffset:-8,cameraError:Math.hypot(e.cart.x-g.player.x,e.cart.y-g.player.y),idleTime:g.player.bodyAnimation.idleTime,moveWeight:g.player.bodyAnimation.moveWeight};
   }cartBody(c,e.cart,true);}
@@ -152,7 +159,7 @@ export function drawMining(renderer,g=renderer.game){
   oval(c,q.x+(shipment.station.x-q.x)*t+i*2,q.y+(shipment.station.y-q.y)*t-18-55*Math.sin(t*Math.PI/2),4,3,'#d7ba89','#53664b',1);
  }}}}
  c.restore();
- renderer.profiler?.end('render.mine.entities');renderer.profiler?.start('render.mine.fog');drawMineFog(renderer,g,m);renderer.profiler?.end('render.mine.fog');
+ renderer.profiler?.end('render.mine.entities');renderer.profiler?.start('render.mine.fog');drawMineFog(renderer,g,m,lightSources);renderer.profiler?.end('render.mine.fog');
  const portal=g.cottage.portalWait;if(portal){const progress=portal.elapsed,px=(g.player.x-v.x)*zoom,py=Math.max(100,(g.player.y-v.y)*zoom-86);c.save();c.setTransform(dpr,0,0,dpr,0,0);c.translate(px,py);drawActionCountdown(c,{progress,label:'1秒',icon:portal.id==='down'?'stairs-down':'stairs-up',width:90});c.restore();renderer.actionCountdownView={x:px,y:py,width:90,height:34,progress,label:'1秒'};}
  // 头顶徽记在屏幕坐标绘制，手机缩放不缩小数字，也不遮住猫脸与工具栏。
  const boarding=g.cottage.cartBoarding;if(boarding&&!g.cottage.ride){const progress=boarding.elapsed/MINE_CART_BOARDING.wait,x=Math.max(44,Math.min(w-44,(g.player.x-v.x)*zoom)),y=Math.max(100,Math.min((renderer.mineControlsTop||h)-28,(g.player.y-v.y)*zoom-85)),label=Math.max(1,Math.ceil(MINE_CART_BOARDING.wait-boarding.elapsed))+'秒';renderer.actionCountdownView={x,y,width:90,height:34,icon:'vehicle',label,progress};c.save();c.setTransform(dpr,0,0,dpr,0,0);c.translate(x,y);drawActionCountdown(c,{progress,label,icon:'vehicle',width:90});c.restore();}

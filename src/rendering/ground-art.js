@@ -1,4 +1,5 @@
 import {TOWN_SHIFT_X} from '../config/town-layout.js';
+import {drawGrassClump} from './ground-depth.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { groundDetails } from '../world/ground-details.js';
@@ -59,6 +60,7 @@ export function* paintGroundSteps(c, view = null, winter = false, season = 'summ
         : i % (artSampleWeight(x, y) > 0.2 ? 7 : 4) !== 0
     )
       continue;
+    if(!winter){drawGrassClump(c,x,y,i);continue;}
     c.strokeStyle = style.groundArt.fineGrass ? (i % 3 ? '#8fa96a66' : '#eff0be7a') : '#80a565';
     c.lineWidth = style.groundArt.grassStrokeWidth;
     // 细节开关只控制局部绘制，保留共同分层与动作输入。

@@ -49,6 +49,11 @@ export function drawSoftRoads(c, view) {
 // 共用绘制与动作输入，风格差异由配置提供。
 export function* drawSoftRoadsSteps(c, view) {
   c.save();
+  // 路肩受光与浅凹暗缘复用完全相同的曲线，防止视觉道路偏离寻路几何。
+  c.lineCap='round';c.lineJoin='round';
+  for(const [width,color,dx,dy] of [[59,'#506c4930',2,3],[54,'#f0e3b5',-1,-1],[51,'#b9a77b',0,0]]){
+    c.save();c.translate(dx,dy);c.lineWidth=width;c.strokeStyle=color;c.beginPath();for(const road of roads)roadPath(c,road);c.stroke();c.restore();yield;
+  }
   for (const [width, alpha] of style.roadArt.drawSoftRoadsStepsValue) {
     c.strokeStyle = style.roadArt.drawSoftRoadsSteps_strokeStyleColor;
     c.globalAlpha = alpha;

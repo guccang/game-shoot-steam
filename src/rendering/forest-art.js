@@ -1,4 +1,5 @@
 import {plant} from './forest-floor-plants.js';
+import {drawCanopyShadow} from './scene-depth.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { consumeDrawSteps } from './draw-steps.js';
@@ -40,11 +41,8 @@ export function drawForestShadow(c, tree, night = 0, winter = false, season = 's
     snowDrift(c, -6, 4, 29, 8, color);
     c.restore();
   }
-  c.globalAlpha *= 1 - night * 0.6;
-  ellipse(c, 20, 12, 40, 14, '#235b4930');
-  ellipse(c, 13, 8, 29, 10, '#234e3e27');
-  ellipse(c, 1, 4, 13, 5, '#24443555');
   c.restore();
+  drawCanopyShadow(c,tree,night);
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function campCanopyAlpha(tree, player) {

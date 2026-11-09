@@ -1,6 +1,9 @@
 import {regionalCampObjects,drawRegionalCamp,drawRegionalCampGround} from './regional-camps.js';
 import {activateCampLayout} from '../world/camp-layout-bindings.js';
 import {drawCampLayoutRoads,campLayoutObjectVisible} from './camp-layout.js';
+import {sampleSceneLight,buildingShadowShape} from '../world/scene-depth.js';
+import {drawActorCastShadow,drawBuildingCastShadow,sceneDepthStats} from './scene-depth.js';
+import {groundDepthStats} from './ground-depth.js';
 import {campLandObjects,campObjectVisible,drawCampLandGround,drawCampLandObject} from './camp-land.js';
 import {industryObjects,drawIndustry} from './industry.js';
 import {tradeObjects,drawTradeObject} from './camp-trade.js';
@@ -36,7 +39,7 @@ import {cropGrowthBoosts} from './farm-growth.js';
 import {farmWorking} from '../core/farming/farm.js';
 import { CanvasCommandSampler } from '../platform/canvas-command-sampler.js';
 import {drawResourcePickups} from './resource-pickup.js';
-import {restorationBuildingVisible,restorationObjects,drawRestorationObject,drawRestorationScaffold,drawRestorationTransfer,drawRestorationBuildCountdown} from './town-restoration.js';
+import {restorationForObject,restorationBuildingVisible,restorationObjects,drawRestorationObject,drawRestorationScaffold,drawRestorationTransfer,drawRestorationBuildCountdown} from './town-restoration.js';
 import {facilityOpen} from '../config/town-restoration.js';
 import {drawEnergyShield} from './energy-shield.js';
 import {drawGravityFields} from './gravity-gun.js';
@@ -376,7 +379,7 @@ export class Renderer {
         c.restore();
       }
     drawLivingGround(c,camp,light.night,view);
-    drawCampLayoutRoads(c,camp,view,light.night);
+    drawCampLayoutRoads(c,camp,view,light.night,this.ground.season);
     drawMonsterCampGround(c,source,light.night,view);
     drawRegionalCampGround(c,source,light.night,view);
     drawFarmGround(c,camp,view);
@@ -393,18 +396,12 @@ export class Renderer {
     // 树影统一留在地面层；树干与树冠随后排序，避免后方树影涂到前景单位身上。
     const riverCrossings=visibleBodies(riverCrossingObjects(source),view,120);
     for(const item of riverCrossings)drawRiverCrossingGround(c,item,light.night);
-    for (const tree of g.trees) {
-      if(source.balconyScene&&!balconyObjectVisible(view,tree))continue;
-      if(source.balconyScene){c.save();balconyUpright(c,view,tree);}
-      drawForestShadow(c, tree, light.night, winter, this.ground.season);if(source.balconyScene)c.restore();
-    }
     drawPlayerTow(c,source,g.player);
     const entrances = visibleBodies(valley ? [] : source.realm ? source.realm.mode === 'tower' ? [towerRealmLandmark(source.realm.arena)] : [] : REALM_ENTRANCES, view, 190);
     for (const entry of entrances) drawRealmEntranceGround(c, entry, light.night);
     const storyPosts=visibleBodies([...storyPostObjects(camp),...clearingPostObjects(camp)],view,150);
     for(const post of storyPosts)drawStoryPostGround(c,post);
     const lamps = valley ? [] : visibleLights(view, time, light, this.reduced.matches).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
-    drawLampGround(c, lamps, [...g.trees, ...g.enemies, ...(g.boss ? [g.boss] : []), g.player]);
     // 赛跑不显示自动攻击范围。
     if(!flight&&!source.balconyScene&&source.realm?.mode!=='race'&&!farmWorking(source)){
     // 淡淡的射程圈帮助理解自动攻击距离。
@@ -426,7 +423,14 @@ export class Renderer {
     c.stroke();
     c.setLineDash([]);
     }
-    drawCampLandGround(c,camp,view,light.night);
+    drawCampLandGround(c,camp,view,light.night,this.ground.season);
+    // 土地覆盖只清除旧院落；真实树木投影和灯池随后绘制，不被地契底色擦掉。
+    for(const tree of g.trees){
+      if(source.balconyScene&&!balconyObjectVisible(view,tree))continue;
+      if(source.balconyScene){c.save();balconyUpright(c,view,tree);}
+      drawForestShadow(c,tree,light.night,winter,this.ground.season);if(source.balconyScene)c.restore();
+    }
+    drawLampGround(c,lamps,[...g.trees,...g.enemies,...(g.boss?[g.boss]:[])]);
     for (const stump of g.stumps) {
       oval(c, stump.x, stump.y, 15, 7, '#9c8254', '#67744c');
       oval(c, stump.x, stump.y - 2, 11, 5, '#d1b381', '#9c8254', 1);
@@ -434,10 +438,6 @@ export class Renderer {
     // 边界和目标在实体及攻击预警之前绘制，保证脚下提示不盖住冲锋区域。
     drawStoryGuidance(c,source,view,this.reduced.matches);
     drawFireRoute(c,source,view,this.reduced.matches);
-    for (const hazard of g.hazards)
-      if (hazard.kind !== 'feather' || hazard.age < hazard.warmup)
-        drawBossHazard(c, hazard, this.reduced.matches);
-    for (const enemy of g.enemies) if (!enemy.flying) drawEnemyWarning(c, enemy);
     // 机械猫按脚底加入实体深度排序，树前树后与玩家遵守同一遮挡关系。
     const mechanicalSources=collectMechanicalSources(source);
     const mechanicalCats=mechanicalSources.filter(g=>g.weapon().controller==='mechanical')
@@ -491,6 +491,14 @@ export class Renderer {
       Number(!!a.flying) - Number(!!b.flying) || (source.balconyScene?(balconyProject(view,a).y-balconyProject(view,b).y)/zoom: a.y-b.y)+(a.depthOffset||0)-(b.depthOffset||0),
     );
     if(source.balconyScene)this.balconyObjects=objects.map(item=>({type:item.type,kind:item.kind,workshop:item.workshop,x:item.x,y:item.y}));
+    const buildingShadows=source.balconyScene?[]:objects.filter(item=>{const f=restorationForObject(item);return !f||facilityOpen(camp.progress,f.id);}).map(buildingShadowShape).filter(Boolean);
+    for(const b of buildingShadows)drawBuildingCastShadow(c,b,light.night);
+    const playerLighting=sampleSceneLight(g.player,light,g.trees,lamps,buildingShadows);
+    if(!g.vehicle.active&&!g.player.flying&&!flight&&!farmWorking(source))drawActorCastShadow(c,g.player,playerLighting);
+    this.sceneDepthReview={designCriterion:'scene-light-depth',light:playerLighting,trees:g.trees.length,lamps:lamps.length,buildings:buildingShadows.length,...sceneDepthStats(),...groundDepthStats()};
+    // 攻击预警始终在地面投影上方，不能被新增阴影压暗。
+    for(const hazard of g.hazards)if(hazard.kind!=='feather'||hazard.age<hazard.warmup)drawBossHazard(c,hazard,this.reduced.matches);
+    for(const enemy of g.enemies)if(!enemy.flying)drawEnemyWarning(c,enemy);
     drawStormGround(c, view, objects, light.storm, this.storm, this.reduced.matches, this.stormStrike);
     profiler?.end('render.lighting');
     profiler?.start('render.gravity');
@@ -632,6 +640,7 @@ export class Renderer {
           outdoorBusy(source)||farmWorking(source)||source.realm?.mode==='race'||source.arrivalCinematic||frontRider(g.vehicle),
           gustStrength(g.time, item.x, wind),
           !!ox&&!ox.approach,
+          playerLighting,
         );
         c.restore();
         // 与骑车一样先画座位上的猫，再由牛头、挽具遮住腿部。

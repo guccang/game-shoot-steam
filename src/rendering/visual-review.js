@@ -1,4 +1,8 @@
 // 地下视野验收读取正式雾层、入口候停和手机操作栏，不另画一套预览。
+import {sceneDepthStats as depthActorStats} from './scene-depth.js';
+import {groundDepthStats as depthGroundStats} from './ground-depth.js';
+// 光影验收绑定正式绘制结果、当前受光和实际缓存，不维护另一套展示画面。
+export function inspectSceneLightDepth(renderer,root=document){return {...renderer.sceneDepthReview,...depthActorStats(),...depthGroundStats(),designCriterion:'scene-light-depth',time:renderer.environment.time,body:{...renderer.game.player.bodyAnimation},overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 export function inspectMineFog(renderer,root=document){return {designCriterion:'mine-fog-entrances',fog:renderer.mineFogReview,countdown:renderer.actionCountdownView,scene:renderer.mineReview,buttons:[...root.querySelectorAll('.mine-compact button')].map(b=>({text:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 import {REGIONAL_CAMPS as REVIEW_REGIONAL_CAMPS} from '../config/regional-camps.js';
 import {regionalCampObjects as reviewRegionalObjects} from './regional-camps.js';
