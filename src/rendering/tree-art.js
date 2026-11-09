@@ -37,6 +37,9 @@ function buildSprite(paletteIndex, species, variant, night, winter, season) {
   else if (['birch', 'willow', 'maple', 'cypress'].includes(species)) drawSpeciesTree(c, species, variant, color, winter);
   else drawSampleTree(c, paletteIndex, species === 'pine', variant, color, winter);
   if(!EXTRA_TREE_SPECIES.some(s=>s.id===species))drawSeasonCanopy(c, species, variant, season, (hex) => (night === true ? nightColor(hex) : hex));
+  // 左上叶顶保持暖亮，右下叶团有冷暗转折；只在已有图集生成时执行。
+  c.save();c.globalCompositeOperation='source-atop';
+  const volume=c.createLinearGradient(-35,-135,35,-15);volume.addColorStop(0,'#fff0bb18');volume.addColorStop(.4,'#244f4400');volume.addColorStop(1,'#244f442b');c.fillStyle=volume;c.fillRect(-64,-145,128,160);c.restore();
   // 暖光图集只对已有树形着色，树冠外保持透明，避免矩形光斑。
   if (night === 'warm') {
     c.globalCompositeOperation = 'source-atop';

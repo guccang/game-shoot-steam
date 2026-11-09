@@ -8,10 +8,10 @@ import {drawCat} from './characters.js';
 import {PLAYER_SCALE} from '../combat/recoil.js';
 import {gatlingHeat} from '../combat/weapon-heat.js';
 // 保留真实连续身体帧、固定脚底和独立手枪；矿车座位只调整身体锚点。
-export function drawMineArmedCat(c,g,x=g.player.x,y=g.player.y){
+export function drawMineArmedCat(c,g,x=g.player.x,y=g.player.y,lighting=null){
  const w=g.weapon(),b=g.cottage.combat,mag=g.magazines[g.loadout.weapon];
  const charge=w.chargeTime?(b?.pulse.charge||0)/w.chargeTime:0;
- drawCat(c,x,y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,g.loadout.weapon,g.player.recoil,g.reducedMotion?.35:1,pulseChargePose(charge,g.time,g.reducedMotion),gatlingHeat(w,mag),false,false,g.player.bodyAnimation,w.modChoice,w.parts,g.reducedMotion?0:mag.rotor||0,false);
+ drawCat(c,x,y,g.progress.hero,g.player.angle,PLAYER_SCALE,0,g.loadout.weapon,g.player.recoil,g.reducedMotion?.35:1,pulseChargePose(charge,g.time,g.reducedMotion),gatlingHeat(w,mag),false,false,g.player.bodyAnimation,w.modChoice,w.parts,g.reducedMotion?0:mag.rotor||0,false,0,false,lighting);
 }
 // 共用正式弹道和伙伴，不创建新位图或第二份动画时钟。
 export function drawMineCombat(c,g,reduced){

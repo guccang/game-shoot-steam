@@ -1,4 +1,5 @@
 import {drawShieldEmitter} from './energy-shield.js';
+import {drawLitEntity} from './scene-depth.js';
 import {chainsawRange,chainsawTip} from '../combat/chainsaw-geometry.js';
 import {drawGravityGun} from './gravity-gun.js';
 import { drawGatling } from './gatling-art.js';
@@ -282,7 +283,12 @@ export function drawCat(
   unarmed = false, // 驾驶与交接隐藏手持武器，身体仍使用原连续帧。
   gust = 0,
   airborne = false,
+  lighting = null, // 正式场景传入同一受光参数，肖像仍保持独立展示背景。
 ) {
+  if(lighting){
+    const radius=weapon===14?chainsawRange(parts)+45:115;
+    return drawLitEntity(c,x,y,lighting,radius,ctx=>drawCat(ctx,0,0,hero,angle,scale,walk,weapon,recoil,motionScale,chargePose,heat,sample,bodyOnly,animation,modChoice,parts,rotor,unarmed,gust,airborne,null));
+  }
   c.save();
   c.translate(x, y);
   c.scale(scale, scale);

@@ -3,6 +3,7 @@ import { style } from '../art-styles/config.js';
 import { box, oval, poly } from './primitives.js';
 import { nightColor } from './river.js';
 import { localIllumination } from '../world/lighting.js';
+import {lightTransmission} from '../world/scene-depth.js';
 
 // 卡通环境灯具：暖木灯柱、圆角提灯与双色火焰，光照不覆盖界面和伤害数字。
 
@@ -26,13 +27,25 @@ function glow(c, x, y, radius, power, squash = 1) {
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawLampGround(c, lights, objects) {
   c.save();
+  const trees=objects.filter(item=>item.type==='tree');
   for (const light of lights) {
+    c.save();
+    // 树干的遮挡楔形只裁剪这一盏灯，不涂黑其他光源与地表；多个遮挡逐一相交。
+    for(const tree of trees){
+      const sx=light.x+(light.offset||0),sy=light.y,dx=tree.x-sx,dy=tree.y-sy,d=Math.hypot(dx,dy),r=9*(tree.size||1);
+      if(d<=r||d>light.radius)continue;
+      const nx=-dy/d*r,ny=dx/d*r,k=(light.radius*2+d)/d;
+      c.beginPath();c.rect(sx-light.radius*3,sy-light.radius*3,light.radius*6,light.radius*6);
+      c.moveTo(tree.x+nx,tree.y+ny);c.lineTo(sx+dx*k+nx*k,sy+dy*k+ny*k);c.lineTo(sx+dx*k-nx*k,sy+dy*k-ny*k);c.lineTo(tree.x-nx,tree.y-ny);c.closePath();c.clip('evenodd');
+    }
     glow(c, light.x + light.offset, light.y - 3, light.radius * 0.8, light.power, 0.72);
+    c.restore();
   }
   for (const item of objects) {
     if (item.type === 'fixture') continue;
     const { power, source } = localIllumination(item, lights);
     if (power < 0.025) continue;
+    if(lightTransmission(item,source,trees)<.2)continue;
     const angle = Math.atan2(item.y - source.y, item.x - source.x - source.offset);
     const length = (item.type === 'tree' ? 34 : 17) * (0.5 + power);
     c.save();

@@ -3,14 +3,14 @@ import {MINE_VISION,mineLightSources} from '../world/mine-vision.js';
 const masks=new WeakMap();
 
 // 柔边光池与淡雾使用地下时钟，暂停和减少动态不会产生额外动画。
-export function drawMineFog(renderer,game,layer){
+export function drawMineFog(renderer,game,layer,preparedSources=null){
  const {width:w,height:h,dpr,c,mineView:v}=renderer;
  let mask=masks.get(renderer);if(!mask){mask=renderer.canvas.ownerDocument.createElement('canvas');masks.set(renderer,mask);}
  const scale=MINE_VISION.scale,mw=Math.ceil(w*scale),mh=Math.ceil(h*scale);
  if(mask.width!==mw||mask.height!==mh){mask.width=mw;mask.height=mh;}
  const ctx=mask.getContext('2d');ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,w,h);
  ctx.globalCompositeOperation='source-over';ctx.fillStyle=`rgba(10,23,22,${MINE_VISION.opacity})`;ctx.fillRect(0,0,w,h);
- const sources=mineLightSources(game,layer,{x:v.x,y:v.y,w:w/v.zoom,h:h/v.zoom});
+ const sources=preparedSources||mineLightSources(game,layer,{x:v.x,y:v.y,w:w/v.zoom,h:h/v.zoom});
  ctx.globalCompositeOperation='destination-out';
  for(const p of sources){
   const x=(p.x-v.x)*v.zoom,y=(p.y-v.y)*v.zoom,r=p.radius*v.zoom;
