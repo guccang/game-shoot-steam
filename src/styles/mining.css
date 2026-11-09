@@ -39,8 +39,9 @@
 #mine-minimap{width:64px;height:64px}
 #mine-hud[data-expanded="false"] :is(#mine-development,#mine-position,#mine-home){display:none}
 #mine-controls #mine-message{min-height:0;max-height:32px;padding:4px 8px;border-radius:8px;background:#294c3ce8;max-width:100%;width:fit-content;margin:0 auto 6px}
-#mine-controls .mine-compact{display:flex;justify-content:flex-end;gap:8px;margin-bottom:6px}
-#mine-controls .mine-compact button{min-width:44px;min-height:44px;flex:1;padding-inline:6px}
+/* 五格快捷栏保持固定顺序，窄屏也能完整显示行驶放灯与停车入口。 */
+#mine-controls .mine-compact{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-bottom:6px}
+#mine-controls .mine-compact button{min-width:44px;min-height:44px;padding-inline:4px;font-size:12px;white-space:nowrap}
 #mine-tools-panel[hidden]{display:none}
 #mine-tools-panel{max-height:45vh;overflow:auto;pointer-events:auto}
 /* 地下钓鱼复用正式操作条，贴近底部，避免与折叠工具重复占用空间。 */
