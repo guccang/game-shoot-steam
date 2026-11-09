@@ -3,6 +3,10 @@ import {box,oval,poly} from './primitives.js';
 import {drawResourceIcon} from './resource-icons.js';
 import {canvasFont} from './text-style.js';
 const EDGE='#365b43';
+// 送料末段继续进入机器，21单位物料的尾部越过132左沿后才开始下一轮。
+const INFEED={from:103,to:151,y:159,size:21,seconds:2};
+// 压床进料护罩宽于物料，覆盖薄立柱后的传送带，避免矿石穿过立柱后重新露出。
+const FACTORY_INLET={x:132,y:141,w:34,h:45};
 // 料斗、启动柄与出料台坐标也用于页面命中，手机缩放不改变操作含义。
 export const INDUSTRY_SCENE={width:360,height:280,hopper:{x:12,y:88,w:105,h:104},start:{x:132,y:220,w:112,h:48},output:{x:265,y:172,w:83,h:92}};
 // 传动轮只转动自身，轮缘与辐条共同表达旋转，不旋转整座设备。
@@ -23,7 +27,7 @@ export function drawIndustryMachineScene(c,{site,recipe,count,loaded=[],job=null
  const inputs=Object.keys(recipe.input);for(const [i,key]of inputs.entries())if(loaded.includes(key)||job)drawResourceIcon(c,key,45+i*37,125,30);
  c.textAlign='center';c.font=canvasFont(12);c.fillStyle=dark?'#f1e8c8':EDGE;c.fillText(hover?'松手投料':'投料口',62,96);
  // 送料在炉体和机架之前绘制，原料进入机器时由实体轮廓自然遮挡。
- if(active&&!reduced){const u=(t*.5)%1;drawResourceIcon(c,inputs[0],103+u*28,159,21);}
+ if(active&&!reduced){const u=(t/INFEED.seconds)%1;drawResourceIcon(c,inputs[0],INFEED.from+u*(INFEED.to-INFEED.from),INFEED.y,INFEED.size);}
  if(site==='refinery'){
   // 炉身、烟囱、窥火窗和导流口各有固定结构；火焰单独变化。
   box(c,132,55,110,144,12,dark?'#9a886d':'#bc9d75',EDGE,2.5);box(c,146,30,27,33,3,metal,EDGE,2);box(c,139,25,40,11,3,'#dfd0a1',EDGE,2);
@@ -35,7 +39,12 @@ export function drawIndustryMachineScene(c,{site,recipe,count,loaded=[],job=null
   // 压床两柱和横梁固定，曲柄带动独立压头，不挤压机器整图。
   box(c,127,188,116,16,4,metal,EDGE,2.5);box(c,137,62,15,130,3,'#7f9a78',EDGE,2);box(c,222,62,15,130,3,'#7f9a78',EDGE,2);box(c,126,45,121,24,5,metal,EDGE,2.5);
   const stroke=!reduced?(1-Math.cos(t*4))*15:0;box(c,180,69,14,40+stroke,3,'#d6c794',EDGE,2);box(c,156,104+stroke,63,21,4,'#aabca0',EDGE,2.5);box(c,153,166,67,15,3,'#d0b882',EDGE,2);
-  if(active)drawResourceIcon(c,inputs[0],186,157,32);gear(c,237,59,22,t*2);box(c,166,48,39,15,3,'#e7d5a2',EDGE,1.5);
+  if(active)drawResourceIcon(c,inputs[0],186,157,32);
+  // 实体护罩位于送料与压床前层，矿石保持连续位移并在内部完全不可见。
+  const inlet=FACTORY_INLET;box(c,inlet.x,inlet.y,inlet.w,inlet.h,4,metal,EDGE,2);
+  box(c,inlet.x+4,inlet.y+5,4,inlet.h-10,1,dark?'#6c836b':'#8ba184');
+  for(const y of [inlet.y+6,inlet.y+inlet.h-6])oval(c,inlet.x+27,y,2,2,'#d9d1a5',EDGE,1);
+  gear(c,237,59,22,t*2);box(c,166,48,39,15,3,'#e7d5a2',EDGE,1.5);
  }
  // 状态灯与出料器只表达真实生产状态，成品数量来自已提交的库存。
  oval(c,338,17,6,6,output?'#e1bd63':active?'#a8c781':'#7e8f76',EDGE,1.5);c.fillStyle=dark?'#f1e8c8':EDGE;c.textAlign='right';c.font=canvasFont(12);c.fillText(job?(motion.remaining?'运转中':'正在保存产物'):output?'成品可取':'等待投料',326,21);

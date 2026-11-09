@@ -1,0 +1,46 @@
+// 实际手机开工后逐帧检查送料完全遮挡；测试诊断画布不进入游戏运行资源。
+async original=>{
+ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),baseline=process.env.INDUSTRY_BASELINE==='1',out='output/playwright/industry-infeed'+(baseline?'-baseline':'');fs.mkdirSync(out,{recursive:true});
+ const context=await original.context().browser().newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir:out+'/video',size:{width:390,height:844}}}),page=await context.newPage(),errors=[],sequences=[],views=[],liveCycles=[];page.on('pageerror',e=>errors.push(e.message));
+ if(!baseline)await context.route('http://localhost:4175/src/rendering/industry-machine-scene.js',r=>r.fulfill({path:path.resolve('src/rendering/industry-machine-scene.js'),contentType:'text/javascript'}));
+ // 从正式房间管理员进入服务页，备料和开工始终使用真实手机按钮。
+ async function open(id){await page.evaluate(async id=>{const m=await import('/src/core/home/cottage.js');if(g.cottage)m.leaveCottage(g);g.cottageDoorLatch=false;g.state='playing';Object.assign(g.player,ind.industryDoor(ind.INDUSTRY_SITES[id]),{vx:0,vy:0});if(!m.enterWorkshop(g,id))throw Error('无法进厂');Object.assign(g.player,(await import('/src/core/workshop/workshop-display-entry.js')).shopkeeperApproach(g.cottage));a.renderer.camera.time=null;a.refresh();},id);await page.locator('[data-room-item="shopkeeper"]').tap();await page.locator('[data-npc-service]').tap();await page.locator('#industry-dialog').waitFor({state:'visible'});}
+ // 冻结的仅是测试壁钟，机器仍由正式UI每帧按真实批次时间计算相位。
+ async function phase(seconds){await page.evaluate(seconds=>{feedNow=feedStart+seconds*1000;},seconds);await page.waitForFunction(()=>document.querySelector('#industry-dialog canvas').getContext('2d').paintedIndustryTime===feedNow);}
+ // 用同一正式绘制器和批次生成两份同状态诊断拷贝，仅省去其中一份的送料图标。
+ // 独立拷贝排除生产画布多帧绘制造成的栅格化差异；手机实际画面另外逐帧截图。
+ async function visibleOre(id,seconds){
+  await phase(seconds);return await page.evaluate(async id=>{
+   const {drawIndustryMachineScene}=await import('/src/rendering/industry-machine-scene.js'),{industryMachineState}=await import('/src/core/industry/industry-draft.js'),{INDUSTRY_RECIPES}=await import('/src/config/industry.js');
+   const canvas=document.querySelector('#industry-dialog canvas'),reference=document.createElement('canvas'),other=document.createElement('canvas');reference.width=other.width=canvas.width;reference.height=other.height=canvas.height;const visible=reference.getContext('2d'),ctx=other.getContext('2d'),stack=[];let skip=false;
+   const proxy=new Proxy(ctx,{get(target,key){if(key==='save')return()=>{stack.push(skip);target.save();};if(key==='restore')return()=>{target.restore();skip=stack.pop();};if(key==='scale')return(x,y)=>{if(Math.abs(x-21/64)<1e-9&&x===y)skip=true;target.scale(x,y);};if(key==='fill'||key==='stroke')return(...args)=>{if(!skip)target[key](...args);};const value=target[key];return typeof value==='function'?value.bind(target):value;},set(target,key,value){target[key]=value;return true;}});
+   const state=g.progress.industry.sites[id],recipe=INDUSTRY_RECIPES.find(r=>r.id===state.job.recipe),options={site:id,recipe,count:state.job.count,job:state.job,motion:industryMachineState(state.job,Date.now()),night:a.environment.time==='night'};visible.setTransform(2,0,0,2,0,0);ctx.setTransform(2,0,0,2,0,0);drawIndustryMachineScene(visible,options);drawIndustryMachineScene(proxy,options);
+   const bounds=[88*2,143*2,82*2,30*2],aPixels=visible.getImageData(...bounds).data,bPixels=ctx.getImageData(...bounds).data;let changed=0;for(let i=0;i<aPixels.length;i+=4)if(aPixels[i]!==bPixels[i]||aPixels[i+1]!==bPixels[i+1]||aPixels[i+2]!==bPixels[i+2]||aPixels[i+3]!==bPixels[i+3])changed++;
+   if(feedNow-feedStart===1990)window.infeedPixelDebug={visible:reference.toDataURL(),without:other.toDataURL()};reference.width=reference.height=other.width=other.height=1;return changed;
+  },id);
+ }
+ // 正式面板与手机布局采样，所有截图另行人工复核。
+ async function shot(name){const r=await page.evaluate(async()=>(await import('/src/rendering/visual-review.js')).inspectIndustryMachineScene(g));assert.equal(r.overflow,false);assert.ok(r.controls.every(b=>b.height>=44));views.push({name,...r});await page.screenshot({path:out+'/'+name+'.png'});}
+ try{
+  await page.goto('http://localhost:4175');await page.locator('#start').tap();await page.evaluate(async()=>{
+   window.a=(await import('/src/main.js')).application;await a.ready;window.g=a.game;window.ind=await import('/src/core/industry/industry.js');const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.campLand.owned=(await import('/src/config/camp-land.js')).CAMP_PLOTS.map(s=>s.id);p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(s=>s.id);p.restoration.cottageRested=true;p.wood=100000;p.industry.raw.copper=100;p.materials.copper=100;g.progress=p;g.reset();g.start();g.arrivalScene=null;g.mainlineSpeech=null;g.mainlineTalkDelay=g.spawnTimer=g.encounterTimer=999999;g.vehicle.active=false;g.enemies=[];g.boss=null;g.update=()=>{};
+  });
+  for(const id of ['refinery','factory']){
+   await open(id);if(id==='factory')await page.locator('[data-industry-recipe]').selectOption('make-farmParts');await page.locator('[data-industry-preset="10"]').tap();
+   for(const key of id==='refinery'?['rawCopper','wood']:['copper','wood']){await page.locator(`[data-industry-material="${key}"]`).tap();await page.locator('[data-industry-hopper]').tap();}await page.locator('[data-industry-start]').tap();
+   await page.evaluate(async id=>{const job=g.progress.industry.sites[id].job;if(!job)throw Error('未开工');const recipe=(await import('/src/config/industry.js')).INDUSTRY_RECIPES.find(r=>r.id===job.recipe);window.actualIndustryNow=Date.now;window.feedStart=job.readyAt-recipe.seconds*job.count*1000;window.feedNow=feedStart;Date.now=()=>feedNow;const ctx=document.querySelector('#industry-dialog canvas').getContext('2d');if(!ctx.recordingIndustryPaint){const clear=ctx.clearRect.bind(ctx);ctx.clearRect=(...args)=>{ctx.paintedIndustryTime=Date.now();return clear(...args);};ctx.recordingIndustryPaint=true;}},id);
+   const values=[];for(const seconds of [0,.4,.8,1,1.2,1.4,1.6,1.8,1.9,1.99,2]){const pixels=await visibleOre(id,seconds);values.push({seconds,visiblePixels:pixels});await page.locator('#industry-dialog canvas').screenshot({path:out+'/'+id+'-phase-'+String(seconds).replace('.','_')+'.png'});if(seconds===1.99&&pixels>0){const diagnostic=await page.evaluate(()=>infeedPixelDebug);for(const [key,value]of Object.entries(diagnostic))fs.writeFileSync(out+'/'+id+'-diagnostic-'+key+'.png',Buffer.from(value.split(',')[1],'base64'));}}sequences.push({id,values});
+   for(const [width,height]of [[320,568],[390,844],[844,390]]){await page.setViewportSize({width,height});for(const time of ['day','night']){await page.evaluate(time=>Object.assign(a.environment,{livingPreview:true,time,autoTime:false,autoWeather:false}),time);await phase(1.4);await shot(id+'-'+width+'-'+time);}}
+   await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(100);const still=await page.locator('#industry-dialog canvas').evaluate(c=>c.toDataURL());await page.waitForTimeout(180);assert.equal(await page.locator('#industry-dialog canvas').evaluate(c=>c.toDataURL()),still);await shot(id+'-reduced');await page.emulateMedia({reducedMotion:'no-preference'});
+   // 连续一比一推进测试壁钟超过一个周期，确认正式UI仍有真实送料和局部机械运动。
+   await page.evaluate(()=>{const start=performance.now();Date.now=()=>feedStart+1200+Math.floor(performance.now()-start);});const live=[];
+   for(let i=0;i<6;i++){await page.waitForTimeout(400);live.push(await page.locator('#industry-dialog canvas').evaluate(c=>({time:c.getContext('2d').paintedIndustryTime,image:c.toDataURL()})));}
+   const cycle={id,elapsed:live.at(-1).time-live[0].time,distinct:new Set(live.map(s=>s.image)).size};assert.ok(cycle.elapsed>=1900);assert.ok(cycle.distinct>=5);liveCycles.push(cycle);await shot(id+'-live-cycle');
+   // 按同一批次的真实截止时间结算，确认动画改动没有影响完成与产出。
+   await page.evaluate(id=>{feedNow=g.progress.industry.sites[id].job.readyAt+1;Date.now=()=>feedNow;},id);await page.waitForFunction(id=>!g.progress.industry.sites[id].job,id);assert.equal(await page.evaluate(id=>Object.values(g.progress.industry.sites[id].output).reduce((a,b)=>a+b,0),id),10);await page.evaluate(()=>{Date.now=actualIndustryNow;});await page.locator('[data-industry-close]').tap();
+  }
+  const result={designCriterion:'industry-machine-scene',baseline,sequences,liveCycles,views,errors};fs.writeFileSync(out+'/report.json',JSON.stringify(result,null,2));
+  for(const sequence of sequences){const v=sequence.values;assert.ok(v[0].visiblePixels>0);assert.ok(v.filter(s=>s.seconds>=1.8&&s.seconds<2).every(s=>s.visiblePixels===0),'矿石未完全隐藏就循环：'+JSON.stringify(sequence));assert.ok(v.some(s=>s.seconds>1&&s.seconds<1.8&&s.visiblePixels>0&&s.visiblePixels<v[0].visiblePixels*.5),'缺少逐渐遮挡的中间帧');assert.ok(v.at(-1).visiblePixels>0);}
+  assert.deepEqual(errors,[]);return {sequences,liveCycles,views:views.length,errors};
+ }catch(error){await page.screenshot({path:out+'/failure.png'});throw error;}finally{await context.close();}
+}
