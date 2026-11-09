@@ -9,7 +9,7 @@ import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {MINING as M,minePoint,mineKey} from '../src/config/mining.js';
 import {freshMining,normalizeMining,openBasement} from '../src/progression/mining/mining.js';
 import {railExits,nextCartExit} from '../src/config/mine-rail-routes.js';
-import {enterMine,rideMineCart,toggleMineCart,updateMining} from '../src/core/mining/mining.js';
+import {enterMine,rideMineCart,toggleMineCart,updateMining,buildMine} from '../src/core/mining/mining.js';
 import {nearbyJunction,setMineCartDirection,setMineJunctionDirection,stoppedCartChoices} from '../src/core/mining/mine-cart-directions.js';
 import {mineRemovalChoices,removeMineFacility} from '../src/core/mining/mine-demolition.js';
 // 构造隔离十字轨道，外部进度完成入职，不改用户存档。
@@ -23,6 +23,19 @@ function setup(){
 function tick(g,n){for(let i=0;i<n;i++)updateMining(g,.05,{x:0,y:0});}
 // 获取事务后替换的新车对象，避免断言引用旧存档。
 function cart(g){return g.progress.mining.carts[0];}
+
+test('行驶中放矿灯按原价扣料，保持座位和轨段，重复点击不重复扣料',()=>{
+ const g=setup();g.progress.mining.ore=g.progress.wood=5;rideMineCart(g);toggleMineCart(g);tick(g,1);
+ const before=structuredClone(cart(g)),position={x:g.player.x,y:g.player.y},key=mineKey({x:0,y:0});
+ assert.ok(buildMine(g,'lamp').ok);assert.equal(g.progress.mining.decor[key],'lamp');assert.equal(g.progress.mining.ore,4);assert.equal(g.progress.wood,4);assert.equal(g.cottage.running,true);assert.equal(g.cottage.ride,1);assert.deepEqual(cart(g),before);assert.deepEqual({x:g.player.x,y:g.player.y},position);
+ assert.equal(buildMine(g,'lamp').ok,false);assert.equal(g.progress.mining.ore,4);assert.equal(g.progress.wood,4);assert.equal(buildMine(g,'rail').ok,false);tick(g,1);assert.ok(g.player.x>position.x);
+});
+test('行驶放灯缺料、暂停和保存失败不扣资源或停止矿车',()=>{
+ for(const reason of ['ore','wood','paused','save']){const g=setup();g.progress.mining.ore=g.progress.wood=5;rideMineCart(g);toggleMineCart(g);tick(g,1);
+  if(reason==='ore')g.progress.mining.ore=0;if(reason==='wood')g.progress.wood=0;if(reason==='paused')g.state='paused';if(reason==='save')g.livingPersist=()=>false;
+  const before=structuredClone(g.progress),position={x:g.player.x,y:g.player.y};assert.equal(buildMine(g,'lamp').ok,false);assert.deepEqual(g.progress,before);assert.deepEqual({x:g.player.x,y:g.player.y},position);assert.equal(g.cottage.running,true);assert.equal(g.cottage.ride,1);
+ }
+});
 
 test('方向输入直接启动矿车，长按只保存一次，急停后同方向需松手再起步',()=>{
  const g=setup();rideMineCart(g);let saves=0;g.livingPersist=()=>{saves++;return true;};

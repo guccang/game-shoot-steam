@@ -139,9 +139,9 @@ function pay(m,p,kind){
   }
  }
 }
-// 铺轨和装点可放脚下或前方一格，允许天然洞厅与已挖通区域。
+// 矿灯允许在行驶中放置；其他施工仍需下车，费用和地形校验沿用同一事务。
 export function buildMine(game,kind,ahead=false){
- if(!active(game)||game.cottage.ride)return notice(game,'请下车后再施工。');
+ if(!active(game)||game.cottage.ride&&kind!=='lamp')return notice(game,'请下车后再施工。');
  if(!['rail','cart','lamp','sign'].includes(kind))return notice(game,'请选择有效设施。');
  const cell=ahead?mineTarget(game):mineCell(game.player),key=mineKey(cell),m=currentMineLayer(game);
  if(!mineInsideBounds(m,minePoint(cell).x,minePoint(cell).y))return notice(game,'外围是坚硬岩层，无法开采或铺轨。');
