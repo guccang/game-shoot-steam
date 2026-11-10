@@ -94,3 +94,29 @@ test('静态树索引跨帧复用，补种、清场与矿井原地替换均能�
   rocks[0] = {...sapling, x: 9000};
   assert.deepEqual(treeGrid(rocks).query(9000,120,9000,120), [rocks[0]]);
 });
+
+// 清理同一帧多棵树后复用索引，仍按原顺序绘制；再生和换图会刷新碰撞。
+test('死亡原地删除不重建分桶，不残留幽灵碰撞或死亡绘制项',async()=>{
+ const {cleanupTreeDeaths,markTreeDeath}=await import('../src/world/spatial-grid.js');
+ const trees=targets(),grid=treeGrid(trees),dead=[trees[0],trees[75],trees[799]],expected=trees.filter(t=>!dead.includes(t));dead.forEach(t=>{t.hp=0;markTreeDeath(trees,t);});
+ cleanupTreeDeaths(trees);assert.equal(treeGrid(trees),grid);assert.deepEqual(trees,expected);
+ for(const t of dead)assert.ok(!grid.query(t.x,t.y,t.x,t.y).includes(t));
+ assert.deepEqual(treesInBounds(trees,0,0,WORLD.width,WORLD.height,200),expected);
+ const sapling={id:10001,x:90,y:120,radius:18,hp:1};trees.push(sapling);assert.ok(treeGrid(trees).query(90,120,90,120).includes(sapling));
+ cleanupTreeDeaths(trees);assert.equal(trees.length,expected.length+1);
+});
+
+// 同帧再生与死亡混合时，新树必须参与碰撞；旧数组换场后不消费旧死亡通知。
+test('补种后立即伐木仍包含新障碍，死亡通知不跨地图污染',async()=>{
+ const {cleanupTreeDeaths,markTreeDeath}=await import('../src/world/spatial-grid.js');const trees=targets();treeGrid(trees);const dead=trees[0],sapling={id:10000,x:90,y:120,radius:18,hp:1};trees.push(sapling);dead.hp=0;markTreeDeath(trees,dead);cleanupTreeDeaths(trees);assert.ok(treeGrid(trees).query(90,120,90,120).includes(sapling));
+ const replacement=[{...dead,hp:100}];cleanupTreeDeaths(replacement);assert.equal(replacement.length,1);
+});
+
+// 领主范围毁树走相同死亡队列，清理后共享碰撞索引与奖励保持正确。
+test('领主毁树登记清理且复用共享索引，不产生玩家木材',async()=>{
+ const {cleanupTreeDeaths}=await import('../src/world/spatial-grid.js'),{breakTreesAlong}=await import('../src/combat/boss-terrain.js');
+ const trees=[{id:1,type:'tree',x:2000,y:1500,radius:12,hp:55},{id:2,type:'tree',x:2000,y:1600,radius:12,hp:55}],grid=treeGrid(trees),stumps=[];
+ const g={trees,fx:{impact(){}},leaveStump(tree){stumps.push(tree);}};
+ breakTreesAlong(g,{x:1960,y:1500},{x:2040,y:1500},8,{protectSettlement:false});cleanupTreeDeaths(trees);
+ assert.equal(treeGrid(trees),grid);assert.equal(stumps.length,1);assert.deepEqual(trees.map(t=>t.id),[2]);assert.ok(!grid.query(2000,1500,2000,1500).some(t=>t.id===1));
+});

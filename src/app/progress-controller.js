@@ -28,13 +28,13 @@ export function createProgressController({
       ? i18nText("app.progress-controller.5b87394b6c")
       : i18nText("app.progress-controller.9afd2c564d");
   }
-  // 同一个 JSON 提交成长与已结算的巡游进度，避免两个存档键不同步。
-  function save() {
+  // 成长和巡游一起提交；伐木使用同一基线的原子增量，其余操作提交完整主档。
+  function save({woodTransaction=false}={}) {
     if (!canSave()) return false;
     game.syncStory();game.syncFireRescue();syncCampDefense(game);
     profiler?.start('storage');
     game.progress.patrol = capturePatrol(game);
-    const result = store.saveProgress(game.progress);
+    const result = (woodTransaction&&store.saveWoodProgress?store.saveWoodProgress:store.saveProgress)(game.progress);
     elapsed = 0;
     renderSaveStatus();
     profiler?.end('storage');

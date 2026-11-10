@@ -75,7 +75,8 @@ export function createGameEventHandler({ root, audio, toast, input, save }) {
       toast.show(data?.permanent?`${data.name}已报废，请用手机呼叫救援或前往维修中心。`:i18nText("app.game-events.d290571244", { p0: (data?.name || i18nText("app.game-events.8f9f50d425")) }));
       audio.play('explosion');
     }
-    if (type === 'reward') save();
+    // 伐木后续账本也写累计增量，避免刚入库又同步重写一遍全档。
+    if (type === 'reward') save({woodTransaction:!!data?.woodTransaction});
     if (['wave-clear', 'wave-start', 'boss-ready'].includes(type)) save();
     if (type === 'boss-ready') toast.show(i18nText("app.game-events.4df4f06ff3", { p0: (data.wave) }));
     if (type === 'start') {

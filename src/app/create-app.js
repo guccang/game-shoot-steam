@@ -324,6 +324,7 @@ export function createApplication({
   rangerArrival=createRangerArrival({game,root,renderer,dialogs,onChange:refresh,onOpenWeaponWorkshop:()=>workshop.open('weapons',0)});
   game.storyPersist = store.saveProgress;
   game.livingPersist=store.saveProgress;
+  game.woodPersist=store.saveWoodProgress;
   clearingPanel=createClearingPanel({game,root,renderer,dialogs,onChange:refresh});
   livingPanel=createLivingPanel({game,root,renderer,dialogs,onTalk,onEquipmentStory:id=>storyPanel.openEquipment(id),onClearing:()=>clearingPanel.visit(),onChange:refresh,environment,onRest:()=>{projectLivingCalendar(environment,game.progress.living.calendar);environmentPanel.render();}});
   storyPanel = createStoryPanel({game,root,dialogs,renderer,onLiving:requestId=>livingPanel.open(null,requestId),onChange:()=>refresh(),openWorkshop:(kind,index)=>workshop.open(kind,index)});
