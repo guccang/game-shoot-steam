@@ -1,3 +1,4 @@
+import {BIOME_DUMPLING_BY_ID} from '../config/biome-dumplings.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { GAMEPLAY_TABLES } from '../config/gameplay-tables.js';
 import { ARMORED } from '../config/armored-enemies.js';
@@ -16,7 +17,7 @@ export function createEnemyAttack() {
 }
 // 普通怪与精英怪分别使用轻快和偏重的攻击节奏。
 export function attackProfile(enemy) {
-  const base = (enemy.species===ARMORED.id ? ARMORED.attack : null) || RANGED_ENEMIES[enemy.species] || (enemy.flying ? FLYING_ATTACK : ATTACK_PROFILES[enemy.tough ? 'tough' : 'normal']);
+  const base = (!enemy.workshopTarget&&BIOME_DUMPLING_BY_ID[enemy.dumplingVariant]) || (enemy.species===ARMORED.id ? ARMORED.attack : null) || RANGED_ENEMIES[enemy.species] || (enemy.flying ? FLYING_ATTACK : ATTACK_PROFILES[enemy.tough ? 'tough' : 'normal']);
   return { ...base, damage: enemy.damage ?? base.damage };
 }
 // 开始前摇即锁定位置和方向；之后玩家移动不会改变本次扑击路线。

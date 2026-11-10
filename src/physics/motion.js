@@ -1,3 +1,4 @@
+import {dumplingWaterFits} from '../world/dumpling-habitats.js';
 import {vehicleFenceFootprint} from '../config/vehicle-fence-footprint.js';
 import {campExpansionPoint} from '../config/camp-land.js';
 import {campBoundaryBlocked} from '../world/camp-boundary.js';
@@ -24,6 +25,7 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
   if(trees.mineScene)return !trees.mineScene.walkable(x,y,radius,!!body?.flying);
   // 建筑墙体连低空载具也不能穿过；飞行仍可跨越水面、树木与普通围栏。
   if(worldBuildingBlocked(x,y,radius,body||{}))return true;
+  if(body?.aquatic&&!dumplingWaterFits(x,y,Math.max(radius,body.radius||0)))return true;
   if(body?.flying)return false;
   if(body?.mapId==='forest'&&!body.arena){
     const dx=delta(x-PASTURE.x,WORLD.width),dy=delta(y-PASTURE.y,WORLD.height);

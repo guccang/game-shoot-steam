@@ -1,3 +1,5 @@
+import {BIOME_DUMPLING_BY_ID} from '../config/biome-dumplings.js';
+import {drawBiomeDumplingWarning} from './biome-dumplings.js';
 import {monsterDeathPose} from '../config/monster-death.js';
 import {bossProfile} from '../config/bosses.js';
 import {campResidentHead} from '../config/camp-residents.js';
@@ -76,7 +78,7 @@ export function drawSlime(c, e, time, reduced = false, profiler = null, deferHea
     c.strokeStyle = '#fff9e5';
     c.lineWidth = 3;
     // 首领召唤使用专属木卫名称，普通重装保留原兵种名称。
-    const label = armored ? `Lv.${e.level} ${e.bossSummon?e.name:ARMORED.name}` : RANGED_ENEMIES[e.species]
+    const label = e.dumplingVariant ? `Lv.${e.level} ${BIOME_DUMPLING_BY_ID[e.dumplingVariant].name}` : armored ? `Lv.${e.level} ${e.bossSummon?e.name:ARMORED.name}` : RANGED_ENEMIES[e.species]
       ? i18nText("rendering.enemyLevel", { p0: e.level, p1: RANGED_ENEMIES[e.species].name })
       : `Lv.${e.level} ${e.flying?'叶翼飞团':dumplingSizeName(e.rank)}`;
     c.strokeText(label, e.x, e.y + 19);
@@ -98,6 +100,7 @@ export function drawSlime(c, e, time, reduced = false, profiler = null, deferHea
 }
 // 地面胶囊预警显示玩家中心需要避开的完整扫掠区域，路径从前摇开始固定。
 export function drawEnemyWarning(c, enemy) {
+  if(enemy.dumplingVariant&&BIOME_DUMPLING_BY_ID[enemy.dumplingVariant].pattern!=='charge')return drawBiomeDumplingWarning(c,enemy);
   if (RANGED_ENEMIES[enemy.species]) return drawRangedWarning(c, enemy);
   const a = enemy.assault;
   if (!a || !['windup', 'lunge', 'returning'].includes(a.phase) || enemy.hp <= 0) return;

@@ -1,3 +1,4 @@
+import {nearbyWaterDumplingSpot,regionalDumpling} from '../../world/dumpling-habitats.js';
 import {observingMonsterCamp} from './monster-camps.js';
 // 移动遭遇独立调度，复用怪物战斗与安全选点，不占用任何波次配额。
 import {livingWaveAllowed} from '../camp/living-safety.js';
@@ -34,9 +35,10 @@ export function updateEncounters(game, dt, moving) {
   if (alive >= rules.maxAlive) return;
   game.encounterTimer = Math.max(0, game.encounterTimer - dt);
   if (game.encounterTimer > 1e-8) return;
-  const spot = findNearbyArrivalSpot(game, game.encounterSpawned, ENCOUNTERS);
+  const water=game.mapId==='forest'&&game.encounterSpawned%2===0?nearbyWaterDumplingSpot(game.player,game.encounterSpawned):null;
+  const spot = water||findNearbyArrivalSpot(game, game.encounterSpawned, ENCOUNTERS);
   if (!spot||(living&&livingSafePoint(spot))) { game.encounterTimer = ENCOUNTERS.retrySeconds; return; }
-  game.spawnEnemy(0, 0, spot, { ambient: true, rangedEncounter: true });
+  game.spawnEnemy(0, 0, spot, { ambient: true, rangedEncounter: true, ...(water?{dumplingVariant:regionalDumpling(water,game.encounterSpawned).id}:{}) });
   game.encounterSpawned++;game.encounterHadEnemies=true;
   game.encounterTimer = rules.minSeconds + game.random() * (rules.maxSeconds - rules.minSeconds);
 }

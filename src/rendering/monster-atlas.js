@@ -1,3 +1,4 @@
+import {drawBiomeDumpling} from './biome-dumplings.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
@@ -198,7 +199,8 @@ export function drawMonsterSprite(c, enemy, time, reduced = false, profiler = nu
   } else {
     c.translate(0, 14);
     const pose = dumplingPose(enemy, reduced);
-    if (enemy.species === 'leaf-bat')
+    if(enemy.dumplingVariant)drawBiomeDumpling(c,enemy,pose,reduced);
+    else if (enemy.species === 'leaf-bat')
       paintFlyingMonster(c, zone, enemy.rank || 0, clip, frame.index, MONSTER_ATLAS.clips[clip].count, pose,{x:enemy.campLookX,y:enemy.campLookY});
     else drawPlainDumpling(c, enemy, zone, pose);
   }
