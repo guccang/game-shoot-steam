@@ -32,6 +32,8 @@ function buildCampLayoutRoads(progress,layout,ignoreDecor){const boundary=campBo
  for(let n=0;n<queue.length;n++){const i=queue[n],x=i%COLS,y=Math.floor(i/COLS);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,j=ny*COLS+nx;if(nx>=0&&nx<COLS&&ny>=0&&ny<ROWS&&!blocked[j]&&parents[j]===-2){parents[j]=i;queue.push(j);}}}
  const paths=[],unreachable=[],network=new Set([root]),searchParents=new Int32Array(blocked.length),seen=new Uint32Array(blocked.length);let searchId=0;
  const targets=[...buildings.map(b=>{
+ // 广场铺地可通行，连接中心，避免南边邻接房屋时把支路目标放进房屋。
+ if(b.plaza)return {id:b.id,width:campBuildingRoadWidth(b),x:b.x,y:b.y-b.height/2,door:{x:b.x,y:b.y-b.height/2}};
  // 停车场地坪可通行，连接东侧入口。
  if(b.placementKind==='pasture')return {id:b.id,width:campBuildingRoadWidth(b),x:b.x,y:b.y-b.height-72,door:{x:b.x,y:b.y-b.height-18}};
  if(b.parking)return {id:b.id,width:56,x:b.x+315,y:b.y-220,door:{x:b.x+315,y:b.y-220}};const room=WORKSHOP_INTERIORS[({'garage':'vehicle','catHome':'cat-home'}[b.id]||b.id)],dy=room?room.door.y-room.site.y:b.id==='cottage'?12:24;return {id:b.id,width:campBuildingRoadWidth(b),x:b.x,y:b.y+72,door:{x:b.x,y:b.y+(b.placementKind==='sign'?28:dy)}};}),...campBoundary(progress,layout).gates.filter(g=>campPlotAt({x:g.x+(g.side==='left'?50:g.side==='right'?-50:0),y:g.y+(g.side==='top'?50:g.side==='bottom'?-50:0)},progress)).map(g=>({id:'gate',width:56,x:g.x+(g.side==='left'?50:g.side==='right'?-50:0),y:g.y+(g.side==='top'?50:g.side==='bottom'?-50:0),door:{x:g.x,y:g.y}}))];
