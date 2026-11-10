@@ -1,5 +1,5 @@
 // 手机可看行情、接单点与商队位置，到场才办理交接。
-import {TRADE_SITES,TRADE_BOARD,TRADE_BOARD_SIZE,TRADE_TASK_IDS,TRADE_STATIONS,TRADE_RELIC} from '../config/camp-trade.js';
+import {TRADE_SITES,TRADE_BOARD,TRADE_BOARD_SIZE,TRADE_TASK_IDS,TRADE_RELIC} from '../config/camp-trade.js';
 import {tradeField,atTradeSite,tradeAction,tradeCrop,tradePrice,tradeStock} from '../core/camp/camp-trade.js';
 import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {worldDistance} from '../world/coordinates.js';
@@ -16,7 +16,8 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
  function button(action,text,id='',disabled=false){return `<button type="button" class="ui-button" data-trade-action="${action}" data-id="${id}" ${disabled?'disabled':''}>${text}</button>`;}
  // 订单、货款和佣金分开显示，同一份作物只可选择一个买主。
  function render(){
-  const p=game.progress,t=p.trade,crop=tradeCrop(p),local=TRADE_SITES.find(s=>atTradeSite(game,s)),board=local===TRADE_BOARD,e=t.escort;
+  const p=game.progress,t=p.trade,crop=tradeCrop(p),local=TRADE_SITES.find(s=>atTradeSite(game,s)),board=!!local,e=t.escort;
+  const nearestSite=TRADE_SITES.reduce((best,s)=>worldDistance(game.player,s)<worldDistance(game.player,best)?s:best);
   const sections=[],stock=local?tradeStock(game,local).filter(r=>r.count>0):[];
   const available=stock.find(r=>r.crop.id===crop.id)?.count||0;
   // 在重复可接的委托标题旁标明首次交付进度。
@@ -25,13 +26,13 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
    sections.push(`<section class="ui-inset"><h3>${local.name} · 现场出售</h3>${stock.length?stock.map(r=>button('sell','出售'+r.crop.name+' ×'+r.sell+' · '+tradePrice(r.crop,r.sell,local.percent||100)+' 金币',r.crop.id,!r.sell)).join(' '):'<p>带上背包作物，或把货车开到这里。</p>'}</section>`);
   }
   sections.push(`<section class="ui-inset"><h3>邻居订单${completionLabel('crop')}</h3><p>${t.serial%2?'薄荷':'阿团'}收购${crop.name} ×3，交货给 ${tradePrice(crop,3,130)} 金币（加价 30%）。${t.crop&&board?'已带到 '+Math.min(3,available)+'/3 份。':''}</p>${button(t.crop?'give-crop':'take-crop',t.crop?'交付三份作物':'接受作物订单','',!board||!!t.crop&&available<3)}
-   ${!board?button('route','前往营地订单板',TRADE_BOARD.id):''}</section>`);
+   ${!board?button('route','前往最近商站',nearestSite.id):''}</section>`);
   sections.push(`<section class="ui-inset"><h3>商队寻物${completionLabel('relic')}</h3><p>击败森林地面怪物，找回货签 ${t.relic??0}/3，报酬 ${TRADE_RELIC.coins} 金币。</p>${button(t.relic===null?'take-relic':'give-relic',t.relic===null?'接受寻物委托':'交还货签','',!board||t.relic!==null&&t.relic<3)}
    </section>`);
-  sections.push('<section class="ui-inset"><h3>商路行情</h3><p>营地按原价收购。到站可卖自己的货；护送另领佣金。</p>'+
-   TRADE_STATIONS.map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${s.commission} 金币 · ${s.guards?'途中有拦路怪':'无需击退专属拦路怪'}</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接护送单',s.id,!board):''}`).join('')+'</section>');
-  if(e){const goal=TRADE_STATIONS.find(s=>s.id===e.station);
-   sections.unshift(`<section class="ui-inset"><h3>正在护送 · ${goal.name}</h3><p>车况 ${Math.ceil(e.hp)}%${goal.guards?'，拦路怪 '+e.cleared+'/'+goal.guards:''}。在车旁领路，离队时商队等候。</p>${button('route','寻找商队','caravan')} ${button('finish-escort','领取佣金 '+goal.commission,'',local!==goal||worldDistance(e,goal)>125||e.cleared!==goal.guards)}</section>`);
+  sections.push('<section class="ui-inset"><h3>营地间运货</h3><p>各商站均可接单、交付作物和货签。选择其他营地运送商队货物，到目的地另领佣金。</p>'+
+   TRADE_SITES.filter(s=>s!==local).map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${s.commission} 金币 · ${s.guards?'途中有拦路怪':'无需击退专属拦路怪'}</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接单运往此营地',s.id,!board):''}`).join('')+'</section>');
+  if(e){const goal=TRADE_SITES.find(s=>s.id===e.station);
+   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>车况 ${Math.ceil(e.hp)}%${goal.guards?'，拦路怪 '+e.cleared+'/'+goal.guards:''}。在车旁领路，离队时商队等候。</p>${button('route','寻找商队','caravan')} ${button('finish-escort','领取佣金 '+goal.commission,'',local!==goal||worldDistance(e,goal)>125||e.cleared!==goal.guards)}</section>`);
   }
   sections.push(`<section class="ui-inset"><h3>收成去向</h3><label class="ui-choice phone-wood"><input type="checkbox" data-keep ${t.keep?'checked':''}>留下收成，经过仓库也保留作物</label></section>`);
   body.innerHTML='<p class="ui-inset" data-trade-summary>共 '+TRADE_TASK_IDS.length+' 项任务 · 已完成 '+t.completed.length+' 项</p>'+sections.join('');
@@ -50,7 +51,7 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
    requestWorldNavigation(game,site,'前往'+site.name,{direct:true,arrivalRadius:70});
    for(const key of [dialog.id,'phone-dialog','current-cat-dialog'])if(root.getElementById(key)?.open)dialogs.close(key);
   }else{const r=tradeAction(game,action,id);status.textContent=r.message;render();if(r.ok){
-    if(action==='escort'){const goal=TRADE_STATIONS.find(s=>s.id===id);requestWorldNavigation(game,goal,'护送至'+goal.name,{direct:true,arrivalRadius:70});}
+    if(action==='escort'){const goal=TRADE_SITES.find(s=>s.id===id);requestWorldNavigation(game,goal,'护送至'+goal.name,{direct:true,arrivalRadius:70});}
     onChange();
    }}
  });

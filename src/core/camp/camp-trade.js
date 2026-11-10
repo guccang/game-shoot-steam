@@ -1,5 +1,5 @@
 // 商路交易只取随身作物和实际到站的自有货舱；护送不占用玩家货位。
-import {TRADE_BOARD,TRADE_STATIONS,TRADE_RELIC} from '../../config/camp-trade.js';
+import {TRADE_SITES,TRADE_BOARD,TRADE_RELIC} from '../../config/camp-trade.js';
 import {FARM_CROPS} from '../../config/farm.js';
 import {validateProgress} from '../../progression/progress.js';
 import {creditResource} from '../../progression/economy/resource-wallet.js';
@@ -39,8 +39,8 @@ export function tradeAction(game,action,id){
  const fail=message=>({ok:false,message});
  if(!tradeField(game)||!['playing','paused'].includes(game.state))return fail('请在森林自由巡游时办理。');
  const next=validateProgress(structuredClone(game.progress)),t=next.trade;
- const station=TRADE_STATIONS.find(s=>s.id===id),destination=TRADE_STATIONS.find(s=>s.id===t.escort?.station);
- const site=action==='sell'?([TRADE_BOARD,...TRADE_STATIONS].find(s=>atTradeSite(game,s))):action==='finish-escort'?destination:TRADE_BOARD;
+ const station=TRADE_SITES.find(s=>s.id===id),destination=TRADE_SITES.find(s=>s.id===t.escort?.station);
+ const local=TRADE_SITES.find(s=>atTradeSite(game,s)),site=action==='finish-escort'?destination:local;
  let coins=0,message='',completedId;
  if(action==='keep'){t.keep=!t.keep;message=t.keep?'已留货，经过仓库也会保留作物。':'已恢复仓库门前自动出售。';}
  else{
@@ -54,7 +54,8 @@ export function tradeAction(game,action,id){
   }else if(action==='take-relic'&&t.relic===null){t.relic=0;message='已接寻物委托，击败森林地面怪物可找回货签。';}
   else if(action==='give-relic'&&t.relic===TRADE_RELIC.count){coins=TRADE_RELIC.coins;t.relic=null;completedId='relic';message='货签已交还商队';}
   else if(action==='escort'&&station&&!t.escort){
-   t.escort={station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message=station.guards?'商队已出发，请带路并击退途中劫货的怪物。':'商队已出发，请带队前往'+station.name+'。';
+   if(station.id===site.id)return fail('请选择另一个营地作为目的地。');
+   t.escort={origin:site.id,station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message=station.guards?'商队已出发，请带路并击退途中劫货的怪物。':'商队已出发，请带队前往'+station.name+'。';
   }else if(action==='finish-escort'&&destination&&worldDistance(t.escort,destination)<=125&&t.escort.cleared===destination.guards){
    coins=destination.commission;t.escort=null;completedId=destination.id;message='商队平安抵达';
   }else if(action==='sell'){
@@ -76,17 +77,17 @@ export function tradeAction(game,action,id){
 export function tradeDefeat(game,target){
  const t=game.progress.trade;
  if(!t||!livingForest(game)||game.cottage||game.livingPreview||target.type!=='enemy'||target.bossSummon||target.workshopTarget||target.football)return;
- if(t.escort&&target.tradeGuard===t.escort.station)t.escort.cleared=Math.min(TRADE_STATIONS.find(s=>s.id===t.escort.station).guards,t.escort.cleared+1);
+ if(t.escort&&target.tradeGuard===t.escort.station)t.escort.cleared=Math.min(TRADE_SITES.find(s=>s.id===t.escort.station).guards,t.escort.cleared+1);
  if(t.relic!==null&&t.relic<TRADE_RELIC.count&&!target.flying){t.relic++;game.float(target.x,target.y-48,'拾得货签 '+t.relic+'/3','#ffe4a2');}
 }
 // 商队沿玩家实际走过的路前进，离队等待；阻击时停下，必须保住货车才能领赏。
 export function updateTradeEscort(game,dt){
  const e=game.progress.trade?.escort;if(!e||!tradeField(game)||game.state!=='playing')return;
- const station=TRADE_STATIONS.find(s=>s.id===e.station),distance=worldDistance(e,game.player);
+ const station=TRADE_SITES.find(s=>s.id===e.station),distance=worldDistance(e,game.player);
  const motion=game.tradeMotion??={index:14,active:true,path:[]};
  if(motion.station!==e.station||worldDistance(e,motion.last||e)>8){motion.path=[];motion.station=e.station;}
  motion.last={x:e.x,y:e.y};
- if(station.guards&&!e.ambush&&!livingSafePoint(e)&&!livingSafePoint(game.player)&&worldDistance(e,station)<worldDistance(TRADE_BOARD,station)*.52)e.ambush=true;
+ if(station.guards&&!e.ambush&&!livingSafePoint(e)&&!livingSafePoint(game.player)&&worldDistance(e,station)<worldDistance(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD,station)*.52)e.ambush=true;
  const before={x:e.x,y:e.y};
  if(e.ambush&&e.cleared<station.guards){
   let guards=game.enemies.filter(v=>v.tradeGuard===e.station&&v.hp>0);
