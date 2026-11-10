@@ -8,6 +8,7 @@ import { findNearbyArrivalSpot } from './enemy-arrival.js';
 
 // 新巡游、死亡重建和切图重新等待，避免刚入场立即刷遭遇怪。
 export function resetEncounters(game) {
+  // 护送波次单独计数，不占普通地图怪的存活名额。
   const rules=encounterRules(game);
   game.encounterTimer = rules.minSeconds + game.random() * (rules.maxSeconds - rules.minSeconds);
   game.encounterSpawned = 0;game.encounterLowRisk=encounterRules(game)===LOW_RISK_ENCOUNTERS;game.encounterQuiet=0;game.encounterHadEnemies=false;
@@ -19,11 +20,11 @@ export function encounterRules(game){return game.mapId==='forest'&&game.player&&
 // 仅自由移动推进遭遇与喘息，暂停、清缴和专属战斗不积压补刷。
 export function updateEncounters(game, dt, moving) {
   const living=livingForest(game);
-  // 护送只使用约定的三波；单次巡游移动遭遇总数有上限，击杀与远处回收不重置。
-  if(game.progress.trade?.escort||game.encounterSpawned>=ENCOUNTERS.maxSpawned||observingMonsterCamp(game))return;
+  // 护送期间仍可遇到普通地图怪；移动遭遇总数有上限，击杀与远处回收不重置。
+  if(game.encounterSpawned>=ENCOUNTERS.maxSpawned||observingMonsterCamp(game))return;
   if (game.campDefense || game.state !== 'playing' || (!living&&!game.bossReady) || game.story || game.realm || game.boss || game.fireActive || !moving) return;
   if(living&&(livingSafePoint(game.player)||livingWaveAllowed(game)||game.livingBattle))return;
-  const rules=encounterRules(game),low=rules===LOW_RISK_ENCOUNTERS,alive=game.enemies.filter(e=>e.ambient&&e.hp>0).length;
+  const rules=encounterRules(game),low=rules===LOW_RISK_ENCOUNTERS,alive=game.enemies.filter(e=>e.ambient&&!e.tradeGuard&&e.hp>0).length;
   // 从危险区回到营地周边时重新给予观察时间，已有怪物不删除、不重复发奖。
   if(low&&!game.encounterLowRisk)game.encounterTimer=Math.max(game.encounterTimer,rules.minSeconds);
   game.encounterLowRisk=low;
