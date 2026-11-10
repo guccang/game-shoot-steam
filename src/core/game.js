@@ -855,6 +855,8 @@ export class Game {
   }
   // 固定上限步长更新，后台恢复时不会突进或受到大量伤害。
   update(dt, input = { x: 0, y: 0 }) {
+    // 自动停车和导航先取得当前载具，读档后的首帧也使用底盘占地。
+    this.player.fenceVehicle=this.vehicle;
     dt = clamp(dt, 0, 0.05);
     this.previewTime += dt;
     // 巨物已击破的短暂演出独占时钟，暂停或离页不会继续消耗弹药与耐久。
@@ -927,6 +929,8 @@ export class Game {
     // 营地实体在章节全程可见，底座碰撞同样不随任务节点开关。
     activateCampLayout(this.progress);
     this.player.campProgress=this.progress;
+    // 当前载具引用让自动移动、后坐及下车共享栅栏底盘占地。
+    this.player.fenceVehicle=this.vehicle;
     this.player.legendaryBuilding=legendaryVisible(this);
     this.player.livingCollision=!this.campDefense&&!this.realm&&this.mapId==='forest'&&!this.fireActive;
     updateLivingWorld(this,dt);

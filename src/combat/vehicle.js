@@ -103,6 +103,8 @@ export function summonVehicle(game) {
   if(vehicleRequiresService(game,v)&&(v.hp<=0||vehicleService(game,v.index)?.phase))return false;
   if (v.hp <= 0) v.hp = v.maxHp = vehicleMaxHp(game.loadout || game.progress);
   v.active = true;
+  // 上车当帧即启用车轮占地，下车由同一对象的active状态恢复。
+  game.player.fenceVehicle=v;
   game.player.flying = !!vehicleModel(v.index).flying;
   game.player.amphibious = !!vehicleModel(v.index).amphibious;
   game.player.treePass = !!vehicleModel(v.index).treePass;

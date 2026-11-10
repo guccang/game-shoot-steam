@@ -30,7 +30,10 @@ export const SETTLEMENT_FENCES=buildSettlementFences(SETTLEMENTS);
 // 静态围栏按空间分桶；扩边覆盖整段栏杆，环形地图边缘也使用同一精确碰撞。
 const fenceGrid=new SpatialGrid(SETTLEMENT_FENCES.filter(f=>f.type==='settlement-fence').map(f=>({...f,radius:Math.max(f.length/2,5)})));
 // 脚底圆只查询附近栏杆，避免每个寻路采样点遍历整座营地；门洞保持原宽度。
-export function settlementBlocked(x,y,radius=12){return fenceGrid.query(x,y,x,y,radius).some(f=>{const p=nearest({x,y},f);return f.horizontal?Math.abs(p.x-f.x)<f.length/2+radius&&Math.abs(p.y-f.y)<radius+5:Math.abs(p.y-f.y)<f.length/2+radius&&Math.abs(p.x-f.x)<radius+5;});}
+export function settlementBlocked(x,y,radius=12,footprint={x:radius,y:radius},origin=null){return fenceGrid.query(x,y,x,y,Math.max(footprint.x,footprint.y)).some(f=>{const p=nearest({x,y},f),old=origin&&nearest(origin,f),axis=f.horizontal?'y':'x',offset=p[axis]-f[axis],before=old&&old[axis]-f[axis];
+ // 旧存档已贴入车轮时允许向原侧退开，不能借恢复逻辑穿越围栏。
+ if(old&&Math.abs(before)<footprint[axis]+5&&offset*before>0&&Math.abs(offset)>Math.abs(before))return false;
+ return f.horizontal?Math.abs(p.x-f.x)<f.length/2+footprint.x&&Math.abs(p.y-f.y)<footprint.y+5:Math.abs(p.y-f.y)<f.length/2+footprint.y&&Math.abs(p.x-f.x)<footprint.x+5;});}
 // 树冠避让也使用空间索引，新增聚落不让每棵树遍历全部围栏。
 const clearingGrid=new SpatialGrid(SETTLEMENT_FENCES.map(f=>({...f,radius:f.length/2+100})));
 // 树冠避让边界与门口。

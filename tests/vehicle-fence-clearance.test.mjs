@@ -1,0 +1,10 @@
+// 驾驶轮廓、门洞与步行切换使用正式移动器，覆盖斜向及高速接近。
+import test from 'node:test';import assert from 'node:assert/strict';import {freshProgress} from '../src/progression/progress.js';import {campBoundary,campBoundaryBlocked} from '../src/world/camp-boundary.js';import {vehicleFenceFootprint} from '../src/config/vehicle-fence-footprint.js';import {moveBody} from '../src/physics/motion.js';import {WORLD} from '../src/world/coordinates.js';
+// 北侧左端为无建筑、无水域的直栏，避免其他场景实体干扰断言。
+function fixture(){const p=freshProgress(),boundary=campBoundary(p),gate=boundary.gates.find(g=>g.side==='top');return {p,boundary,gate};}
+test('松果战车与重型车贴栏时完整轮廓留在栏内，宽门仍能通过',()=>{const {p,gate}=fixture();for(const index of [0,1,6]){const v={active:true,index},f=vehicleFenceFootprint(v),body={x:gate.x-260,y:gate.y+100,mapId:'forest',campProgress:p,fenceVehicle:v};moveBody(body,0,-240,WORLD,12,[]);assert.ok(body.y>=gate.y+f.y+5);assert.ok(body.y<gate.y+f.y+13);const before=body.x;moveBody(body,40,-20,WORLD,12,[]);assert.ok(body.x>before,'贴栏可横移');body.x=gate.x;body.y=gate.y+100;moveBody(body,0,-200,WORLD,12,[]);assert.ok(body.y<gate.y,'门洞不可被放大半径封死');}});
+test('左右栅栏按车轮宽度拦截，步行与下车仍为原半径',()=>{const {p,boundary}=fixture(),f=boundary.objects.find(o=>o.type==='settlement-fence'&&!o.horizontal&&o.x===-210&&o.y> -100&&o.y<0);assert.ok(f);const v={active:true,index:0},body={x:f.x+110,y:f.y,mapId:'forest',campProgress:p,fenceVehicle:v};moveBody(body,-220,0,WORLD,12,[]);assert.ok(body.x>=f.x+51);v.active=false;moveBody(body,-100,0,WORLD,12,[]);assert.ok(body.x<f.x+30);assert.equal(campBoundaryBlocked(gateSafeX(p),-500,12,p),false);});
+// 返回营地中心横坐标用于远离栏杆的基础检查。
+function gateSafeX(p){return campBoundary(p).gates.find(g=>g.side==='top').x;}
+
+test('旧档轮子已经压栏时可向营内退出，不能继续穿栏',()=>{const {p,boundary}=fixture(),f=boundary.objects.find(o=>o.type==='settlement-fence'&&!o.horizontal&&o.x===-210&&o.y> -100&&o.y<0),body={x:f.x+25,y:f.y,mapId:'forest',campProgress:p,fenceVehicle:{active:true,index:0}};moveBody(body,-80,0,WORLD,12,[]);assert.equal(body.x,f.x+25);moveBody(body,100,0,WORLD,12,[]);assert.ok(body.x>f.x+100);});

@@ -28,4 +28,7 @@ export function campBoundary(progress,layout=progress?.campLayout){const owned=c
  const grid=new SpatialGrid(objects.filter(o=>o.type==='settlement-fence').map(o=>({...o,radius:o.length/2+5}))),result={objects,gates,lines,regions,grid,key};if(cache.size>=64)cache.delete(cache.keys().next().value);cache.set(key,result);return result;
 }
 // 实际围栏采用同一有限线段，牵引车与拖挂均按各自半径检查。
-export function campBoundaryBlocked(x,y,radius,progress){return campBoundary(progress).grid.query(x,y,x,y,radius).some(f=>{const p=nearest({x,y},f);return f.horizontal?Math.abs(p.x-f.x)<f.length/2+radius&&Math.abs(p.y-f.y)<radius+5:Math.abs(p.y-f.y)<f.length/2+radius&&Math.abs(p.x-f.x)<radius+5;});}
+export function campBoundaryBlocked(x,y,radius,progress,footprint={x:radius,y:radius},origin=null){return campBoundary(progress).grid.query(x,y,x,y,Math.max(footprint.x,footprint.y)).some(f=>{const p=nearest({x,y},f),old=origin&&nearest(origin,f),axis=f.horizontal?'y':'x',offset=p[axis]-f[axis],before=old&&old[axis]-f[axis];
+ // 旧存档已贴入车轮时允许向原侧退开，不能借恢复逻辑穿越围栏。
+ if(old&&Math.abs(before)<footprint[axis]+5&&offset*before>0&&Math.abs(offset)>Math.abs(before))return false;
+ return f.horizontal?Math.abs(p.x-f.x)<f.length/2+footprint.x&&Math.abs(p.y-f.y)<footprint.y+5:Math.abs(p.y-f.y)<f.length/2+footprint.y&&Math.abs(p.x-f.x)<footprint.x+5;});}
