@@ -37,7 +37,7 @@ function cellProps(col,row){
     const px=x+dx*mirror*scale, py=y+dy*scale;
     if(px<ORIGINAL_WORLD.width&&py<ORIGINAL_WORLD.height)continue;
     if(pathDistance(px,py)<60||isWaterScenery(px,py)||monsterCampClearing(px,py)||inCampComposition(px,py)||coversScenery(px,py))continue;
-    props.push({type:'scenery',kind,x:px,y:py,size:size*scale});
+    props.push({type:'scenery',groundScenery:true,kind,x:px,y:py,size:size*scale});
   }
   if(cells.size>=256)cells.delete(cells.keys().next().value);
   cells.set(key,props);

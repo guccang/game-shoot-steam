@@ -506,7 +506,8 @@ export class Renderer {
         depthOffset:parkingGaragePose(g.player,g.vehicle)?parkingGaragePose(g.player,g.vehicle).y+3-g.player.y:0 },
     ].filter(item=>campObjectVisible(camp,item)&&campLayoutObjectVisible(camp,item)).filter(item=>!source.balconyScene||balconyObjectVisible(view,item)).sort((a, b) =>
       // 空中单位及其预警在树冠上方，避免飞行近战从完全遮挡的位置突然命中。
-      Number(!!a.flying) - Number(!!b.flying) || (source.balconyScene?(balconyProject(view,a).y-balconyProject(view,b).y)/zoom: a.y-b.y)+(a.depthOffset||0)-(b.depthOffset||0),
+      // 可穿行低景先于所有实体，避免倒木与花草穿到角色和车身上。
+      Number(!!b.groundScenery)-Number(!!a.groundScenery) || Number(!!a.flying) - Number(!!b.flying) || (source.balconyScene?(balconyProject(view,a).y-balconyProject(view,b).y)/zoom: a.y-b.y)+(a.depthOffset||0)-(b.depthOffset||0),
     );
     if(source.balconyScene)this.balconyObjects=objects.map(item=>({type:item.type,kind:item.kind,workshop:item.workshop,x:item.x,y:item.y}));
     const windowGroups=new Map(objects.map(item=>[item,buildingWindowLights(item,camp)]));
