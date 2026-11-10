@@ -491,3 +491,46 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #industry-dialog :is(input,select), .inventory-transfer-field :is(input,select) { width: 100%; min-height: 44px; box-sizing: border-box; padding: 8px; font: inherit; color: var(--ui-forest); background: var(--ui-paper); border: 2px solid var(--ui-forest); border-radius: 8px; }
 #industry-dialog .ui-inset + .ui-inset { margin-top: 12px; }
 #industry-dialog .production-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* 浅色手绘纸页：共用底板结构，只改变表面色与轻描边，不改变触控尺寸。 */
+dialog.ui-panel--sketch {
+  --ui-forest: #697653;
+  --ui-deep: #a5aa80;
+  --ui-paper: #fff9e9;
+  --ui-sage: #edf0d9;
+  --ui-line: #b2b88c;
+  --ui-text: #394c40;
+  --ui-muted: #647052;
+  --ui-gold: #dfad58;
+  border-width: 2px;
+  border-radius: 25px 21px 24px 18px;
+  box-shadow: inset 0 0 0 4px #f4e8bd, 0 4px 0 #9ba57c, 0 12px 32px #253b302b;
+}
+.ui-panel--sketch > .ui-panel__header {
+  background: #f5d98f;
+  color: var(--ui-text);
+  border-bottom: 2px dashed #c6a365;
+}
+.ui-panel--sketch > .ui-panel__header :is(h2,p,small) { color: var(--ui-text); }
+.ui-panel--sketch > .ui-panel__footer { background: #f2eacb; border-top: 1px dashed #b3b78b; }
+.ui-panel--sketch :is(.ui-button,.ui-close) {
+  color: var(--ui-text);
+  border-color: #84916a;
+  border-radius: 13px 16px 12px 15px;
+  box-shadow: 0 2px 0 #b7bd94;
+}
+.ui-panel--sketch .ui-button--primary { background: #dce9b7; color: var(--ui-text); border-color: #81915f; }
+.ui-panel--sketch :is(.ui-button,.ui-close):focus-visible { outline: 3px solid #8a6331; outline-offset: 2px; }
+.ui-panel--sketch .ui-button:disabled { background: #ebe9dc; color: #797c6e; box-shadow: none; }
+/* 手机功能卡使用低饱和纸片色，深绿仅作为文字和图标描线。 */
+#phone-dialog .keepsake-apps { gap: 10px; }
+#phone-dialog .keepsake-apps .ui-button { min-height: 48px; background: #f9e5c2; }
+#phone-dialog .keepsake-apps .ui-button:nth-child(4n+2) { background: #e6edd1; }
+#phone-dialog .keepsake-apps .ui-button:nth-child(4n+3) { background: #f5ded0; }
+#phone-dialog .keepsake-apps .ui-button:nth-child(4n) { background: #dcebea; }
+#phone-dialog #phone-wallet .resource-pill { background: #fff0c6; border-color: #c6b77f; }
+#phone-dialog #phone-wallet .resource-pill:nth-child(2) { background: #edf0d7; border-color: #b5bd92; }
+#phone-dialog #phone-environment button { background: #f3efd9; color: var(--ui-text); border: 1px solid #aab58b; box-shadow: 0 2px 0 #c1c8a4; border-radius: 14px 12px 16px 13px; }
+#phone-dialog .keepsake-phone-heading { padding: 10px 12px; background: #f7edcf; border-radius: 16px 12px 18px 13px; }
+#phone-dialog .keepsake-phone > h3 { padding-left: 10px; border-left: 4px solid #dfb56b; }
+#phone-dialog .ui-inset { background: #f0efda; border-color: #c4c59d; }
