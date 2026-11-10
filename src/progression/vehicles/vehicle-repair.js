@@ -1,4 +1,4 @@
-import {repairParkingSpot} from '../../config/repair-parking.js';
+import {repairParkingSpot,repairLayoutSite} from '../../config/repair-parking.js';
 // 自有车耐久与救援订单独立持久化，非法记录不创造车辆或免费完成维修。
 import {COLLECTED_VEHICLES} from '../../config/vehicles.js';
 import {REPAIR_BAY,REPAIR_LAYOUT_VERSION,VEHICLE_REPAIR as C} from '../../config/vehicle-repair.js';
@@ -15,7 +15,7 @@ export function normalizeVehicleService(raw,progress){
   const route=Array.isArray(r.route)?r.route.slice(0,4096).map(p=>point(p,REPAIR_BAY)):[];
   return {hp:phase==='wrecked'?0:hp,phase,...(['repairing','ready'].includes(phase)?{repairSpot:spot?.id||null}:{}),mapId:r.mapId==='jiuzhaigou'?'jiuzhaigou':'forest',
    layoutVersion:r.layoutVersion===REPAIR_LAYOUT_VERSION?REPAIR_LAYOUT_VERSION:0,
-   position:['repairing','ready'].includes(phase)?{x:(spot||REPAIR_BAY).x,y:(spot||REPAIR_BAY).y}:point(r.position,REPAIR_BAY),truck:point(r.truck,REPAIR_BAY),route,
+   position:['repairing','ready'].includes(phase)?repairLayoutSite(progress,{phase,repairSpot:spot?.id}):point(r.position,REPAIR_BAY),truck:point(r.truck,REPAIR_BAY),route,
    step:Math.max(0,Math.min(route.length-1,Math.floor(r.step)||0)),timer:Math.max(0,Math.min(C.repairSeconds,Number(r.timer)||0)),wheel:Number.isFinite(r.wheel)?r.wheel%10000:0,angle:Number.isFinite(r.angle)?r.angle:0};
  });
 }
