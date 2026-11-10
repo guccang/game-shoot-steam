@@ -1,3 +1,5 @@
+import {updateSpecialAmmo} from '../combat/vehicle-special-ammo.js';
+import {updateVehicleFlares} from '../world/vehicle-flares.js';
 import {surfaceWeapon} from '../world/surface-vision.js';
 import {activateCampLayout} from '../world/camp-layout-bindings.js';
 import {updateIndustry} from './industry/industry.js';
@@ -227,7 +229,7 @@ export class Game {
     // 结算续接资格仅属于当前现场，重置后旧收据失效。
     this.campDefense=null;
     this.warehouseAutoWood=null;this.warehouseAutoHarvest=null;
-    this.ammoWarning=null;
+    this.ammoWarning=null;this.specialAmmoZones=[];
     this.fishing=null;this.campSleep=null;this.tradeRest=null;this.tradeDepartures=[];this.tradeViewport=null;this.outdoorNotice='';this.loadWarning=null;this.woodPickupWarning=null;this.vehicleBoarding=null;this.vehicleBoardingBlocked=null;this.parking=null;this.cottage=null;this.mineWarehouseIntent=false;this.mineEntranceLatch=null;this.mineEntranceWait=0;this.mineEntranceKey=null;this.cottageEntry=null;this.cottageEntryKind=null;this.cottageDoorLatch=false;this.parkingVisitors=[];this.parkingVisitorHistory=[];this.parkingVisitTimer=8;
     resetMainlineScene(this);
     this.fireRescue=null;this.fireClock=GAMEPLAY_VALUES.fire.initialDispatchDelay;
@@ -1034,6 +1036,7 @@ export class Game {
       }
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
+    updateVehicleFlares(this,dt);updateSpecialAmmo(this,dt);
     updateVehicle(this, dt, !!this.parking?.idle);
     // 进入清缴范围即可检查；自由探索只认真实敌人，树木采集不算开战。
     const gunTarget=this.vehicle.active?this.vehicle.targetId:null;

@@ -1,3 +1,4 @@
+import {ammoSoldAt} from '../../config/vehicle-special-ammo.js';
 // 地区营地的任务、补给、采购、维修和招募统一先保存候选存档，再更新现场。
 import {REGIONAL_CAMPS,regionalParcel} from '../../config/regional-camps.js';
 import {regionalCampAvailable,regionalCampHere} from './regional-camp-access.js';
@@ -35,7 +36,7 @@ export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target=
   if(next.treasure.clues.includes(c.clue))return {ok:false,message:'这条线索已经记在手机寻宝页。'};
   next.treasure.clues.push(c.clue);message='线索已记入手机「寻宝」页，可随时查看地点与描述。';
  }else if(action==='ammo'){
-  const rule=AMMO_TYPES[key];if(!rule||!['hand','vehicle'].includes(target)||!rule.targets.includes(target))return {ok:false,message:'请选择适合背包或载具的弹药。'};
+  const rule=AMMO_TYPES[key];if(!rule||!ammoSoldAt(key,id)||!['hand','vehicle'].includes(target)||!rule.targets.includes(target))return {ok:false,message:'请选择适合背包或载具的弹药。'};
   if(target==='vehicle'&&!nearby)return {ok:false,message:'请把载具开到身边240单位内再补给。'};
   const stock=target==='hand'?next.supplies.hand:next.supplies.vehicles[hull];if(stock[key]+rule.pack>100000)return {ok:false,message:'弹药库存已满。'};
   stock[key]+=rule.pack;cost=rule.coins;

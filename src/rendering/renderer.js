@@ -1,3 +1,4 @@
+import {drawSpecialAmmoZones} from './vehicle-special-ammo.js';
 import {TOWN_COURTS,TOWN_LAYOUT} from '../config/town-layout.js';
 import {campExpansionPoint} from '../config/camp-land.js';
 import {campFestivalObjects,drawCampPlaza,drawFestivalLion,drawFestivalCouplets,drawFestivalFireworks} from './camp-festivals.js';
@@ -524,6 +525,7 @@ export class Renderer {
     drawStormGround(c, view, objects, light.storm, this.storm, this.reduced.matches, this.stormStrike);
     profiler?.end('render.lighting');
     profiler?.start('render.gravity');
+    drawSpecialAmmoZones(c,source,this.reduced.matches);
     drawGravityFields(c,source,this.reduced.matches);
     profiler?.end('render.gravity');
     profiler?.start('render.entities');

@@ -92,6 +92,7 @@ function flame(c, time, phase, reduced, rain) {
 export function drawLightFixture(c, light, time, environment, reduced = false) {
   c.save();
   c.translate(light.x, light.y);
+  if(light.flare){glow(c,0,-20,55,light.power);c.strokeStyle='#ffe5a1';c.lineWidth=2;c.beginPath();c.moveTo(-9,-25);c.quadraticCurveTo(0,-43,9,-25);c.lineTo(0,-20);c.closePath();c.stroke();oval(c,0,-20,4,5,'#fff6cf');c.restore();return;}
   if(light.decorLamp){oval(c,4,5,17,6,'#304b3530');drawDecorLamp(c,light.decorLamp,light.power);glow(c,0,-90,28,light.power*.95);c.restore();return;}
   const color = (hex) => nightColor(hex, environment.night * 0.75);
   const outline = color(style.lighting.drawLightFixtureColor);
