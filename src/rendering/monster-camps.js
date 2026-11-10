@@ -1,3 +1,4 @@
+import {monsterCampRetired} from '../world/camp-retired-monsters.js';
 // 开放怪物营地正式绘制器：有限平涂、脚底排序与独立火焰，不生成常驻位图缓存。
 import {MONSTER_CAMPS,MONSTER_CAMP_RULES,campSignSite} from '../config/monster-camps.js';
 import {monsterCampsAvailable,monsterCampObjects,monsterCampLevel} from '../core/battle/monster-camps.js';
@@ -12,7 +13,7 @@ export function campRenderObjects(game,view){return monsterCampObjects(game,view
 // 地面只保留自然草土铺底，边缘由居民头顶预警表达，不绘制任何警戒圆圈。
 export function drawMonsterCampGround(c,game,night,view){
  if(!monsterCampsAvailable(game))return;c.save();
- for(const camp of visibleBodies(MONSTER_CAMPS.filter(c=>c.mapId===game.mapId),view,400)){
+ for(const camp of visibleBodies(MONSTER_CAMPS.filter(c=>c.mapId===game.mapId&&!monsterCampRetired(game.progress,c)),view,400)){
   oval(c,camp.x,camp.y+5,115*MONSTER_CAMP_RULES.scale,82*MONSTER_CAMP_RULES.scale,night>.5?'#727b59':'#bfca8e');
  }
  c.restore();

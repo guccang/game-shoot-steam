@@ -1,3 +1,4 @@
+import {monsterCampRetired} from '../../world/camp-retired-monsters.js';
 // 主动交谈事务：现场资格、随机不重复、交情与线索保存一次完成；绝不接取任务或发放装备。
 import {NPC_DIALOGUES,SHOP_DIALOGUE_ALIASES,NPC_CHAT_COOLDOWN_MS,NPC_CHAT_FAREWELL} from '../../config/npc-dialogue.js';
 import {TREASURE_SITES} from '../../config/treasure.js';
@@ -27,7 +28,7 @@ export function canConverse(game,source){
  if(kind==='resident')return livingForest(game)&&livingResidents(game).some(r=>r.id===id&&worldDistance(game.player,r)<=110);
  if(!monsterCampsAvailable(game))return false;
  const camp=MONSTER_CAMPS.find(c=>c.id===(kind==='wild'?CAMP_CHARACTERS.find(n=>n.id===id)?.camp:id));
- return !!camp&&camp.mapId===game.mapId&&(kind==='wild'?[campCharacterSite(camp)]:[camp,campSignSite(camp)]).some(site=>worldDistance(game.player,site)<=MONSTER_CAMP_RULES.interact);
+ return !!camp&&!monsterCampRetired(game.progress,camp)&&camp.mapId===game.mapId&&(kind==='wild'?[campCharacterSite(camp)]:[camp,campSignSite(camp)]).some(site=>worldDistance(game.player,site)<=MONSTER_CAMP_RULES.interact);
 }
 // 只抽本轮未读且已解锁的内容；读完当前层再补较早层遗漏，不用旧对白填满次数。
 export function chooseNpcLine(npc,record,random=Math.random){

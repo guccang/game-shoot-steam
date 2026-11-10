@@ -52,7 +52,7 @@ function windowFrame(c,x,y,w,h,night){
  drawInsetWindow(c,x,y,w,h,night);
 }
 // 石基和门槛明确房屋占地，通行口放在底座中央并与一秒进屋点对齐。
-export function drawBuildingArchitecture(c,kind,winter=false,night=0,extraRows=0){
+export function drawBuildingArchitecture(c,kind,winter=false,night=0,extraRows=0,showLabel=true){
  if(kind==='warehouse-depot'){drawStorageDepot(c,winter,night);return;}
  const d=DESIGNS[kind]||DESIGNS.cottage,w=d.w,lift=kind==='cottage'?extraRows*32:0,h=d.h+lift,left=-w/2,right=w/2,wall=-d.h*.63-lift;
  c.save();oval(c,7,6,w*.51,11,'#29463826');oval(c,1,4,w*.44,5,'#29463829');
@@ -113,7 +113,7 @@ export function drawBuildingArchitecture(c,kind,winter=false,night=0,extraRows=0
  }else if(kind==='kitchen'){
   box(c,-30,wall+6,60,16,3,'#c49569',EDGE,1.4);oval(c,0,wall+14,10,4,'#e7dcb5',EDGE,1.3);
  }
- drawWorldSign(c,d.name,0,kind==='relay'?-54:wall+lift+15);
+ if(showLabel)drawWorldSign(c,d.name,0,kind==='relay'?-54:wall+lift+15);
  if(winter)drawRoofSnow(c,kind==='weapons'||kind==='legendary'?[[left-5,wall],[left+17,-h+10],[right-16,-h+24],[right+5,wall+3]]:[[left-8,wall-1],[-10,-h],[right-3,-h+25],[right+8,wall+5]]);
  c.restore();
 }

@@ -1,3 +1,4 @@
+import {monsterCampRetired} from '../../world/camp-retired-monsters.js';
 import {REGIONAL_CAMPS,regionalNpc,regionalParcel} from '../../config/regional-camps.js';
 import {NATURAL_TERRAIN} from '../../world/natural-terrain.js';
 import {landingPoint} from '../../combat/vehicle-landing.js';
@@ -108,7 +109,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     const clearing=livingForest(game)&&game.progress.living.patrolActive?clearingSite(game.progress):null;
     if(clearing){const p=canonical(clearing),x=p.x*scaleX,y=p.y*scaleY;c.beginPath();c.arc(x,y,13,0,Math.PI*2);c.fillStyle='#f1d678';c.fill();c.strokeStyle='#315747';c.lineWidth=2;c.stroke();c.fillStyle='#315747';c.textAlign='center';c.font=canvasFont(13);c.fillText('剿',x,y+4);}
     // 森林总览用小圆点标营地，目录按距玩家的直线距离排列。
-    const camps=monsterCampsAvailable(game)?MONSTER_CAMPS.filter(camp=>camp.mapId===game.mapId)
+    const camps=monsterCampsAvailable(game)?MONSTER_CAMPS.filter(camp=>camp.mapId===game.mapId&&!monsterCampRetired(game.progress,camp))
       .map(camp=>({camp,distance:worldDistance(game.player,camp)})).sort((a,b)=>a.distance-b.distance):[];
     for(const {camp} of camps){
       const p=canonical(camp),forest=game.mapId==='forest',x=p.x*scaleX,y=p.y*scaleY;
@@ -169,7 +170,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
   scope.on($('region-legend'),'click',event=>{const id=event.target.closest('[data-earth-landform]')?.dataset.earthLandform,f=NATURAL_TERRAIN.earth.find(f=>f.id===id);if(!f)return;const point=landingPoint({...game.player,x:f.x,y:f.y+f.ry+100,mapId:'forest'},game.trees,{nearbyOnly:true});if(!point)return;requestWorldNavigation(game,{...point,id:f.id,mapId:'forest',name:f.name+'观景处',kind:'earth-viewpoint'},'前往'+f.name+'观景处',{direct:true,arrivalRadius:35});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
   // 选中营地只设置圈外导航，关闭地图后由玩家实际行走。
   scope.on($('region-legend'),'click',event=>{if(!event.target.closest('[data-legendary-route]'))return;if(!travelLegendary(game).ok)return;for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
-  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-monster-camp]'),c=MONSTER_CAMPS.find(c=>c.id===b?.dataset.monsterCamp);if(c&&c.mapId===game.mapId){requestWorldNavigation(game,campVisitorSite(c),'前往'+c.name+'圈外',{direct:true});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();}});
+  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-monster-camp]'),c=MONSTER_CAMPS.find(c=>c.id===b?.dataset.monsterCamp);if(c&&c.mapId===game.mapId&&!monsterCampRetired(game.progress,c)){requestWorldNavigation(game,campVisitorSite(c),'前往'+c.name+'圈外',{direct:true});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();}});
   for (const id of ['close-map', 'map-done'])
     scope.on($(id), 'click', () => dialogs.close('map-dialog'));
   // 异步预取当前地图，完成后刷新打开的面板；不会逐帧绘制底图。

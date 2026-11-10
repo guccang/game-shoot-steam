@@ -1,3 +1,4 @@
+import {monsterCampRetired,retiredMonsterCampIds} from '../../world/camp-retired-monsters.js';
 import {activeGardeningLesson} from '../../progression/story/mainline-gardening.js';
 import {currentMainlineTask} from '../../config/mainline.js';
 import {gameSource} from '../game-source.js';
@@ -23,13 +24,13 @@ export function monsterCampsAvailable(game){return ['forest','jiuzhaigou'].inclu
 // 等级从正式出生属性取值，地图目录与实战不维护第二套数值。
 export function monsterCampLevel(camp){return enemyIdentity(camp.x,camp.y,0,camp.mapId).level;}
 // 警戒边界为真实世界圆，跨世界接缝也使用最近距离。
-export function insideMonsterCamp(game,camp){return !!camp&&monsterCampsAvailable(game)&&game.mapId===camp.mapId&&worldDistance(game.player,camp)<=RULES.radius;}
+export function insideMonsterCamp(game,camp){return !!camp&&!monsterCampRetired(game.progress,camp)&&monsterCampsAvailable(game)&&game.mapId===camp.mapId&&worldDistance(game.player,camp)<=RULES.radius;}
 // 五个名额分成两只和三只，保留生活小组之间的通路。
 function home(camp,slot){const offsets=[[-65,-30],[-95,10],[55,-25],[90,12],[55,62]];return {x:camp.x+offsets[slot][0]*RULES.scale,y:camp.y+offsets[slot][1]*RULES.scale};}
 // 追击只在完整离开实际视口后解除，留出身体和头顶预警的余量。
 export function campActorVisible(game,actor){const v=arrivalView(game),p=nearest(actor,game.player),x=p.x-game.player.x,y=p.y-game.player.y;return x>=v.left-48&&x<=v.right+48&&y>=v.top-24&&y<=v.bottom+campResidentHead(actor)+12;}
 // 命中资格跟随真实追击状态，退到营地外仍可战斗；生活和预警居民不参与命中。
-export function canHitCampActor(game,actor){return monsterCampsAvailable(game)&&actor.mapId===game.mapId&&actor.campState==='chasing'&&game.enemies.includes(actor);}
+export function canHitCampActor(game,actor){return !monsterCampRetired(game.progress,actor.monsterCamp)&&monsterCampsAvailable(game)&&actor.mapId===game.mapId&&actor.campState==='chasing'&&game.enemies.includes(actor);}
 // 状态切换重置攻击前摇与旧冲量，不重置脚底、步态时钟或剩余血量。
 function setCampState(actor,state){if(actor.campState===state)return;actor.campState=state;actor.assault=createEnemyAttack();actor.pushX=actor.pushY=0;actor.knockTime=0;actor.campUnseen=0;}
 // 事务保存失败保留原进度，未提交死亡稍后重试，避免重复掉落。
@@ -37,7 +38,7 @@ function commit(game,change){const next=validateProgress(structuredClone(game.pr
 // 只处理已登记的本轮实际死亡；清空与固定种子在同一事务提交。
 export function settleMonsterCampKill(game,enemy){
  const camp=MONSTER_CAMPS.find(c=>c.id===enemy.monsterCamp),run=session(game).runs.get(camp?.id);
- if(!camp||!run||enemy.hp>0||!run.actors.includes(enemy))return false;
+ if(!camp||monsterCampRetired(game.progress,camp)||!run||enemy.hp>0||!run.actors.includes(enemy))return false;
  const before=game.progress.monsterCamps.camps[camp.id],bit=1<<enemy.campSlot;
  if(before.mask&bit)return true;
  const complete=(before.mask|bit)===31,rewards=[];
@@ -49,13 +50,13 @@ export function settleMonsterCampKill(game,enemy){
  return ok;
 }
 // 外围观察时暂停随机遭遇，避免偷听被身后随机刷怪打断；原有敌人仍需玩家处理。
-export function observingMonsterCamp(game){return monsterCampsAvailable(game)&&MONSTER_CAMPS.some(c=>c.mapId===game.mapId&&worldDistance(c,game.player)<RULES.observe);}
+export function observingMonsterCamp(game){return monsterCampsAvailable(game)&&MONSTER_CAMPS.some(c=>!monsterCampRetired(game.progress,c)&&c.mapId===game.mapId&&worldDistance(c,game.player)<RULES.observe);}
 // 居民依次经历生活、警觉、追击和返营；视口外失去目标后沿正式地形走回原位。
 export function updateMonsterCamps(game,dt){
- const s=session(game);if(game.state!=='playing')return;
+ const s=session(game),retired=retiredMonsterCampIds(game.progress);game.enemies=game.enemies.filter(e=>!retired.has(e.monsterCamp));for(const id of retired)s.runs.delete(id);if(game.state!=='playing')return;
  if(!monsterCampsAvailable(game)){game.enemies=game.enemies.filter(e=>!e.monsterCamp);for(const run of s.runs.values()){run.active=false;for(const actor of run.actors)setCampState(actor,'returning');}return;}
  s.retry=Math.max(0,s.retry-dt);
- for(const camp of MONSTER_CAMPS){
+ for(const camp of MONSTER_CAMPS){if(retired.has(camp.id))continue;
   const record=game.progress.monsterCamps.camps[camp.id],distance=camp.mapId===game.mapId?worldDistance(camp,game.player):Infinity;
   if(record.cooldown>0)record.cooldown=Math.max(0,record.cooldown-dt);
   if(record.mask===31&&record.cooldown<=0&&distance>RULES.observe){record.mask=0;s.runs.delete(camp.id);}
@@ -106,8 +107,8 @@ export function monsterCampObjects(game,view){
  const s=session(game),items=[];
  const sites=view?campCandidates(game.mapId,view.x,view.y,700,view.w,view.h):MONSTER_CAMPS;
  // 返营中的居民可能已离开营地视口，始终按居民自身的位置绘制。
- for(const run of s.runs.values())for(const actor of run.actors)if(actor.mapId===game.mapId&&actor.hp>0&&actor.campState!=='chasing')items.push({...actor,type:'monster-camp-resident'});
- for(const camp of sites){if(camp.mapId!==game.mapId)continue;items.push({...camp,type:'monster-camp-fire'});
+ for(const run of s.runs.values())for(const actor of run.actors)if(!monsterCampRetired(game.progress,actor.monsterCamp)&&actor.mapId===game.mapId&&actor.hp>0&&actor.campState!=='chasing')items.push({...actor,type:'monster-camp-resident'});
+ for(const camp of sites){if(camp.mapId!==game.mapId||monsterCampRetired(game.progress,camp))continue;items.push({...camp,type:'monster-camp-fire'});
   const npc=CAMP_CHARACTERS.find(n=>n.camp===camp.id);if(npc)items.push({...enemyIdentity(camp.x,camp.y,0,camp.mapId),...campCharacterSite(camp),type:'monster-camp-npc',campNpc:true,kind:'dumpling',name:npc.name,npc:npc.id,phase:1,hp:1,maxHp:1});
   if(CAMP_CHARACTERS.some(n=>n.destination===camp.id&&game.progress.monsterCamps.clues.includes(n.id)))items.push({...campCacheSite(camp),type:'monster-camp-cache'});
  }return items;
@@ -115,7 +116,7 @@ export function monsterCampObjects(game,view){
 // 同一轮闲聊先抛话再接话，按次数穿插亲戚和邻营传闻。
 export function monsterCampChatter(game){
  if(!monsterCampsAvailable(game))return null;
- const s=session(game),camp=MONSTER_CAMPS.find(c=>c.mapId===game.mapId&&worldDistance(c,game.player)<RULES.observe);if(!camp)return null;
+ const s=session(game),camp=MONSTER_CAMPS.find(c=>!monsterCampRetired(game.progress,c)&&c.mapId===game.mapId&&worldDistance(c,game.player)<RULES.observe);if(!camp)return null;
  const run=s.runs.get(camp.id),alive=run?.actors.filter(e=>e.hp>0);if(!alive?.length)return null;
  if(run.active||alive.some(e=>e.campState==='alert'))return null;
  const beat=Math.floor((game.time||0)/5),record=game.progress.monsterCamps.camps[camp.id],other=MONSTER_CAMPS.filter(c=>c.id!==camp.id).sort((a,b)=>game.progress.monsterCamps.camps[b.id].clears-game.progress.monsterCamps.camps[a.id].clears)[0];
@@ -129,14 +130,14 @@ export function monsterCampChatter(game){
 // 交谈必须到具名人物身旁；线索只领一次，后续回访仍有回应。
 export function talkCampCharacter(game,id){
  const npc=CAMP_CHARACTERS.find(n=>n.id===id),camp=MONSTER_CAMPS.find(c=>c.id===npc?.camp);
- if(!npc||!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state)||game.mapId!==camp.mapId||worldDistance(game.player,campCharacterSite(camp))>RULES.interact)return {ok:false,message:'请到营地里的具名居民身旁交谈。'};
+ if(!npc||monsterCampRetired(game.progress,camp)||!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state)||game.mapId!==camp.mapId||worldDistance(game.player,campCharacterSite(camp))>RULES.interact)return {ok:false,message:'请到营地里的具名居民身旁交谈。'};
  if(!game.progress.monsterCamps.clues.includes(id)&&!commit(game,p=>p.monsterCamps.clues.push(id)))return {ok:false,message:'线索保存失败，请重试。'};
  return {ok:true,message:game.progress.monsterCamps.items.includes(id)?npc.reply:npc.clue};
 }
 // 冷灰堆要求已听线索、正确时段与现场距离，特殊物品及奖励永不重复。
 export function inspectCampCache(game,id){
  const npc=CAMP_CHARACTERS.find(n=>n.id===id),camp=MONSTER_CAMPS.find(c=>c.id===npc?.destination),p=game.progress.monsterCamps;
- if(!npc||!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state)||game.mapId!==camp.mapId||!p.clues.includes(id)||worldDistance(game.player,campCacheSite(camp))>RULES.interact)return {ok:false,message:'先听取线索，再走到对应营地圈外的冷灰堆。'};
+ if(!npc||monsterCampRetired(game.progress,camp)||!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state)||game.mapId!==camp.mapId||!p.clues.includes(id)||worldDistance(game.player,campCacheSite(camp))>RULES.interact)return {ok:false,message:'先听取线索，再走到对应营地圈外的冷灰堆。'};
  if(p.items.includes(id))return {ok:false,message:'这里已经找过了，物品收在营地见闻里。'};
  if(calendarView(game.progress.living.calendar).id!==npc.phase)return {ok:false,message:npc.phase==='night'?'等到夜晚，灰里的东西才会露出来。':'等白天再来，才能看清灰里的刻痕。'};
  if(npc.requiresClear&&!p.camps[camp.id].clears)return {ok:false,message:'先完整清空这里一回，信封还被拿去垫锅。'};

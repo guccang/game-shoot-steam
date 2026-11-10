@@ -1,3 +1,4 @@
+import {monsterCampRetired} from '../world/camp-retired-monsters.js';
 // 营地小故事使用底部对白；现场线索和灰堆仍由核心事务核对条件。
 import {MONSTER_CAMPS,CAMP_CHARACTERS,MONSTER_CAMP_RULES,campCharacterSite,campCacheSite} from '../config/monster-camps.js';
 import {campStory} from '../config/camp-stories.js';
@@ -26,8 +27,8 @@ export function createMonsterCampPanel({game,root,renderer,dialogs,onChange,onTa
  }
  // 附近入口传入实际锚点；未指定营地时读取当前地图最近营地的故事。
  function open(id=null,siteId=null,storyOnly=false){
-  if(!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state))return;
-  camp=MONSTER_CAMPS.find(c=>c.id===id&&c.mapId===game.mapId)||MONSTER_CAMPS.filter(c=>c.mapId===game.mapId).sort((a,b)=>worldDistance(game.player,a)-worldDistance(game.player,b))[0];if(!camp)return;
+  if(!monsterCampsAvailable(game)||!['playing','paused'].includes(game.state)||id&&monsterCampRetired(game.progress,id))return;
+  camp=MONSTER_CAMPS.find(c=>c.id===id&&c.mapId===game.mapId&&!monsterCampRetired(game.progress,c))||MONSTER_CAMPS.filter(c=>c.mapId===game.mapId&&!monsterCampRetired(game.progress,c)).sort((a,b)=>worldDistance(game.player,a)-worldDistance(game.player,b))[0];if(!camp)return;
   person=CAMP_CHARACTERS.find(n=>n.camp===camp.id&&nearby(campCharacterSite(camp)))||null;
   cache=siteId===camp.id+'-cache'?CAMP_CHARACTERS.find(n=>n.destination===camp.id&&game.progress.monsterCamps.clues.includes(n.id)&&nearby(campCacheSite(camp))):null;
   if(onTalk&&!cache&&!storyOnly){const campId=camp.id;onTalk(person?'wild:'+person.id:'camp-story:'+campId,()=>open(campId,siteId,true));return;}
