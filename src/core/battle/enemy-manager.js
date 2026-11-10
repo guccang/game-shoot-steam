@@ -194,10 +194,10 @@ export function updateEnemies(game, dt, previousPlayer) {
     const victim = barricade || station || goddess || companion?.node || game.player;
     const previous = barricade || station || goddess || (companion ? companion.node.previous || companion.node : previousPlayer);
     const regional=!!enemy.dumplingVariant&&BIOME_DUMPLING_BY_ID[enemy.dumplingVariant].pattern!=='charge'&&!enemy.workshopTarget;
-    if(regional)updateBiomeDumpling(game,enemy,victim,dt);
+    const regionalDamage=regional?updateBiomeDumpling(game,enemy,victim,dt):0;
     const ranged = (regional||RANGED_ENEMIES[enemy.species]) && !enemy.workshopTarget;
     if (ranged&&!regional) updateRangedAttack(game, enemy, victim, dt);
-    const damage = ranged ? 0 : updateEnemyAttack(enemy, victim===game.player?energyShieldMeleeTarget(game,enemy):victim, victim===game.player?energyShieldMeleeTarget(game,enemy,previous):previous, dt, WORLD, dangerRange);
+    const damage = ranged ? (regionalDamage||0) : updateEnemyAttack(enemy, victim===game.player?energyShieldMeleeTarget(game,enemy):victim, victim===game.player?energyShieldMeleeTarget(game,enemy,previous):previous, dt, WORLD, dangerRange);
     if (damage) {
       if(barricade)hurtCampBarricade(game,damage);
       else if (station) game.hurtStoryTarget(damage);

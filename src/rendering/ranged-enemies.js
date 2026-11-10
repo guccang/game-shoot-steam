@@ -1,3 +1,4 @@
+import {biomeBoltHeight} from '../combat/biome-bolt-motion.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import {drawBiomeDumplingBolt} from './biome-dumplings.js';
 import { style } from '../art-styles/config.js';
@@ -164,8 +165,8 @@ export function drawEnemyBolts(c, bolts, reduced = false) {
       oval(c, end.x, end.y, b.splash, b.splash, '#f4dca016', '#c06a47', 2);
     }
     oval(c, b.x, b.y + 8, 7, 3, '#315c4328');
-    c.translate(b.x, b.y);
-    if(b.dumplingVariant)drawBiomeDumplingBolt(c,b);
+    c.translate(b.x, b.y-(b.dumplingVariant?biomeBoltHeight(b):0));
+    if(b.dumplingVariant)drawBiomeDumplingBolt(c,b,reduced);
     else if (['reed-archer', 'bramble-buggy', 'stump-bombard'].includes(b.species)) {
       c.rotate(Math.atan2(b.dy, b.dx));
       if (b.splash) {

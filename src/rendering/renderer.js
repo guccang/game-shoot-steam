@@ -415,7 +415,7 @@ export class Renderer {
     for (const entry of entrances) drawRealmEntranceGround(c, entry, light.night);
     const storyPosts=visibleBodies([...storyPostObjects(camp),...clearingPostObjects(camp)],view,150);
     for(const post of storyPosts)drawStoryPostGround(c,post);
-    const lamps = valley ? [] : visibleLights(view, time, light, this.reduced.matches,source).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
+    const lamps = visibleLights(view, time, light, this.reduced.matches,source).filter(l=>!valley||l.flare).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
     // 赛跑不显示自动攻击范围。
     if(!flight&&!source.balconyScene&&source.realm?.mode!=='race'&&!farmWorking(source)){
     // 淡淡的射程圈帮助理解自动攻击距离。
