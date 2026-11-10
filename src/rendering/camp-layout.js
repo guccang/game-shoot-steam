@@ -1,3 +1,4 @@
+import {campPathWidth} from '../config/camp-roads.js';
 import {campGateRoads} from '../world/camp-gate-roads.js';
 import {hasCampLayoutChanges} from '../config/camp-layout.js';
 import {campSurfaceRoads,campGateInnerRoads} from '../world/camp-surface-roads.js';
@@ -25,7 +26,7 @@ export function drawCampLayoutRoads(c,game,view,night,season='summer'){
  if(!moved){c.beginPath();for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference);c.rect(q.x,q.y,p.right-p.left,p.bottom-p.top);}c.clip();}
  if(finish&&(finish.material!=='earth'||finish.shape!=='plain')){drawCampRoadFinish(c,roads.paths,view,finish,night);c.restore();return;}
  c.lineCap='round';c.lineJoin='round';
- for(const [width,color,dx,dy] of [[CAMP_ROAD_WIDTH+10,'#71885c55',2,3],[CAMP_ROAD_WIDTH+4,'#e3d5a1',-1,-1],[CAMP_ROAD_WIDTH,'#d9c48d',0,0],[CAMP_ROAD_WIDTH-9,'#e8d4a1',0,0]]){c.lineWidth=width;c.strokeStyle=nightColor(color,night);c.beginPath();for(const path of roads.paths)path.forEach((p,i)=>{const q=nearest(p,reference);if(i)c.lineTo(q.x+dx,q.y+dy);else c.moveTo(q.x+dx,q.y+dy);});c.stroke();}
+ for(const [width,color,dx,dy] of [[CAMP_ROAD_WIDTH+10,'#71885c55',2,3],[CAMP_ROAD_WIDTH+4,'#e3d5a1',-1,-1],[CAMP_ROAD_WIDTH,'#d9c48d',0,0],[CAMP_ROAD_WIDTH-9,'#e8d4a1',0,0]]){c.strokeStyle=nightColor(color,night);for(const path of roads.paths){c.lineWidth=campPathWidth(path)+width-CAMP_ROAD_WIDTH;c.beginPath();path.forEach((p,i)=>{const q=nearest(p,reference);if(i)c.lineTo(q.x+dx,q.y+dy);else c.moveTo(q.x+dx,q.y+dy);});c.stroke();}}
  c.restore();
 }
 

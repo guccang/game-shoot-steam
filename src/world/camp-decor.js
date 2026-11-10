@@ -1,3 +1,4 @@
+import {campPathWidth} from '../config/camp-roads.js';
 import {hasCampLayoutChanges} from '../config/camp-layout.js';
 import {worldRoadFootprintOverlap} from './farm-roads.js';
 import {overlapsCampPlaza} from './camp-plaza.js';
@@ -36,4 +37,4 @@ export function campDecorPlacementError(game,uid,x,y){const p=game.progress,item
 // 默认土路实体半宽24；搬迁和自定义铺面沿用正式营路宽度，草缘阴影不算路面。
 export function campDecorRoadHalfWidth(progress){const finish=progress.campManagement?.styles.road;return hasCampLayoutChanges(progress.campLayout)||finish&&(finish.material!=='earth'||finish.shape!=='plain')?CAMP_ROAD_WIDTH/2:24;}
 // 道路仅检验真实底座，不借用农田尺寸，也不叠加角色或灯杆高度缓冲。
-export function campDecorRoadOverlap(point,definition,paths,halfWidth){return paths.some(path=>path.some((b,i)=>i&&roadFootprintDistance(path[i-1],b,nearest(point,path[i-1]),definition.width/2,definition.depth/2)<halfWidth));}
+export function campDecorRoadOverlap(point,definition,paths,halfWidth){return paths.some(path=>path.some((b,i)=>i&&roadFootprintDistance(path[i-1],b,nearest(point,path[i-1]),definition.width/2,definition.depth/2)<(path.width?campPathWidth(path)/2:halfWidth)));}

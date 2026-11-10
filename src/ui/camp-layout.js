@@ -1,3 +1,4 @@
+import {campPathWidth} from '../config/camp-roads.js';
 import {CAMP_EXPANSION_DIRECTIONS} from '../world/camp-expansion-site.js';
 import {campFixedFacilities} from '../world/camp-layout-facilities.js';
 import {drawCampLayoutIcon} from '../rendering/camp-layout-icons.js';
@@ -29,7 +30,7 @@ export function createCampLayoutPanel({game,root,dialogs,onChange}){
  // 只重绘一个有界编辑画布，不生成运行图集。
  function draw(){if(!dialog.open||!draft)return;drawExpansion();const r=canvas.getBoundingClientRect(),dpr=Math.min(2,root.defaultView.devicePixelRatio||1);if(canvas.width!==Math.round(r.width*dpr)||canvas.height!==Math.round(r.height*dpr)){canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);}c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,r.width,r.height);const scale=view.scale*zoom;
   for(const p of campPlots(game.progress)){const q=screen({x:p.left,y:p.top});c.fillStyle=ownsCampPlot(game.progress,p.id)?'#d9dfa6':'#94ad78';c.fillRect(q.x,q.y,(p.right-p.left)*scale,(p.bottom-p.top)*scale);}
-  c.strokeStyle='#fff0c6';c.lineWidth=Math.max(3,56*scale);c.lineCap='round';c.lineJoin='round';for(const path of roads?.paths||[]){c.beginPath();path.forEach((p,i)=>{const q=screen(p);if(i)c.lineTo(q.x,q.y);else c.moveTo(q.x,q.y);});c.stroke();}
+  c.strokeStyle='#fff0c6';c.lineWidth=Math.max(3,56*scale);c.lineCap='round';c.lineJoin='round';for(const path of roads?.paths||[]){c.lineWidth=Math.max(1.5,campPathWidth(path)*scale);c.beginPath();path.forEach((p,i)=>{const q=screen(p);if(i)c.lineTo(q.x,q.y);else c.moveTo(q.x,q.y);});c.stroke();}
   c.strokeStyle='#557050';c.lineWidth=3;for(const f of campBoundary(game.progress,draft).objects.filter(f=>f.type==='settlement-fence')){const q=screen(f);c.beginPath();c.moveTo(q.x-(f.horizontal?f.length*scale/2:0),q.y-(f.horizontal?0:f.length*scale/2));c.lineTo(q.x+(f.horizontal?f.length*scale/2:0),q.y+(f.horizontal?0:f.length*scale/2));c.stroke();}
   // 选中的大门高亮对应围栏开口，避免调整方向与画布脱节。
   const gate=campBoundary(game.progress,draft).gates.find(g=>g.id===find('[data-layout-gate]').value);if(gate){const q=screen(gate);c.strokeStyle='#b58b39';c.lineWidth=5;c.beginPath();c.moveTo(q.x-(gate.horizontal?gate.length*scale/2:0),q.y-(gate.horizontal?0:gate.length*scale/2));c.lineTo(q.x+(gate.horizontal?gate.length*scale/2:0),q.y+(gate.horizontal?0:gate.length*scale/2));c.stroke();}
