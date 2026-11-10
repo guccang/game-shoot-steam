@@ -1,5 +1,6 @@
 // 营地夜间公共照明与窗光预算；野外和地下继续使用原来的迷雾数值。
-export const CAMP_LIGHTING=Object.freeze({ambient:.86,feather:100,lampRadius:300,windowRadius:120,maxWindows:24});
+// 公共环境光仅抵消一半夜色，让灯间区域保持暗部，亮度层次交给路灯和窗光。
+export const CAMP_LIGHTING=Object.freeze({ambient:.5,feather:100,lampRadius:300,windowRadius:120,maxWindows:24});
 
 // 窗洞位置对应正式建筑立面；矩形天窗只涂玻璃，不盖住原横梁。
 export const CAMP_WINDOWS=Object.freeze({

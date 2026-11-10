@@ -9,7 +9,7 @@ function normalizeCycle(raw, phases) {
   return {phase:raw.phase,steps:raw.steps,elapsed:raw.elapsed,duration:raw.duration};
 }
 export const CHRONICLE_WEATHERS = ['sun','cloud','rain','thunder','snow','gust'];
-export const WEATHER_NAMES = { gust:"阵风", sun:i18nText("ui.panels.environment.749c359ed0"), cloud:i18nText("ui.panels.environment.30c379777e"), rain:i18nText("ui.panels.environment.570764f969"), thunder:i18nText("ui.panels.environment.9ddc77d893"), snow:i18nText("ui.panels.environment.bc4e5aec66") };
+export const WEATHER_NAMES = { gust:"大风", sun:i18nText("ui.panels.environment.749c359ed0"), cloud:i18nText("ui.panels.environment.30c379777e"), rain:i18nText("ui.panels.environment.570764f969"), thunder:i18nText("ui.panels.environment.9ddc77d893"), snow:i18nText("ui.panels.environment.bc4e5aec66") };
 // 只接收有限非负数，未知天气与无效字段不进入持久化统计。
 export function normalizeChronicle(raw) {
   const safe=value=>Number.isFinite(value)&&value>=0?Math.min(value,Number.MAX_SAFE_INTEGER):0;

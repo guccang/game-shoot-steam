@@ -1,3 +1,5 @@
+// 天气验收读取正式雪量、场景和图集预算，不另画展示用雪景。
+export function inspectCampClimate(renderer,root=document){return {designCriterion:'camp-climate-sleep',weather:renderer.environment.weather,season:renderer.environment.forestSeason,time:renderer.environment.time,snowCover:renderer.snowCover,camp:renderer.environment.climateCamp,visible:renderer.visibleStats,cache:renderer.diagnosticInfo(),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 // 营地公共照明、正式窗洞与路口灯均从当前绘制帧采集。
 export function inspectCampNightLighting(renderer,root=document){return {designCriterion:'camp-night-lighting',...renderer.campLightingReview,fog:renderer.surfaceFogReview,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 // 检查正式地面雾幕、实际手持射程与手机边界，不创建预览替身。

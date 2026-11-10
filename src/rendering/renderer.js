@@ -17,7 +17,7 @@ import {drawMining,drawMineShaft} from './mining.js';
 import {advanceMineLandscapeGround} from './mine-landscape-ground.js';
 import {mineShaftObjects} from '../core/mining/mining.js';
 import {constructionObjects,drawConstructionCompany} from './construction-company.js';
-import {campBuildingCache} from './camp-building-cache.js';
+import {campBuildingCache,campSnowBlendBytes} from './camp-building-cache.js';
 import {outdoorFishingView,drawOutdoorGround,outdoorObjects,drawOutdoorObject,drawOutdoorFishing} from './outdoors.js';
 import {outdoorBusy} from '../core/activities/outdoors.js';
 import {waystationObjects,drawWaystation} from './waystations.js';
@@ -163,6 +163,7 @@ export class Renderer {
     this.river = new RiverRenderer();
     this.rain = new RainRenderer();
     this.snow = new SnowRenderer();
+    this.snowCover = 0;
     this.fallingLeaves = new FallingLeavesRenderer();
     this.fireflies = new FireflyRenderer();
     this.camera = new CombatCamera();
@@ -199,7 +200,7 @@ export class Renderer {
       contextRecovery:{...canvasRecoveryStats(),rebuilds:this.contextRecoveries},
       view: this.view, frameTiming: this.frameTiming,
       seasonTransition: this.seasonVisual, seasonScratch: seasonRasterStats(),
-      groundCache: this.ground.stats(), navigationCache: this.navigationWarmup?.stats(), riverCache: this.river.stats(), campBuildings: campBuildingCache.stats(),
+      groundCache: this.ground.stats(), navigationCache: this.navigationWarmup?.stats(), riverCache: this.river.stats(), campBuildings: {...campBuildingCache.stats(),blendBytes:campSnowBlendBytes()},
       backgroundBytes: this.ground.stats().bytes + this.ground.stats().pendingBytes + this.river.stats().bytes
         + this.ground.mapPreview.stats().bytes + this.ground.mapPreview.stats().pendingBytes,
       canvasCommands: this.commands.report(),
@@ -313,9 +314,9 @@ export class Renderer {
     // 建筑提示只调整DOM布局，不再叠加镜头平移或缩放。
     // 地块准备好后才推进统一外观时钟，树木与地面使用同一组季节权重。
     const seasonVisual=this.seasonVisual=this.ground.update(this.environment,view,seasonNow,light.night);
-    const wind = this.gusts.sample(g.time, g.player.x, !this.reduced.matches && this.environment.randomGusts !== false);
-    const winter=valley?0:seasonVisual.weights.winter;
-    if(!seasonVisual.active||valley)seasonRasterStats(true);
+    const wind = this.gusts.sample(g.time, g.player.x, !this.reduced.matches && (this.environment.randomGusts !== false || this.environment.weather === 'gust'), this.environment.weather === 'gust');
+    const winter=this.snowCover;
+    if((!seasonVisual.active||valley)&&!(winter>0&&winter<1))seasonRasterStats(true);
     const zoom = view.zoom;
     this.game.parkingView=view;
     // 仅传递视口几何供逻辑选出生点，渲染不生成敌人或推进波次。

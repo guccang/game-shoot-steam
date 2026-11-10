@@ -1,3 +1,4 @@
+import {createCottageSleep} from './cottage-sleep.js';
 import {setHidden,setText} from './shared/dom-state.js';
 import {createResidentChat} from './cottage-resident-chat.js';
 import {roomResident} from '../config/cottage-residents.js';
@@ -27,6 +28,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  frame.append(panel);
  const glideButton=panel.querySelector('#home-glider');
  scope.on(glideButton,'click',()=>{input.reset();if(game.cottage?.glide)descendHomeGlider(game);else launchHomeGlider(game);render();});
+ const sleep=createCottageSleep({game,root,dialogs,input});
  const mining=createMining({game,renderer,root,panel,input,dialogs,onCharacter,onOutdoors});
  const arcade=createHomeArcade({game,renderer,root,panel,input});
  const approach=createCottageApproach({game,renderer,root,panel});
@@ -44,7 +46,7 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
  function openService(kind,index){if(kind==='construction')construction.open('build');else if(kind==='cat-home')catHome.open();else if(kind==='furniture')homeDecor.open();else openWorkshop(kind,index);}
  // 世界热点和室内面板都从当前记录投影，不积累离场车辆或重复DOM。
  function render(){
-  const room=game.cottage;mining.render();frame.classList.toggle('inside-cottage',!!room);setHidden(panel,!room);storage.render();homeDecor.render();catHome.render();chat.render();construction.render();shopkeeper.render();approach.render();arcade.render();
+  const room=game.cottage;sleep.render();mining.render();frame.classList.toggle('inside-cottage',!!room);setHidden(panel,!room);storage.render();homeDecor.render();catHome.render();chat.render();construction.render();shopkeeper.render();approach.render();arcade.render();
   setHidden(glideButton,!room?.balcony||!!room.arcade);
   glideButton.disabled=!!room?.glide&&(room.glide.approach||room.glide.remaining<100);
   setText(glideButton,room?.glide?'就近降落':'起飞滑翔');
@@ -80,6 +82,6 @@ export function createCampHome({game,renderer,root,input,onChange,openWorkshop,d
 
  }
  // 卸载清理动态热点，返回首页不能遗留室内样式。
- function dispose(){arcade.dispose();mining.dispose();approach.dispose();construction.dispose();shopkeeper.dispose();storage.dispose();chat.dispose();catHome.dispose();homeDecor.dispose();scope.dispose();renderer.interiorArt=null;panel.remove();frame.classList.remove('inside-cottage');}
+ function dispose(){sleep.dispose();arcade.dispose();mining.dispose();approach.dispose();construction.dispose();shopkeeper.dispose();storage.dispose();chat.dispose();catHome.dispose();homeDecor.dispose();scope.dispose();renderer.interiorArt=null;panel.remove();frame.classList.remove('inside-cottage');}
  return {tap,render,dispose,openService,openHomeDecor:homeDecor.open};
 }

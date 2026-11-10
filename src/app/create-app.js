@@ -1,5 +1,8 @@
 import {approachBuilding} from '../core/navigation/scene-approach.js';
 import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
+import {actualEnvironment,beginEnvironmentTick,endEnvironmentTick} from '../world/environment-preview.js';
+import {chooseCampWeather,updateCampClimate} from '../world/camp-climate.js';
+import {advanceSnowCover} from '../world/snow-cover.js';
 import {createRegionalCampPanel} from '../ui/regional-camps.js';
 import {recoverRegionalParcel} from '../core/camp/regional-camps.js';
 import {createCampLayoutPanel} from '../ui/camp-layout.js';
@@ -47,7 +50,6 @@ import { calendarView,advanceLivingCalendar,projectLivingCalendar } from '../wor
 import {durationFor} from '../world/environment-timing.js';
 import {clearLivingRenderCache} from '../rendering/living-world.js';
 import {recordCanvasContextEvent} from '../rendering/canvas-recovery.js';
-import { chooseSeasonWeather } from '../world/season-weather.js';
 import { recordPlayTime } from '../world/play-chronicle.js';
 import { freshRangerProgress } from '../progression/progress.js';
 import { createRangerArrival } from '../ui/ranger-arrival.js';
@@ -232,7 +234,7 @@ export function createApplication({
     });
   // 环境独立写入，不覆盖巡游与成长。
   function saveEnvironment() {
-    const saved=store.saveEnvironment(environment);
+    const saved=store.saveEnvironment(actualEnvironment(environment));
     renderSaveStatus();
     return saved;
   }
@@ -246,9 +248,6 @@ export function createApplication({
     environment,
     root,
     dialogs,
-    onSave: saveEnvironment,
-    // 手动操作也立即保存对应的新起点，退出不能恢复到跳转前的旧进度。
-    onCycleRestart: kind=>{naturalClock.restart(kind);saveChronicle();},
   });
   const mechanicalPanel=createMechanicalPanel({game,root,dialogs,onChange:()=>refresh(),commit:index=>configureMechanical(game,index,store.saveProgress)});
   const spiderPanel=createSpiderPanel({game,root,dialogs,onChange:()=>refresh(),commit:index=>configureSpider(game,index,store.saveProgress)});
@@ -570,16 +569,17 @@ export function createApplication({
         const elapsed=active&&chronicleActive&&chronicleAt!==null?Math.max(0,now-chronicleAt):0;
         chronicleAt=now;chronicleActive=active;
         const environmentNow = Date.now();
+        beginEnvironmentTick(environment);
         const usesCalendar=game.mapId==='forest'&&!game.realm;
-        let environmentChanged=false;
+        let environmentChanged=updateCampClimate(environment,game,environmentNow);
         if(usesCalendar){
           if(!environment.livingPreview&&!game.arrivalPending){advanceLivingCalendar(game.progress.living.calendar,elapsed);recordPlayTime(chronicle,elapsed,environment);}
-          environmentChanged=projectLivingCalendar(environment,game.progress.living.calendar,environmentNow);
+          environmentChanged=projectLivingCalendar(environment,game.progress.living.calendar,environmentNow)||environmentChanged;
           // 手动换天气与既有周期设置继续有效，暂停只移动锚点而不累计天气时长。
           if(environment.weatherAt!==livingWeatherAnchor)livingWeatherMs=0;
           livingWeatherMs+=elapsed;
           const weatherDuration=durationFor(environment,'weather');
-          if(environment.autoWeather&&livingWeatherMs>=weatherDuration){livingWeatherMs%=weatherDuration;environment.weather=chooseSeasonWeather(environment.forestSeason,environment.weather);environmentChanged=true;}
+          if(environment.autoWeather&&livingWeatherMs>=weatherDuration){livingWeatherMs%=weatherDuration;environment.weather=chooseCampWeather(environment.forestSeason,environment.climateCamp,environment.weather);environmentChanged=true;}
           environment.weatherAt=environmentNow-livingWeatherMs;livingWeatherAnchor=environment.weatherAt;
           game.livingPhase=calendarView(game.progress.living.calendar).id;
           game.livingPreview=!!environment.livingPreview;
@@ -589,6 +589,8 @@ export function createApplication({
         }
         // 所有室外地图都同步当前天气，避免旅行后沿用森林的旧雨情。
         game.livingWeather=environment.weather;
+        endEnvironmentTick(environment);
+        renderer.snowCover=advanceSnowCover(renderer.snowCover,environment.weather,elapsed);
         if (environmentChanged) {
           environmentPanel.render();
           saveEnvironment();
