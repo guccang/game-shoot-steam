@@ -417,7 +417,7 @@ export function createApplication({
       if(type==='cottage-change')renderer.camera.time=null;save();return;
     }
     if(type==='vehicle-parked'){input.reset();save();refresh();return;}
-    if(type==='navigation-change'){save();toast.show(game.progress.mainline.navigationEnabled?'寻路已开启':'寻路已关闭，再点右侧箭头即可开启');return;}
+    if(type==='navigation-change'){save();if(!data?.silent)toast.show(game.progress.mainline.navigationEnabled?'寻路已开启':'寻路已关闭，再点右侧箭头即可开启');return;}
     recordMainlineEvent(game,type);if(type.startsWith('mainline-')){input.reset();save();if(type==='mainline-complete')taskReward.enqueue(data);return;}dispatchGameEvent(type,data);
   };
   const audioControls = createAudioControls({ root, audio, toast });

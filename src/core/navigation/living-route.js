@@ -15,8 +15,9 @@ const caches=new WeakMap();
 // 对话与暂停只隐藏，离开常驻森林才清理；未接和完成的委托不产生导航。
 export function livingRouteStates(game,view){
   game=gameSource(game);
-  // 清缴节点栏显示期间同步收起邻里路线，避免主线路线隐藏后旧委托接替显示。
-  if(!taskNavigationEnabled(game)||game.state==='paused'||game.mainlineSpeech||clearingCombatActive(game))return [];
+  // 主动关闭或驿站接管释放邻里搜索；清缴显示期间不让旧委托接替主路线。
+  if(!taskNavigationEnabled(game)){caches.delete(game);return [];}
+  if(game.state==='paused'||game.mainlineSpeech||clearingCombatActive(game))return [];
   // 修复前置、临时访问与入职目标优先时，不再叠画邻里旧路线和终点。
   if(!livingForest(game)||game.state!=='playing'||game.progress.restoration?.build||game.progress.arrival?.phase==='repairing'||worldNavigationObjective(game)){caches.delete(game);return [];}
   let cache=caches.get(game);
