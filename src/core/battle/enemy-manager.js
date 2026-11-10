@@ -1,3 +1,6 @@
+import {regionalDumpling,dumplingWaterFits} from '../../world/dumpling-habitats.js';
+import {BIOME_DUMPLING_BY_ID} from '../../config/biome-dumplings.js';
+import {updateBiomeDumpling} from '../../combat/biome-dumplings.js';
 import {energyShieldMeleeTarget} from '../../combat/energy-shield-surface.js';
 import {clearingEnemyDamage,clearingEnemyHealth} from '../../config/clearing-damage.js';
 import {clearingOpeningPacing,clearingEnemyLevel,CLEARING_FODDER} from '../../config/clearing-difficulty.js';
@@ -84,6 +87,12 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
   }
   // 六类首领及各玩法的正式召唤物共用铁甲木卫实体、碰撞和盾击动作。
   if(context?.bossSummon)identity={...armoredIdentity(ground),name:'铁甲木卫'};
+  // 地貌团子只进入森林普通战斗；剧情、秘境、重装及领主召唤保持身份。
+  const regionalAllowed=(!context?.ambient||context?.rangedEncounter||context?.dumplingVariant)&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&game.mapId==='forest'&&!game.realm&&!game.story&&!context?.bossOwner&&!context?.ordinaryDumpling&&!context?.escortWave;
+  const variant=regionalAllowed?(context?.dumplingVariant?BIOME_DUMPLING_BY_ID[context.dumplingVariant]:regionalDumpling(spot,game.nextId)):null;
+  if(variant&&(context?.dumplingVariant||(identity.species||'slime')==='slime')&&(variant.habitat!=='lake'||dumplingWaterFits(spot.x,spot.y,30))){
+    identity={...ground,species:'slime',flying:false,name:variant.name,dumplingVariant:variant.id,color:variant.color,aquatic:variant.habitat==='lake',amphibious:variant.habitat==='lake'};
+  }
   // 正常森林清缴及领主援兵按已完成轮数成长；野外遭遇、剧情与秘境继续使用原规则。
   const baseDamage=identity.damage*(context?.bossOwner?BOSS_SUPPORT.damage:1);
   const damage=(clearing||context?.bossOwner)&&livingForest(game)
@@ -182,8 +191,10 @@ export function updateEnemies(game, dt, previousPlayer) {
     const companion = goddess || station ? null : companionEnemyTarget(game,enemy,companions);
     const victim = barricade || station || goddess || companion?.node || game.player;
     const previous = barricade || station || goddess || (companion ? companion.node.previous || companion.node : previousPlayer);
-    const ranged = RANGED_ENEMIES[enemy.species] && !enemy.workshopTarget;
-    if (ranged) updateRangedAttack(game, enemy, victim, dt);
+    const regional=!!enemy.dumplingVariant&&BIOME_DUMPLING_BY_ID[enemy.dumplingVariant].pattern!=='charge'&&!enemy.workshopTarget;
+    if(regional)updateBiomeDumpling(game,enemy,victim,dt);
+    const ranged = (regional||RANGED_ENEMIES[enemy.species]) && !enemy.workshopTarget;
+    if (ranged&&!regional) updateRangedAttack(game, enemy, victim, dt);
     const damage = ranged ? 0 : updateEnemyAttack(enemy, victim===game.player?energyShieldMeleeTarget(game,enemy):victim, victim===game.player?energyShieldMeleeTarget(game,enemy,previous):previous, dt, WORLD, dangerRange);
     if (damage) {
       if(barricade)hurtCampBarricade(game,damage);

@@ -1,4 +1,5 @@
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
+import {drawBiomeDumplingBolt} from './biome-dumplings.js';
 import { style } from '../art-styles/config.js';
 import { dumplingPose } from '../combat/dumpling-motion.js';
 import { drawDumplingBody, drawDumplingSprout } from './dumpling-body.js';
@@ -164,7 +165,8 @@ export function drawEnemyBolts(c, bolts, reduced = false) {
     }
     oval(c, b.x, b.y + 8, 7, 3, '#315c4328');
     c.translate(b.x, b.y);
-    if (['reed-archer', 'bramble-buggy', 'stump-bombard'].includes(b.species)) {
+    if(b.dumplingVariant)drawBiomeDumplingBolt(c,b);
+    else if (['reed-archer', 'bramble-buggy', 'stump-bombard'].includes(b.species)) {
       c.rotate(Math.atan2(b.dy, b.dx));
       if (b.splash) {
         oval(c, 0, 0, 11, 8, '#bd8752', outline, 2);
