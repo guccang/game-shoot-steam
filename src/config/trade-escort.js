@@ -1,9 +1,11 @@
 // 护送报价、固定波数与夜宿时长；坐标仍使用世界单位。
 import {worldDistance} from '../world/coordinates.js';
 import {displayMeters} from '../world/distance-units.js';
-export const TRADE_ESCORT=Object.freeze({waves:3,batch:8,basePay:1000,perMeter:2,restSeconds:3,campDistanceMeters:200});
+export const TRADE_ESCORT=Object.freeze({durability:800,depositRate:.3,waves:3,batch:8,basePay:1000,perMeter:2,restSeconds:3,campDistanceMeters:200});
 // 报价按循环地图最短距离计算，接单后保存，避免更新数值改变在途佣金。
 export function escortQuote(origin,destination){const meters=displayMeters(worldDistance(origin,destination));return {meters,coins:TRADE_ESCORT.basePay+meters*TRADE_ESCORT.perMeter};}
+// 接单定金按锁定佣金计算，向上取整。
+export function escortDeposit(pay){return Math.ceil(pay*TRADE_ESCORT.depositRate);}
 // 击杀槽位按波次编号去重，读档丢失现场怪物时只补未击杀名额。
 export function escortWaveDone(e){return Math.floor((e.defeated?.length||0)/TRADE_ESCORT.batch);}
 

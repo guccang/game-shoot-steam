@@ -1,4 +1,4 @@
-import {escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../config/trade-escort.js';
+import {escortDeposit,escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../config/trade-escort.js';
 // 手机可看行情、接单点与商队位置，到场才办理交接。
 import {TRADE_SITES,TRADE_BOARD,TRADE_BOARD_SIZE,TRADE_TASK_IDS,TRADE_RELIC} from '../config/camp-trade.js';
 import {tradeField,atTradeSite,tradeAction,tradeCrop,tradePrice,tradeStock} from '../core/camp/camp-trade.js';
@@ -12,6 +12,7 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
  dialog.id='camp-trade-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','camp-trade-title');
  dialog.innerHTML='<header class="ui-panel__header"><div><h2 id="camp-trade-title">营地订单与商路</h2></div><button class="ui-close" id="camp-trade-close" aria-label="关闭订单板">×</button></header><div class="ui-panel__body"></div><footer class="ui-panel__footer"><p role="status" aria-live="polite"></p></footer>';
  root.body.append(dialog);
+ let abandonConfirm=false;
  const body=dialog.querySelector('.ui-panel__body'),status=dialog.querySelector('[role=status]');
  // 行为标识仅使用程序配置中的稳定编号，中文名称用于展示。
  function button(action,text,id='',disabled=false){return `<button type="button" class="ui-button" data-trade-action="${action}" data-id="${id}" ${disabled?'disabled':''}>${text}</button>`;}
@@ -31,21 +32,23 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
   sections.push(`<section class="ui-inset"><h3>商队寻物${completionLabel('relic')}</h3><p>击败森林地面怪物，找回货签 ${t.relic??0}/3，报酬 ${TRADE_RELIC.coins} 金币。</p>${button(t.relic===null?'take-relic':'give-relic',t.relic===null?'接受寻物委托':'交还货签','',!board||t.relic!==null&&t.relic<3)}
    </section>`);
   sections.push('<section class="ui-inset"><h3>营地间运货</h3><p>各商站均可接单、交付作物和货签。选择其他营地运送商队货物，到目的地另领佣金。</p>'+
-   TRADE_SITES.filter(s=>s!==local).map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${escortQuote(local||nearestSite,s).coins} 金币 · ${escortQuote(local||nearestSite,s).meters}米 · 3波怪物</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接单运往此营地',s.id,!board):''}`).join('')+'</section>');
+   TRADE_SITES.filter(s=>s!==local).map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${escortQuote(local||nearestSite,s).coins} 金币 · ${escortQuote(local||nearestSite,s).meters}米 · 3波怪物 · 定金 ${escortDeposit(escortQuote(local||nearestSite,s).coins)} 金币（30%，成功交付退还，失败或放弃不退）</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','支付定金并接单',s.id,!board||p.coins<escortDeposit(escortQuote(local||nearestSite,s).coins)):''}`).join('')+'</section>');
   if(e){const goal=TRADE_SITES.find(s=>s.id===e.station);
-   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>货物损坏 ${(100-e.hp).toFixed(1)}% · 预计佣金 ${escortPayout(e)} / ${e.pay} · 已清理 ${escortWaveDone(e)}/3波${e.camped?' · 夜间扎营':''}。在车旁领路，离队时商队等候。</p>${e.camped?button('rest-escort','就地扎营，休息到天亮'):''} ${button('route','寻找商队','caravan')} ${!e.camped?button('route','继续前往目的地',goal.id):''} ${button('finish-escort','领取佣金 '+escortPayout(e),'',local!==goal||worldDistance(e,goal)>125||escortWaveDone(e)!==TRADE_ESCORT.waves)}</section>`);
+   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>货物损坏 ${(100-e.hp).toFixed(1)}% · 预计佣金 ${escortPayout(e)} / ${e.pay} · 已清理 ${escortWaveDone(e)}/3波${e.camped?' · 夜间扎营':''}。定金 ${e.deposit||0} 金币，交付返还；失败或放弃不退。在车旁领路，离队时商队等候。</p>${e.camped?button('rest-escort','就地扎营，休息到天亮'):''} ${button('route','寻找商队','caravan')} ${!e.camped?button('route','继续前往目的地',goal.id):''} ${button('finish-escort','领取佣金 '+escortPayout(e),'',local!==goal||worldDistance(e,goal)>125||escortWaveDone(e)!==TRADE_ESCORT.waves||e.hp<=0)} ${button('confirm-abandon',abandonConfirm?'确认放弃，损失定金 '+(e.deposit||0)+' 金币':'放弃订单')} ${abandonConfirm?button('cancel-abandon','继续护送'):''}</section>`);
   }
   sections.push(`<section class="ui-inset"><h3>收成去向</h3><label class="ui-choice phone-wood"><input type="checkbox" data-keep ${t.keep?'checked':''}>留下收成，经过仓库也保留作物</label></section>`);
   body.innerHTML='<p class="ui-inset" data-trade-summary>共 '+TRADE_TASK_IDS.length+' 项任务 · 已完成 '+t.completed.length+' 项</p>'+sections.join('');
  }
  dialogs.register(dialog.id,{focusId:'camp-trade-close',onOpen:render});
  // 现场入口和手机详情均继承既有弹窗暂停归属。
- function open(){status.textContent='';root.body.append(dialog);dialogs.open(dialog.id);}
+ function open(){abandonConfirm=false;status.textContent='';root.body.append(dialog);dialogs.open(dialog.id);}
  scope.on(dialog.querySelector('.ui-close'),'click',()=>dialogs.close(dialog.id));
  scope.on(dialog,'change',event=>{if(event.target.matches('[data-keep]')){const r=tradeAction(game,'keep');status.textContent=r.message;render();}});
  scope.on(dialog,'click',event=>{
   const b=event.target.closest('[data-trade-action]');if(!b)return;
-  const action=b.dataset.tradeAction,id=b.dataset.id;
+  let action=b.dataset.tradeAction;const id=b.dataset.id;
+  if(action==='cancel-abandon'){abandonConfirm=false;render();return;}
+  if(action==='confirm-abandon'){if(!abandonConfirm){abandonConfirm=true;render();return;}action='abandon-escort';abandonConfirm=false;}
   if(action==='route'){
    const site=id==='caravan'&&game.progress.trade.escort?{...game.progress.trade.escort,id,name:'护送商队',mapId:'forest'}:TRADE_SITES.find(s=>s.id===id);
    if(!site||!tradeField(game)){status.textContent='请先返回森林地面。';return;}
@@ -57,6 +60,9 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
     onChange();
    }}
  });
+ // 露营马车本体可点击打开订单，直接使用休息入口。
+ const caravan=root.createElement('button');caravan.type='button';caravan.hidden=true;sceneHit(caravan,'露营商队，休息到天亮');caravan.style.zIndex='5';frame.append(caravan);
+ scope.on(caravan,'click',()=>{const e=game.progress.trade?.escort;if(e?.camped&&tradeField(game))open();});
  const markers=TRADE_SITES.map(site=>{
   const node=root.createElement('button');node.type='button';sceneHit(node,site.name);node.hidden=true;
   node.style.pointerEvents='auto';node.style.zIndex='4';frame.append(node);
@@ -66,10 +72,12 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
  // 投影木牌原地的触控区，战斗活动和打开弹窗时隐藏。
  function renderFrame(){
   const visible=tradeField(game)&&game.state==='playing'&&renderer.view;
+  if(visible)game.tradeViewport={x:renderer.view.x,y:renderer.view.y,w:renderer.view.w,h:renderer.view.h};
+  const escort=game.progress.trade?.escort;if(visible&&escort?.camped&&!game.tradeRest)placeSceneHit(caravan,escort,renderer,frame,{width:120,height:150,foot:35});else caravan.hidden=true;
   for(const {node,site} of markers){
    if(!visible){node.hidden=true;continue;}
    placeSceneHit(node,site,renderer,frame,site===TRADE_BOARD?TRADE_BOARD_SIZE:{width:72,height:45,foot:0});
   }
  }
- return {open,renderFrame,dispose(){scope.dispose();dialog.remove();for(const {node} of markers)node.remove();}};
+ return {open,renderFrame,dispose(){scope.dispose();dialog.remove();caravan.remove();for(const {node} of markers)node.remove();}};
 }

@@ -32,16 +32,17 @@ export function tradeObjects(game){
  // 远站在林中设有收货帐篷、桌台与营灯，各自按脚底排序。近站沿用旧哨站原建筑。
  const outpost=TRADE_STATIONS.find(s=>s.id==='trade-amber');
  for(const [part,dx,dy] of [['tent',-76,-38],['table',32,-32],['lamp',61,-37]])sites.push({type:'outdoor-camp',part,x:outpost.x+dx,y:outpost.y+dy});
+ for(const retired of game.tradeDepartures||[])sites.push({...retired,type:'trade-cart'});
  if(cart){sites.push({...cart,type:'trade-cart'});if(cart.camped)for(const [part,dx,dy]of [['tent',-80,0],['cot',0,55],['lamp',55,0]])sites.push({type:'outdoor-camp',part,x:cart.x+dx,y:cart.y+dy});}
  return sites;
 }
 // 商队的马步与轮纹沿用真实车体动作时钟，木牌不增加阻挡。
 export function drawTradeObject(c,item,game,night,reduced){
  if(item.type==='trade-cart'){
-  const vehicle={index:14,...game.tradeMotion,active:true,angle:0,weaponIndex:0,recoil:{rise:0,kick:0}};
+  const vehicle={index:14,...(item.departing?item.motion:game.tradeMotion),active:true,angle:0,weaponIndex:0,recoil:{rise:0,kick:0}};
   drawVehicleTracks(c,item,vehicle,reduced,game.time,game.progress);
   drawVehicleArmor(c,item,vehicle,game.progress,game.time,reduced);
-  drawWorldSign(c,'商队 '+Math.ceil(item.hp)+'%',item.x,item.y-72);
+  drawWorldSign(c,item.departing?'返程商队':'商队 '+Math.ceil(item.hp)+'%',item.x,item.y-72);
  }else if(item.id===TRADE_BOARD.id){
   drawOrderBoard(c,item,game.progress.trade,night);
  }else{

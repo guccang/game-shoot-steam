@@ -1,7 +1,8 @@
+import {retireTradeEscort,updateDepartingTradeCarts} from './trade-departure.js';
 import {followTradeCart} from './trade-follow.js';
 import {clearWorldNavigation} from '../navigation/world-navigation.js';
 import {stopWaystationTravel} from '../navigation/waystations.js';
-import {escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../../config/trade-escort.js';
+import {escortDeposit,escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../../config/trade-escort.js';
 import {updateEscortEncounter,startEscortRest} from './trade-escort.js';
 // 商路交易只取随身作物和实际到站的自有货舱；护送不占用玩家货位。
 import {TRADE_SITES,TRADE_BOARD,TRADE_RELIC} from '../../config/camp-trade.js';
@@ -43,6 +44,8 @@ export function tradeStock(game,site){
 export function tradeAction(game,action,id){
  const fail=message=>({ok:false,message});
  if(!tradeField(game)||!['playing','paused'].includes(game.state))return fail('请在森林自由巡游时办理。');
+ if(action==='abandon-escort')return retireTradeEscort(game,'已放弃订单，定金不予退还。');
+ if(game.progress.trade?.escort?.hp<=0)return retireTradeEscort(game,'护送失败，货物已全部损毁，定金不予退还。');
  if(action==='rest-escort')return startEscortRest(game);
  const next=validateProgress(structuredClone(game.progress)),t=next.trade;
  const station=TRADE_SITES.find(s=>s.id===id),destination=TRADE_SITES.find(s=>s.id===t.escort?.station);
@@ -61,9 +64,10 @@ export function tradeAction(game,action,id){
   else if(action==='give-relic'&&t.relic===TRADE_RELIC.count){coins=TRADE_RELIC.coins;t.relic=null;completedId='relic';message='货签已交还商队';}
   else if(action==='escort'&&station&&!t.escort){
    if(station.id===site.id)return fail('请选择另一个营地作为目的地。');
-   t.escort={pay:escortQuote(site,station).coins,rounds:next.bosses,wave:0,defeated:[],travel:0,camped:false,origin:site.id,station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message='商队已出发，运费'+t.escort.pay+'金币；途中有3波怪物，夜晚需扎营。';
+   const pay=escortQuote(site,station).coins,deposit=escortDeposit(pay);if(next.coins<deposit)return fail('金币不足，需要支付定金 '+deposit+' 金币。');next.coins-=deposit;recordEconomy(next,'expense','trade:deposit',{coins:deposit});
+   t.escort={deposit,pay,rounds:next.bosses,wave:0,defeated:[],travel:0,camped:false,origin:site.id,station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message='商队已出发，运费'+t.escort.pay+'金币，已付定金'+deposit+'金币；成功交付返还，失败或放弃不退。';
   }else if(action==='finish-escort'&&destination&&worldDistance(t.escort,destination)<=125&&escortWaveDone(t.escort)===TRADE_ESCORT.waves){
-   coins=escortPayout(t.escort);message='商队抵达，货物损坏'+(100-t.escort.hp).toFixed(1)+'%，实收佣金 '+coins+' 金币';t.escort=null;completedId=destination.id;
+   coins=escortPayout(t.escort)+(t.escort.deposit||0);message='返还定金 '+(t.escort.deposit||0)+' 金币；'+'商队抵达，货物损坏'+(100-t.escort.hp).toFixed(1)+'%，实收佣金 '+escortPayout(t.escort)+' 金币';t.escort=null;completedId=destination.id;
   }else if(action==='sell'){
    const i=FARM_CROPS.findIndex(c=>c.id===id);if(i<0)return fail('请选择作物。');
    const stocks=tradeStocks(game,next,site),sale=productionSalePlan(next,stocks),count=sale.reduce((n,row)=>n+row[i],0);
@@ -89,7 +93,8 @@ export function tradeDefeat(game,target){
 }
 // 商队沿玩家实际走过的路前进，离队等待；阻击时停下，必须保住货车才能领赏。
 export function updateTradeEscort(game,dt){
- const e=game.progress.trade?.escort;if(!e||!tradeField(game)||game.state!=='playing')return;
+ if(!tradeField(game)||game.state!=='playing')return;updateDepartingTradeCarts(game,dt);
+ const e=game.progress.trade?.escort;if(!e)return;if(e.hp<=0){retireTradeEscort(game,'护送失败，货物已全部损毁，定金不予退还。');return;}
  const distance=worldDistance(e,game.player);
  const motion=game.tradeMotion??={index:14,active:true,path:[]};
  if(motion.station!==e.station||worldDistance(e,motion.last||e)>8){motion.path=[];motion.search=null;motion.retry=0;motion.station=e.station;}

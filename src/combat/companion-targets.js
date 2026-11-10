@@ -1,3 +1,4 @@
+import {TRADE_ESCORT} from '../config/trade-escort.js';
 // 机械伙伴作为敌人的独立攻击目标，包含手持、车载与守护部署的核心。
 import { vehicleCompanionContext } from './vehicle-companions.js';
 import { worldDistance } from '../world/coordinates.js';
@@ -27,4 +28,4 @@ export function companionEnemyTarget(game, enemy, nodes = companionTargets(game)
   enemy.companionTarget=nearest?.node||null;return nearest||null;
 }
 // 收起的伙伴不再承伤；保留已锁定的空目标，不能把扑击转移给玩家或其他核心。
-export function damageCompanion(target, amount) { if(target.source&&livingForest(target.source)&&livingSafePoint(target.node))return false;if(target.trade){if(target.source?.progress.trade?.escort!==target.node||target.node.hp<=0||amount<=0)return false;target.node.hp=Math.max(0,target.node.hp-amount);return true;}return !!target.source&&hurtMechanical(target.source,target.node,amount); }
+export function damageCompanion(target, amount) { if(target.source&&livingForest(target.source)&&livingSafePoint(target.node))return false;if(target.trade){if(target.source?.progress.trade?.escort!==target.node||target.node.hp<=0||amount<=0)return false;target.node.hp=Math.max(0,target.node.hp-amount*100/TRADE_ESCORT.durability);return true;}return !!target.source&&hurtMechanical(target.source,target.node,amount); }

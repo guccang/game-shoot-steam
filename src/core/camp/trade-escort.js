@@ -35,7 +35,7 @@ export function updateEscortEncounter(g,dt){
  if(worldDistance(g.player,e)>300)return true;
  if(e.wave<=done){g.player.vx=g.player.vy=0;e.wave=done+1;g.float(g.player.x,g.player.y-70,'商队遭遇 · 第'+e.wave+'/3波','#ffe4a2');}
  for(let n=0;n<TRADE_ESCORT.batch;n++){const slot=(e.wave-1)*TRADE_ESCORT.batch+n;if(e.defeated.includes(slot)||alive.some(m=>m.tradeSlot===slot))continue;
- let spot=null;for(let i=0;i<24;i++){const a=(n*3+i)*Math.PI/12,p={x:g.player.x+Math.cos(a)*230,y:g.player.y+Math.sin(a)*230};if(!livingSafePoint(p)&&!blocked(p.x,p.y,25,g.trees,{mapId:g.mapId,livingCollision:true})){spot=p;break;}}
+ let spot=null;for(let i=0;i<24;i++){const base=e.wave*2.4+(e.rounds||0)*.7,a=base+Math.sin(n*12.9898+i*4.31)*.55,r=300+((n*73+i*47)%170),p={x:g.player.x+Math.cos(a)*r,y:g.player.y+Math.sin(a)*r};if(!livingSafePoint(p)&&!blocked(p.x,p.y,25,g.trees,{mapId:g.mapId,livingCollision:true})){spot=p;break;}}
  if(!spot)continue;const m=g.spawnEnemy(0,0,spot,{ambient:true,escortWave:e.wave,escortRounds:e.rounds,escortOrdinal:n+1});if(m){m.tradeGuard=e.station;m.tradeSlot=slot;}
  }
  return true;

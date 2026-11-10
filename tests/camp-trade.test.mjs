@@ -17,7 +17,7 @@ import {updateWarehouseHarvest} from '../src/core/inventory/warehouse-harvest.js
 
 // 用同一份地图恢复现场，保留真实森林碰撞和可交互的车辆。
 function scene(raw){
- const p=raw||freshProgress();
+ const p=raw||freshProgress();if(!raw)p.coins=100000;
  p.arrival={version:3,phase:'complete',keys:true};p.mainline.phase='complete';p.mainline.completed=[...MAINLINE_IDS];
  p.vehicleHulls[0]=1;
  const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.vehicle.active=false;
@@ -86,7 +86,7 @@ for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、�
  for(let i=0;i<100;i++)updateTradeEscort(g,.05);
  assert.equal(reloaded,true);assert.equal(g.progress.trade.escort.cleared,24);
  const before=g.progress.coins;assert.equal(tradeAction(g,'finish-escort').ok,true,JSON.stringify(g.progress.trade.escort));
- assert.equal(g.progress.coins,before+escortQuote(TRADE_BOARD,station).coins);assert.equal(tradeAction(g,'finish-escort').ok,false);
+ assert.equal(g.progress.coins,before+escortQuote(TRADE_BOARD,station).coins+Math.ceil(escortQuote(TRADE_BOARD,station).coins*.3));assert.equal(tradeAction(g,'finish-escort').ok,false);
  assert.deepEqual(validateProgress(g.progress).trade.completed,[station.id]);
 });
 

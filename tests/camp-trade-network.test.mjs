@@ -17,7 +17,7 @@ import {updateWarehouseHarvest} from '../src/core/inventory/warehouse-harvest.js
 
 // 用同一份地图恢复现场，保留真实森林碰撞和可交互的车辆。
 function scene(raw){
- const p=raw||freshProgress();
+ const p=raw||freshProgress();if(!raw)p.coins=100000;
  p.arrival={version:3,phase:'complete',keys:true};p.mainline.phase='complete';p.mainline.completed=[...MAINLINE_IDS];
  p.vehicleHulls[0]=1;
  const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.vehicle.active=false;

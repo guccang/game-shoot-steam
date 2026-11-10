@@ -6,7 +6,7 @@ import {rescueTruckVisible} from '../config/vehicle-repair.js';
 
 const ROOTS = ['player', 'vehicle', 'enemies', 'boss', 'enemyBolts', 'hazards', 'projectiles',
   'shots', 'particles', 'numbers', 'drops', 'remnants', 'fx', 'realm', 'funnel', 'drone',
-  'mechanical', 'spider', 'magazines', 'arrivalScene', 'farmWork', 'livingActors', 'campActors', 'story', 'fireRescue', 'tradeMotion'];
+  'mechanical', 'spider', 'magazines', 'arrivalScene', 'farmWork', 'livingActors', 'campActors', 'story', 'fireRescue', 'tradeMotion', 'tradeDepartures'];
 const CHILDREN = ['motion', 'bodyAnimation', 'recoil', 'assault', 'trail', 'nodes', 'mother', 'gun',
   'module', 'companions', 'items', 'rivals', 'defenses', 'runtime', 'player', 'vehicle',
   'mechanical', 'spider', 'funnel', 'drone', 'elder', 'bus', 'scooter', 'actors', 'goddess', 'magazine', 'flight', 'stream', 'job'];
@@ -98,7 +98,7 @@ export function createRenderInterpolation() {
         if (!Number.isFinite(current)) continue;
         if (!Number.isFinite(old) || blend === 1) { view[field] = current; continue; }
         // 商队轮相按整周取短方向，避免过零时反转一圈；其他已有载具沿用原表现规则。
-        const angle = ANGLES.has(field) || field === 'wheelPhase' && value === game.tradeMotion;
+        const angle = ANGLES.has(field) || field === 'wheelPhase' && (value === game.tradeMotion || game.tradeDepartures?.some(e=>e.motion===value));
         const change = field === 'x' ? dx : field === 'y' ? dy : angle ? delta(current - old, Math.PI * 2) : current - old;
         // 年龄、寿命重置属于新事件，不从旧状态反向播放。
         const resetClock = RESET_CLOCKS.has(field) && current < old;
