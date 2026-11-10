@@ -31,10 +31,6 @@ export const WHEAT_FIELDS = [
 ];
 // 装饰只沿屋侧、田后和草场外缘成组摆放；田前、屋门与桥头之间保留开放通路。
 export const CAMP_PROPS = [
-  { kind: 'fence', x: 795+TOWN_SHIFT_X, y: 563, size: 0.9 },
-  { kind: 'fence', x: 885+TOWN_SHIFT_X, y: 567, size: 0.9 },
-  { kind: 'fence', x: VEHICLE_WORKSHOP.x+88, y: VEHICLE_WORKSHOP.y+48, size: 0.88 },
-  { kind: 'fence', x: 235+TOWN_SHIFT_X, y: 1160, size: 0.85 },
   { kind: 'logs', x: WORKSHOP.x+90, y: WORKSHOP.y-20, size: 0.9 },
   { kind: 'logs', x: 515+TOWN_SHIFT_X, y: 860, size: 0.85 },
   { kind: 'logs', x: RANGER_COTTAGE.x+90, y: RANGER_COTTAGE.y+20, size: 0.8 },
