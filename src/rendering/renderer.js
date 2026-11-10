@@ -1,3 +1,4 @@
+import {TOWN_COURTS,TOWN_LAYOUT} from '../config/town-layout.js';
 import {campExpansionPoint} from '../config/camp-land.js';
 import {campFestivalObjects,drawCampPlaza,drawFestivalLion,drawFestivalCouplets,drawFestivalFireworks} from './camp-festivals.js';
 import {campDecorationObjects,drawCampDecoration,drawCampDecorShop} from './camp-decor.js';
@@ -109,7 +110,7 @@ import { GustCycle, gustStrength } from '../world/gust.js';
 import { drawLakeGusts } from './natural-terrain.js';
 import { drawHomeGlider } from './home-glider.js';
 import { drawForestTree, drawForestShadow } from './forest-art.js';
-import { SCENERY } from '../world/scenery.js';
+import { SCENERY,CAMP_PROPS } from '../world/scenery.js';
 import { forestUnderstory } from '../world/forest-understory.js';
 import { REALM_ENTRANCES, towerRealmLandmark } from '../world/realm-entrances.js';
 import { drawRealmEntrance, drawRealmEntranceGround } from './realm-entrances.js';
@@ -231,7 +232,10 @@ export class Renderer {
     syncCampLayout(progress){
       const revision=activateCampLayout(progress);
       if(this.campLayoutRevision===revision)return;
-      this.campLayoutRevision=revision;sceneryGrid=new SpatialGrid(SCENERY,{cellSize:480});this.ground.invalidateCampLayout();
+      // 只有烘焙进地面的旧/新底座区域需要重画；站牌、装饰及门位不清空森林缓存。
+      const anchors=[...SCENERY,...CAMP_PROPS,...TOWN_COURTS,TOWN_LAYOUT.tent].map(p=>({x:p.x,y:p.y,w:800,h:800})),previous=this.campGroundAnchors;
+      const dirty=previous?anchors.flatMap((p,i)=>previous[i]&&(p.x!==previous[i].x||p.y!==previous[i].y)?[previous[i],p]:[]):[];
+      this.campGroundAnchors=anchors;this.campLayoutRevision=revision;sceneryGrid=new SpatialGrid(SCENERY,{cellSize:480});if(dirty.length)this.ground.invalidateCampLayout(dirty);
     }
     // 首次准备使用镜头副本，只计算将要显示的完整地块，不推进正式镜头与战斗时钟。
   prepareGround(padding=0) {

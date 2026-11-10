@@ -1,7 +1,7 @@
 import { mixRaster, releaseRaster } from './season-raster.js';
 import { MapPreviewCache } from './map-preview-cache.js';
 // 地面采用有上限的按需分块缓存；循环边界复用同一地图块，夜色按需生成。
-import { WORLD } from '../world/coordinates.js';
+import { nearest, WORLD } from '../world/coordinates.js';
 import { buildGroundTile, GROUND_PAD as PAD } from './ground-tile.js';
 import { drawAlignedTile } from './tile-blit.js';
 export const GROUND_TILE_SIZE = 384;
@@ -56,6 +56,7 @@ export class GroundCache {
     this.winter = false;
     this.season = 'summer';
     this.tiles = new Map();
+    this.layoutDirty=new Set();
     this.builds = 0;
     this.hits = 0;
     this.baseLimit = cacheLimit;this.limit = cacheLimit;
@@ -67,15 +68,15 @@ export class GroundCache {
     this.lastInvalidation = null;
     this.mapPreview = new MapPreviewCache();
   }
-  // 设施搬迁后释放包含旧庭院的分块，下次绘制使用新的正式锚点。
-  invalidateCampLayout(){this.noteInvalidation('camp-layout');this.cancelWarmup();for(const tile of this.tiles.values())release(tile);this.tiles.clear();}
+  // 布局变更保留已发布纹理；分帧重画完成后原子替换，移动帧不承担整块重建。
+  invalidateCampLayout(regions=null){this.noteInvalidation('camp-layout');this.cancelWarmup();for(const [key] of this.tiles){const [col,row]=key.split(':').map(Number),x=col*GROUND_TILE_SIZE,y=row*GROUND_TILE_SIZE;if(!regions||regions.some(r=>{const p=nearest({x:r.x,y:r.y},{x:x+GROUND_TILE_SIZE/2,y:y+GROUND_TILE_SIZE/2});return p.x+r.w/2>x&&p.x-r.w/2<x+GROUND_TILE_SIZE&&p.y+r.h/2>y&&p.y-r.h/2<y+GROUND_TILE_SIZE;}))this.layoutDirty.add(key);}}
   // 地图切换立即释放旧分块，避免两张地图共用坐标键或累积像素内存。
   setMap(mapId = 'forest') {
     if (this.mapId === mapId) return;
     this.removed.clear(); this.noteInvalidation('map');
     this.cancelWarmup();
     for (const tile of this.tiles.values()) release(tile);
-    this.tiles.clear();
+    this.tiles.clear();this.layoutDirty.clear();
     this.mapId = mapId;
   }
   // 消防清场与旧建筑地面投影共用遮罩；切换才释放缓存，不保留第二套地图纹理。
@@ -83,7 +84,7 @@ export class GroundCache {
     const key=arena?`${arena.x}:${arena.y}:${arena.radius}`:'';
     if(key===(this.sceneryMaskKey||''))return;
     this.noteInvalidation('scenery-mask');
-    this.cancelWarmup();for(const tile of this.tiles.values())release(tile);this.tiles.clear();
+    this.cancelWarmup();for(const tile of this.tiles.values())release(tile);this.tiles.clear();this.layoutDirty.clear();
     this.sceneryMaskKey=key;this.sceneryMask=arena?{x:arena.x,y:arena.y,radius:arena.radius+220}:null;
   }
   // 季节只改变森林表现；过渡期间保留来源快照，结束立即释放来源像素。
@@ -104,7 +105,7 @@ export class GroundCache {
     this.noteInvalidation('season');
     this.cancelWarmup();
     for (const tile of this.tiles.values()) release(tile);
-    this.tiles.clear();
+    this.tiles.clear();this.layoutDirty.clear();
     this.winter = winter;
     this.season = next;
   }
@@ -129,9 +130,10 @@ export class GroundCache {
   }
   // 新任务始终独占一块工作画布；完整绘制结束后才原子替换正式缓存。
   startWork(spec, night = 1) {
+    if(this.layoutDirty.has(spec.key)&&this.tiles.get(spec.key)?.night)night=1;
     const surfaces = new Set();
     this.work = { spec, night, surfaces, ms: 0, steps: buildGroundTile(spec, this.mapId, this.season,
-      this.transition, this.tiles.get(spec.key), night, surfaces, this.sceneryMask) };
+      this.transition, this.layoutDirty.has(spec.key)?null:this.tiles.get(spec.key), night, surfaces, this.sceneryMask) };
   }
   // 发布时沿用来源层生命周期；季节过渡已结束就立即释放多余来源纹理。
   publish(tile, spec) {
@@ -139,6 +141,8 @@ export class GroundCache {
       releaseRaster(tile.fromDay); releaseRaster(tile.fromNight); tile.fromDay = tile.fromNight = null;
     }
     if (!this.tiles.has(spec.key)) this.builds++;
+    const previous=this.tiles.get(spec.key);
+    if(this.layoutDirty.delete(spec.key)&&previous&&previous!==tile)release(previous);
     this.removed.delete(spec.key);
     this.tiles.delete(spec.key); this.tiles.set(spec.key, tile);
   }
@@ -204,10 +208,10 @@ export class GroundCache {
     if (this.work && !this.desired.has(this.work.spec.key)) { this.work.steps.return(); this.work = null; }
     // 白天先铺完相邻块，再补夜色，避免新路面等待当前看不见的夜景读回。
     // 夜间仍完整构建昼夜两层，初次入场的默认行为也保持不变。
-    const missing = desired.filter(spec => !this.tiles.get(spec.key)?.night && spec.key !== this.work?.spec.key);
+    const missing = desired.filter(spec => (this.layoutDirty.has(spec.key)||!this.tiles.get(spec.key)?.night) && spec.key !== this.work?.spec.key);
     this.pending = night > 0 ? missing.map(spec => ({...spec, night:1})) : [
-      ...missing.filter(spec => !this.tiles.has(spec.key)).map(spec => ({...spec, night:0})),
-      ...missing.filter(spec => this.tiles.has(spec.key)).map(spec => ({...spec, night:1})),
+      ...missing.filter(spec => (!this.tiles.has(spec.key)||this.layoutDirty.has(spec.key))).map(spec => ({...spec, night:0})),
+      ...missing.filter(spec => this.tiles.has(spec.key)&&!this.layoutDirty.has(spec.key)).map(spec => ({...spec, night:1})),
     ];
     this.trim();
   }
@@ -216,12 +220,12 @@ export class GroundCache {
     while (this.tiles.size > this.limit) {
       const key = [...this.tiles.keys()].find(key => !this.desired?.has(key)) ?? this.tiles.keys().next().value;
       this.noteRemoved(key, 'evicted');
-      release(this.tiles.get(key)); this.tiles.delete(key);
+      release(this.tiles.get(key)); this.tiles.delete(key);this.layoutDirty.delete(key);
     }
   }
   // 当前光照所需的新地块不能一直等忙帧的剩余预算；额外夜色则继续只用空余时间。
   needsWarmup() {
-    const needed = spec => { const tile = this.tiles.get(spec.key); return !tile || this.requiredNight && !tile.night; };
+    const needed = spec => { const tile = this.tiles.get(spec.key); return this.layoutDirty.has(spec.key)||!tile || this.requiredNight && !tile.night; };
     return !!(this.work && needed(this.work.spec)) || this.pending.some(needed);
   }
   // 在调用者给出的时间预算内推进若干步骤；不可分割的一步允许小幅超支并如实记录。
@@ -232,7 +236,7 @@ export class GroundCache {
       if (!this.work) {
         const spec = this.pending.shift(); if (!spec) break;
         const night = spec.night ?? 1, tile = this.tiles.get(spec.key);
-        if (tile && (!night || tile.night)) continue;
+        if (tile && !this.layoutDirty.has(spec.key)&&(!night || tile.night)) continue;
         this.startWork(spec, night);
       }
       const work = this.work, stepStart = performance.now();
@@ -253,7 +257,7 @@ export class GroundCache {
     return keys.size?done/(keys.size*2):1;
   }
   // 离开应用时释放缓存与未完成任务，重挂载不会留下离屏纹理。
-  dispose() { this.cancelWarmup(); for (const tile of this.tiles.values()) release(tile); this.tiles.clear(); this.mapPreview.dispose(); }
+  dispose() { this.cancelWarmup(); for (const tile of this.tiles.values()) release(tile); this.tiles.clear();this.layoutDirty.clear(); this.mapPreview.dispose(); }
   // 仅绘制视野内块，不把全地图纹理作为 CanvasPattern 每帧提交。
   draw(c, view, night) {
     const specs = groundTiles(view);

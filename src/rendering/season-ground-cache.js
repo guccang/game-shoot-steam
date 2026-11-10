@@ -23,7 +23,7 @@ export class SeasonGroundCache {
   // 公开当前已发布的纹理，维持现有入场与诊断入口。
   get tiles(){return this.current.tiles;}
   // 营地搬迁同步刷新当前与过渡中的地面，避免旧院落在换季时重新出现。
-  invalidateCampLayout(){for(const pool of this.pools())pool.invalidateCampLayout();}
+  invalidateCampLayout(regions=null){for(const pool of this.pools())pool.invalidateCampLayout(regions);}
   // 风格切换重建各季节的派生纹理，保留同一调度器、请求、遮罩与渐变时钟。
   refreshArtStyle(){
     if(this.disposed)return;
