@@ -1,0 +1,461 @@
+{
+  "version": 1,
+  "description": "十五种地貌团子透明PNG独立部件，脚底及动作由正式运行时驱动",
+  "entries": {
+    "snowcap": {
+      "file": "snowcap.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          43,
+          236,
+          169
+        ],
+        "crown": [
+          266,
+          81,
+          236,
+          93
+        ],
+        "left": [
+          51,
+          266,
+          153,
+          236
+        ],
+        "right": [
+          307,
+          266,
+          154,
+          236
+        ]
+      },
+      "bytes": 176920,
+      "sourceSha256": "a1b8b15a82e03f69c41d538585977ca44637bd37a2d6dc7c5c610aa83de0245d"
+    },
+    "icehorn": {
+      "file": "icehorn.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          34,
+          10,
+          188,
+          236
+        ],
+        "crown": [
+          266,
+          47,
+          236,
+          162
+        ],
+        "left": null,
+        "right": null
+      },
+      "bytes": 99392,
+      "sourceSha256": "8234e0de0236e63852be944a100349dd955b938e4924fb9e40c69d559b2a5b1a"
+    },
+    "avalanche": {
+      "file": "avalanche.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          44,
+          236,
+          167
+        ],
+        "crown": [
+          276,
+          10,
+          216,
+          236
+        ],
+        "left": [
+          10,
+          282,
+          236,
+          204
+        ],
+        "right": [
+          266,
+          282,
+          236,
+          204
+        ]
+      },
+      "bytes": 206020,
+      "sourceSha256": "ff6e58a0c480107cbf5fed645444f392a42b2db3462eab3037a6a1785e6fa146"
+    },
+    "lavapot": {
+      "file": "lavapot.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          40,
+          236,
+          176
+        ],
+        "crown": [
+          266,
+          54,
+          236,
+          148
+        ],
+        "left": null,
+        "right": null
+      },
+      "bytes": 93882,
+      "sourceSha256": "92d5b49eb200c6e0d8a8dd72236fef0d3d4103c38891e78acc01472d49bf2f72"
+    },
+    "ashfan": {
+      "file": "ashfan.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          60,
+          236,
+          136
+        ],
+        "crown": [
+          266,
+          65,
+          236,
+          125
+        ],
+        "left": [
+          56,
+          266,
+          144,
+          236
+        ],
+        "right": null
+      },
+      "bytes": 118719,
+      "sourceSha256": "15390047f93c55fa85b2f006008408b6af927e8f584413e1351ac201977a917c"
+    },
+    "obsidian": {
+      "file": "obsidian.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          32,
+          10,
+          191,
+          236
+        ],
+        "crown": [
+          302,
+          10,
+          163,
+          236
+        ],
+        "left": [
+          74,
+          266,
+          108,
+          236
+        ],
+        "right": [
+          329,
+          266,
+          109,
+          236
+        ]
+      },
+      "bytes": 149353,
+      "sourceSha256": "311af82d03a114e067d52c6b36505545e67e4dad9a40ada812f94d0d29eba7a3"
+    },
+    "lotus": {
+      "file": "lotus.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          64,
+          236,
+          127
+        ],
+        "crown": [
+          266,
+          73,
+          236,
+          109
+        ],
+        "left": [
+          10,
+          284,
+          236,
+          199
+        ],
+        "right": [
+          266,
+          282,
+          236,
+          203
+        ]
+      },
+      "bytes": 162028,
+      "sourceSha256": "ea2fb611d19b96dbcc418dbcdf2178d8e1e36a74c6b238e3792b1d46e7ae5802"
+    },
+    "bubble": {
+      "file": "bubble.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          31,
+          10,
+          194,
+          236
+        ],
+        "crown": [
+          266,
+          41,
+          236,
+          173
+        ],
+        "left": [
+          10,
+          285,
+          236,
+          198
+        ],
+        "right": [
+          266,
+          286,
+          236,
+          196
+        ]
+      },
+      "bytes": 190226,
+      "sourceSha256": "0dd7d26c7089bfbdab30205e30f7c40dbc12107388b4a81f4db19faf989f45d5"
+    },
+    "whirlpool": {
+      "file": "whirlpool.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          75,
+          236,
+          106
+        ],
+        "crown": [
+          266,
+          70,
+          236,
+          115
+        ],
+        "left": [
+          10,
+          304,
+          236,
+          159
+        ],
+        "right": [
+          266,
+          304,
+          236,
+          159
+        ]
+      },
+      "bytes": 145709,
+      "sourceSha256": "5a8c28278c05ad2dafbefede165fba9fc322628977cf25b07f36f2fba8a572e0"
+    },
+    "fern": {
+      "file": "fern.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          22,
+          236,
+          212
+        ],
+        "crown": [
+          266,
+          68,
+          236,
+          120
+        ],
+        "left": null,
+        "right": null
+      },
+      "bytes": 99591,
+      "sourceSha256": "097162832e04323fb164b59664b89927d4185003a80780ee8e46262f008d5c05"
+    },
+    "orchid": {
+      "file": "orchid.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          42,
+          236,
+          172
+        ],
+        "crown": [
+          266,
+          19,
+          236,
+          218
+        ],
+        "left": null,
+        "right": null
+      },
+      "bytes": 120012,
+      "sourceSha256": "c59a7c44f595c39b45ce9e721bab52cb790cfabae0216e10762539bea3851ec8"
+    },
+    "vine": {
+      "file": "vine.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          18,
+          10,
+          220,
+          236
+        ],
+        "crown": null,
+        "left": [
+          73,
+          266,
+          110,
+          236
+        ],
+        "right": [
+          333,
+          266,
+          101,
+          236
+        ]
+      },
+      "bytes": 96508,
+      "sourceSha256": "5e549748bae9ec1aa233d3282059903ecd6adbd33b6e049079f0ab6502b092b4"
+    },
+    "shale": {
+      "file": "shale.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          61,
+          236,
+          134
+        ],
+        "crown": [
+          266,
+          73,
+          236,
+          110
+        ],
+        "left": null,
+        "right": null
+      },
+      "bytes": 78817,
+      "sourceSha256": "baed4b23c13a9bd918ac20830f3529e2dbd9e1638dc7a7d8a19d8c6542b959d2"
+    },
+    "sandbell": {
+      "file": "sandbell.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          22,
+          10,
+          212,
+          236
+        ],
+        "crown": [
+          266,
+          50,
+          236,
+          155
+        ],
+        "left": [
+          14,
+          266,
+          228,
+          236
+        ],
+        "right": [
+          270,
+          266,
+          227,
+          236
+        ]
+      },
+      "bytes": 208349,
+      "sourceSha256": "fa88b29a2011b1a7e5529d0428bd3b14d84e529c03bfc9841459be193e25745c"
+    },
+    "riftcrystal": {
+      "file": "riftcrystal.png",
+      "size": [
+        512,
+        512
+      ],
+      "parts": {
+        "body": [
+          10,
+          43,
+          236,
+          169
+        ],
+        "crown": [
+          266,
+          21,
+          236,
+          213
+        ],
+        "left": null,
+        "right": null
+      },
+      "bytes": 110980,
+      "sourceSha256": "87fb2576cba312e9e6addd7b119920a245e1d4e877f1087ddc21aeab7da75ed1"
+    }
+  }
+}
