@@ -1,7 +1,7 @@
 import {REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';
 import {buildSettlementFences} from './settlements.js';
 // 已购地块的并集外轮廓，同时供正式木栏、通行碰撞和规划图读取。
-import {CAMP_PLOTS,ownsCampPlot} from '../config/camp-land.js';
+import {campPlots,CAMP_PLOTS,ownsCampPlot} from '../config/camp-land.js';
 import {SETTLEMENTS} from '../config/settlements.js';
 import {nearest} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
@@ -16,7 +16,7 @@ function outline(regions){const lines=[];
  lines.sort((a,b)=>a.side.localeCompare(b.side)||a.fixed-b.fixed||a.lo-b.lo);const merged=[];for(const line of lines){const last=merged.at(-1);if(last&&last.side===line.side&&last.fixed===line.fixed&&last.hi===line.lo)last.hi=line.hi;else merged.push({...line});}return merged;
 }
 // 五块地仅有有限组合，缓存最多32项，不在碰撞热路径重建围栏。
-export function campBoundary(progress){const owned=CAMP_PLOTS.filter(p=>ownsCampPlot(progress,p.id)),key=owned.map(p=>p.id).join('|');if(cache.has(key))return cache.get(key);
+export function campBoundary(progress){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=owned.map(p=>p.id+':'+p.top).join('|');if(cache.has(key))return cache.get(key);
  const regions=[...owned,SETTLEMENTS.find(s=>s.id==='neighbors')],lines=outline(regions),objects=[],gates=[];
  for(const line of lines){const {horizontal,fixed,lo,hi,side}=line;let gate=null;
  const gateWidth=horizontal&&side==='bottom'&&fixed===850?520:CAMP_GATE_WIDTH;
@@ -25,7 +25,7 @@ export function campBoundary(progress){const owned=CAMP_PLOTS.filter(p=>ownsCamp
  for(const [a,b] of parts){const count=Math.ceil((b-a)/58);for(let i=0;i<count;i++)objects.push({type:'settlement-fence',settlement:'sunleaf',horizontal,x:horizontal?a+(b-a)*(i+.5)/count:fixed,y:horizontal?fixed:a+(b-a)*(i+.5)/count,length:(b-a)/count});}
  }
  const remote=buildSettlementFences(REGIONAL_SETTLEMENTS);objects.push(...remote);gates.push(...remote.filter(o=>o.type==='settlement-gate'));
- const grid=new SpatialGrid(objects.filter(o=>o.type==='settlement-fence').map(o=>({...o,radius:o.length/2+5}))),result={objects,gates,lines,regions,grid,key};cache.set(key,result);return result;
+ const grid=new SpatialGrid(objects.filter(o=>o.type==='settlement-fence').map(o=>({...o,radius:o.length/2+5}))),result={objects,gates,lines,regions,grid,key};if(cache.size>=64)cache.delete(cache.keys().next().value);cache.set(key,result);return result;
 }
 // 实际围栏采用同一有限线段，牵引车与拖挂均按各自半径检查。
 export function campBoundaryBlocked(x,y,radius,progress){return campBoundary(progress).grid.query(x,y,x,y,radius).some(f=>{const p=nearest({x,y},f);return f.horizontal?Math.abs(p.x-f.x)<f.length/2+radius&&Math.abs(p.y-f.y)<radius+5:Math.abs(p.y-f.y)<f.length/2+radius&&Math.abs(p.x-f.x)<radius+5;});}

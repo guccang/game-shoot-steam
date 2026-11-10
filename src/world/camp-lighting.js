@@ -1,6 +1,6 @@
 // 友善营地的基础亮度和路口灯具，按地契与布局缓存，不扫描整张世界。
 import {CAMP_LIGHTING} from '../config/camp-lighting.js';
-import {CAMP_PLOTS,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
+import {campPlots,CAMP_PLOTS,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
 import {CAMP_BUILDINGS,campBuildingPosition} from '../config/camp-layout.js';
 import {TOWN_PATHS} from '../config/town-layout.js';
 import {REGIONAL_CAMPS,REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';
@@ -12,7 +12,7 @@ const cache=new WeakMap();
 // 只在真实友善地契范围开灯，未购买的野地不会提前变成亮营地。
 export function campLightRegions(game){
  if(game.mapId!=='forest'||game.realm||game.cottage)return [];
- return [...CAMP_PLOTS.filter(p=>ownsCampPlot(game.progress,p.id)),SETTLEMENTS.find(s=>s.id==='neighbors'),...REGIONAL_SETTLEMENTS];
+ return [...campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id)),SETTLEMENTS.find(s=>s.id==='neighbors'),...REGIONAL_SETTLEMENTS];
 }
 
 // 周期世界中使用实际矩形边界，不能因为主营地的负坐标而漏掉照明。

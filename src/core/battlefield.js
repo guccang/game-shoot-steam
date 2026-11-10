@@ -1,3 +1,4 @@
+import {campExpansionPoint} from '../config/camp-land.js';
 import {restoreVehicleService} from './vehicles/vehicle-repair.js';
 import {farmCovers} from '../world/farm-land.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -109,6 +110,7 @@ export function* populateBattlefieldSteps(game){
 
 // 树木初始化与再生统一从此入口生成，避免属性默认值散落。
 export function addTree(game, x, y, details = {}) {
+  if(game.mapId==='forest'&&!game.story&&!game.realm&&campExpansionPoint({x,y},game.progress,60))return;
   // 已开垦土地保留，旧树不能在读档或再生时覆盖农作物。
   if(farmCovers(game,{x,y}))return;
   if (game.mapId === 'jiuzhaigou' ? valleyBlocked(x, y, 30) : excludesNaturalScenery(x, y, true) || isWaterScenery(x, y) || (x > 485 && x < 655 && y > 350 && y < 530)) return;

@@ -1,3 +1,4 @@
+import {campExpansionPoint} from '../config/camp-land.js';
 import { visibilityRoute } from './visibility-route.js';
 import { i18nText } from "../i18n/index.js";
 // 自然地貌绕行：小型可见图只在路径被湖山挡住时建立，普通追击仍走直线。
@@ -90,6 +91,7 @@ export function forgetNaturalRoute(body) { routes.delete(body); }
 // 通行采样同时包含河流与湖山，扑击和路径搜索使用同一个判定。
 export function terrainBlocked(x, y, radius = 12, mapId = 'forest') {
   if (mapId === 'jiuzhaigou') return valleyBlocked(x, y, radius);
+  if(campExpansionPoint({x,y}))return false;
   return isWaterBlocked(x, y, radius) || isNaturalBlocked(x, y, radius);
 }
 

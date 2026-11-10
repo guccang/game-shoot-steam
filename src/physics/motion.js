@@ -1,3 +1,4 @@
+import {campExpansionPoint} from '../config/camp-land.js';
 import {campBoundaryBlocked} from '../world/camp-boundary.js';
 import {PASTURE,PEN_RAILS} from '../config/pasture.js';
 import {worldBuildingBlocked} from '../world/building-collision.js';
@@ -47,7 +48,7 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
   const index = trees.query ? trees : trees.length > 24 ? treeGrid(trees) : null;
   const candidates = index ? index.query(x, y, x, y, radius) : trees;
   for (const t of candidates) {
-    if (t.hp <= 0) continue;
+    if (t.hp <= 0||body?.mapId==='forest'&&!body.arena&&campExpansionPoint(t,body.campProgress,60)) continue;
     const dx = delta(t.x - x, WORLD.width), dy = delta(t.y - y, WORLD.height);
     if (dx * dx + dy * dy < (t.radius + radius) ** 2) return true;
   }

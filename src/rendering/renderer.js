@@ -1,3 +1,4 @@
+import {campExpansionPoint} from '../config/camp-land.js';
 import {campFestivalObjects,drawCampPlaza,drawFestivalLion,drawFestivalCouplets,drawFestivalFireworks} from './camp-festivals.js';
 import {campDecorationObjects,drawCampDecoration,drawCampDecorShop} from './camp-decor.js';
 import {setCampBuildingFinish} from './camp-building-finish.js';
@@ -524,6 +525,7 @@ export class Renderer {
     for (const item of objects) {
       if(source.balconyScene&&item.type==='player')continue;
       // 独立运动草坪覆盖原地表，平台内部不能残留森林摆件或山体遮挡。
+      if(source.mapId==='forest'&&!source.realm&&!source.story&&!source.campDefense&&['tree','stump','landform','earth-landform'].includes(item.type)&&campExpansionPoint(item,source.progress,60))continue;
       if(item.kind==='district-sign'&&source.progress.campManagement?.items.some(d=>d.type==='default-sign-'+item.id)&&!source.realm&&!source.story&&!source.campDefense)continue;
       if(['football','race'].includes(source.realm?.mode)&&['scenery','landform','fixture','signpost'].includes(item.type)&&Math.hypot(item.x-source.realm.arena.x,item.y-source.realm.arena.y)<source.realm.arena.radius+220)continue;
       // 宽麦田按真实冠幅裁剪，镜头经过行中心外侧时仍保留伸入画面的麦穗。

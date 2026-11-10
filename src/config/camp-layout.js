@@ -8,7 +8,7 @@ export const CAMP_BUILDINGS=Object.entries({cottage:'巡林小屋',weapons:'武�
  // 停车场以底边中心为规划锚点，六车位保持原稳定标识。
  {id:'north',name:'北门停车场',x:NORTH_PARKING.x+NORTH_PARKING.width/2,y:NORTH_PARKING.y+NORTH_PARKING.height,width:NORTH_PARKING.width,height:NORTH_PARKING.height,parking:true}]);
 // 原坐标单独保存，运行设施迁移不会反过来改变默认规划。
-export function normalizeCampLayout(raw){const positions={};for(const b of CAMP_BUILDINGS){const p=raw?.positions?.[b.id];if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=-1120&&p.x<=790&&p.y>=-58&&p.y<=1400)positions[b.id]={x:Math.round(p.x/CAMP_LAYOUT_GRID)*CAMP_LAYOUT_GRID,y:Math.round(p.y/CAMP_LAYOUT_GRID)*CAMP_LAYOUT_GRID};}return {version:1,positions};}
+export function normalizeCampLayout(raw){const positions={};for(const b of CAMP_BUILDINGS){const p=raw?.positions?.[b.id];if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=-1120&&p.x<=790&&p.y>=-23500&&p.y<=1400)positions[b.id]={x:Math.round(p.x/CAMP_LAYOUT_GRID)*CAMP_LAYOUT_GRID,y:Math.round(p.y/CAMP_LAYOUT_GRID)*CAMP_LAYOUT_GRID};}return {version:1,positions};}
 // 从草稿或已保存配置读取建筑脚底；未搬动时完全沿用旧坐标。
 export function campBuildingPosition(layout,building){return {...building,...layout?.positions?.[building.id]};}
 
