@@ -31,8 +31,8 @@ function arch(c,x,y,w,h){
 // 窗户用暖木外框和大块玻璃，细节数量与树冠内部曲线相近。
 export function drawInsetWindow(c,x,y,w,h,night=false){
  c.save();arch(c,x-3,y-3,w+6,h+6);c.fillStyle='#bba071';c.fill();c.strokeStyle=EDGE;c.lineWidth=1.8;c.stroke();
- arch(c,x+1,y+1,w-2,h-2);c.fillStyle=night?'#d5b66d':'#8eac91';c.fill();c.save();c.clip();
- c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y);c.lineTo(x+w,y+h*.42);c.quadraticCurveTo(x+w*.45,y+h*.70,x,y+h*.50);c.closePath();c.fillStyle=night?'#f5dfa1':'#c3d6af';c.fill();c.restore();
+ arch(c,x+1,y+1,w-2,h-2);c.fillStyle=night?'#ffe4a0':'#8eac91';c.fill();c.save();c.clip();
+ c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y);c.lineTo(x+w,y+h*.42);c.quadraticCurveTo(x+w*.45,y+h*.70,x,y+h*.50);c.closePath();c.fillStyle=night?'#fff2c1':'#c3d6af';c.fill();c.restore();
  c.strokeStyle='#c8b17f';c.lineWidth=2.4;c.lineCap='round';c.beginPath();c.moveTo(x+w*.5,y+1);c.lineTo(x+w*.5,y+h-1);if(h>22){c.moveTo(x+1,y+h*.56);c.lineTo(x+w-1,y+h*.56);}c.stroke();
  box(c,x-5,y+h+1,w+10,4,2,'#a18e65',null);c.restore();
 }

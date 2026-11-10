@@ -1,3 +1,4 @@
+import {buildingWindowLights,drawCampWindowLights} from './camp-window-lights.js';
 import {drawSurfaceFog} from './surface-fog.js';
 import {regionalCampObjects,drawRegionalCamp,drawRegionalCampGround} from './regional-camps.js';
 import {activateCampLayout} from '../world/camp-layout-bindings.js';
@@ -403,7 +404,7 @@ export class Renderer {
     for (const entry of entrances) drawRealmEntranceGround(c, entry, light.night);
     const storyPosts=visibleBodies([...storyPostObjects(camp),...clearingPostObjects(camp)],view,150);
     for(const post of storyPosts)drawStoryPostGround(c,post);
-    const lamps = valley ? [] : visibleLights(view, time, light, this.reduced.matches).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
+    const lamps = valley ? [] : visibleLights(view, time, light, this.reduced.matches,source).filter(l=>!['football','race'].includes(source.realm?.mode)||Math.hypot(l.x-source.realm.arena.x,l.y-source.realm.arena.y)>source.realm.arena.radius+220);
     // 赛跑不显示自动攻击范围。
     if(!flight&&!source.balconyScene&&source.realm?.mode!=='race'&&!farmWorking(source)){
     // 淡淡的射程圈帮助理解自动攻击距离。
@@ -493,6 +494,9 @@ export class Renderer {
       Number(!!a.flying) - Number(!!b.flying) || (source.balconyScene?(balconyProject(view,a).y-balconyProject(view,b).y)/zoom: a.y-b.y)+(a.depthOffset||0)-(b.depthOffset||0),
     );
     if(source.balconyScene)this.balconyObjects=objects.map(item=>({type:item.type,kind:item.kind,workshop:item.workshop,x:item.x,y:item.y}));
+    const windowGroups=new Map(objects.map(item=>[item,buildingWindowLights(item,camp)]));
+    const windowLights=[...windowGroups.values()].flat();
+    this.campLightingReview={windows:windowLights,lamps:lamps.filter(l=>l.campLight),night:light.night};
     const buildingShadows=source.balconyScene?[]:objects.filter(item=>{const f=restorationForObject(item);return !f||facilityOpen(camp.progress,f.id);}).map(buildingShadowShape).filter(Boolean);
     for(const b of buildingShadows)drawBuildingCastShadow(c,b,light.night);
     const playerLighting=sampleSceneLight(g.player,light,g.trees,lamps,buildingShadows);
@@ -663,6 +667,7 @@ export class Renderer {
         drawEnergyShield(c,source,g.player,this.reduced.matches);
         c.restore();
       }
+      drawCampWindowLights(c,windowGroups.get(item),light.night);
       if(cachedBuilding)profiler?.end('render.campBuildings');
       drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();
     }
@@ -784,7 +789,7 @@ export class Renderer {
     profiler?.start('render.tone');
     this.tone.draw(c, w, h, this.environment, performance.now(), this.reduced.matches);
     profiler?.end('render.tone');
-    drawSurfaceFog(this,renderGame,g.player,view,lamps,light.night);
+    drawSurfaceFog(this,renderGame,g.player,view,lamps,light.night,windowLights);
     profiler?.start('render.indicators');
     drawPlayerActionCountdown(this);
     drawWaterBagIndicator(this);

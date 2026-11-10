@@ -1,3 +1,5 @@
+import {campRoadLights} from './camp-lighting.js';
+import {CAMP_LIGHTING} from '../config/camp-lighting.js';
 // 固定环境灯位与光照采样：独立于战斗、存档和随机数，循环地图共用同一布局。
 import {TOWN_SHIFT_X} from '../config/town-layout.js';
 import { PATHS } from './biomes.js';
@@ -25,7 +27,7 @@ export const LIGHT_FIXTURES = [
     phase: i * 2.39996,
     height: item.kind === 'lamp' ? 86 : 58,
     offset: item.kind === 'lamp' ? 18 : 0,
-    radius: item.kind === 'lamp' ? 145 : 112,
+    radius: item.kind === 'lamp' ? CAMP_LIGHTING.lampRadius : 150,
   }),
 );
 
@@ -43,8 +45,8 @@ export function fixturePower(fixture, time, environment, reduced = false) {
 }
 
 // 可见镜像包含视口外照进来的光源，不创建额外实体或改变碰撞。
-export function visibleLights(view, time, environment, reduced = false) {
-  return visibleBodies(LIGHT_FIXTURES, view, 190).map((fixture) => ({
+export function visibleLights(view, time, environment, reduced = false, game=null) {
+  return visibleBodies(game?.mapId==='forest'&&!game.realm?[...LIGHT_FIXTURES,...campRoadLights(game.progress)]:LIGHT_FIXTURES, view, CAMP_LIGHTING.lampRadius+120).map((fixture) => ({
     ...fixture,
     power: fixturePower(fixture, time, environment, reduced),
   }));
