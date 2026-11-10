@@ -39,7 +39,7 @@ export function enterParkedWorkshop(game,parkingId){
 function enterInterior(game,kind,parkingEntrance=null,mountedCountdown=false){
  // 仓库使用室外存取页面，不再切换室内坐标或让驾驶员下车。
  if(kind==='warehouse')return false;
- if(!facilityOpen(game.progress,kind==='vehicle'?'garage':kind))return false;
+ if(!WORKSHOP_INTERIORS[kind]?.regional&&!facilityOpen(game.progress,kind==='vehicle'?'garage':kind))return false;
  const layout=interiorLayout({kind});
  if(kind==='legendary'&&!game.progress.vehicleHulls[6])return false;
  if(game.cottage||!canEnterCottage(game)||game.state!=='playing'||game.progress.restoration?.build||game.mainlineSpeech||worldDistance(game.player,parkingEntrance||layout.door)>layout.radius)return false;
@@ -115,7 +115,7 @@ export function updateCottage(game,dt,input){
   if(!latched||worldDistance(game.player,latched.door)>latched.radius+18)game.cottageDoorLatch=false;
   else {game.cottageEntry=null;game.cottageEntryKind=null;return false;}
  }
- if(!facilityOpen(game.progress,layout.id==='vehicle'?'garage':layout.id)||worldDistance(game.player,layout.door)>layout.radius||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>3){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
+ if(!layout.regional&&!facilityOpen(game.progress,layout.id==='vehicle'?'garage':layout.id)||worldDistance(game.player,layout.door)>layout.radius||Math.hypot(input.x,input.y)>.01||Math.hypot(game.player.vx||0,game.player.vy||0)>3){game.cottageEntry=null;game.cottageEntryKind=null;return false;}
  if(game.cottageEntryKind!==layout.id)game.cottageEntry=0;
  game.cottageEntryKind=layout.id;game.cottageEntry=(game.cottageEntry||0)+dt;
  return game.cottageEntry+1e-9>=layout.wait?enterInterior(game,layout.id,null,true):false;

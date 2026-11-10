@@ -1,3 +1,5 @@
+import {approachBuilding} from '../core/navigation/scene-approach.js';
+import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
 import {createRegionalCampPanel} from '../ui/regional-camps.js';
 import {recoverRegionalParcel} from '../core/camp/regional-camps.js';
 import {createCampLayoutPanel} from '../ui/camp-layout.js';
@@ -193,7 +195,7 @@ export function createApplication({
       industryPanel?.render();
     }
     seedShop?.render();
-    monsterCampPanel?.render();regionalCampPanel?.render();
+    monsterCampPanel?.render();if(!afterDraw)regionalCampPanel?.render();
     clearingPanel?.render();
     firePanel?.render();
     mainline?.render();
@@ -348,6 +350,7 @@ export function createApplication({
   npcConversations=createNpcConversations({game,root,renderer,dialogs,onChange:refresh,onCampService:()=>mainline.talk()});
   // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
   function openRoomService(kind,index){
+    const regional=WORKSHOP_INTERIORS[kind];if(regional?.regional)return regionalCampPanel.open(regional.regional,regional.regionalTab);
     if(kind==='refinery'||kind==='factory')return industryPanel.open(kind);
     if(kind==='construction')return campHome.openService(kind,index);
     if(kind==='warehouse')return warehouse.open();
@@ -373,6 +376,7 @@ export function createApplication({
       else restorationPanel.open(entry.key);
     }
     else if(entry.type==='arrival-repair')game.advanceArrival();
+    else if(entry.type==='regional-building')approachBuilding(game,entry.key);
     else if(entry.type==='regional-camp')regionalCampPanel.open(entry.key);
     else if(entry.type==='regional-parcel'){const result=recoverRegionalParcel(game,entry.key);toast.show(result.message);refresh();}
     else if(entry.type==='monster-camp')monsterCampPanel.open(entry.key,entry.id);

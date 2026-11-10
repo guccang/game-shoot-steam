@@ -65,6 +65,8 @@ test('货签只在接单后由森林地面怪掉落，背包与交还数量一�
 
 for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、读档再到站且只领一次佣金',()=>{
  let g=scene();assert.equal(tradeAction(g,'escort',station.id).ok,true);
+ // 远程线路使用分帧导航；这里验证营地南门最后一段护送、重载与结算。
+ locate(g,{x:station.x-100,y:station.y+430});Object.assign(g.progress.trade.escort,{x:g.player.x,y:g.player.y});
  const path=planQuestRoute({...g.player,mapId:'forest',livingCollision:true},station,g.trees);assert.equal(path.reachable,true);
  const start={...g.progress.trade.escort};locate(g,station);updateTradeEscort(g,.05);
  assert.equal(worldDistance(g.progress.trade.escort,start),0);assert.equal(tradeAction(g,'finish-escort').ok,false);locate(g,start);
@@ -96,7 +98,7 @@ test('同一订单重复结算只标记一次，旧档从成功交付记录找�
  delete old.trade.completed;
  old.economyLog.income['trade:give-relic:coins']=90;
  old.economyLog.income['trade:finish-escort:coins']=380;
- assert.deepEqual(validateProgress(old).trade.completed,['crop','relic',...TRADE_STATIONS.map(s=>s.id)]);
+ assert.deepEqual(validateProgress(old).trade.completed,['crop','relic',...TRADE_STATIONS.slice(0,2).map(s=>s.id)]);
 });
 
 // 只在路障现场累计损伤，失败不会发放佣金，重新接单也不会把旧怪算入新单。

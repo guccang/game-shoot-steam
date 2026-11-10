@@ -29,7 +29,7 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
   sections.push(`<section class="ui-inset"><h3>商队寻物${completionLabel('relic')}</h3><p>击败森林地面怪物，找回货签 ${t.relic??0}/3，报酬 ${TRADE_RELIC.coins} 金币。</p>${button(t.relic===null?'take-relic':'give-relic',t.relic===null?'接受寻物委托':'交还货签','',!board||t.relic!==null&&t.relic<3)}
    </section>`);
   sections.push('<section class="ui-inset"><h3>商路行情</h3><p>营地按原价收购。到站可卖自己的货；护送另领佣金。</p>'+
-   TRADE_STATIONS.map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${s.commission} 金币 · ${s.guards?'途中有拦路怪':'沿途有营地木栏保护'}</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接护送单',s.id,!board):''}`).join('')+'</section>');
+   TRADE_STATIONS.map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${s.commission} 金币 · ${s.guards?'途中有拦路怪':'无需击退专属拦路怪'}</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接护送单',s.id,!board):''}`).join('')+'</section>');
   if(e){const goal=TRADE_STATIONS.find(s=>s.id===e.station);
    sections.unshift(`<section class="ui-inset"><h3>正在护送 · ${goal.name}</h3><p>车况 ${Math.ceil(e.hp)}%${goal.guards?'，拦路怪 '+e.cleared+'/'+goal.guards:''}。在车旁领路，离队时商队等候。</p>${button('route','寻找商队','caravan')} ${button('finish-escort','领取佣金 '+goal.commission,'',local!==goal||worldDistance(e,goal)>125||e.cleared!==goal.guards)}</section>`);
   }

@@ -24,7 +24,7 @@ import {mineEntrances} from '../../world/mine-entrances.js';
 // 全部已有营业房共用目录，仓库保留室外存取事务，不另造库存或室内服务。
 export {CLICK_BUILDINGS};
 // 限制场景状态，保留修复、传奇解锁及活动中的原有权限。
-export function clickableBuildings(game){return canInspectBuilding(game)&&canEnterCottage(game)&&game.state==='playing'&&!game.progress.restoration?.build&&!farmMode(game)?CLICK_BUILDINGS.filter(b=>ownsCampPoint(game.progress,b.site)&&(b.id!=='legendary'||game.progress.vehicleHulls[6])):[];}
+export function clickableBuildings(game){return canInspectBuilding(game)&&canEnterCottage(game)&&game.state==='playing'&&!game.progress.restoration?.build&&!farmMode(game)?CLICK_BUILDINGS.filter(b=>(b.regional||ownsCampPoint(game.progress,b.site))&&(b.id!=='legendary'||game.progress.vehicleHulls[6])):[];}
 // 命中完整建筑和门前空地，循环世界边缘使用最近镜像。
 export function buildingContains(building,point,game){const site=nearest(building.site,point),door=nearest(building.door,point);return Math.abs(point.x-site.x)<=building.site.width/2&&point.y>=site.y-buildingClickHeight(building,game)&&point.y<=site.y+20||Math.abs(point.x-door.x)<=A.doorHalfWidth&&Math.abs(point.y-door.y)<=A.doorDepth;}
 // 加盖后的整栋立面都可点击；未修复时继续使用原施工地块的范围。
@@ -63,7 +63,7 @@ export function approachParkedVehicle(game,hull){
 }
 // 主动点击可重新进入刚离开的门，不改变无点击时的防重复候停。
 export function approachBuilding(game,id){
- const b=clickableBuildings(game).find(b=>b.id===id);if(!b||!facilityOpen(game.progress,id==='vehicle'?'garage':id))return false;
+ const b=clickableBuildings(game).find(b=>b.id===id);if(!b||!b.regional&&!facilityOpen(game.progress,id==='vehicle'?'garage':id))return false;
  if(!request(game,id,nearest(b.door,game.player)))return false;
  game.cottageDoorLatch=false;return true;
 }

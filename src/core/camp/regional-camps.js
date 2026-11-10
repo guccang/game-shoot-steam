@@ -58,7 +58,7 @@ export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target=
   if(next.vehicleWeapons[c.gun])return {ok:false,message:'已经拥有这门主炮，无需重复购买。'};
   next.vehicleWeapons[c.gun]=1;cost=VEHICLE_WEAPONS[c.gun].cost;message='特色主炮已存入工坊装备库，可在营地为附近车辆安装。';
  }else if(action==='repair'){
-  const service=next.vehicleService[hull],site=vehicleLocations(g).find(v=>v.hull===hull),wreck=service?.phase==='wrecked'&&site?.mapId===g.mapId&&worldDistance(g.player,site)<=240;
+  const service=next.vehicleService[hull],site=vehicleLocations(g).find(v=>v.hull===hull),wreck=service?.phase==='wrecked'&&site?.mapId===g.mapId&&worldDistance(g.cottage?.outside||g.player,site)<=240;
   if(!nearby&&!wreck)return {ok:false,message:'请把车辆开到身边，或将残骸牵引到营地，再现场维修。'};
   if(next.logistics.tow&&next.logistics.tow.target!==hull)return {ok:false,message:'请先解除其他车辆的牵引。'};
   cost=vehicleRepairQuote(g,hull);if(!cost)return {ok:false,message:'这辆车状态良好，无需维修。'};

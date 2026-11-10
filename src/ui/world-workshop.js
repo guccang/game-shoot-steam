@@ -21,7 +21,7 @@ export function createWorldWorkshop({game,renderer,root,kind,onLocked}){
  function activate(building){
   if(root.hidden||root.querySelector('dialog[open]')||!clickableBuildings(game).some(b=>b.id===building.id))return false;
   const id=building.id==='vehicle'?'garage':building.id;
-  if(!facilityOpen(game.progress,id)){onLocked?.(id);return true;}
+  if(!building.regional&&!facilityOpen(game.progress,id)){onLocked?.(id);return true;}
   return approachBuilding(game,building.id);
  }
  // 原生键盘与画布短按共同进入正式寻路，不在界面层直接传送。

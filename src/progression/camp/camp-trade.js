@@ -16,7 +16,7 @@ export function normalizeTrade(raw,ledger){
   if(ledger?.income['trade:give-relic:coins']>0)completed.add('relic');
   const payouts=(ledger?.events||[]).filter(e=>e.source==='trade:finish-escort'&&e.type==='income').map(e=>e.amounts.coins);
   payouts.push(ledger?.income['trade:finish-escort:coins']);
-  for(const station of TRADE_STATIONS){
+  for(const station of TRADE_STATIONS.slice(0,2)){
    const other=TRADE_STATIONS.find(s=>s!==station);
    if(payouts.some(n=>n>0&&n%other.commission!==0))completed.add(station.id);
   }

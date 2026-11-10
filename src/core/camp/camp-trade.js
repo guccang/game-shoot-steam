@@ -54,7 +54,7 @@ export function tradeAction(game,action,id){
   }else if(action==='take-relic'&&t.relic===null){t.relic=0;message='已接寻物委托，击败森林地面怪物可找回货签。';}
   else if(action==='give-relic'&&t.relic===TRADE_RELIC.count){coins=TRADE_RELIC.coins;t.relic=null;completedId='relic';message='货签已交还商队';}
   else if(action==='escort'&&station&&!t.escort){
-   t.escort={station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message=station.guards?'商队已出发，请带路并击退途中劫货的怪物。':'商队已出发，请沿营地道路带队去旧哨驿站。';
+   t.escort={station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message=station.guards?'商队已出发，请带路并击退途中劫货的怪物。':'商队已出发，请带队前往'+station.name+'。';
   }else if(action==='finish-escort'&&destination&&worldDistance(t.escort,destination)<=125&&t.escort.cleared===destination.guards){
    coins=destination.commission;t.escort=null;completedId=destination.id;message='商队平安抵达';
   }else if(action==='sell'){

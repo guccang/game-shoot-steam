@@ -43,7 +43,7 @@ export function nearbyInteraction(game){
  if(canUseWarehouse(game))return {id:'warehouse',type:'warehouse',label:'打开仓库',detail:'格子存取 · 拖拽物品',presentation:'task-entry'};
  if(canRequestParking(game))return {id:'parking-'+nearestParkingSpot(game).id,type:'parking',label:'停车入位'};
  const entries=[];
- if(regionalCampAvailable(game))for(const c of REGIONAL_CAMPS){for(const site of [regionalNpc(c),...regionalBuildings(c).map(b=>({x:b.x,y:b.y+50}))]){const distance=worldDistance(game.player,site);if(distance<=130)entries.push({...site,id:c.id,type:'regional-camp',key:c.id,label:'拜访'+c.name,detail:'补给 · 维修 · 故事',distance});}const box=regionalParcel(c),distance=worldDistance(game.player,box);if(game.progress.regionalCamps[c.id].stage===1&&distance<=95)entries.push({...box,type:'regional-parcel',key:c.id,label:'寻找'+c.parcel,distance});}
+ if(regionalCampAvailable(game))for(const c of REGIONAL_CAMPS){for(const site of [regionalNpc(c),...regionalBuildings(c).map(b=>({x:b.x,y:b.y+50,building:b.id}))]){const distance=worldDistance(game.player,site);if(distance<=130)entries.push({...site,id:c.id,type:site.building?'regional-building':'regional-camp',key:site.building||c.id,label:site.building?'进入服务屋':'拜访'+c.name,detail:'补给 · 维修 · 故事',distance});}const box=regionalParcel(c),distance=worldDistance(game.player,box);if(game.progress.regionalCamps[c.id].stage===1&&distance<=95)entries.push({...box,type:'regional-parcel',key:c.id,label:'寻找'+c.parcel,distance});}
  if(personalFleet(game)){
   for(const [hull,r] of (game.progress.vehicleService||[]).entries()){
    if(r?.phase!=='wrecked'||r.mapId!==game.mapId)continue;
