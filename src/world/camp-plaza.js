@@ -1,4 +1,4 @@
-import {CAMP_BUILDINGS,campBuildingPosition} from '../config/camp-layout.js';
+import {CAMP_BUILDINGS,campBuildingPosition,campLayoutFootprints} from '../config/camp-layout.js';
 import {campDecorDefinition} from '../config/camp-management.js';
 // 中央庆典广场位于两座工坊之间；保留横向通路，永久装饰集中在边缘。
 import {nearest} from './coordinates.js';
@@ -9,4 +9,4 @@ export function overlapsCampPlaza(x,y,rx=0,ry=rx){const p=nearest({x,y},CAMP_PLA
 
 const occupancyCache=new WeakMap();
 // 旧档自定义布局不强制搬家；占用广场时暂停庆典陈列，移走后立即恢复。
-export function campPlazaOccupied(progress){const state=progress.campManagement,layout=progress.campLayout,plots=progress.farm?.plots,count=plots?.length,old=occupancyCache.get(progress);if(old&&old.state===state&&old.layout===layout&&old.plots===plots&&old.count===count)return old.occupied;const occupied=CAMP_BUILDINGS.some(b=>{if(!progress.campLayout?.positions?.[b.id])return false;const p=campBuildingPosition(progress.campLayout,b);return overlapsCampPlaza(p.x,p.y-p.height/2,p.width/2,p.height/2);})||(progress.campManagement?.items||[]).some(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type);return overlapsCampPlaza(i.x,i.y-d.height/2,d.width/2,d.height/2+d.depth/2);})||(progress.farm?.plots||[]).some(p=>p.mapId==='forest'&&overlapsCampPlaza(p.x,p.y,24,18));occupancyCache.set(progress,{state,layout,plots,count,occupied});return occupied;}
+export function campPlazaOccupied(progress){const state=progress.campManagement,layout=progress.campLayout,plots=progress.farm?.plots,count=plots?.length,old=occupancyCache.get(progress);if(old&&old.state===state&&old.layout===layout&&old.plots===plots&&old.count===count)return old.occupied;const occupied=CAMP_BUILDINGS.some(b=>{if(!progress.campLayout?.positions?.[b.id])return false;const p=campBuildingPosition(progress.campLayout,b);return p.parking?campLayoutFootprints(p).some(r=>overlapsCampPlaza((r.left+r.right)/2,(r.top+r.bottom)/2,(r.right-r.left)/2,(r.bottom-r.top)/2)):overlapsCampPlaza(p.x,p.y-p.height/2,p.width/2,p.height/2);})||(progress.campManagement?.items||[]).some(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type);return overlapsCampPlaza(i.x,i.y-d.height/2,d.width/2,d.height/2+d.depth/2);})||(progress.farm?.plots||[]).some(p=>p.mapId==='forest'&&overlapsCampPlaza(p.x,p.y,24,18));occupancyCache.set(progress,{state,layout,plots,count,occupied});return occupied;}

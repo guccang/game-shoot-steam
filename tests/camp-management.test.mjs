@@ -1,3 +1,4 @@
+import {checkCampPlacement} from '../src/core/camp/camp-layout.js';
 import {campPlazaOccupied} from '../src/world/camp-plaza.js';
 import {campFestivalObjects} from '../src/rendering/camp-festivals.js';
 // 营地交易、白名单、回滚与真实占地回归，避免只验证页面文案。
@@ -33,3 +34,5 @@ test('节庆购买失败回滚，不允许未购、未知和污染键注入',()=
 test('广场保持开放，八款路灯购买摆放后才发光，收纳关闭光源',()=>{const g=setup(),lamps=CAMP_DECOR_CATALOG.filter(d=>d.form==='lamp');assert.equal(lamps.length,8);for(const d of lamps){const r=buyCampDecor(g,d.id);assert.match(campDecorPlacementError(g,r.uid,90,740),/广场/);const q=spot(g,r.uid);assert.equal(placeCampDecor(g,r.uid,q.x,q.y).ok,true);}assert.equal(campDecorLights(g.progress).length,8);storeCampDecor(g,1);assert.equal(campDecorLights(g.progress).length,7);});
 
 test('旧档占用广场不强制移动，收纳后恢复春节表演',()=>{const g=setup();buyCampFestival(g,'spring');assert.equal(campPlazaOccupied(g.progress),false);assert.ok(campFestivalObjects(g).some(i=>i.type==='festival-lion'));const r=buyCampDecor(g,'fountain');g.progress.campManagement={...g.progress.campManagement,items:[{uid:r.uid,type:'fountain',x:90,y:740}]};assert.equal(campPlazaOccupied(g.progress),true);assert.equal(campFestivalObjects(g).length,0);assert.equal(g.progress.campManagement.items[0].x,90);storeCampDecor(g,r.uid);assert.equal(campPlazaOccupied(g.progress),false);assert.ok(campFestivalObjects(g).some(i=>i.type==='festival-lion'));});
+
+test('可移动停车场的东侧弯道也不能侵占庆典广场',()=>{const g=setup(),layout={version:1,positions:{north:{x:-300,y:920}}};assert.match(checkCampPlacement(g,layout,'north'),/广场/);g.progress.campLayout=layout;assert.equal(campPlazaOccupied(g.progress),true);});

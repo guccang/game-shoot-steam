@@ -15,7 +15,7 @@ import {capturePatrol} from '../battle/patrol-session.js';
 import {worldDistance,nearest} from '../../world/coordinates.js';
 // 门前、车道与正在使用的实体均不能被新建筑覆盖。
 export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.find(b=>b.id===id);if(!base)return '没有这座建筑。';const b=campBuildingPosition(layout,base);
- if(overlapsCampPlaza(b.x,b.y-b.height/2,b.width/2,b.height/2))return '请保留中央庆典广场。';
+ if(b.parking?campLayoutFootprints(b).some(r=>overlapsCampPlaza((r.left+r.right)/2,(r.top+r.bottom)/2,(r.right-r.left)/2,(r.bottom-r.top)/2)):overlapsCampPlaza(b.x,b.y-b.height/2,b.width/2,b.height/2))return '请保留中央庆典广场。';
  if(!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  // 停车场东侧弯道与入口计入占地，防止搬到房屋、树木或土地外。
  for(const {left,right,top,bottom} of campLayoutFootprints(b)){
