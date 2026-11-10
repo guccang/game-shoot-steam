@@ -61,3 +61,15 @@
 | PNG替换 | 不适用：本轮无图片替换，保持全部原有资产 |
 
 动态效果开发结论：通过。本轮仅交付场景可视范围摆放和移动，原地图编辑保留。无待修订项。PNG精修替换未开展，不属于本轮交付。
+
+## 场景快捷选取增补（制作前）
+本轮复用原透明编辑层及正式装饰画笔，不新增图片。矿产制造快捷位改为装饰；点击装饰的完整轮廓选取、再点击或拖动移动，确认保存后留在选取模式，取消不写存档。命中按脚底排序，触摸宽度至少44px，保留原比例、昼夜、遮挡和碰撞规则。验证手机快捷入口、选取无跳位、连续编辑、取消、退出恢复，以及原管理页流程。
+
+### 快捷选取验收结果
+
+- `designCriterion`: `decor-scene-shortcut`，正式入口 `src/ui/camp-world-placement.js::openPicker/pick/render`；沿用 `drawCampDecoration`，没有新增美术资源。
+- `tests/decor-scene-shortcut-browser.cjs` 通过：快捷位替换、进入后无需管理页、原位选取不跳动、真实触摸拖动、取消还原、点选微移、确认后连续选取、退出恢复游戏。
+- `tests/camp-world-placement-browser.cjs` 通过：旧管理页摆放、碰撞阻止、保存失败、暂停传递、手机昼夜及原角色/载具/怪物同屏回归。
+- 证据：`output/playwright/decor-scene-shortcut/shortcut.png`、`selected-day.png`、`picker-night-320.png`、`report.json`、`video/`；旧入口证据位于 `output/playwright/decor-world-placement/`。均保留主工作区，不进入游戏包。
+- 390宽日间与320宽夜间底板和按钮无溢出；编辑预览底框和主体与原灯笼同锚点。命中面积扩大仅用于触摸，不改变实体或道路碰撞；原资源加载与单画布预算不变。
+- 本轮结论：通过。未新增图案、动作或PNG替换；无待修订项。

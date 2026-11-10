@@ -1,3 +1,4 @@
+import {canManageCamp} from '../core/camp/camp-management.js';
 // 工厂页面以可拖放机器为中心，材料托盘和实际库存共用事务，关闭备料不会丢失物品。
 import {createEventScope} from '../platform/events.js';
 import {INDUSTRY_SITES,industryDoor,canUseIndustry,industryVehicles,industryMaterialSources,transferIndustry,updateIndustry} from '../core/industry/industry.js';
@@ -17,7 +18,7 @@ export function createIndustryPanel({game,root,renderer,dialogs,input,onChange,o
  panel.id='industry-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','industry-title');
  panel.innerHTML='<header class="ui-panel__header"><div><h2 id="industry-title">矿产提炼厂</h2></div><button class="ui-close" data-industry-close aria-label="关闭工厂">×</button></header><div class="ui-panel__body"><nav class="industry-tabs" aria-label="生产环节"><button class="ui-button" data-industry-site="refinery">提炼厂</button><button class="ui-button" data-industry-site="factory">加工厂</button></nav><div class="industry-recipe-bar"><span data-industry-product aria-hidden="true"></span><select data-industry-recipe aria-label="选择产物配方"></select><output data-industry-count-label aria-live="polite">×1</output></div><div class="industry-count"><input data-industry-count aria-label="本批生产份数" type="range" min="1" max="99" step="1" value="1"><div class="industry-presets" role="group" aria-label="快捷生产份数"><button type="button" data-industry-preset="1">1份</button><button type="button" data-industry-preset="5">5份</button><button type="button" data-industry-preset="10">10份</button><button type="button" data-industry-preset="max">最多</button></div></div><div class="industry-machine-stage"><canvas width="720" height="560" aria-label="工业机器生产场景"></canvas><button type="button" class="industry-hopper" data-industry-hopper aria-label="投料口，选中材料后点击投料"></button><button type="button" class="ui-button ui-button--primary industry-start" data-industry-start>启动</button><button type="button" class="industry-output" data-industry-output aria-label="产物自动存入小屋仓库"></button><span class="industry-drop-hint" aria-hidden="true">拖到这里</span></div><div class="industry-progress"><span data-industry-phase></span><span data-industry-duration></span></div><div class="industry-materials" aria-label="可拖入机器的材料"></div><div class="industry-finished" aria-label="等待入库的成品"></div><button class="ui-button" data-industry-route>前往工厂</button><details class="industry-help"><summary>配方 · 帮助</summary><p data-industry-formula></p><p data-industry-docked></p><p>拖材料或点选 → 投料 → 启动</p><p>取料：厂内 → 载具 → 仓库</p><p>启动才扣料 · 关页继续生产 · 成品自动存入小屋仓库</p><div data-industry-return-list></div></details></div><footer class="ui-panel__footer"><p id="industry-message" role="status"></p><button type="button" class="ui-button" data-industry-clear aria-label="清空备料">↺ 重置</button></footer>';
  root.body.append(panel);const find=s=>panel.querySelector(s),canvas=find('canvas'),ctx=canvas.getContext('2d'),hopper=find('[data-industry-hopper]'),start=find('[data-industry-start]'),tray=find('.industry-materials'),quantity=find('[data-industry-count]'),choice=find('select'),message=find('#industry-message');
- menu.type='button';menu.className='field-menu-item';menu.textContent='矿产制造';menu.setAttribute('aria-label','矿产提炼与加工');root.getElementById('field-menu-items').append(menu);
+ menu.type='button';menu.className='field-menu-item';menu.id='decor-scene-button';menu.textContent='装饰';menu.setAttribute('aria-label','装饰：在场景中选择并移动');menu.setAttribute('aria-controls','camp-world-placement');root.getElementById('field-menu-items').append(menu);
  // 所有热点使用正式场景的逻辑矩形，布局缩放后仍落在同一个料斗和出料台。
  for(const [key,node]of [['hopper',hopper],['start',start],['output',find('[data-industry-output]')]]){const r=INDUSTRY_SCENE[key];Object.assign(node.style,{left:r.x/3.6+'%',top:r.y/2.8+'%',width:r.w/3.6+'%',height:r.h/2.8+'%'});}
  // 草稿只存在页面会话内，不把材料提前转进隐藏仓位。
@@ -62,7 +63,8 @@ export function createIndustryPanel({game,root,renderer,dialogs,input,onChange,o
  scope.on(panel,'keydown',e=>{if(e.key==='Escape'&&drag){e.preventDefault();e.stopPropagation();cancelDrag();}});
  scope.on(choice,'change',()=>{choose(choice.value,Number(quantity.value));message.textContent='请重新投料';render();});
  scope.on(quantity,'input',()=>{cancelDrag();draft=createIndustryDraft(draft.recipe,Number(quantity.value));selected=null;signature='';message.textContent='请重新投料';render();});
- scope.on(menu,'click',()=>open());
+ // 快捷位改为场景装饰；工厂原建筑入口继续保留。
+ scope.on(menu,'click',()=>game.openSceneDecor?.());
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.hasAttribute('data-industry-close')){dialogs.close(panel.id);return;}
   if(b.dataset.industrySite){siteId=b.dataset.industrySite;const job=game.progress.industry.sites[siteId].job;choose(job?.recipe||INDUSTRY_RECIPES.find(r=>r.site===siteId).id,job?.count||1);message.textContent='';render();return;}
@@ -75,7 +77,7 @@ export function createIndustryPanel({game,root,renderer,dialogs,input,onChange,o
   if(key||raw){const stock=game.progress.industry.sites[siteId][raw?'input':'output'][key||raw],n=Math.min(stock,Number(quantity.value));report(transferIndustry(game,siteId,key||raw,n,raw?'return':'collect'),'✓ 已装车');}
  });
  // 每帧只画一张小画布，库存DOM最多每250ms检查且不在拖动期间替换。
- function render(){menu.hidden=!productionAvailable(game);if(!panel.open||root.hidden)return;const now=Date.now(),frame=host.performance.now();
+ function render(){menu.hidden=!canManageCamp(game);if(!panel.open||root.hidden)return;const now=Date.now(),frame=host.performance.now();
   // 游戏主循环也能完成批次，观察上次批次以便同步按钮与完成反馈。
   if(observedJob?.site===siteId&&!game.progress.industry.sites[siteId].job){draft.loaded=[];selected=null;message.textContent=completionMessage();signature='';observedJob=null;}
   if(!drag&&(!signature||frame>=nextRender)){nextRender=frame+250;const previous=game.progress.industry.sites[siteId].job;updateIndustry(game,now);if(previous&&!game.progress.industry.sites[siteId].job){draft.loaded=[];selected=null;message.textContent=completionMessage();}

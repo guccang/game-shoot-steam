@@ -19,7 +19,7 @@ import {nearest} from '../world/coordinates.js';
 // 单页保留材质/造型选择与购物状态，只有确认按钮执行收费或摆放。
 export function createCampManagement({game,renderer,root,dialogs,onChange}){const scope=createEventScope(),dialog=root.createElement('dialog'),hotspot=root.createElement('button'),frame=root.getElementById('game-frame');dialog.id='camp-management-dialog';dialog.className='ui-panel ui-panel--fullscreen ui-page';dialog.setAttribute('aria-labelledby','camp-management-title');dialog.innerHTML=`<header class="ui-panel__header"><div><h2 id="camp-management-title">营地管理</h2><p data-manager-wallet></p></div><button class="ui-close" aria-label="关闭营地管理">×</button></header><div class="ui-panel__body"><nav class="camp-manager-tabs" aria-label="营地管理分类"><button class="ui-button" data-manager-tab="style">外观</button><button class="ui-button" data-manager-tab="shop">装饰铺</button><button class="ui-button" data-manager-tab="owned">我的装饰</button></nav><div data-manager-content></div></div><footer class="ui-panel__footer"><p role="status" aria-live="polite" data-manager-message></p><div class="camp-manager-actions"><button class="ui-button" data-manager-back>返回营地</button><button class="ui-button ui-button--primary" data-manager-confirm hidden>确认摆放</button></div></footer>`;root.body.append(dialog);sceneHit(hotspot,'营地装饰铺：购买装饰与管理营地');hotspot.id='camp-decoration-shop-hit';hotspot.style.pointerEvents='auto';renderer.canvas.after(hotspot);let tab='style',ownedFilter='unplaced',category='fence',selection=null,draft=null,message='',choices={},view={x:300,y:500,scale:.4},zoom=1,drag=null;
  const $=s=>dialog.querySelector(s);
- const worldPlacement=createCampWorldPlacement({game,renderer,root,dialogs,onReturn:saved=>{open();tab='owned';message=saved?'已摆放到营地。':'已取消，原位置保持不变。';if(saved)onChange();content();}});
+ const worldPlacement=createCampWorldPlacement({game,renderer,root,dialogs,onSaved:onChange,onReturn:saved=>{open();tab='owned';message=saved?'已摆放到营地。':'已取消，原位置保持不变。';if(saved)onChange();content();}});
  // 图标直接调用正式装饰画笔，不创建另一份商品画风。
  function icon(canvas,type){const c=canvas.getContext('2d'),d=campDecorDefinition(type);c.clearRect(0,0,128,128);c.save();c.translate(64,116);const scale=Math.min(1,108/d.height,110/d.width);c.scale(scale,scale);drawCampDecoration(c,{type,x:0,y:0},0,0,true);c.restore();}
  // 一次操作只重建当前可见页，不在帧循环中重建目录。
@@ -57,6 +57,6 @@ export function createCampManagement({game,renderer,root,dialogs,onChange}){cons
  // 统一战场短按按真实屋体命中，不使用屏幕固定位置。
  function tap(e){if(!canManageCamp(game)||root.querySelector('dialog[open]')||!renderer.view)return false;const r=renderer.canvas.getBoundingClientRect(),v=renderer.view,p={x:v.x+(e.clientX-r.left)/r.width*v.w,y:v.y+(e.clientY-r.top)/r.height*v.h},s=nearest(CAMP_DECOR_SHOP,p);return Math.abs(p.x-s.x)<60&&p.y>s.y-100&&p.y<s.y+12?open():false;}
  // 销毁时移除页面、热点和回调，不遗留重复监听。
- function dispose(){worldPlacement.dispose();scope.dispose();dialog.remove();hotspot.remove();delete game.openCampManagement;}
- game.openCampManagement=open;return {open,render,tap,dispose};
+ function dispose(){worldPlacement.dispose();scope.dispose();dialog.remove();hotspot.remove();delete game.openCampManagement;delete game.openSceneDecor;}
+ game.openSceneDecor=()=>canManageCamp(game)&&worldPlacement.openPicker();game.openCampManagement=open;return {open,render,tap,dispose};
 }
