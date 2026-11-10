@@ -12,7 +12,7 @@ import {travelMineLayer,currentMineLayer} from '../src/core/mining/mine-layers.j
 import {minePortals} from '../src/world/mine-portals.js';
 import {MINE_VISION,mineGlow,mineLightSources,minePointLit} from '../src/world/mine-vision.js';
 // 固定种子、共享矿层和真实存档事务，准备可走通道而不替换移动器。
-function setup(){const p=freshProgress();p.homeDecor.basement=true;openBasement(p.mining);p.mining.seed=1847;p.mining.shafts=['7,3'];p.mining.ore=10000;p.wood=10000;p.coins=100000;for(let x=4;x<=9;x++)for(let y=1;y<=5;y++){p.mining.dug[`${x},${y}`]=true;p.mining.bridges[`${x},${y}`]=true;}const g=new Game(p);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.trees=[];g.livingPersist=()=>true;Object.assign(g.player,minePoint({x:7,y:3}),{vx:0,vy:0});assert.ok(enterMine(g,'7,3'));return g;}
+function setup(){const p=freshProgress();p.homeDecor.basement=true;openBasement(p.mining);p.mining.seed=1847;p.mining.shafts=['7,3'];p.mining.ore=10000;p.mining.coreClears[1]=true;p.mining.coreCrystals[1]=1;p.wood=10000;p.coins=100000;for(let x=4;x<=9;x++)for(let y=1;y<=5;y++){p.mining.dug[`${x},${y}`]=true;p.mining.bridges[`${x},${y}`]=true;}const g=new Game(p);g.state='playing';g.vehicle.active=false;g.mainlineSpeech=null;g.trees=[];g.livingPersist=()=>true;Object.assign(g.player,minePoint({x:7,y:3}),{vx:0,vy:0});assert.ok(enterMine(g,'7,3'));return g;}
 
 test('地下点击真实走近，抵达前不传送，候停1秒后返回并防止立即回弹',()=>{
  const g=setup();Object.assign(g.player,minePoint({x:5,y:3}));assert.ok(approachMinePortal(g,'shaft:7,3'));const start=g.player.x;

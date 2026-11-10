@@ -1,10 +1,11 @@
 // 地下九类景观使用同一森林描边与低饱和块面，独立绘制地面、水流、植株和生物动作。
+import {drawMineSpecial} from './mine-specials.js';
 import {minePoint} from '../config/mining.js';
 import {MINE_ANIMALS} from '../config/mine-ecology.js';
 import {mineDumplingForm,mineDumplingSnapshot} from '../config/mine-dumplings.js';
 import {drawSlime} from './enemies.js';
 import {mineMetalContext} from './mine-metal-palette.js';
-import {box,oval} from './primitives.js';
+import {box,oval,poly} from './primitives.js';
 const ink='#365a47';
 // 连续地形由共享地貌绘制器负责，设施仍按原施工格保留真实木桥范围。
 export function drawMineTerrain(c,cell,layer,night,time){
@@ -16,6 +17,7 @@ export function drawMineTerrain(c,cell,layer,night,time){
 export {drawMineFlora as drawMineLandscape} from './mine-flora.js';
 // 地下复用地表团子的独立身体、翼根、脚步、轮组和武器，仅局部调色与等比适配矿道。
 export function drawMineAnimal(c,a,time,reduced=false){
+ if(drawMineSpecial(c,a,reduced))return;
  if(a.hp<=0&&!a.death)return;
  const form=mineDumplingForm(a),actor=mineDumplingSnapshot(a),metal=mineMetalContext(c);
  c.save();c.translate(a.x,a.y);
@@ -25,4 +27,4 @@ export function drawMineAnimal(c,a,time,reduced=false){
  c.restore();
 }
 // 孢子和车炮使用独立运动实体，弹道不依附于角色位图。
-export function drawMineBolts(c,bolts){for(const b of bolts||[]){oval(c,b.x,b.y,b.enemy?5:4,b.enemy?5:4,b.enemy?'#baac84':'#f2d89b',ink,1.5);if(!b.enemy){c.strokeStyle='#ead491';c.lineWidth=2;c.beginPath();c.moveTo(b.x,b.y);c.lineTo(b.x-b.vx*.025,b.y-b.vy*.025);c.stroke();}}}
+export function drawMineBolts(c,bolts){for(const b of bolts||[]){if(b.blast){c.save();c.globalAlpha=b.fired?.65:.3;c.fillStyle=b.fired?'#e4ba76':'#d5a36a';c.beginPath();c.arc(b.x,b.y,b.radius,0,Math.PI*2);c.fill();c.globalAlpha=1;c.strokeStyle='#365a47';c.lineWidth=2;c.stroke();c.restore();continue;}if(b.crystal)poly(c,[[b.x,b.y-7],[b.x+5,b.y],[b.x,b.y+7],[b.x-5,b.y]],'#a8ceba',ink,1.5);else oval(c,b.x,b.y,b.enemy?5:4,b.enemy?5:4,b.enemy?'#baac84':'#f2d89b',ink,1.5);if(!b.enemy){c.strokeStyle='#ead491';c.lineWidth=2;c.beginPath();c.moveTo(b.x,b.y);c.lineTo(b.x-b.vx*.025,b.y-b.vy*.025);c.stroke();}}}

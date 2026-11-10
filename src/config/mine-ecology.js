@@ -1,4 +1,5 @@
 // 地下生态目录和层级面积规则，稳定种子只在开通时生成一次。
+import {MINE_SPECIALS} from './mine-specials.js';
 import {PREVIOUS_FOREST_WORLD as MINE_EXTENT} from '../world/coordinates.js';
 import {MINING,minePoint,DEPOT_COLUMN} from './mining.js';
 export const MINE_BIOMES=[
@@ -12,7 +13,7 @@ export const MINE_BIOMES=[
  {id:'spring',name:'地热温泉',floor:'#c7baa0',night:'#968e7f',resource:'heal',yield:16,regrow:80,animal:'beetle'},
  {id:'fossil',name:'化石遗迹',floor:'#c6b48c',night:'#938970',resource:'ore',yield:3,regrow:150,animal:'beetle'},
 ];
-export const MINE_ANIMALS={beetle:{name:'金属灰近战团子',hp:48,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'金属灰叶翼飞团',hp:30,speed:60,damage:6,range:36,windup:.65,recover:1,reward:2},spore:{name:'金属灰远程团子',hp:60,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
+export const MINE_ANIMALS={...MINE_SPECIALS,beetle:{name:'金属灰近战团子',hp:48,speed:38,damage:8,range:32,windup:.65,recover:1.1,reward:3},bat:{name:'金属灰叶翼飞团',hp:30,speed:60,damage:6,range:36,windup:.65,recover:1,reward:2},spore:{name:'金属灰远程团子',hp:60,speed:25,damage:10,range:150,windup:1,recover:1.5,reward:4}};
 // 景观石柱耐久与矿镐伤害独立于普通岩壁，矿石产量与恢复时间读取生态配置。
 export const MINE_ROCK={hp:60,pickDamage:20,pickReach:72};
 export const MINE_ECOLOGY={bridge:{ore:2,wood:4},respawn:180,scanRadius:8,maxNearby:10};

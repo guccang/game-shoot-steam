@@ -1,4 +1,5 @@
 // 地下沿用三类稳定生态身份，外观按原生栖地键确定，不重抽存档或改变战斗属性。
+import {MINE_SPECIALS} from './mine-specials.js';
 import {mineHash,MINE_ANIMALS} from './mine-ecology.js';
 import {RANGED_ENEMIES} from './ranged-enemies.js';
 import {ARMORED} from './armored-enemies.js';
@@ -17,6 +18,7 @@ export const MINE_DUMPLINGS=Object.freeze([
 ]);
 // 图鉴没有栖地时显示该行为组的代表；正式实体由稳定格子生成相同外观。
 export function mineDumplingForm(animal){
+ if(MINE_SPECIALS[animal.kind])return {...MINE_SPECIALS[animal.kind],id:animal.kind,kind:animal.kind,species:'slime',rank:0,scale:1};
  const forms=MINE_DUMPLINGS.filter(f=>f.kind===animal.kind);
  if(!forms.length)throw new Error('未知地下怪物类型：'+animal.kind);
  if(!animal.key)return forms[0];

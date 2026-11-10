@@ -2243,3 +2243,10 @@ export function inspectCampFestivals(game,renderer,root=document){const panel=ro
 
 // 地貌团子验收读取正式实体和施法状态，逐帧记录脚底、生命及局部动作时钟。
 export function inspectBiomeDumplings(game,root=document){return {designCriterion:'biome-dumplings',actors:game.enemies.filter(e=>e.dumplingVariant).map(e=>({id:e.dumplingVariant,x:e.x,y:e.y,hp:e.hp,aquatic:e.aquatic,phase:e.assault.phase,elapsed:e.assault.elapsed,step:e.gelStep,clock:e.ecoClock})),bolts:game.enemyBolts.filter(b=>b.dumplingVariant).length,art:biomeDumplingArtStats(),newBitmapBytes:biomeDumplingArtStats().decodedBytes,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 矿心团王验收采样来自实际矿层、晶核库存和正式报价，不另造展示状态。
+export async function inspectMineCoreBoss(game,root=document){
+ const {mineLayerUnlockQuote,currentMineLayer}=await import('../core/mining/mine-layers.js');
+ const l=currentMineLayer(game);
+ return {designCriterion:'mine-core-boss',depth:game.cottage?.depth||1,actors:Object.values(l.animals).map(a=>({kind:a.kind,hp:a.hp,phase:a.phase,move:a.move,step:a.gelStep})),quote:mineLayerUnlockQuote(game),cores:{...game.progress.mining.coreCrystals},cleared:{...game.progress.mining.coreClears},bolts:game.cottage?.bolts?.length||0,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
+}

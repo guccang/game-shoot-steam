@@ -15,6 +15,8 @@ export function mineGlow(cell,layer){
 // 玩家灯随显示插值移动；矿灯和植物从同一层真实记录投影，最多保留十六个灯源。
 export function mineLightSources(game,layer,view){
  const lights=[{x:game.player.x,y:game.player.y-20,radius:MINE_VISION.player,kind:'player'}],lamps=[],flora=[];
+ // 苏醒团王的核心照亮自身冠饰与矿锤，占用既有十六灯预算。
+ for(const a of game.cottage?.ecologyActors||[])if(a.kind==='coreking'&&a.hp>0&&Math.hypot(a.x-game.player.x,a.y-game.player.y)<280)lights.push({x:a.x,y:a.y-55,radius:110,kind:'core'});
  const pad=MINE_VISION.lamp,first=mineCell({x:view.x-pad,y:view.y-pad}),last=mineCell({x:view.x+view.w+pad,y:view.y+view.h+pad});
  for(let y=first.y;y<=last.y;y++)for(let x=first.x;x<=last.x;x++){
   const cell={x,y},key=mineKey(cell);
