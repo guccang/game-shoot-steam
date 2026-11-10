@@ -38,3 +38,6 @@ export function campLayoutFootprints(b){if(b.placementKind==='pasture')return [{
 
 // 建筑或大门任一发生搬迁，都启用同一套正式道路与灯光。
 export function hasCampLayoutChanges(layout){return Object.keys(layout?.positions||{}).length>0||Object.keys(layout?.gates||{}).length>0;}
+
+// 围栏只避让建筑实际轮廓与门前入口，不套用建筑之间的侧向留白。
+export function campFenceFootprints(b){if(b.parking||b.plaza||b.placementKind)return campLayoutFootprints(b);return [{left:b.x-b.width/2-6,right:b.x+b.width/2+6,top:b.y-b.height-6,bottom:b.y+95}];}

@@ -10,7 +10,7 @@ import {campLayoutDecorConflicts} from '../../world/camp-layout-decor.js';
 import {PARKING_SPOTS} from '../../config/parking.js';
 import {campPlotAt,ownsCampPlot} from '../../config/camp-land.js';
 // 布局草稿先检查占地和道路，保存成功后统一迁移全部正式锚点。
-import {CAMP_BUILDINGS,normalizeCampLayout,campBuildingPosition,campLayoutFootprints} from '../../config/camp-layout.js';
+import {CAMP_BUILDINGS,normalizeCampLayout,campBuildingPosition,campLayoutFootprints,campFenceFootprints} from '../../config/camp-layout.js';
 import {layoutBuildings,ownedLayoutPoint,campLayoutRoads} from '../../world/camp-layout-roads.js';
 import {activateCampLayout} from '../../world/camp-layout-bindings.js';
 import {campBoundary,campBoundaryBlocked} from '../../world/camp-boundary.js';
@@ -24,10 +24,12 @@ export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.fin
  if(!base.publicFacility&&!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  // 外围公共道路和公交站保留原位，不能被新屋体覆盖。
  const land=campPlotAt(b,game.progress);if(!sign&&(!land||!ownsCampPlot(game.progress,land.id))){const center={x:b.x,y:b.y-b.height/2};if(PATHS.some(path=>path.some((point,i)=>i&&roadFootprintDistance(path[i-1],point,nearest(center,path[i-1]),b.width/2,b.height/2)<28))||[RANGER.busStop,RANGER.bus].some(site=>{const p=nearest(site,b);return Math.abs(p.x-b.x)<b.width/2+85&&p.y+45>b.y-b.height&&p.y-150<b.y;}))return '请避开营地外的公共道路和公交站。';}
+ // 围栏独立检查真实屋体与入口；道路根据新位置重建，不要求侧面留一条宽车道。
+ if(!sign&&campFenceFootprints(b).some(({left,right,top,bottom})=>boundary.objects.some(f=>f.type==='settlement-fence'&&(f.horizontal?left<f.x+f.length/2&&right>f.x-f.length/2&&top<f.y+5&&bottom>f.y-5:left<f.x+5&&right>f.x-5&&top<f.y+f.length/2&&bottom>f.y-f.length/2))))return '请勿让建筑横跨围栏。';
  // 停车场东侧弯道与入口计入占地，防止搬到房屋、树木或土地外。
  for(const {left,right,top,bottom} of campLayoutFootprints(b)){
  for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!(b.plaza||b.parking?ownedLayoutPoint:campPlacementPoint)(game.progress,x,y,sign?0:12)&&!(sign&&boundary.gates.some(g=>g.settlement==='sunleaf'&&(g.horizontal?Math.abs(x-g.x)<=g.length/2-24&&Math.abs(y-g.y)<=48:Math.abs(y-g.y)<=g.length/2-24&&Math.abs(x-g.x)<=48))))return b.plaza||b.parking?'建筑和门前通道必须留在已购土地内。':'请放在营地或外围100米内的干地，避开未购地块。';
- if(!sign&&boundary.objects.some(f=>{if(f.type!=='settlement-fence')return false;return f.horizontal?left<f.x+f.length/2&&right>f.x-f.length/2&&top<f.y+5&&bottom>f.y-5:left<f.x+5&&right>f.x-5&&top<f.y+f.length/2&&bottom>f.y-f.length/2;}))return '请勿让建筑横跨围栏。';
+
  for(const other of layoutBuildings(game.progress,layout)){if(other.id===id)continue;if(campLayoutFootprints(other).some(r=>left<r.right&&right>r.left&&top<r.bottom&&bottom>r.top))return '与'+other.name+'或它的门前通道重叠。';}
  if(!sign&&boundary.gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';
  // 可通行站牌允许放在门洞，只保护真实围栏底座，不套用房屋转弯缓冲。
