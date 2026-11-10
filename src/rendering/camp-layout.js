@@ -1,3 +1,4 @@
+import {hasCampLayoutChanges} from '../config/camp-layout.js';
 import {campSurfaceRoads} from '../world/camp-surface-roads.js';
 import {drawCampRoadFinish} from './camp-road-finish.js';
 // 搬迁后的道路在正式地面层绘制；布局和地契变化才重新生成有界路网。
@@ -12,8 +13,8 @@ export function campRoadView(game){return campRoadNetwork(game.progress);}
 // 同一路网叠加草沿接触暗边和土路亮肩，几何与通行宽度保持一致。
 export function drawCampLayoutRoads(c,game,view,night,season='summer'){
  if(game.mapId!=='forest'||game.cottage||game.story||game.realm||game.campDefense)return;
- const finish=game.progress.campManagement?.styles.road;const customized=Object.keys(game.progress.campLayout?.positions||{}).length>0||finish&&(finish.material!=='earth'||finish.shape!=='plain');const expanded=campPlots(game.progress).filter(p=>p.top< -58&&ownsCampPlot(game.progress,p.id));
- const moved=Object.keys(game.progress.campLayout?.positions||{}).length>0,roads={paths:campSurfaceRoads(game.progress)},reference={x:view.x+view.w/2,y:view.y+view.h/2};if(!customized)roads.paths=roads.paths.filter(path=>path.every(p=>p.y<=-58));c.save();
+ const finish=game.progress.campManagement?.styles.road;const customized=hasCampLayoutChanges(game.progress.campLayout)||finish&&(finish.material!=='earth'||finish.shape!=='plain');const expanded=campPlots(game.progress).filter(p=>p.top< -58&&ownsCampPlot(game.progress,p.id));
+ const moved=hasCampLayoutChanges(game.progress.campLayout),roads={paths:campSurfaceRoads(game.progress)},reference={x:view.x+view.w/2,y:view.y+view.h/2};if(!customized)roads.paths=roads.paths.filter(path=>path.every(p=>p.y<=-58));c.save();
  // 已购地覆盖旧院路，保留未开发土地和外部自然地貌；路网与建筑同帧更新。
  for(const p of expanded){const q=nearest({x:p.left,y:p.top},reference);drawCampGrass(c,{...q,w:p.right-p.left,h:-58-p.top},night,season);}
  if(moved)for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference),w=p.right-p.left,h=p.bottom-p.top;if(q.x>view.x+view.w||q.x+w<view.x||q.y>view.y+view.h||q.y+h<view.y)continue;drawCampGrass(c,{...q,w,h},night,season);}

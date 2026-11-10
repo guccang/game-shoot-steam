@@ -1,3 +1,4 @@
+import {hasCampLayoutChanges} from '../config/camp-layout.js';
 import {campSurfaceRoads} from './camp-surface-roads.js';
 import {roadFootprintDistance} from './road-footprint.js';
 import {overlapsCampPlaza} from './camp-plaza.js';
@@ -43,7 +44,7 @@ export function worldRoadFootprintOverlap(point,progress=null,halfWidth=HALF_W,h
  // 搬迁后的营路与正式绘制共用路径，旧支路已被草地覆盖后允许重新开垦。
  const plot=point.mapId==='forest'&&campPlotAt(point,progress);
  if(progress&&point.mapId==='forest'&&nearest(point,{x:0,y:0}).y< -58)return campSurfaceRoads(progress).some(path=>path.some((b,i)=>i&&roadFootprintDistance(path[i-1],b,nearest(point,path[i-1]),halfWidth,halfDepth)<28));
- if(plot&&progress&&ownsCampPlot(progress,plot.id)&&Object.keys(progress.campLayout?.positions||{}).length){for(const path of campRoadNetwork(progress).paths)for(let i=1;i<path.length;i++)if(roadFootprintDistance(path[i-1],path[i],nearest(point,path[i-1]),halfWidth,halfDepth)<CAMP_ROAD_WIDTH/2)return true;return false;}
+ if(plot&&progress&&ownsCampPlot(progress,plot.id)&&hasCampLayoutChanges(progress.campLayout)){for(const path of campRoadNetwork(progress).paths)for(let i=1;i<path.length;i++)if(roadFootprintDistance(path[i-1],path[i],nearest(point,path[i-1]),halfWidth,halfDepth)<CAMP_ROAD_WIDTH/2)return true;return false;}
  if(!['forest','jiuzhaigou'].includes(point.mapId))return false;
  const p=canonical(point),radius=point.mapId==='forest'?24:15,index=point.mapId==='forest'?forest:valley;
  const xs=[p.x],ys=[p.y],rx=halfWidth+radius,ry=halfDepth+radius;

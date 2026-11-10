@@ -47,7 +47,7 @@ export function farmLevel(farm){return Math.max(1,FARM_LEVEL_XP.findLastIndex(xp
 export function farmLevelProgress(farm){const level=farmLevel(farm),nextXp=FARM_LEVEL_XP[level]??null;return {level,xp:farm.xp,nextXp,nextCrop:nextXp===null?null:FARM_CROPS[level]??null};}
 
 // 快递站在小屋北侧偏东，避开北栏与屋顶，领取区留在柜台前方。
-export const FARM_DELIVERY=Object.freeze({id:'seed-delivery',mapId:'forest',x:TOWN_LAYOUT.cottage.x+150,y:TOWN_LAYOUT.cottage.y-85,width:110,height:92});
+export const FARM_DELIVERY={id:'seed-delivery',mapId:'forest',x:TOWN_LAYOUT.cottage.x+150,y:TOWN_LAYOUT.cottage.y-85,width:110,height:92};
 export const FARM_SENDERS=Object.freeze(['青芽','阿栎师傅','林间邻居','旅行商人']);
 // 种子小屋位于营地东侧田地与任务广场之间，门前交易点不占建筑底座。
 export const FARM_SEED_SHOP={id:'seed-shop',mapId:'forest',x:1000+TOWN_SHIFT_X,y:830,width:120,height:110};

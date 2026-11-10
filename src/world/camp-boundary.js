@@ -15,12 +15,12 @@ function outline(regions){const lines=[];
  }
  lines.sort((a,b)=>a.side.localeCompare(b.side)||a.fixed-b.fixed||a.lo-b.lo);const merged=[];for(const line of lines){const last=merged.at(-1);if(last&&last.side===line.side&&last.fixed===line.fixed&&last.hi===line.lo)last.hi=line.hi;else merged.push({...line});}return merged;
 }
-// 五块地仅有有限组合，缓存最多32项，不在碰撞热路径重建围栏。
-export function campBoundary(progress){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=owned.map(p=>p.id+':'+p.top).join('|');if(cache.has(key))return cache.get(key);
+// 地契与门位共用有界缓存，最多64项，不在碰撞热路径重建围栏。
+export function campBoundary(progress,layout=progress?.campLayout){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=owned.map(p=>p.id+':'+p.top).join('|')+JSON.stringify(layout?.gates||{});if(cache.has(key))return cache.get(key);
  const regions=[...owned,SETTLEMENTS.find(s=>s.id==='neighbors')],lines=outline(regions),objects=[],gates=[];
  for(const line of lines){const {horizontal,fixed,lo,hi,side}=line;let gate=null;
  const gateWidth=horizontal&&side==='bottom'&&fixed===850?520:CAMP_GATE_WIDTH;
- if(hi-lo>=gateWidth+48){const ideal=horizontal?(fixed>=2000?300:side==='bottom'&&fixed===850?500:390):lo>=1400?(side==='left'?1850:1800):729,at=Math.max(lo+gateWidth/2+24,Math.min(hi-gateWidth/2-24,ideal));gate={type:'settlement-gate',settlement:'sunleaf',name:'营地通道',horizontal,x:horizontal?at:fixed,y:horizontal?fixed:at,length:gateWidth,side};gates.push(gate);objects.push(gate);}
+ if(hi-lo>=gateWidth+48){const id=side+':'+(horizontal?lo:fixed)+':'+(horizontal?(side==='top'&&fixed< -58?-58:fixed):hi),low=lo+gateWidth/2+24,high=hi-gateWidth/2-24,preferred=layout?.gates?.[id];const ideal=Number.isFinite(preferred)?low+(high-low)*preferred:horizontal?(fixed>=2000?300:side==='bottom'&&fixed===850?500:390):lo>=1400?(side==='left'?1850:1800):729,at=Math.max(lo+gateWidth/2+24,Math.min(hi-gateWidth/2-24,ideal));gate={id,low,high,type:'settlement-gate',settlement:'sunleaf',name:'营地通道',horizontal,x:horizontal?at:fixed,y:horizontal?fixed:at,length:gateWidth,side};gates.push(gate);objects.push(gate);}
  const center=gate&&(horizontal?gate.x:gate.y),parts=gate?[[lo,center-gate.length/2],[center+gate.length/2,hi]]:[[lo,hi]];
  for(const [a,b] of parts){const count=Math.ceil((b-a)/58);for(let i=0;i<count;i++)objects.push({type:'settlement-fence',settlement:'sunleaf',horizontal,x:horizontal?a+(b-a)*(i+.5)/count:fixed,y:horizontal?fixed:a+(b-a)*(i+.5)/count,length:(b-a)/count});}
  }

@@ -1,3 +1,4 @@
+import {hasCampLayoutChanges} from '../config/camp-layout.js';
 // 友善营地的基础亮度和路口灯具，按地契与布局缓存，不扫描整张世界。
 import {CAMP_LIGHTING} from '../config/camp-lighting.js';
 import {campPlots,CAMP_PLOTS,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
@@ -35,7 +36,7 @@ export function campRoadLights(progress,includeManaged=false){
  if(!progress)return [];
  const plots=progress.farm?.plots,key=JSON.stringify([progress.campLayout,progress.campLand]);
  let entry=cache.get(progress);if(entry?.key===key&&entry.plots===plots&&entry.count===plots?.length)return includeManaged||!progress.campManagement?.defaultDecorVersion?entry.lights:entry.lights.filter(l=>!l.id.startsWith('camp-road-'));
- const customized=Object.keys(progress.campLayout?.positions||{}).length>0,paths=customized?campRoadNetwork(progress).paths:TOWN_PATHS;
+ const customized=hasCampLayoutChanges(progress.campLayout),paths=customized?campRoadNetwork(progress).paths:TOWN_PATHS;
  const buildings=CAMP_BUILDINGS.map(b=>campBuildingPosition(progress.campLayout,b)),lights=[];
  const candidates=paths.flatMap(path=>customized?path.filter((p,i)=>i>0&&i<path.length-1&&(p.x-path[i-1].x)*(path[i+1].y-p.y)!==(p.y-path[i-1].y)*(path[i+1].x-p.x)):path);
  for(const p of candidates){

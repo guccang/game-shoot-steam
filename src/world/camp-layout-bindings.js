@@ -1,5 +1,7 @@
+import {CAMP_DECOR_SHOP} from '../config/camp-management.js';
+import {TRADE_BOARD} from '../config/camp-trade.js';
 import {activateCampLand} from '../config/camp-land.js';
-import {FARM_SEED_SHOP,FARM_SEED_DOOR} from '../config/farm.js';
+import {FARM_SEED_SHOP,FARM_SEED_DOOR,FARM_DELIVERY} from '../config/farm.js';
 import {INDUSTRY_SITES} from '../config/industry.js';
 import {CAMP_ROUTINES} from '../config/camp-routines.js';
 // 单一运行世界的布局适配层：把旧模块的静态锚点统一绑定到当前存档，保留既有接口。
@@ -34,6 +36,8 @@ let activeKey=null,revision=0;
 function bind(id,site){id=aliases[id]||id;if(!site||!CAMP_BUILDINGS.some(b=>b.id===id)||seen.has(site)||!Number.isFinite(site.x)||!Number.isFinite(site.y))return;seen.add(site);if(Object.isFrozen(site))throw Error('营地锚点不可迁移：'+id);bindings.push({id,site,base:{x:site.x,y:site.y,...Object.fromEntries(['approachY','disembarkY','garageY'].filter(k=>Number.isFinite(site[k])).map(k=>[k,site[k]]))}});}
 for(const b of CAMP_BUILDINGS)bind(b.id,TOWN_LAYOUT[b.id]);
 for(const [id,site] of Object.entries({weapons:WORKSHOP,garage:VEHICLE_WORKSHOP,cottage:RANGER_COTTAGE,warehouse:WAREHOUSE,warehouseDepot:WAREHOUSE_DEPOT,catHome:CAT_HOME,furniture:FURNITURE_SHOP,ammo:AMMO_SHOP,outdoor:OUTDOOR_SHOP,construction:CONSTRUCTION_COMPANY,repair:REPAIR_CENTER,story:STORY_POSTS.find(p=>p.id==='sunleaf-post'),clearing:CLEARING_POST}))bind(id,site);
+// 订单板的绘制、现场交接和任务导航共用同一锚点；驿站修复点由下方通用绑定迁移。
+bind('trade',TRADE_BOARD);bind('delivery',FARM_DELIVERY);bind('camp-decor',CAMP_DECOR_SHOP);
 bind('weapons',CAMP_ROUTINES.oak.stroll);bind('garage',CAMP_ROUTINES.wheel.stroll);bind('tower',CAMP_ROUTINES.lumi.stroll);
 for(const [id,site] of Object.entries(INDUSTRY_SITES))bind(id,site);
 // 同步停车场地坪、入口与主线导航。

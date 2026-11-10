@@ -9,7 +9,7 @@ import {campPlotAt,ownsCampPlot} from '../../config/camp-land.js';
 import {CAMP_BUILDINGS,normalizeCampLayout,campBuildingPosition,campLayoutFootprints} from '../../config/camp-layout.js';
 import {layoutBuildings,ownedLayoutPoint,campLayoutRoads} from '../../world/camp-layout-roads.js';
 import {activateCampLayout} from '../../world/camp-layout-bindings.js';
-import {campBoundary} from '../../world/camp-boundary.js';
+import {campBoundary,campBoundaryBlocked} from '../../world/camp-boundary.js';
 import {canInspectBuilding} from './building-entry.js';
 import {bindEconomy,economyFor} from '../../config/economy.js';
 import {capturePatrol} from '../battle/patrol-session.js';
@@ -22,7 +22,7 @@ export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.fin
  for(const {left,right,top,bottom} of campLayoutFootprints(b)){
  for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!ownedLayoutPoint(game.progress,x,y,12))return '建筑和门前通道必须留在已购土地内。';
  for(const other of layoutBuildings(game.progress,layout)){if(other.id===id)continue;if(campLayoutFootprints(other).some(r=>left<r.right&&right>r.left&&top<r.bottom&&bottom>r.top))return '与'+other.name+'或它的门前通道重叠。';}
- if(campBoundary(game.progress).gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';
+ if(campBoundary(game.progress,layout).gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';
  if((game.trees||[]).some(t=>{const p=nearest(t,b);return t.hp>0&&p.x>=left&&p.x<=right&&p.y>=top&&p.y<=bottom;}))return '这里有树木，请先清理或选择空地。';
  if(game.progress.farm?.plots?.some?.(plot=>{if(plot.mapId&&plot.mapId!=='forest')return false;const p=nearest(plot,b);return p.x>=left-20&&p.x<=right+20&&p.y>=top-20&&p.y<=bottom+20;}))return '请避开已有农田。';
  const player=game.player&&nearest(game.player,b);if(player&&player.x>=left&&player.x<=right&&player.y>=top&&player.y<=bottom)return '请先离开计划放置建筑的位置。';
@@ -51,6 +51,13 @@ export function canPlanCamp(game){return !campPlanUnavailable(game);}
 // 保存事务成功后才更新运行锚点，保留角色连续动作时钟。
 export function saveCampLayout(game,draft,persist=game.restorationPersist){if(!canPlanCamp(game))return {ok:false,message:campPlanUnavailable(game)};const layout=normalizeCampLayout(draft),previous=game.progress.campLayout||{positions:{}};
  for(const b of CAMP_BUILDINGS){const before=campBuildingPosition(previous,b),after=campBuildingPosition(layout,b);if(worldDistance(before,after)<1)continue;const error=checkCampPlacement(game,layout,b.id);if(error)return {ok:false,message:b.name+'：'+error};}
+ // 关闭原门口前保护正在穿门的角色和车辆，避免保存后被新围栏夹住。
+ if(JSON.stringify(layout.gates||{})!==JSON.stringify(previous.gates||{})){const nextBoundary={...game.progress,campLayout:layout};for(const actor of [game.player,...(game.progress.campParking?.owned||[])])if(actor&&(!actor.mapId||actor.mapId==='forest')&&!campBoundaryBlocked(actor.x,actor.y,30,game.progress)&&campBoundaryBlocked(actor.x,actor.y,30,nextBoundary))return {ok:false,message:'请先将猫猫和载具移离原门口，再调整大门。'};}
+ // 大门沿原围栏调整，入口内侧不得覆盖建筑、农田或停放车辆。
+ for(const gate of campBoundary(game.progress,layout).gates){if(!gate.id||layout.gates?.[gate.id]===previous.gates?.[gate.id])continue;const inset={x:gate.x+(gate.side==='left'?60:gate.side==='right'?-60:0),y:gate.y+(gate.side==='top'?60:gate.side==='bottom'?-60:0)},halfX=gate.horizontal?gate.length/2:65,halfY=gate.horizontal?65:gate.length/2;
+ if(layoutBuildings(game.progress,layout).some(b=>!b.passable&&campLayoutFootprints(b).some(r=>r.left<inset.x+halfX&&r.right>inset.x-halfX&&r.top<inset.y+halfY&&r.bottom>inset.y-halfY)))return {ok:false,message:'大门前有建筑或车道，请换一个位置。'};
+ if([...(game.progress.farm?.plots||[]),...(game.progress.campParking?.owned||[]).filter(v=>v.spot==null)].some(p=>{const q=nearest(p,inset);return (!p.mapId||p.mapId==='forest')&&Math.abs(q.x-inset.x)<halfX+30&&Math.abs(q.y-inset.y)<halfY+30;}))return {ok:false,message:'请避开门前农田或停放载具。'};
+ }
  const roads=campLayoutRoads(game.progress,layout,{ignoreDecor:true});if(roads.unreachable.length)return {ok:false,message:'有建筑或营门无法连通，请留出更宽的通道。'};
  const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));next.campLayout=layout;const serviceError=relocateLayoutService(game,next);if(serviceError)return {ok:false,message:serviceError};const reclaimed=campLayoutDecorConflicts(game.progress,layout,roads),ids=new Set(reclaimed);for(const item of next.campManagement?.items||[])if(ids.has(item.uid))item.x=item.y=null;const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  try{if(persist?.(next)!==true)return {ok:false,message:'布局未保存，建筑位置没有改变，请重试。'};}catch{return {ok:false,message:'布局未保存，建筑位置没有改变，请重试。'};}
