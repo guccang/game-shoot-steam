@@ -1,3 +1,4 @@
+import {campBuildingFinish,drawCampWallFinish} from './camp-building-finish.js';
 // 房屋沿用树冠的圆润轮廓与三个大明暗面，所有细节只在静态图集生成时绘制。
 import {box,oval} from './primitives.js';
 const EDGE='#536047';
@@ -5,11 +6,16 @@ const EDGE='#536047';
 function roofPoint(points,u,v){const [a,b,d,e]=points;return [(b[0]+(d[0]-b[0])*u)*(1-v)+(a[0]+(e[0]-a[0])*u)*v,(b[1]+(d[1]-b[1])*u)*(1-v)+(a[1]+(e[1]-a[1])*u)*v];}
 // 圆脊和下垂厚檐共用完整闭合轮廓，屋面不会拆成互相压住的卡片。
 function roofOutline(c,p){
+ const shape=campBuildingFinish()?.shape;
+ if(shape==='gable'){c.beginPath();c.moveTo(...p(0,1));c.lineTo(...p(.08,.28));c.lineTo(...p(.48,-.12));c.lineTo(...p(.91,.26));c.lineTo(...p(1,1));c.closePath();return;}
+ if(shape==='terrace'){c.beginPath();for(const [i,q] of [[0,[0,1]],[1,[0,.62]],[2,[.08,.62]],[3,[.08,.3]],[4,[.18,.3]],[5,[.18,0]],[6,[.82,0]],[7,[.82,.3]],[8,[.92,.3]],[9,[.92,.62]],[10,[1,.62]],[11,[1,1]]]){if(i)c.lineTo(...p(...q));else c.moveTo(...p(...q));}c.closePath();return;}
  c.beginPath();c.moveTo(...p(.07,0));c.quadraticCurveTo(...p(.5,-.10),...p(.93,0));c.quadraticCurveTo(...p(1,0),...p(1,.12));c.quadraticCurveTo(...p(.98,.55),...p(1,.88));c.quadraticCurveTo(...p(1.03,1.04),...p(.94,1.04));c.quadraticCurveTo(...p(.5,1.16),...p(.06,1.04));c.quadraticCurveTo(...p(-.03,1.04),...p(0,.88));c.quadraticCurveTo(...p(.02,.5),...p(0,.12));c.quadraticCurveTo(...p(0,0),...p(.07,0));c.closePath();
 }
 // 屋顶使用受光顶、主苔色、檐下暗部；少量弧形搭接提示材料，不铺网格纹。
 export function drawRoofSurface(c,points,{base='#9bb477',light='#c7d694',shade='#789760',snow=false}={}){
+ const finish=campBuildingFinish();if(finish){base=finish.material==='stone'?'#899f99':'#af936e';light=finish.material==='stone'?'#c5cdb8':'#d8bd8c';shade=finish.material==='stone'?'#617e77':'#8f7759';if(finish.shape==='gable')points=points.map((q,i)=>[q[0],q[1]-(i===1||i===2?9:0)]);}
  const p=(u,v)=>roofPoint(points,u,v);c.save();roofOutline(c,p);c.fillStyle=base;c.fill();c.save();c.clip();
+ if(finish?.shape==='terrace'){for(const v of [.27,.55,.81]){c.beginPath();c.moveTo(...p(0,v));c.lineTo(...p(1,v));c.strokeStyle=light;c.lineWidth=5;c.stroke();}}
  c.beginPath();c.moveTo(...p(-.1,.58));c.bezierCurveTo(...p(.22,.88),...p(.38,.50),...p(.64,.70));c.quadraticCurveTo(...p(.82,.86),...p(1.1,.59));c.lineTo(...p(1.1,1.5));c.lineTo(...p(-.1,1.5));c.closePath();c.fillStyle=shade;c.fill();
  c.beginPath();c.moveTo(...p(-.1,-.2));c.lineTo(...p(.90,-.2));c.quadraticCurveTo(...p(.91,.15),...p(.66,.25));c.bezierCurveTo(...p(.50,.28),...p(.59,.52),...p(.31,.51));c.quadraticCurveTo(...p(.03,.60),...p(-.1,.34));c.closePath();c.fillStyle=light;c.fill();
  c.strokeStyle=shade;c.lineWidth=1.35;c.lineCap='round';
@@ -38,7 +44,7 @@ export function drawInsetWindow(c,x,y,w,h,night=false){
 }
 // 墙体使用微弧转角与连续暖色立面，保留原底座、侧墙和高层高度。
 export function drawHouseWall(c,left,right,top){
- c.save();c.beginPath();c.moveTo(left+12,top);c.lineTo(right-15,top-6);c.quadraticCurveTo(right+1,top-1,right,top+15);c.lineTo(right-1,-8);c.quadraticCurveTo(right,1,right-13,2);c.quadraticCurveTo(0,6,left+11,0);c.quadraticCurveTo(left+3,-1,left+4,-12);c.lineTo(left+5,top+12);c.quadraticCurveTo(left+5,top,left+12,top);c.closePath();c.fillStyle='#efdfb1';c.fill();c.save();c.clip();
+ c.save();c.beginPath();c.moveTo(left+12,top);c.lineTo(right-15,top-6);c.quadraticCurveTo(right+1,top-1,right,top+15);c.lineTo(right-1,-8);c.quadraticCurveTo(right,1,right-13,2);c.quadraticCurveTo(0,6,left+11,0);c.quadraticCurveTo(left+3,-1,left+4,-12);c.lineTo(left+5,top+12);c.quadraticCurveTo(left+5,top,left+12,top);c.closePath();c.fillStyle='#efdfb1';c.fill();c.save();c.clip();drawCampWallFinish(c,left,top-8,right-left,-top+18);
  c.beginPath();c.moveTo(right-25,top-10);c.quadraticCurveTo(right-28,top*.5,right-25,3);c.lineTo(right+10,10);c.lineTo(right+10,top-10);c.closePath();c.fillStyle='#8d9b78';c.fill();
  c.beginPath();c.moveTo(left,top);c.lineTo(right,top-8);c.lineTo(right,top+20);c.quadraticCurveTo(0,top+9,left,top+23);c.closePath();c.fillStyle='#a7ab7d';c.fill();
  c.beginPath();c.moveTo(left,-17);c.quadraticCurveTo(-12,-10,right,-15);c.lineTo(right,10);c.lineTo(left,10);c.closePath();c.fillStyle='#dac99a';c.fill();c.restore();

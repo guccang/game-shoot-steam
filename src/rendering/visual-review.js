@@ -2230,3 +2230,6 @@ export function inspectIndustryMachineScene(game,root=document){const panel=root
 
 // 地下真实候停与屏幕徽记同源采样，验收不另建模拟矿车。
 export function inspectMineCartBoarding(game,renderer,root=document){return {designCriterion:'mine-cart-nearby-boarding',boarding:game.cottage?.cartBoarding?{...game.cottage.cartBoarding}:null,ride:game.cottage?.ride,countdown:renderer.actionCountdownView?{...renderer.actionCountdownView}:null,player:{x:game.player.x,y:game.player.y},overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 营地管理读取正式存档、碰撞实例与建筑缓存；手机界面由同一应用提供。
+export function inspectCampManagement(game,renderer,root=document){const panel=root.getElementById('camp-management-dialog');return {designCriterion:'camp-management-decor',styles:structuredClone(game.progress.campManagement.styles),items:structuredClone(game.progress.campManagement.items),cache:renderer.diagnosticInfo().campBuildings,time:renderer.environment.time,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:[...(panel?.querySelectorAll('button,select')||[])].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),newBitmapBytes:0};}

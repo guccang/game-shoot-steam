@@ -1,3 +1,4 @@
+import {createCampManagement} from '../ui/camp-management.js';
 import {approachBuilding} from '../core/navigation/scene-approach.js';
 import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
 import {actualEnvironment,beginEnvironmentTick,endEnvironmentTick} from '../world/environment-preview.js';
@@ -161,12 +162,12 @@ export function createApplication({
   profiler.end('init.renderer');
   diagnostics.attach({ game, renderer });
   const storm = new StormCycle();
-  let campDefensePanel,campHome,npcConversations,campLandPanel;
+  let campDefensePanel,campHome,npcConversations,campLandPanel,campManagement;
   // 各交互控制器共享主动闲聊入口，初始化完成后才接收场景点击。
   const onTalk=(id,service)=>npcConversations.open(id,service);
   let worldRealms, worldWorkshop, worldVehicleWorkshop, guardianBuild, cameraControls;
   const input = createInput({ game, root, host, enabled:()=>shell.page==='game', onChange: () => refresh(),
-    onTap: event => { if(waystations.tapWorld(event))return; if(campLandPanel?.tap(event))return; if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event)||outdoors.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
+    onTap: event => { if(campManagement?.tap(event))return; if(waystations.tapWorld(event))return; if(campLandPanel?.tap(event))return; if(productionPanel?.tapWorld(event)||farmPanel?.tapWorld(event)||outdoors.tapWorld(event))return; if (!campHome?.tap(event) && !campDefensePanel?.tap(event) && !worldWorkshop?.tap(event) && !worldVehicleWorkshop?.tap(event)) worldRealms?.tap(event); }, onPinch: ratio => cameraControls?.pinch(ratio) });
   const dialogs = createDialogs({ game, root, isGameplayActive:()=>shell.page==='game', resetInput: input.reset, onChange: () => { refresh(); syncAudio(); },onEvent:(type,data)=>{if(type==='dialog-open')checkout.prepare(data.id);diagnostics.gameplay.event(type,data);} });
   const checkout=createShopCheckout({game,root,dialogs,onNotice:toast.show});
   const inventory = createInventory({ game, root, dialogs, onChange: () => refresh(), onInventoryRender:()=>backpack.render(), onCleanup:()=>loadCleanup.open(null) });
@@ -271,6 +272,7 @@ export function createApplication({
   }});
   game.requestFacility=id=>restorationPanel.open(id);
   campLandPanel=createCampLandPanel({game,root,renderer,dialogs,onChange:refresh});
+  campManagement=createCampManagement({game,root,renderer,dialogs,onChange:refresh});
   const campLayoutPanel=createCampLayoutPanel({game,root,dialogs,onChange:refresh});
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const creatureCodex=createCreatureCodex({game,root,dialogs});
@@ -666,7 +668,7 @@ export function createApplication({
         profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
         profiler.start('render.panels.home'); campHome.render(); profiler.end('render.panels.home');
         profiler.start('render.panels.nearby'); nearbyControls.render();treasure.update(); profiler.end('render.panels.nearby');
-        profiler.start('render.panels.workshop'); worldWorkshop.render();campLandPanel.render(); profiler.end('render.panels.workshop');
+        profiler.start('render.panels.workshop'); worldWorkshop.render();campLandPanel.render();campManagement.render(); profiler.end('render.panels.workshop');
         profiler.start('render.panels.vehicleWorkshop'); worldVehicleWorkshop.render(); profiler.end('render.panels.vehicleWorkshop');
         profiler.start('render.panels.guardian'); guardianBuild.render(); profiler.end('render.panels.guardian');
         profiler.end('render.panels');
@@ -759,7 +761,7 @@ export function createApplication({
     realmPanel.dispose();firePanel.dispose();
     worldRealms.dispose();
     nearbyControls.dispose();
-    restorationPanel.dispose();campLandPanel.dispose();campLayoutPanel.dispose();
+    restorationPanel.dispose();campLandPanel.dispose();campLayoutPanel.dispose();campManagement.dispose();
     seedShop.dispose();
     monsterCampPanel.dispose();regionalCampPanel.dispose();
     campHome.dispose();

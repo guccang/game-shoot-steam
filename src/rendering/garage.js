@@ -1,3 +1,4 @@
+import {drawCampWallFinish} from './camp-building-finish.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { drawWorldSign } from './world-signs.js';
@@ -39,6 +40,7 @@ export function drawGarage(c, winter = false, options = {}) {
     style.garage.strokeWidth,
   );
   box(c, -98, -109, 184, 109, 2, style.garage.wallLight, null);
+  drawCampWallFinish(c,-98,-109,184,109);
   poly(c,[[-98,-109],[86,-109],[86,-90],[-98,-96]],'#4b685139',null);
   box(c, -GARAGE.bayHalf, GARAGE.bayTop, GARAGE.bayHalf * 2, 108, 2, '#476354', edge, style.garage.strokeWidth);
   poly(

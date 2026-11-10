@@ -1,3 +1,4 @@
+import {campDecorDefinition} from '../../config/camp-management.js';
 import {LIVING_PLACES} from '../../config/living-world.js';
 import {WORLD_BUILDINGS} from '../../config/world-buildings.js';
 import {PARKING_SPOTS} from '../../config/parking.js';
@@ -15,6 +16,7 @@ import {worldDistance,nearest} from '../../world/coordinates.js';
 export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.find(b=>b.id===id);if(!base)return '没有这座建筑。';const b=campBuildingPosition(layout,base);
  if(!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  const left=b.x-b.width/2-24,right=b.x+b.width/2+24,top=b.y-b.height-20,bottom=b.y+95;
+ if(game.progress.campManagement?.items.some(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type);return left<i.x+d.width/2&&right>i.x-d.width/2&&top<i.y+d.depth/2&&bottom>i.y-d.height;}))return '请先收纳或移走这里的营地装饰。';
  for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!ownedLayoutPoint(game.progress,x,y,12))return '建筑和门前通道必须留在已购土地内。';
  for(const other of layoutBuildings(game.progress,layout)){if(other.id===id)continue;if(left<other.x+other.width/2+24&&right>other.x-other.width/2-24&&top<other.y+95&&bottom>other.y-other.height-20)return '与'+other.name+'或它的门前通道重叠。';}
  if(campBoundary(game.progress).gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';

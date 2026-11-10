@@ -1,8 +1,14 @@
+import {campBuildingFinish,campBuildingFinishKey,withCampBuildingFinish} from './camp-building-finish.js';
 // 只缓存原先逐帧重画的营地静态立面，已有景物图集与动态施工保持各自入口。
 import {createRenderCanvas} from './canvas-recovery.js';
 import {StaticRasterCache} from './static-raster-cache.js';
 import {drawBuildingArchitecture} from './building-architecture.js';
-export const campBuildingCache=new StaticRasterCache();
+// 每个静态条目捕获外观，仍共享原8MB上限和逐帧预热队列。
+class CampBuildingCache extends StaticRasterCache{
+ // 只有正在绘制的营地建筑加入外观键，其他调用保留原缓存。
+ draw(c,key,bounds,paint){const finish=campBuildingFinish();super.draw(c,campBuildingFinishKey()+':'+key,bounds,ctx=>withCampBuildingFinish(finish,paint,ctx));}
+}
+export const campBuildingCache=new CampBuildingCache();
 // 全场共用一张混合工作画布；不按建筑数量或积雪量增加缓存。
 let snowBlend=null;
 // 工作画布单独计入诊断，避免漏报渐积雪时的临时像素。

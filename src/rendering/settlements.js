@@ -89,7 +89,8 @@ function gateLeaf(c, a, b, palette) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawSettlement(c, item, game, night) {
-  const palette = night > 0.5 ? style.settlements.drawSettlementValue : style.settlements.drawSettlementValue2;
+  const finish=item.settlement==='sunleaf'&&!game.story&&!game.campDefense?game.progress.campManagement?.styles[item.type==='settlement-gate'?'gate':'fence']:null;
+  const palette = finish?.material==='stone'?['#aeb8a4','#53634d','#d2d6bc','#7c8b77']:finish?.material==='metal'?['#8ba39a','#3e5c51','#c2d1be','#5b7b70']:night > 0.5 ? style.settlements.drawSettlementValue : style.settlements.drawSettlementValue2;
   const half = item.length / 2,
     ends = item.horizontal
       ? [
@@ -129,12 +130,15 @@ export function drawSettlement(c, item, game, night) {
           ? { x: a.x + sign * Math.cos(angle) * span, y: a.y }
           : { x: a.x, y: a.y + sign * Math.cos(angle) * span };
       gateLeaf(c, a, fold, palette);gateLeaf(c, fold, b, palette);
+      if(finish?.shape==='crest'){const x=(a.x+fold.x)/2,y=(a.y+fold.y)/2-27;oval(c,x,y,10,12,palette[2],palette[1],1.7);poly(c,[[x,y-6],[x+5,y],[x,y+6],[x-5,y]],palette[0],palette[1],1);}
     }
   } else {
-    timber(c, ends[0], ends[1], 13, 7, palette);
+    timber(c, ends[0], ends[1], 13, finish?.material==='stone'?23:7, palette);
     timber(c, ends[0], ends[1], 30, 7, palette);
+    if(finish?.shape==='picket'||finish?.shape==='lattice')for(let i=1;i<4;i++){const t=i/4,p={x:ends[0].x+(ends[1].x-ends[0].x)*t,y:ends[0].y+(ends[1].y-ends[0].y)*t};timber(c,p,p,8,finish.shape==='picket'?37:28,palette,4);if(finish.shape==='picket')poly(c,[[p.x-3,p.y-44],[p.x+2,p.y-51],[p.x+6,p.y-44]],palette[2],palette[1],1);}
+    if(finish?.shape==='lattice'){timber(c,{x:ends[0].x,y:ends[0].y-8},{x:ends[1].x,y:ends[1].y-35},0,3,palette,3);timber(c,{x:ends[0].x,y:ends[0].y-35},{x:ends[1].x,y:ends[1].y-8},0,3,palette,3);}
   }
-  for (const end of ends) post(c, end, palette);
+  for (const end of ends){post(c, end, palette);if(finish?.material==='stone')box(c,end.x-9,end.y-49,21,7,2,palette[2],palette[1],1.6);if(item.type==='settlement-gate'&&finish?.shape==='lantern'){box(c,end.x-2,end.y-70,4,24,1,palette[1]);oval(c,end.x,end.y-72,12,15,'#c47456',palette[1],1.5);oval(c,end.x-2,end.y-73,5,9,'#efc47e');box(c,end.x-1,end.y-57,2,9,0,'#bc7151');}}
   if (item.type === 'settlement-gate' && item.horizontal) {
     box(c, -half - 35, -68, 70, 22, 4, palette[2], palette[1], 1.7);
     c.fillStyle = palette[1];

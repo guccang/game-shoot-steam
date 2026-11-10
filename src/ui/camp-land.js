@@ -11,7 +11,7 @@ import {createEventScope} from '../platform/events.js';
 export function createCampLandPanel({game,root,renderer,dialogs,onChange}){
  const scope=createEventScope(),dialog=root.createElement('dialog'),layer=root.createElement('div'),frame=root.getElementById('game-frame');let selected='workyard',message='',lastPanel='';
  dialog.id='camp-land-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','camp-land-title');
- dialog.innerHTML='<header class="ui-panel__header"><div><small>营地 · 土地与建设</small><h2 id="camp-land-title">扩建营地</h2></div><button class="ui-close" aria-label="关闭营地扩建">×</button></header><div class="ui-panel__body"><button class="ui-button" data-land-layout>营地布局规划</button><p>买下相邻土地，再投入木材建造设施。地图、背包和仓储始终可用。</p><section class="ui-section" data-land-list></section><section class="ui-section" data-land-detail></section><p role="status" data-land-message></p></div><footer class="ui-panel__footer"><button class="ui-button" data-land-go>前往地界</button><button class="ui-button ui-button--primary" data-land-buy>购买土地</button></footer>';
+ dialog.innerHTML='<header class="ui-panel__header"><div><small>营地 · 土地与建设</small><h2 id="camp-land-title">扩建营地</h2></div><button class="ui-close" aria-label="关闭营地扩建">×</button></header><div class="ui-panel__body"><button class="ui-button" data-land-management>营地管理与装饰</button><button class="ui-button" data-land-layout>营地布局规划</button><p>买下相邻土地，再投入木材建造设施。地图、背包和仓储始终可用。</p><section class="ui-section" data-land-list></section><section class="ui-section" data-land-detail></section><p role="status" data-land-message></p></div><footer class="ui-panel__footer"><button class="ui-button" data-land-go>前往地界</button><button class="ui-button ui-button--primary" data-land-buy>购买土地</button></footer>';
  root.body.append(dialog);layer.className='world-building-entrances';layer.style.pointerEvents='none';renderer.canvas.after(layer);
  const buttons=[{id:'core',name:'营地建设',sign:{x:440,y:720}},...CAMP_PLOTS.filter(p=>p.sign)].map(plot=>{const b=root.createElement('button');sceneHit(b,'扩建营地：'+plot.name);b.dataset.campPlot=plot.id;b.style.pointerEvents='auto';scope.on(b,'click',e=>{if(e.detail===0)open(plot.id);});layer.append(b);return b;});
  const find=s=>dialog.querySelector(s);
@@ -28,6 +28,7 @@ export function createCampLandPanel({game,root,renderer,dialogs,onChange}){
  }
  function open(id){if(!campLandStatus(game,id)||!canInspectBuilding(game))return false;selected=id;message='';const previous=[...root.querySelectorAll('dialog[open]')].filter(d=>d!==dialog);lastPanel='';dialogs.open(dialog.id);for(const d of previous){dialogs.transferResume(d.id,dialog.id);dialogs.close(d.id);}renderPanel();return true;}
  dialogs.register(dialog.id,{onOpen:renderPanel});
+ scope.on(find('[data-land-management]'),'click',()=>game.openCampManagement?.());
  scope.on(find('[data-land-layout]'),'click',()=>{if(!game.openCampLayout?.()){message='请先结束施工、牵引、停车或入营引导。';lastPanel='';renderPanel();}});
  scope.on(find('.ui-close'),'click',()=>dialogs.close(dialog.id));
  scope.on(dialog,'click',e=>{const select=e.target.closest('[data-land-select]'),build=e.target.closest('[data-land-build]');if(select){selected=select.dataset.landSelect;message='';renderPanel();}if(build&&!build.disabled)game.requestFacility?.(build.dataset.landBuild);});

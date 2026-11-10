@@ -93,7 +93,7 @@ export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,
     </button>`).join('');
    detail.innerHTML=`<section class="keepsake-phone">
     <div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div>
-    <div class="keepsake-apps">${button('trade','订单与商路')}${button('treasure','寻宝')}${button('map','看地图')}${button('waystations','驿站')}${button('home','回小屋')}${button('repair','载具救援')}</div>
+    <div class="keepsake-apps">${button('camp-management','营地管理')}${button('trade','订单与商路')}${button('treasure','寻宝')}${button('map','看地图')}${button('waystations','驿站')}${button('home','回小屋')}${button('repair','载具救援')}</div>
     <h3>索敌设定</h3>
     <label class="ui-choice phone-wood"><input type="checkbox" data-target-wood aria-labelledby="phone-wood-label" aria-describedby="phone-wood-help" ${game.gameplayPreferences.targetWood?'checked':''}>
      <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">勾选后，手持枪械优先打敌人，周围没有敌人时打树。手持电锯优先锯树。</small></span></label>
@@ -146,6 +146,7 @@ export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);show(phone);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
+  if(action==='camp-management'){if(!game.openCampManagement?.()){message.textContent='请在地面巡林时管理营地，先结束当前活动。';message.hidden=false;}return;}
   if(action==='trade'){onTrade();return;}
   if(action==='waystations'){onWaystations?.();return;}
   if(action==='treasure'&&ownsKeepsake(game.progress,'patrol-phone')){onTreasure();return;}

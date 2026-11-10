@@ -1,3 +1,6 @@
+import {campDecorationObjects,drawCampDecoration,drawCampDecorShop} from './camp-decor.js';
+import {setCampBuildingFinish} from './camp-building-finish.js';
+import {clearArtStyleCache as clearCampSceneryFinish} from './scenery.js';
 import {buildingWindowLights,drawCampWindowLights} from './camp-window-lights.js';
 import {drawSurfaceFog} from './surface-fog.js';
 import {regionalCampObjects,drawRegionalCamp,drawRegionalCampGround} from './regional-camps.js';
@@ -449,7 +452,10 @@ export class Renderer {
     const spiders=collectMechanicalSources(source,'spider').flatMap(g=>visibleBodies([g.spider.mother,...g.spider.nodes].filter(n=>n.active&&n.ready),view).map(n=>({...n,type:'mechanical-spider',weapon:g.weapon(),hatch:n.mother?g.spider.hatch:0,hatchSide:g.spider.hatchSide})));
     const scenePeople=sceneNpcObjects(this.sceneNpcContinuity??=createSceneNpcContinuity(),source,[...storyObjects(source),...mainlineActors(source).map(actor=>g.campActors?.get(actor.id)||actor)],view);
     const activeStoryResidents=new Set([...storyResidentIds(source),...scenePeople.map(a=>a.residentId).filter(Boolean)]);
+    // 存档外观变化才释放旧房屋像素，切镜头或远方营地不反复重建缓存。
+    const finishKey=JSON.stringify(source.progress.campManagement?.styles.building);if(this.campFinishKey!==finishKey){this.campFinishKey=finishKey;campBuildingCache.clear();clearCampSceneryFinish();}
     const objects = [
+      ...visibleBodies(campDecorationObjects(camp),view,150),
       ...visibleBodies(campLandObjects(camp),view,110),
       ...visibleBodies(mineShaftObjects(source),view,100),
       ...visibleBodies(constructionObjects(camp),view,160),
@@ -530,9 +536,14 @@ export class Renderer {
       if(['fire-truck-rear','fire-truck-front'].includes(item.type)&&!facilityOpen(source.progress,'fire'))continue;
       if(source.balconyScene){c.save();balconyUpright(c,view,item);}
       if(drawRestorationObject(c,item,camp,light.night,g.player)){drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();continue;}
+      // 作用域严格限定主营地屋体，结束后还原；门洞、机械和人物独立绘制。
+      const themed=!source.story&&!source.realm&&!source.campDefense&&source.mapId==='forest'&&( ['camp-decor-shop','construction-company','repair-center','repair-center-back','outdoor-shop','ammo-shop','industry','warehouse','warehouse-depot','cat-home','furniture-shop','seed-shop'].includes(item.type)||item.type==='scenery'&&['cottage','garage'].includes(item.kind));
+      setCampBuildingFinish(themed?source.progress.campManagement?.styles.building:null);
       const cachedBuilding=CACHED_CAMP_BUILDINGS.has(item.type);
       if(cachedBuilding){this.visibleStats.campBuildings++;profiler?.start('render.campBuildings');}
-      if(item.type==='camp-land-sign'||item.type==='camp-land-stake')drawCampLandObject(c,item,light.night);
+      if(item.type==='camp-decoration')drawCampDecoration(c,item,light.night,source.time,this.reduced.matches);
+      else if(item.type==='camp-decor-shop')drawCampDecorShop(c,item,light.night);
+      else if(item.type==='camp-land-sign'||item.type==='camp-land-stake')drawCampLandObject(c,item,light.night);
       else if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
       else if(item.type==='construction-company')drawConstructionCompany(c,item,light.night);
       else if(item.type==='outdoor-camp')drawOutdoorObject(c,item,source,light.night);
@@ -668,6 +679,7 @@ export class Renderer {
         drawEnergyShield(c,source,g.player,this.reduced.matches);
         c.restore();
       }
+      setCampBuildingFinish(null);
       drawCampWindowLights(c,windowGroups.get(item),light.night);
       if(cachedBuilding)profiler?.end('render.campBuildings');
       drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();

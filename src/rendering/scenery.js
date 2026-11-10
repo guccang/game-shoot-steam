@@ -1,3 +1,4 @@
+import {campBuildingFinishKey} from './camp-building-finish.js';
 import {createRenderCanvas} from './canvas-recovery.js';
 import {homeExterior} from '../config/home-construction.js';
 import {drawHomeFloorSign} from './construction-company.js';
@@ -23,6 +24,7 @@ import { drawRealmEntrance, drawRealmEntranceGround } from './realm-entrances.js
 // 建筑和麦田的静态图集；地面底座与可遮挡实体分离，细节只在首次使用时绘制。
 
 const atlas = new Map();
+
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawSceneryGround(c) {
   drawTownGround(c);
@@ -392,12 +394,13 @@ function tent(c) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 function sprite(item, winter) {
+  const finish=campBuildingFinishKey();
   const home=item.kind==='cottage'&&!item.workshop?homeExterior({floors:item.homeFloors}):null;
   // 加盖后释放旧高度的昼夜/雪景图集，只保留当前楼身，连续购买也不会累积历史画布。
   if(home)for(const [key,entry] of atlas)if(entry.homeRows!=null&&entry.homeRows!==home.rows){releaseRaster(entry.day);releaseRaster(entry.night);atlas.delete(key);}
   // 图集键与宽穗/短茎的两行周期一致，避免另一行命中错误造型。
   const key =
-    `${winter}:${home?.rows||0}:` +
+    `${finish}:${winter}:${home?.rows||0}:` +
     (item.kind === 'wheat'
       ? `wheat:${item.width}:${item.row % style.scenery.wheatRowPeriod}`
       : item.kind +
@@ -427,7 +430,7 @@ function sprite(item, winter) {
   else if (winter && item.kind === 'flowers') winterPlant(c);
   else drawCampProp(c, item.kind);
   if (winter && !item.workshop) drawScenerySnow(c, item);
-  const entry = { day: canvas, night: null, width, height,homeRows:home?.rows };
+  const entry = { day: canvas, night: null, width, height,homeRows:home?.rows,building:['cottage','garage'].includes(item.kind) };
   atlas.set(key, entry);
   return entry;
 }

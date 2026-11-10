@@ -1,3 +1,4 @@
+import {normalizeCampManagement} from './camp/camp-management.js';
 import {normalizeRegionalCamps} from './camp/regional-camps.js';
 import {normalizeWaystations} from './navigation/waystations.js';
 import {normalizeCampLayout} from '../config/camp-layout.js';
@@ -87,6 +88,7 @@ export function freshProgress() {
     treasure:freshTreasure(),
     npcDialogue:{},
     homeDecor:freshHome(),
+    campManagement:normalizeCampManagement(),
     residentCats:[0],
     mining:freshMining(),
     homeArcade:freshHomeArcade(),
@@ -230,6 +232,7 @@ export function validateProgress(raw) {
   p.story = validateStory(raw.story);
   p.living=normalizeLivingWorld(raw.living);
   p.homeDecor=normalizeHome(raw.homeDecor,p.living.calendar);
+  p.campManagement=normalizeCampManagement(raw.campManagement);
   // 旧档可能先获得了伙伴才引入住宿，补足其楼层，不动原有设施与家具。
   p.residentCats=residentRoster(p.heroes,raw.residentCats);
   p.homeDecor.floors=Math.max(p.homeDecor.floors,p.residentCats.length+1);

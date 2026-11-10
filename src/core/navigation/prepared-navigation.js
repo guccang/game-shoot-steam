@@ -10,7 +10,7 @@ export function playerNavigationBody(game){return {...game.player,campProgress:g
 
 // 通行条件变化必须重新验证，停车车体与维修护栏也属于正式障碍。
 export function navigationBodyKey(body,{parking=true}={}){
- return JSON.stringify([body.campProgress?.campLand,body.campProgress?.restoration?.repaired,body.mapId,!!body.flying,!!body.amphibious,!!body.treePass,!!body.livingCollision,!!body.legendaryBuilding,body.navigationRadius??12,body.arena??null,body.worldBarriers??[],parking?body.parkingBarriers??[]:null]);
+ return JSON.stringify([body.campProgress?.campLand,body.campProgress?.campManagement?.items,body.campProgress?.campLayout,body.campProgress?.restoration?.repaired,body.mapId,!!body.flying,!!body.amphibious,!!body.treePass,!!body.livingCollision,!!body.legendaryBuilding,body.navigationRadius??12,body.arena??null,body.worldBarriers??[],parking?body.parkingBarriers??[]:null]);
 }
 
 // 只记录成功事务的路线与树木快照；接单后树木变化不使已验证的路线失效。

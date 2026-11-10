@@ -1,3 +1,4 @@
+import {CAMP_DECOR_SHOP} from './camp-management.js';
 import {REGIONAL_CAMPS,regionalBuildings} from './regional-camps.js';
 // 世界建筑实体目录：底座锚点、墙体和开放车库通道共用周期坐标。
 import {TOWN_LAYOUT} from './town-layout.js';
@@ -8,6 +9,7 @@ import {LEGENDARY_WORKSHOP} from './legendary-workshop.js';
 import {LIVING_PLACES} from './living-world.js';
 // 矩形为相对底座的实体墙面；门前进屋点始终留在实体外侧。
 export const WORLD_BUILDINGS=[
+ {...CAMP_DECOR_SHOP,solidBeforeRepair:true,rects:[[-50,-75,50,4]]},
  ...REGIONAL_CAMPS.flatMap(c=>regionalBuildings(c).map(b=>({...b,regional:true,rects:[[-(b.kind==='legendary'?101:b.kind==='seed'?54:70),-105,b.kind==='legendary'?108:b.kind==='seed'?54:70,5]]}))),
  {id:'refinery',...TOWN_LAYOUT.refinery,rects:[[-92,-118,92,4]]},
  {id:'factory',...TOWN_LAYOUT.factory,rects:[[-92,-118,92,4]]},

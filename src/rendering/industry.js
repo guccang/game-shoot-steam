@@ -1,3 +1,5 @@
+import {campBuildingFinish,drawCampWallFinish} from './camp-building-finish.js';
+import {drawRoofSurface} from './building-materials.js';
 // 两座工业建筑参与正式脚底排序，动态部件由当前生产状态驱动。
 import {TOWN_LAYOUT} from '../config/town-layout.js';
 import {box,oval,poly} from './primitives.js';
@@ -10,7 +12,7 @@ export function drawIndustry(c,item,game,night=0){
  const active=!!game.progress.industry?.sites[item.id]?.job,t=active?game.time:0,edge='#3e5b45',wall=night?'#8a9e7c':'#f0dfb0',roof=night?'#49644d':'#789860';
  c.save();c.translate(item.x,item.y);c.lineJoin='round';c.lineCap='round';
  oval(c,8,9,105,16,'#35553a35');box(c,-100,-8,200,22,5,night?'#73806b':'#b9bb91',edge,2);
- box(c,-90,-99,180,100,4,wall,edge,3);poly(c,[[-100,-99],[0,-133],[100,-99],[90,-85],[-90,-85]],roof,edge,3);
+ box(c,-90,-99,180,100,4,wall,edge,3);drawCampWallFinish(c,-87,-97,174,96);if(campBuildingFinish())drawRoofSurface(c,[[-100,-88],[-15,-133],[80,-118],[100,-88]],{base:roof});else poly(c,[[-100,-99],[0,-133],[100,-99],[90,-85],[-90,-85]],roof,edge,3);
  box(c,-26,-46,52,48,4,'#425b43',edge,2);box(c,-19,-39,38,39,3,'#223d30');
  if(item.id==='refinery'){
   box(c,-77,-144,28,93,3,night?'#7c7059':'#b9976a',edge,3);box(c,-82,-151,38,12,3,'#e0c996',edge,2);
