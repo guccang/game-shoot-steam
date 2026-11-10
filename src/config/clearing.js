@@ -6,7 +6,7 @@ export const CLEARING_STEPS=[{icon:'accept',label:'接取清缴'},{icon:'travel'
 // 首轮完成后即可选择继续，保留回营整备，不打断想连续作战的玩家。
 export const CLEARING_CONTINUE_ROUND=1;
 
-// 随机任务距离使用循环世界最短距离，场地大小保持现有清缴节奏。
+// 距离上下限仅用于兼容历史场地；新任务按地图等级带选点，保留场地大小。
 export const CLEARING_SITE_RULES=Object.freeze({minDistance:1000,maxDistance:3000,radius:300,minSeparation:600,attempts:256});
 
 // 前三级地点留在营地草甸；清缴基础等级固定，强度只由清缴成长表与兵种决定。

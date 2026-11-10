@@ -228,14 +228,12 @@ function beginClearingPatrol(game,site=null,resuming=false){
 export function canAcceptNextClearing(game,round){
  return Number.isInteger(round)&&round>=CLEARING_CONTINUE_ROUND&&round===game.pendingClearingRound&&round===game.progress.bosses&&facilityOpen(game.progress,'clearing')&&!game.progress.living.patrolActive&&!game.livingPreview&&livingForest(game)&&['playing','paused'].includes(game.state)&&!game.boss&&!game.livingBattle&&!game.mainlineSpeech;
 }
-// 续战沿用刚完成的场地；保存失败保留资格，回营接单仍抽取新地点。
+// 下一轮按任务等级重新选场；保存失败保留续接资格，暂停恢复仍返回旧场。
 export function acceptNextClearing(game,round){
  if(!canAcceptNextClearing(game,round))return {ok:false,message:'本次结算现在不能继续接取清缴。'};
- const site=clearingSite(game.progress);
- // 追击领主可能离开场地；续接资格只取决于当前收据，到场刷怪仍由生活安全规则控制。
- const atSite=worldDistance(game.player,site)<=site.radius&&!livingSafePoint(game.player);
- const result=beginClearingPatrol(game,site);
- return {...result,message:result.ok?(atSite?'原地继续下一轮，短暂休整后怪群将再次入场。':'已接续下一轮，请沿路点返回本次清缴地点。'):result.message};
+ // 追击领主离场仍保留续接资格，新地点到场前不推进怪潮。
+ const result=beginClearingPatrol(game);
+ return {...result,message:result.ok?'已接取下一轮，请沿导航前往对应等级的新清缴地点。':result.message};
 }
 // 最多展示一个就近交互，任务目标优先于闲聊，委托板仍使用原有正式入口。
 export function nearbyLivingInteraction(game){

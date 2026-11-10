@@ -98,7 +98,7 @@ export function updateCampDefense(game,dt){const r=game.campDefense;if(!r||game.
   // 部分名额沿有效视口外沿步行入场，其余沿用已外移的前场出生带。
   const outside=r.spawned%CAMP_DEFENSE.spawn.offscreenEvery===0?findCampOffscreenSpawn(game):null;
   const spot=outside||{x:r.barrier.x+r.gate.nx*depth-r.gate.ny*lateral,y:r.barrier.y+r.gate.ny*depth+r.gate.nx*lateral};
-  const e=game.spawnEnemy(0,0,spot,{ambient:true});
+  const e=game.spawnEnemy(0,0,spot,{ambient:true,hordeOrdinal:r.spawned+1});
   // 兽潮等级来自本波配置，覆盖地图出生区域的等级，显示与战斗进度一致。
   Object.assign(e,{level:wave.level,campDefense:true,campRaider:r.spawned%4===0,arena:r.arena,hp:wave.hp,maxHp:wave.hp,damage:wave.damage,speed:wave.speed,reward:0});r.spawned++;r.spawnTimer+=wave.spawnInterval;
  }

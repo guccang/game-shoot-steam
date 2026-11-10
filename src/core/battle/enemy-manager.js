@@ -1,3 +1,4 @@
+import {mixedDumpling} from '../../config/special-dumpling-spawns.js';
 import {regionalDumpling,dumplingWaterFits} from '../../world/dumpling-habitats.js';
 import {BIOME_DUMPLING_BY_ID} from '../../config/biome-dumplings.js';
 import {updateBiomeDumpling} from '../../combat/biome-dumplings.js';
@@ -88,8 +89,9 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
   // 六类首领及各玩法的正式召唤物共用铁甲木卫实体、碰撞和盾击动作。
   if(context?.bossSummon)identity={...armoredIdentity(ground),name:'铁甲木卫'};
   // 地貌团子只进入森林普通战斗；剧情、秘境、重装及领主召唤保持身份。
-  const regionalAllowed=(!context?.ambient||context?.rangedEncounter||context?.dumplingVariant)&&!game.fireActive&&!game.campDefense&&!game.workshopTrial&&game.mapId==='forest'&&!game.realm&&!game.story&&!context?.bossOwner&&!context?.ordinaryDumpling&&!context?.escortWave;
-  const variant=regionalAllowed?(context?.dumplingVariant?BIOME_DUMPLING_BY_ID[context.dumplingVariant]:regionalDumpling(spot,game.nextId)):null;
+  const regionalAllowed=(!context?.ambient||context?.rangedEncounter||context?.dumplingVariant||context?.hordeOrdinal)&&!game.fireActive&&(!game.campDefense||context?.hordeOrdinal)&&!game.workshopTrial&&game.mapId==='forest'&&!game.realm&&!game.story&&!context?.bossOwner&&!context?.ordinaryDumpling&&!context?.escortWave;
+  const mode=context?.hordeOrdinal?'horde':clearing?'clearing':'field',number=context?.hordeOrdinal??(clearing?ordinal:game.encounterSpawned+1);
+  const variant=regionalAllowed?(context?.dumplingVariant?BIOME_DUMPLING_BY_ID[context.dumplingVariant]:mode==='field'?(regionalDumpling(spot,game.nextId)||mixedDumpling(spot,number,mode,game.enemies,()=>game.random())):mixedDumpling(spot,number,mode,game.enemies,()=>game.random())):null;
   if(variant&&(context?.dumplingVariant||(identity.species||'slime')==='slime')&&(variant.habitat!=='lake'||dumplingWaterFits(spot.x,spot.y,30))){
     identity={...ground,species:'slime',flying:false,name:variant.name,dumplingVariant:variant.id,color:variant.color,aquatic:variant.habitat==='lake',amphibious:variant.habitat==='lake'};
   }

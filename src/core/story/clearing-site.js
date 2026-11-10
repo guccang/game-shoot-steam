@@ -3,7 +3,7 @@ import {ENCOUNTERS} from '../../config/encounters.js';
 import {FOREST_LEVEL_ORIGIN,FOREST_LEVEL_BANDS,forestThreatAt} from '../../world/forest-levels.js';
 import {MONSTER_CAMPS,MONSTER_CAMP_RULES} from '../../config/monster-camps.js';
 // 接取时随机选择真实可达的林间战场，不修改地貌或生成额外奖励。
-import {CLEARING_SITE_RULES as RULES,CLEARING_STARTER_RULES} from '../../config/clearing.js';
+import {CLEARING_SITE_RULES as RULES,CLEARING_STARTER_RULES,CLEARING_APPROACH} from '../../config/clearing.js';
 import {biomeAt} from '../../world/biomes.js';
 import {canonical,worldDistance} from '../../world/coordinates.js';
 import {settlementAt} from '../../world/settlements.js';
@@ -29,22 +29,24 @@ export function clearingSiteOpen(site,trees){
 export function chooseClearingSite(game,onRoute=null){
  const origin=canonical(game.player),trees=createPlayerNavigationIndex(game.trees),previous=game.progress.living.clearingSite;
  const level=clearingEnemyLevel(game.progress.bosses),beginner=level<=3,maxLevel=Math.max(3,level);
- const band=FOREST_LEVEL_BANDS.find(b=>b.max>=maxLevel);
+ const band=FOREST_LEVEL_BANDS.find(b=>b.max>=maxLevel)||FOREST_LEVEL_BANDS.at(-1);
  const safeRadius=maxLevel>=FOREST_LEVEL_BANDS.at(-1).max?Infinity:band.from+(band.to-band.from)*(maxLevel-band.min+1)/(band.max-band.min+1);
  // 有限等级带内收紧抽样上界，避免大量候选落在必定被拒绝的远端。
- const rules=beginner?{...RULES,...CLEARING_STARTER_RULES}:{...RULES,maxDistance:Math.min(RULES.maxDistance,safeRadius-ENCOUNTERS.maxDistance+worldDistance(origin,FOREST_LEVEL_ORIGIN))};
+ const rules=beginner?{...RULES,...CLEARING_STARTER_RULES}:{...RULES,minDistance:band.from+RULES.radius+40,maxDistance:Math.min(band.to-400,safeRadius-400),attempts:512};
+ const center=beginner?CLEARING_APPROACH:FOREST_LEVEL_ORIGIN;
  const body={...game.player,...origin,flying:false,amphibious:false,treePass:false,mapId:'forest',livingCollision:true},start=game.random()*Math.PI*2,offset=game.random();
  let routes=0;
  for(let i=0;i<rules.attempts;i++){
   // 低级任务半径与角度使用不同步长，避免窄草甸中的候选点退化到几条固定弧线。
   const angle=start+i*2.399963,distance=rules.minDistance+(rules.maxDistance-rules.minDistance)*((offset+i*0.41421356237)%1);
-  const point=canonical({x:origin.x+Math.cos(angle)*distance,y:origin.y+Math.sin(angle)*distance});
-  const site=normalizeClearingSite({...point,origin});
+  const point=canonical({x:center.x+Math.cos(angle)*distance,y:center.y+Math.sin(angle)*distance});
+  const site=normalizeClearingSite({...point,origin,distributionVersion:1,level});
+  if(!beginner&&(worldDistance(point,center)<rules.minDistance||worldDistance(point,center)>rules.maxDistance))continue;
   if(beginner&&biomeAt(point.x,point.y).id!==CLEARING_STARTER_RULES.biome)continue;
   // 整个战场不能跨入超出任务难度的等级带，赶路另检查遭遇出生距离。
   if(!clearingAreaSafe(point,RULES.radius,safeRadius,maxLevel))continue;
-  if(!site||previous&&worldDistance(site,previous)<rules.minSeparation||!clearingSiteOpen(site,trees))continue;
-  const route=planQuestRoute(body,clearingNavigationTarget(site),trees,16000,{shortEdges:true});
+  if(!site||worldDistance(site,origin)<=RULES.radius+60||previous&&worldDistance(site,previous)<rules.minSeparation||!clearingSiteOpen(site,trees))continue;
+  const route=planQuestRoute(body,clearingNavigationTarget(site),trees,24000,{shortEdges:true});
   if(route.reachable&&clearingRouteSafe(route.points,safeRadius,beginner,maxLevel)){
    // 仅成功候选交付安全短边，接取事务决定是否缓存，不把路径塞进地点或存档。
    onRoute?.(route,trees);return site;
@@ -56,12 +58,14 @@ export function chooseClearingSite(game,onRoute=null){
 
 // 检查完整步行路线，防止低等级落点的引导路线穿过高等级野外遭遇区。
 function clearingRouteSafe(points,safeRadius,beginner,maxLevel){
+ // 玩家追击出草甸后允许沿可走路径返回；一旦进入安全区，后续不再绕出。
+ let enteredSafe=false;
  for(let i=1;i<points.length;i++){
   const a=points[i-1],b=points[i],steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/32));
   for(let n=0;n<=steps;n++){
    const point={x:a.x+(b.x-a.x)*n/steps,y:a.y+(b.y-a.y)*n/steps};
-   if(!clearingAreaSafe(point,ENCOUNTERS.maxDistance,safeRadius,maxLevel))return false;
-   if(beginner&&biomeAt(point.x,point.y).id!==CLEARING_STARTER_RULES.biome)return false;
+   const safe=clearingAreaSafe(point,ENCOUNTERS.maxDistance,safeRadius,maxLevel)&&(!beginner||biomeAt(point.x,point.y).id===CLEARING_STARTER_RULES.biome);
+   if(safe)enteredSafe=true;else if(enteredSafe)return false;
   }
  }
  return true;
