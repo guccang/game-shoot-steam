@@ -98,7 +98,7 @@ export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,
     <h3>寻路设置</h3>
     <div class="ui-inset"><p>任务寻路：${taskNavigationEnabled(game)?'已开启':'已关闭'}</p>
      <button type="button" class="ui-button" data-pack-action="toggle-navigation" aria-pressed="${taskNavigationEnabled(game)}" aria-describedby="phone-navigation-help">${taskNavigationEnabled(game)?'关闭任务寻路':'开启任务寻路'}</button>
-     <p id="phone-navigation-help">关闭后停止任务路线计算并隐藏路点，保留任务进度。开启任务寻路会停止当前驿站导航。</p></div>
+     <p id="phone-navigation-help">关闭后取消临时导航、移除对应任务卡并隐藏路点，保留任务进度。开启任务寻路会停止当前驿站导航。</p></div>
     <h3>索敌设定</h3>
     <label class="ui-choice phone-wood"><input type="checkbox" data-target-wood aria-labelledby="phone-wood-label" aria-describedby="phone-wood-help" ${game.gameplayPreferences.targetWood?'checked':''}>
      <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">勾选后，手持枪械优先打敌人，周围没有敌人时打树。手持电锯优先锯树。</small></span></label>
