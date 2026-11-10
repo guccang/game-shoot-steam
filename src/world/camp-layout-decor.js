@@ -1,3 +1,4 @@
+import {campDecorRoadOverlap,campDecorRoadHalfWidth} from './camp-decor.js';
 // 布局优先：仅找出需要回收的装饰，预览期间不修改玩家物品。
 import {CAMP_BUILDINGS,campBuildingPosition,campLayoutFootprints} from '../config/camp-layout.js';
 import {campDecorDefinition} from '../config/camp-management.js';
@@ -12,5 +13,5 @@ export function campLayoutDecorConflicts(progress,layout,roads){
  const rects=moved.flatMap(b=>campLayoutFootprints(campBuildingPosition(layout,b))),aliases={vehicle:'garage','cat-home':'catHome','warehouse-depot':'warehouseDepot'},lanes=[];
  for(const b of moved){const before=campBuildingPosition(progress.campLayout,b),after=campBuildingPosition(layout,b),dx=after.x-before.x,dy=after.y-before.y;for(const s of PARKING_SPOTS.filter(s=>(aliases[s.building]||s.building)===b.id))lanes.push([{x:s.x+dx,y:s.y+dy},{x:s.x+dx,y:s.approachY+dy}]);}
  const paths=Object.keys(layout.positions||{}).length?roads.paths:campSurfaceRoads({...progress,campLayout:layout});
- return (progress.campManagement?.items||[]).filter(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type),r=Math.max(d.width/2,d.depth/2)+10;return rects.some(b=>{const p=nearest(i,{x:(b.left+b.right)/2,y:(b.top+b.bottom)/2});return b.left<p.x+d.width/2&&b.right>p.x-d.width/2&&b.top<p.y+d.depth/2&&b.bottom>p.y-d.height;})||lanes.some(([a,b])=>distance(i,a,b)<r+55)||paths.some(path=>path.some((b,n)=>n&&distance(i,path[n-1],b)<r+34));}).map(i=>i.uid);
+ return (progress.campManagement?.items||[]).filter(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type),r=Math.max(d.width/2,d.depth/2)+10;return rects.some(b=>{const p=nearest(i,{x:(b.left+b.right)/2,y:(b.top+b.bottom)/2});return b.left<p.x+d.width/2&&b.right>p.x-d.width/2&&b.top<p.y+d.depth/2&&b.bottom>p.y-d.height;})||lanes.some(([a,b])=>distance(i,a,b)<r+55)||campDecorRoadOverlap(i,d,paths,campDecorRoadHalfWidth({...progress,campLayout:layout}));}).map(i=>i.uid);
 }

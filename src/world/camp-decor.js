@@ -1,9 +1,11 @@
+import {worldRoadFootprintOverlap} from './farm-roads.js';
 import {overlapsCampPlaza} from './camp-plaza.js';
 import {campSurfaceRoads} from './camp-surface-roads.js';
-import {farmOverlapsRoad} from './farm-roads.js';
+import {roadFootprintDistance} from './road-footprint.js';
+import {CAMP_ROAD_WIDTH} from '../config/camp-layout.js';
 // 装饰占地与通路保护：正式物理、编辑预览和保存均读取同一脚底矩形。
 import {campDecorDefinition,CAMP_DECOR_SHOP} from '../config/camp-management.js';
-import {ownedLayoutPoint,campRoadNetwork,layoutBuildings} from './camp-layout-roads.js';
+import {ownedLayoutPoint,layoutBuildings} from './camp-layout-roads.js';
 import {campBoundaryBlocked,campBoundary} from './camp-boundary.js';
 import {WORLD_BUILDINGS} from '../config/world-buildings.js';
 import {PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
@@ -23,10 +25,14 @@ export function campDecorPlacementError(game,uid,x,y){const p=game.progress,item
  const buildings=[...layoutBuildings(p,p.campLayout),...WORLD_BUILDINGS,CAMP_DECOR_SHOP];if(buildings.some(b=>{const q=nearest(b,point);return Math.abs(x-q.x)<(b.width||140)/2+r&&y>q.y-(b.height||130)-d.height/4&&y<q.y+85+d.depth/2;}))return '这里是建筑、屋檐或门前通道。';
  const lot=nearest(NORTH_PARKING,point);if(x>lot.x-r&&x<lot.x+NORTH_PARKING.width+r&&y>lot.y-r&&y<lot.y+NORTH_PARKING.height+r)return '请保留北停车场。';
  if(PARKING_SPOTS.some(s=>{const q=nearest(s,point);return segmentDistance(point,q,{x:q.x,y:q.y+s.approachY-s.y})<r+55;}))return '请保留停车位及进出车道。';
- if(farmOverlapsRoad({x,y,mapId:'forest'},p))return '请不要占用营地道路。';
- if(campSurfaceRoads(p).some(path=>path.some((b,i)=>i&&segmentDistance(point,path[i-1],b)<r+34)))return '请不要占用营地道路。';
+ if(campDecorRoadHalfWidth(p)===24?worldRoadFootprintOverlap({...point,mapId:'forest'},p,d.width/2,d.depth/2):campDecorRoadOverlap(point,d,campSurfaceRoads(p),campDecorRoadHalfWidth(p)))return '请不要占用营地道路。';
  if(p.campManagement.items.some(i=>{if(i.uid===uid||i.x===null)return false;const o=campDecorDefinition(i.type);return Math.abs(x-i.x)<(d.width+o.width)/2+12&&Math.abs(y-i.y)<(d.depth+o.depth)/2+18;}))return '与其他装饰太近了。';
  if(p.farm?.plots?.some(f=>f.mapId==='forest'&&worldDistance(f,point)<r+40))return '这里已有农田。';
  if(game.trees?.some(t=>t.hp>0&&worldDistance(t,point)<r+40))return '请避开树木。';
  if(game.player&&worldDistance(game.player,point)<r+28)return '请先离开摆放位置。';
  if(p.campParking?.owned?.some(v=>v.spot==null&&v.mapId==='forest'&&worldDistance(v,point)<r+65)||(p.vehicleService||[]).some(v=>v?.position&&v.mapId==='forest'&&worldDistance(v.position,point)<r+65))return '这里停着载具，请先移走。';return '';}
+
+// 默认土路实体半宽24；搬迁和自定义铺面沿用正式营路宽度，草缘阴影不算路面。
+export function campDecorRoadHalfWidth(progress){const finish=progress.campManagement?.styles.road;return Object.keys(progress.campLayout?.positions||{}).length||finish&&(finish.material!=='earth'||finish.shape!=='plain')?CAMP_ROAD_WIDTH/2:24;}
+// 道路仅检验真实底座，不借用农田尺寸，也不叠加角色或灯杆高度缓冲。
+export function campDecorRoadOverlap(point,definition,paths,halfWidth){return paths.some(path=>path.some((b,i)=>i&&roadFootprintDistance(path[i-1],b,nearest(point,path[i-1]),definition.width/2,definition.depth/2)<halfWidth));}
