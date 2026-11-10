@@ -25,7 +25,7 @@ test('当前位置建站、阻止重叠、读档保留名称坐标，旧档默�
  const g=fixture(),a=buildWaystation(g,'林缘');assert.ok(a.ok);assert.equal(a.site.x,g.player.x);assert.equal(buildWaystation(g).ok,false);
  assert.match(farmLandReason(g,{x:g.player.x,y:g.player.y,mapId:'forest'}),/驿站/);
  g.player.x+=220;assert.ok(buildWaystation(g).ok);const p=validateProgress(JSON.parse(JSON.stringify(g.progress)));assert.deepEqual(p.waystations,g.progress.waystations);assert.equal(normalizeWaystations(null).sites.length,0);
- const clean=normalizeWaystations({sites:[a.site,a.site,{id:4,x:NaN,y:0},{id:5,x:-5,y:-8,name:'  '}]});assert.equal(clean.sites.length,2);assert.equal(clean.sites[1].x,WORLD.width-5);assert.equal(clean.sites[1].name,'林间驿站');
+ const clean=normalizeWaystations({sites:[a.site,a.site,{id:4,x:NaN,y:0},{id:5,x:-5,y:-8,name:'  '}]});assert.equal(clean.sites.length,2);assert.equal(clean.sites[1].x,WORLD.width-5);assert.equal(clean.sites[1].name,'晴叶营地');
 });
 test('湖水、树干、室内与飞行禁止建站，失败不新增记录',()=>{
  const g=fixture(),lake=NATURAL_TERRAIN.lakes[0];Object.assign(g.player,lake);assert.ok(waystationBuildReason(g));assert.equal(buildWaystation(g).ok,false);assert.equal(g.progress.waystations.sites.length,0);

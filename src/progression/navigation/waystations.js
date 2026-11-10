@@ -1,13 +1,17 @@
 // 自建驿站仅持久化地点，未完成行程不跨读档自动驾驶。
 import {canonical} from '../../world/coordinates.js';
 import {WAYSTATIONS,WAYSTATION_NAME_HEADS as HEADS,WAYSTATION_NAME_TAILS as TAILS,waystationPurpose} from '../../config/waystations.js';
-// 读档保留站名和编号，用途缺省或损坏时归通用，不重新抽取任何地点。
+import {waystationLandmarkName} from '../../world/waystation-landmarks.js';
+// 只校正旧系统随机名和默认占位名，不改玩家在历史版本留下的自定义名称。
+const automaticNames=new Set(['林间驿站',...HEADS.flatMap(head=>TAILS.map(tail=>head+tail))]);
+// 读档只校正附近旧随机名；编号、历史自定义名和位置保留，用途缺省时归通用。
 export function normalizeWaystations(raw){
  const sites=[],ids=new Set();
  for(const site of Array.isArray(raw?.sites)?raw.sites:[]){
   if(sites.length>=WAYSTATIONS.limit)break;
   if(!site||!Number.isFinite(site.x)||!Number.isFinite(site.y)||!Number.isSafeInteger(site.id)||site.id<1||site.id>=1000000000||ids.has(site.id))continue;
-  ids.add(site.id);sites.push({id:site.id,name:String(site.name||'').trim().slice(0,16)||'林间驿站',purpose:waystationPurpose(site.purpose).id,...canonical(site),mapId:'forest'});
+  const oldName=String(site.name||'').trim().slice(0,16)||'林间驿站',name=automaticNames.has(oldName)?waystationLandmarkName({...site,mapId:'forest'})||oldName:oldName;
+  ids.add(site.id);sites.push({id:site.id,name,purpose:waystationPurpose(site.purpose).id,...canonical(site),mapId:'forest'});
  }
  const next=Number.isSafeInteger(raw?.nextId)&&raw.nextId>0&&raw.nextId<=1000000000?raw.nextId:1;
  return {nextId:Math.max(next,1,...sites.map(s=>s.id+1)),sites};

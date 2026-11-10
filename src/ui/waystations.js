@@ -5,10 +5,11 @@ import {WAYSTATIONS,WAYSTATION_PURPOSES,WAYSTATION_SIGN,waystationPurpose} from 
 import {buildWaystation,removeWaystation,travelToWaystation,stopWaystationTravel,waystationBuildReason,waystationUnavailable} from '../core/navigation/waystations.js';
 import {nearest,worldDistance} from '../world/coordinates.js';
 import {displayMeters} from '../world/distance-units.js';
+import {waystationLandmarkName} from '../world/waystation-landmarks.js';
 export function createWaystations({game,root,renderer,dialogs,persist,onChange,onNotice}){
  const scope=createEventScope(),panel=root.createElement('dialog'),hud=root.createElement('section');let message='',lastNotice='',removing=null;
  panel.id='waystations-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','waystations-title');
- panel.innerHTML='<header class="ui-panel__header"><div><h2 id="waystations-title">林间驿站</h2><p>在走过的地方，留下下一程的路标</p></div><button type="button" class="ui-close" aria-label="关闭驿站">×</button></header><div class="ui-panel__body"><section class="ui-section"><h3>当前位置建立驿站</h3><p>选择用途，名称随机生成，编号依次递增。</p><fieldset class="waystation-purposes"><legend>用途类型</legend><div id="waystation-purposes"></div></fieldset><p id="waystation-build-note"></p><button type="button" class="ui-button ui-button--primary" id="waystation-build">在这里建立</button></section><h3 id="waystation-count" tabindex="-1"></h3><p>选择驿站自动前往，操作方向即可接管。可在这里移除不需要的驿站。</p><div id="waystation-list"></div></div><footer class="ui-panel__footer"><p id="waystation-message" role="status"></p></footer>';
+ panel.innerHTML='<header class="ui-panel__header"><div><h2 id="waystations-title">林间驿站</h2><p>在走过的地方，留下下一程的路标</p></div><button type="button" class="ui-close" aria-label="关闭驿站">×</button></header><div class="ui-panel__body"><section class="ui-section"><h3>当前位置建立驿站</h3><p>选择用途，名称沿用附近营地或景观，编号依次递增。</p><fieldset class="waystation-purposes"><legend>用途类型</legend><div id="waystation-purposes"></div></fieldset><p id="waystation-build-note"></p><button type="button" class="ui-button ui-button--primary" id="waystation-build">在这里建立</button></section><h3 id="waystation-count" tabindex="-1"></h3><p>选择驿站自动前往，操作方向即可接管。可在这里移除不需要的驿站。</p><div id="waystation-list"></div></div><footer class="ui-panel__footer"><p id="waystation-message" role="status"></p></footer>';
  root.body.append(panel);
  hud.id='waystation-travel';hud.hidden=true;hud.setAttribute('aria-label','驿站自动行进');hud.innerHTML='<span role="status"></span><button type="button" class="ui-button" aria-label="停止驿站导航">停止</button>';root.getElementById('game-frame').append(hud);
  const get=id=>root.getElementById(id);
@@ -21,7 +22,8 @@ export function createWaystations({game,root,renderer,dialogs,persist,onChange,o
  function render(){
   const sites=game.progress.waystations?.sites||[],reason=waystationBuildReason(game);
   setText(get('waystation-count'),`已建驿站 ${sites.length} / ${WAYSTATIONS.limit}`);
-  setText(get('waystation-build-note'),reason||'免费建立，保存在当前落脚点。');get('waystation-build').disabled=!!reason;
+  const landmark=waystationLandmarkName(game.player);
+  setText(get('waystation-build-note'),reason||(landmark?`免费建立，将命名为「${landmark}」。`:'免费建立，附近没有地标时随机命名。'));get('waystation-build').disabled=!!reason;
   setText(get('waystation-message'),message);get('waystation-list').replaceChildren();
   if(!sites.length){const empty=root.createElement('p');setText(empty,'还没有驿站。在这里建立第一座吧。');get('waystation-list').append(empty);}
   for(const site of sites){
