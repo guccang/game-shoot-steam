@@ -8,7 +8,7 @@ import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {COTTAGE} from '../src/config/cottage.js';
 import {enterCottage,leaveCottage,updateCottage,sleepInCottage} from '../src/core/home/cottage.js';
 import {cottageRestGuideActive} from '../src/core/camp/cottage-guide.js';
-import {mainlineObjective,updateMainline} from '../src/core/story/mainline-manager.js';
+import {mainlineObjective} from '../src/core/story/mainline-manager.js';
 import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
 import {repairFacility,updateRestoration} from '../src/core/camp/town-restoration.js';
 // 只准备教学前置与落点，建造和睡眠均调用正式核心入口。
@@ -20,14 +20,20 @@ function scene(repaired=true){
 function startSleep(g){const at={x:g.player.x,y:g.player.y};Object.assign(g.player,{x:220,y:220});updateCottage(g,0,{x:0,y:0});Object.assign(g.player,at);updateCottage(g,0,{x:0,y:0});for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});return sleepInCottage(g);}
 // 睡眠动画使用正式控制器结算，不通过修改生命绕开事务。
 function finish(g){updateCottage(g,1.3,{x:0,y:0});}
-test('小屋完工后出现一次休息指引，读档保留，原主线暂不推进',()=>{
+// 完工和读档均不强制回屋，只有受伤角色主动入屋才提供首次休息提示。
+test('小屋完工与读档不强制休息，主动入屋才出现首次休息提示',()=>{
  const g=scene(false);g.progress.wood=1000;assert.equal(cottageRestGuideActive(g),false);
  assert.equal(repairFacility(g,'cottage').ok,true);updateRestoration(g,4);
- assert.equal(cottageRestGuideActive(g),true);assert.equal(mainlineObjective(g).cottageRest,true);
- assert.deepEqual(worldNavigationObjective(g).site,{...COTTAGE.door,mapId:'forest',name:'巡林小屋门前'});
- const phase=g.progress.mainline.phase;updateMainline(g,10);assert.equal(g.progress.mainline.phase,phase);
- assert.equal(validateProgress(g.progress).restoration.cottageRested,false);
- g.vehicle.active=true;assert.match(mainlineObjective(g).label,/停稳1秒.*下车进屋/);
+ assert.equal(cottageRestGuideActive(g),false);assert.notEqual(mainlineObjective(g)?.cottageRest,true);
+ assert.notEqual(worldNavigationObjective(g)?.cottageRest,true);
+ const saved=validateProgress(g.progress);assert.equal(saved.restoration.cottageRested,false);
+ const restored=new Game(saved,()=>.5);restored.start();restored.vehicle.active=false;restored.player.hp=27;Object.assign(restored.player,COTTAGE.door);
+ assert.equal(cottageRestGuideActive(restored),false);assert.notEqual(mainlineObjective(restored)?.cottageRest,true);
+ assert.notEqual(worldNavigationObjective(restored)?.cottageRest,true);
+ assert.ok(enterCottage(restored));assert.equal(cottageRestGuideActive(restored),true);
+ assert.equal(mainlineObjective(restored),null);
+ assert.equal(restored.progress.restoration.cottageRested,false);
+ assert.ok(leaveCottage(restored));assert.equal(cottageRestGuideActive(restored),false);
 });
 test('选时睡眠恢复当前猫猫最大生命，存档保存回血和首次休息记录',()=>{
  for(const mode of ['morning']){
