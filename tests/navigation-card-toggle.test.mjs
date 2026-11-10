@@ -24,9 +24,13 @@ test('清缴赶路关闭后保留站牌任务正文，重开恢复同一目标',
  const g=scene();g.progress.living.patrolActive=true;const site=clearingSite(g.progress);Object.assign(g.player,{x:site.x+600,y:site.y});
  assert.equal(worldTaskObjective(g).key,'boss-clearing');assert.equal(worldTaskObjective(g).label,'前往清缴场站牌附近');assertToggle(g);
 });
-test('临时访问关闭后保留操作，不切换回已暂停的主线',()=>{
+test('临时访问关闭后移除任务卡，重新开启不复活已取消的目的地',()=>{
  const g=scene();Object.assign(g.player,MAINLINE_SITES.camp);const action={type:'camp-defense',gate:'left'};
- requestWorldNavigation(g,MAINLINE_SITES.westGate,'前往西门',{direct:true,action});assert.equal(worldTaskObjective(g).key,'visit');assert.deepEqual(worldTaskObjective(g).action,action);assertToggle(g);
+ requestWorldNavigation(g,MAINLINE_SITES.westGate,'前往西门',{direct:true,action});assert.equal(worldTaskObjective(g).key,'visit');assert.deepEqual(worldTaskObjective(g).action,action);
+ const before=structuredClone(g.progress);toggleTaskNavigation(g);assert.equal(worldTaskObjective(g),null);assert.equal(worldTaskObjective(createRenderInterpolation().sample(g,.5)),null);assert.equal(storyRouteState(g),null);
+ assert.deepEqual({...g.progress,mainline:{...g.progress.mainline,navigationEnabled:true}},before);
+ toggleTaskNavigation(g);assert.equal(worldTaskObjective(g),null);assert.equal(worldNavigationObjective(g),null);
+ requestWorldNavigation(g,MAINLINE_SITES.westGate,'前往西门',{direct:true,action});assert.equal(worldTaskObjective(g).key,'visit');
 });
 test('路点关闭时到达临时目的地仍撤销访问卡，重新开启不复活旧目标',()=>{
  const g=scene();Object.assign(g.player,MAINLINE_SITES.camp);requestWorldNavigation(g,MAINLINE_SITES.garage,'前往载具工坊',{direct:true});toggleTaskNavigation(g);

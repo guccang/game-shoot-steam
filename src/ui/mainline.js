@@ -119,7 +119,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
  // 任务卡优先显示，波次与Boss进度依次排在下方。
  function render(){
   const selected=worldTaskObjective(game);
-  // 卡片保留清缴返场、临时访问和修复目标；关闭路点只影响指引，不撤掉正文与操作入口。
+  // 已取消的临时访问不再有目标卡；正式任务进度和操作入口继续保留。
   const main=mainlineObjective(game),priority=selected?.restoration||selected?.key==='visit'||selected?.key==='boss-clearing'||main?.restoration||main?.cottageRest;
   const request=priority?null:trackedLivingRequest(game),target=request&&livingRequestTarget(game,request);
   const o=priority?(selected||main):target?{task:request,label:target.text,site:{...target,mapId:game.mapId}}:main,dialogOpen=!!root.querySelector('dialog[open]');
