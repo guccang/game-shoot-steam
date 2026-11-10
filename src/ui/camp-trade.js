@@ -1,4 +1,4 @@
-import {escortQuote,escortWaveDone,TRADE_ESCORT} from '../config/trade-escort.js';
+import {escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../config/trade-escort.js';
 // 手机可看行情、接单点与商队位置，到场才办理交接。
 import {TRADE_SITES,TRADE_BOARD,TRADE_BOARD_SIZE,TRADE_TASK_IDS,TRADE_RELIC} from '../config/camp-trade.js';
 import {tradeField,atTradeSite,tradeAction,tradeCrop,tradePrice,tradeStock} from '../core/camp/camp-trade.js';
@@ -33,7 +33,7 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
   sections.push('<section class="ui-inset"><h3>营地间运货</h3><p>各商站均可接单、交付作物和货签。选择其他营地运送商队货物，到目的地另领佣金。</p>'+
    TRADE_SITES.filter(s=>s!==local).map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${escortQuote(local||nearestSite,s).coins} 金币 · ${escortQuote(local||nearestSite,s).meters}米 · 3波怪物</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接单运往此营地',s.id,!board):''}`).join('')+'</section>');
   if(e){const goal=TRADE_SITES.find(s=>s.id===e.station);
-   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>车况 ${Math.ceil(e.hp)}% · 已清理 ${escortWaveDone(e)}/3波${e.camped?' · 夜间扎营':''}。在车旁领路，离队时商队等候。</p>${e.camped?button('rest-escort','就地扎营，休息到天亮'):''} ${button('route','寻找商队','caravan')} ${!e.camped?button('route','继续前往目的地',goal.id):''} ${button('finish-escort','领取佣金 '+e.pay,'',local!==goal||worldDistance(e,goal)>125||escortWaveDone(e)!==TRADE_ESCORT.waves)}</section>`);
+   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>货物损坏 ${(100-e.hp).toFixed(1)}% · 预计佣金 ${escortPayout(e)} / ${e.pay} · 已清理 ${escortWaveDone(e)}/3波${e.camped?' · 夜间扎营':''}。在车旁领路，离队时商队等候。</p>${e.camped?button('rest-escort','就地扎营，休息到天亮'):''} ${button('route','寻找商队','caravan')} ${!e.camped?button('route','继续前往目的地',goal.id):''} ${button('finish-escort','领取佣金 '+escortPayout(e),'',local!==goal||worldDistance(e,goal)>125||escortWaveDone(e)!==TRADE_ESCORT.waves)}</section>`);
   }
   sections.push(`<section class="ui-inset"><h3>收成去向</h3><label class="ui-choice phone-wood"><input type="checkbox" data-keep ${t.keep?'checked':''}>留下收成，经过仓库也保留作物</label></section>`);
   body.innerHTML='<p class="ui-inset" data-trade-summary>共 '+TRADE_TASK_IDS.length+' 项任务 · 已完成 '+t.completed.length+' 项</p>'+sections.join('');

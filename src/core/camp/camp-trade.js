@@ -1,4 +1,4 @@
-import {escortQuote,escortWaveDone,TRADE_ESCORT} from '../../config/trade-escort.js';
+import {escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../../config/trade-escort.js';
 import {updateEscortEncounter,startEscortRest} from './trade-escort.js';
 // 商路交易只取随身作物和实际到站的自有货舱；护送不占用玩家货位。
 import {TRADE_SITES,TRADE_BOARD,TRADE_RELIC} from '../../config/camp-trade.js';
@@ -60,7 +60,7 @@ export function tradeAction(game,action,id){
    if(station.id===site.id)return fail('请选择另一个营地作为目的地。');
    t.escort={pay:escortQuote(site,station).coins,rounds:next.bosses,wave:0,defeated:[],travel:0,camped:false,origin:site.id,station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message='商队已出发，运费'+t.escort.pay+'金币；途中有3波怪物，夜晚需扎营。';
   }else if(action==='finish-escort'&&destination&&worldDistance(t.escort,destination)<=125&&escortWaveDone(t.escort)===TRADE_ESCORT.waves){
-   coins=t.escort.pay;t.escort=null;completedId=destination.id;message='商队平安抵达';
+   coins=escortPayout(t.escort);message='商队抵达，货物损坏'+(100-t.escort.hp).toFixed(1)+'%，实收佣金 '+coins+' 金币';t.escort=null;completedId=destination.id;
   }else if(action==='sell'){
    const i=FARM_CROPS.findIndex(c=>c.id===id);if(i<0)return fail('请选择作物。');
    const stocks=tradeStocks(game,next,site),sale=productionSalePlan(next,stocks),count=sale.reduce((n,row)=>n+row[i],0);

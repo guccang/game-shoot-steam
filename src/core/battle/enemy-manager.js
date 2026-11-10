@@ -179,7 +179,7 @@ export function updateEnemies(game, dt, previousPlayer) {
     const barricade=enemy.campDefense&&!enemy.campRaider&&campBarricadeTarget(game,enemy);
     const goddess = enemy.goddessTarget && game.realm?.mode === 'guardian' ? game.realm.goddess : null;
     const station = enemy.storyTarget ? storyTarget(game) : null;
-    const companion = enemy.tradeGuard || goddess || station ? null : companionEnemyTarget(game,enemy,companions);
+    const companion = goddess || station ? null : companionEnemyTarget(game,enemy,companions);
     const victim = barricade || station || goddess || companion?.node || game.player;
     const previous = barricade || station || goddess || (companion ? companion.node.previous || companion.node : previousPlayer);
     const ranged = RANGED_ENEMIES[enemy.species] && !enemy.workshopTarget;
