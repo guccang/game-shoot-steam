@@ -5,6 +5,7 @@ import { normalizeAudioPreferences } from './audio.js';
 import { normalizeChronicle } from '../world/play-chronicle.js';
 export const STORAGE_KEYS = {
   progress: 'forest-patrol-v1',
+  woodJournal: 'forest-patrol-wood-journal-v1',
   worldRevision: 'forest-patrol-world-revision',
   environment: 'forest-patrol-environment-v1',
   audio: 'forest-patrol-audio-v1',
@@ -15,7 +16,7 @@ export const STORAGE_KEYS = {
 export const WORLD_SAVE_REVISION = 'forest-exploration-pacing-2026-11';
 // 延迟获取存储，读取 localStorage 属性本身被浏览器拒绝时也能安全回退。
 export function createSaveStore(getStorage = () => globalThis.localStorage) {
-  let available = true, worldReady = false;
+  let available = true, worldReady = false, woodBase = null;
   let diagnostic=()=>{};
   // 只报告保存结果和键名，不向日志传递存档内容；观察器异常不能改变保存结果。
   function notify(operation,key,ok,error){try{diagnostic({operation,key,ok,error:error?String(error.name||error):null});}catch{/* 诊断与保存事务隔离。 */}}
@@ -26,6 +27,7 @@ export function createSaveStore(getStorage = () => globalThis.localStorage) {
       const storage=getStorage();
       if(storage.getItem(STORAGE_KEYS.worldRevision)!==WORLD_SAVE_REVISION){
         storage.removeItem(STORAGE_KEYS.progress);
+        storage.removeItem(STORAGE_KEYS.woodJournal);
         storage.removeItem(STORAGE_KEYS.chronicle);
         storage.setItem(STORAGE_KEYS.worldRevision,WORLD_SAVE_REVISION);
       }
@@ -64,6 +66,15 @@ export function createSaveStore(getStorage = () => globalThis.localStorage) {
     if (text === null) return { status: 'missing', progress: null };
     try {
       const raw = JSON.parse(text);
+      // 增量与主档代号相同才恢复；新主档原子写入后，旧增量即使未清理也不会重复覆盖。
+      const journalText=getStorage().getItem(STORAGE_KEYS.woodJournal);
+      if(journalText){
+        const journal=JSON.parse(journalText);
+        if(raw?.woodSaveRevision&&journal.base===raw.woodSaveRevision){
+          if(journal.version!==1||!journal.fields||typeof journal.fields!=='object'||Array.isArray(journal.fields))throw Error('伐木存档损坏');
+          for(const [key,value] of Object.entries(journal.fields)){if(key==='__proto__'||key==='woodSaveRevision')continue;if(value===null)delete raw[key];else raw[key]=JSON.parse(value);}
+        }
+      }
       if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.version !== 1 ||
           !['coins', 'wood', 'heroes', 'weapons', 'patrol', 'story', 'realms'].some(key => Object.hasOwn(raw, key)))
         return { status: 'corrupt', progress: null };
@@ -98,7 +109,29 @@ export function createSaveStore(getStorage = () => globalThis.localStorage) {
   }
   // 版本重置完成后正常保存，新版本不会因再次刷新而丢失进度。
   function saveProgress(progress) {
-    return prepareWorldSave() && write(STORAGE_KEYS.progress, progress);
+    if(!prepareWorldSave())return false;
+    const saved={...progress,woodSaveRevision:globalThis.crypto?.randomUUID?.()??`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`};
+    if(!write(STORAGE_KEYS.progress,saved))return false;
+    woodBase=null;return true;
+  }
+  // 连续伐木只写相对主档的累计增量；每笔同步持久化后才允许到账，无定时器丢失窗口。
+  function saveWoodProgress(progress){
+    if(!prepareWorldSave())return false;
+    try{
+      if(!woodBase){
+        const raw=read(STORAGE_KEYS.progress);
+        // 老档或新档先保存一次完整基线，后续奖励合并到同一条有界增量记录。
+        if(!raw?.woodSaveRevision){if(!saveProgress(progress))return false;return true;}
+        woodBase={revision:raw.woodSaveRevision,fields:Object.fromEntries(Object.entries(raw).filter(([key])=>key!=='woodSaveRevision').map(([key,value])=>[key,JSON.stringify(value)]))};
+      }
+      const fields={};
+      for(const key of new Set([...Object.keys(woodBase.fields),...Object.keys(progress)])){
+        if(key==='woodSaveRevision')continue;
+        const value=JSON.stringify(progress[key]);
+        if(value!==woodBase.fields[key])fields[key]=value??null;
+      }
+      return write(STORAGE_KEYS.woodJournal,{version:1,base:woodBase.revision,fields});
+    }catch(error){available=false;notify('write',STORAGE_KEYS.woodJournal,false,error);return false;}
   }
   // 环境时钟单独保存，避免覆盖成长进度。
   function saveEnvironment(environment) {
@@ -127,6 +160,7 @@ export function createSaveStore(getStorage = () => globalThis.localStorage) {
     loadProgress,
     loadEnvironment,
     saveProgress,
+    saveWoodProgress,
     saveEnvironment,
     get available() {
       return available;

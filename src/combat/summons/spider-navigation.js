@@ -1,6 +1,6 @@
 // 母巢按真实体积绕过树木、营地护栏和维修封锁；路线缓存不进入存档。
 import {nearest,worldDistance} from '../../world/coordinates.js';
-import {SpatialGrid} from '../../world/spatial-grid.js';
+import {treeGrid} from '../../world/spatial-grid.js';
 import {questLineClear} from '../../physics/quest-route.js';
 import {createRouteSession,advanceRouteSession} from '../../core/navigation/quest-navigation-cache.js';
 const paths=new WeakMap();
@@ -15,10 +15,11 @@ function followAnchor(owner,body,index){
 }
 // 跟随位置必须与主人同侧；固定后侧偏移穿过栏杆时临时收拢到主人附近。
 export function spiderFollowWaypoint(game,node,destination){
+ const index=treeGrid(game.trees);
  const body={...node,navigationRadius:node.radius||24},owner=nearest(game.player,node);
  let cache=paths.get(node);
- if(!cache||cache.trees!==game.trees||cache.count!==game.trees.length||cache.mapId!==node.mapId||cache.arena!==node.arena||cache.barriers!==node.worldBarriers||cache.radius!==body.navigationRadius){
-  cache={trees:game.trees,count:game.trees.length,mapId:node.mapId,arena:node.arena,barriers:node.worldBarriers,radius:body.navigationRadius,index:new SpatialGrid(game.trees),session:null};paths.set(node,cache);
+ if(!cache||cache.trees!==game.trees||cache.index!==index||cache.mapId!==node.mapId||cache.arena!==node.arena||cache.barriers!==node.worldBarriers||cache.radius!==body.navigationRadius){
+  cache={trees:game.trees,mapId:node.mapId,arena:node.arena,barriers:node.worldBarriers,radius:body.navigationRadius,index,session:null};paths.set(node,cache);
  }
  const goal=questLineClear(owner,nearest(destination,owner),{...body,navigationRadius:0},cache.index)?nearest(destination,node):followAnchor(owner,body,cache.index);
  if(!goal)return {x:node.x,y:node.y};

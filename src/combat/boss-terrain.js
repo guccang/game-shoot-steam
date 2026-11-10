@@ -1,25 +1,17 @@
 import {sweptBox,sweptBoxTouchesCircle} from '../physics/swept-box.js';
 // 领主技能与红狼碾压共用树干扫掠和破碎表现，不发放玩家采集奖励。
 import { nearest, worldDistance } from '../world/coordinates.js';
-import { SpatialGrid } from '../world/spatial-grid.js';
+import { treeGrid,markTreeDeath } from '../world/spatial-grid.js';
 import {livingForest,livingSafePoint} from '../world/living-spaces.js';
 
-const indices = new WeakMap();
-
-// 同一树木数组复用空间索引；清理或再生后重建，避免每个羽刃扫描整片森林。
-function treeIndex(game) {
-  let entry = indices.get(game);
-  if (!entry || entry.trees !== game.trees || entry.length !== game.trees.length) {
-    entry = { trees: game.trees, length: game.trees.length, grid: new SpatialGrid(game.trees) };
-    indices.set(game, entry);
-  }
-  return entry.grid;
-}
+// 领主与武器共用增量树林索引，伐木后不再额外重建一次全图分桶。
+function treeIndex(game) { return treeGrid(game.trees); }
 
 // 死树立即退出后续碰撞，同一施法重叠区域也只产生一次碎屑与树桩。
 function shatter(game, tree, origin, direction, protectSettlement = true) {
   if(protectSettlement&&livingForest(game)&&livingSafePoint(tree))return;
   tree.hp = 0;
+  markTreeDeath(game.trees,tree);
   tree.hitX = direction.x;
   tree.hitY = direction.y;
   const point = nearest(tree, origin);
