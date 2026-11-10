@@ -1,5 +1,5 @@
 import {overlapsCampPlaza} from '../../world/camp-plaza.js';
-import {campDecorDefinition} from '../../config/camp-management.js';
+import {campLayoutDecorConflicts} from '../../world/camp-layout-decor.js';
 import {LIVING_PLACES} from '../../config/living-world.js';
 import {WORLD_BUILDINGS} from '../../config/world-buildings.js';
 import {PARKING_SPOTS} from '../../config/parking.js';
@@ -19,7 +19,6 @@ export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.fin
  if(!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  // 停车场东侧弯道与入口计入占地，防止搬到房屋、树木或土地外。
  for(const {left,right,top,bottom} of campLayoutFootprints(b)){
- if(game.progress.campManagement?.items.some(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type);return left<i.x+d.width/2&&right>i.x-d.width/2&&top<i.y+d.depth/2&&bottom>i.y-d.height;}))return '请先收纳或移走这里的营地装饰。';
  for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!ownedLayoutPoint(game.progress,x,y,12))return '建筑和门前通道必须留在已购土地内。';
  for(const other of layoutBuildings(game.progress,layout)){if(other.id===id)continue;if(campLayoutFootprints(other).some(r=>left<r.right&&right>r.left&&top<r.bottom&&bottom>r.top))return '与'+other.name+'或它的门前通道重叠。';}
  if(campBoundary(game.progress).gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';
@@ -43,8 +42,8 @@ export function canPlanCamp(game){return canInspectBuilding(game)&&['playing','p
 // 保存事务成功后才更新运行锚点，保留角色连续动作时钟。
 export function saveCampLayout(game,draft,persist=game.restorationPersist){if(!canPlanCamp(game))return {ok:false,message:'请先结束施工、停车、牵引或当前活动，再规划营地。'};const layout=normalizeCampLayout(draft),previous=game.progress.campLayout||{positions:{}};
  for(const b of CAMP_BUILDINGS){const before=campBuildingPosition(previous,b),after=campBuildingPosition(layout,b);if(worldDistance(before,after)<1)continue;const error=checkCampPlacement(game,layout,b.id);if(error)return {ok:false,message:b.name+'：'+error};}
- const roads=campLayoutRoads(game.progress,layout);if(roads.unreachable.length)return {ok:false,message:'有建筑或营门无法连通，请留出更宽的通道。'};
- const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));next.campLayout=layout;const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
+ const roads=campLayoutRoads(game.progress,layout,{ignoreDecor:true});if(roads.unreachable.length)return {ok:false,message:'有建筑或营门无法连通，请留出更宽的通道。'};
+ const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));next.campLayout=layout;const reclaimed=campLayoutDecorConflicts(game.progress,layout,roads),ids=new Set(reclaimed);for(const item of next.campManagement?.items||[])if(ids.has(item.uid))item.x=item.y=null;const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  try{if(persist?.(next)!==true)return {ok:false,message:'布局未保存，建筑位置没有改变，请重试。'};}catch{return {ok:false,message:'布局未保存，建筑位置没有改变，请重试。'};}
- game.progress=next;activateCampLayout(next);game.sceneApproach=null;for(const actor of game.campActors?.values()||[]){actor.path=[];actor.action='rest';actor.stage=2;actor.remaining=0;}game.campRoutine=null;game.player.campProgress=next;return {ok:true,message:'布局已保存，建筑入口和连接道路已同步更新。'};
+ game.progress=next;activateCampLayout(next);game.sceneApproach=null;for(const actor of game.campActors?.values()||[]){actor.path=[];actor.action='rest';actor.stage=2;actor.remaining=0;}game.campRoutine=null;game.player.campProgress=next;return {ok:true,reclaimed,message:reclaimed.length?`布局已保存，${reclaimed.length} 件冲突装饰已回收到「我的装饰」，可再次摆放。`:'布局已保存，建筑入口和连接道路已同步更新。'};
 }

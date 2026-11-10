@@ -93,3 +93,11 @@
 - 正式入口：src/rendering/scenery.js调用drawTownSign；src/world/camp-layout-bindings.js按稳定building标识绑定；inspectCampLayoutPlanner新增实时signs诊断，visual-contract.json关联专项脚本，designCriterion为camp-layout-planner。
 - 资源与保留项：无新增图片/画布/动画/缓存，站牌尺寸、脚底排序、中文文字、昼夜色调及无碰撞性质保持；继续使用既有角色与车辆动作。PNG精修、变体制作及视频动作不适用，本轮只修复既有标牌位置绑定。
 - 本轮结论：通过；无待修订项。未运行全量测试。
+
+## 布局优先与装饰回收（2026-11-10）
+
+布局预览和保存规划道路时不让可回收装饰阻挡布局。保存候选同时回收与搬迁建筑、停车场主体/东侧入口、附属车位进出通道、新路面冲突的装饰；稳定编号、购买记录和金币保留。取消、非法布局和保存失败不改动装饰或建筑。未冲突摆件保留原位。回收后重新建立碰撞和灯具投影。
+
+营地管理「我的装饰」使用明确的「回收」「已回收」文案，回收后可免费再次摆放。本轮不修改美术画笔、尺寸或静态资源，仅调整事务规则与中文操作反馈。
+
+验证：tests/camp-layout-decor.test.mjs、camp-management.test.mjs、camp-layout.test.mjs、camp-parking-layout.test.mjs，共24项针对性检查通过。tests/camp-layout-decor-browser.cjs 在4175端口通过实际移动触控拖动、预览取消、自动回收、手动回收再摆放、320/390宽度及正式场景昼夜检查。证据保留于 output/playwright/layout-decor-reclaim/，原布局 designCriterion=camp-layout-planner 继续适用。
