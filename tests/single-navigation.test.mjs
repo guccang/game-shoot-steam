@@ -45,3 +45,18 @@ test('主动选择任务仅在保存成功后取消驿站',async()=>{
  g.mainlinePersist=()=>false;assert.equal(selectMainlineTask(g,MAINLINE_IDS[2]),false);assert.equal(g.waystationTravel,trip);
  g.mainlinePersist=()=>true;assert.equal(selectMainlineTask(g,MAINLINE_IDS[2]),true);assert.equal(g.waystationTravel,null);assert.equal(taskNavigationEnabled(g),true);
 });
+
+// 手机取消是一次性任务操作，持久化成功后同时撤销卡片、路线和追踪。
+test('取消回家任务后无当前任务，重复取消和重新开启寻路都不恢复旧目标',async()=>{
+ const {currentNavigationTask,cancelCurrentTask}=await import('../src/core/navigation/current-navigation-task.js');const {g}=scene();assert.equal(navigatePhone(g,'home').ok,true);assert.equal(currentNavigationTask(g).label,'回巡林小屋');
+ const completed=[...g.progress.mainline.completed];let saved;g.mainlinePersist=p=>{saved=structuredClone(p);return true;};g.state='paused';assert.equal(cancelCurrentTask(g).ok,true);
+ assert.equal(currentNavigationTask(g),null);assert.equal(worldNavigationDiagnostics(g).intent,null);assert.equal(taskNavigationEnabled(g),false);assert.equal(saved.mainline.navigationEnabled,false);assert.equal(saved.mainline.trackingPaused,true);assert.deepEqual(saved.taskTracking,{kind:'none'});assert.deepEqual(g.progress.mainline.completed,completed);
+ assert.equal(cancelCurrentTask(g).ok,false);setTaskNavigationEnabled(g,true);assert.equal(currentNavigationTask(g),null);
+ assert.equal(navigatePhone(g,'home').ok,true);assert.equal(currentNavigationTask(g).label,'回巡林小屋');
+});
+// 保存失败不能只撤掉画面，原行程和搜索必须仍然完整可用。
+test('取消驿站先保存，失败保留目标和速度，成功停止自动行进',async()=>{
+ const {currentNavigationTask,cancelCurrentTask}=await import('../src/core/navigation/current-navigation-task.js');const {g}=scene();travelToWaystation(g,1);const trip=g.waystationTravel;g.player.vx=25;g.mainlinePersist=()=>false;const before=structuredClone(g.progress);
+ assert.equal(cancelCurrentTask(g).ok,false);assert.equal(g.waystationTravel,trip);assert.equal(g.player.vx,25);assert.deepEqual(g.progress,before);
+ g.mainlinePersist=()=>true;assert.equal(cancelCurrentTask(g).ok,true);assert.equal(g.waystationTravel,null);assert.equal(g.player.vx,0);assert.equal(currentNavigationTask(g),null);assert.equal(taskNavigationEnabled(g),false);
+});
