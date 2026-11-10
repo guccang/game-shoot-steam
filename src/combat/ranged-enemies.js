@@ -1,3 +1,4 @@
+import {biomeBoltStep} from './biome-bolt-motion.js';
 import {campBarricadeTarget,hurtCampBarricade} from '../core/camp/camp-defense.js';
 import {surfaceTargetVisible,surfaceAttackRange} from '../world/surface-vision.js';
 import {traceEnergyShield} from './energy-shield-surface.js';
@@ -73,10 +74,10 @@ export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
   if (!game.enemyBolts.length) return;
   const alive = new Set(game.enemies.filter(e => e.hp > 0).map(e => e.id));
   for (const b of game.enemyBolts) {
-      if(livingBoltBlocked(game,{x:b.x,y:b.y,vx:b.dx*b.speed,vy:b.dy*b.speed},dt)){b.remaining=0;continue;}
     if (!alive.has(b.owner)) { b.remaining = 0; continue; }
-    const travel = Math.min(b.remaining, b.speed * dt), from = { x: b.x, y: b.y },
-      to = { x: b.x + b.dx * travel, y: b.y + b.dy * travel };
+    const step=b.dumplingVariant?biomeBoltStep(b,dt):null,travel=step?.travel??Math.min(b.remaining,b.speed*dt),from={x:b.x,y:b.y},to=step?.to??{x:b.x+b.dx*travel,y:b.y+b.dy*travel};
+    // 弧线使用本帧真实弦段检查墙体，避免以旧方向检查另一路径。
+    if(livingBoltBlocked(game,{...from,vx:(to.x-from.x)/dt,vy:(to.y-from.y)/dt},dt)){b.remaining=0;continue;}
     let hit = null, fraction = Infinity;
     for (const tree of game.trees) {
       if (tree.hp <= 0) continue;

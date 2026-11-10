@@ -1,4 +1,4 @@
-import {vehicleFlareLights,vehicleFlareCovers} from './vehicle-flares.js';
+import {vehicleFlareLights,vehicleFlareIllumination} from './vehicle-flares.js';
 import {CAMP_LIGHTING} from '../config/camp-lighting.js';
 import {campPointLit,campRoadLights} from './camp-lighting.js';
 // 地面迷雾的可见性与射程共用规则，不访问渲染器或扫描世界实体。
@@ -14,7 +14,7 @@ export function surfaceNightStrength(game){
 
 // 远程射程逐渐缩短，近战实体尺寸与控制器部署距离不变；不修改装备存档。
 export function surfaceAttackRange(game,range){
- const night=vehicleFlareCovers(game)?0:surfaceNightStrength(game);
+ const night=surfaceNightStrength(game)*(1-vehicleFlareIllumination(game));
  return range+(Math.min(range*SURFACE_VISION.rangeRatio,SURFACE_VISION.rangeLimit)-range)*night;
 }
 
@@ -32,11 +32,11 @@ export function surfaceTargetVisible(game,target){
  // 淡雾初起时保留远景，随夜色收拢到固定光圈，避免切时段瞬间失去目标。
  const bodyRadius=Math.max(0,Number(target.radius)||0);
  const radius=SURFACE_VISION.player*SURFACE_VISION.litRatio/Math.max(.001,night)+bodyRadius;
- if(Math.hypot(p.x-origin.x,y-(origin.y-20))<=radius||campPointLit(game,target)||vehicleFlareLights(game).some(l=>{const v=nearest(l,origin);return Math.hypot(p.x-v.x,y-(v.y-l.height))<=l.radius*SURFACE_VISION.litRatio+bodyRadius;}))return true;
+ if(Math.hypot(p.x-origin.x,y-(origin.y-20))<=radius||campPointLit(game,target)||vehicleFlareLights(game).some(l=>{const v=nearest(l,origin);return Math.hypot(p.x-v.x,y-(v.y-l.height))<=l.radius*SURFACE_VISION.litRatio*l.power+bodyRadius;}))return true;
  return game.mapId!=='jiuzhaigou'&&[...activeFixedLights(game.progress),...campDecorLights(game.progress),...(game.mapId==='forest'?campRoadLights(game.progress):[])].some(light=>{const l=nearest(light,origin);return Math.hypot(p.x-l.x-light.offset,y-(l.y-light.height))<=light.radius*SURFACE_VISION.litRatio+bodyRadius;});
 }
 
 // 正式视口已经裁剪路灯，最多四十个局部光池；窗光优先保留附近二十四处。
 export function surfaceLightSources(player,lights,windows=[]){
- return [{x:player.x,y:player.y-20,radius:SURFACE_VISION.player,kind:'player'},...[...lights.map(p=>({x:p.x+p.offset,y:p.y-p.height,radius:p.radius,kind:p.kind})),...windows.slice().sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y)).slice(0,CAMP_LIGHTING.maxWindows)].sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y)).slice(0,SURFACE_VISION.maxLights-1)];
+ return [{x:player.x,y:player.y-20,radius:SURFACE_VISION.player,kind:'player'},...[...lights.map(p=>({x:p.x+p.offset,y:p.y-p.height,radius:p.radius,kind:p.kind,...(p.flare?{power:p.power}:{})})),...windows.slice().sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y)).slice(0,CAMP_LIGHTING.maxWindows)].sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y)).slice(0,SURFACE_VISION.maxLights-1)];
 }

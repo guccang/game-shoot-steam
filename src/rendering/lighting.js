@@ -92,7 +92,15 @@ function flame(c, time, phase, reduced, rain) {
 export function drawLightFixture(c, light, time, environment, reduced = false) {
   c.save();
   c.translate(light.x, light.y);
-  if(light.flare){glow(c,0,-20,55,light.power);c.strokeStyle='#ffe5a1';c.lineWidth=2;c.beginPath();c.moveTo(-9,-25);c.quadraticCurveTo(0,-43,9,-25);c.lineTo(0,-20);c.closePath();c.stroke();oval(c,0,-20,4,5,'#fff6cf');c.restore();return;}
+  if(light.flare){
+    // 灯芯悬在真实投影上方；尾焰随弧线升空，降落伞与吊线在顶点展开。
+    const h=light.flightHeight||0,age=light.age||0,sway=reduced?0:Math.sin(age*2)*2;
+    c.globalAlpha=light.power;oval(c,0,4,9,3,'#b99b6940');c.translate(0,-h);
+    if(light.phase==='rise'){c.strokeStyle='#f6d393';c.lineWidth=3;c.beginPath();c.moveTo(-Math.cos(light.angle)*18,16);c.quadraticCurveTo(-Math.cos(light.angle)*9,8,0,0);c.stroke();}
+    if(light.phase==='descent'){c.strokeStyle='#e8d9a8';c.fillStyle='#f0e7bf';c.lineWidth=1.5;c.beginPath();c.moveTo(-15+sway,-28);c.quadraticCurveTo(sway,-48,15+sway,-28);c.quadraticCurveTo(sway,-33,-15+sway,-28);c.fill();c.stroke();c.beginPath();c.moveTo(-15+sway,-28);c.lineTo(0,0);c.lineTo(15+sway,-28);c.stroke();}
+    glow(c,0,0,45,light.power);oval(c,0,0,4,6,'#fff4bd');
+    if(!reduced)for(let i=0;i<3;i++){const t=(age*1.3+i/3)%1;oval(c,Math.sin(i*3+age)*4,7+t*20,1.5,2,'#edb56d');}c.restore();return;
+  }
   if(light.decorLamp){oval(c,4,5,17,6,'#304b3530');drawDecorLamp(c,light.decorLamp,light.power);glow(c,0,-90,28,light.power*.95);c.restore();return;}
   const color = (hex) => nightColor(hex, environment.night * 0.75);
   const outline = color(style.lighting.drawLightFixtureColor);

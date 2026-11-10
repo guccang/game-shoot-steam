@@ -17,7 +17,7 @@ export function drawVisionFog(renderer,{view:v,sources,regions=[],opacity,scale,
  }
  for(const p of sources){
   const x=(p.x-v.x)*v.zoom,y=(p.y-v.y)*v.zoom,r=p.radius*v.zoom;
-  const light=ctx.createRadialGradient(x,y,r*.18,x,y,r);light.addColorStop(0,'rgba(0,0,0,.98)');light.addColorStop(.48,'rgba(0,0,0,.88)');light.addColorStop(1,'rgba(0,0,0,0)');
+  const light=ctx.createRadialGradient(x,y,r*.18,x,y,r);light.addColorStop(0,`rgba(0,0,0,${.98*(p.power??1)})`);light.addColorStop(.48,`rgba(0,0,0,${.88*(p.power??1)})`);light.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=light;ctx.fillRect(x-r,y-r,r*2,r*2);
  }
  ctx.globalCompositeOperation='source-over';
@@ -31,6 +31,7 @@ export function drawVisionFog(renderer,{view:v,sources,regions=[],opacity,scale,
  c.globalAlpha=opacity/.985;
  // 微光只点亮原灯芯或菌帽附近，暖灯与冷菇能从雾中辨别。
  for(const p of sources.filter(p=>p.kind!=='player'&&p.kind!=='window')){
+  if(p.kind==='flare')continue;
   const x=(p.x-v.x)*v.zoom,y=(p.y-v.y)*v.zoom,r=(p.kind==='lamp'?22:16)*v.zoom;
   const tint=c.createRadialGradient(x,y,0,x,y,r);tint.addColorStop(0,p.kind==='lamp'?'#ffe5a366':'#a5f0cf66');tint.addColorStop(1,p.kind==='lamp'?'#ffe5a300':'#a5f0cf00');c.fillStyle=tint;c.fillRect(x-r,y-r,r*2,r*2);
  }

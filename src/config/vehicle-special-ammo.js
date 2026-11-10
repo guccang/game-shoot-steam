@@ -6,8 +6,8 @@ export const SPECIAL_AMMO={
  gas:{name:'苔溪毒气弹',camp:'mossbrook',color:'#b7ce72',radius:140,power:.35,duration:7,pack:12,coins:220,use:'毒气云持续7秒，每秒追加主炮伤害的18%，覆盖更广。'},
  arcShell:{name:'雨铃电弧弹',camp:'rainbell',color:'#b9b5f2',radius:180,power:.85,pack:12,coins:240,use:'电弧跳跃：命中后打击附近最多5名敌人。'},
  seismic:{name:'层岩震荡弹',camp:'stratacove',color:'#d5ad85',radius:155,power:1,duration:0,pack:12,coins:240,use:'震地冲击：大范围爆破与强击退，减速2秒。'},
- flare:{name:'照明弹',camp:'all',color:'#ffe5a1',pack:8,coins:80,use:'夜间自动发射，照亮三个相邻视野区，持续45秒；驶离后补发。'}
+ flare:{name:'照明弹',camp:'all',color:'#ffe5a1',pack:8,coins:80,use:'夜间抛射升空，约20秒缓降熄灭；光照随高度扩大和收缩，照亮约三个基础视野面积。'}
 };
-export const FLARE_RULES=Object.freeze({duration:45,radius:300,spacing:220,departure:270});
+export const FLARE_RULES=Object.freeze({duration:20,rise:2.5,landing:17,height:180,throwDistance:85,radius:420,departure:350});
 // 特色商品只能在来源营地购买，照明弹六座营地通售。
 export function ammoSoldAt(key,camp='home'){return !SPECIAL_AMMO[key]||SPECIAL_AMMO[key].camp==='all'||SPECIAL_AMMO[key].camp===camp;}
