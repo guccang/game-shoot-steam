@@ -16,7 +16,7 @@ function outline(regions){const lines=[];
  lines.sort((a,b)=>a.side.localeCompare(b.side)||a.fixed-b.fixed||a.lo-b.lo);const merged=[];for(const line of lines){const last=merged.at(-1);if(last&&last.side===line.side&&last.fixed===line.fixed&&last.hi===line.lo)last.hi=line.hi;else merged.push({...line});}return merged;
 }
 // 地契与门位共用有界缓存，最多64项，不在碰撞热路径重建围栏。
-export function campBoundary(progress,layout=progress?.campLayout){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=owned.map(p=>p.id+':'+p.top).join('|')+JSON.stringify(layout?.gates||{});if(cache.has(key))return cache.get(key);
+export function campBoundary(progress,layout=progress?.campLayout){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=JSON.stringify(owned)+JSON.stringify(layout?.gates||{});if(cache.has(key))return cache.get(key);
  const regions=[...owned,SETTLEMENTS.find(s=>s.id==='neighbors')],lines=outline(regions),objects=[],gates=[];
  for(const line of lines){const {horizontal,fixed,lo,hi,side}=line;let gate=null;
  const gateWidth=horizontal&&side==='bottom'&&fixed===850?520:CAMP_GATE_WIDTH;

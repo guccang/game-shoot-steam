@@ -1,6 +1,6 @@
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
-import { CAMP_GATES } from '../config/camp-defense.js';
+import { CAMP_GATES,campDefensePost } from '../config/camp-defense.js';
 import { box, oval, poly } from './primitives.js';
 import { PLAYER_SCALE } from '../combat/recoil.js';
 import { drawCat } from './characters.js';
@@ -41,8 +41,8 @@ export function campDefenseObjects(game) {
   const completed = game.progress?.campDefense?.runs ?? 0;
   return CAMP_GATES.map((g) => ({
     ...g,
-    x: g.x - g.ny * 108,
-    y: g.y + g.nx * 108,
+    x: campDefensePost(game.progress,g).x,
+    y: campDefensePost(game.progress,g).y,
     type: 'camp-defense',
     kind: 'marker',
     completed,

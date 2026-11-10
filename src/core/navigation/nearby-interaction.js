@@ -61,7 +61,7 @@ export function nearbyInteraction(game){
   if(e.type==='realm'&&['fire','tower'].includes(e.key))continue;
   // 兽潮导航在站牌附近结束，提示范围覆盖抵达误差，同时遵守营门的实际进入距离。
   const gate=e.type==='gate'&&CAMP_GATES.find(g=>g.id===e.key),distance=worldDistance(game.player,e);
-  if(gate?worldDistance(game.player,gate)<=160:distance<=(e.radius??BUILDING_ENTRY.radius))entries.push({...e,label:e.type==='realm'?'查看入口':gate?'怪潮站牌':e.type==='clearing'?'查看清缴委托':'查看告示',detail:gate?'打开怪潮页面':'',presentation:gate?'task-entry':null,distance});
+  if(gate?distance<=160:distance<=(e.radius??BUILDING_ENTRY.radius))entries.push({...e,label:e.type==='realm'?'查看入口':gate?'怪潮站牌':e.type==='clearing'?'查看清缴委托':'查看告示',detail:gate?'打开怪潮页面':'',presentation:gate?'task-entry':null,distance});
  }
  // 修复提示覆盖真实修复区及门前预告范围，骑乘时同样可查看资源；自选建筑需在修复页确认。
  if(!game.story&&!game.realm&&!game.fireActive&&!game.campDefense&&!bossCombatActive(game)&&!game.livingBattle&&!game.workshopTrial)for(const f of TOWN_RESTORATIONS){

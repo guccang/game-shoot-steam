@@ -8,6 +8,10 @@ export const CAMP_GATES=camp.gates.filter(g=>['top','left'].includes(g.side)).ma
  x:g.side==='left'?camp.left:g.at,y:g.side==='top'?camp.top:g.side==='bottom'?camp.bottom:g.at,
  nx:g.side==='left'?-1:0,ny:g.side==='top'?-1:g.side==='bottom'?1:0,
 }));
+// 怪潮站牌独立于守门战场，搬迁只改变入口和绘制位置。
+export const CAMP_DEFENSE_POSTS=CAMP_GATES.map(g=>({id:'defense-'+g.id,gate:g.id,name:g.name+'怪潮站牌',x:g.x-g.ny*108,y:g.y+g.nx*108,width:96,height:142,passable:true}));
+// 从当前存档读取站牌脚底，避免多个游戏实例串用布局。
+export function campDefensePost(progress,gate){const post=CAMP_DEFENSE_POSTS.find(p=>p.gate===(gate.id||gate));return post&&{...post,...progress?.campLayout?.positions?.[post.id]};}
 export const CAMP_DEFENSE={gateHp:1500,limit:56,rest:3,spawnInterval:.17,radius:410,
  // 团子在拒马外305至375单位出生，比原先外移70单位，保留横向分散与战区边界。
  spawn:{depth:305,depthSpread:70,width:240,offscreenEvery:3,offscreenMargin:64},

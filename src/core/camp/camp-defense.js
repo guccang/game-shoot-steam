@@ -5,7 +5,7 @@ import { creditResource } from '../../progression/economy/resource-wallet.js';
 import {recordActivity} from '../../progression/player/game-statistics.js';
 import {rewardReceipt} from '../../progression/economy/reward-receipt.js';
 // 营地守门会话：原森林整体冻结，独立怪潮与救场仅在本局结算资源。
-import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward,campDefenseWave,campDefenseBoss,CAMP_DEFENSE_GROWTH_VERSION} from '../../config/camp-defense.js';
+import {campDefensePost,CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward,campDefenseWave,campDefenseBoss,CAMP_DEFENSE_GROWTH_VERSION} from '../../config/camp-defense.js';
 import {HORDE_GIANT} from '../../config/bosses.js';
 import {validateProgress} from '../../progression/progress.js';
 import {validateCampDefense} from '../../progression/camp/camp-defense.js';
@@ -20,8 +20,8 @@ import {recordEconomy} from '../../progression/economy/economy-ledger.js';
 import {prepareCampAllies,updateCampAllies} from './camp-rescue.js';
 const SHARED=new Set(['progress','random','onEvent','profiler','viewport','campDefense','campDefensePersist']);
 
-// 入口位于实际门洞，清缴或故事未结束时不切换现场。
-export function canStartCampDefense(game,gate){return facilityOpen(game.progress,'defense')&&!!gate&&!game.campDefense&&!game.arrivalCinematic&&!game.story&&!game.realm&&!game.fireActive&&!game.boss&&!game.livingBattle&&!game.progress.living.patrolActive&&game.mapId==='forest'&&['playing','paused'].includes(game.state)&&worldDistance(game.player,gate)<=160;}
+// 入口跟随当前站牌，清缴或故事未结束时不切换现场。
+export function canStartCampDefense(game,gate){return facilityOpen(game.progress,'defense')&&!!gate&&!game.campDefense&&!game.arrivalCinematic&&!game.story&&!game.realm&&!game.fireActive&&!game.boss&&!game.livingBattle&&!game.progress.living.patrolActive&&game.mapId==='forest'&&['playing','paused'].includes(game.state)&&worldDistance(game.player,campDefensePost(game.progress,gate))<=160;}
 // 活动开始与恢复共用数据；断线重建本波未击败配额，不重复已获得的成绩。
 export function startCampDefense(game,gateId,saved=null){
  const gate=CAMP_GATES.find(g=>g.id===gateId);if(!gate||!saved&&!canStartCampDefense(game,gate))return false;

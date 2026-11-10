@@ -49,7 +49,7 @@ for(const b of WORLD_BUILDINGS)bind(b.id,b);
 for(const f of TOWN_RESTORATIONS){bind(f.id,f);bind(f.id,f.site);}
 for(const s of PARKING_SPOTS)bind(s.building,s);
 for(const e of REALM_ENTRANCES)bind(e.mode,e);
-for(const e of BUILDING_ENTRIES)bind(e.type==='post'&&e.key==='sunleaf-post'?'story':e.key,e);
+for(const e of BUILDING_ENTRIES)bind(e.type==='gate'?'defense-'+e.key:e.type==='post'&&e.key==='sunleaf-post'?'story':e.key,e);
 for(const [id,site] of Object.entries(MAINLINE_SITES)){const key=({seedShop:'seed',weaponsEntry:'weapons',garageEntry:'garage',warehouseEntry:'warehouse',ammoEntry:'ammo',repairEntry:'repair',storyPost:'story',clearingPost:'clearing',footballEntry:'football',patrol:'clearing'})[id]||id.replace(/Entry$/,'');bind(key,site);}
 // 站牌与正式场景共用对象，已有布局载入即迁移，不另存牌位。
 for(const sign of TOWN_SIGNS)bind(sign.building,sign);

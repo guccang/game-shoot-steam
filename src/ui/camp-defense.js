@@ -3,7 +3,7 @@ import { HELP_EMBLEM } from './help-emblem.js';
 import {facilityOpen} from '../config/town-restoration.js';
 import {BUILDING_ENTRIES} from '../config/building-entries.js';
 // 门口交互、单行怪潮进度、救场气泡与统一结算，UI 不直接更改成绩和钱包。
-import {CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward} from '../config/camp-defense.js';
+import {campDefensePost,CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward} from '../config/camp-defense.js';
 import {resourceName} from '../rendering/resource-icons.js';
 import {startCampDefense,canStartCampDefense,spawnCampBoss,claimCampDefense,leaveCampDefense} from '../core/camp/camp-defense.js';
 import {campDefenseObjects} from '../rendering/camp-defense.js';
@@ -46,12 +46,12 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
   // 场次读取已保存的开场快照，领奖前不提前增加次数。
   html=(r?`<p>第 ${r.rounds+1} 次兽潮 · 已完成 ${game.progress.campDefense.runs} 次</p>`:`<p>已完成 ${game.progress.campDefense.runs} 次兽潮 · 下一次为第 ${game.progress.campDefense.runs+1} 次</p>`)+html;
   html+='<p class="camp-ring-key">波次数字外圈：金色表示开波等待进度，绿色内圈表示本波清怪进度。</p><details><summary>评分与奖励</summary><p>S：守住五波与领主，拒马至少剩一半。A：完成防守，或守住三波后获救。B：其余守门表现。救场击杀不计成绩。</p>'+Object.entries(CAMP_DEFENSE.grades).map(([grade,r])=>`<p>${grade} · 金币 ${r.coins} / 木材 ${r.wood} / 零件 ${r.parts}</p>`).join('')+'</details>';
-  const blocked=!r&&worldDistance(game.player,selected)<=160&&!canStartCampDefense(game,selected);
+  const blocked=!r&&worldDistance(game.player,campDefensePost(game.progress,selected))<=160&&!canStartCampDefense(game,selected);
   const canLeave=!!r&&r.phase!=='result'&&r.phase!=='spoils';setHidden($('camp-leave'),!canLeave);setHidden($('camp-leave-note'),!canLeave);
   $('camp-content').innerHTML=html;$('camp-error').textContent=r?.error||(blocked?'先完成当前清缴或活动，再来守门。':'');$('camp-primary').disabled=blocked;$('camp-primary').textContent=!r?(blocked?'当前活动进行中':canStartCampDefense(game,selected)?'开始守门':'前往'+selected.name):r.phase==='result'?'领取奖励，回到营地':'继续守门';
  }
  // 远处点盾牌只规划到候停点，现场点击仍可立即打开。
- function visit(g){if(!facilityOpen(game.progress,'defense')){game.requestFacility?.('defense');return;}if(game.campDefense||game.arrivalCinematic||game.story||game.realm||game.fireActive)return;selected=g;if(worldDistance(game.player,g)>160){requestWorldNavigation(game,BUILDING_ENTRIES.find(e=>e.type==='gate'&&e.key===g.id),'前往'+g.name+'守门',{action:{type:'camp-defense',gate:g.id}});onChange();return;}dialogs.open('camp-defense-dialog');}
+ function visit(g){if(!facilityOpen(game.progress,'defense')){game.requestFacility?.('defense');return;}if(game.campDefense||game.arrivalCinematic||game.story||game.realm||game.fireActive)return;selected=g;if(worldDistance(game.player,campDefensePost(game.progress,g))>160){requestWorldNavigation(game,BUILDING_ENTRIES.find(e=>e.type==='gate'&&e.key===g.id),'前往'+g.name+'守门',{action:{type:'camp-defense',gate:g.id}});onChange();return;}dialogs.open('camp-defense-dialog');}
  dialogs.register('camp-defense-dialog',{onOpen:renderDialog,focusId:'camp-primary'});
  // 退出沿用详情面板，保存失败保留现场与按钮，结算阶段只提供领取返回。
  scope.on($('camp-leave'),'click',()=>{if(!leaveCampDefense(game)){renderDialog();return;}dialogs.cancelResume();dialogs.close('camp-defense-dialog');onChange();});

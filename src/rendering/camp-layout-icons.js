@@ -6,6 +6,7 @@ const edge='#42634d',cream='#f4e5b9',roof='#92aa79',wood='#b99c71';
 export function drawCampLayoutIcon(c,item){const id=item.sourceId||item.id,kind=({catHome:'cat-home',warehouseDepot:'warehouse-depot'})[id]||id;
  if(['cottage','weapons','warehouse','warehouse-depot','cat-home','furniture','construction','seed','ammo','relay','kitchen','legendary'].includes(kind)){drawBuildingArchitecture(c,kind,false,0,0,false);return;}
  oval(c,0,3,67,9,'#38543b25');
+ if(id.startsWith('defense-')){box(c,-5,-130,10,133,2,wood,edge,3);poly(c,[[-48,-125],[48,-125],[43,-50],[0,-25],[-43,-50]],cream,edge,3);poly(c,[[-23,-100],[23,-100],[18,-68],[0,-55],[-18,-68]],roof,edge,3);return;}
  if(id==='north'){box(c,-82,-95,164,94,5,'#aab98a',edge,3);for(const x of [-54,0,54])for(const y of [-72,-29]){c.strokeStyle=cream;c.lineWidth=3;c.strokeRect(x-19,y-15,38,30);}return;}
  if(id==='tent'){poly(c,[[-65,0],[0,-100],[65,0]],roof,edge,3);poly(c,[[-27,0],[0,-82],[27,0]],cream,edge,2);return;}
  if(['trade','travel','story','clearing','delivery'].includes(id)){for(const x of [-43,37])box(c,x,-88,7,89,2,wood,edge,2);box(c,-57,-92,114,60,4,cream,edge,3);poly(c,[[-65,-94],[-48,-110],[48,-110],[65,-94]],roof,edge,3);c.strokeStyle=edge;c.lineWidth=4;if(id==='delivery'||id==='story'){c.strokeRect(-25,-77,50,30);c.beginPath();c.moveTo(-25,-77);c.lineTo(0,-59);c.lineTo(25,-77);c.stroke();}else if(id==='travel'){poly(c,[[-28,-68],[8,-68],[8,-77],[30,-61],[8,-45],[8,-54],[-28,-54]],roof,edge,2);}else{for(const x of [-28,6])for(const y of [-77,-57])box(c,x,y,23,12,1,roof,edge,1);}return;}
