@@ -23,7 +23,8 @@ export function normalizeCampLayout(raw){const positions={};for(const b of CAMP_
 export function campBuildingPosition(layout,building){return {...building,...layout?.positions?.[building.id]};}
 
 // 布局校验分别保留地坪和东侧弯道，避免把入口下方空地误作停车场。
-export function campLayoutFootprints(b){if(b.plaza)return [{left:b.x-b.width/2,right:b.x+b.width/2,top:b.y-b.height,bottom:b.y}];const main={left:b.x-b.width/2-24,right:b.x+b.width/2+24,top:b.y-b.height-20,bottom:b.y+(b.parking?20:95)};return b.parking?[main,{left:b.x+166,right:b.x+343,top:b.y-248,bottom:b.y-132}]:[main];}
+// 站牌按底座和点击站位占地，牌面高度不作为房屋或车道禁放范围。
+export function campLayoutFootprints(b){if(b.placementKind==='sign')return [{left:b.x-24,right:b.x+24,top:b.y-12,bottom:b.y+36}];if(b.plaza)return [{left:b.x-b.width/2,right:b.x+b.width/2,top:b.y-b.height,bottom:b.y}];const main={left:b.x-b.width/2-24,right:b.x+b.width/2+24,top:b.y-b.height-20,bottom:b.y+(b.parking?20:95)};return b.parking?[main,{left:b.x+166,right:b.x+343,top:b.y-248,bottom:b.y-132}]:[main];}
 
 // 建筑或大门任一发生搬迁，都启用同一套正式道路与灯光。
 export function hasCampLayoutChanges(layout){return Object.keys(layout?.positions||{}).length>0||Object.keys(layout?.gates||{}).length>0;}

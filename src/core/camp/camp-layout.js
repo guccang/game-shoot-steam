@@ -14,19 +14,21 @@ import {bindEconomy,economyFor} from '../../config/economy.js';
 import {capturePatrol} from '../battle/patrol-session.js';
 import {worldDistance,nearest} from '../../world/coordinates.js';
 // 门前、车道与正在使用的实体均不能被新建筑覆盖。
-export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.find(b=>b.id===id);if(!base)return '没有这座建筑。';const b=campBuildingPosition(layout,base);
- if(id!=='plaza'&&(b.parking?campLayoutFootprints(b).some(r=>overlapsCampPlaza((r.left+r.right)/2,(r.top+r.bottom)/2,(r.right-r.left)/2,(r.bottom-r.top)/2,game.progress)):overlapsCampPlaza(b.x,b.y-b.height/2,b.width/2,b.height/2,game.progress)))return '请保留中央庆典广场。';
+export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.find(b=>b.id===id);if(!base)return '没有这座建筑。';const b=campBuildingPosition(layout,base),sign=b.placementKind==='sign',boundary=campBoundary(game.progress,layout);
+ if(id!=='plaza'&&(b.parking||sign?campLayoutFootprints(b).some(r=>overlapsCampPlaza((r.left+r.right)/2,(r.top+r.bottom)/2,(r.right-r.left)/2,(r.bottom-r.top)/2,game.progress)):overlapsCampPlaza(b.x,b.y-b.height/2,b.width/2,b.height/2,game.progress)))return '请保留中央庆典广场。';
  if(!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  // 停车场东侧弯道与入口计入占地，防止搬到房屋、树木或土地外。
  for(const {left,right,top,bottom} of campLayoutFootprints(b)){
- for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!ownedLayoutPoint(game.progress,x,y,12))return '建筑和门前通道必须留在已购土地内。';
+ for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!ownedLayoutPoint(game.progress,x,y,sign?0:12)&&!(sign&&boundary.gates.some(g=>g.settlement==='sunleaf'&&(g.horizontal?Math.abs(x-g.x)<=g.length/2-24&&Math.abs(y-g.y)<=48:Math.abs(y-g.y)<=g.length/2-24&&Math.abs(x-g.x)<=48))))return '建筑和门前通道必须留在已购土地内。';
  for(const other of layoutBuildings(game.progress,layout)){if(other.id===id)continue;if(campLayoutFootprints(other).some(r=>left<r.right&&right>r.left&&top<r.bottom&&bottom>r.top))return '与'+other.name+'或它的门前通道重叠。';}
- if(campBoundary(game.progress,layout).gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';
+ if(!sign&&boundary.gates.some(g=>Math.abs(g.x-b.x)<(g.horizontal?g.length/2+30:b.width/2+110)&&Math.abs(g.y-b.y)<(g.horizontal?b.height+100:g.length/2+30)))return '请给营门及拖挂转弯留下空间。';
+ // 可通行站牌允许放在门洞，只保护真实围栏底座，不套用房屋转弯缓冲。
+ if(sign&&campBoundaryBlocked(b.x,b.y,12,{...game.progress,campLayout:layout}))return '请避开实际围栏和门柱。';
  if((game.trees||[]).some(t=>{const p=nearest(t,b);return t.hp>0&&p.x>=left&&p.x<=right&&p.y>=top&&p.y<=bottom;}))return '这里有树木，请先清理或选择空地。';
  if(game.progress.farm?.plots?.some?.(plot=>{if(plot.mapId&&plot.mapId!=='forest')return false;const p=nearest(plot,b);return p.x>=left-20&&p.x<=right+20&&p.y>=top-20&&p.y<=bottom+20;}))return '请避开已有农田。';
  const player=game.player&&nearest(game.player,b);if(player&&player.x>=left&&player.x<=right&&player.y>=top&&player.y<=bottom)return '请先离开计划放置建筑的位置。';
  if((game.progress.campParking?.owned||[]).some(v=>{const p=nearest(v,b);return v.spot==null&&v.mapId==='forest'&&p.x>=left-30&&p.x<=right+30&&p.y>=top-30&&p.y<=bottom+30;}))return '这里停着载具，请先移走。';
- for(const fixed of campFixedFacilities(game.progress)){const p=nearest(fixed,b),overlap=fixed.publicTable?(b.parking?left<p.x+fixed.width/2&&right>p.x-fixed.width/2&&top<p.y+5&&bottom>p.y-19:b.x-b.width/2<p.x+fixed.width/2&&b.x+b.width/2>p.x-fixed.width/2&&b.y-b.height<p.y+5&&b.y>p.y-19):fixed.rects.some(([l,t,r,bt])=>left<fixed.x+r+20&&right>fixed.x+l-20&&top<fixed.y+bt+20&&bottom>fixed.y+t-20);if(overlap)return '请避开'+fixed.name+'（公共设施）。';}
+ for(const fixed of campFixedFacilities(game.progress)){const p=nearest(fixed,b),overlap=fixed.publicTable?(b.parking||sign?left<p.x+fixed.width/2&&right>p.x-fixed.width/2&&top<p.y+5&&bottom>p.y-19:b.x-b.width/2<p.x+fixed.width/2&&b.x+b.width/2>p.x-fixed.width/2&&b.y-b.height<p.y+5&&b.y>p.y-19):fixed.rects.some(([l,t,r,bt])=>left<fixed.x+r+20&&right>fixed.x+l-20&&top<fixed.y+bt+20&&bottom>fixed.y+t-20);if(overlap)return '请避开'+fixed.name+'（公共设施）。';}
  }
  const aliases={'vehicle':'garage','cat-home':'catHome','warehouse-depot':'warehouseDepot'};
  // 泊位随建筑搬迁，连同接近车道检查土地和邻屋，不能落到另一座建筑中。
