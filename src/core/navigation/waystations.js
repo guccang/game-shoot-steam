@@ -47,7 +47,7 @@ export function waystationBuildReason(g){
 export function buildWaystation(g,options={}){
  const message=waystationBuildReason(g);if(message)return {ok:false,message};
  const data=g.progress.waystations??=normalizeWaystations(null),id=data.nextId++;
- const site={id,name:waystationLandmarkName(g.player)||randomWaystationName(data.sites,g.random||Math.random),purpose:waystationPurpose(options?.purpose).id,...canonical(g.player),mapId:'forest'};
+ const site={id,style:'wood',name:waystationLandmarkName(g.player)||randomWaystationName(data.sites,g.random||Math.random),purpose:waystationPurpose(options?.purpose).id,...canonical(g.player),mapId:'forest'};
  data.sites.push(site);return {ok:true,message:`已建立${site.name}。`,site};
 }
 // 手机可远程移除记录，落盘成功后才终止相关行程；失败不改变站点、编号或运动。

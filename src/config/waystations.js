@@ -13,4 +13,4 @@ export const WAYSTATION_PURPOSES=Object.freeze([
 // 绘制与手机页面共用同一用途目录，显示文案不作为存档键。
 export function waystationPurpose(id){return WAYSTATION_PURPOSES.find(p=>p.id===id)||WAYSTATION_PURPOSES.at(-1);}
 // 牌面加宽后点击仍覆盖整块屋檐，落脚点与原导航位置保持一致。
-export const WAYSTATION_SIGN=Object.freeze({width:94,height:42,top:-73,roofWidth:102,roofTop:-86,hitHalfWidth:55,hitBottom:12});
+export const WAYSTATION_SIGN=Object.freeze({width:94,height:42,top:-73,roofWidth:102,roofTop:-86,hitHalfWidth:55,hitTop:-100,hitBottom:12});

@@ -274,7 +274,7 @@ export function createApplication({
   game.requestFacility=id=>restorationPanel.open(id);
   campLandPanel=createCampLandPanel({game,root,renderer,dialogs,onChange:refresh});
   campCalendar=createCampCalendar({game,root,dialogs,onChange:refresh});
-  campManagement=createCampManagement({game,root,renderer,dialogs,onChange:refresh});
+  campManagement=createCampManagement({game,root,renderer,dialogs,onChange:refresh,onWaystations:()=>waystations.open()});
   const campLayoutPanel=createCampLayoutPanel({game,root,dialogs,onChange:refresh});
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const creatureCodex=createCreatureCodex({game,root,dialogs});

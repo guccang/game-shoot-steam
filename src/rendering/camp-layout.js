@@ -1,5 +1,6 @@
+import {campGateRoads} from '../world/camp-gate-roads.js';
 import {hasCampLayoutChanges} from '../config/camp-layout.js';
-import {campSurfaceRoads} from '../world/camp-surface-roads.js';
+import {campSurfaceRoads,campGateInnerRoads} from '../world/camp-surface-roads.js';
 import {drawCampRoadFinish} from './camp-road-finish.js';
 // 搬迁后的道路在正式地面层绘制；布局和地契变化才重新生成有界路网。
 import {campRoadNetwork} from '../world/camp-layout-roads.js';
@@ -18,6 +19,8 @@ export function drawCampLayoutRoads(c,game,view,night,season='summer'){
  // 已购地覆盖旧院路，保留未开发土地和外部自然地貌；路网与建筑同帧更新。
  for(const p of expanded){const q=nearest({x:p.left,y:p.top},reference);drawCampGrass(c,{...q,w:p.right-p.left,h:-58-p.top},night,season);}
  if(moved)for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference),w=p.right-p.left,h=p.bottom-p.top;if(q.x>view.x+view.w||q.x+w<view.x||q.y>view.y+view.h||q.y+h<view.y)continue;drawCampGrass(c,{...q,w,h},night,season);}
+ // 门外接驳不受营地地契裁剪；与门内铺面使用相同材质和中心线。
+ drawCampRoadFinish(c,[...campGateRoads(game.progress),...campGateInnerRoads(game.progress)],view,finish,night);
  c.beginPath();for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference);c.rect(q.x,q.y,p.right-p.left,p.bottom-p.top);}c.clip();
  if(finish&&(finish.material!=='earth'||finish.shape!=='plain')){drawCampRoadFinish(c,roads.paths,view,finish,night);c.restore();return;}
  c.lineCap='round';c.lineJoin='round';
