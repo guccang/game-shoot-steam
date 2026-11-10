@@ -13,7 +13,7 @@ import {WORLD_BUILDINGS} from '../config/world-buildings.js';
 import {invalidateBuildingCollisionIndex} from './building-collision.js';
 import {TOWN_RESTORATIONS} from '../config/town-restoration.js';
 import {SCENERY,CAMP_PROPS} from './scenery.js';
-import {PARKING_SPOTS} from '../config/parking.js';
+import {PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {MAINLINE_SITES} from '../config/mainline.js';
 import {WAREHOUSE,WAREHOUSE_DEPOT} from '../config/warehouse.js';
 import {CAMP_WAREHOUSE} from '../config/wood-storage.js';
@@ -35,6 +35,8 @@ for(const b of CAMP_BUILDINGS)bind(b.id,TOWN_LAYOUT[b.id]);
 for(const [id,site] of Object.entries({weapons:WORKSHOP,garage:VEHICLE_WORKSHOP,cottage:RANGER_COTTAGE,warehouse:WAREHOUSE,warehouseDepot:WAREHOUSE_DEPOT,catHome:CAT_HOME,furniture:FURNITURE_SHOP,ammo:AMMO_SHOP,outdoor:OUTDOOR_SHOP,construction:CONSTRUCTION_COMPANY,repair:REPAIR_CENTER,story:STORY_POSTS.find(p=>p.id==='sunleaf-post'),clearing:CLEARING_POST}))bind(id,site);
 bind('weapons',CAMP_ROUTINES.oak.stroll);bind('garage',CAMP_ROUTINES.wheel.stroll);bind('tower',CAMP_ROUTINES.lumi.stroll);
 for(const [id,site] of Object.entries(INDUSTRY_SITES))bind(id,site);
+// 同步停车场地坪、入口与主线导航。
+bind('north',NORTH_PARKING);bind('north',NORTH_PARKING.entrance);bind('north',MAINLINE_SITES.northParking);
 bind('seed',FARM_SEED_SHOP);bind('seed',FARM_SEED_DOOR);
 bind('cottage',COTTAGE.door);bind('warehouse',CAMP_WAREHOUSE);bind('repair',REPAIR_BAY);bind('clearing',CLEARING_APPROACH);
 for(const room of [...Object.values(WORKSHOP_INTERIORS),...CLICK_BUILDINGS])for(const site of [room.site,room.door,room.outside])bind(room.id,site);

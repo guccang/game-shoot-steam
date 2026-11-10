@@ -1,5 +1,5 @@
 // 停车位和建筑操作徽记复用正式世界投影；绘制只读状态，不推进停车。
-import {TOWN_SHIFT_X} from '../config/town-layout.js';
+// 车位、地坪和标牌均使用当前停车场局部坐标。
 import {PARKING as C,PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
 import {nearest} from '../world/coordinates.js';
 import {GARAGE} from '../world/workshop.js';
@@ -16,9 +16,9 @@ export function drawParkingGround(c,game,view,night=0){
  if(lot.x-30<=view.x+view.w&&lot.x+560>=view.x&&lot.y-30<=view.y+view.h&&lot.y+NORTH_PARKING.height+30>=view.y){
  c.save();c.translate(shiftX,shiftY);
  c.strokeStyle=night?'#afba8e40':'#d5c99870';c.lineWidth=42;c.lineCap='round';c.beginPath();
- c.moveTo(500+TOWN_SHIFT_X,265);c.quadraticCurveTo(585+TOWN_SHIFT_X,265,NORTH_PARKING.entrance.x,NORTH_PARKING.entrance.y);c.stroke();
+ c.moveTo(NORTH_PARKING.x+355,NORTH_PARKING.y+120);c.quadraticCurveTo(NORTH_PARKING.x+440,NORTH_PARKING.y+120,NORTH_PARKING.entrance.x,NORTH_PARKING.entrance.y);c.stroke();
  box(c,NORTH_PARKING.x,NORTH_PARKING.y,NORTH_PARKING.width,NORTH_PARKING.height,20,night?'#9baf8230':'#d5c99880','#91a07770',1.5);
- box(c,280+TOWN_SHIFT_X,139,110,23,5,'#e9dcaf','#6c8869',1.5);c.fillStyle='#456a4b';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText('北门停车场',335+TOWN_SHIFT_X,155);c.restore();
+ box(c,NORTH_PARKING.x+135,NORTH_PARKING.y-6,110,23,5,'#e9dcaf','#6c8869',1.5);c.fillStyle='#456a4b';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText('北门停车场',NORTH_PARKING.x+190,NORTH_PARKING.y+10);c.restore();
  }
  for(const spot of PARKING_SPOTS){
   if(spot.indoor)continue;
