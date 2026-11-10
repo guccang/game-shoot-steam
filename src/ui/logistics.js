@@ -1,3 +1,5 @@
+import {vehicleSEMarkup} from './vehicle-se.js';
+import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
 import {REGIONAL_CAMPS} from '../config/regional-camps.js';
 import {refitMarkup,refitPreview} from './vehicle-refit.js';
 import {vehicleRefitStats,redistributeVehicleZones,VEHICLE_ZONES} from '../config/vehicle-refit.js';
@@ -61,7 +63,7 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
   content.innerHTML=refitMarkup(game,hull,refitTab,draftZones,vehicleBuildReason(game,hull));cards.forEach(n=>content.append(n));
  }
  // 仅操作后刷新，长列表不会被每帧重绘打断滚动。
- function render(){get('title').textContent=mode==='fit'?'载具改造':'载具仓库';get('subtitle').textContent=mode==='fit'?'引擎 · 装甲 · 底盘区域，共同决定能力上限':'点击货物移到背包，装卸需靠近车辆';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();if(mode!=='fit')get('content').insertAdjacentHTML('beforeend',treasureCargoMarkup());}
+ function render(){get('title').textContent=mode==='fit'?'载具改造':'载具仓库';get('subtitle').textContent=mode==='fit'?'引擎 · 装甲 · 底盘区域，共同决定能力上限':'点击货物移到背包，装卸需靠近车辆';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();if(mode==='fit'&&hull!==null)get('content').insertAdjacentHTML('beforeend',vehicleSEMarkup(game,hull,{fit:true}));if(mode!=='fit')get('content').insertAdjacentHTML('beforeend',treasureCargoMarkup());}
  dialogs.register(panel.id,{focusId:'logistics-close',onOpen:render});
  // 从载具页面进入时将货舱放到文档末尾，使嵌套弹窗的触控层级与打开顺序一致。
  function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';refitTab='vehicle';draftZones=null;if(!panel.open)root.body.append(panel);dialogs.open(panel.id);if(mode==='cargo'&&hull!==null&&inspectLogisticsLesson(game,'vehicleLoadViewed'))onChange();}
@@ -70,6 +72,7 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
  scope.on(panel,'click',event=>{
   const node=event.target.closest('button');if(!node||node.disabled)return;let result;
 
+  if(node.dataset.seAction){result=configureVehicleSE(game,hull,node.dataset.seKey,node.dataset.seAction);message=result.message;render();onChange();return;}
   if(node.dataset.refitTab){refitTab=node.dataset.refitTab;render();return;}
   if(node.hasAttribute('data-refit-reset')){draftZones=null;render();return;}
   if(node.dataset.refitAction)result=configureVehicleBuild(game,hull,node.dataset.refitAction,draftZones);

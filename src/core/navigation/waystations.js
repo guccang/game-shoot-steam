@@ -1,3 +1,4 @@
+import {seActive} from '../../config/vehicle-se.js';
 import {setTaskNavigationEnabled} from './task-navigation.js';
 import {clearWorldNavigation} from './world-navigation.js';
 import {stopWaystationTravel} from './navigation-control.js';
@@ -19,6 +20,7 @@ import {waystationLandmarkName} from '../../world/waystation-landmarks.js';
 
 // 自动导航遵守正式驾驶限制，不能把发动机、载荷或牵引导致的停驶误报为正在移动。
 export function waystationMovementReason(g){
+ if(g.vehicle.active&&!seActive(g,'autopilot'))return '请先安装并开启自动驾驶 SE 装置，或下车步行前往。';
  if(movementLoadFactor(g)>0)return '';
  if(g.vehicle.active){
   if(vehicleFaults(g.progress,g.vehicle.index).engine>=100)return '发动机已损坏，维修后才能自动前往驿站。';

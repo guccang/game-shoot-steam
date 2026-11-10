@@ -1,3 +1,4 @@
+import {seActive} from '../config/vehicle-se.js';
 // 单枚空中照明弹：抛物线升空、慢速下降与落地熄灭，灯光与可见性共用同一时钟。
 import {FLARE_RULES as R} from '../config/vehicle-special-ammo.js';
 import {worldDistance,canonical} from './coordinates.js';
@@ -22,7 +23,7 @@ export function vehicleFlareIllumination(game,point=game.player){const p=vehicle
 export function updateVehicleFlares(game,dt){
  if(game.state!=='playing'||dt<=0)return;const s=game.progress.supplies;if(!s)return;
  if(s.activeFlare){s.activeFlare.life-=dt;if(s.activeFlare.life<=0)s.activeFlare=null;}
- if(!s.autoFlare||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic||vehicleFlareCovers(game))return;
+ if(!seActive(game,'flare')||!s.autoFlare||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic||vehicleFlareCovers(game))return;
  const stock=s.vehicles[game.vehicle.index];if(!(stock?.flare>0))return;stock.flare--;
  s.activeFlare={...canonical(game.player),angle:game.vehicle.angle||0,life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:'照明弹升空 · 缓降照明约20秒'});

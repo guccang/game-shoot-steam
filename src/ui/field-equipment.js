@@ -1,3 +1,6 @@
+import {vehicleSEMarkup} from './vehicle-se.js';
+import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
+import {startSEControl} from '../combat/vehicle-se.js';
 import {specialAmmoMarkup} from './vehicle-special-ammo.js';
 import {configureSpecialAmmo} from '../core/vehicles/supplies.js';
 import {buyDetector} from '../core/activities/treasure.js';
@@ -44,7 +47,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
  // 详情按当前装备重新读取伤害、弹匣与备用弹量。
  function renderEquipment(){if(mode==='vehicle'&&!(game.loadout||game.progress).vehicleHulls[game.vehicle.index]){get('body').innerHTML='<p>当前没有自有载具，请到载具工坊选购。</p>';return;}const p=game.loadout||game.progress,permanent=finiteSupply(game),car=mode==='vehicle',v=game.vehicle,index=car?v.index:p.weapon,w=car?vehicleWeapon(p,v.weaponIndex):game.weapon(),mag=car?v.module?.magazine:game.magazines[index],f=permanent?vehicleFaults(game.progress,v.index):{gun:0,engine:0},load=car?vehicleLoad(game,index,{driver:true}):null,key=ammoKind(w),stock=car?game.progress.supplies.vehicles[index]:game.progress.supplies.hand;
   get('body').innerHTML=`<canvas id="field-equipment-image" width="320" height="180" style="width:100%;height:160px;object-fit:contain" aria-label="当前装备"></canvas><h3>${car?vehicleModel(index).name:WEAPONS[index].name}</h3>${car?`<p>当前载荷 ${load.payload.toFixed(2)} / ${load.capacity} kg</p>${load.overloaded?'<p role="status">载荷已满，无法移动，请清理货舱或随身背包。</p>':''}`:''}`+(car?`<p>车体 HP ${Math.ceil(v.hp)} / ${v.maxHp}</p><p>主炮：${w?.name||'未安装'}</p><section class="ui-inset"><b>主炮损坏 ${f.gun}% · 发动机损坏 ${f.engine}%</b><p>${f.gun>=100?'主炮停用。':f.gun?'主炮故障使射速降低。':'主炮正常。'}${f.engine>=100?'发动机停驶。':f.engine?'发动机故障使移动减速。':'发动机正常。'}完全损坏请送维修中心。</p></section>`:`<p>伤害 ${game.damage()} · 射程 ${Math.round(w.range)} · ${w.id==='water'?'水袋容量':'弹夹容量'} ${w.magazineSize}</p>`)+(w?.id==='water'?`<section class="ui-inset"><p class="equipment-ammo"><span class="ammo-symbol">${ammoIcon('waterbag')}</span><span>水袋 ${Math.floor(mag?.ammo||0)} / ${w.magazineSize} · ${Math.floor((mag?.ammo||0)/w.magazineSize*100)}%<br>可喷射 ${Math.floor(mag?.ammo||0)} 次</span></p><p>${permanent?'装备水枪靠近河流或湖泊自动补水，战斗和受击不会中断；离岸保留水量，空袋可消耗潮汐水罐装填。':'活动使用独立供给，不消耗随身库存。'}</p>${permanent?'<p>背包备用潮汐水罐 '+stock.water+' 份</p>':''}<p>从空袋补满约 ${Number(w.reloadTime.toFixed(2))} 秒；升级水袋增加容量，升级补水泵缩短补满时间。</p></section>`:key?`<p class="equipment-ammo"><span class="ammo-symbol">${ammoIcon(key)}</span><span>${AMMO_TYPES[key].name}：弹夹 ${Math.floor(mag?.ammo||0)} / ${w.magazineSize} · 备用 ${permanent?stock[key]+' 发 · '+AMMO_TYPES[key].mass+' kg/发':'活动独立供给，不消耗实物库存'}</span></p>`:'<p>该装备使用近战或独立能量，无需实物子弹。</p>')+(!car&&permanent&&key&&catAmmoWarehouse(game)?'<p>当前载具仓库 '+catAmmoWarehouse(game)[key]+' 发；背包备用耗尽后自动补给，取用量受背包余量限制。</p>':'')+(car?'<p>升级、改装及换炮请前往对应工坊，与屋内售货员交谈。</p>':'');
-  if(car&&permanent)get('body').insertAdjacentHTML('beforeend',specialAmmoMarkup(game,w));
+  if(car&&permanent)get('body').insertAdjacentHTML('beforeend',specialAmmoMarkup(game,w)+vehicleSEMarkup(game,game.vehicle.index));
   drawWorkshopEquipment(get('image').getContext('2d'),p,car?'vehicle':'weapons',index);
  }
  // 猫猫优先背包并自动分流到当前自有载具，车用弹药仍受店旁装载规则约束。
@@ -54,7 +57,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
   get('body').insertAdjacentHTML('beforeend','<section class="ui-section"><h3>野外装备</h3><p>帐篷、钓具与鱼获交易已迁至独立的户外用品店。</p><button class="ui-button" data-outdoor-shop>查看户外用品店</button></section>');
   get('body').insertAdjacentHTML('beforeend',`<section class="ui-section"><h3>探索工具</h3><span class="treasure-art">${inventoryIcon(itemDefinition('metal-detector'))}</span><b>金属探测器 · 1.2千克</b><p>反复使用，在手机寻宝页开启，循邻居线索找到埋藏装备。</p><button class="ui-button" data-shop-good="metal-detector" data-buy-detector ${p.treasure.detector?'disabled':''}>${p.treasure.detector?'已拥有':'加入购物车 · 180金币'}</button></section>`);
  }
- scope.on(panel,'change',e=>{if(!e.target.matches('[data-special-ammo]'))return;const r=configureSpecialAmmo(game,{key:e.target.value});message=r.message;render();onChange();});
+ scope.on(panel,'change',e=>{if(e.target.matches('[data-se-radius]')){const r=configureVehicleSE(game,game.vehicle.index,'combat','radius',Number(e.target.value));message=r.message;render();onChange();return;}if(!e.target.matches('[data-special-ammo]'))return;const r=configureSpecialAmmo(game,{key:e.target.value});message=r.message;render();onChange();});
  scope.on(panel,'click',e=>{if(!e.target.closest('[data-auto-flare]'))return;const r=configureSpecialAmmo(game,{autoFlare:!game.progress.supplies.autoFlare});message=r.message;render();onChange();});
  // 标题与导航始终对应当前模式，其他车和其他枪没有浏览入口。
  function render(){renderWeaponList();panel.querySelector('[data-field-nav]').parentElement.hidden=mode==='weapons';panel.querySelector('[data-field-cargo]').hidden=mode!=='vehicle';panel.querySelector('[data-field-cargo]').disabled=!game.progress.vehicleHulls[game.vehicle.index];panel.querySelector('[data-field-cleanup]').hidden=mode!=='vehicle';get('title').textContent=mode==='ammo'?'弹药补给铺':mode==='items'?'随身道具':mode==='vehicle'?'当前载具':'当前武器';get('subtitle').textContent=mode==='ammo'?'购买弹药、准备材料制作与补充道具':mode==='items'?'选择随身道具使用':'查看当前装备状态';mode==='ammo'?renderShop():mode==='items'?get('body').innerHTML=items():renderEquipment();get('message').textContent=message;panel.querySelector('[data-field-nav]').textContent=['ammo','items'].includes(mode)?'前往弹药补给铺':'前往载具工坊';}
@@ -62,7 +65,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
  // 只有屋内售货员能打开交易页，外部入口只负责导航。
  function open(kind='weapons'){mode=kind;message='';if(kind==='ammo'){if(game.cottage?.kind!=='ammo')return;target=supplyVehicleNearby(game)?'vehicle':'hand';}dialogs.open(panel.id);}
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
- scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.hasAttribute('data-field-weapon')){
+ scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.seAction||b.dataset.seControl){const r=b.dataset.seControl?startSEControl(game,b.dataset.seControl):configureVehicleSE(game,game.vehicle.index,b.dataset.seKey,b.dataset.seAction);message=r.message;render();onChange();return;}if(b.hasAttribute('data-field-weapon')){
   const index=Number(b.dataset.fieldWeapon);
   if(mode!=='weapons'||index===game.progress.weapon)return;
   if(!game.transact('weapons',index,'equip')){get('message').textContent='当前无法装备这把武器。';return;}

@@ -43,7 +43,7 @@ test('暂停冻结、方向输入立即接管，跨场景或角色变化撤销�
 });
 test('两栖与驾驶通行能力延续正式物理，无法到达时明确停止',()=>{
  const g=fixture(),lake=NATURAL_TERRAIN.lakes[0];g.progress.waystations.sites=[{id:1,name:'旧地点',mapId:'forest',x:lake.x,y:lake.y}];assert.ok(travelToWaystation(g,1).ok);advance(g,100);assert.equal(g.waystationTravel,null);assert.match(g.waystationMessage,/没有找到/);
- const h=fixture();buildWaystation(h);h.player.x+=200;h.vehicle={active:true,index:3};h.player.amphibious=true;travelToWaystation(h,1);advance(h);assert.match(h.waystationMessage,/已到达/);
+ const h=fixture();buildWaystation(h);h.player.x+=200;h.vehicle={active:true,index:3,hp:300};h.progress.vehicleHulls[3]=1;h.progress.vehicleSE[3].owned=h.progress.vehicleSE[3].installed=['autopilot'];h.player.amphibious=true;travelToWaystation(h,1);advance(h);assert.match(h.waystationMessage,/已到达/);
 });
 test('世界边缘驿站使用最近镜像寻路，不沿长边绕世界',()=>{
  const g=fixture();g.player.flying=true;g.player.x=WORLD.width-80;g.progress.waystations.sites=[{id:1,name:'边界站',mapId:'forest',x:80,y:g.player.y}];travelToWaystation(g,1);const steps=advance(g);assert.ok(steps<200);assert.ok(worldDistance(g.player,g.progress.waystations.sites[0])<=14);
@@ -130,7 +130,7 @@ test('眼前新长出的树触发一次重规划，仍以真实碰撞绕行抵�
 
 // 已得到路线不等于车辆实际行驶，静止状态必须能从导航状态中区分。
 test('气垫船起步状态以实际位移为准，零位移不显示已移动',()=>{
- const g=fixture();g.vehicle={active:true,index:3};g.player.amphibious=true;buildWaystation(g);g.player.x+=240;assert.ok(travelToWaystation(g,1).ok);
+ const g=fixture();g.vehicle={active:true,index:3,hp:300};g.progress.vehicleHulls[3]=1;g.progress.vehicleSE[3].owned=g.progress.vehicleSE[3].installed=['autopilot'];g.player.amphibious=true;buildWaystation(g);g.player.x+=240;assert.ok(travelToWaystation(g,1).ok);
  for(let i=0;i<100&&g.waystationTravel.phase==='planning';i++)updateWaystationTravel(g,.04,{x:0,y:0});
  assert.equal(g.waystationTravel.phase,'moving');assert.equal(g.waystationTravel.moving,false);
  const input=updateWaystationTravel(g,.04,{x:0,y:0});moveBody(g.player,input.x*7,input.y*7,WORLD,12,g.trees);updateWaystationTravel(g,.04,{x:0,y:0});assert.equal(g.waystationTravel.moving,true);
@@ -138,7 +138,7 @@ test('气垫船起步状态以实际位移为准，零位移不显示已移动',
 
 // 正式驾驶限制在出发前及途中均生效，禁止反复重算路线掩盖不能开动的车辆。
 test('气垫船满载、发动机损坏和牵引不足明确提示，恢复后可重新出发',()=>{
- const g=fixture();g.vehicle={active:true,index:3};g.player.amphibious=true;buildWaystation(g);g.player.x+=240;
+ const g=fixture();g.vehicle={active:true,index:3,hp:300};g.progress.vehicleHulls[3]=1;g.progress.vehicleSE[3].owned=g.progress.vehicleSE[3].installed=['autopilot'];g.player.amphibious=true;buildWaystation(g);g.player.x+=240;
  g.progress.logistics.builds[3].wood=1e8;assert.match(travelToWaystation(g,1).message,/载荷已满/);assert.equal(g.waystationTravel,undefined);
  g.progress.logistics.builds[3].wood=0;g.progress.supplies.engineFaults[3]=100;assert.match(travelToWaystation(g,1).message,/发动机/);
  g.progress.supplies.engineFaults[3]=0;g.progress.logistics.tow={tractor:3,target:1};assert.match(travelToWaystation(g,1).message,/牵引/);

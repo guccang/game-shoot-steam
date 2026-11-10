@@ -351,6 +351,6 @@ function stepBallistics(game, dt, targets, treeShots, woodTargets) {
   for(const b of game.projectiles)if(b.gravityRadius&&!b.terrainStopped&&b.remaining<=.001&&b.z>=0&&!gravityPointSafe(game,b)&&b.travelled<b.gravityMaxTravel){
     b.remaining=gravityFlightRange(game,{...b,range:b.gravityMaxTravel-b.travelled},b,{x:b.dx,y:b.dy},[]);
   }
-  for(const b of game.projectiles)if(b.remaining<=.001){detonateSpecialAmmo(game,b);landGravityField(game,b);if(b.kind==='wolf-256')explodeHeavyShell(game,b,null);}
+  for(const b of game.projectiles)if(b.remaining<=.001){detonateSpecialAmmo(game,b);landGravityField(game,b);if(['wolf-256','se-rocket'].includes(b.kind))explodeHeavyShell(game,b,null);}
   game.projectiles = game.projectiles.filter((b) => b.remaining > 0.001);
 }

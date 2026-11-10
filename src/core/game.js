@@ -1,3 +1,4 @@
+import {updateSEControl,updateSEDevices,absorbSEShield} from '../combat/vehicle-se.js';
 import {updateSpecialAmmo} from '../combat/vehicle-special-ammo.js';
 import {updateVehicleFlares} from '../world/vehicle-flares.js';
 import {surfaceWeapon} from '../world/surface-vision.js';
@@ -841,6 +842,7 @@ export class Game {
     if(this.state!=='playing')return;
     if (this.realm) amount = Math.max(1, amount * Math.max(GAMEPLAY_VALUES.blessings.armorFloor, 1 - (this.realm.buffs.armor || 0) * GAMEPLAY_VALUES.blessings.armorPerStack));
     // 格挡不产生或刷新无敌时间，已有的身体保护也不能免除护盾消耗。
+    amount=absorbSEShield(this,amount);
     amount=absorbEnergyShield(this,amount,source);
     if(amount<=0||this.player.invincible>0)return;
     if (absorbVehicleHit(this, amount, source)) return;
@@ -886,6 +888,7 @@ export class Game {
     if(this.realm?.mode==='race'){if(updateRace(this,dt,input)){syncRealm(this);this.onEvent('realm-finish',{won:this.realm.phase==='won'});}return;}
     if(updateArrival(this,dt)){if(this.state==='paused')updateVehicleBoarding(this,0,input);else this.vehicleBoarding=null;return;}
     updateLoadWarning(this,dt,input);
+    input=updateSEControl(this,dt,input);
     input=updateWaystationTravel(this,dt,input);
     input=updateSceneApproach(this,dt,input);
     if(outdoorBusy(this))input={x:0,y:0};
@@ -1036,7 +1039,7 @@ export class Game {
       }
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
-    updateVehicleFlares(this,dt);updateSpecialAmmo(this,dt);
+    updateSEDevices(this,dt);updateVehicleFlares(this,dt);updateSpecialAmmo(this,dt);
     updateVehicle(this, dt, !!this.parking?.idle);
     // 进入清缴范围即可检查；自由探索只认真实敌人，树木采集不算开战。
     const gunTarget=this.vehicle.active?this.vehicle.targetId:null;
