@@ -1,3 +1,5 @@
+import {LIVING_PLACES} from '../config/living-world.js';
+import {FIRE_STATION,FIRE_PARKING,FIRE_EXIT,FIRE_GARAGE,FIRE_DOOR,FIRE_APRON,FIRE_DOOR_APPROACH} from './fire-navigation.js';
 import {activateCampPlaza} from './camp-plaza.js';
 import {CAMP_DECOR_SHOP} from '../config/camp-management.js';
 import {TRADE_BOARD} from '../config/camp-trade.js';
@@ -38,6 +40,9 @@ function bind(id,site){id=aliases[id]||id;if(!site||!CAMP_BUILDINGS.some(b=>b.id
 for(const b of CAMP_BUILDINGS)bind(b.id,TOWN_LAYOUT[b.id]);
 for(const [id,site] of Object.entries({weapons:WORKSHOP,garage:VEHICLE_WORKSHOP,cottage:RANGER_COTTAGE,warehouse:WAREHOUSE,warehouseDepot:WAREHOUSE_DEPOT,catHome:CAT_HOME,furniture:FURNITURE_SHOP,ammo:AMMO_SHOP,outdoor:OUTDOOR_SHOP,construction:CONSTRUCTION_COMPANY,repair:REPAIR_CENTER,story:STORY_POSTS.find(p=>p.id==='sunleaf-post'),clearing:CLEARING_POST}))bind(id,site);
 // 订单板的绘制、现场交接和任务导航共用同一锚点；驿站修复点由下方通用绑定迁移。
+// 消防实体、上下车和侧门候停点一起平移，生活设施让居民作息读取同一坐标。
+for(const site of [FIRE_STATION,FIRE_PARKING,FIRE_EXIT,FIRE_GARAGE,FIRE_DOOR,FIRE_APRON,FIRE_DOOR_APPROACH])bind('fire',site);
+for(const [id,site] of Object.entries(LIVING_PLACES))bind(id,site);
 bind('trade',TRADE_BOARD);bind('delivery',FARM_DELIVERY);bind('camp-decor',CAMP_DECOR_SHOP);
 bind('weapons',CAMP_ROUTINES.oak.stroll);bind('garage',CAMP_ROUTINES.wheel.stroll);bind('tower',CAMP_ROUTINES.lumi.stroll);
 for(const [id,site] of Object.entries(INDUSTRY_SITES))bind(id,site);

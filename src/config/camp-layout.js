@@ -1,3 +1,5 @@
+import {LIVING_PLACES} from './living-world.js';
+import {FIRE_STATION} from './fire-station-layout.js';
 import {CAMP_PLAZA_BUILDING} from './camp-plaza.js';
 import {CAMP_DEFENSE_POSTS} from './camp-defense.js';
 import {CAMP_DECOR_SHOP} from './camp-management.js';
@@ -10,6 +12,9 @@ export const CAMP_LAYOUT_GRID=20;
 export const CAMP_ROAD_WIDTH=56;
 export const CAMP_BUILDINGS=Object.entries({cottage:'巡林小屋',weapons:'武器工坊',garage:'载具工坊',warehouse:'小屋仓库',warehouseDepot:'后院仓库',outdoor:'户外用品店',ammo:'弹药补给铺',repair:'维修中心',catHome:'猫窝',furniture:'家具小铺',construction:'建筑公司',refinery:'提炼厂',factory:'加工厂',story:'回信驿',clearing:'清缴告示牌',rogue:'远征光门',tower:'时空塔',guardian:'守护祭坛',travel:'远行驿站',tent:'公共帐篷'}).map(([id,name])=>({id,name,...TOWN_LAYOUT[id],...(id==='travel'?{passable:true}:{}),width:TOWN_LAYOUT[id].width||(['cottage'].includes(id)?150:110),height:TOWN_LAYOUT[id].height||(['cottage'].includes(id)?160:100)})).concat([
  ...CAMP_DEFENSE_POSTS,{...CAMP_PLAZA_BUILDING},
+ // 生活设施保留稳定身份，饭桌、栖架和房屋均可规划搬迁。
+ ...['camp','roost','relay','pottery','kitchen','market'].map(id=>({...LIVING_PLACES[id],id,publicFacility:true})),
+ {...FIRE_STATION,id:'fire',name:'森林消防站',publicFacility:true,placementKind:'fire'},
  // 订单板独立搬迁，原商路身份与统计内容保持不变。
  {...TRADE_BOARD,id:'trade',passable:true,width:TRADE_BOARD_SIZE.width,height:TRADE_BOARD_SIZE.height-TRADE_BOARD_SIZE.foot},
  {...FARM_SEED_SHOP,id:'seed',name:'种子小屋'},
@@ -23,8 +28,8 @@ export function normalizeCampLayout(raw){const positions={};for(const b of CAMP_
 export function campBuildingPosition(layout,building){return {...building,...layout?.positions?.[building.id]};}
 
 // 布局校验分别保留地坪和东侧弯道，避免把入口下方空地误作停车场。
-// 站牌按底座和点击站位占地，牌面高度不作为房屋或车道禁放范围。
-export function campLayoutFootprints(b){if(b.placementKind==='sign')return [{left:b.x-24,right:b.x+24,top:b.y-12,bottom:b.y+36}];if(b.plaza)return [{left:b.x-b.width/2,right:b.x+b.width/2,top:b.y-b.height,bottom:b.y}];const main={left:b.x-b.width/2-24,right:b.x+b.width/2+24,top:b.y-b.height-20,bottom:b.y+(b.parking?20:95)};return b.parking?[main,{left:b.x+166,right:b.x+343,top:b.y-248,bottom:b.y-132}]:[main];}
+// 消防站按偏心车库和侧门占地；站牌按底座与点击站位占地，保留临河原址干地。
+export function campLayoutFootprints(b){if(b.placementKind==='fire')return [{left:b.x-142,right:b.x+97,top:b.y-135,bottom:b.y+105}];if(b.placementKind==='sign')return [{left:b.x-24,right:b.x+24,top:b.y-12,bottom:b.y+36}];if(b.plaza)return [{left:b.x-b.width/2,right:b.x+b.width/2,top:b.y-b.height,bottom:b.y}];const main={left:b.x-b.width/2-24,right:b.x+b.width/2+24,top:b.y-b.height-20,bottom:b.y+(b.parking?20:95)};return b.parking?[main,{left:b.x+166,right:b.x+343,top:b.y-248,bottom:b.y-132}]:[main];}
 
 // 建筑或大门任一发生搬迁，都启用同一套正式道路与灯光。
 export function hasCampLayoutChanges(layout){return Object.keys(layout?.positions||{}).length>0||Object.keys(layout?.gates||{}).length>0;}

@@ -8,35 +8,35 @@ import {worldDistance,ORIGINAL_WORLD} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
 import {riverXAt} from './river-geometry.js';
 // 出入库各点相对站房定位，移动站房时保持原有车道形状。
-export const FIRE_PARKING=Object.freeze({x:FIRE_STATION.x+40,y:FIRE_STATION.y+70});
+export const FIRE_PARKING={x:FIRE_STATION.x+40,y:FIRE_STATION.y+70};
 // 小镇营地的已验证主路落点，接警转场后从这里步行去消防站。
 export const FIRE_TOWN_ARRIVAL=Object.freeze({...TOWN_LAYOUT.spawn});
 // 交接下车点在车库门前干地，猫猫与库内车辆各有独立落点。
-export const FIRE_EXIT=Object.freeze({x:FIRE_STATION.x-20,y:FIRE_STATION.y+70});
+export const FIRE_EXIT={x:FIRE_STATION.x-20,y:FIRE_STATION.y+70};
 // 库内驾驶席、侧门和车道共享正式世界锚点，不能由不同绘制层各自估算。
-export const FIRE_GARAGE=Object.freeze({x:FIRE_STATION.x-49,y:FIRE_STATION.y-27});
-export const FIRE_DOOR=Object.freeze({x:FIRE_STATION.x+10,y:FIRE_STATION.y-27});
-export const FIRE_APRON=Object.freeze({x:FIRE_STATION.x-49,y:FIRE_STATION.y+42});
-export const FIRE_DOOR_APPROACH=Object.freeze({x:FIRE_STATION.x+10,y:FIRE_STATION.y+30});
+export const FIRE_GARAGE={x:FIRE_STATION.x-49,y:FIRE_STATION.y-27};
+export const FIRE_DOOR={x:FIRE_STATION.x+10,y:FIRE_STATION.y-27};
+export const FIRE_APRON={x:FIRE_STATION.x-49,y:FIRE_STATION.y+42};
+export const FIRE_DOOR_APPROACH={x:FIRE_STATION.x+10,y:FIRE_STATION.y+30};
 const STEP=40, graphs=new WeakMap();
 // 按世界实例缓存原林路网，采伐后仍采用保守路线；不会改变地形，也不会清除任何树木。
 export function fireRoads(game) {
- if(graphs.has(game))return graphs.get(game);
+ const key=JSON.stringify([game.progress.campLayout,game.progress.campLand,FIRE_STATION.x,FIRE_STATION.y]);if(graphs.get(game)?.key===key)return graphs.get(game);
  // 消防仍服务原生活圈；树木按局部桶查询，扩图后不逐格扫描数千棵外围树。
- const nodes=new Map(),trees=new SpatialGrid(game.trees),body={mapId:'forest'};
- for(let y=40;y<ORIGINAL_WORLD.height;y+=STEP)for(let x=40;x<ORIGINAL_WORLD.width;x+=STEP)
+ const nodes=new Map(),trees=new SpatialGrid(game.trees),body={mapId:'forest',campProgress:game.progress},left=Math.min(40,Math.floor((FIRE_STATION.x-1000)/40)*40),right=Math.max(ORIGINAL_WORLD.width,FIRE_STATION.x+1000),top=Math.min(40,Math.floor((FIRE_STATION.y-1000)/40)*40),bottom=Math.max(ORIGINAL_WORLD.height,FIRE_STATION.y+1000),step=Math.max(STEP,Math.ceil(Math.sqrt((right-left)*(bottom-top)/50000)/40)*40);
+ for(let y=top;y<bottom;y+=step)for(let x=left;x<right;x+=step)
   if(!blocked(x,y,16,trees,body))nodes.set(`${x}:${y}`,{x,y,links:[]});
- for(const n of nodes.values())for(const [dx,dy]of [[STEP,0],[0,STEP]]){
+ for(const n of nodes.values())for(const [dx,dy]of [[step,0],[0,step]]){
   const b=nodes.get(`${n.x+dx}:${n.y+dy}`);
   if(b&&!blocked(n.x+dx/2,n.y+dy/2,16,trees,body)){n.links.push(b);b.links.push(n);}
  }
  const start=[...nodes.values()].sort((a,b)=>worldDistance(a,FIRE_PARKING)-worldDistance(b,FIRE_PARKING))[0],reachable=new Set([start]),queue=[start];
  for(let i=0;i<queue.length;i++)for(const n of queue[i].links)if(!reachable.has(n)){reachable.add(n);queue.push(n);}
- const road={nodes:queue,start};graphs.set(game,road);return road;
+ const road={nodes:queue,start,key};graphs.set(game,road);return road;
 }
 // 取水点统一选择已连通的东岸干地，吸水管向西伸入真实河道，排除桥面。
 export function fireWaterSources(game){
- const candidates=fireRoads(game).nodes.filter(n=>n.x-riverXAt(n.y)<125&&n.x-riverXAt(n.y)>55&&(n.y<550||n.y>950)&&worldDistance(n,FIRE_STATION)<1100);
+ const candidates=fireRoads(game).nodes.filter(n=>n.x-riverXAt(n.y)<125&&n.x-riverXAt(n.y)>55&&(n.y<550||n.y>950));
  const result=[];for(const y of [1080,1720,400]){const n=candidates.filter(n=>result.every(s=>worldDistance(s,n)>260)).sort((a,b)=>Math.abs(a.y-y)-Math.abs(b.y-y)||worldDistance(a,FIRE_STATION)-worldDistance(b,FIRE_STATION))[0];if(n)result.push({x:n.x,y:n.y,name:i18nText("world.fire-navigation.68f54d96f1", { p0: (result.length+1) }),waterX:riverXAt(n.y),waterY:n.y,waterDx:riverXAt(n.y)-n.x});}
  if(!result.length)throw Error(i18nText("world.fire-navigation.45d396baa8"));return result;
 }

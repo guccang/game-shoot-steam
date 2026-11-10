@@ -21,7 +21,8 @@ export function drawCampLayoutRoads(c,game,view,night,season='summer'){
  if(moved)for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference),w=p.right-p.left,h=p.bottom-p.top;if(q.x>view.x+view.w||q.x+w<view.x||q.y>view.y+view.h||q.y+h<view.y)continue;drawCampGrass(c,{...q,w,h},night,season);}
  // 门外接驳不受营地地契裁剪；与门内铺面使用相同材质和中心线。
  drawCampRoadFinish(c,[...campGateRoads(game.progress),...campGateInnerRoads(game.progress)],view,finish,night);
- c.beginPath();for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference);c.rect(q.x,q.y,p.right-p.left,p.bottom-p.top);}c.clip();
+ // 新路网已按水域和围栏寻路，搬到营地外的设施支路也必须完整绘制。
+ if(!moved){c.beginPath();for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference);c.rect(q.x,q.y,p.right-p.left,p.bottom-p.top);}c.clip();}
  if(finish&&(finish.material!=='earth'||finish.shape!=='plain')){drawCampRoadFinish(c,roads.paths,view,finish,night);c.restore();return;}
  c.lineCap='round';c.lineJoin='round';
  for(const [width,color,dx,dy] of [[CAMP_ROAD_WIDTH+10,'#71885c55',2,3],[CAMP_ROAD_WIDTH+4,'#e3d5a1',-1,-1],[CAMP_ROAD_WIDTH,'#d9c48d',0,0],[CAMP_ROAD_WIDTH-9,'#e8d4a1',0,0]]){c.lineWidth=width;c.strokeStyle=nightColor(color,night);c.beginPath();for(const path of roads.paths)path.forEach((p,i)=>{const q=nearest(p,reference);if(i)c.lineTo(q.x+dx,q.y+dy);else c.moveTo(q.x+dx,q.y+dy);});c.stroke();}
