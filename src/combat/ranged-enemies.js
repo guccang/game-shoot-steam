@@ -1,3 +1,4 @@
+import {campBarricadeTarget,hurtCampBarricade} from '../core/camp/camp-defense.js';
 import {surfaceTargetVisible,surfaceAttackRange} from '../world/surface-vision.js';
 import {traceEnergyShield} from './energy-shield-surface.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
@@ -84,7 +85,8 @@ export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
     }
     const shield=traceEnergyShield(game,from,to,previousPlayer,b.radius);
     if(shield&&shield.t<fraction){fraction=shield.t;hit={node:game.player,shield};}
-    for (const target of b.splash ? [] : [{ node: game.player, previous: previousPlayer }, ...companions]) {
+    const barrier=b.campBarrier?campBarricadeTarget(game,{x:b.endX,y:b.endY}):null;
+    for (const target of b.splash ? [] : [{ node: game.player, previous: previousPlayer }, ...companions,...(barrier?[{node:barrier,barrier:true}]:[])]) {
       if (target.node.hp <= 0) continue;
       const p = nearest(target.node, from), previous = nearest(target.previous || target.node.previous || target.node, p);
       const t = segmentCircle({ x: from.x - previous.x, y: from.y - previous.y },
@@ -96,6 +98,7 @@ export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
       b.remaining = 0;
       if (!hit.tree) {
         if (hit.node === game.player) game.hurt(b.damage,{...(hit.shield||from),damageType:b.splash?'explosion':null});
+        else if(hit.barrier)hurtCampBarricade(game,b.damage);
         else damageCompanion(hit, b.damage);
       }
       if(hit.shield&&b.splash){b.x=hit.shield.x;b.y=hit.shield.y;detonateEnemyShell(game,b,companions,true);}
@@ -112,12 +115,13 @@ export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
 // 范围伤害与预警共用真实半径，掩体遮挡每个目标，伙伴与角色分别结算一次。
 function detonateEnemyShell(game, shell, companions, skipPlayer=false) {
   const center = { x: shell.x, y: shell.y };
-  for (const target of [...(skipPlayer?[]:[{ node: game.player }]), ...companions]) {
+  const barrier=shell.campBarrier?campBarricadeTarget(game,{x:shell.endX,y:shell.endY}):null;
+  for (const target of [...(skipPlayer?[]:[{ node: game.player }]), ...companions,...(barrier?[{node:barrier,barrier:true}]:[])]) {
     if (target.node.hp <= 0 || worldDistance(center, target.node) > shell.splash) continue;
     const point = nearest(target.node, center);
     if (game.trees.some(tree => tree.hp > 0 && segmentCircle(center, point, nearest(tree, center), tree.radius) !== null)) continue;
     const amount = shell.damage * (worldDistance(center, point) <= shell.splash * GAMEPLAY_VALUES.ranged.fullSplashRadiusRatio ? 1 :GAMEPLAY_VALUES.ranged.edgeSplashDamageRatio);
-    if (target.node === game.player) game.hurt(amount,{...center,damageType:'explosion'}); else damageCompanion(target, amount);
+    if (target.node === game.player) game.hurt(amount,{...center,damageType:'explosion'}); else if(target.barrier)hurtCampBarricade(game,amount);else damageCompanion(target, amount);
   }
   game.fx.add('blast', shell.x, shell.y, .3, { size: shell.splash, color: '#e4b16d' });
   game.fx.add('ring', shell.x, shell.y, .38, { size: shell.splash, color: '#b76543' });

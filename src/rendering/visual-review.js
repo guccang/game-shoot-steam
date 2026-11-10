@@ -2250,3 +2250,6 @@ export async function inspectMineCoreBoss(game,root=document){
  const l=currentMineLayer(game);
  return {designCriterion:'mine-core-boss',depth:game.cottage?.depth||1,actors:Object.values(l.animals).map(a=>({kind:a.kind,hp:a.hp,phase:a.phase,move:a.move,step:a.gelStep})),quote:mineLayerUnlockQuote(game),cores:{...game.progress.mining.coreCrystals},cleared:{...game.progress.mining.coreClears},bolts:game.cottage?.bolts?.length||0,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};
 }
+
+// 读取正式地面战场编成与当前清缴坐标，供手机同屏验收绑定。
+export function inspectForestSpecialDistribution(game,root=document){return {designCriterion:'forest-special-distribution',site:structuredClone(game.progress.living.clearingSite),horde:!!game.campDefense,special:game.enemies.filter(e=>e.hp>0&&e.dumplingVariant).map(e=>({id:e.dumplingVariant,phase:e.assault?.phase,campDefense:!!e.campDefense})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}

@@ -11,8 +11,9 @@ export function normalizeClearingSite(raw){
  const distance=worldDistance(raw,raw.origin),r=CLEARING_SITE_RULES;
  // 兼容首轮草甸近点与历史远点，不迁移已接取地点或重置波次。
  const beginnerSite=distance>=CLEARING_STARTER_RULES.minDistance&&distance<=CLEARING_STARTER_RULES.maxDistance&&biomeAt(raw.x,raw.y).id===CLEARING_STARTER_RULES.biome;
- if(!beginnerSite&&(distance<r.minDistance||distance>r.maxDistance))return null;
- return {id:'patrol-clearing',name:'本次清缴地点',mapId:'forest',x:raw.x,y:raw.y,radius:r.radius,origin:{x:raw.origin.x,y:raw.origin.y}};
+ const distributed=raw.distributionVersion===1&&Number.isSafeInteger(raw.level)&&raw.level>=1&&raw.level<=1000000;
+ if(!distributed&&!beginnerSite&&(distance<r.minDistance||distance>r.maxDistance))return null;
+ return {id:'patrol-clearing',name:'本次清缴地点',mapId:'forest',x:raw.x,y:raw.y,radius:r.radius,origin:{x:raw.origin.x,y:raw.origin.y},...(distributed?{distributionVersion:1,level:raw.level}:{})};
 }
 // 未携带新地点的历史在途任务继续原东林场地；新接单必须由选点事务填入坐标。
 export function clearingSite(progress){return progress.living?.clearingSite||BOSS_CLEARING;}

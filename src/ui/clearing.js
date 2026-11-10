@@ -1,10 +1,12 @@
+import {clearingEnemyLevel} from '../config/clearing-difficulty.js';
+import {FOREST_LEVEL_BANDS} from '../world/forest-levels.js';
 import {displayMeters} from '../world/distance-units.js';
 import {forestRuleLines} from '../config/forest-rules.js';
 import {facilityOpen} from "../config/town-restoration.js";
 import {worldDistance} from '../world/coordinates.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 // 清缴场景交互：点告示牌接取，确认后自动接续正式导航，不借用邻里长列表。
-import {CLEARING_POST,CLEARING_APPROACH,CLEARING_STEPS,CLEARING_SITE_RULES,CLEARING_STARTER_RULES} from '../config/clearing.js';
+import {CLEARING_POST,CLEARING_APPROACH,CLEARING_STEPS} from '../config/clearing.js';
 import {challengeLevelMarkup} from './challenge-feedback.js';
 import {challengeProgress} from '../config/economy.js';
 import {clearingRound} from './clearing-round.js';
@@ -39,8 +41,8 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
   dialog.querySelector('.clearing-loot').textContent=game.progress.bosses<3?'入门清缴 · 团怪成群，特殊怪穿插':'进阶清缴 · 成群团怪与特殊强敌';
   dialog.querySelector('.clearing-loot').textContent+=' · 击败怪物获得装备材料；金币来自种地，木材通过采集与任务获取';
   dialog.querySelector('.clearing-loot').textContent+=' · 完成后营地经验 +180';
-  const rules=game.progress.bosses===0?CLEARING_STARTER_RULES:CLEARING_SITE_RULES;
-  $('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴 · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`${game.progress.bosses===0?'营地草甸':'随机地点'} ${displayMeters(rules.minDistance)}–${displayMeters(rules.maxDistance)} 米 · 清理 5 批怪物及领主`}`;
+  const level=clearingEnemyLevel(game.progress.bosses),band=FOREST_LEVEL_BANDS.find(b=>b.max>=level)||FOREST_LEVEL_BANDS.at(-1);
+  $('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴 · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`${level<=3?'营地草甸安全区域':band.name+' · 距营地 '+displayMeters(band.from)+'–'+displayMeters(band.to)+' 米'} · 清理 5 批怪物及领主`}`;
   if(resuming)$('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴已暂停 · 领主 ${Math.ceil(game.boss.hp)} / ${game.boss.maxHp} HP · 继续后返回原地点。`;
   dialog.querySelector('.clearing-loot').textContent+=' · 远离领主脱战或回营后可暂停并购买弹药，无需先击败领主';
   const reason=clearingPostReason(game),accept=$('clearing-accept');

@@ -22,10 +22,10 @@ export function updateBiomeDumpling(game,enemy,victim,dt){
     const angles=dumplingShotAngles(p,Math.atan2(a.dirY,a.dirX)),limit=game.boss?1:RANGED_LIMITS.bolts;
     const count=Math.min(angles.length,limit);
     if(game.rangedShotTimer>0||game.enemyBolts.length+count>limit)return;
-    for(const angle of angles.slice(0,count))game.enemyBolts.push({species:'biome-dumpling',dumplingVariant:p.id,owner:enemy.id,x:enemy.x,y:enemy.y-15,dx:Math.cos(angle),dy:Math.sin(angle),radius:p.radius,speed:p.speed,remaining:p.splash?Math.hypot(a.endX-enemy.x,a.endY-(enemy.y-15)):p.range,splash:p.splash||0,endX:a.endX,endY:a.endY,damage:enemy.damage,age:0});
+    for(const angle of angles.slice(0,count))game.enemyBolts.push({species:'biome-dumpling',campBarrier:!!enemy.campDefense&&!enemy.campRaider,dumplingVariant:p.id,owner:enemy.id,x:enemy.x,y:enemy.y-15,dx:Math.cos(angle),dy:Math.sin(angle),radius:p.radius,speed:p.speed,remaining:p.splash?Math.hypot(a.endX-enemy.x,a.endY-(enemy.y-15)):p.range,splash:p.splash||0,endX:a.endX,endY:a.endY,damage:enemy.damage,age:0});
     game.rangedShotTimer=game.boss?RANGED_LIMITS.bossShotGap:RANGED_LIMITS.shotGap;a.phase='recovery';a.elapsed=0;return;
   }
-  const pursuit=enemy.aquatic?{direct:true,goal:target}:groundPursuit(enemy,victim,dt,true,surfaceAttackRange(game,p.reach));
+  const pursuit=enemy.aquatic||enemy.arena?{direct:true,goal:target}:groundPursuit(enemy,victim,dt,true,surfaceAttackRange(game,p.reach));
   if(distance<=surfaceAttackRange(game,p.reach)&&visible&&pursuit.direct){
     const angle=Math.atan2(target.y-(enemy.y-15),target.x-enemy.x);
     Object.assign(a,{phase:'windup',elapsed:0,originX:enemy.x,originY:enemy.y-15,endX:target.x,endY:target.y,dirX:Math.cos(angle),dirY:Math.sin(angle)});return;
