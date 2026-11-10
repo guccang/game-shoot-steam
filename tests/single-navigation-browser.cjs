@@ -19,9 +19,16 @@ const fs=require('node:fs');
   if(!await page.evaluate(()=>!!a.game.waystationTravel&&!a.game.progress.mainline.navigationEnabled))throw Error('驿站未独占导航');
   await page.locator('#phone-button').tap();await page.locator('[data-pack-action=home]').tap();
   if(!await page.evaluate(()=>!a.game.waystationTravel&&a.game.progress.mainline.navigationEnabled))throw Error('回家未取消驿站');
+  // 回家导航卡必须随手机关闭操作消失；只重新开启开关不能恢复已取消的临时任务。
+  await page.locator('#mainline-hud').waitFor({state:'visible'});
+  if(!await page.locator('#mainline-hud').textContent().then(text=>text.includes('回巡林小屋')))throw Error('缺少回家导航卡');
+  await page.locator('#phone-button').tap();await page.locator('[data-pack-action=toggle-navigation]').tap();await page.locator('#phone-close').tap();
+  await page.locator('#mainline-hud').waitFor({state:'hidden'});await page.screenshot({path:'output/single-navigation/home-card-dismissed.png'});
+  await page.locator('#phone-button').tap();await page.locator('[data-pack-action=toggle-navigation]').tap();await page.locator('#phone-close').tap();
+  await page.locator('#mainline-hud').waitFor({state:'hidden'});
   await page.locator('#phone-button').tap();await page.locator('[data-pack-action=toggle-navigation]').tap();await page.locator('#phone-close').tap();
   await page.reload();await page.locator('#start').tap({timeout:60000});await page.locator('#game-frame[data-page=game]').waitFor({timeout:120000});await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;});await page.locator('#phone-button').tap();
   if(await page.locator('[data-pack-action=toggle-navigation]').textContent()!=='开启任务寻路')throw Error('刷新后关闭偏好丢失');
-  if(errors.length)throw Error(errors.join('\n'));fs.writeFileSync('output/single-navigation/results.json',JSON.stringify({checks,errors,reloadClosed:true,stationToHome:true},null,2));console.log(JSON.stringify({checks,errors,reloadClosed:true,stationToHome:true}));
+  if(errors.length)throw Error(errors.join('\n'));fs.writeFileSync('output/single-navigation/results.json',JSON.stringify({checks,errors,reloadClosed:true,stationToHome:true,homeCardDismissed:true},null,2));console.log(JSON.stringify({checks,errors,reloadClosed:true,stationToHome:true,homeCardDismissed:true}));
  }catch(error){await page.screenshot({path:'output/single-navigation/failure.png'});throw error;}finally{await browser.close();}
 })();
