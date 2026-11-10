@@ -1,2 +1,14 @@
 /* 营地管理复用统一底板，仅定义手机内容排布与画布，不另起按钮材质。 */
 .camp-manager-tabs,.camp-manager-categories,.camp-manager-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.camp-manager-tabs>button{flex:1}.camp-manager-selects{display:grid;grid-template-columns:1fr 1fr;gap:12px}.camp-manager-selects label{min-width:0}.camp-manager-selects select{display:block;width:100%;min-height:44px;margin-top:6px;background:var(--ui-cream,#fff5d9);color:var(--ui-forest,#315c43);border:2px solid #72896c;border-radius:8px;padding:6px}.camp-manager-product{display:flex;align-items:center;gap:12px;margin:10px 0}.camp-manager-product canvas{width:82px;height:82px;flex:0 0 82px}.camp-manager-product>div{min-width:0;flex:1}.camp-manager-product h3{margin:4px 0;font-size:16px}.camp-manager-product button{max-width:100%;white-space:normal}.camp-manager-product small{display:block}.camp-manager-owned .camp-manager-actions{gap:5px}[data-manager-style-preview]{display:block;width:100%;height:auto;border-radius:12px;margin:12px 0}[data-manager-map]{display:block;width:100%;height:320px;border:2px solid #53734f;border-radius:12px;touch-action:none;margin:12px 0}#camp-management-dialog [aria-pressed="true"]{outline:2px solid #b9994d;outline-offset:1px}#camp-management-dialog .ui-panel__footer{display:block}#camp-management-dialog [data-manager-message]{margin:0 0 6px;font-size:13px}#camp-management-dialog [data-manager-style]{width:100%;margin:4px 0 12px}
+
+/* 透明模态层与正式画布重合，底部操作栏继续复用手机通用底板。 */
+#camp-world-placement{position:fixed;inset:auto;margin:0;padding:0;border:0;max-width:none;max-height:none;background:transparent;box-shadow:none;overflow:hidden;box-sizing:border-box}
+#camp-world-placement::backdrop{background:transparent}
+#camp-world-placement>canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+#camp-world-placement>.ui-panel{position:absolute;inset:auto 8px max(8px,env(safe-area-inset-bottom));margin:0 auto;width:calc(100% - 16px);max-height:48%;display:flex;flex-direction:column}
+#camp-world-placement .ui-panel__header{padding:8px 12px;min-height:0}
+#camp-world-placement h2{font-size:16px;margin:0}
+#camp-world-placement .ui-panel__body{padding:6px 12px;min-height:0;overflow:auto}
+#camp-world-placement p{margin:0;font-size:13px}
+#camp-world-placement .ui-panel__footer{padding:8px 12px;display:flex;gap:8px}
+#camp-world-placement .ui-panel__footer button{flex:1;min-height:44px}
