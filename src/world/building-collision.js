@@ -1,3 +1,4 @@
+import {vehicleFenceFootprint} from '../config/vehicle-fence-footprint.js';
 import {campDecorBlocked} from './camp-decor.js';
 import {ownsCampPoint} from '../config/camp-land.js';
 import {facilityOpen} from '../config/town-restoration.js';
@@ -16,7 +17,7 @@ function nearbyBuildings(x,y,radius){
 // 世界查询与飞行、步行、高速移动共用同一墙体边界；秘境室内由自身边界管理。
 export function worldBuildingBlocked(x,y,radius=12,body={}){
  if(body.mapId!=='forest'||body.arena&&body.arena.terrain!=='forest')return false;
- if(campDecorBlocked(x,y,radius,body.campProgress))return true;
+ if(campDecorBlocked(x,y,radius,body.campProgress,vehicleFenceFootprint(body.fenceVehicle,radius)))return true;
  return nearbyBuildings(x,y,radius).some(({building:b})=>{
   // 先按当前坐标排除远处建筑，再读取营地产权和修复状态，避免每个采样遍历存档。
   const p=nearest({x,y},b),dx=p.x-b.x,dy=p.y-b.y;

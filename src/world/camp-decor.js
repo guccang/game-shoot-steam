@@ -1,3 +1,4 @@
+import {campDecorCollisionRects} from '../config/camp-decor-collision.js';
 import {campPathWidth} from '../config/camp-roads.js';
 import {hasCampLayoutChanges} from '../config/camp-layout.js';
 import {worldRoadFootprintOverlap} from './farm-roads.js';
@@ -5,7 +6,7 @@ import {overlapsCampPlaza} from './camp-plaza.js';
 import {campSurfaceRoads} from './camp-surface-roads.js';
 import {roadFootprintDistance} from './road-footprint.js';
 import {CAMP_ROAD_WIDTH} from '../config/camp-layout.js';
-// 装饰占地与通路保护：正式物理、编辑预览和保存均读取同一脚底矩形。
+// 装饰占地与通路保护：摆放保留完整外框，正式物理按可见立柱和底座检测。
 import {campDecorDefinition,CAMP_DECOR_SHOP} from '../config/camp-management.js';
 import {ownedLayoutPoint,layoutBuildings} from './camp-layout-roads.js';
 import {campBoundaryBlocked,campBoundary} from './camp-boundary.js';
@@ -15,7 +16,7 @@ import {nearest,worldDistance} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
 const indexes=new WeakMap();
 // 一次提交重建一次有界索引，寻路热路径不遍历全存档。
-export function campDecorBlocked(x,y,radius,progress){const state=progress?.campManagement;if(!state)return false;let grid=indexes.get(state);if(!grid){grid=new SpatialGrid(state.items.filter(i=>i.x!==null&&!campDecorDefinition(i.type)?.passable).map(i=>({...i,radius:campDecorDefinition(i.type).width/2+24})));indexes.set(state,grid);}return grid.query(x,y,x,y,radius).some(i=>{const p=nearest({x,y},i),d=campDecorDefinition(i.type);return Math.abs(p.x-i.x)<d.width/2+radius&&Math.abs(p.y-i.y)<d.depth/2+radius;});}
+export function campDecorBlocked(x,y,radius,progress,footprint={x:radius,y:radius}){const state=progress?.campManagement;if(!state)return false;let grid=indexes.get(state);if(!grid){grid=new SpatialGrid(state.items.filter(i=>i.x!==null&&!campDecorDefinition(i.type)?.passable).map(i=>({...i,radius:campDecorDefinition(i.type).width/2+24})));indexes.set(state,grid);}return grid.query(x,y,x,y,Math.max(footprint.x,footprint.y)).some(i=>{const p=nearest({x,y},i),d=campDecorDefinition(i.type);return campDecorCollisionRects(d).some(([left,top,right,bottom])=>p.x>i.x+left-footprint.x&&p.x<i.x+right+footprint.x&&p.y>i.y+top-footprint.y&&p.y<i.y+bottom+footprint.y);});}
 // 线段距离用于道路、门口和停车进出通道保护。
 function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);}
 // 放置不占路、不盖门、不挤车辆，也不允许把实体压到玩家脚下。
