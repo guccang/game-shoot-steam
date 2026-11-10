@@ -1,3 +1,5 @@
+import {INDUSTRY_GOODS} from '../../config/industry.js';
+import {industryStore,industryHomeCapacity} from '../industry/industry.js';
 import {TOWN_RESTORATIONS,facilityOpen} from '../../config/town-restoration.js';
 import {FARM_CROPS} from '../../config/farm.js';
 import {equipmentParts,partLevel} from '../../config/equipment-parts.js';
@@ -54,6 +56,12 @@ export function debugGrantProgress(progress,kind,game=null) {
   else if(kind==='resources') {
     for(const key of ['coins','wood'])next[key]=Math.min(RESOURCE_CAP,next[key]+9999);
     for(const key of MATERIAL_KEYS)next.materials[key]=Math.min(MATERIAL_CAP,next.materials[key]+9999);
+    // 原矿、精炼块和加工制品按正式目录入库；木材已发放，避免重复或塞满背包。
+    for(const key of Object.keys(INDUSTRY_GOODS)){
+      if(key==='wood')continue;
+      const [stock,id]=industryStore(next,key,'home');
+      stock[id]=Math.min(industryHomeCapacity(key),(stock[id]||0)+9999);
+    }
   } else throw new Error(i18nText("progression.debug-grants.b09ba06570"));
   return next;
 }
