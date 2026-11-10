@@ -11,7 +11,7 @@ function placeDepot(m,preferred=0){
  m.depotRow=row;
 }
 // 新玩家自带矿锄，地下室施工后才开放开掘入口。
-export function freshMining(){return {version:2,layers:{},bridges:{},harvested:{},animals:{},age:0,entry:'0,0',descent:null,seed:0,pickaxe:true,bagOre:{},ore:0,dug:{},rails:{},junctions:{},decor:{},shafts:[],carts:[],nextCart:1};}
+export function freshMining(){return {version:2,coreClears:{},coreCrystals:{},layers:{},bridges:{},harvested:{},animals:{},age:0,entry:'0,0',descent:null,seed:0,pickaxe:true,bagOre:{},ore:0,dug:{},rails:{},junctions:{},decor:{},shafts:[],carts:[],nextCart:1};}
 // 坐标使用安全整数并预留世界单位乘法空间，防止损坏存档造成无限循环。
 function validKey(key){return /^-?\d+,-?\d+$/.test(key)&&key.split(',').every(n=>Number.isSafeInteger(Number(n))&&Math.abs(Number(n))<1e10)&&key===mineKey(Object.fromEntries(key.split(',').map((v,i)=>[i?'y':'x',Number(v)])));}
 // 只恢复已挖空格内的设施，车体不得落在墙里；旧存档自动获得工具。
@@ -49,6 +49,8 @@ export function normalizeMining(raw,depth=1){
   const depths=Object.keys(raw.layers||{}).filter(key=>Number.isSafeInteger(Number(key))&&Number(key)>=2&&String(Number(key))===key).map(Number).sort((a,b)=>a-b);
   let expected=2;for(const d of depths){if(d!==expected||!raw.layers[d]||typeof raw.layers[d]!=='object')break;m.layers[d]=normalizeMining({...raw.layers[d],version:2},d);expected++;}
  }
+ // 晶核库存与已击败记录仅保存于根进度，严格按实际存在的层恢复。
+ if(depth===1){for(const key of Object.keys(raw.coreClears||{})){const d=Number(key);if(!Number.isSafeInteger(d)||d<1||String(d)!==key||d!==1&&!m.layers[d]||raw.coreClears[key]!==true)continue;m.coreClears[key]=true;m.coreCrystals[key]=raw.coreCrystals?.[key]===1?1:0;const layer=d===1?m:m.layers[d];for(const [id,a] of Object.entries(layer.animals))if(a.kind==='coreking')delete layer.animals[id];}}
  return m;
 }
 // 施工只开通小屋正下方九格，空格不产矿，防止重复施工刷取。

@@ -1,3 +1,5 @@
+import {advanceMineSpecial} from '../../combat/mine-specials.js';
+import {specialMineKind} from '../../config/mine-specials.js';
 import {advanceMineDumplingMotion} from '../../combat/mine-dumpling-motion.js';
 import {statisticsSource} from '../../combat/statistics-source.js';
 import {mineRockSite,hitMineRock,mineRockTargets} from './mine-rocks.js';
@@ -40,8 +42,9 @@ function discoverAnimals(game,l){
  for(let y=-E.scanRadius;y<=E.scanRadius;y++)for(let x=-E.scanRadius;x<=E.scanRadius;x++){
   if(count>=E.maxNearby)return;const cell={x:center.x+x,y:center.y+y},key=mineKey(cell),t=mineTerrain(cell,l),entry=minePoint(Object.fromEntries(l.entry.split(',').map((v,i)=>[i?'y':'x',Number(v)]))),p=minePoint(cell);
   if(!mineCellOpen(cell,l)||t.safe||t.water||t.hash%37!==0||Math.hypot(p.x-entry.x,p.y-entry.y)<240||Math.hypot(p.x-game.player.x,p.y-game.player.y)<180)continue;
-  const old=l.animals[key];if(old&&(old.hp>0||old.respawn>l.age))continue;
-  l.animals[key]={key,kind:t.biome.animal,...p,hp:mineAnimalStats(t.biome.animal,game.cottage.depth).hp,maxHp:mineAnimalStats(t.biome.animal,game.cottage.depth).hp,respawn:0,clock:0,phase:'roam',timer:0,flash:0,death:0};count++;
+  const old=l.animals[key];if(old&&(old.kind==='coreking'||old.hp>0||old.respawn>l.age))continue;
+  const kind=specialMineKind(t);
+  l.animals[key]={key,kind,...p,hp:mineAnimalStats(kind,game.cottage.depth).hp,maxHp:mineAnimalStats(kind,game.cottage.depth).hp,respawn:0,clock:0,phase:'roam',timer:0,flash:0,death:0};count++;
  }
 }
 // 地下受击绕开地表安全区；濒危时退回本层入口，战车保留一格装甲并停止自动开掘。
@@ -56,9 +59,11 @@ function hurtExplorer(game,damage){
 // 独立投射物与真实岩壁碰撞，孢子蓄力后瞄准固定位置，玩家可以走位躲避。
 function advanceBolts(game,dt){
  const room=game.cottage;room.bolts??=[];
- room.bolts=room.bolts.filter(b=>{const next={x:b.x+b.vx*dt,y:b.y+b.vy*dt};b.life-=dt;if(b.life<=0||!mineLineClear(game,b,next))return false;Object.assign(b,next);
+ room.bolts=room.bolts.filter(b=>{
+  if(b.blast){b.delay-=dt;b.life-=dt;if(b.delay<=0&&!b.fired){b.fired=true;if(Math.hypot(b.x-game.player.x,b.y-game.player.y)<b.radius+(game.vehicle.active?26:10)&&mineLineClear(game,b,game.player))hurtExplorer(game,b.damage);}return b.life>0;}
+  const next={x:b.x+b.vx*dt,y:b.y+b.vy*dt};b.life-=dt;if(b.life<=0||!mineLineClear(game,b,next))return false;Object.assign(b,next);
   if(b.enemy){if(Math.hypot(b.x-game.player.x,b.y-game.player.y)<(game.vehicle.active?32:15)){hurtExplorer(game,b.damage);return false;}}
-  else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<20);if(a){hitMineAnimal(game,a,b.damage,{statisticsSource:b.statisticsSource});return false;}const rock=mineRockTargets(game).find(t=>t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<24);if(rock){hitMineRock(game,rock,b.damage);return false;}}return true;});
+  else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<(a.kind==='coreking'?32:20));if(a){hitMineAnimal(game,a,b.damage,{statisticsSource:b.statisticsSource});return false;}const rock=mineRockTargets(game).find(t=>t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<24);if(rock){hitMineRock(game,rock,b.damage);return false;}}return true;});
 }
 // 矿锄自动近身防卫，战车使用实际主炮伤害、余弹、装填和独立后坐，未开掘岩壁阻断索敌。
 function defendExplorer(game,dt,actors){
@@ -83,13 +88,14 @@ export function updateMineEcology(game,dt){
  const room=game.cottage,l=currentMineLayer(game);l.age+=dt;room.hurtWait=Math.max(0,(room.hurtWait||0)-dt);room.scanWait=(room.scanWait||0)-dt;
  if(room.scanWait<=0){room.scanWait=.6;discoverAnimals(game,l);}room.bolts??=[];
  const actors=Object.values(l.animals).filter(a=>Math.hypot(a.x-game.player.x,a.y-game.player.y)<560);room.ecologyActors=actors;
- const engaged=new Set(actors.filter(a=>a.hp>0&&mineLineClear(game,a,game.player)).sort((a,b)=>Number(b.phase==='windup')-Number(a.phase==='windup')||Math.hypot(a.x-game.player.x,a.y-game.player.y)-Math.hypot(b.x-game.player.x,b.y-game.player.y)).slice(0,mineThreatLimit(room.depth)).map(a=>a.key));
+ const engaged=new Set(actors.filter(a=>a.hp>0&&mineLineClear(game,a,game.player)).sort((a,b)=>Number(b.kind==='coreking')-Number(a.kind==='coreking')||Number(b.phase==='windup')-Number(a.phase==='windup')||Math.hypot(a.x-game.player.x,a.y-game.player.y)-Math.hypot(b.x-game.player.x,b.y-game.player.y)).slice(0,mineThreatLimit(room.depth)).map(a=>a.key));
  for(const a of actors){advanceMineDumplingMotion(a,dt);a.clock=(a.clock||0)+dt;a.flash=Math.max(0,(a.flash||0)-dt);if(a.hp<=0){a.death=Math.max(0,(a.death||0)-dt);continue;}
   const spec=mineAnimalStats(a.kind,room.depth),dx=game.player.x-a.x,dy=game.player.y-a.y,distance=Math.hypot(dx,dy),[hx,hy]=a.key.split(',').map(Number),home=minePoint({x:hx,y:hy}),visible=mineLineClear(game,a,game.player),nearEntry=Math.hypot(game.player.x-minePoint(Object.fromEntries(l.entry.split(',').map((v,i)=>[i?'y':'x',Number(v)]))).x,game.player.y-minePoint(Object.fromEntries(l.entry.split(',').map((v,i)=>[i?'y':'x',Number(v)]))).y)<135;
   a.maxHp=spec.hp;a.wet=Math.max(0,(a.wet||0)-dt);a.chill=Math.max(0,(a.chill||0)-dt);
   a.timer=Math.max(0,(a.timer||0)-dt);
+  if(advanceMineSpecial(game,a,spec,dt,{engaged:engaged.has(a.key),nearEntry,home,visible,hurt:hurtExplorer}))continue;
   if(a.phase==='windup'&&(!engaged.has(a.key)||nearEntry)){a.phase='roam';a.timer=0;}
-  if(a.phase==='windup'){if(a.timer<=0){if(a.kind==='spore'){const n=Math.max(1,Math.hypot(a.aimX-a.x,a.aimY-a.y));room.bolts.push({x:a.x,y:a.y,vx:(a.aimX-a.x)/n*145,vy:(a.aimY-a.y)/n*145,life:2,damage:spec.damage,enemy:true});}else if(distance<spec.range+12&&visible&&!nearEntry)hurtExplorer(game,spec.damage);a.phase='recover';a.timer=spec.recover;}continue;}
+  if(a.phase==='windup'){if(a.timer<=0){if(a.kind==='spore'){if(room.bolts.filter(b=>b.enemy).length>=12){a.phase='recover';a.timer=spec.recover;continue;}const n=Math.max(1,Math.hypot(a.aimX-a.x,a.aimY-a.y));room.bolts.push({x:a.x,y:a.y,vx:(a.aimX-a.x)/n*145,vy:(a.aimY-a.y)/n*145,life:2,damage:spec.damage,enemy:true});}else if(distance<spec.range+12&&visible&&!nearEntry)hurtExplorer(game,spec.damage);a.phase='recover';a.timer=spec.recover;}continue;}
   if(a.phase==='recover'&&a.timer>0)continue;
   if(engaged.has(a.key)&&!nearEntry&&visible&&distance<spec.range){a.phase='windup';a.timer=spec.windup;a.aimX=game.player.x;a.aimY=game.player.y;continue;}
   const chase=engaged.has(a.key)&&!nearEntry&&visible&&distance<290&&Math.hypot(a.x-home.x,a.y-home.y)<150,tx=chase?game.player.x:home.x+Math.sin(a.clock*.5)*26,ty=chase?game.player.y:home.y+Math.cos(a.clock*.4)*20,n=Math.max(1,Math.hypot(tx-a.x,ty-a.y)),speed=spec.speed*(chase?1:.25)*(a.chill>0?a.chillFactor||.65:1),nx=a.x+(tx-a.x)/n*speed*dt,ny=a.y+(ty-a.y)/n*speed*dt;

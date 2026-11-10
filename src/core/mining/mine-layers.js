@@ -1,4 +1,5 @@
 // 地下深层支付金币与施工材料开通，连接点和布局仅首次生成并保存。
+import {mineCoreName} from '../../config/mine-specials.js';
 import {mineCell,mineKey,minePoint,mineFreightCell,mineLayerUnlockCost} from '../../config/mining.js';
 import {mineCellArea,mineTerrain} from '../../config/mine-ecology.js';
 import {mineLayer,freshMineLayer} from '../../progression/mining/mine-layers.js';
@@ -11,7 +12,9 @@ export function mineLayerUnlockQuote(game){
  const depth=(game.cottage?.depth||1)+1,unlocked=!!mineLayer(game.progress.mining,depth),cost=unlocked?{coins:0,ore:0,wood:0}:mineLayerUnlockCost(depth);
  const have={coins:game.progress.coins,ore:game.progress.mining.ore,wood:game.progress.wood},names={coins:'金币',ore:'矿石',wood:'木材'};
  const missing=Object.keys(cost).filter(k=>have[k]<cost[k]).map(k=>names[k]+'缺 '+(cost[k]-have[k]));
- return {depth,unlocked,cost,have,missing,affordable:!missing.length};
+ const coreDepth=depth-1,coreName=mineCoreName(coreDepth),coreHave=game.progress.mining.coreCrystals?.[coreDepth]||0;
+ if(!unlocked&&coreHave<1)missing.unshift(coreName+'缺 1：击败本层矿心团王获得');
+ return {depth,unlocked,cost,have,missing,coreName,coreHave,affordable:!missing.length};
 }
 // 入口附近只做层间通行，矿车不能带离轨道，战车可沿施工坡道同行。
 export function travelMineLayer(game,direction){
@@ -27,7 +30,7 @@ export function travelMineLayer(game,direction){
    if(!layer.dug[key]||mineTerrain(cell,layer).water||mineCellArea(cell,layer)<4096)return mineNotice(game,'请在层内完整的干燥地块开通坡道。');
    const quote=mineLayerUnlockQuote(game),cost=quote.cost;
    if(!quote.affordable)return mineNotice(game,'开通材料不足：'+quote.missing.join('，')+'。矿石和木材使用仓库库存。');
-   const r=miningCommit(game,(m,p,l)=>{p.coins-=cost.coins;m.ore-=cost.ore;p.wood-=cost.wood;m.layers??={};m.layers[nextDepth]=freshMineLayer(nextDepth,cell);l.descent=key;recordEconomy(p,'expense','mine:layer:'+nextDepth,{coins:cost.coins,wood:cost.wood});},`地下 ${nextDepth} 层已开通，大小与生态布局已永久保存。`);if(!r.ok)return r;
+   const r=miningCommit(game,(m,p,l)=>{m.coreCrystals[depth]-=1;p.coins-=cost.coins;m.ore-=cost.ore;p.wood-=cost.wood;m.layers??={};m.layers[nextDepth]=freshMineLayer(nextDepth,cell);l.descent=key;recordEconomy(p,'expense','mine:layer:'+nextDepth,{coins:cost.coins,wood:cost.wood});},`地下 ${nextDepth} 层已开通，大小与生态布局已永久保存。`);if(!r.ok)return r;
    next=mineLayer(game.progress.mining,nextDepth);
   }
  }else return mineNotice(game,'请选择上行或下行。');

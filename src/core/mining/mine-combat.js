@@ -1,3 +1,4 @@
+import {mineCoreName} from '../../config/mine-specials.js';
 import {cancelMineWorkCombat} from './mine-work-combat.js';
 import {hitMineDumpling} from '../../combat/mine-dumpling-motion.js';
 import {mineDumplingForm} from '../../config/mine-dumplings.js';
@@ -29,13 +30,13 @@ import {updateGravityFields} from '../../combat/gravity-field.js';
 
 // 当前存档实体结算：事务更换进度后仍不会重复击杀或漏掉第二颗子弹。
 export function hitMineAnimal(game,animal,damage,impact={}){
- const a=currentMineLayer(game).animals[animal.key];if(!a||a.hp<=0||!(damage>0))return false;
+ const a=currentMineLayer(game).animals[animal.key];if(!a||a.kind==='coreking'&&game.progress.mining.coreClears?.[game.cottage.depth||1]||a.hp<=0||!(damage>0))return false;
  hitMineDumpling(a,impact);
  if(a.hp>damage){a.hp-=damage;a.flash=.18;}
  else{
   const reward=mineAnimalStats(a.kind,game.cottage.depth).reward;
-  const result=miningCommit(game,(m,p,l)=>{Object.assign(l.animals[a.key],{hp:0,death:.6,phase:'dead',respawn:l.age+180});m.ore+=reward;if(!game.workshopTrial&&!game.livingPreview)recordDefeat(p,'enemy',impact.statisticsSource,{mineKind:a.kind});},`击退${mineDumplingForm(a).name}，获得 ${reward} 矿石。`);
-  if(!result.ok){a.hp=1;return false;}a.hp=0;return true;
+  const result=miningCommit(game,(m,p,l)=>{Object.assign(l.animals[a.key],{hp:0,death:.6,phase:'dead',respawn:l.age+180});m.ore+=reward;if(a.kind==='coreking'){const depth=game.cottage.depth||1;m.coreClears??={};m.coreCrystals??={};m.coreClears[depth]=true;m.coreCrystals[depth]=1;}if(!game.workshopTrial&&!game.livingPreview)recordDefeat(p,'enemy',impact.statisticsSource,{mineKind:a.kind});},a.kind==='coreking'?`击败矿心团王！获得${mineCoreName(game.cottage.depth||1)}，备齐金币、矿石和木材即可开通下一层。`:`击退${mineDumplingForm(a).name}，获得 ${reward} 矿石。`);
+  if(!result.ok){a.hp=1;return false;}a.hp=0;game.cottage.bolts=(game.cottage.bolts||[]).filter(b=>b.owner!==a.key);return true;
  }
  if(impact.water)a.wet=2;
  if(impact.chillFactor){a.chill=impact.chillDuration||1;a.chillFactor=impact.chillFactor;}
@@ -106,7 +107,7 @@ export function readyMineWeapon(game){
 }
 // 活实体代理始终查询当前存档，供弹道索引在一次多目标击杀中继续使用。
 function mineTargetProxy(game,key,id){
- const t={key,id,type:'enemy',radius:16};
+ const t={key,id,type:'enemy',radius:currentMineLayer(game).animals[key]?.kind==='coreking'?32:16};
  for(const field of ['hp','x','y','wet','chill','chillFactor'])Object.defineProperty(t,field,{enumerable:true,get:()=>currentMineLayer(game).animals[key]?.[field]||0,set:value=>{const a=currentMineLayer(game).animals[key];if(a)a[field]=value;}});
  return t;
 }
