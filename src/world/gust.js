@@ -10,7 +10,10 @@ export class GustCycle {
     this.wave = null;
   }
   // 不补播室内或离线期间的阵风；启用、重新开局后先留短暂的安静期。
-  sample(time, originX, enabled) {
+  sample(time, originX, enabled, frequent = false) {
+    // 大风气候缩短静歇；天气退出后当前风自然消退。
+    if(frequent&&!this.frequent)this.nextAt=time;
+    this.frequent=frequent;
     if (!enabled || this.lastTime !== null && time < this.lastTime - .25) {
       this.wave = null;
       this.nextAt = null;
@@ -22,7 +25,7 @@ export class GustCycle {
     if (time >= this.nextAt) {
       const duration = 3 + this.random() * 2;
       this.wave = {start:time, originX, duration, peak:.55 + this.random() * .4};
-      this.nextAt = time + duration + 1.4 + 18 + this.random() * 24;
+      this.nextAt = time + duration + 1.4 + (frequent ? .5 + this.random() * 2 : 18 + this.random() * 24);
     }
     return this.wave;
   }

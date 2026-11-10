@@ -26,7 +26,7 @@ export const DAY_CYCLE_DURATION = DAY_PHASES.reduce((sum, phase) => sum + phase.
 export const WEATHER_INTERVAL = GAMEPLAY_TABLES.environmentTimings.weather;
 // 天气、昼夜与晴阴光线共用十五秒缓入缓出，避免短暂切换像屏幕开关。
 export const WEATHER_FADE_DURATION = 15000;
-export const WEATHER_TYPES = ['sun', 'cloud', 'rain', 'thunder', 'snow'];
+export const WEATHER_TYPES = ['sun', 'cloud', 'rain', 'thunder', 'snow', 'gust'];
 // 自动天气关闭时圆环停留为完整余量，不显示一个不会触发切换的倒计时。
 export function weatherRemaining(state, now = Date.now()) {
   return state.autoWeather ? Math.max(0, Math.min(durationFor(state,'weather'), durationFor(state,'weather') - (now - (state.weatherAt ?? now)))) : durationFor(state,'weather');
@@ -39,6 +39,8 @@ export function restartDayCycle(state, now = Date.now()) {
 }
 // 为旧存档补充环境时钟，并校验天气、时段和自动开关。
 export function normalizeEnvironment(state, now = Date.now()) {
+  // 旧预览标记和上次地区只属会话，重新进入必须按实际位置重新抽取气候。
+  state.livingPreview=false;delete state.climateCamp;
   state.timings = normalizeTimings(state.timings);
   state.forestSeason = normalizeSeason(state.forestSeason);
   if (!Number.isFinite(state.seasonAt)) restartSeasonCycle(state,state.forestSeason,now);

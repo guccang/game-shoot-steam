@@ -14,11 +14,13 @@ import { SeasonAtlas } from './season-raster.js';
 const transitionAtlas = new SeasonAtlas(96);
 const cache = new Map();
 let activeSeason = null;
+// 雪量合成使用独立工作画布，不能覆盖季节图集正在返回的共享临时画布。
+let snowBlend = null;
 // 诊断只统计已生成图集，不触发预热，也不增加纹理内存。
 // 共用绘制与动作输入，风格差异由配置提供。
 export function treeAtlasStats() {
   const blended = transitionAtlas.stats();
-  return { count: cache.size + blended.count, bytes: cache.size * 256 * 320 * 4 + blended.bytes };
+  return { count: cache.size + blended.count, bytes: cache.size * 256 * 320 * 4 + blended.bytes + (snowBlend ? 256 * 320 * 4 : 0) };
 }
 // 图集保持原有脚底锚点与缓存规格，不改变碰撞、风摆和受击动画。
 // 共用绘制与动作输入，风格差异由配置提供。
@@ -57,7 +59,8 @@ function buildSprite(paletteIndex, species, variant, night, winter, season) {
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawTreeSprite(c, tree, night, warmth = 0, winter = false, season = 'original', transition = null) {
   if (!transition) transitionAtlas.clear();
-  const next = winter ? 'winter' : season;
+  const next = season;
+  const cover=Math.max(0,Math.min(1,Number(winter)||0));
   // 只保留当前物候的树图集，连续随机切季不会常驻四倍解码内存。
   if (transition || activeSeason !== next) {
     for (const image of cache.values()) {
@@ -71,14 +74,24 @@ export function drawTreeSprite(c, tree, night, warmth = 0, winter = false, seaso
     species = tree.variant || 'round',
     variant = Math.abs(tree.id || 0) % (['round', 'pine'].includes(species) ? 6 : 2);
   // 昼夜与暖光分别复用静态端点，来源快照包含快速重定向前的叶色。
-  const sprite = (lighting) => {
-    const key = `${palette}:${species}:${variant}:${lighting}`;
+  const endpoint = (lighting, snowy) => {
+    const key = `${palette}:${species}:${variant}:${lighting}:${snowy}`;
     if (transition)
       return transitionAtlas.image(key, transition, (value) =>
-        buildSprite(palette, species, variant, lighting, value === 'winter', value),
+        buildSprite(palette, species, variant, lighting, snowy, value),
       );
-    if (!cache.has(key)) {if(cache.size>=96){const oldest=cache.keys().next().value,image=cache.get(oldest);image.width=image.height=1;cache.delete(oldest);}cache.set(key, buildSprite(palette, species, variant, lighting, winter, next));}
+    if (!cache.has(key)) {if(cache.size>=96){const oldest=cache.keys().next().value,image=cache.get(oldest);image.width=image.height=1;cache.delete(oldest);}cache.set(key, buildSprite(palette, species, variant, lighting, snowy, next));}
     const image=cache.get(key);cache.delete(key);cache.set(key,image);return image;
+  };
+  // 两端在相同季节、姿态和光照下混合，雪量不会改变树种或季节叶色。
+  const sprite = lighting => {
+    if(cover<=0)return endpoint(lighting,false);
+    if(cover>=1)return endpoint(lighting,true);
+    snowBlend ||= createRenderCanvas();if(snowBlend.width!==256){snowBlend.width=256;snowBlend.height=320;}
+    const blend=snowBlend.getContext('2d');blend.clearRect(0,0,256,320);
+    blend.globalCompositeOperation='source-over';blend.globalAlpha=1-cover;blend.drawImage(endpoint(lighting,false),0,0);
+    blend.globalCompositeOperation='lighter';blend.globalAlpha=cover;blend.drawImage(endpoint(lighting,true),0,0);
+    return snowBlend;
   };
   const alpha = c.globalAlpha;
   c.drawImage(sprite(false), -64, -145, 128, 160);
@@ -100,4 +113,5 @@ export function clearArtStyleCache() {
   releaseArtCache(cache);
   transitionAtlas.clear();
   activeSeason = null;
+  if(snowBlend){snowBlend.width=snowBlend.height=1;snowBlend=null;}
 }

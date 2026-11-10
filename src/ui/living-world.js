@@ -185,8 +185,6 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
   // 顶部图片在正式历法下打开日程，调试预览仍交给环境面板。
   for(const id of ['season-picture','time-picture'])scope.on(root.getElementById(id),'click',()=>{if(environment.calendarActive&&!environment.livingPreview){open();view='news';render();}});
   // 调试选项放进既有Debug折叠区，正式玩家流程不暴露实现参数。
-  const debug=root.createElement('label');debug.className='living-preview';debug.innerHTML='<input id="living-preview" type="checkbox">环境预览（不推进正式日期）';root.getElementById('debug-content').append(debug);
-  scope.on(debug.querySelector('input'),'change',event=>{environment.livingPreview=event.target.checked;onRest();onChange();});
   // 热点跟随真实人物和任务道具；不显示屏幕底部交互条。
   function renderFrame(){
     chatter.render();
