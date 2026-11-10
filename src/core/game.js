@@ -1,3 +1,4 @@
+import {surfaceWeapon} from '../world/surface-vision.js';
 import {activateCampLayout} from '../world/camp-layout-bindings.js';
 import {updateIndustry} from './industry/industry.js';
 import {tradeDefeat,updateTradeEscort} from './camp/camp-trade.js';
@@ -303,7 +304,7 @@ export class Game {
   }
   // 统一读取装备、熟练度与互斥改装后的有效参数。
   weapon(index = this.loadout.weapon) {
-    return scooterCapacity(realmWeapon(effectiveWeapon(this.loadout, index), this.realm?.buffs),this);
+    return surfaceWeapon(this,scooterCapacity(realmWeapon(effectiveWeapon(this.loadout, index), this.realm?.buffs),this));
   }
   // 改装不补弹，清空当前武器蓄能，防止切分支绕过充能和装填限制。
   modifyWeapon(index, choice) {

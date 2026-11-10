@@ -601,6 +601,9 @@ export function createApplication({
         diagnostics.gameplay.input(vector);
         profiler.end('environment');
         game.reducedMotion = renderer.reduced.matches;
+        // 固定逻辑步前采样昼夜，所有寻敌复用同一个权重。
+        renderer.light.set(environment,host.performance.now());
+        game.surfaceNight=renderer.light.sample(host.performance.now(),renderer.reduced.matches).night;
         profiler.start('audio');
         syncAudio();
         profiler.end('audio');

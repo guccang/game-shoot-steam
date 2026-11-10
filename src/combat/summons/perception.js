@@ -1,9 +1,11 @@
+import {surfaceTargetVisible} from '../../world/surface-vision.js';
 // 召唤物的视野资格使用正式镜头矩形，武器数值和已发射弹道保持独立。
 import { SUMMON_PERCEPTION } from '../../config/summon-behavior.js';
 import { nearest } from '../../world/coordinates.js';
 
 // 镜头尚未提供时按同尺寸的普通视野保守估计；无视口的离线规则模拟保持原射程。
 export function summonTargetVisible(game,target) {
+ if(!surfaceTargetVisible(game,target))return false;
   const size=game.viewport,provided=game.summonView||game.arrivalView;
   if(!size&&!provided)return true;
   const width=size?.width||provided.width,height=size?.height||provided.height;

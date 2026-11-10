@@ -1,3 +1,5 @@
+// 检查正式地面雾幕、实际手持射程与手机边界，不创建预览替身。
+export function inspectSurfaceFog(renderer,root=document){return {designCriterion:'surface-night-fog',fog:renderer.surfaceFogReview,range:renderer.game.weapon().range,night:renderer.game.surfaceNight,actors:renderer.visibleStats,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 // 地下视野验收读取正式雾层、入口候停和手机操作栏，不另画一套预览。
 import {sceneDepthStats as depthActorStats} from './scene-depth.js';
 import {groundDepthStats as depthGroundStats} from './ground-depth.js';

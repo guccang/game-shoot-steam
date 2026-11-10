@@ -1,3 +1,4 @@
+import {surfaceTargetVisible,surfaceAttackRange} from '../world/surface-vision.js';
 import {traceEnergyShield} from './energy-shield-surface.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 普通远程状态机与有界慢弹：前摇锁点、击退打断、共享发射间隔，不产生弹幕。
@@ -11,6 +12,7 @@ import { damageCompanion } from './companion-targets.js';
 
 // 只有已经进入实际可见区域的普通远程怪才蓄力，避免手机画外偷袭。
 function visibleShooter(game, enemy) {
+  if(!surfaceTargetVisible(game,enemy))return false;
   const view = game.arrivalView;
   if (!view) return worldDistance(enemy, game.player) <= RANGED_ENEMIES[enemy.species].reach;
   const p = nearest(enemy, game.player), x = p.x - game.player.x, y = p.y - game.player.y;
@@ -45,8 +47,8 @@ export function updateRangedAttack(game, enemy, victim, dt) {
     return;
   }
   const point = nearest(victim, enemy), distance = Math.hypot(point.x - enemy.x, point.y - enemy.y);
-  const pursuit = enemy.arena ? { goal: point, direct: true } : groundPursuit(enemy, victim, dt, true, profile.reach);
-  if (distance <= profile.reach && pursuit.direct && visibleShooter(game, enemy)) {
+  const pursuit = enemy.arena ? { goal: point, direct: true } : groundPursuit(enemy, victim, dt, true, surfaceAttackRange(game,profile.reach));
+  if (distance <= surfaceAttackRange(game,profile.reach) && pursuit.direct && visibleShooter(game, enemy)) {
     if (game.rangedShotTimer > 0 || game.enemyBolts.length >= (game.boss ? 1 : RANGED_LIMITS.bolts)) return;
     const dx = point.x - enemy.x, dy = point.y - (enemy.y - 15), aimDistance = Math.hypot(dx, dy);
     Object.assign(a, { phase: 'windup', elapsed: 0, originX: enemy.x, originY: enemy.y,

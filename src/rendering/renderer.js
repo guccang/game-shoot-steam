@@ -1,3 +1,4 @@
+import {drawSurfaceFog} from './surface-fog.js';
 import {regionalCampObjects,drawRegionalCamp,drawRegionalCampGround} from './regional-camps.js';
 import {activateCampLayout} from '../world/camp-layout-bindings.js';
 import {drawCampLayoutRoads,campLayoutObjectVisible} from './camp-layout.js';
@@ -783,6 +784,7 @@ export class Renderer {
     profiler?.start('render.tone');
     this.tone.draw(c, w, h, this.environment, performance.now(), this.reduced.matches);
     profiler?.end('render.tone');
+    drawSurfaceFog(this,renderGame,g.player,view,lamps,light.night);
     profiler?.start('render.indicators');
     drawPlayerActionCountdown(this);
     drawWaterBagIndicator(this);

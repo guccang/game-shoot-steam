@@ -1,3 +1,4 @@
+import {surfaceAttackRange} from '../../world/surface-vision.js';
 import {weaponTerrainTargets} from '../terrain-targets.js';
 // 召唤物共用存活/射程/敌人优先筛选，地面与飞行分配策略独立保留。
 import { summonTargetVisible } from './perception.js';
@@ -5,6 +6,7 @@ import { worldDistance } from '../../world/coordinates.js';
 
 // 调用方显式指定飞行敌人资格、领主优先及同距离排序，保持原索敌行为。
 export function summonTargetPool(game,origin,range,{allowFlying=true,bossFirst=false,tieById=false,targetTrees=true}={}) {
+  range=surfaceAttackRange(game,range);
   const valid=t=>t.hp>0&&(!game.combatLineClear||game.combatLineClear(origin,t))&&(!game.player.arena||worldDistance(t,game.player.arena)+(t.radius||0)<=game.player.arena.radius)&&summonTargetVisible(game,t)&&(allowFlying||!t.flying)&&worldDistance(t,origin)<=range;
   if(bossFirst&&game.boss&&valid(game.boss))return [game.boss];
   const enemies=(bossFirst?game.enemies:[...game.enemies,...(game.boss?[game.boss]:[])]).filter(valid);

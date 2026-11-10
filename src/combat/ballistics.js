@@ -1,3 +1,4 @@
+import {surfaceWeapon} from '../world/surface-vision.js';
 import {weaponTerrainTargets} from './terrain-targets.js';
 import {statisticsSource} from './statistics-source.js';
 import {landGravityField,explodeHeavyShell,gravityPointSafe,gravityFlightRange} from './gravity-field.js';
@@ -54,6 +55,7 @@ export function fireBallistics(
   critical,
   independentMuzzle = false,
 ) {
+  weapon=surfaceWeapon(game,weapon);
   if(game.combatLineClear&&!game.combatLineClear(independentMuzzle?muzzle:hitCenter(game.player),muzzle))return;
   const profile = GAMEPLAY_TABLES.projectileProfiles[weapon.id] || GAMEPLAY_TABLES.projectileProfiles.default;
   const vehicleMounted = !!(weapon.vehicleMounted || game.vehicleMounted);

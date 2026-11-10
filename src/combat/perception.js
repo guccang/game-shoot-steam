@@ -1,3 +1,4 @@
+import {surfaceTargetVisible} from '../world/surface-vision.js';
 import {bossCombatActive} from '../core/battle/boss-engagement.js';
 // 首次发现与持续交战分开：画面发现敌人，武器射程决定能否继续攻击。
 import {AUTO_AIM_VIEW} from '../config/combat-perception.js';
@@ -13,6 +14,7 @@ export function attackTargetDistance(game, target, limit) {
 
 // 正式镜头包含缩放与前场偏移；无画布的离线规则模拟保持原射程。
 export function attackTargetVisible(game,target){
+ if(!surfaceTargetVisible(game,target))return false;
  const size=game.viewport,provided=game.summonView||game.arrivalView;
  if(!size&&!provided)return true;
  const width=size?.width||provided.width,height=size?.height||provided.height;
@@ -29,6 +31,7 @@ export function attackTargetVisible(game,target){
 }
 // 查询保持只读；已发现或已命中的敌人出屏仍可交战，射程和存活由各武器校验。
 export function attackTargetKnown(game,target){
+ if(!surfaceTargetVisible(game,target))return false;
  // 已脱战领主不再被远程自动锁定，接战距离由战斗规则统一控制。
  if(target===game.boss&&!bossCombatActive(game))return false;
  return attackTargetVisible(game,target)||target.type!=='tree'&&game.combatSight?.has(target)&&game.combatSight.get(target)===target.id;
