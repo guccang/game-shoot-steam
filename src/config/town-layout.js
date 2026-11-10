@@ -73,10 +73,11 @@ export const TOWN_COURTS = [
   {id:'expedition-court',x:680,y:1255,w:160,h:95,material:'stone'},
   {id:'tower-court',x:925,y:1255,w:145,h:95,material:'stone'},
 ].map(townPoint);
+// 区域木牌明确归属设施，布局搬迁时保留原相对偏移，不按当前位置猜测。
 export const TOWN_SIGNS = [
-  {id:'repair-district',x:-310,y:785,label:'维修整备区'},
-  {id:'home',x:735,y:285,label:'生活区'},
-  {id:'workshops',x:470,y:720,label:'整备区'},
-  {id:'tasks',x:745,y:850,label:'任务广场'},
-  {id:'challenges',x:560,y:1260,label:'挑战庭院'},
+  {id:'repair-district',building:'repair',x:-310,y:785,label:'维修整备区'},
+  {id:'home',building:'cottage',x:735,y:285,label:'生活区'},
+  {id:'workshops',building:'weapons',x:470,y:720,label:'整备区'},
+  {id:'tasks',building:'story',x:745,y:850,label:'任务广场'},
+  {id:'challenges',building:'guardian',x:560,y:1260,label:'挑战庭院'},
 ].map(sign=>({type:'scenery',kind:'district-sign',size:1,...townPoint(sign)}));
