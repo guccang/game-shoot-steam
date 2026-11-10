@@ -42,7 +42,7 @@ const valley=roadIndex(JIUZHAIGOU_PATHS.map(path=>path.map(([x,y])=>({x,y}))));
 // 森林实体路面半宽24，湖谷半宽15；森林渐薄草缘不禁种，周期边缘检查相邻地图镜像。
 export function worldRoadFootprintOverlap(point,progress=null,halfWidth=HALF_W,halfDepth=HALF_H){
  if(progress&&point.mapId==='forest'&&campGateRoads(progress).some(path=>path.some((b,i)=>i&&roadFootprintDistance(path[i-1],b,nearest(point,path[i-1]),halfWidth,halfDepth)<28)))return true;
- if(point.mapId==='forest'&&overlapsCampPlaza(point.x,point.y,halfWidth,halfDepth))return true;
+ if(point.mapId==='forest'&&overlapsCampPlaza(point.x,point.y,halfWidth,halfDepth,progress||undefined))return true;
  // 搬迁后的营路与正式绘制共用路径，旧支路已被草地覆盖后允许重新开垦。
  const plot=point.mapId==='forest'&&campPlotAt(point,progress);
  if(progress&&point.mapId==='forest'&&nearest(point,{x:0,y:0}).y< -58)return campSurfaceRoads(progress).some(path=>path.some((b,i)=>i&&roadFootprintDistance(path[i-1],b,nearest(point,path[i-1]),halfWidth,halfDepth)<28));

@@ -1,3 +1,4 @@
+import {resolveCampPlaza} from './camp-plaza.js';
 import {campFixedFacilities} from './camp-layout-facilities.js';
 import {campDecorDefinition} from '../config/camp-management.js';
 import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
@@ -12,7 +13,7 @@ export function campRoadNetwork(progress){const key=JSON.stringify([progress.cam
 // 路面保持在已购地内，边缘留出一半路宽。
 export function ownedLayoutPoint(progress,x,y,margin=0){return [[-margin,-margin],[margin,-margin],[-margin,margin],[margin,margin]].every(([dx,dy])=>{const plot=campPlotAt({x:x+dx,y:y+dy},progress);return plot&&ownsCampPlot(progress,plot.id);});}
 // 建筑屋面占地加通路余量，脚底向南保留门口直连段。
-export function layoutBuildings(progress,layout){return CAMP_BUILDINGS.filter(b=>{const p=campPlotAt(b);return p&&ownsCampPlot(progress,p.id);}).map(b=>campBuildingPosition(layout,b));}
+export function layoutBuildings(progress,layout){return CAMP_BUILDINGS.filter(b=>{const p=campPlotAt(b);return p&&ownsCampPlot(progress,p.id);}).map(b=>{if(b.plaza&&!layout?.positions?.plaza){const p=resolveCampPlaza(progress,layout);return {...b,x:p?.x??b.x,y:p?p.y+p.depth/2:b.y};}return campBuildingPosition(layout,b);});}
 // 营门外保留100单位接驳地带，让贴边种子小屋的真实门槛也能连到营路。
 // 一次洪泛得到全部路径；随新增北侧用地调整网格，约5万格预算，不在每帧重算。
 export function campLayoutRoads(progress,layout=progress.campLayout,{ignoreDecor=false}={}){const boundary=campBoundary(progress,layout),LEFT=Math.floor((Math.min(...boundary.regions.map(r=>r.left))-120)/20)*20,RIGHT=Math.max(...boundary.regions.map(r=>r.right))+120,BOTTOM=Math.max(...boundary.regions.map(r=>r.bottom))+160,TOP=Math.floor((Math.min(...boundary.regions.map(r=>r.top))-120)/20)*20,STEP=Math.max(20,Math.ceil(Math.sqrt((RIGHT-LEFT)*(BOTTOM-TOP)/50000)/20)*20),COLS=Math.ceil((RIGHT-LEFT)/STEP),ROWS=Math.ceil((BOTTOM-TOP)/STEP),buildings=layoutBuildings(progress,layout),regions=[...boundary.regions,...boundary.gates.map(g=>g.horizontal?{left:g.x-g.length/2+8,right:g.x+g.length/2-8,top:g.y-100,bottom:g.y+100}:{left:g.x-100,right:g.x+100,top:g.y-g.length/2+8,bottom:g.y+g.length/2-8})],fixed=campFixedFacilities(progress),fields=(progress.farm?.plots||[]).filter(p=>p.mapId==='forest').map(p=>nearest(p,{x:350,y:650})).filter(p=>p.x>LEFT-60&&p.x<RIGHT&&p.y>TOP-60&&p.y<BOTTOM),blocked=new Uint8Array(COLS*ROWS),parents=new Int32Array(COLS*ROWS).fill(-2),point=i=>({x:LEFT+(i%COLS)*STEP,y:TOP+Math.floor(i/COLS)*STEP});
