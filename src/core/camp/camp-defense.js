@@ -1,3 +1,4 @@
+import {currentCampDefenseGate} from '../../world/camp-defense-gates.js';
 import {findCampOffscreenSpawn} from './camp-defense-arrival.js';
 import {facilityOpen} from '../../config/town-restoration.js';
 import {awardCampXp} from '../../progression/camp/camp-level.js';
@@ -5,7 +6,7 @@ import { creditResource } from '../../progression/economy/resource-wallet.js';
 import {recordActivity} from '../../progression/player/game-statistics.js';
 import {rewardReceipt} from '../../progression/economy/reward-receipt.js';
 // 营地守门会话：原森林整体冻结，独立怪潮与救场仅在本局结算资源。
-import {campDefensePost,CAMP_GATES,CAMP_DEFENSE,campDefenseGrade,campDefenseReward,campDefenseWave,campDefenseBoss,CAMP_DEFENSE_GROWTH_VERSION} from '../../config/camp-defense.js';
+import {campDefensePost,CAMP_DEFENSE,campDefenseGrade,campDefenseReward,campDefenseWave,campDefenseBoss,CAMP_DEFENSE_GROWTH_VERSION} from '../../config/camp-defense.js';
 import {HORDE_GIANT} from '../../config/bosses.js';
 import {validateProgress} from '../../progression/progress.js';
 import {validateCampDefense} from '../../progression/camp/camp-defense.js';
@@ -24,7 +25,7 @@ const SHARED=new Set(['progress','random','onEvent','profiler','viewport','campD
 export function canStartCampDefense(game,gate){return facilityOpen(game.progress,'defense')&&!!gate&&!game.campDefense&&!game.arrivalCinematic&&!game.story&&!game.realm&&!game.fireActive&&!game.boss&&!game.livingBattle&&!game.progress.living.patrolActive&&game.mapId==='forest'&&['playing','paused'].includes(game.state)&&worldDistance(game.player,campDefensePost(game.progress,gate))<=160;}
 // 活动开始与恢复共用数据；断线重建本波未击败配额，不重复已获得的成绩。
 export function startCampDefense(game,gateId,saved=null){
- const gate=CAMP_GATES.find(g=>g.id===gateId);if(!gate||!saved&&!canStartCampDefense(game,gate))return false;
+ const gate=currentCampDefenseGate(game.progress,gateId);if(!gate||!saved&&!canStartCampDefense(game,gate))return false;
  // 读档先恢复冻结的森林车库，避免局内换车或损毁覆盖退出后的驾驶状态。
  if(saved?.forestVehicles)restoreRealmVehicles(game,saved.forestVehicles);
  const forestVehicles=captureRealmVehicles(game);
@@ -32,7 +33,7 @@ export function startCampDefense(game,gateId,saved=null){
  game.reset();
  const rounds=saved?.rounds??game.progress.campDefense.runs;
  const barrier={type:'camp-barricade',x:gate.x+gate.nx*65,y:gate.y+gate.ny*65,radius:30,attackRadius:24};
- const arena={x:barrier.x+gate.nx*170,y:barrier.y+gate.ny*170,radius:CAMP_DEFENSE.radius,terrain:'forest'};
+ const arena={x:barrier.x+gate.nx*170,y:barrier.y+gate.ny*170,radius:CAMP_DEFENSE.radius,terrain:'forest',campProgress:{campLand:game.progress.campLand,campLayout:game.progress.campLayout}};
  game.campDefense={gateId,rounds,wave:1,cleared:0,waveKills:0,kills:0,gateHp:CAMP_DEFENSE.gateHp,elapsed:0,phase:'waves',reason:null,bossDefeated:false,bossHp:campDefenseBoss(rounds).hp,allies:[],...saved,forest,patrol,gate,barrier,arena,timer:CAMP_DEFENSE.rest,spawnTimer:0,rescueTime:0,helpers:[],error:''};
  const r=game.campDefense;r.forestVehicles=forestVehicles;r.spawned=r.waveKills;r.barrier.hp=r.gateHp;r.barrier.maxHp=CAMP_DEFENSE.gateHp;
  game.trees=game.trees.filter(t=>worldDistance(t,arena)>arena.radius+80);

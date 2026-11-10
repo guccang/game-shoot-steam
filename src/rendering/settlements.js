@@ -14,7 +14,7 @@ import { clearingSite } from '../progression/story/clearing-site.js';
 export function settlementObjects(game) {
   return game.mapId === 'forest' && !game.realm
     ? [
-        ...(game.campDefense||game.story?SETTLEMENT_FENCES:campBoundary(game.progress).objects),
+        ...(game.story?SETTLEMENT_FENCES:campBoundary(game.progress).objects),
         ...(game.progress.living.patrolActive
           ? [{ ...clearingSite(game.progress), type: 'story-prop', kind: 'route', label: '清缴场' }]
           : []),
@@ -89,7 +89,7 @@ function gateLeaf(c, a, b, palette) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function drawSettlement(c, item, game, night) {
-  const finish=item.settlement==='sunleaf'&&!game.story&&!game.campDefense?game.progress.campManagement?.styles[item.type==='settlement-gate'?'gate':'fence']:null;
+  const finish=item.settlement==='sunleaf'&&!game.story?game.progress.campManagement?.styles[item.type==='settlement-gate'?'gate':'fence']:null;
   const palette = finish?.material==='stone'?['#aeb8a4','#53634d','#d2d6bc','#7c8b77']:finish?.material==='metal'?['#8ba39a','#3e5c51','#c2d1be','#5b7b70']:night > 0.5 ? style.settlements.drawSettlementValue : style.settlements.drawSettlementValue2;
   const half = item.length / 2,
     ends = item.horizontal

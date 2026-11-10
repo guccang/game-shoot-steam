@@ -14,7 +14,7 @@ import {nightColor} from './river.js';
 export function campRoadView(game){return campRoadNetwork(game.progress);}
 // 同一路网叠加草沿接触暗边和土路亮肩，几何与通行宽度保持一致。
 export function drawCampLayoutRoads(c,game,view,night,season='summer'){
- if(game.mapId!=='forest'||game.cottage||game.story||game.realm||game.campDefense)return;
+ if(game.mapId!=='forest'||game.cottage||game.story||game.realm)return;
  const finish=game.progress.campManagement?.styles.road;const customized=hasCampLayoutChanges(game.progress.campLayout)||finish&&(finish.material!=='earth'||finish.shape!=='plain');const expanded=campPlots(game.progress).filter(p=>p.top< -58&&ownsCampPlot(game.progress,p.id));
  const moved=hasCampLayoutChanges(game.progress.campLayout),roads={paths:campSurfaceRoads(game.progress)},reference={x:view.x+view.w/2,y:view.y+view.h/2};if(!customized)roads.paths=roads.paths.filter(path=>path.every(p=>p.y<=-58));c.save();
  // 已购地覆盖旧院路，保留未开发土地和外部自然地貌；路网与建筑同帧更新。
@@ -31,4 +31,4 @@ export function drawCampLayoutRoads(c,game,view,night,season='summer'){
 }
 
 // 静态草花、旧田栏和园圃提示不盖到搬迁后的屋体；农田实体由放置校验保护。
-export function campLayoutObjectVisible(game,item){if(game.mapId!=='forest'||game.story||game.realm||game.campDefense||!(item.type==='farm-sign'||item.type==='scenery'&&['fence','flowers','stones','logs'].includes(item.kind)))return true;return !CAMP_BUILDINGS.some(base=>{if(!game.progress.campLayout?.positions?.[base.id])return false;const b=campBuildingPosition(game.progress.campLayout,base),p=nearest(item,b);return Math.abs(p.x-b.x)<b.width/2+20&&p.y>b.y-b.height-10&&p.y<b.y+75;});}
+export function campLayoutObjectVisible(game,item){if(game.mapId!=='forest'||game.story||game.realm||!(item.type==='farm-sign'||item.type==='scenery'&&['fence','flowers','stones','logs'].includes(item.kind)))return true;return !CAMP_BUILDINGS.some(base=>{if(!game.progress.campLayout?.positions?.[base.id])return false;const b=campBuildingPosition(game.progress.campLayout,base),p=nearest(item,b);return Math.abs(p.x-b.x)<b.width/2+20&&p.y>b.y-b.height-10&&p.y<b.y+75;});}

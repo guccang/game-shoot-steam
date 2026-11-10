@@ -20,7 +20,7 @@ export function taskCombatHudTop(root){
  if(frame.matches('.tower-active,.guardian-active,.rogue-active'))return health.getBoundingClientRect().top-r.top+(visible?panel.getBoundingClientRect().height+6:0);
  const next=top+(visible?panel.getBoundingClientRect().height+6:0);
  // 战斗条横向内容较宽，排到地图和设置下方，避免右端详情入口被圆盘挡住。
- return minimap&&combatHudVisible(root)?Math.max(next,minimap.bottom-r.top+8,resources.bottom-r.top+8):next;
+ return minimap&&!frame.classList.contains('camp-defending')&&combatHudVisible(root)?Math.max(next,minimap.bottom-r.top+8,resources.bottom-r.top+8):next;
 }
 // 相同位置不重复写入样式；空值只在从任务堆叠切回 CSS 布局时移除。
 function setTop(node, top){

@@ -71,6 +71,10 @@ export function createCampDefensePanel({game,root,renderer,dialogs,onChange}){
  // 兽潮与其他任务共用顶边，结算恢复资源栏后再回到其下方。
  function positionHud(){
   hud.style.top=taskCombatHudTop(root)+'px';
+  // 紧接生命卡，同时缩到小地图左侧；窄屏让耐久单独占一行，保留按钮触控尺寸。
+  const map=$('local-minimap'),box=frame.getBoundingClientRect(),mapBox=map?.getBoundingClientRect(),left=hud.offsetLeft;
+  const width=mapBox?.width&&frame.classList.contains('has-local-minimap')?Math.min(284,mapBox.left-box.left-left-8):Math.min(284,box.width-left-14);
+  hud.style.width=Math.max(164,width)+'px';hud.classList.toggle('camp-hud-narrow',width<250);
   // 复用正式领主血条，按实际兽潮条高度排列，兼容手机窄屏与换行。
   if(game.campDefense&&!$('boss-hud').hidden)$('boss-hud').style.top=(hud.offsetTop+hud.offsetHeight+8)+'px';
  }

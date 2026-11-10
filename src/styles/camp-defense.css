@@ -30,3 +30,6 @@
 /* 退出放在继续守门下方，以次级按钮区分行动，手机保持完整触控高度。 */
 #camp-leave{width:100%;border:1px solid #9caf83;background:#e8edcf;color:#365442;padding:10px 12px}
 #camp-leave-note{font-size:12px;margin:12px 0 8px;color:#63765c}
+
+/* 兽潮紧跟生命卡并避开右侧小地图，窄屏保持完整触控区。 */
+#camp-defense-hud.camp-hud-narrow{flex-wrap:wrap;gap:2px 6px;padding:4px 8px}#camp-defense-hud.camp-hud-narrow .camp-hp{flex-basis:100%;height:30px}#camp-defense-hud #camp-help{width:44px}
