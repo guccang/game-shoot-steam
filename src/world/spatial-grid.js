@@ -2,6 +2,7 @@
 import { WORLD, wrap } from './coordinates.js';
 
 const forestIndices = new WeakMap();
+const pendingDeaths = new WeakMap();
 
 // 树干坐标固定。砍倒后读实时血量，清场会替换数组，补种会追加；矿井岩壁可原地换批。
 export function treeGrid(trees) {
@@ -17,6 +18,23 @@ export function treeGrid(trees) {
   return entry.grid;
 }
 
+// 命中和领主毁树登记同一份死亡集合；世界替换后旧集合由弱引用自动回收。
+export function markTreeDeath(trees,tree){
+  let deaths=pendingDeaths.get(trees);if(!deaths){deaths=new Set();pendingDeaths.set(trees,deaths);}deaths.add(tree);
+}
+// 正式帧只清理本帧死亡实体，原生数组搬移保留绘制顺序，不逐个扫描四万棵活树。
+export function cleanupTreeDeaths(trees){
+  const deaths=pendingDeaths.get(trees);if(!deaths)return;
+  let entry=forestIndices.get(trees);
+  // 同帧补种可能尚未入索引，不能仅修改长度就把新树误当成已经登记。
+  if(entry&&entry.length!==trees.length){forestIndices.delete(trees);entry=null;}
+  for(const tree of deaths){
+    if(tree.hp>0)continue;
+    const index=trees.indexOf(tree);if(index<0)continue;
+    trees.splice(index,1);if(entry){entry.grid.remove(tree);entry.order.delete(tree);}
+  }
+  if(entry)entry.length=trees.length;pendingDeaths.delete(trees);
+}
 // 先缩小森林候选，再按原数组顺序交给可见性或瞄准精查，重叠遮挡和等距目标保持一致。
 export function treesInBounds(trees, x, y, right, bottom, padding) {
   if (trees.length <= 24 || trees.mineScene) return trees;
@@ -42,6 +60,15 @@ export class SpatialGrid {
       this.cells.get(key).push(item);
       this.maxRadius = Math.max(this.maxRadius, item.radius || 0);
     }
+  }
+
+  // 树干位置固定，只访问所属分桶；最大半径保留保守上界，不必全图重新计算。
+  remove(item) {
+    const x=Math.floor(wrap(item.x,WORLD.width)/this.width),y=Math.floor(wrap(item.y,WORLD.height)/this.height);
+    const key=y*this.columns+x,bucket=this.cells.get(key);
+    if(!bucket)return;
+    const index=bucket.indexOf(item);if(index>=0)bucket.splice(index,1);
+    if(!bucket.length)this.cells.delete(key);
   }
 
   // 长射线、大半径和多次越界最多访问每格一次，保留原对象以读取即时死亡状态。

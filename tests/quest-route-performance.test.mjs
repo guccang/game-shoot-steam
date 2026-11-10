@@ -70,6 +70,6 @@ test('真实战场逐帧更新保持路线，树再生和砍伐不再触发重�
  const obstructed=storyRouteState(g);assert.equal(obstructed.searchStarts,1);assert.deepEqual(obstructed.points,result.points);
  // 按开始规划时的无树快照验证，途中新增树木不改变已算路线和角色实际碰撞。
  for(let i=1;i<obstructed.points.length;i++)assert.ok(questLineClear(obstructed.points[i-1],obstructed.points[i],{...g.player,mapId:g.mapId,livingCollision:true},[]));
- g.trees[0].hp=0;g.update(1/60);assert.notEqual(g.trees,trees);assert.equal(g.trees.length,0);
+ g.hit(g.trees[0],999999);g.update(1/60);assert.equal(g.trees,trees);assert.equal(g.trees.length,0);
  assert.equal(storyRouteState(g).searchStarts,1);
 });

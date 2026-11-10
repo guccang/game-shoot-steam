@@ -62,3 +62,13 @@ test('屋内、死亡、暂停、借用玩法和已超载均不收取，不创�
 test('新手采集立即计入记录，余量不足时指向仓库而非地面木材',()=>{
  const p=freshRangerProgress();Object.assign(p.arrival,{phase:'gather',keys:true,parked:false});const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.vehicle.active=false;g.livingPersist=()=>true;g.trees=[];const before=g.progress.arrival.wood;g.addTree(1150,800);g.hit(g.trees[0],9999,false,{weaponIndex:RANGER.saw});assert.equal(g.progress.arrival.wood,before+8);const cap=LOAD_RULES.catCapacity;try{LOAD_RULES.catCapacity=catLoad(g).weight+WOOD_ITEM.mass;assert.equal(arrivalWorkshopObjective(g).key,'arrival-wood-store');}finally{LOAD_RULES.catCapacity=cap;}
 });
+
+// 正式存储拒绝后原事务所有可写分支不变；重试与刷新包含背包、统计和任务。
+test('增量存档配额失败不污染共享分支，成功后刷新不漏木材',async()=>{
+ const {createSaveStore}=await import('../src/platform/storage.js');const map=new Map();let denied=false;
+ const storage={getItem:k=>map.get(k)??null,removeItem:k=>map.delete(k),setItem(k,v){if(denied)throw Error('配额不足');map.set(k,v);}},store=createSaveStore(()=>storage);
+ const {g}=scene();g.woodPersist=store.saveWoodProgress;const target={x:1100,y:800,type:'tree'};
+ assert.equal(collectAutomaticWood(g,target,8),true);const before=structuredClone(g.progress);denied=true;
+ assert.equal(collectAutomaticWood(g,target,8),false);assert.deepEqual(g.progress,before);assert.equal(g.drops.length,1);
+ denied=false;assert.equal(collectAutomaticWood(g,target,8),true);const restored=createSaveStore(()=>storage).loadProgress();assert.equal(restored.logistics.bagWood,16);assert.equal(restored.economyLog.income['forest:tree:wood'],16);assert.equal(restored.statistics.resources.wood,16);
+});

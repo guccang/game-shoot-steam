@@ -90,7 +90,7 @@ import { createRecoil, triggerRecoil, updateRecoil, muzzlePosition } from '../co
 import { shotSolution } from '../combat/aim.js';
 import { piercingLane, updateAimLock } from '../combat/targeting.js';
 import {attackTargetDistance,attackTargetVisible,attackTargetKnown,rememberCombatTarget,updateCombatPerception} from '../combat/perception.js';
-import {treesInBounds} from '../world/spatial-grid.js';
+import {treesInBounds,cleanupTreeDeaths,markTreeDeath} from '../world/spatial-grid.js';
 import { createPulseState, advancePulse, kickHolder, updateHolderKick } from '../combat/pulse.js';
 import {updateWaterBag} from './fishing/water-bag.js';
 import { consumeRound, advanceReload } from '../combat/magazine.js';
@@ -258,6 +258,8 @@ export class Game {
   get canExploreRealm() {
     return this.state === 'realm' && ((this.realm?.mode === 'guardian' && ['build', 'rest'].includes(this.realm.phase)) || (this.realm?.mode === 'tower' && this.realm.phase === 'rest'));
   }
+  // 原地回收死亡树木，避免伐木时重建整片森林的空间索引。
+  cleanupTrees() { cleanupTreeDeaths(this.trees); }
   // 添加一棵可破坏且会缓慢再生的树。
   addTree(x, y, details = {}) {
     addTree(this, x, y, details);
@@ -589,6 +591,7 @@ export class Game {
     if(target.type==='tree'&&(['football','race'].includes(this.realm?.mode)||target.fireRescue||this.campDefense))return;
     // 比赛只接受正式冲量，生命恒定，禁止死亡奖励及高伤害刷分。
     if(!target.football)target.hp -= amount;
+    if(target.type==='tree'&&target.hp<=0)markTreeDeath(this.trees,target);
     // 击退碰撞沿用发起攻击的快照，不把切枪后的武器误记为来源。
     if(amount>0&&impact?.impulse>0)target.statisticsSource=impact.statisticsSource;
     target.flash = 0.13;
@@ -713,10 +716,11 @@ export class Game {
     collectAutomaticWood(this,target,wood,impact);
     recordEconomy(this.progress,'income','forest:'+target.type,{coins,...materials});
     if(coins)this.drops.push(createResourceDrop(target,coins,0));
-    this.onEvent('reward');
+    this.onEvent('reward',{woodTransaction:target.type==='tree'});
   }
   // 玩家采集与领主毁树共用树桩和再生规则，资源奖励由各自调用方决定。
   leaveStump(tree) {
+    markTreeDeath(this.trees,tree);
     this.stumps.push({
       x: tree.x,
       y: tree.y,
@@ -1081,7 +1085,7 @@ export class Game {
     this.stumps = this.stumps.filter((s) => !s.regrown);
     updateCombatTraces(this, dt);
     // 无树木死亡时保持集合身份，避免每帧使导航与空间索引失效。
-    if(this.trees.some(t=>t.hp<=0))this.trees = this.trees.filter((t) => t.hp > 0);
+    this.cleanupTrees();
     recycleEnemies(this);
     // 本帧弹道击杀与怪物移动结算后立即刷新锁定，绘制时不留下空目标帧。
     profiler?.end('logic.cleanup');

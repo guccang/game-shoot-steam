@@ -17,6 +17,18 @@ export function woodPickupCapacity(game){
  const stock=driving?game.progress.logistics.builds[game.vehicle.index].wood:game.progress.logistics.bagWood;
  return Math.max(0,Math.min(RESOURCE_CAP-(stock||0),Math.floor((load.capacity-weight-1e-6)/WOOD_ITEM.mass)));
 }
+// 只复制采集与巡游快照会修改的分支；历史图鉴、装备和账本旧事件保持只读共享。
+function woodTransaction(progress){
+ const keys=['logistics','arrival','restoration','supplies','vehicleService','living','campParking','fireDispatch'];
+ const next={...progress,...structuredClone(Object.fromEntries(keys.map(key=>[key,progress[key]])))};
+ if(progress.statistics)next.statistics={...progress.statistics,resources:{...progress.statistics.resources}};
+ if(progress.economyLog){
+  const ledger=progress.economyLog,events=ledger.events.slice();
+  if(events.length)events[events.length-1]={...events.at(-1),amounts:{...events.at(-1).amounts}};
+  next.economyLog={...ledger,income:{...ledger.income},events};
+ }
+ return bindEconomy(next,economyFor(progress));
+}
 // 同步检查整笔重量并保存；动画只表达已到账数量，不在飞行结束时再次增加库存。
 export function collectAutomaticWood(game,target,amount,impact){
  const count=Math.max(0,Math.min(RESOURCE_CAP,Math.floor(Number(amount)||0)));
@@ -30,11 +42,11 @@ export function collectAutomaticWood(game,target,amount,impact){
   }
   return false;
  }
- const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress)),snapshot=Object.create(game);snapshot.progress=next;
+ const next=woodTransaction(game.progress),snapshot=Object.create(game);snapshot.progress=next;
  const collected=collectWood(snapshot,count);recordEconomy(next,'income','forest:'+target.type,{wood:collected.count});
  if(target.type==='tree'){recordArrivalWood(snapshot,collected.count,impact);recordRestorationWood(snapshot,collected.count);}
  next.patrol=capturePatrol(snapshot);
- try{if((game.livingPersist?.(next)??true)!==true)return false;}catch{return false;}
+ try{if(((game.woodPersist||game.livingPersist)?.(next)??true)!==true)return false;}catch{return false;}
  // 采集结果通过木材飞行和库存数字反馈，不再弹出入库文字。
  game.progress=next;game.woodPickupWarning=null;game.drops.push(createResourceDrop(target,0,collected.count));return true;
 }
