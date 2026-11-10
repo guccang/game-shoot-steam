@@ -115,10 +115,6 @@
 }
 .environment-options button[data-weather] { min-height: 44px; min-width: 0; }
 
-/* 手机天气为只读状态，不再表现为可点击按钮。 */
-#weather-picture { cursor:default;touch-action:auto; }
-#weather-picture:hover { background:#fffceded; }
-#weather-picture:active { transform:none; }
 /* 小屋三种休息目标纵向排列，短屏正文可滚动，保持统一44像素触控区。 */
 #cottage-sleep-dialog .ui-section { display:grid;gap:10px; }
 

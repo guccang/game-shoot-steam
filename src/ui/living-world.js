@@ -182,8 +182,6 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
   function interact(){if(!target)return;const owner=target.resident||residentFor(game,target.step?.resident||LIVING_REQUESTS.find(q=>q.id===target.id)?.host)?.id;if(onTalk&&target.resident){onTalk('resident:'+owner,()=>open(owner));return;}open(owner);if(target.step)result(interactLivingRequest(game,target.id));}
   scope.on(action,'click',event=>{if(event.detail===0)interact();});
   scope.on(root,'keydown',event=>{if(event.code==='KeyE'&&!event.repeat&&!event.defaultPrevented&&target&&!game.mainlineSpeech&&!root.querySelector('dialog[open]')){event.preventDefault();interact();}});
-  // 顶部图片在正式历法下打开日程，调试预览仍交给环境面板。
-  for(const id of ['season-picture','time-picture'])scope.on(root.getElementById(id),'click',()=>{if(environment.calendarActive&&!environment.livingPreview){open();view='news';render();}});
   // 调试选项放进既有Debug折叠区，正式玩家流程不暴露实现参数。
   // 热点跟随真实人物和任务道具；不显示屏幕底部交互条。
   function renderFrame(){
