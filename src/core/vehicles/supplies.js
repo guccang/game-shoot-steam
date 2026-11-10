@@ -1,3 +1,4 @@
+import {ammoSoldAt,SPECIAL_AMMO} from '../../config/vehicle-special-ammo.js';
 import {regionalCampHere} from '../camp/regional-camp-access.js';
 import {eraVehicle} from '../../config/vehicle-eras.js';
 import {shopDelivery,addShopStock} from '../economy/shop-delivery.js';
@@ -39,6 +40,7 @@ export function tradeSupply(game,{kind,id,batches=1,craft=false,target,loadConfi
  if(kind==='item'&&target===undefined)target='hand';
  if(!Number.isInteger(batches)||batches<1||batches>20||!['ammo','item'].includes(kind)||!['hand','vehicle'].includes(target))return {ok:false,message:'无效补给数量。'};
  const rule=(kind==='ammo'?AMMO_TYPES:SUPPLY_ITEMS)[id];if(!rule||kind==='item'&&craft)return {ok:false,message:'该补给不能制作。'};
+ if(kind==='ammo'&&(!ammoSoldAt(id)||craft&&rule.special))return {ok:false,message:'此弹药仅在对应营地购买，不能制作。'};
  if(kind==='ammo'&&!rule.targets.includes(target))return {ok:false,message:'这是载具弹药，请在载具弹药页补给到货舱。'};
  if(!craft){
   const itemId=(kind==='ammo'?'ammo:':'supply:')+id,count=(rule.pack||1)*batches,cost=rule.coins*batches;
@@ -106,4 +108,12 @@ export function mountMainGun(game,hull,gun){
  const result=commit(game,next,'主炮换装完成，弹药和故障均已保留。');if(!result.ok)return result;
  for(const i of changed){const v=game.vehicles[i],replacement=createVehicle(next, i);Object.assign(v,{weaponIndex:replacement.weaponIndex,module:replacement.module,modules:replacement.modules,targetId:null,recoil:replacement.recoil});}
  return result;
+}
+
+// 随车选择增强弹和自动照明，保存失败不改变当前设置；旧档默认开启照明。
+export function configureSpecialAmmo(game,{key,autoFlare}={}){
+ if(!supplyAvailable(game)||!game.progress.vehicleHulls[game.vehicle.index])return {ok:false,message:'当前无法设置自有载具弹药。'};
+ if(key!==undefined&&key!=='none'&&(!SPECIAL_AMMO[key]||key==='flare'))return {ok:false,message:'无效的主炮增强弹。'};
+ if(autoFlare!==undefined&&typeof autoFlare!=='boolean')return {ok:false,message:'无效照明开关。'};
+ const next=candidate(game);if(key!==undefined)next.supplies.selectedSpecial[game.vehicle.index]=key;if(autoFlare!==undefined)next.supplies.autoFlare=autoFlare;return commit(game,next,'载具弹药设置已保存。');
 }

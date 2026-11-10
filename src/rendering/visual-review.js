@@ -2253,3 +2253,6 @@ export async function inspectMineCoreBoss(game,root=document){
 
 // 读取正式地面战场编成与当前清缴坐标，供手机同屏验收绑定。
 export function inspectForestSpecialDistribution(game,root=document){return {designCriterion:'forest-special-distribution',site:structuredClone(game.progress.living.clearingSite),horde:!!game.campDefense,special:game.enemies.filter(e=>e.hp>0&&e.dumplingVariant).map(e=>({id:e.dumplingVariant,phase:e.assault?.phase,campDefense:!!e.campDefense})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
+
+// 主炮增强和照明验收读取正式库存、场、雾源，不单独绘制替身。
+export function inspectVehicleSpecialAmmo(game,renderer,root=document){return {designCriterion:'vehicle-special-ammo',selected:game.progress.supplies.selectedSpecial[game.vehicle.index],autoFlare:game.progress.supplies.autoFlare,flare:game.progress.supplies.activeFlare,zones:(game.specialAmmoZones||[]).map(z=>({key:z.key,life:z.life,radius:z.radius})),fog:renderer.surfaceFogReview?.sources,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}

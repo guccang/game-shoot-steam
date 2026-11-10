@@ -1,3 +1,4 @@
+import {enhancedVehicleShot} from './vehicle-special-ammo.js';
 import {surfaceWeapon} from '../world/surface-vision.js';
 import {weaponTerrainTargets} from './terrain-targets.js';
 import {applyVehicleFault} from './vehicle-faults.js';
@@ -300,7 +301,7 @@ export function updateVehicle(game, dt, holdFire = false) {
   const critical = game.random() < GAMEPLAY_VALUES.combat.criticalChance;
   emitWeaponAttack(
     game,
-    w.id==='chainsaw'?{...w,sawScale:VEHICLE_GUN_SCALE,sawAngle:vehicleGunPose(v,game.reducedMotion).angle}:w,
+    w.id==='chainsaw'?{...w,sawScale:VEHICLE_GUN_SCALE,sawAngle:vehicleGunPose(v,game.reducedMotion).angle}:enhancedVehicleShot(game,w),
     muzzle,
     { x: (point.x - muzzle.x) / distance, y: (point.y - muzzle.y) / distance },
     Math.round(vehicleDamage((game.loadout || game.progress), v.weaponIndex) * (critical ? GAMEPLAY_VALUES.combat.criticalMultiplier : 1) * (1 + (game.realm?.buffs.power || 0) * GAMEPLAY_VALUES.blessings.powerPerStack)),

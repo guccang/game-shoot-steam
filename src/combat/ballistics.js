@@ -1,3 +1,4 @@
+import {detonateSpecialAmmo} from './vehicle-special-ammo.js';
 import {surfaceWeapon} from '../world/surface-vision.js';
 import {weaponTerrainTargets} from './terrain-targets.js';
 import {statisticsSource} from './statistics-source.js';
@@ -145,7 +146,7 @@ export function fireBallistics(
       age: 0,
       remaining: weapon.range,
       travelled: 0,
-      vehicleMounted,gravityRadius:weapon.gravityRadius,gravityDuration:weapon.gravityDuration,gravityPull:weapon.gravityPull,gravityMinDistance:weapon.gravityMinDistance,targetTrees,blastRadius:weapon.blastRadius,blastRatio:weapon.blastRatio,
+      specialAmmo:weapon.specialAmmo,vehicleMounted,gravityRadius:weapon.gravityRadius,gravityDuration:weapon.gravityDuration,gravityPull:weapon.gravityPull,gravityMinDistance:weapon.gravityMinDistance,targetTrees,blastRadius:weapon.blastRadius,blastRatio:weapon.blastRatio,
       amount,
       weaponIndex: weapon.weaponIndex,
       masteryOwnerIndex: weapon.masteryOwnerIndex,
@@ -210,6 +211,7 @@ function resolveHit(game, b, hit) {
   b.x = hit.x;
   b.y = hit.y;
   impact(game, hit, b);
+  detonateSpecialAmmo(game,b);
   landGravityField(game,b);explodeHeavyShell(game,b,hit.target);
   b.hitIds.push(hit.target.id);
   // 穿甲弹保留原方向与帧内剩余行程，每个有效命中消耗一次穿透；去重表跨帧保留。
@@ -349,6 +351,6 @@ function stepBallistics(game, dt, targets, treeShots, woodTargets) {
   for(const b of game.projectiles)if(b.gravityRadius&&!b.terrainStopped&&b.remaining<=.001&&b.z>=0&&!gravityPointSafe(game,b)&&b.travelled<b.gravityMaxTravel){
     b.remaining=gravityFlightRange(game,{...b,range:b.gravityMaxTravel-b.travelled},b,{x:b.dx,y:b.dy},[]);
   }
-  for(const b of game.projectiles)if(b.remaining<=.001){landGravityField(game,b);if(b.kind==='wolf-256')explodeHeavyShell(game,b,null);}
+  for(const b of game.projectiles)if(b.remaining<=.001){detonateSpecialAmmo(game,b);landGravityField(game,b);if(b.kind==='wolf-256')explodeHeavyShell(game,b,null);}
   game.projectiles = game.projectiles.filter((b) => b.remaining > 0.001);
 }

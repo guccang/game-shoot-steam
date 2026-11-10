@@ -187,7 +187,7 @@ export function drawTankShell(c, b, reduced = false) {
         [-6, -4],
         [-6, 4],
       ],
-      '#f4dca066',
+      (b.color||'#f4dca0')+'66',
     );
   poly(
     c,
@@ -198,7 +198,7 @@ export function drawTankShell(c, b, reduced = false) {
       [2, 3],
       [-9, 3],
     ],
-    '#f4dca0',
+    b.color||'#f4dca0',
     outline,
     1.3,
   );

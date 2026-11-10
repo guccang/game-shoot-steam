@@ -1,3 +1,4 @@
+import {SPECIAL_AMMO} from './vehicle-special-ammo.js';
 import {REGIONAL_GUNS} from './regional-camps.js';
 import {TREASURE_GUNS} from './treasure.js';
 // 道具、弹药、主炮质量与故障概率集中配置；重量统一使用千克。
@@ -7,6 +8,7 @@ export const AMMO_SHOP={...TOWN_LAYOUT.ammo,id:'ammo-shop',name:'弹药补给铺
 // 每包数量增加十倍、包价及制作材料不变；重量采用游戏负重尺度，不使用现实炮弹质量。
 // 交易分类由同一配置约束；通用子弹可分别补给，炮弹只在载具页出售，潮汐水罐同时补给水枪和主炮。
 export const AMMO_TYPES={
+ ...Object.fromEntries(Object.entries(SPECIAL_AMMO).map(([key,r])=>[key,{...r,mass:key==='flare'?.2:.5,targets:['vehicle'],special:true}])),
  // 普通子弹单发4克，备用库存、弹匣和载具货舱统一按此计重。
  light:{name:'通用子弹',mass:.004,pack:300,coins:30,wood:2,parts:0,targets:['hand','vehicle']},
  // 标准弹一包50千克、重型弹一包60千克；保留整轮补给量，让大量囤弹占用实际货舱。
