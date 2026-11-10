@@ -1,3 +1,5 @@
+import {escortQuote,escortWaveDone,TRADE_ESCORT} from '../../config/trade-escort.js';
+import {updateEscortEncounter,startEscortRest} from './trade-escort.js';
 // 商路交易只取随身作物和实际到站的自有货舱；护送不占用玩家货位。
 import {TRADE_SITES,TRADE_BOARD,TRADE_RELIC} from '../../config/camp-trade.js';
 import {FARM_CROPS} from '../../config/farm.js';
@@ -6,9 +8,9 @@ import {creditResource} from '../../progression/economy/resource-wallet.js';
 import {RESOURCE_CAP} from '../../config/resource-limits.js';
 import {recordEconomy} from '../../progression/economy/economy-ledger.js';
 import {productionSalePlan} from '../../progression/farming/farm-production.js';
-import {livingForest,livingSafePoint} from '../../world/living-spaces.js';
+import {livingForest} from '../../world/living-spaces.js';
 import {nearest,worldDistance,WORLD} from '../../world/coordinates.js';
-import {moveBody,blocked} from '../../physics/motion.js';
+import {moveBody} from '../../physics/motion.js';
 import {parkedOwned} from '../vehicles/camp-parking.js';
 import {commitCargo} from '../inventory/cargo.js';
 import {advanceVehicleWheels} from '../../combat/vehicle-motion.js';
@@ -38,6 +40,7 @@ export function tradeStock(game,site){
 export function tradeAction(game,action,id){
  const fail=message=>({ok:false,message});
  if(!tradeField(game)||!['playing','paused'].includes(game.state))return fail('请在森林自由巡游时办理。');
+ if(action==='rest-escort')return startEscortRest(game);
  const next=validateProgress(structuredClone(game.progress)),t=next.trade;
  const station=TRADE_SITES.find(s=>s.id===id),destination=TRADE_SITES.find(s=>s.id===t.escort?.station);
  const local=TRADE_SITES.find(s=>atTradeSite(game,s)),site=action==='finish-escort'?destination:local;
@@ -55,9 +58,9 @@ export function tradeAction(game,action,id){
   else if(action==='give-relic'&&t.relic===TRADE_RELIC.count){coins=TRADE_RELIC.coins;t.relic=null;completedId='relic';message='货签已交还商队';}
   else if(action==='escort'&&station&&!t.escort){
    if(station.id===site.id)return fail('请选择另一个营地作为目的地。');
-   t.escort={origin:site.id,station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message=station.guards?'商队已出发，请带路并击退途中劫货的怪物。':'商队已出发，请带队前往'+station.name+'。';
-  }else if(action==='finish-escort'&&destination&&worldDistance(t.escort,destination)<=125&&t.escort.cleared===destination.guards){
-   coins=destination.commission;t.escort=null;completedId=destination.id;message='商队平安抵达';
+   t.escort={pay:escortQuote(site,station).coins,rounds:next.bosses,wave:0,defeated:[],travel:0,camped:false,origin:site.id,station:id,x:game.player.x,y:game.player.y,hp:100,ambush:false,cleared:0};message='商队已出发，运费'+t.escort.pay+'金币；途中有3波怪物，夜晚需扎营。';
+  }else if(action==='finish-escort'&&destination&&worldDistance(t.escort,destination)<=125&&escortWaveDone(t.escort)===TRADE_ESCORT.waves){
+   coins=t.escort.pay;t.escort=null;completedId=destination.id;message='商队平安抵达';
   }else if(action==='sell'){
    const i=FARM_CROPS.findIndex(c=>c.id===id);if(i<0)return fail('请选择作物。');
    const stocks=tradeStocks(game,next,site),sale=productionSalePlan(next,stocks),count=sale.reduce((n,row)=>n+row[i],0);
@@ -77,28 +80,19 @@ export function tradeAction(game,action,id){
 export function tradeDefeat(game,target){
  const t=game.progress.trade;
  if(!t||!livingForest(game)||game.cottage||game.livingPreview||target.type!=='enemy'||target.bossSummon||target.workshopTarget||target.football)return;
- if(t.escort&&target.tradeGuard===t.escort.station)t.escort.cleared=Math.min(TRADE_SITES.find(s=>s.id===t.escort.station).guards,t.escort.cleared+1);
+ if(t.escort&&target.tradeGuard===t.escort.station&&Number.isInteger(target.tradeSlot)&&!t.escort.defeated.includes(target.tradeSlot)){t.escort.defeated.push(target.tradeSlot);t.escort.cleared=t.escort.defeated.length;}
  if(t.relic!==null&&t.relic<TRADE_RELIC.count&&!target.flying){t.relic++;game.float(target.x,target.y-48,'拾得货签 '+t.relic+'/3','#ffe4a2');}
 }
 // 商队沿玩家实际走过的路前进，离队等待；阻击时停下，必须保住货车才能领赏。
 export function updateTradeEscort(game,dt){
  const e=game.progress.trade?.escort;if(!e||!tradeField(game)||game.state!=='playing')return;
- const station=TRADE_SITES.find(s=>s.id===e.station),distance=worldDistance(e,game.player);
+ const distance=worldDistance(e,game.player);
  const motion=game.tradeMotion??={index:14,active:true,path:[]};
  if(motion.station!==e.station||worldDistance(e,motion.last||e)>8){motion.path=[];motion.station=e.station;}
  motion.last={x:e.x,y:e.y};
- if(station.guards&&!e.ambush&&!livingSafePoint(e)&&!livingSafePoint(game.player)&&worldDistance(e,station)<worldDistance(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD,station)*.52)e.ambush=true;
  const before={x:e.x,y:e.y};
- if(e.ambush&&e.cleared<station.guards){
-  let guards=game.enemies.filter(v=>v.tradeGuard===e.station&&v.hp>0);
-  if(distance<260&&!guards.length){
-   // 优先在车旁空地出现，窄路回退到商队已走过的地面。
-   const spot=Array.from({length:8},(_,i)=>({x:e.x+90*Math.cos(i*Math.PI/4),y:e.y+90*Math.sin(i*Math.PI/4)})).find(p=>!livingSafePoint(p)&&!blocked(p.x,p.y,14,game.trees,{mapId:'forest',livingCollision:true}))||e;
-   const enemy=game.spawnEnemy(0,100,spot,{ambient:true,ordinaryDumpling:true});
-   if(enemy){enemy.tradeGuard=e.station;guards=[enemy];game.float(e.x,e.y-60,'商队遇袭，请击退拦路怪！','#ffe4a2');}
-  }
-  if(guards.some(v=>worldDistance(v,e)<100)){e.hp-=dt*3;if(e.hp<=0){game.progress.trade.escort=null;game.tradeMotion=null;game.float(e.x,e.y-45,'商队撤回营地，护送失败','#ffd19c');return;}}
- }else if(distance<240){
+ if(updateEscortEncounter(game,dt))return;
+ if(distance<240){
   const path=motion.path,last=path.at(-1)||e;
   if(worldDistance(last,game.player)>12)path.push({x:game.player.x,y:game.player.y});
   if(path.length>100)path.splice(0,path.length-100);
@@ -111,5 +105,5 @@ export function updateTradeEscort(game,dt){
    if(worldDistance(e,point)<4||worldDistance(before,e)<.01)path.shift();
   }
  }
- advanceVehicleWheels(motion,e,before,dt);motion.last={x:e.x,y:e.y};
+ e.travel=(e.travel||0)+worldDistance(before,e);advanceVehicleWheels(motion,e,before,dt);motion.last={x:e.x,y:e.y};
 }

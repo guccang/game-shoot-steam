@@ -1,3 +1,4 @@
+import {TRADE_ESCORT} from '../config/trade-escort.js';
 import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
 import {MINING} from '../config/mining.js';
 import {MINE_ENTRANCE,mineEntrances} from '../world/mine-entrances.js';
@@ -11,6 +12,8 @@ import {doorwayInteractionAnchor,projectInteractionAnchor} from '../world/intera
 
 // 房屋入室与出门均站定一秒共用正式进度，绘制不改变计时或房间状态。
 export function playerActionCountdown(game){
+ // 商队夜宿共用睡眠圆环，固定在玩家身旁。
+ if(game.tradeRest)return {elapsed:game.tradeRest.elapsed,wait:TRADE_ESCORT.restSeconds,icon:'bed',anchor:{x:game.player.x+65,y:game.player.y-50,space:'world'}};
  const room=game.cottage;
  if(room?.basementElapsed>0)return {elapsed:room.basementElapsed,wait:1,icon:'stairs-down',anchor:{x:MINING.hatch.goal.x-62,y:MINING.hatch.goal.y-15,space:'room'}};
  if(room?.balcony)return room.balconyExitElapsed>0?{elapsed:room.balconyExitElapsed,wait:1,icon:'home',anchor:{...HOME_BALCONY.exit,space:'room'}}:null;

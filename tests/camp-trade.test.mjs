@@ -1,3 +1,4 @@
+import {escortQuote} from '../src/config/trade-escort.js';
 // 用正式钱包、货舱、击杀和道路验证订单交接与护送读档。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -68,6 +69,8 @@ for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、�
  // 远程线路使用分帧导航；这里验证营地南门最后一段护送、重载与结算。
  locate(g,{x:station.x-100,y:station.y+430});Object.assign(g.progress.trade.escort,{x:g.player.x,y:g.player.y});
  const path=planQuestRoute({...g.player,mapId:'forest',livingCollision:true},station,g.trees);assert.equal(path.reachable,true);
+ // 本例专测行进与交货，三波实际生成/击杀由trade-escort专项覆盖。
+ g.progress.trade.escort.defeated=Array.from({length:24},(_,i)=>i);g.progress.trade.escort.wave=3;g.progress.trade.escort.cleared=24;
  const start={...g.progress.trade.escort};locate(g,station);updateTradeEscort(g,.05);
  assert.equal(worldDistance(g.progress.trade.escort,start),0);assert.equal(tradeAction(g,'finish-escort').ok,false);locate(g,start);
  let reloaded=false;
@@ -76,14 +79,14 @@ for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、�
    const dx=point.x-g.player.x,dy=point.y-g.player.y,k=Math.min(1,3/Math.hypot(dx,dy));
    g.player.x+=dx*k;g.player.y+=dy*k;updateTradeEscort(g,.05);
    let enemy=g.enemies.find(e=>e.tradeGuard&&e.hp>0);
-   if(!reloaded&&(enemy||!station.guards&&worldDistance(g.player,start)>200)){const player={...g.player};g=scene(validateProgress(JSON.parse(JSON.stringify(g.progress))));locate(g,player);updateTradeEscort(g,.05);enemy=g.enemies.find(e=>e.tradeGuard&&e.hp>0);reloaded=true;}
+   if(!reloaded&&(enemy||worldDistance(g.player,start)>200)){const player={...g.player};g=scene(validateProgress(JSON.parse(JSON.stringify(g.progress))));locate(g,player);updateTradeEscort(g,.05);enemy=g.enemies.find(e=>e.tradeGuard&&e.hp>0);reloaded=true;}
    if(enemy)defeat(g,enemy);
   }
  }
  for(let i=0;i<100;i++)updateTradeEscort(g,.05);
- assert.equal(reloaded,true);assert.equal(g.progress.trade.escort.cleared,station.guards);
+ assert.equal(reloaded,true);assert.equal(g.progress.trade.escort.cleared,24);
  const before=g.progress.coins;assert.equal(tradeAction(g,'finish-escort').ok,true,JSON.stringify(g.progress.trade.escort));
- assert.equal(g.progress.coins,before+station.commission);assert.equal(tradeAction(g,'finish-escort').ok,false);
+ assert.equal(g.progress.coins,before+escortQuote(TRADE_BOARD,station).coins);assert.equal(tradeAction(g,'finish-escort').ok,false);
  assert.deepEqual(validateProgress(g.progress).trade.completed,[station.id]);
 });
 
@@ -101,13 +104,5 @@ test('同一订单重复结算只标记一次，旧档从成功交付记录找�
  assert.deepEqual(validateProgress(old).trade.completed,['crop','relic',...TRADE_STATIONS.slice(0,2).map(s=>s.id)]);
 });
 
-// 只在路障现场累计损伤，失败不会发放佣金，重新接单也不会把旧怪算入新单。
-test('护送失败后返回营地可重新接单',()=>{
- const g=scene(),station=TRADE_STATIONS[1];tradeAction(g,'escort',station.id);
- const e=g.progress.trade.escort;e.x=station.x-250;e.y=station.y;e.ambush=true;e.hp=.1;
- locate(g,e);const enemy=g.spawnEnemy(0,0,{x:e.x+10,y:e.y},{ambient:true,ordinaryDumpling:true});
- enemy.tradeGuard=station.id;const coins=g.progress.coins;updateTradeEscort(g,.05);
- assert.equal(g.progress.trade.escort,null);assert.equal(g.progress.coins,coins);
- locate(g,TRADE_BOARD);assert.equal(tradeAction(g,'escort',station.id).ok,true);
- defeat(g,enemy);assert.equal(g.progress.trade.escort.cleared,0);
-});
+// 护送怪物优先攻击玩家，不再因靠近货车凭空扣血。
+test('怪物靠近不直接扣商队生命，未完成三波不能交货',()=>{const g=scene(),station=TRADE_STATIONS[1];tradeAction(g,'escort',station.id);const e=g.progress.trade.escort;Object.assign(e,{x:1800,y:3200,travel:100000});locate(g,e);updateTradeEscort(g,.05);assert.equal(e.hp,100);assert.equal(g.enemies.filter(m=>m.tradeGuard).length,8);locate(g,station);assert.equal(tradeAction(g,'finish-escort').ok,false);});

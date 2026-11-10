@@ -33,7 +33,9 @@ import { playerThreatRange } from '../../combat/threat-range.js';
 
 // 怪物从玩家周围出现；清缴使用统一基础强度，野外遭遇继续读取出生区域。
 export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = GAMEPLAY_VALUES.enemy.spawnRadius, arrival = null, context = null) {
-  const clearing=!context?.ambient&&!context?.bossOwner&&!game.realm&&!game.story;
+  // 护送仅借用清剿编成与数值，ambient标记使它不计入清剿名额。
+  const wave=context?.escortWave??game.wave,rounds=context?.escortRounds??game.progress.bosses;
+  const clearing=!!context?.escortWave||!context?.ambient&&!context?.bossOwner&&!game.realm&&!game.story;
   const clearingStats=(clearing||!!context?.bossOwner)&&livingForest(game);
   let spot = arrival || drySpawn({
     mapId: game.mapId,
@@ -42,7 +44,7 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
   });
   // 营地前三波避免环形刷怪误取邻区高等级，主动走进高等级区仍面对当地怪物。
   if (
-    !context?.ambient && game.wave <= GAMEPLAY_VALUES.enemy.meadowProtectionWaves &&
+    !context?.ambient && wave <= GAMEPLAY_VALUES.enemy.meadowProtectionWaves &&
     radius >= GAMEPLAY_VALUES.enemy.protectionMinRadius &&
     radius <= GAMEPLAY_VALUES.enemy.protectionMaxRadius &&
     biomeAt(game.player.x, game.player.y, game.mapId).id === 'meadow'
@@ -54,9 +56,9 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
     }
   }
   // 清缴使用统一等级后再叠加轮数成长；遭遇仍按实际区域取等级，保留营地保护。
-  const origin = !context?.ambient && (arrival && game.wave <= GAMEPLAY_VALUES.enemy.meadowProtectionWaves && biomeAt(game.player.x, game.player.y, game.mapId).id === 'meadow')
+  const origin = !context?.ambient && (arrival && wave <= GAMEPLAY_VALUES.enemy.meadowProtectionWaves && biomeAt(game.player.x, game.player.y, game.mapId).id === 'meadow')
       ? game.player : spot,
-    difficulty = context?.ambient ? ENCOUNTER_DIFFICULTY : waveDifficulty(game.wave, game.recoveryRun),
+    difficulty = context?.ambient&&!context?.escortWave ? ENCOUNTER_DIFFICULTY : waveDifficulty(wave, game.recoveryRun),
     ground = enemyIdentity(
       origin.x,
       origin.y,
@@ -65,11 +67,11 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
       clearingStats ? CLEARING_STARTER_RULES.enemyLevel : null,
     ),
     // 召唤木卫固定使用地面基础身份，剧情脚本借用 bossOwner 的普通单位不受影响。
-    baseIdentity = !context?.ordinaryDumpling&&!context?.bossSummon&&!clearing&&(context?.ambient ? game.player.flying : flyingSpawn(game.wave, context?.bossOwner ? game.nextId : game.waveSpawned + 1, game.player.flying))
+    baseIdentity = !context?.ordinaryDumpling&&!context?.bossSummon&&!clearing&&(context?.ambient ? game.player.flying : flyingSpawn(wave, context?.bossOwner ? game.nextId : game.waveSpawned + 1, game.player.flying))
       ? flyingIdentity(ground) : ground;
   // 清缴与移动遭遇共用远程配额；剧情、秘境和领主援军保持原有阵容。
-  const stage = context?.rangedEncounter ? Math.max(GAMEPLAY_VALUES.ranged.unlockWave, ground.level) : game.wave;
-  const ordinal = context?.rangedEncounter ? game.encounterSpawned + 1 : game.waveSpawned + 1;
+  const stage = context?.rangedEncounter ? Math.max(GAMEPLAY_VALUES.ranged.unlockWave, ground.level) : wave;
+  const ordinal = context?.escortOrdinal??(context?.rangedEncounter ? game.encounterSpawned + 1 : game.waveSpawned + 1);
   const eligible = !clearing&&(!context?.ambient || context?.rangedEncounter) && !baseIdentity.flying && !game.realm && !game.story && !context?.bossOwner && stage >= GAMEPLAY_VALUES.ranged.unlockWave && ordinal % GAMEPLAY_VALUES.ranged.every === GAMEPLAY_VALUES.ranged.ordinalRemainder;
   let identity = rangedSpawn(stage, ordinal, eligible ? game.random() : 1, game.enemies, !eligible)
     ? rangedIdentity(baseIdentity, rangedSpecies(stage, game.random())) : baseIdentity;
@@ -78,19 +80,19 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
   if(heavyEligible&&armoredSpawn(stage,ordinal,game.random(),game.enemies))identity=armoredIdentity(identity);
   // 清缴不叠加野外遭遇的独立抽签；从原始团子属性生成本波唯一的编成名额。
   if(clearing){
-    identity=clearingIdentity(ground,game.wave,ordinal,game.enemies,game.random());
+    identity=clearingIdentity(ground,wave,ordinal,game.enemies,game.random());
   }
   // 六类首领及各玩法的正式召唤物共用铁甲木卫实体、碰撞和盾击动作。
   if(context?.bossSummon)identity={...armoredIdentity(ground),name:'铁甲木卫'};
   // 正常森林清缴及领主援兵按已完成轮数成长；野外遭遇、剧情与秘境继续使用原规则。
   const baseDamage=identity.damage*(context?.bossOwner?BOSS_SUPPORT.damage:1);
   const damage=(clearing||context?.bossOwner)&&livingForest(game)
-    ?clearingEnemyDamage(baseDamage,game.progress.bosses,game.wave,game.recoveryRun)
+    ?clearingEnemyDamage(baseDamage,rounds,wave,game.recoveryRun)
     :Math.round(baseDamage*difficulty.damage);
   const health=(clearing||context?.bossOwner)&&livingForest(game)
-    ?clearingEnemyHealth(game.progress.bosses,game.wave,game.recoveryRun):difficulty.health;
+    ?clearingEnemyHealth(rounds,wave,game.recoveryRun):difficulty.health;
   // 新手清缴重装不承担过长的弹匣消耗；野外、剧情、秘境及试玩不套用减免。
-  const armorHealth=clearingStats&&!context?.bossSummon&&identity.species===ARMORED.id?clearingOpeningPacing(game.progress.bosses).armoredHealth:1;
+  const armorHealth=clearingStats&&!context?.bossSummon&&identity.species===ARMORED.id?clearingOpeningPacing(rounds).armoredHealth:1;
   // 清缴增量主要是脆皮团怪；野外遭遇、领主援军和特殊兵种不套用此减免。
   const fodder=clearingStats&&clearing&&!identity.flying&&!RANGED_ENEMIES[identity.species]&&identity.species!==ARMORED.id;
   const hp = Math.max(1,Math.round(identity.hp * health * armorHealth * (fodder?CLEARING_FODDER.health:1) * (context?.bossSummon ? BOSS_SUPPORT.summonHealth : context?.bossOwner ? BOSS_SUPPORT.health : 1))),
@@ -101,13 +103,13 @@ export function spawnEnemy(game, angle = game.random() * Math.PI * 2, radius = G
       ...spot,
       ...identity,
       // 清缴与领主援军显示本轮等级，属性与奖励仍来自独立清缴预算。
-      level: clearingStats ? clearingEnemyLevel(game.progress.bosses) : identity.level,
+      level: clearingStats ? clearingEnemyLevel(rounds) : identity.level,
       hp,
       maxHp: hp,
       damage:Math.max(1,Math.round(damage*(fodder?CLEARING_FODDER.damage:1))),
       // 常驻清缴与领主援兵使用兵种基础移速，不随波次或胜场额外加速。
       speed: identity.speed * ((clearing||context?.bossOwner)&&livingForest(game)?1:difficulty.speed),
-      wave: context?.bossOwner || context?.ambient ? 0 : game.wave,
+      wave: context?.bossOwner || context?.ambient ? 0 : wave,
       ...(context?.ambient ? { ambient: true } : {}),
       ...(context?.bossOwner ? { bossOwner: context.bossOwner } : {}),
       radius: identity.species===ARMORED.id ? ARMORED.radius : RANGED_ENEMIES[identity.species]?.bodyRadius || GAMEPLAY_TABLES.enemyRadiusByRank[identity.rank],
@@ -177,7 +179,7 @@ export function updateEnemies(game, dt, previousPlayer) {
     const barricade=enemy.campDefense&&!enemy.campRaider&&campBarricadeTarget(game,enemy);
     const goddess = enemy.goddessTarget && game.realm?.mode === 'guardian' ? game.realm.goddess : null;
     const station = enemy.storyTarget ? storyTarget(game) : null;
-    const companion = goddess || station ? null : companionEnemyTarget(game,enemy,companions);
+    const companion = enemy.tradeGuard || goddess || station ? null : companionEnemyTarget(game,enemy,companions);
     const victim = barricade || station || goddess || companion?.node || game.player;
     const previous = barricade || station || goddess || (companion ? companion.node.previous || companion.node : previousPlayer);
     const ranged = RANGED_ENEMIES[enemy.species] && !enemy.workshopTarget;

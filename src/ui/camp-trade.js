@@ -1,3 +1,4 @@
+import {escortQuote,escortWaveDone,TRADE_ESCORT} from '../config/trade-escort.js';
 // 手机可看行情、接单点与商队位置，到场才办理交接。
 import {TRADE_SITES,TRADE_BOARD,TRADE_BOARD_SIZE,TRADE_TASK_IDS,TRADE_RELIC} from '../config/camp-trade.js';
 import {tradeField,atTradeSite,tradeAction,tradeCrop,tradePrice,tradeStock} from '../core/camp/camp-trade.js';
@@ -30,9 +31,9 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
   sections.push(`<section class="ui-inset"><h3>商队寻物${completionLabel('relic')}</h3><p>击败森林地面怪物，找回货签 ${t.relic??0}/3，报酬 ${TRADE_RELIC.coins} 金币。</p>${button(t.relic===null?'take-relic':'give-relic',t.relic===null?'接受寻物委托':'交还货签','',!board||t.relic!==null&&t.relic<3)}
    </section>`);
   sections.push('<section class="ui-inset"><h3>营地间运货</h3><p>各商站均可接单、交付作物和货签。选择其他营地运送商队货物，到目的地另领佣金。</p>'+
-   TRADE_SITES.filter(s=>s!==local).map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${s.commission} 金币 · ${s.guards?'途中有拦路怪':'无需击退专属拦路怪'}</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接单运往此营地',s.id,!board):''}`).join('')+'</section>');
+   TRADE_SITES.filter(s=>s!==local).map(s=>`<h4>${s.name}${completionLabel(s.id)}</h4><p>作物加价 ${s.percent-100}% · 护送佣金 ${escortQuote(local||nearestSite,s).coins} 金币 · ${escortQuote(local||nearestSite,s).meters}米 · 3波怪物</p>${button('route','导航到'+s.name,s.id)} ${!e?button('escort','接单运往此营地',s.id,!board):''}`).join('')+'</section>');
   if(e){const goal=TRADE_SITES.find(s=>s.id===e.station);
-   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>车况 ${Math.ceil(e.hp)}%${goal.guards?'，拦路怪 '+e.cleared+'/'+goal.guards:''}。在车旁领路，离队时商队等候。</p>${button('route','寻找商队','caravan')} ${button('finish-escort','领取佣金 '+goal.commission,'',local!==goal||worldDistance(e,goal)>125||e.cleared!==goal.guards)}</section>`);
+   sections.unshift(`<section class="ui-inset"><h3>正在运货</h3><p>${(TRADE_SITES.find(s=>s.id===e.origin)||TRADE_BOARD).name} → ${goal.name}</p><p>车况 ${Math.ceil(e.hp)}% · 已清理 ${escortWaveDone(e)}/3波${e.camped?' · 夜间扎营':''}。在车旁领路，离队时商队等候。</p>${e.camped?button('rest-escort','就地扎营，休息到天亮'):''} ${button('route','寻找商队','caravan')} ${!e.camped?button('route','继续前往目的地',goal.id):''} ${button('finish-escort','领取佣金 '+e.pay,'',local!==goal||worldDistance(e,goal)>125||escortWaveDone(e)!==TRADE_ESCORT.waves)}</section>`);
   }
   sections.push(`<section class="ui-inset"><h3>收成去向</h3><label class="ui-choice phone-wood"><input type="checkbox" data-keep ${t.keep?'checked':''}>留下收成，经过仓库也保留作物</label></section>`);
   body.innerHTML='<p class="ui-inset" data-trade-summary>共 '+TRADE_TASK_IDS.length+' 项任务 · 已完成 '+t.completed.length+' 项</p>'+sections.join('');
@@ -51,6 +52,7 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
    requestWorldNavigation(game,site,'前往'+site.name,{direct:true,arrivalRadius:70});
    for(const key of [dialog.id,'phone-dialog','current-cat-dialog'])if(root.getElementById(key)?.open)dialogs.close(key);
   }else{const r=tradeAction(game,action,id);status.textContent=r.message;render();if(r.ok){
+    if(action==='rest-escort'){dialogs.close(dialog.id);for(const key of ['phone-dialog','current-cat-dialog','keepsake-dialog'])if(root.getElementById(key)?.open)dialogs.close(key);}
     if(action==='escort'){const goal=TRADE_SITES.find(s=>s.id===id);requestWorldNavigation(game,goal,'护送至'+goal.name,{direct:true,arrivalRadius:70});}
     onChange();
    }}

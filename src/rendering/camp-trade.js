@@ -32,7 +32,7 @@ export function tradeObjects(game){
  // 远站在林中设有收货帐篷、桌台与营灯，各自按脚底排序。近站沿用旧哨站原建筑。
  const outpost=TRADE_STATIONS.find(s=>s.id==='trade-amber');
  for(const [part,dx,dy] of [['tent',-76,-38],['table',32,-32],['lamp',61,-37]])sites.push({type:'outdoor-camp',part,x:outpost.x+dx,y:outpost.y+dy});
- if(cart)sites.push({...cart,type:'trade-cart'});
+ if(cart){sites.push({...cart,type:'trade-cart'});if(cart.camped)for(const [part,dx,dy]of [['tent',-80,0],['cot',0,55],['lamp',55,0]])sites.push({type:'outdoor-camp',part,x:cart.x+dx,y:cart.y+dy});}
  return sites;
 }
 // 商队的马步与轮纹沿用真实车体动作时钟，木牌不增加阻挡。
