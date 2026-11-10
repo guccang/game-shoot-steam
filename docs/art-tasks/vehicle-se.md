@@ -36,3 +36,8 @@ SE 特殊装置（vehicle-se），本轮为动态功能与界面开发。五种�
 证据目录 output/vehicle-se/（含连续video、browser-result.json和测试日志）；正式浏览器 tests/vehicle-se-browser.cjs 返回 passed:true、errors:[]。默认4175被已有服务占用，本轮工作树隔离服务使用4176，未中断原服务。
 
 长期参考：[夜间巡战](../art-reference/vehicle-se-night.png)、[手机控制](../art-reference/vehicle-se-controls.png)、[双联火箭](../art-reference/vehicle-se-rockets.png)。PNG精修：后续阶段，仅指可选的独立装置插画；本轮功能与动态效果全部交付。
+
+## 小营地装配与重量调整（2026-11-11）
+
+小营地车辆整备使用同一辆车的装置库存。当地特色装置可先购买保管，安装时检查真实载荷。苔溪出售自动驾驶仪（160 kg），赤炉出售蜂巢火箭架（475 kg），雪松出售空投照明器（90 kg），雨铃出售战术巡战仪（240 kg），层岩出售脉冲防护罩（375 kg）。新重量为原值的五倍，已装配的旧存档从同一目录计算，五套合计 1340 kg。任一小营地都可免费装卸已购件。
+五营地按钮与跨营地装卸检查见 tests/regional-se-shop-browser.cjs，20项SE与载荷测试通过。沿用原有手机服务列表，本次无新增运行素材。截图和录像保存在 output/regional-se-shop。

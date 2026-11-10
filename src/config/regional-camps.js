@@ -1,10 +1,10 @@
 // 五方营地为固定友善聚落；坐标、剧情和商品保持稳定标识，独立于怪物据点。
 export const REGIONAL_CAMPS=[
- {id:'mossbrook',name:'苔溪营地',region:'西南苔原林',x:7000,y:19000,npc:'苔婆婆',hero:1,house:'cat-home',seeds:[4,8,12],clue:'sentinel',engine:5,gun:25,story:'断水的苗圃',intro:'旧水车停了，幼苗等着溪水。我的水车图纸落在东边林道的木匣里，请帮我带回来。',parcel:'水车图纸',ending:'照着图纸接好水槽，苗圃又能喝到溪水了。薄荷愿意跟你一起巡林。'},
- {id:'emberforge',name:'赤炉营地',region:'北部火山外缘',x:17713,y:5867,npc:'炉叔',hero:2,house:'legendary',seeds:[6,15,21],clue:'longbranch',engine:6,gun:26,story:'最后一枚铆钉',intro:'撤离时丢了祖传的铆钉模具。去东边的旧运输箱找找，修好炉门，我们就能继续造引擎。',parcel:'铆钉模具',ending:'炉门终于合拢了。这炉钢献给守护森林的朋友，银豆也想加入你的营地。'},
- {id:'snowcedar',name:'雪松营地',region:'东北雪山脚下',x:37382,y:6348,npc:'松爷爷',hero:4,house:'warehouse',seeds:[3,18,27],clue:'cedar',engine:7,gun:27,story:'没有寄出的信',intro:'雪团的巡山队多年没收到山下的消息。东边补给匣里有最后一袋信，请带回来让大家安心。',parcel:'巡山邮袋',ending:'原来老朋友们一直惦记着这里。雪团终于可以放心出门，替大家看看更远的森林。'},
- {id:'rainbell',name:'雨铃营地',region:'东南雨林边缘',x:38464,y:26567,npc:'铃阿姨',hero:3,house:'seed',seeds:[10,24,36],clue:'honeycomb',engine:8,gun:28,story:'听得见的归路',intro:'雨太大，巡林猫听不见回家的铃声。东边遗落的货箱里有共鸣片，请帮我们修好路铃。',parcel:'路铃共鸣片',ending:'铃声又穿过雨林了。摩卡会记住每一条归路，也愿意陪你去找新的营地。'},
- {id:'stratacove',name:'层岩营地',region:'南部层岩台地',x:22889,y:30293,npc:'岩师傅',hero:5,house:'legendary',seeds:[14,30,42],clue:'twin-heart',engine:9,gun:29,story:'岩层里的名字',intro:'旧勘测队把伙伴的名字刻在标本册里。它留在东边的勘测箱中，我想把大家的故事接着讲下去。',parcel:'岩层标本册',ending:'每一层岩石都记得一段旅程。墨墨愿意带着这些名字，去你的营地开始新故事。'},
+ {id:'mossbrook',seDevice:'autopilot',name:'苔溪营地',region:'西南苔原林',x:7000,y:19000,npc:'苔婆婆',hero:1,house:'cat-home',seeds:[4,8,12],clue:'sentinel',engine:5,gun:25,story:'断水的苗圃',intro:'旧水车停了，幼苗等着溪水。我的水车图纸落在东边林道的木匣里，请帮我带回来。',parcel:'水车图纸',ending:'照着图纸接好水槽，苗圃又能喝到溪水了。薄荷愿意跟你一起巡林。'},
+ {id:'emberforge',seDevice:'rocket',name:'赤炉营地',region:'北部火山外缘',x:17713,y:5867,npc:'炉叔',hero:2,house:'legendary',seeds:[6,15,21],clue:'longbranch',engine:6,gun:26,story:'最后一枚铆钉',intro:'撤离时丢了祖传的铆钉模具。去东边的旧运输箱找找，修好炉门，我们就能继续造引擎。',parcel:'铆钉模具',ending:'炉门终于合拢了。这炉钢献给守护森林的朋友，银豆也想加入你的营地。'},
+ {id:'snowcedar',seDevice:'flare',name:'雪松营地',region:'东北雪山脚下',x:37382,y:6348,npc:'松爷爷',hero:4,house:'warehouse',seeds:[3,18,27],clue:'cedar',engine:7,gun:27,story:'没有寄出的信',intro:'雪团的巡山队多年没收到山下的消息。东边补给匣里有最后一袋信，请带回来让大家安心。',parcel:'巡山邮袋',ending:'原来老朋友们一直惦记着这里。雪团终于可以放心出门，替大家看看更远的森林。'},
+ {id:'rainbell',seDevice:'combat',name:'雨铃营地',region:'东南雨林边缘',x:38464,y:26567,npc:'铃阿姨',hero:3,house:'seed',seeds:[10,24,36],clue:'honeycomb',engine:8,gun:28,story:'听得见的归路',intro:'雨太大，巡林猫听不见回家的铃声。东边遗落的货箱里有共鸣片，请帮我们修好路铃。',parcel:'路铃共鸣片',ending:'铃声又穿过雨林了。摩卡会记住每一条归路，也愿意陪你去找新的营地。'},
+ {id:'stratacove',seDevice:'shield',name:'层岩营地',region:'南部层岩台地',x:22889,y:30293,npc:'岩师傅',hero:5,house:'legendary',seeds:[14,30,42],clue:'twin-heart',engine:9,gun:29,story:'岩层里的名字',intro:'旧勘测队把伙伴的名字刻在标本册里。它留在东边的勘测箱中，我想把大家的故事接着讲下去。',parcel:'岩层标本册',ending:'每一层岩石都记得一段旅程。墨墨愿意带着这些名字，去你的营地开始新故事。'},
 ];
 // 引擎目录追加在原有探索引擎之后，不移动旧存档编号。
 export const REGIONAL_ENGINES=[
