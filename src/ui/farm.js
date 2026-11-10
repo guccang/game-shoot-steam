@@ -50,7 +50,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  const get=id=>root.getElementById('farm-'+id),coin=root.querySelector('[data-coins]')?.closest('.resource-pill'),cells=new Map(),flights=new Set();
  sceneHit(get('delivery-hit'),'查看快递站');
  const toolCanvases=[menu.querySelector('[data-farm-tool-art]'),...layer.querySelectorAll('[data-farm-tool-art]')];
- let opened=false,combat=false,autoCombat=false,weaponSignature='',selected=0,category='ornamental',seedPage=0,anchor=null,popup=null,loaded=false,disposed=false,gesture=null,signature='',lastResult=null,mailOpen=false,mailSignature='',notice='',introduced=false;
+ let opened=false,combat=false,autoCombat=false,weaponSignature='',selected=0,category='ornamental',seedPage=0,anchor=null,popup=null,loaded=false,disposed=false,gesture=null,signature='',lastResult=null,mailOpen=false,mailViewport='',mailSignature='',notice='',introduced=false;
  const groups=createFarmToolGroups({root,layer,toolbar:get('tools'),scope,onChoose:chooseTool,onOpen:()=>{popup=null;mailOpen=false;input.reset();render();},onDrag:startSickleDrag});
  // 镰刀从按钮直接拖到田里时沿用原有拖收手势，原地长按交给分类。
  function startSickleDrag(p){
@@ -214,7 +214,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(!canUseFarmDelivery(game)||root.querySelector('dialog[open]'))return;
   if(worldDistance(game.player,FARM_DELIVERY)>115){requestWorldNavigation(game,{...FARM_DELIVERY,y:FARM_DELIVERY.y+45},'前往快递站领取种子',{direct:true});say('前往小屋北侧的快递站，靠近柜台领取种子礼物');return;}
   // 收起农具但不改变驾驶状态；已有农活返车意图仍在关闭快递时处理。
-  stop(false);mailOpen=true;mailSignature='';render();
+  stop(false);mailOpen=true;mailViewport='';mailSignature='';render();
  }
  // 只在选择种子时读取屏幕高度和库存，战场刷新无需触发布局。
  function renderSeedPicker(f){
@@ -306,7 +306,8 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
   if(mailOpen&&(!deliveryAvailable||worldDistance(game.player,FARM_DELIVERY)>140))mailOpen=false;farmProperty(get('mail'),'hidden',!mailOpen);
   const mailKey=mailOpen&&JSON.stringify([f.delivery.parcels,f.inventory]);
   if(mailOpen&&mailKey!==mailSignature){mailSignature=mailKey;get('mail').innerHTML='<header><b>种子快递站</b><button data-farm-mail-close aria-label="关闭快递">×</button></header><p>邻居只会寄来已解锁的种子</p>'+f.delivery.parcels.map(p=>`<article>${farmCropMarkup(p.crop)}<span><b>${FARM_SENDERS[p.sender]}寄来的礼物</b><small>${FARM_CROPS[p.crop].name}种子 ×${p.count}</small></span><button data-farm-parcel="${p.id}">领取</button></article>`).join('')+(parcelCount?'':'<p>暂时没有新包裹，先去种田或巡林吧。</p>')+(f.inventory.some(Boolean)?'<button data-farm-sell>出售背包及在场货舱作物</button>':'');}
-  if(mailOpen)positionPopup(get('mail'),FARM_DELIVERY);
+  // 快递打开后固定屏幕锚点，领取造成列表变短不再移动标题和按钮；旋转屏幕时重新避让安全区。
+  if(mailOpen){const viewport=frame.clientWidth+':'+frame.clientHeight;if(mailViewport!==viewport){const node=get('mail');node.style.maxHeight='';positionPopup(node,FARM_DELIVERY);node.style.maxHeight=Math.max(44,frame.clientHeight-95-parseFloat(node.style.top||'60'))+'px';mailViewport=viewport;}}
   const result=game.farmWork?.result;if(result&&result!==lastResult){lastResult=result;if(!result.needsLoadConfirmation&&(!result.ok||game.farmWork?.job?.action==='saw'))say(result.message);}
   for(const event of (game.farmSignals||[]).splice(0)){if(event.action==='harvest')flyCoins(event);if(event.message)say(event.message);onChange();}
   for(const f of flights)if(game.state==='paused'&&f.animation.playState==='running')f.animation.pause();else if(game.state==='playing'&&f.animation.playState==='paused')f.animation.play();
