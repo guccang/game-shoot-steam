@@ -1,3 +1,4 @@
+import {seMass} from '../../config/vehicle-se.js';
 import {vehicleRefitStats} from '../../config/vehicle-refit.js';
 import {industryMass} from '../industry/industry.js';
 import {treasureCargoMass} from '../activities/treasure.js';
@@ -35,11 +36,11 @@ export function vehicleLoad(game,index=game.vehicle.index,{driver=index===game.v
  const gun=progress.vehicleLoadouts[index],key=ammoKind(VEHICLE_WEAPONS[gun]),loaded=progress===game.progress?game.vehicles?.[index]?.module?.magazine?.ammo:progress.supplies?.vehicleMags?.[index]?.ammo;
  const ammo=ammunitionMass(progress.supplies?.vehicles[index])+Math.max(0,loaded||0)*(AMMO_TYPES[key]?.mass||0),gunMass=GUN_MASSES[gun]||0;
  const refit=vehicleRefitStats(progress,index);
- const payload=cargo+armor+engineMass+ammo+gunMass,capacity=spec.payload*engine.payload*refit.power*refit.strength.storage;
+ const deviceMass=seMass(progress,index),payload=cargo+armor+engineMass+ammo+gunMass+deviceMass,capacity=spec.payload*engine.payload*refit.power*refit.strength.storage;
  const cat=driver?catLoad(progress===game.progress?game:Object.assign(Object.create(game),{progress})):null;
  const driverMass=cat?cat.body+cat.weight:0;
  const towCapacity=Math.max(0,spec.tow*engine.tow*refit.power-payload*LOAD_RULES.towPayloadPenalty),mass=spec.mass+payload+driverMass;
- return {mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driverMass,overloaded:payload>=capacity};
+ return {deviceMass,mass,payload,capacity,towCapacity,cargo,armor,engineMass,ammo,gunMass,driver:driverMass,overloaded:payload>=capacity};
 }
 // 徒步拖行按背包占用扣减牵引余量。
 export function footTowCapacity(load){return Math.max(0,LOAD_RULES.catTowCapacity-load.weight);}

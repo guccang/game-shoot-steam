@@ -1,3 +1,4 @@
+import {normalizeVehicleSE} from '../config/vehicle-se.js';
 import {grantDefaultCampDecor} from './camp/default-decor.js';
 import {normalizeCampManagement} from './camp/camp-management.js';
 import {normalizeRegionalCamps} from './camp/regional-camps.js';
@@ -137,6 +138,7 @@ export function freshProgress() {
     bossChallenge: null,
     patrol: null,
   };
+  progress.vehicleSE=normalizeVehicleSE(null,progress.vehicleHulls.length);
   return grantDefaultCampDecor(progress);
 }
 // 正式首页首次进入及清档共用空白入职档；交接前不拥有赠品。
@@ -279,6 +281,7 @@ export function validateProgress(raw) {
   const mountedGuns=new Set();
   p.vehicleLoadouts=p.vehicleHulls.map((owned,i)=>{const gun=raw.vehicleLoadouts?.[i];if(!owned||!isVehicleArmament(gun)||!p.vehicleWeapons[gun]||mountedGuns.has(gun))return null;mountedGuns.add(gun);return gun;});
   p.supplies=normalizeSupplies(raw.supplies,p);
+  p.vehicleSE=normalizeVehicleSE(raw.vehicleSE,p.vehicleHulls.length);
   p.warehouse=normalizeWarehouse(raw.warehouse);
   p.vehicleService=normalizeVehicleService(raw.vehicleService,p);
   p.campParking=normalizeCampParking(raw.campParking,p);

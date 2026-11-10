@@ -1,3 +1,4 @@
+import {drawVehicleSE} from './vehicle-se.js';
 import {drawSpecialAmmoZones} from './vehicle-special-ammo.js';
 import {TOWN_COURTS,TOWN_LAYOUT} from '../config/town-layout.js';
 import {campExpansionPoint} from '../config/camp-land.js';
@@ -526,6 +527,7 @@ export class Renderer {
     profiler?.end('render.lighting');
     profiler?.start('render.gravity');
     drawSpecialAmmoZones(c,source,this.reduced.matches);
+
     drawGravityFields(c,source,this.reduced.matches);
     profiler?.end('render.gravity');
     profiler?.start('render.entities');
@@ -819,6 +821,8 @@ export class Renderer {
     this.tone.draw(c, w, h, this.environment, performance.now(), this.reduced.matches);
     profiler?.end('render.tone');
     drawSurfaceFog(this,renderGame,g.player,view,lamps,light.night,windowLights);
+    // 装置边界和护罩为状态提示，夜雾后显示但不揭示任何敌人或地形。
+    if(!source.balconyScene){c.save();c.scale(zoom,zoom);c.translate(-cameraX,-cameraY);drawVehicleSE(c,source);c.restore();}
     profiler?.start('render.indicators');
     drawPlayerActionCountdown(this);
     drawWaterBagIndicator(this);

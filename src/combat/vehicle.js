@@ -1,3 +1,4 @@
+import {seTargetAllowed} from './vehicle-se.js';
 import {enhancedVehicleShot} from './vehicle-special-ammo.js';
 import {surfaceWeapon} from '../world/surface-vision.js';
 import {weaponTerrainTargets} from './terrain-targets.js';
@@ -226,7 +227,7 @@ export function vehicleMuzzle(player, vehicle, reduced = false) {
 // 怪物优先、Boss 集火；有效锁定不被更近目标抢占，循环地图按最近镜像瞄准。
 function vehicleTarget(game, weapon) {
   // 运木障碍交给履带处理，炮塔不会反复锁定无法射毁的任务树。
-  const valid = (t) => !t.equipmentObstacle && t.hp > 0 && attackTargetDistance(game,t,weapon.range) <= weapon.range && attackTargetKnown(game,t);
+  const valid = (t) => seTargetAllowed(game,t) && !t.equipmentObstacle && t.hp > 0 && attackTargetDistance(game,t,weapon.range) <= weapon.range && attackTargetKnown(game,t);
   if (game.boss && valid(game.boss)) return game.boss;
   const enemies = game.enemies.filter(valid),
     pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : weaponTerrainTargets(game,true,true).filter(valid);

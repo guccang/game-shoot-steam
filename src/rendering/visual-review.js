@@ -2259,3 +2259,6 @@ export function inspectVehicleSpecialAmmo(game,renderer,root=document){return {d
 
 // 正式弹体、阶段与雾源一起采样，空中照明只有一个实体和一处连续光池。
 export async function inspectDumplingAttacksAirFlare(game,renderer,root=document){const {vehicleFlarePose,vehicleFlareLights}=await import('../world/vehicle-flares.js');return {designCriterion:'dumpling-attacks-air-flare',flare:vehicleFlarePose(game),lights:vehicleFlareLights(game).length,bolts:game.enemyBolts.map(b=>({id:b.dumplingVariant,speed:b.speed,curve:b.curve,age:b.age})),actors:game.enemies.filter(e=>e.dumplingVariant).map(e=>({id:e.dumplingVariant,phase:e.assault.phase,burst:e.assault.burstLeft||0})),fog:renderer.surfaceFogReview?.sources,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 直接读取正式装配、运行控制与弹丸，验证手机页面与世界效果同步。
+export async function inspectVehicleSE(game,renderer,root=document){const {seBuild,seMass}=await import('../config/vehicle-se.js');return {designCriterion:'vehicle-se',build:seBuild(game.progress,game.vehicle.index),mass:seMass(game.progress,game.vehicle.index),control:game.seControl?{mode:game.seControl.mode,radius:game.seControl.radius,status:game.seControl.status}:null,rockets:game.projectiles.filter(b=>b.kind==='se-rocket').length,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
