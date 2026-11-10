@@ -1,3 +1,4 @@
+import {TOWN_SIGNS} from './town-layout.js';
 // 营地外观与装饰目录：数值、材质及造型使用稳定标识，不依赖中文分支。
 export const CAMP_DECOR_LIMIT=60;
 export const CAMP_DECOR_GRID=10;
@@ -63,9 +64,11 @@ CAMP_DECOR_CATALOG.push(...[
  {"id":"lamp-bamboo","name":"竹节路灯","theme":"路灯","price":580,"width":42,"depth":24,"height":122,"form":"lamp"},
  {"id":"lamp-pagoda","name":"石亭路灯","theme":"路灯","price":760,"width":52,"depth":28,"height":120,"form":"lamp"}
 ]);
+// 默认设施仅进入拥有列表，保持原有画笔、文字和通行行为。
+export const CAMP_DEFAULT_DECOR=[{id:'default-lamp',name:'营地路灯',width:24,depth:10,height:120,form:'lamp',fixture:'lamp'},{id:'default-torch',name:'营地火把',width:24,depth:10,height:72,form:'lamp',fixture:'torch'},...TOWN_SIGNS.map(s=>({id:'default-sign-'+s.id,name:s.label+'站牌',label:s.label,width:46,depth:12,height:42,form:'district-sign'}))].map(d=>({...d,default:true,passable:true}));
 // 非法组合不产生报价，也不能写入拥有表。
 export function campStyle(category,material,shape){const d=Object.hasOwn(CAMP_APPEARANCE,category)?CAMP_APPEARANCE[category]:null,m=d?.materials.find(x=>x[0]===material),s=d?.shapes.find(x=>x[0]===shape);return m&&s?{category,material,shape,key:`${category}:${material}:${shape}`,name:m[1]+' · '+s[1],price:m[2]+s[2]}:null;}
 // 默认外观完整保留旧档现有造型。
 export function defaultCampStyle(category){const d=CAMP_APPEARANCE[category];return campStyle(category,d.materials[0][0],d.shapes[0][0]);}
 // 装饰目录查询保持稳定标识，不用名称判定类型。
-export function campDecorDefinition(id){return CAMP_DECOR_CATALOG.find(d=>d.id===id);}
+export function campDecorDefinition(id){return CAMP_DECOR_CATALOG.find(d=>d.id===id)||CAMP_DEFAULT_DECOR.find(d=>d.id===id);}

@@ -524,6 +524,7 @@ export class Renderer {
     for (const item of objects) {
       if(source.balconyScene&&item.type==='player')continue;
       // 独立运动草坪覆盖原地表，平台内部不能残留森林摆件或山体遮挡。
+      if(item.kind==='district-sign'&&source.progress.campManagement?.items.some(d=>d.type==='default-sign-'+item.id)&&!source.realm&&!source.story&&!source.campDefense)continue;
       if(['football','race'].includes(source.realm?.mode)&&['scenery','landform','fixture','signpost'].includes(item.type)&&Math.hypot(item.x-source.realm.arena.x,item.y-source.realm.arena.y)<source.realm.arena.radius+220)continue;
       // 宽麦田按真实冠幅裁剪，镜头经过行中心外侧时仍保留伸入画面的麦穗。
       const margin = item.type==='settlement-gate'?item.length/2+55:item.burst ? 180 : ['realm-entrance','fire-station-back'].includes(item.type) ? Math.max(90,item.width/2+10) : item.type === 'landform' ? item.rx + 45 : item.scenic ? 190 : item.type === 'scenery' ? Math.max(100, (item.width || 160) / 2 + 16) : 90;

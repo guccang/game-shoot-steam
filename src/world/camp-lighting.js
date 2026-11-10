@@ -27,14 +27,14 @@ export function visibleCampLightRegions(game,view){
  .map(r=>({...r,x:r.x-r.w/2,y:r.y-r.h/2,feather:CAMP_LIGHTING.feather,power:CAMP_LIGHTING.ambient}));
 }
 
-// 现有灯柱造型的独立公共灯，不新增碰撞和玩家存档实体。
+// 生成原有灯柱候选；主营地迁移为存档装饰，邻里和其他营地仍为公共灯。
 function lamp(id,x,y){return {id,type:'fixture',kind:'lamp',x,y,phase:0,height:86,offset:18,radius:CAMP_LIGHTING.lampRadius,campLight:true};}
 
 // 路口与转角选路肩，避开完整房屋、门口和耕地；搬迁后从真实新路网重建。
-export function campRoadLights(progress){
+export function campRoadLights(progress,includeManaged=false){
  if(!progress)return [];
  const plots=progress.farm?.plots,key=JSON.stringify([progress.campLayout,progress.campLand]);
- let entry=cache.get(progress);if(entry?.key===key&&entry.plots===plots&&entry.count===plots?.length)return entry.lights;
+ let entry=cache.get(progress);if(entry?.key===key&&entry.plots===plots&&entry.count===plots?.length)return includeManaged||!progress.campManagement?.defaultDecorVersion?entry.lights:entry.lights.filter(l=>!l.id.startsWith('camp-road-'));
  const customized=Object.keys(progress.campLayout?.positions||{}).length>0,paths=customized?campRoadNetwork(progress).paths:TOWN_PATHS;
  const buildings=CAMP_BUILDINGS.map(b=>campBuildingPosition(progress.campLayout,b)),lights=[];
  const candidates=paths.flatMap(path=>customized?path.filter((p,i)=>i>0&&i<path.length-1&&(p.x-path[i-1].x)*(path[i+1].y-p.y)!==(p.y-path[i-1].y)*(path[i+1].x-p.x)):path);
@@ -50,5 +50,5 @@ export function campRoadLights(progress){
  // 邻里主路与五方营地十字口同样有固定路肩照明，不把路灯铺满野外。
  lights.push(lamp('neighbors-road',280,1830));
  for(const c of REGIONAL_CAMPS)for(const [i,[dx,dy]]of [[-95,-95],[95,95]].entries())lights.push(lamp('camp-'+c.id+'-'+i,c.x+dx,c.y+dy));
- entry={key,lights,plots,count:plots?.length};cache.set(progress,entry);return lights;
+ entry={key,lights,plots,count:plots?.length};cache.set(progress,entry);return includeManaged||!progress.campManagement?.defaultDecorVersion?lights:lights.filter(l=>!l.id.startsWith('camp-road-'));
 }

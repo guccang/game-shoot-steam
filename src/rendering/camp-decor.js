@@ -1,3 +1,5 @@
+import {drawLightFixture} from './lighting.js';
+import {drawTownSign} from './town-layout.js';
 import {drawExpandedDecoration} from './camp-decor-expanded.js';
 import {drawCampWallFinish} from './camp-building-finish.js';
 import {drawRoofSurface} from './building-materials.js';
@@ -11,10 +13,13 @@ function star(c,x,y,r){poly(c,Array.from({length:10},(_,i)=>{const a=i*Math.PI/5
 function flower(c,x,y,color='#e1a1a0',r=5){for(let i=0;i<5;i++)oval(c,x+Math.cos(i*1.256)*r*.7,y+Math.sin(i*1.256)*r*.7,r*.65,r*.65,color);oval(c,x,y,r*.45,r*.45,'#f2d98b');}
 // 红灯笼与流苏为独立局部图元，灯芯沿用暖黄小面积高光。
 function lantern(c,x,y,night){box(c,x-2,y-16,4,17,1,WOOD,E,1);oval(c,x,y+9,12,17,RED,E,1.8);oval(c,x-3,y+6,5,11,night?'#f4c47e':'#df916a');box(c,x-8,y-8,16,4,2,'#d6b36a',E,1);box(c,x-7,y+24,14,4,2,'#d6b36a',E,1);for(const dx of [-4,0,4])box(c,x+dx,y+28,1.7,10,0,RED);}
-// 所有装饰最多60个实例，由正式脚底队列裁剪和排序。
+// 购买装饰最多60件，默认设施另行保留，由正式脚底队列裁剪和排序。
 export function campDecorationObjects(game){if(game.mapId!=='forest'||game.cottage||game.realm||game.story||game.campDefense)return [];return [{...CAMP_DECOR_SHOP,type:'camp-decor-shop'},...(game.progress.campManagement?.items||[]).filter(i=>i.x!==null&&campDecorDefinition(i.type)?.form!=='lamp').map(i=>({...i,kind:i.type,type:'camp-decoration'}))];}
 // 实体仅改变局部喷泉水珠；减少动态或暂停时由调用方固定时钟。
-export function drawCampDecoration(c,item,night=0,time=0,reduced=false){const d=campDecorDefinition(item.kind||item.type);if(!d)return;c.save();c.translate(item.x||0,item.y||0);if(item.decorScale)c.scale(item.decorScale,item.decorScale);c.lineCap='round';c.lineJoin='round';oval(c,4,3,d.width*.5,d.depth*.32,'#34503a27');
+export function drawCampDecoration(c,item,night=0,time=0,reduced=false){const d=campDecorDefinition(item.kind||item.type);if(!d)return;c.save();c.translate(item.x||0,item.y||0);if(item.decorScale)c.scale(item.decorScale,item.decorScale);c.lineCap='round';c.lineJoin='round';
+ if(d.fixture){drawLightFixture(c,{x:0,y:0,kind:d.fixture,power:night,phase:0},time,{night,dusk:0,rain:0},reduced);c.restore();return;}
+ if(d.form==='district-sign'){drawTownSign(c,{x:0,y:0,label:d.label},night);c.restore();return;}
+ oval(c,4,3,d.width*.5,d.depth*.32,'#34503a27');
  if(d.form){drawExpandedDecoration(c,d,night,time,reduced);c.restore();return;}
  switch(d.id){
  case 'spring-lantern':box(c,-17,-6,34,10,3,'#9ba487',E,1.8);box(c,-4,-99,8,94,2,WOOD,E,2);box(c,-6,-100,27,6,2,CREAM,E,1.5);lantern(c,12,-78,night);break;

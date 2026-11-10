@@ -47,7 +47,7 @@ export function fixturePower(fixture, time, environment, reduced = false) {
 
 // 可见镜像包含视口外照进来的光源，不创建额外实体或改变碰撞。
 export function visibleLights(view, time, environment, reduced = false, game=null) {
-  return visibleBodies(game?.mapId==='forest'&&!game.realm?[...LIGHT_FIXTURES,...campRoadLights(game.progress),...(!game.story&&!game.cottage&&!game.campDefense?campDecorLights(game.progress):[])]:LIGHT_FIXTURES, view, CAMP_LIGHTING.lampRadius+120).map((fixture) => ({
+  return visibleBodies(game?.mapId==='forest'&&!game.realm?[...activeFixedLights(game.progress),...campRoadLights(game.progress),...(!game.story&&!game.cottage&&!game.campDefense?campDecorLights(game.progress):[])]:LIGHT_FIXTURES, view, CAMP_LIGHTING.lampRadius+120).map((fixture) => ({
     ...fixture,
     power: fixturePower(fixture, time, environment, reduced),
   }));
@@ -72,4 +72,7 @@ export function localIllumination(point, lights) {
 }
 
 // 购买路灯使用同一照明管线，光池、迷雾视野与灯头亮度同步。
-export function campDecorLights(progress){return (progress?.campManagement?.items||[]).filter(i=>i.x!==null&&campDecorDefinition(i.type)?.form==='lamp').map(i=>({id:'decor-light-'+i.uid,type:'fixture',kind:'lamp',decorLamp:i.type,x:i.x,y:i.y,phase:0,height:90,offset:0,radius:CAMP_LIGHTING.lampRadius,campLight:true}));}
+export function campDecorLights(progress){return (progress?.campManagement?.items||[]).filter(i=>i.x!==null&&campDecorDefinition(i.type)?.form==='lamp').map(i=>({id:'decor-light-'+i.uid,type:'fixture',kind:campDecorDefinition(i.type).fixture||'lamp',decorLamp:campDecorDefinition(i.type).fixture?null:i.type,x:i.x,y:i.y,phase:0,height:campDecorDefinition(i.type).fixture==='lamp'?86:campDecorDefinition(i.type).fixture==='torch'?58:90,offset:campDecorDefinition(i.type).fixture==='lamp'?18:0,radius:campDecorDefinition(i.type).fixture==='torch'?150:CAMP_LIGHTING.lampRadius,campLight:true}));}
+
+// 已入库固定灯由装饰实例绘制，回收后不留下原灯和光池。
+export function activeFixedLights(progress){return LIGHT_FIXTURES.filter(l=>!progress?.campManagement?.defaultLightIds?.includes(l.id));}

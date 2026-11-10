@@ -13,7 +13,7 @@ import {nearest,worldDistance} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
 const indexes=new WeakMap();
 // 一次提交重建一次有界索引，寻路热路径不遍历全存档。
-export function campDecorBlocked(x,y,radius,progress){const state=progress?.campManagement;if(!state)return false;let grid=indexes.get(state);if(!grid){grid=new SpatialGrid(state.items.filter(i=>i.x!==null).map(i=>({...i,radius:campDecorDefinition(i.type).width/2+24})));indexes.set(state,grid);}return grid.query(x,y,x,y,radius).some(i=>{const p=nearest({x,y},i),d=campDecorDefinition(i.type);return Math.abs(p.x-i.x)<d.width/2+radius&&Math.abs(p.y-i.y)<d.depth/2+radius;});}
+export function campDecorBlocked(x,y,radius,progress){const state=progress?.campManagement;if(!state)return false;let grid=indexes.get(state);if(!grid){grid=new SpatialGrid(state.items.filter(i=>i.x!==null&&!campDecorDefinition(i.type)?.passable).map(i=>({...i,radius:campDecorDefinition(i.type).width/2+24})));indexes.set(state,grid);}return grid.query(x,y,x,y,radius).some(i=>{const p=nearest({x,y},i),d=campDecorDefinition(i.type);return Math.abs(p.x-i.x)<d.width/2+radius&&Math.abs(p.y-i.y)<d.depth/2+radius;});}
 // 线段距离用于道路、门口和停车进出通道保护。
 function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);}
 // 放置不占路、不盖门、不挤车辆，也不允许把实体压到玩家脚下。

@@ -1,3 +1,4 @@
+import {grantDefaultCampDecor} from './camp/default-decor.js';
 import {normalizeCampManagement} from './camp/camp-management.js';
 import {normalizeRegionalCamps} from './camp/regional-camps.js';
 import {normalizeWaystations} from './navigation/waystations.js';
@@ -65,7 +66,7 @@ import { equipmentRecipe, ownsEquipment } from './workshop/equipment-goals.js';
 // 创建新玩家进度，首批物资可用于体验一次升级。
 import {validateFireProgress} from './activities/fire-progress.js';
 export function freshProgress() {
-  return {
+  const progress = {
     campLayout:normalizeCampLayout(null),
     campLand:freshCampLand(),
     townLayoutVersion:TOWN_LAYOUT_VERSION,
@@ -136,6 +137,7 @@ export function freshProgress() {
     bossChallenge: null,
     patrol: null,
   };
+  return grantDefaultCampDecor(progress);
 }
 // 正式首页首次进入及清档共用空白入职档；交接前不拥有赠品。
 export function freshRangerProgress() {
@@ -289,7 +291,7 @@ export function validateProgress(raw) {
   normalizeWeaponStorage(p);
   if(!raw.forestExtentVersion)restoreForestExtent(p,raw);
   p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
-  return p;
+  return grantDefaultCampDecor(p);
 }
 // 根据当前等级计算升级费用。
 export function upgradeCost(level, progress, kind = 'weapons', index = 0, part = null) {

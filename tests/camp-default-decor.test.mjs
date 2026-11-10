@@ -1,0 +1,16 @@
+// 默认设施的迁移、回收和原照明退场必须一起验证。
+import test from 'node:test';import assert from 'node:assert/strict';
+import {freshProgress,validateProgress} from '../src/progression/progress.js';
+import {grantDefaultCampDecor} from '../src/progression/camp/default-decor.js';
+import {campDecorLights,activeFixedLights,LIGHT_FIXTURES} from '../src/world/lighting.js';
+import {campRoadLights} from '../src/world/camp-lighting.js';
+import {campDecorBlocked} from '../src/world/camp-decor.js';
+import {CAMP_PLOTS} from '../src/config/camp-land.js';
+import {campDecorDefinition} from '../src/config/camp-management.js';
+import {Game} from '../src/core/game.js';
+import {buyCampDecor,storeCampDecor} from '../src/core/camp/camp-management.js';
+// 创建真实管理事务，保存回执可用于验证回滚。
+function setup(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.phase='complete';p.mainline.trackingPaused=true;p.coins=100000;const g=new Game(p);g.state='playing';g.mainlineSpeech=null;g.livingPersist=()=>true;return g;}
+test('新档和旧档默认灯牌入库，保留位置且加载不重复',()=>{const p=freshProgress();assert.ok(p.campManagement.items.some(i=>i.type==='default-sign-home'));const l=p.campManagement.items.find(i=>i.type==='default-lamp');assert.equal(campDecorBlocked(l.x,l.y,5,p),false);assert.ok(activeFixedLights(p).length<LIGHT_FIXTURES.length);assert.ok(!campRoadLights(p).some(l=>l.id.startsWith('camp-road-')));assert.deepEqual(validateProgress(p).campManagement.items,p.campManagement.items);const old=structuredClone(p);old.campManagement={items:[{uid:91,type:'snowman',x:null,y:null}],nextId:92};old.campLand.owned=CAMP_PLOTS.map(p=>p.id);const restored=validateProgress(old);assert.equal(restored.campManagement.items[0].uid,91);assert.ok(restored.campManagement.items.some(i=>i.type==='default-sign-repair-district'));assert.deepEqual(validateProgress(restored).campManagement.items,restored.campManagement.items);});
+test('灯移动后光池随动，回收及读档后原灯不重生，保存失败不改变世界',()=>{const g=setup(),l=g.progress.campManagement.items.find(i=>i.type==='default-lamp');l.x=600;l.y=400;assert.ok(campDecorLights(g.progress).some(i=>i.x===600&&i.y===400&&i.offset===18));const before=structuredClone(g.progress.campManagement);g.livingPersist=()=>false;assert.equal(storeCampDecor(g,l.uid).ok,false);assert.deepEqual(g.progress.campManagement,before);g.livingPersist=()=>true;assert.equal(storeCampDecor(g,l.uid).ok,true);const p=validateProgress(g.progress);assert.equal(p.campManagement.items.find(i=>i.uid===l.uid).x,null);assert.equal(campDecorLights(p).length,campDecorLights({campManagement:before}).length-1);assert.ok(!activeFixedLights(p).some(i=>i.id===p.campManagement.defaultLightIds[0]));});
+test('默认物件不挤占60件购买额度，新地契设施只赠送一次',()=>{const g=setup();for(let i=0;i<60;i++)assert.equal(buyCampDecor(g,'flowerbed').ok,true);assert.equal(buyCampDecor(g,'flowerbed').ok,false);assert.equal(validateProgress(g.progress).campManagement.items.filter(i=>!campDecorDefinition(i.type).default).length,60);g.progress.campLand.owned.push('workyard');grantDefaultCampDecor(g.progress,'workyard');const before=structuredClone(g.progress.campManagement.items);grantDefaultCampDecor(g.progress,'workyard');assert.deepEqual(g.progress.campManagement.items,before);});

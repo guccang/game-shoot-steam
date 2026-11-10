@@ -18,7 +18,7 @@ import {campDecorPlacementError,campDecorBlocked} from '../src/world/camp-decor.
 import {normalizeCampManagement} from '../src/progression/camp/camp-management.js';
 import {CAMP_PLOTS} from '../src/config/camp-land.js';
 // 隔离存档保证交易条件，保存回执仍走正式事务。
-function setup(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.phase='complete';p.mainline.trackingPaused=true;p.coins=100000;p.campLand.owned=CAMP_PLOTS.map(p=>p.id);const g=new Game(p);g.state='playing';g.mainlineSpeech=null;g.livingPersist=()=>true;g.trees=[];Object.assign(g.player,{x:700,y:740});return g;}
+function setup(){const p=freshProgress();p.campManagement.items=[];p.campManagement.nextId=1;p.arrival={version:3,phase:'complete',keys:true};p.mainline.phase='complete';p.mainline.trackingPaused=true;p.coins=100000;p.campLand.owned=CAMP_PLOTS.map(p=>p.id);const g=new Game(p);g.state='playing';g.mainlineSpeech=null;g.livingPersist=()=>true;g.trees=[];Object.assign(g.player,{x:700,y:740});return g;}
 // 测试只搜索有界营地，结果必须经正式放置校验。
 function spot(g,uid){for(let y=60;y<1320;y+=40)for(let x=-1040;x<720;x+=40)if(!campDecorPlacementError(g,uid,x,y))return {x,y};throw Error('没有可用装饰空地');}
 test('50件独立装饰，春节圣诞均可购买并往返保存',()=>{const g=setup();assert.equal(CAMP_DECOR_CATALOG.length,50);for(const d of CAMP_DECOR_CATALOG)assert.equal(buyCampDecor(g,d.id).ok,true);const r=buyCampDecor(g,CAMP_DECOR_CATALOG[0].id);assert.equal(r.uid,51);const p=validateProgress(g.progress);assert.equal(p.campManagement.items.length,51);assert.equal(p.campManagement.nextId,52);});

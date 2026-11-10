@@ -2,7 +2,7 @@ import {CAMP_LIGHTING} from '../config/camp-lighting.js';
 import {campPointLit,campRoadLights} from './camp-lighting.js';
 // 地面迷雾的可见性与射程共用规则，不访问渲染器或扫描世界实体。
 import {SURFACE_VISION} from '../config/surface-vision.js';
-import {LIGHT_FIXTURES} from './lighting.js';
+import {activeFixedLights,campDecorLights} from './lighting.js';
 import {nearest} from './coordinates.js';
 
 // 室内、地下、秘境和独立靶场沿用自身规则，昼夜权重由正式环境时钟提供。
@@ -32,7 +32,7 @@ export function surfaceTargetVisible(game,target){
  const bodyRadius=Math.max(0,Number(target.radius)||0);
  const radius=SURFACE_VISION.player*SURFACE_VISION.litRatio/Math.max(.001,night)+bodyRadius;
  if(Math.hypot(p.x-origin.x,y-(origin.y-20))<=radius||campPointLit(game,target))return true;
- return game.mapId!=='jiuzhaigou'&&[...LIGHT_FIXTURES,...(game.mapId==='forest'?campRoadLights(game.progress):[])].some(light=>{const l=nearest(light,origin);return Math.hypot(p.x-l.x-light.offset,y-(l.y-light.height))<=light.radius*SURFACE_VISION.litRatio+bodyRadius;});
+ return game.mapId!=='jiuzhaigou'&&[...activeFixedLights(game.progress),...campDecorLights(game.progress),...(game.mapId==='forest'?campRoadLights(game.progress):[])].some(light=>{const l=nearest(light,origin);return Math.hypot(p.x-l.x-light.offset,y-(l.y-light.height))<=light.radius*SURFACE_VISION.litRatio+bodyRadius;});
 }
 
 // 正式视口已经裁剪路灯，最多四十个局部光池；窗光优先保留附近二十四处。
