@@ -22,7 +22,7 @@ export function createCampTradePanel({game,root,dialogs,renderer,onChange}){
   const sections=[],stock=local?tradeStock(game,local).filter(r=>r.count>0):[];
   const available=stock.find(r=>r.crop.id===crop.id)?.count||0;
   // 在重复可接的委托标题旁标明首次交付进度。
-  const completionLabel=id=>t.completed.includes(id)?' · 已完成':'';
+  const completionLabel=id=>(t.failed||[]).includes(id)?' · 失败，可重新接取':t.completed.includes(id)?' · 已完成':'';
   if(local){
    sections.push(`<section class="ui-inset"><h3>${local.name} · 现场出售</h3>${stock.length?stock.map(r=>button('sell','出售'+r.crop.name+' ×'+r.sell+' · '+tradePrice(r.crop,r.sell,local.percent||100)+' 金币',r.crop.id,!r.sell)).join(' '):'<p>带上背包作物，或把货车开到这里。</p>'}</section>`);
   }

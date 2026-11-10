@@ -1,7 +1,7 @@
 import {surfaceWeapon} from '../world/surface-vision.js';
 import {activateCampLayout} from '../world/camp-layout-bindings.js';
 import {updateIndustry} from './industry/industry.js';
-import {tradeDefeat,updateTradeEscort} from './camp/camp-trade.js';
+import {tradeDefeat,updateTradeEscort,failCampOrders} from './camp/camp-trade.js';
 import {weaponTerrainTargets} from '../combat/terrain-targets.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
 import {commitWorkshop} from './workshop/workshop.js';
@@ -843,6 +843,7 @@ export class Game {
     this.float(this.player.x, this.player.y, `−${Math.floor(amount)}`, '#ffb1a0', true);
     this.onEvent('hurt', { fatal: this.player.hp <= 0 });
     if (!this.player.hp) {
+      failCampOrders(this);
       if(this.campDefense){rescueCampDefense(this,'death');return;}
       if (this.story) { failStory(this); return; }
       if (this.realm) { finishRealm(this); return; }

@@ -1,3 +1,6 @@
+import {followTradeCart} from './trade-follow.js';
+import {clearWorldNavigation} from '../navigation/world-navigation.js';
+import {stopWaystationTravel} from '../navigation/waystations.js';
 import {escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../../config/trade-escort.js';
 import {updateEscortEncounter,startEscortRest} from './trade-escort.js';
 // 商路交易只取随身作物和实际到站的自有货舱；护送不占用玩家货位。
@@ -9,8 +12,8 @@ import {RESOURCE_CAP} from '../../config/resource-limits.js';
 import {recordEconomy} from '../../progression/economy/economy-ledger.js';
 import {productionSalePlan} from '../../progression/farming/farm-production.js';
 import {livingForest} from '../../world/living-spaces.js';
-import {nearest,worldDistance,WORLD} from '../../world/coordinates.js';
-import {moveBody} from '../../physics/motion.js';
+import {worldDistance} from '../../world/coordinates.js';
+
 import {parkedOwned} from '../vehicles/camp-parking.js';
 import {commitCargo} from '../inventory/cargo.js';
 import {advanceVehicleWheels} from '../../combat/vehicle-motion.js';
@@ -72,6 +75,7 @@ export function tradeAction(game,action,id){
  }
  if(coins){if(coins>RESOURCE_CAP-next.coins)return fail('金币已满，请留出足够余额空间。');creditResource(next,'coins',coins);recordEconomy(next,'income','trade:'+action,{coins});message+='，金币 +'+coins+'。';}
  if(completedId&&!t.completed.includes(completedId))t.completed.push(completedId);
+ if(['take-crop','take-relic','escort'].includes(action)){const key=action==='take-crop'?'crop':action==='take-relic'?'relic':id;t.failed=(t.failed||[]).filter(f=>f!==key);}
  const result=commitCargo(game,next,message);
  if(result.ok&&action==='escort'){game.tradeMotion=null;for(const enemy of game.enemies)delete enemy.tradeGuard;}
  return result;
@@ -88,22 +92,18 @@ export function updateTradeEscort(game,dt){
  const e=game.progress.trade?.escort;if(!e||!tradeField(game)||game.state!=='playing')return;
  const distance=worldDistance(e,game.player);
  const motion=game.tradeMotion??={index:14,active:true,path:[]};
- if(motion.station!==e.station||worldDistance(e,motion.last||e)>8){motion.path=[];motion.station=e.station;}
+ if(motion.station!==e.station||worldDistance(e,motion.last||e)>8){motion.path=[];motion.search=null;motion.retry=0;motion.station=e.station;}
  motion.last={x:e.x,y:e.y};
  const before={x:e.x,y:e.y};
  if(updateEscortEncounter(game,dt))return;
- if(distance<240){
-  const path=motion.path,last=path.at(-1)||e;
-  if(worldDistance(last,game.player)>12)path.push({x:game.player.x,y:game.player.y});
-  if(path.length>100)path.splice(0,path.length-100);
-  if(distance>40&&path.length){
-   const point=nearest(path[0],e),dx=point.x-e.x,dy=point.y-e.y,len=Math.hypot(dx,dy),step=Math.min(len,dt*(115+Math.max(0,distance-70)));
-   if(len>0){
-    const body={x:e.x,y:e.y,mapId:'forest',livingCollision:true};
-    moveBody(body,dx/len*step,dy/len*step,WORLD,10,game.trees);e.x=body.x;e.y=body.y;
-   }
-   if(worldDistance(e,point)<4||worldDistance(before,e)<.01)path.shift();
-  }
- }
+ followTradeCart(game,e,motion,dt);
  e.travel=(e.travel||0)+worldDistance(before,e);advanceVehicleWheels(motion,e,before,dt);motion.last={x:e.x,y:e.y};
+}
+
+// 死亡先清除在途订单并记录失败，随后由原死亡存档流程保存；历史已完成记录保留。
+export function failCampOrders(game){
+ const t=game.progress.trade;if(!t)return;
+ const failed=[...(t.failed||[])];if(t.crop)failed.push('crop');if(t.relic!==null)failed.push('relic');if(t.escort)failed.push(t.escort.station);
+ t.failed=[...new Set(failed)];t.crop=t.relic=t.escort=null;game.tradeMotion=null;game.tradeRest=null;
+ game.enemies=game.enemies.filter(e=>!e.tradeGuard);clearWorldNavigation(game);game.sceneApproach=null;if(game.waystationTravel)stopWaystationTravel(game,'护送失败，自动行进已停止。');
 }

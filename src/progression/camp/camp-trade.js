@@ -23,5 +23,5 @@ export function normalizeTrade(raw,ledger){
    if(payouts.some(n=>n>0&&n%other.commission!==0))completed.add(station.id);
   }
  }
- return {serial,crop,relic,escort,keep:raw?.keep===true,completed:TRADE_TASK_IDS.filter(id=>completed.has(id))};
+ return {serial,crop,relic,escort,failed:TRADE_TASK_IDS.filter(id=>Array.isArray(raw?.failed)&&raw.failed.includes(id)),keep:raw?.keep===true,completed:TRADE_TASK_IDS.filter(id=>completed.has(id))};
 }

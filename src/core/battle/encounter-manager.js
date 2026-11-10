@@ -19,7 +19,8 @@ export function encounterRules(game){return game.mapId==='forest'&&game.player&&
 // 仅自由移动推进遭遇与喘息，暂停、清缴和专属战斗不积压补刷。
 export function updateEncounters(game, dt, moving) {
   const living=livingForest(game);
-  if(observingMonsterCamp(game))return;
+  // 护送只使用约定的三波；单次巡游移动遭遇总数有上限，击杀与远处回收不重置。
+  if(game.progress.trade?.escort||game.encounterSpawned>=ENCOUNTERS.maxSpawned||observingMonsterCamp(game))return;
   if (game.campDefense || game.state !== 'playing' || (!living&&!game.bossReady) || game.story || game.realm || game.boss || game.fireActive || !moving) return;
   if(living&&(livingSafePoint(game.player)||livingWaveAllowed(game)||game.livingBattle))return;
   const rules=encounterRules(game),low=rules===LOW_RISK_ENCOUNTERS,alive=game.enemies.filter(e=>e.ambient&&e.hp>0).length;

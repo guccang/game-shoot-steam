@@ -72,7 +72,7 @@ for(const station of TRADE_STATIONS)test(station.name+'按既定路线护送、�
  // 本例专测行进与交货，三波实际生成/击杀由trade-escort专项覆盖。
  g.progress.trade.escort.defeated=Array.from({length:24},(_,i)=>i);g.progress.trade.escort.wave=3;g.progress.trade.escort.cleared=24;
  const start={...g.progress.trade.escort};locate(g,station);updateTradeEscort(g,.05);
- assert.equal(worldDistance(g.progress.trade.escort,start),0);assert.equal(tradeAction(g,'finish-escort').ok,false);locate(g,start);
+ assert.ok(worldDistance(g.progress.trade.escort,start)<=16);assert.equal(tradeAction(g,'finish-escort').ok,false);locate(g,start);
  let reloaded=false;
  for(const point of path.points){
   while(worldDistance(g.player,point)>.01){

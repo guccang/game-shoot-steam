@@ -9,3 +9,6 @@ export function escortWaveDone(e){return Math.floor((e.defeated?.length||0)/TRAD
 
 // 货物完好百分比决定实收佣金，向下取整，损失不能带来额外收入。
 export function escortPayout(e){return Math.floor(Math.max(0,e.pay||0)*Math.max(0,Math.min(100,e.hp??100))/100);}
+
+// 商队跟随范围、速度与搜索预算独立于佣金和战斗波次。
+export const TRADE_FOLLOW=Object.freeze({range:2000,stop:40,speed:115,catchUp:200,budget:4096,retry:1});
