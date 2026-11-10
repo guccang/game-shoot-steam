@@ -6,7 +6,7 @@ import {defeatBoss} from '../src/core/battle/boss-manager.js';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {enterCottage,leaveCottage,updateCottage} from '../src/core/home/cottage.js';
+import {enterCottage,leaveCottage,updateCottage,sleepInCottage} from '../src/core/home/cottage.js';
 import {cottageRestGuideActive} from '../src/core/camp/cottage-guide.js';
 import {mainlineObjective,updateMainline} from '../src/core/story/mainline-manager.js';
 import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
@@ -17,7 +17,7 @@ function scene(repaired=true){
  const g=new Game(p,()=>.5);g.start();g.vehicle.active=false;g.player.hp=27;Object.assign(g.player,COTTAGE.door);g.restorationPersist=()=>true;g.livingPersist=()=>true;return g;
 }
 // 重试先离开床边解除闩锁，再用正式候停进入睡眠。
-function startSleep(g){const at={x:g.player.x,y:g.player.y};Object.assign(g.player,{x:220,y:220});updateCottage(g,0,{x:0,y:0});Object.assign(g.player,at);updateCottage(g,0,{x:0,y:0});for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});return !!g.cottage.sleep;}
+function startSleep(g){const at={x:g.player.x,y:g.player.y};Object.assign(g.player,{x:220,y:220});updateCottage(g,0,{x:0,y:0});Object.assign(g.player,at);updateCottage(g,0,{x:0,y:0});for(let i=0;i<20;i++)updateCottage(g,.05,{x:0,y:0});return sleepInCottage(g);}
 // 睡眠动画使用正式控制器结算，不通过修改生命绕开事务。
 function finish(g){updateCottage(g,1.3,{x:0,y:0});}
 test('小屋完工后出现一次休息指引，读档保留，原主线暂不推进',()=>{
@@ -29,7 +29,7 @@ test('小屋完工后出现一次休息指引，读档保留，原主线暂不�
  assert.equal(validateProgress(g.progress).restoration.cottageRested,false);
  g.vehicle.active=true;assert.match(mainlineObjective(g).label,/停稳1秒.*下车进屋/);
 });
-test('自动睡眠恢复当前猫猫最大生命，存档保存回血和首次休息记录',()=>{
+test('选时睡眠恢复当前猫猫最大生命，存档保存回血和首次休息记录',()=>{
  for(const mode of ['morning']){
   const g=scene();const economy=structuredClone(RECOMMENDED_ECONOMY);bindEconomy(g.progress,economy);g.progress.hero=1;g.progress.heroes[1]=3;const hero=g.progress.hero;const phase=g.progress.mainline.phase;
   assert.ok(enterCottage(g));assert.equal(mainlineObjective(g)?.cottageRest,undefined);Object.assign(g.player,COTTAGE.bed);

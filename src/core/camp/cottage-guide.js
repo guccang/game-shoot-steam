@@ -12,5 +12,5 @@ export function cottageRestObjective(game,task){
  if(!cottageRestGuideActive(game)||game.cottage)return null;
  return {task:{...task,id:'cottage-first-rest',title:'进屋休息，恢复生命'},cottageRest:true,key:'cottage-first-rest',phase:'doing',navigation:true,
   site:{...COTTAGE.door,mapId:'forest',name:'巡林小屋门前'},label:game.vehicle.active?'在门前停稳1秒，自动下车进屋':'在门前停留1秒，自动进入小屋',
-  hint:'在门前停留1秒进入；驾驶时载具留在门口。到床前停留1秒自动入睡，恢复全部生命。'};
+  hint:'在门前停留1秒进入；驾驶时载具留在门口。到床前停留1秒，选择睡到早晨、黄昏或夜晚，恢复全部生命。'};
 }

@@ -31,10 +31,18 @@ test('每阵重新抽取间隔、时长和峰值，关闭与重开局均清除�
  assert.equal(cycle.sample(0,0,true),null);assert.equal(cycle.sample(100,0,false),null);
  assert.equal(cycle.sample(100,0,true),null);
 });
-test('旧阵风转换为带随机阵风的晴天，手动关风可随环境设置保存',()=>{
+test('大风作为地区主天气保留，随机阵风开关兼容旧存档',()=>{
  const env=normalizeEnvironment({weather:'gust',autoWeather:false});
- assert.equal(env.weather,'sun');assert.equal(env.randomGusts,true);
+ assert.equal(env.weather,'gust');assert.equal(env.randomGusts,true);
  for(const row of Object.values(SEASON_WEATHER_WEIGHTS))assert.ok(!('gust' in row));
  const memory=new Map(),store=createSaveStore(()=>({getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v)}));
  env.randomGusts=false;assert.ok(store.saveEnvironment(env));assert.equal(store.loadEnvironment().randomGusts,false);
+});
+
+// 地区大风沿用同一局部风场，只缩短两阵之间的静歇。
+test('大风气候立即起风并频繁续接，普通天气保留原间隔',()=>{
+ const cycle=new GustCycle(()=>.5),wave=cycle.sample(0,400,true,true);
+ assert.ok(wave);assert.ok(cycle.nextAt-wave.start-wave.duration<5);
+ const next=cycle.sample(cycle.nextAt,400,true,true);assert.ok(next.start>wave.start);
+ cycle.sample(cycle.nextAt,400,true,false);assert.ok(cycle.nextAt-cycle.wave.start-cycle.wave.duration>18);
 });

@@ -18,7 +18,7 @@ export function drawRoofSurface(c,points,{base='#9bb477',light='#c7d694',shade='
  // 檐底是一条圆润暗唇，与屋顶同体，深度不靠附加矩形横梁表达。
  c.beginPath();c.moveTo(...p(.03,1.02));c.quadraticCurveTo(...p(.50,1.16),...p(.97,1.02));c.strokeStyle=shade;c.lineWidth=4;c.lineCap='round';c.stroke();
  roofOutline(c,p);c.strokeStyle=EDGE;c.lineWidth=2.2;c.lineJoin='round';c.stroke();
- c.restore();if(snow)drawRoofSnow(c,points);
+ c.restore();if(snow){c.save();c.globalAlpha*=Math.max(0,Math.min(1,Number(snow)));drawRoofSnow(c,points);c.restore();}
 }
 // 积雪沿同一圆屋脊铺开，保留下缘苔色与厚檐，昼夜轮廓一致。
 export function drawRoofSnow(c,points){

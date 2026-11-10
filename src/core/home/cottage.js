@@ -19,7 +19,7 @@ import {COTTAGE as C,COTTAGE_FURNITURE,COTTAGE_STAIRS,cottageFloor} from '../../
 import {worldDistance,nearest} from '../../world/coordinates.js';
 import {updateCatMotion} from '../battle/cat-motion.js';
 import {calendarView,advanceLivingCalendar} from '../../world/living-calendar.js';
-import {LIVING_DAY_MS} from '../../config/living-world.js';
+import {LIVING_DAY_MS,LIVING_PHASES} from '../../config/living-world.js';
 
 // 步行和驾驶都可在门前候停；过场、事件战斗和自动倒车期间不抢占控制。
 export function canEnterCottage(game){return game.mapId==='forest'&&!game.realm&&!game.story&&!game.arrivalCinematic&&!game.fireActive&&!game.campDefense&&!bossCombatActive(game)&&!game.livingBattle&&!game.workshopTrial&&!['align','reverse'].includes(game.parking?.phase);}
@@ -94,11 +94,11 @@ export function updateCottage(game,dt,input){
    room.basementElapsed=near&&!room.basementLatch&&Math.hypot(input.x,input.y)<.01?(room.basementElapsed||0)+dt:0;
    if(room.basementElapsed>=1&&enterMine(game))return true;
   }
-  // 床前站定一秒直接入睡，移动取消，醒来须先离开床边才能再次触发。
+  // 床前站定一秒提出休息选择；移动取消，关闭选择或醒来后须离开床边。
   const nearBed=(!room.kind||room.kind==='cottage')&&!cottageFloor(room)&&Math.hypot(p.x-C.bed.x,p.y-C.bed.y)<=C.bedRadius;
-  if(!nearBed)room.bedLatch=false;
+  if(!nearBed){room.bedLatch=false;room.sleepRequested=false;}
   if(!nearBed||room.bedLatch||p.hp<=0||Math.hypot(input.x,input.y)>.01)room.restElapsed=null;
-  else {const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.restElapsed=room.restElapsed==null?0:room.restElapsed+tick;if(room.restElapsed+1e-9>=C.bedWait){sleepInCottage(game);return true;}}
+  else {const tick=Number.isFinite(dt)?Math.max(0,Math.min(.05,dt)):0;room.restElapsed=room.restElapsed==null?0:room.restElapsed+tick;if(room.restElapsed+1e-9>=C.bedWait){room.sleepRequested=true;return true;}}
   const exit=room.kind==='cottage'?cottageStreetExit(game.progress.homeDecor):layout.exit;
   room.exitElapsed=!(room.kind==='cottage'&&cottageFloor(room)>0)&&Math.hypot(input.x,input.y)<=.01&&Math.hypot(p.x-exit.x,p.y-exit.y)<=layout.exitRadius?(room.exitElapsed||0)+dt:0;
   if(room.exitElapsed+1e-9>=layout.exitWait)leaveCottage(game);
@@ -130,19 +130,21 @@ export function leaveCottage(game){
 // 预告和实际休息共用同一目标日期，不修改传入的正式历法。
 export function cottageSleepTarget(calendar,mode){
  const target={...calendar};
- advanceLivingCalendar(target,mode==='morning'?LIVING_DAY_MS-calendar.elapsed:calendarView(calendar).remaining);
+ const start=LIVING_PHASES.find(p=>p.id===(mode==='morning'?'day':mode))?.start;
+ const delta=mode==='phase'?calendarView(calendar).remaining:start===undefined?LIVING_DAY_MS-calendar.elapsed:(start-calendar.elapsed+LIVING_DAY_MS)%LIVING_DAY_MS||LIVING_DAY_MS;
+ advanceLivingCalendar(target,delta);
  return target;
 }
-// 只有床前完整候停后才入睡，自动睡到明早，结算仍由原保存事务完成。
-export function sleepInCottage(game){
- const mode='morning';
- if(!game.cottage||game.cottage.balcony||cottageFloor(game.cottage)!==0||game.cottage.kind&&game.cottage.kind!=='cottage'||game.cottage.sleep||game.state!=='playing'||game.player.hp<=0||game.cottage.bedLatch||game.cottage.restElapsed==null||game.cottage.restElapsed+1e-9<C.bedWait||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
- game.cottage.exitElapsed=0;game.cottage.restElapsed=null;game.cottage.bedLatch=true;game.player.vx=game.player.vy=0;
+// 只有床前完整候停并明确选择后才入睡，结算仍由原保存事务完成。
+export function sleepInCottage(game,mode='morning'){
+ if(!['morning','dusk','night'].includes(mode))return false;
+ if(!game.cottage||game.cottage.balcony||cottageFloor(game.cottage)!==0||game.cottage.kind&&game.cottage.kind!=='cottage'||game.cottage.sleep||!(game.state==='playing'||game.state==='paused'&&game.cottage.sleepRequested)||game.player.hp<=0||game.cottage.bedLatch||game.cottage.restElapsed==null||game.cottage.restElapsed+1e-9<C.bedWait||Math.hypot(game.player.x-C.bed.x,game.player.y-C.bed.y)>C.bedRadius)return false;
+ game.cottage.sleepRequested=false;game.cottage.exitElapsed=0;game.cottage.restElapsed=null;game.cottage.bedLatch=true;game.player.vx=game.player.vy=0;
  game.cottage.sleep={mode,elapsed:0,target:cottageSleepTarget(game.progress.living.calendar,mode)};game.cottage.restResult='';game.cottage.notice='好好睡一觉……';return true;
 }
 // 保存成功才兑现跳时；失败留在屋内，可再次休息，不补领任何战斗或委托奖励。
 function finishCottageSleep(game){
- // 入睡时锁定清晨目标，睡眠过渡中即使自然跨过时段也不会多睡一段。
+ // 入睡时锁定选定目标，睡眠过渡中即使自然跨过时段也不会多睡一段。
  const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress)),calendar={...game.cottage.sleep.target},hp=game.maxHp();next.living.calendar=calendar;
  // 回血、首次休息和外部安全位置写入同一个候选存档，失败不兑现任何一项。
  next.restoration.cottageRested=true;
