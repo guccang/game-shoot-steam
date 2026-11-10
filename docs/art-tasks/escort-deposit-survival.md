@@ -64,4 +64,3 @@
 证据目录：output/playwright/escort-deposit-survival/、output/playwright/escort-return-motion/。
 
 动态效果开发结论：通过：手机实测点击、结算、二次确认、连续返程和画外回收均通过；昼夜及短屏截图已检查。PNG精修不适用。长期参考为上述手机昼夜截图。
-
