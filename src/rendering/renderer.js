@@ -1,3 +1,4 @@
+import {campFestivalObjects,drawCampPlaza,drawFestivalLion,drawFestivalCouplets,drawFestivalFireworks} from './camp-festivals.js';
 import {campDecorationObjects,drawCampDecoration,drawCampDecorShop} from './camp-decor.js';
 import {setCampBuildingFinish} from './camp-building-finish.js';
 import {clearArtStyleCache as clearCampSceneryFinish} from './scenery.js';
@@ -431,6 +432,7 @@ export class Renderer {
     c.setLineDash([]);
     }
     drawCampLandGround(c,camp,view,light.night,this.ground.season);
+    drawCampPlaza(c,camp,view,light.night);
     // 土地覆盖只清除旧院落；真实树木投影和灯池随后绘制，不被地契底色擦掉。
     for(const tree of g.trees){
       if(source.balconyScene&&!balconyObjectVisible(view,tree))continue;
@@ -456,6 +458,7 @@ export class Renderer {
     const finishKey=JSON.stringify(source.progress.campManagement?.styles.building);if(this.campFinishKey!==finishKey){this.campFinishKey=finishKey;campBuildingCache.clear();clearCampSceneryFinish();}
     const objects = [
       ...visibleBodies(campDecorationObjects(camp),view,150),
+      ...visibleBodies(campFestivalObjects(camp),view,150),
       ...visibleBodies(campLandObjects(camp),view,110),
       ...visibleBodies(mineShaftObjects(source),view,100),
       ...visibleBodies(constructionObjects(camp),view,160),
@@ -541,7 +544,8 @@ export class Renderer {
       setCampBuildingFinish(themed?source.progress.campManagement?.styles.building:null);
       const cachedBuilding=CACHED_CAMP_BUILDINGS.has(item.type);
       if(cachedBuilding){this.visibleStats.campBuildings++;profiler?.start('render.campBuildings');}
-      if(item.type==='camp-decoration')drawCampDecoration(c,item,light.night,source.time,this.reduced.matches);
+      if(item.type==='festival-lion')drawFestivalLion(c,item,source.time,this.reduced.matches);
+      else if(item.type==='camp-decoration')drawCampDecoration(c,item,light.night,source.time,this.reduced.matches);
       else if(item.type==='camp-decor-shop')drawCampDecorShop(c,item,light.night);
       else if(item.type==='camp-land-sign'||item.type==='camp-land-stake')drawCampLandObject(c,item,light.night);
       else if(item.type==='mine-shaft')drawMineShaft(c,item,light.night);
@@ -680,12 +684,14 @@ export class Renderer {
         c.restore();
       }
       setCampBuildingFinish(null);
+      drawFestivalCouplets(c,item,camp);
       drawCampWindowLights(c,windowGroups.get(item),light.night);
       if(cachedBuilding)profiler?.end('render.campBuildings');
       drawRestorationScaffold(c,item,camp,light.night);if(source.balconyScene)c.restore();
     }
     // 营地居民血条在实体之后绘制，避免被相邻盾卫或棚子盖住，只绘制一次。
     for(const item of objects)if(item.type==='monster-camp-resident')drawEnemyHealthBar(c,item);
+    drawFestivalFireworks(c,camp,view,light.night,this.reduced.matches);
     drawRestorationTransfer(c,camp,this.reduced.matches,zoom);
     drawArrivalGuidance(c,source,g.player);
     drawParkingCountdown(c,source,g.player,zoom);

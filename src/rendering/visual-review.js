@@ -1,3 +1,6 @@
+import {festivalCalendar,activeCampFestival} from '../world/camp-festivals.js';
+import {CAMP_DECOR_CATALOG} from '../config/camp-management.js';
+import {campDecorLights} from '../world/lighting.js';
 // 天气验收读取正式雪量、场景和图集预算，不另画展示用雪景。
 export function inspectCampClimate(renderer,root=document){return {designCriterion:'camp-climate-sleep',weather:renderer.environment.weather,season:renderer.environment.forestSeason,time:renderer.environment.time,snowCover:renderer.snowCover,camp:renderer.environment.climateCamp,visible:renderer.visibleStats,cache:renderer.diagnosticInfo(),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
 // 营地公共照明、正式窗洞与路口灯均从当前绘制帧采集。
@@ -2233,3 +2236,6 @@ export function inspectMineCartBoarding(game,renderer,root=document){return {des
 
 // 营地管理读取正式存档、碰撞实例与建筑缓存；手机界面由同一应用提供。
 export function inspectCampManagement(game,renderer,root=document){const panel=root.getElementById('camp-management-dialog');return {designCriterion:'camp-management-decor',styles:structuredClone(game.progress.campManagement.styles),items:structuredClone(game.progress.campManagement.items),cache:renderer.diagnosticInfo().campBuildings,time:renderer.environment.time,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:[...(panel?.querySelectorAll('button,select')||[])].filter(b=>b.getClientRects().length).map(b=>({name:b.getAttribute('aria-label')||b.textContent.trim(),width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})),newBitmapBytes:0};}
+
+// 节庆验收读取运行日历、真实光源和正式页面，不以目录数量代替视觉证据。
+export function inspectCampFestivals(game,renderer,root=document){const panel=root.getElementById('camp-calendar-dialog');return {designCriterion:'camp-festival-calendar',today:festivalCalendar(game.progress.living.calendar).today.id,active:activeCampFestival(game.progress)?.id||null,mode:game.progress.campManagement.festivalMode,owned:[...game.progress.campManagement.festivals],catalogCount:CAMP_DECOR_CATALOG.length,lampStyles:CAMP_DECOR_CATALOG.filter(d=>d.form==='lamp').length,lights:campDecorLights(game.progress).length,time:game.time,night:renderer.environment.time,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,controls:[...(panel?.querySelectorAll('button')||[])].filter(b=>b.getClientRects().length).map(b=>({name:b.textContent,height:b.getBoundingClientRect().height})),newBitmapBytes:0};}

@@ -1,3 +1,4 @@
+import {drawDecorLamp} from './camp-decor-expanded.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { box, oval, poly } from './primitives.js';
@@ -91,6 +92,7 @@ function flame(c, time, phase, reduced, rain) {
 export function drawLightFixture(c, light, time, environment, reduced = false) {
   c.save();
   c.translate(light.x, light.y);
+  if(light.decorLamp){oval(c,4,5,17,6,'#304b3530');drawDecorLamp(c,light.decorLamp,light.power);glow(c,0,-90,28,light.power*.95);c.restore();return;}
   const color = (hex) => nightColor(hex, environment.night * 0.75);
   const outline = color(style.lighting.drawLightFixtureColor);
   oval(c, 4, 5, 17, 6, '#304b3530');

@@ -1,3 +1,4 @@
+import {createCampCalendar} from '../ui/camp-calendar.js';
 import {createCampManagement} from '../ui/camp-management.js';
 import {approachBuilding} from '../core/navigation/scene-approach.js';
 import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
@@ -162,7 +163,7 @@ export function createApplication({
   profiler.end('init.renderer');
   diagnostics.attach({ game, renderer });
   const storm = new StormCycle();
-  let campDefensePanel,campHome,npcConversations,campLandPanel,campManagement;
+  let campDefensePanel,campHome,npcConversations,campLandPanel,campManagement,campCalendar;
   // 各交互控制器共享主动闲聊入口，初始化完成后才接收场景点击。
   const onTalk=(id,service)=>npcConversations.open(id,service);
   let worldRealms, worldWorkshop, worldVehicleWorkshop, guardianBuild, cameraControls;
@@ -272,6 +273,7 @@ export function createApplication({
   }});
   game.requestFacility=id=>restorationPanel.open(id);
   campLandPanel=createCampLandPanel({game,root,renderer,dialogs,onChange:refresh});
+  campCalendar=createCampCalendar({game,root,dialogs,onChange:refresh});
   campManagement=createCampManagement({game,root,renderer,dialogs,onChange:refresh});
   const campLayoutPanel=createCampLayoutPanel({game,root,dialogs,onChange:refresh});
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
@@ -761,7 +763,7 @@ export function createApplication({
     realmPanel.dispose();firePanel.dispose();
     worldRealms.dispose();
     nearbyControls.dispose();
-    restorationPanel.dispose();campLandPanel.dispose();campLayoutPanel.dispose();campManagement.dispose();
+    restorationPanel.dispose();campLandPanel.dispose();campLayoutPanel.dispose();campManagement.dispose();campCalendar.dispose();
     seedShop.dispose();
     monsterCampPanel.dispose();regionalCampPanel.dispose();
     campHome.dispose();

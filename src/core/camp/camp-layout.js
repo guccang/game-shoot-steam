@@ -1,3 +1,4 @@
+import {overlapsCampPlaza} from '../../world/camp-plaza.js';
 import {campDecorDefinition} from '../../config/camp-management.js';
 import {LIVING_PLACES} from '../../config/living-world.js';
 import {WORLD_BUILDINGS} from '../../config/world-buildings.js';
@@ -14,6 +15,7 @@ import {capturePatrol} from '../battle/patrol-session.js';
 import {worldDistance,nearest} from '../../world/coordinates.js';
 // 门前、车道与正在使用的实体均不能被新建筑覆盖。
 export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.find(b=>b.id===id);if(!base)return '没有这座建筑。';const b=campBuildingPosition(layout,base);
+ if(overlapsCampPlaza(b.x,b.y-b.height/2,b.width/2,b.height/2))return '请保留中央庆典广场。';
  if(!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  const left=b.x-b.width/2-24,right=b.x+b.width/2+24,top=b.y-b.height-20,bottom=b.y+95;
  if(game.progress.campManagement?.items.some(i=>{if(i.x===null)return false;const d=campDecorDefinition(i.type);return left<i.x+d.width/2&&right>i.x-d.width/2&&top<i.y+d.depth/2&&bottom>i.y-d.height;}))return '请先收纳或移走这里的营地装饰。';

@@ -1,3 +1,4 @@
+import {campFestival} from '../../config/camp-festivals.js';
 // 购买、外观与摆放使用候选存档事务，保存失败时保持金币、世界和实例号不变。
 import {CAMP_DECOR_CATALOG,CAMP_DECOR_LIMIT,CAMP_DECOR_GRID,campStyle} from '../../config/camp-management.js';
 import {normalizeCampManagement} from '../../progression/camp/camp-management.js';
@@ -17,3 +18,8 @@ export function buyCampDecor(game,type){let uid;const result=commit(game,p=>{con
 export function placeCampDecor(game,uid,x,y){return commit(game,p=>{x=Math.round(x/CAMP_DECOR_GRID)*CAMP_DECOR_GRID;y=Math.round(y/CAMP_DECOR_GRID)*CAMP_DECOR_GRID;const proxy=Object.create(game);proxy.progress=p;const error=campDecorPlacementError(proxy,uid,x,y);if(error)return error;Object.assign(p.campManagement.items.find(i=>i.uid===uid),{x,y});return '';});}
 // 收纳保留购买记录和实例号，重新放置不收费。
 export function storeCampDecor(game,uid){return commit(game,p=>{const item=p.campManagement.items.find(i=>i.uid===uid);if(!item)return '没有这件装饰。';item.x=item.y=null;return '';});}
+
+// 节庆套装只收一次费用；失败沿用购买事务完整回滚。
+export function buyCampFestival(game,id){return commit(game,p=>{const f=campFestival(id);if(!f)return '没有这种节日装扮。';if(p.campManagement.festivals.includes(id))return '';if(p.coins<f.price)return '金币不足。';p.coins-=f.price;p.campManagement.festivals.push(id);return '';});}
+// 自动、日常与已购套装自由切换，不改手工摆放的位置。
+export function setCampFestival(game,id){return commit(game,p=>{if(!['auto','normal'].includes(id)&&!p.campManagement.festivals.includes(id))return '请先购买这套节日装扮。';p.campManagement.festivalMode=id;return '';});}

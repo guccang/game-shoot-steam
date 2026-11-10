@@ -1,3 +1,4 @@
+import {overlapsCampPlaza} from './camp-plaza.js';
 import {campSurfaceRoads} from './camp-surface-roads.js';
 import {farmOverlapsRoad} from './farm-roads.js';
 // 装饰占地与通路保护：正式物理、编辑预览和保存均读取同一脚底矩形。
@@ -15,6 +16,7 @@ export function campDecorBlocked(x,y,radius,progress){const state=progress?.camp
 function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);}
 // 放置不占路、不盖门、不挤车辆，也不允许把实体压到玩家脚下。
 export function campDecorPlacementError(game,uid,x,y){const p=game.progress,item=p.campManagement?.items.find(i=>i.uid===uid),d=campDecorDefinition(item?.type);if(!d||!Number.isFinite(x)||!Number.isFinite(y))return '请先选择已购买的装饰。';const point={x,y},r=Math.max(d.width/2,d.depth/2)+10;
+ if(overlapsCampPlaza(x,y-d.height/2,d.width/2,d.height/2+d.depth/2))return '请保留中央庆典广场，装饰可放在广场周边。';
  if(!ownedLayoutPoint(p,x,y,r))return '请放在已购买营地的空地内。';
  if(campBoundaryBlocked(x,y,r,p))return '请与围栏留出距离。';
  if(campBoundary(p).gates.some(g=>segmentDistance(point,g.horizontal?{x:g.x-g.length/2,y:g.y}:{x:g.x,y:g.y-g.length/2},g.horizontal?{x:g.x+g.length/2,y:g.y}:{x:g.x,y:g.y+g.length/2})<r+90))return '请保留大门和转弯通道。';

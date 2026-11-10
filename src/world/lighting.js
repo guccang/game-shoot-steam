@@ -1,3 +1,4 @@
+import {campDecorDefinition} from '../config/camp-management.js';
 import {campRoadLights} from './camp-lighting.js';
 import {CAMP_LIGHTING} from '../config/camp-lighting.js';
 // 固定环境灯位与光照采样：独立于战斗、存档和随机数，循环地图共用同一布局。
@@ -46,7 +47,7 @@ export function fixturePower(fixture, time, environment, reduced = false) {
 
 // 可见镜像包含视口外照进来的光源，不创建额外实体或改变碰撞。
 export function visibleLights(view, time, environment, reduced = false, game=null) {
-  return visibleBodies(game?.mapId==='forest'&&!game.realm?[...LIGHT_FIXTURES,...campRoadLights(game.progress)]:LIGHT_FIXTURES, view, CAMP_LIGHTING.lampRadius+120).map((fixture) => ({
+  return visibleBodies(game?.mapId==='forest'&&!game.realm?[...LIGHT_FIXTURES,...campRoadLights(game.progress),...(!game.story&&!game.cottage&&!game.campDefense?campDecorLights(game.progress):[])]:LIGHT_FIXTURES, view, CAMP_LIGHTING.lampRadius+120).map((fixture) => ({
     ...fixture,
     power: fixturePower(fixture, time, environment, reduced),
   }));
@@ -69,3 +70,6 @@ export function localIllumination(point, lights) {
   }
   return { power: Math.min(1, power), source };
 }
+
+// 购买路灯使用同一照明管线，光池、迷雾视野与灯头亮度同步。
+export function campDecorLights(progress){return (progress?.campManagement?.items||[]).filter(i=>i.x!==null&&campDecorDefinition(i.type)?.form==='lamp').map(i=>({id:'decor-light-'+i.uid,type:'fixture',kind:'lamp',decorLamp:i.type,x:i.x,y:i.y,phase:0,height:90,offset:0,radius:CAMP_LIGHTING.lampRadius,campLight:true}));}

@@ -1,3 +1,4 @@
+import {overlapsCampPlaza} from './camp-plaza.js';
 import {campRoadNetwork} from './camp-layout-roads.js';
 import {campPlotAt,ownsCampPlot} from '../config/camp-land.js';
 import {CAMP_ROAD_WIDTH} from '../config/camp-layout.js';
@@ -52,6 +53,7 @@ function soilDistance(a,b,p){
 }
 // 森林实体路面半宽24，湖谷半宽15；森林渐薄草缘不禁种，周期边缘检查相邻地图镜像。
 export function farmOverlapsRoad(point,progress=null){
+ if(point.mapId==='forest'&&overlapsCampPlaza(point.x,point.y,24,18))return true;
  // 搬迁后的营路与正式绘制共用路径，旧支路已被草地覆盖后允许重新开垦。
  const plot=point.mapId==='forest'&&campPlotAt(point);
  if(plot&&progress&&ownsCampPlot(progress,plot.id)&&Object.keys(progress.campLayout?.positions||{}).length){for(const path of campRoadNetwork(progress).paths)for(let i=1;i<path.length;i++)if(soilDistance(path[i-1],path[i],nearest(point,path[i-1]))<CAMP_ROAD_WIDTH/2)return true;return false;}
