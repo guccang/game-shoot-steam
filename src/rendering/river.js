@@ -7,7 +7,7 @@ import { consumeDrawSteps } from './draw-steps.js';
 import { oval, box } from './primitives.js';
 import { WORLD } from '../world/coordinates.js';
 import { drawAlignedTile } from './tile-blit.js';
-import { WATERFALL, BRIDGE, riverPoint, riverXAt, riverSamples, riverHalfWidth } from '../world/river-geometry.js';
+import { WATERFALL, BRIDGES, riverPoint, riverXAt, riverSamples, riverHalfWidth } from '../world/river-geometry.js';
 import { drawShoreGroundSteps, drawShoreWaterSteps, drawShoreDetails } from './shore-art.js';
 
 // 河流、瀑布与夜色纹理的 Canvas 表现，使用共享地形几何。
@@ -173,12 +173,11 @@ export function* drawRiverGroundSteps(ctx, winter = false, view = null) {
   ctx.moveTo(WATERFALL.x - 30, WATERFALL.y + 1);
   ctx.lineTo(WATERFALL.x + 30, WATERFALL.y + 1);
   ctx.stroke();
-  drawBridge(ctx);
+  for (const bridge of BRIDGES) drawBridge(ctx, bridge);
   ctx.restore();
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-function drawBridge(ctx) {
-  const b = BRIDGE;
+function drawBridge(ctx, b) {
   box(ctx, b.x + 6, b.y + 10, b.width, b.height + 2, 5, '#2e57413b');
   box(ctx, b.x, b.y + b.height - 3, b.width, 10, 3, '#786342');
   ctx.fillStyle = '#8d7852';
@@ -247,7 +246,7 @@ export class RiverRenderer {
       ctx.translate(RIVER_PAD - region.x, RIVER_PAD - region.y);
       // 动态水面块也只提交自身与扰动留边内的原河道，不重复生成整条大地图河流。
       drawWater(ctx,{x:region.x-RIVER_PAD,y:region.y-RIVER_PAD,w:texture.width,h:texture.height});
-      ctx.clearRect(BRIDGE.x - 5, BRIDGE.y - 5, BRIDGE.width + 10, BRIDGE.height + 10);
+      for (const b of BRIDGES) ctx.clearRect(b.x - 5, b.y - 5, b.width + 10, b.height + 10);
       const left = regions[0].x,
         right = left + regions[0].w;
       ctx.clearRect(left, WATERFALL.y - 8, WATERFALL.x - WATERFALL.width / 2 - left, WATERFALL.height + 8);

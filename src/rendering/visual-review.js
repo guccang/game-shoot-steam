@@ -242,6 +242,8 @@ import {clearingStage,canUseClearingPost} from '../core/story/clearing-guide.js'
 import {riverCrossingObjects} from './river-crossing.js';
 // 第二章验收绑定正式场景设施和玩家碰撞，不使用单独的概念图。
 export function inspectRiverStory(game,root){return {designCriterion:'river-story-movement',stage:game.story?.stageId,phase:game.story?.phase,position:{x:game.player.x,y:game.player.y},arena:game.player.arena||null,amphibious:game.player.amphibious,facilities:riverCrossingObjects(game),barriers:game.player.worldBarriers||[],overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+// 南桥验收直接读取正式桥板、道路、碰撞和河面缓存，不生成替代场景。
+export async function inspectSouthRiverBridge(game,renderer){const {BRIDGES,SOUTH_BRIDGE,isWaterBlocked}=await import('../world/river-geometry.js'),{pathDistance}=await import('../world/paths.js');const b=SOUTH_BRIDGE,center={x:b.x+b.width/2,y:b.y+b.height/2};return {designCriterion:'south-river-bridge',bridges:BRIDGES.map(b=>({...b})),center,deckBlocked:isWaterBlocked(center.x,center.y,12),roadDistance:pathDistance(center.x,center.y),position:{x:game.player.x,y:game.player.y},vehicle:game.vehicle.active,river:renderer.river.stats()};}
 // 清缴教学验收读取正式导航、场景入口与操作高亮，不生成示意页面。
 export function inspectClearingGuide(game,root){
  const marker=root.getElementById('clearing-marker'),dialog=root.getElementById('clearing-dialog'),nav=worldNavigationObjective(game);

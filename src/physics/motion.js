@@ -4,7 +4,7 @@ import {worldBuildingBlocked} from '../world/building-collision.js';
 import {monsterHitProfile} from '../config/monster-hit-reactions.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 // 轻量二维物理：分步碰撞、惯性与冲量；碎片另带高度轴，重力不会歪曲来弹方向。
-import { isWaterBlocked, BRIDGE, riverXAt } from '../world/river-geometry.js';
+import { isWaterBlocked, BRIDGES, riverXAt } from '../world/river-geometry.js';
 import {livingFacilityBlocked} from '../world/living-spaces.js';
 import {settlementAt,settlementBlocked} from '../world/settlements.js';
 import { canonical, nearest, delta, WORLD } from '../world/coordinates.js';
@@ -303,15 +303,14 @@ export function navigationTarget(body, target, direct = clearWaterPath(body, tar
   if (terrainLineClear(body, goal, 12, isWaterBlocked)) return naturalWaypoint(body, goal);
   const point = canonical(body),
     side = point.x < riverXAt(point.y) ? -1 : 1;
-  const bridge = nearest({ x: BRIDGE.x + BRIDGE.width / 2, y: BRIDGE.y + BRIDGE.height / 2 }, body);
-  const x = bridge.x + side * (BRIDGE.width / 2 + 30),
-    y = bridge.y;
   const end = canonical(target),
     targetSide = end.x < riverXAt(end.y) ? -1 : 1;
-  const exit = { x: bridge.x + targetSide * (BRIDGE.width / 2 + 30), y };
+  // 比较两桥完整的进桥与出桥距离，南部追击不再绕到营地北桥，镜像仍取最近周期。
+  const route=BRIDGES.map(b=>{const center=nearest({x:b.x+b.width/2,y:b.y+b.height/2},body),entry={x:center.x+side*(b.width/2+30),y:center.y},exit={x:center.x+targetSide*(b.width/2+30),y:center.y};return {bridge:b,entry,exit,cost:Math.hypot(entry.x-body.x,entry.y-body.y)+Math.hypot(exit.x-goal.x,exit.y-goal.y)};}).reduce((best,next)=>next.cost<best.cost?next:best);
+  const {x,y}=route.entry,exit=route.exit;
   // 进入整个可通行桥面带后向出口推进；群体挤压偏离中线不能触发掉头。
   // 桥沿按正式移动半径留白，防止斜线采样漏掉岸角的极短水域而卡在边缘。
-  const onDeck = Math.abs(body.y - y) <= BRIDGE.height / 2 - 12;
+  const onDeck = Math.abs(body.y - y) <= route.bridge.height / 2 - 12;
   if (onDeck && clearWaterPath(body, exit)) return exit;
   return naturalWaypoint(body, { x, y });
 }

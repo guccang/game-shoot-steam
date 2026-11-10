@@ -1,7 +1,7 @@
 // 优化必须保持原河道查询结果、伙伴通行和循环世界的一致性。
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { riverSamples, riverXAt, riverHalfWidth, isWaterScenery, BRIDGE, WATERFALL } from '../src/world/river-geometry.js';
+import { riverSamples, riverXAt, riverHalfWidth, isWaterScenery, BRIDGES, WATERFALL } from '../src/world/river-geometry.js';
 import { canonical, WORLD } from '../src/world/coordinates.js';
 import { NATURAL_TERRAIN } from '../src/world/natural-terrain.js';
 import { naturalWaypoint, terrainLineClear, terrainBlocked } from '../src/physics/terrain-navigation.js';
@@ -17,7 +17,7 @@ function originalRiverX(y) {
 // 保留全扫描参照，检查桥头、瀑布、河湾和周期接缝的留白不被优化改变。
 function originalScenery(x, y) {
   ({ x, y } = canonical({ x, y }));
-  if (x > BRIDGE.x - 35 && x < BRIDGE.x + BRIDGE.width + 35 && y > BRIDGE.y - 35 && y < BRIDGE.y + BRIDGE.height + 35) return true;
+  if (BRIDGES.some(b=>x>b.x-35&&x<b.x+b.width+35&&y>b.y-35&&y<b.y+b.height+35)) return true;
   if (x > 1128 && x < 1312 && y > WATERFALL.y - 40 && y < WATERFALL.y + 180) return true;
   return riverSamples.some(p => Math.hypot(p.x - x, p.y - y) < riverHalfWidth(p.y, x < p.x ? -1 : 1) + 23);
 }

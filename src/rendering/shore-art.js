@@ -2,7 +2,7 @@
 import { style } from '../art-styles/config.js';
 import { consumeDrawSteps } from './draw-steps.js';
 import { WORLD } from '../world/coordinates.js';
-import { riverXAt, riverHalfWidth, BRIDGE } from '../world/river-geometry.js';
+import { riverXAt, riverHalfWidth, BRIDGES } from '../world/river-geometry.js';
 import { NATURAL_TERRAIN, riverBeachWidth } from '../world/natural-terrain.js';
 import { oval } from './primitives.js';
 
@@ -252,7 +252,7 @@ export function drawShoreDetails(c) {
     [2495, 1, false],
     [2690, -1, false],
   ]) {
-    if (y > BRIDGE.y - 60 && y < BRIDGE.y + BRIDGE.height + 60) continue;
+    if (BRIDGES.some(b=>y>b.y-60&&y<b.y+b.height+60)) continue;
     const x = waterEdge(y, side) + side * (14 + riverBeachWidth(y, side));
     if (stones) {
       shoreStone(c, x, y, 0.85);

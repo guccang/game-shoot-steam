@@ -3,7 +3,7 @@ import { i18nText } from "../i18n/index.js";
 // 自然地貌绕行：小型可见图只在路径被湖山挡住时建立，普通追击仍走直线。
 import { NATURAL_TERRAIN, isNaturalBlocked } from '../world/natural-terrain.js';
 import {mountainPeaks} from '../world/mountain-peaks.js';
-import { isWaterBlocked, BRIDGE } from '../world/river-geometry.js';
+import { isWaterBlocked, BRIDGES } from '../world/river-geometry.js';
 import { nearest, WORLD } from '../world/coordinates.js';
 import { JIUZHAIGOU_TERRAIN, JIUZHAIGOU_SPAWN, valleyBlocked } from '../world/jiuzhaigou.js';
 
@@ -40,9 +40,9 @@ function navigationNodes(body,goal=body,margin=1400) {
     }
   }
   // 河流的合法跨岸入口必须进入导航图，不能只登记湖山的外侧角点。
-  if(body.mapId!=='jiuzhaigou')for(const x of [BRIDGE.x-32,BRIDGE.x+BRIDGE.width+32]){
-    const point=nearest({x,y:BRIDGE.y+BRIDGE.height/2},body);
-    nodes.push({...point,mapId:body.mapId,navKey:`bridge:${x}`});
+  if(body.mapId!=='jiuzhaigou')for(const b of BRIDGES)for(const x of [b.x-32,b.x+b.width+32]){
+    const point=nearest({x,y:b.y+b.height/2},body);
+    nodes.push({...point,mapId:body.mapId,navKey:`bridge:${b.y}:${x}`});
   }
   return nodes;
 }

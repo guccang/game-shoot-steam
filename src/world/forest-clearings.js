@@ -21,7 +21,7 @@ import { COTTAGES, WHEAT_FIELDS, SCENERY } from './scenery.js';
 // 快递站与小屋共用树冠净空，列表只创建一次，避免逐棵树分配。
 const CLEARING_BUILDINGS=[OUTDOOR_SHOP,AMMO_SHOP,CAT_HOME,FURNITURE_SHOP,CONSTRUCTION_COMPANY,WAREHOUSE,WAREHOUSE_DEPOT,REPAIR_CENTER,...COTTAGES,FARM_DELIVERY,FARM_SEED_SHOP];
 import { riverBeachWidth, excludesNaturalScenery } from './natural-terrain.js';
-import { riverXAt, riverHalfWidth } from './river-geometry.js';
+import { riverXAt, riverHalfWidth, BRIDGES } from './river-geometry.js';
 import { coversRealmEntrance } from './realm-entrances.js';
 import { coversLandscape } from './landscape-compositions.js';
 
@@ -55,6 +55,8 @@ export function coversScenery(x, y) {
   if (coversLandscape(x, y)) return true;
   if (excludesNaturalScenery(x, y, true)) return true;
   const left = x - 56, right = x + 56, top = y - 140, bottom = y + 12;
+  // 两座桥及桥头按完整树冠避让，不能只清掉桥板上的树根。
+  if(BRIDGES.some(b=>right>b.x-40&&left<b.x+b.width+40&&bottom>b.y-30&&top<b.y+b.height+30))return true;
   // 车位与倒车通道保留完整树冠净空，不让树梢盖住倒计时或车轮。
   if(parkingClearing(x,y))return true;
   // 公交站整座棚顶和候车地面保留树冠净空。

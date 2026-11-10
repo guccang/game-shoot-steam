@@ -4,7 +4,7 @@ import {drawCanopyShadow} from './scene-depth.js';
 import { style } from '../art-styles/config.js';
 import { consumeDrawSteps } from './draw-steps.js';
 import { excludesNaturalScenery } from '../world/natural-terrain.js';
-import { isWaterScenery, BRIDGE } from '../world/river-geometry.js';
+import { isWaterScenery, BRIDGES } from '../world/river-geometry.js';
 import { pathDistance, FOREST_BIOME_ANCHORS, terrainNoise, biomeAt } from '../world/biomes.js';
 import { drawSoftRoadsSteps } from './road-art.js';
 import { treeSway } from '../physics/motion.js';
@@ -114,10 +114,10 @@ export function drawGardenDetails(c, rand, view = null, winter = false, season =
           );
       }
     }
-  for (const side of [-1, 1])
+  for (const bridge of BRIDGES) for (const side of [-1, 1])
     for (let i = 0; i < 3; i++) {
-      const x = side < 0 ? BRIDGE.x - 16 - i * 22 : BRIDGE.x + BRIDGE.width + 16 + i * 22;
-      ellipse(c, x, BRIDGE.y + BRIDGE.height / 2, 11, 7, '#d4d0ac');
+      const x = side < 0 ? bridge.x - 16 - i * 22 : bridge.x + bridge.width + 16 + i * 22;
+      ellipse(c, x, bridge.y + bridge.height / 2, 11, 7, '#d4d0ac');
     }
 }
 // 共用绘制与动作输入，风格差异由配置提供。

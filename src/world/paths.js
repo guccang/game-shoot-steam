@@ -1,6 +1,7 @@
 // 世界道路与留白查询独立于生态区，供地貌生成和植被布局共用。
 import {TOWN_SHIFT_X} from '../config/town-layout.js';
 import { WORLD, ORIGINAL_WORLD, canonical } from './coordinates.js';
+import {SOUTH_BRIDGE} from './river-geometry.js';
 // 主路横贯木桥，纵路连接营地与两片林区；首尾相接避免循环边缘断路。
 export const PATHS = [
   Array.from({ length: WORLD.width / 20 + 1 }, (_, i) => {
@@ -28,6 +29,10 @@ for(const road of PATHS){
  tail.forEach((point,i)=>{const t=i/(tail.length-1);point[axis]+=offset*t*t*(3-2*t);});
 }
 for (const y of [3600,6000]) {const wave=Math.sin(y/ORIGINAL_WORLD.height*Math.PI*2),left=2600+wave*110,right=10000+wave*65;PATHS.push(Array.from({length:371},(_,i)=>({x:left+(right-left)*i/370,y:y+Math.sin(i/370*Math.PI*2)*45})));}
+// 南桥引路从河西纵路接到河东既有横路，桥板与路心始终处于同一高度。
+const southRoadY=SOUTH_BRIDGE.y+SOUTH_BRIDGE.height/2,southWest=PATHS[1][southRoadY/20],southEast=PATHS[2][southRoadY/20];
+const southRoadSteps=Math.ceil((southEast.x-southWest.x)/20);
+PATHS.push(Array.from({length:southRoadSteps+1},(_,i)=>({x:southWest.x+(southEast.x-southWest.x)*i/southRoadSteps,y:southRoadY})));
 
 // 道路段构成一次性空间树，局部留白查询不再扫描整张扩展地图。
 function buildPathIndex(segments) {

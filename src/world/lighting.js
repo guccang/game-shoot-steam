@@ -2,6 +2,7 @@
 import {TOWN_SHIFT_X} from '../config/town-layout.js';
 import { PATHS } from './biomes.js';
 import { visibleBodies } from './coordinates.js';
+import {SOUTH_BRIDGE} from './river-geometry.js';
 
 // 稀疏布灯：桥头一对、两处道路标记，其余林地保持幽暗；火把集中于营地和路口。
 export const LIGHT_FIXTURES = [
@@ -13,6 +14,9 @@ export const LIGHT_FIXTURES = [
   { kind: 'torch', x: 510+TOWN_SHIFT_X, y: 1050 },
   { kind: 'torch', x: 895+TOWN_SHIFT_X, y: 1020 },
   { kind: 'torch', x: 875+TOWN_SHIFT_X, y: 1320 },
+  // 南桥两岸沿用旧灯，放在桥口外缘，不占桥面或改变已有灯具编号。
+  { kind: 'lamp', x: SOUTH_BRIDGE.x-15, y: SOUTH_BRIDGE.y },
+  { kind: 'lamp', x: SOUTH_BRIDGE.x+SOUTH_BRIDGE.width+15, y: SOUTH_BRIDGE.y },
 ].map((item, i) =>
   Object.freeze({
     ...item,

@@ -5,7 +5,7 @@ import {nearest,canonical} from '../world/coordinates.js';
 import {NATURAL_TERRAIN} from '../world/natural-terrain.js';
 import {JIUZHAIGOU_TERRAIN,JIUZHAIGOU_PATHS} from '../world/jiuzhaigou.js';
 import {PATHS} from '../world/paths.js';
-import {riverXAt,riverHalfWidth,BRIDGE} from '../world/river-geometry.js';
+import {riverXAt,riverHalfWidth,BRIDGES} from '../world/river-geometry.js';
 import {treeGrid} from '../world/spatial-grid.js';
 import {CLICK_BUILDINGS} from '../config/scene-approach.js';
 import {parkedOwned} from '../core/vehicles/camp-parking.js';
@@ -27,7 +27,7 @@ export function drawLocalMinimap(c,g,view,night=false){
  }
  c.strokeStyle=night?'#c1bc94':'#eada9e';c.lineWidth=4;c.lineCap='round';
  for(const path of g.mapId==='jiuzhaigou'?JIUZHAIGOU_PATHS:PATHS){c.beginPath();for(const chunk of pathChunks(path)){if(!pathChunkVisible(chunk,g.player,b))continue;for(let i=chunk.start;i<chunk.end;i++){const a=at(path[i-1]),z=at(path[i]);if(Math.abs(a.x-z.x)>size*2||Math.abs(a.y-z.y)>size*2||Math.max(a.x,z.x)<0||Math.min(a.x,z.x)>size||Math.max(a.y,z.y)<0||Math.min(a.y,z.y)>size)continue;c.moveTo(a.x,a.y);c.lineTo(z.x,z.y);}}c.stroke();}
- if(g.mapId==='forest'){const p=at(BRIDGE);c.fillStyle='#bc9d69';c.fillRect(p.x,p.y,BRIDGE.width/b.w*size,BRIDGE.height/b.h*size);}
+ if(g.mapId==='forest')for(const bridge of BRIDGES){const p=at(bridge);c.fillStyle='#bc9d69';c.fillRect(p.x,p.y,bridge.width/b.w*size,bridge.height/b.h*size);}
  c.fillStyle=night?'#476b55':'#729769';let trees=0;
  for(const t of treeGrid(g.trees||[]).query(b.x,b.y,b.x+b.w,b.y+b.h,30)){if(t.hp<=0)continue;const p=at(t);if(!visible(p))continue;c.beginPath();c.arc(p.x,p.y,2.3,0,Math.PI*2);c.fill();trees++;}
  if(g.mapId==='forest')for(const building of CLICK_BUILDINGS){const p=at(building.site);if(!visible(p))continue;c.fillStyle='#a8895f';c.strokeStyle='#496650';c.lineWidth=1;c.fillRect(p.x-5,p.y-7,10,8);c.strokeRect(p.x-5,p.y-7,10,8);}

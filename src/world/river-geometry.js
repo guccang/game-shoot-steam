@@ -76,6 +76,9 @@ export function riverXAt(y) {
     t = (y - a.y) / (b.y - a.y);
   return a.x + (b.x - a.x) * t;
 }
+// 南侧横路在六千单位处过河；桥身贴合真实中心线，北桥的既有坐标与引用不变。
+export const SOUTH_BRIDGE = { x: riverXAt(6000) - 110, y: 5961, width: 220, height: 78 };
+export const BRIDGES = [BRIDGE, SOUTH_BRIDGE];
 // 桥南的小河湾左右错开扩展，变化在两端平滑归零，桥面与其他河段保持原宽。
 export function riverHalfWidth(y, side = 1) {
   if (y <= 800 || y >= 1180) return 39;
@@ -89,12 +92,7 @@ export function riverHalfWidth(y, side = 1) {
 export function isWaterBlocked(x, y, radius = 12) {
   ({ x, y } = canonical({ x, y }));
   const deckInset=Math.min(Math.max(0,radius),4);
-  if (
-    x >= BRIDGE.x &&
-    x <= BRIDGE.x + BRIDGE.width &&
-    y >= BRIDGE.y + deckInset &&
-    y <= BRIDGE.y + BRIDGE.height - deckInset
-  )
+  if (BRIDGES.some(b => x >= b.x && x <= b.x + b.width && y >= b.y + deckInset && y <= b.y + b.height - deckInset))
     return false;
   if (y > 400 - radius && y < 590 + radius && Math.abs(x - WATERFALL.x) < 54 + radius) return true;
   const dx = x - riverXAt(y);
@@ -104,12 +102,7 @@ export function isWaterBlocked(x, y, radius = 12) {
 // 河道与桥头不生成树木和草叶，避免遮挡过河入口。
 export function isWaterScenery(x, y) {
   ({ x, y } = canonical({ x, y }));
-  if (
-    x > BRIDGE.x - 35 &&
-    x < BRIDGE.x + BRIDGE.width + 35 &&
-    y > BRIDGE.y - 35 &&
-    y < BRIDGE.y + BRIDGE.height + 35
-  )
+  if (BRIDGES.some(b => x > b.x - 35 && x < b.x + b.width + 35 && y > b.y - 35 && y < b.y + b.height + 35))
     return true;
   if (x > 1128 && x < 1312 && y > WATERFALL.y - 40 && y < WATERFALL.y + 180) return true;
   // 最大岸宽为 39 + 16，再加 23 留白；范围之外的样本不可能命中原距离判定。
