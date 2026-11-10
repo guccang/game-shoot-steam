@@ -1,3 +1,4 @@
+import {PASTURE,PEN_GATE,PEN_OX} from '../config/pasture.js';
 import {LIVING_PLACES} from '../config/living-world.js';
 import {FIRE_STATION,FIRE_PARKING,FIRE_EXIT,FIRE_GARAGE,FIRE_DOOR,FIRE_APRON,FIRE_DOOR_APPROACH} from './fire-navigation.js';
 import {activateCampPlaza} from './camp-plaza.js';
@@ -43,6 +44,8 @@ for(const [id,site] of Object.entries({weapons:WORKSHOP,garage:VEHICLE_WORKSHOP,
 // 消防实体、上下车和侧门候停点一起平移，生活设施让居民作息读取同一坐标。
 for(const site of [FIRE_STATION,FIRE_PARKING,FIRE_EXIT,FIRE_GARAGE,FIRE_DOOR,FIRE_APRON,FIRE_DOOR_APPROACH])bind('fire',site);
 for(const [id,site] of Object.entries(LIVING_PLACES))bind(id,site);
+// 牛栏绘制、碰撞、交互和归栏目标共同迁移。
+for(const site of [PASTURE,PEN_GATE,PEN_OX])bind('pasture',site);
 bind('trade',TRADE_BOARD);bind('delivery',FARM_DELIVERY);bind('camp-decor',CAMP_DECOR_SHOP);
 bind('weapons',CAMP_ROUTINES.oak.stroll);bind('garage',CAMP_ROUTINES.wheel.stroll);bind('tower',CAMP_ROUTINES.lumi.stroll);
 for(const [id,site] of Object.entries(INDUSTRY_SITES))bind(id,site);

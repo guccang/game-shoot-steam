@@ -1,7 +1,9 @@
-// 营地东侧固定牧栏，北侧中央留门；场景向北时世界纵坐标减小。
-export const PASTURE=Object.freeze({mapId:'forest',x:990,y:880,halfWidth:130,halfHeight:52,gate:104,oxPrice:48,sheepPrice:24,callRange:165,walkSpeed:68,idleReturnSeconds:60});
-export const PEN_OX=Object.freeze({mapId:'forest',x:PASTURE.x-84,y:PASTURE.y-15,facing:1});
-export const PEN_GATE=Object.freeze({mapId:'forest',x:PASTURE.x,y:PASTURE.y-PASTURE.halfHeight-18});
+// 营地东侧默认牧栏，北侧中央留门；场景向北时世界纵坐标减小。
+export const PASTURE_BASE=Object.freeze({mapId:'forest',x:990,y:880,halfWidth:130,halfHeight:52,gate:104,oxPrice:48,sheepPrice:24,callRange:165,walkSpeed:68,idleReturnSeconds:60});
+// 可移动锚点由统一布局适配更新，尺寸与默认基准不累积变化。
+export const PASTURE={...PASTURE_BASE};
+export const PEN_OX={mapId:'forest',x:PASTURE.x-84,y:PASTURE.y-15,facing:1};
+export const PEN_GATE={mapId:'forest',x:PASTURE.x,y:PASTURE.y-PASTURE.halfHeight-18};
 // 牧栏东南的三块林间草地轮流长出甜穗草，牛在草丛斜后方吃草。
 export const GRAZING_SITES=[{x:1460,y:1110},{x:1530,y:1165},{x:1600,y:1220}];
 export const FORAGE_ID='material:sweet-grass';
