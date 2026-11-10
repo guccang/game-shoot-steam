@@ -4,7 +4,7 @@ import {CAMP_ROUTINES} from '../config/camp-routines.js';
 // 单一运行世界的布局适配层：把旧模块的静态锚点统一绑定到当前存档，保留既有接口。
 // 每个锚点只登记一次原坐标；切换游戏或读档时从基准重新应用，不累积位移。
 import {CAMP_BUILDINGS} from '../config/camp-layout.js';
-import {TOWN_LAYOUT,TOWN_COURTS} from '../config/town-layout.js';
+import {TOWN_LAYOUT,TOWN_COURTS,TOWN_SIGNS} from '../config/town-layout.js';
 import {WORKSHOP,VEHICLE_WORKSHOP,RANGER_COTTAGE} from './workshop.js';
 import {COTTAGE} from '../config/cottage.js';
 import {WORKSHOP_INTERIORS} from '../config/workshop-interiors.js';
@@ -46,6 +46,8 @@ for(const s of PARKING_SPOTS)bind(s.building,s);
 for(const e of REALM_ENTRANCES)bind(e.mode,e);
 for(const e of BUILDING_ENTRIES)bind(e.type==='post'&&e.key==='sunleaf-post'?'story':e.key,e);
 for(const [id,site] of Object.entries(MAINLINE_SITES)){const key=({seedShop:'seed',weaponsEntry:'weapons',garageEntry:'garage',warehouseEntry:'warehouse',ammoEntry:'ammo',repairEntry:'repair',storyPost:'story',clearingPost:'clearing',footballEntry:'football',patrol:'clearing'})[id]||id.replace(/Entry$/,'');bind(key,site);}
+// 站牌与正式场景共用对象，已有布局载入即迁移，不另存牌位。
+for(const sign of TOWN_SIGNS)bind(sign.building,sign);
 for(const s of SCENERY){const b=CAMP_BUILDINGS.find(b=>Math.abs(s.x-b.x)<.1&&Math.abs(s.y-b.y)<.1);if(b)bind(b.id,s);}
 for(const s of CAMP_PROPS){const b=CAMP_BUILDINGS.filter(b=>Math.abs(s.x-b.x)<b.width/2+30&&s.y>b.y-30&&s.y<b.y+80).sort((a,b)=>Math.hypot(s.x-a.x,s.y-a.y)-Math.hypot(s.x-b.x,s.y-b.y))[0];if(b)bind(b.id,s);}
 for(const court of TOWN_COURTS){const id=court.id.replace(/-yard$/,'');bind(id==='cat-home'?'catHome':id,court);}

@@ -80,3 +80,16 @@
 - 针对性单测：tests/camp-layout.test.mjs 9项通过，tests/camp-parking-layout.test.mjs 2项通过。JS语法及差异空白检查通过，未运行全量测试。
 - 已有失败说明：tests/parking-vehicle-transfer.test.mjs 的11项中10项失败；未修改main分支上复查同样10项失败，未将其计为本次通过，也未修改旧断言。这些旧测试涉及购买/换车行为；本轮另以实际靠近搬迁车辆上车验证当前交互。
 - 本轮结论：布局交互开发通过；无待修订美术项，无PNG替换任务。测试初始化先保存已购土地，避免异步存档同步覆盖测试布置；此修正仅在浏览器验收脚本。
+
+
+## 2026-11-10 区域站牌随布局迁移
+
+目标：修复维修整备区、生活区、整备区、任务广场和挑战庭院木牌停留在旧位置的问题。分别绑定维修中心、巡林小屋、武器工坊、回信驿和守护祭坛，保留原相对偏移、脚底锚点、中文标签、森林绿/木色描边和昼夜处理。采用既有程序木牌，不生成图片；无新增造型、尺寸、动画、图层或资源缓存。标牌继续作为无碰撞装饰按脚底排序，不新增阻挡；沿用正式 drawTownSign。已有存档只保存建筑位置，载入时重新计算牌位，避免迁移旧档或累积偏移。designCriterion：camp-layout-planner。实施前以用户截图和现有 drawTownSign 为参考；本轮验收通过，记录如下。
+
+
+- 单测：tests/camp-sign-layout.test.mjs 验证全部五块牌与正式SCENERY共享对象、归属独立、既有布局载入、重复激活及切档恢复；连同tests/camp-layout.test.mjs共10项通过。
+- 真实交互：tests/camp-sign-layout-browser.cjs 从营地管理进入规划，手机点按维修中心方向按钮后保存到(-680,860)，木牌同步至(-850,715)，保持(-170,-145)偏移，刷新恢复一致，页面异常0。
+- 视觉证据：output/playwright/camp-sign-layout/repair-{320,390,1280}-{day,night}.png及report.json。已实际打开检查短屏、常规手机及宽窗口既有竖版容器中的昼夜画面；站牌不滞留旧地、不盖在维修屋体上，与角色、怪物、车辆、建筑、路面和UI同屏。手机为Edge触控模拟，非实体设备；不新增桌面布局。
+- 正式入口：src/rendering/scenery.js调用drawTownSign；src/world/camp-layout-bindings.js按稳定building标识绑定；inspectCampLayoutPlanner新增实时signs诊断，visual-contract.json关联专项脚本，designCriterion为camp-layout-planner。
+- 资源与保留项：无新增图片/画布/动画/缓存，站牌尺寸、脚底排序、中文文字、昼夜色调及无碰撞性质保持；继续使用既有角色与车辆动作。PNG精修、变体制作及视频动作不适用，本轮只修复既有标牌位置绑定。
+- 本轮结论：通过；无待修订项。未运行全量测试。
