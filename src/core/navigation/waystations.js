@@ -1,3 +1,7 @@
+import {setTaskNavigationEnabled} from './task-navigation.js';
+import {clearWorldNavigation} from './world-navigation.js';
+import {stopWaystationTravel} from './navigation-control.js';
+export {stopWaystationTravel} from './navigation-control.js';
 // 驿站事务与自动行进共用正式碰撞和分帧寻路，绝不传送或修改地形。
 import {WAYSTATIONS as W,waystationPurpose} from '../../config/waystations.js';
 import {canonical,nearest,worldDistance} from '../../world/coordinates.js';
@@ -64,10 +68,6 @@ export function removeWaystation(g,id,persist=()=>true){
  if(g.waystationTravel?.id===id)stopWaystationTravel(g,'目的驿站已移除，已停止自动行进。');
  return {ok:true,message:`已移除${site.id}号驿站 · ${site.name}。`,site};
 }
-// 终止时清除惯性，手动接管仍由当前帧的真实方向输入继续驱动。
-export function stopWaystationTravel(g,message='已停止驿站导航。'){
- g.waystationTravel=null;g.waystationMessage=message;g.player.vx=g.player.vy=0;
-}
 // 选择站点只创建临时行程；正式更新循环负责搜索、避障和到达。
 export function travelToWaystation(g,id){
  const reason=waystationUnavailable(g)||waystationMovementReason(g);if(reason)return {ok:false,message:reason};
@@ -75,6 +75,8 @@ export function travelToWaystation(g,id){
  if(worldDistance(g.player,site)<=W.arrival)return {ok:false,message:'已经到达这座驿站。'};
  g.sceneApproach=null;g.waystationMessage='';g.player.vx=g.player.vy=0;
  g.waystationTravel={id,player:g.player,mapId:g.mapId,frame:0,clock:0,retries:0,last:{x:g.player.x,y:g.player.y},still:0,elapsed:0,phase:'planning',moving:false,checkAt:0};
+ // 新驿站独占导航，关闭旧任务路线并撤销回家等临时访问目标。
+ clearWorldNavigation(g);setTaskNavigationEnabled(g,false,{silent:true});
  return {ok:true,message:`正在规划前往${site.name}的路线。`};
 }
 // 暂停不消耗搜索预算；能力变化和新障碍会触发有限重规划，无法到达时明确停止。

@@ -1,3 +1,4 @@
+import {stopWaystationTravel} from '../navigation/navigation-control.js';
 // 巡林簿的主动选择共用候选存档事务；失败保留原任务、进度与追踪状态。
 import {MAINLINE_TASKS,currentMainlineTask} from '../../config/mainline.js';
 import {isCampaignTask} from '../../config/mainline-pacing.js';
@@ -21,5 +22,5 @@ export function selectMainlineTask(game,id=null){
  const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  let saved=false;try{saved=(game.mainlinePersist?.(next)??true)===true;}catch{}
  if(!saved){game.mainlineError='选择未保存，请重试。';return false;}
- game.progress=next;game.mainlineError='';game.mainlineSpeech=null;clearWorldNavigation(game);game.onEvent('mainline-change');return true;
+ game.progress=next;if(id&&game.waystationTravel)stopWaystationTravel(game,'');game.mainlineError='';game.mainlineSpeech=null;clearWorldNavigation(game);game.onEvent('mainline-change');return true;
 }

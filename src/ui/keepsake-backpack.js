@@ -1,3 +1,4 @@
+import {taskNavigationEnabled,toggleTaskNavigation} from '../core/navigation/task-navigation.js';
 import {escapeHtml as escape} from './shared/html.js';
 import {transferItem} from '../core/inventory/inventory-transfer.js';
 import {appendRangerLetter} from './ranger-letter.js';
@@ -94,6 +95,10 @@ export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,
    detail.innerHTML=`<section class="keepsake-phone">
     <div class="keepsake-phone-heading">${keepsakeIcon('patrol-phone')}<div><h3>巡林手机</h3><p>${escape(calendar.label)}</p></div></div>
     <div class="keepsake-apps">${button('calendar','节日日历')}${button('camp-management','营地管理')}${button('trade','订单与商路')}${button('treasure','寻宝')}${button('map','看地图')}${button('waystations','驿站')}${button('home','回小屋')}${button('repair','载具救援')}</div>
+    <h3>寻路设置</h3>
+    <div class="ui-inset"><p>任务寻路：${taskNavigationEnabled(game)?'已开启':'已关闭'}</p>
+     <button type="button" class="ui-button" data-pack-action="toggle-navigation" aria-pressed="${taskNavigationEnabled(game)}" aria-describedby="phone-navigation-help">${taskNavigationEnabled(game)?'关闭任务寻路':'开启任务寻路'}</button>
+     <p id="phone-navigation-help">关闭后停止任务路线计算并隐藏路点，保留任务进度。开启任务寻路会停止当前驿站导航。</p></div>
     <h3>索敌设定</h3>
     <label class="ui-choice phone-wood"><input type="checkbox" data-target-wood aria-labelledby="phone-wood-label" aria-describedby="phone-wood-help" ${game.gameplayPreferences.targetWood?'checked':''}>
      <span><b id="phone-wood-label">木材</b><small id="phone-wood-help">勾选后，手持枪械优先打敌人，周围没有敌人时打树。手持电锯优先锯树。</small></span></label>
@@ -144,6 +149,8 @@ export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,
   if(action==='place-sprinkler'){if(onPlaceSprinkler?.()){for(const p of [itemPanel,bag])if(p.open)dialogs.close(p.id);}return;}
   if(action==='transfer'){onTransfer(selected,'load');return;}
   if(action==='use-item'){const item=backpackEntries(game).find(r=>r.id===selected);if(!item||item.category!=='supply')return;const result=useSupplyItem(game,item.key);renderBag();render();message.textContent=result.message;message.hidden=false;if(result.ok)onChange();return;}
+  // 手机与任务卡共用开关，弹窗暂停期间也可关闭并保存，不取消已接任务。
+  if(action==='toggle-navigation'){toggleTaskNavigation(game);render();onChange();return;}
   if(action==='open-phone'){dialogs.close(itemPanel.id);show(phone);return;}
   if(action==='read-letter'){inventoryView=false;resetView();return;}
   if(action==='calendar'){game.openCampCalendar?.();return;}

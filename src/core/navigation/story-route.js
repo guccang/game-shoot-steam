@@ -26,8 +26,9 @@ function routeGoal(body,site,index){
 // 活跃任务才规划；目标、地图、会话与通行能力改变立即作废旧路线。
 function resolveStoryRoute(game,view,prepare=false){
  game=gameSource(game);
- // 暂时隐藏只影响显示，不删除已验证路线；恢复后仍检查目标、角色和障碍版本。
- if(!taskNavigationEnabled(game)||game.state==='paused'&&!prepare||game.mainlineSpeech||game.story?.phase==='dialogue')return null;
+ // 主动关闭或驿站接管会释放旧搜索；暂停和对白只隐藏，仍保留同一任务路线。
+ if(!taskNavigationEnabled(game)){routes.delete(game);return null;}
+ if(game.state==='paused'&&!prepare||game.mainlineSpeech||game.story?.phase==='dialogue')return null;
  const run=game.story,main=!run?worldNavigationObjective(game):null;
  if(game.state!=='playing'&&!(prepare&&game.state==='paused')||run&&(run.phase!=='active'||run.trial||!storySceneActive(game))||!run&&(!main||main.site.mapId!==game.mapId)){routes.delete(game);return null;}
  const def=run?storyDefinition(game):{interaction:{radius:main.site.arrivalRadius??85}},objective=run?game.storyObjective():{site:main.key},site=run?def.world.sites[objective.site]:main.site;
