@@ -2262,3 +2262,6 @@ export async function inspectDumplingAttacksAirFlare(game,renderer,root=document
 
 // 直接读取正式装配、运行控制与弹丸，验证手机页面与世界效果同步。
 export async function inspectVehicleSE(game,renderer,root=document){const {seBuild,seMass}=await import('../config/vehicle-se.js');return {designCriterion:'vehicle-se',build:seBuild(game.progress,game.vehicle.index),mass:seMass(game.progress,game.vehicle.index),control:game.seControl?{mode:game.seControl.mode,radius:game.seControl.radius,status:game.seControl.status}:null,rockets:game.projectiles.filter(b=>b.kind==='se-rocket').length,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
+
+// 检查正式地区营地列表和当前主炮，不建立替代预览页面。
+export function inspectRegionalGunSwitch(game,root=document){return {designCriterion:'regional-gun-switch',mounted:game.progress.vehicleLoadouts[game.vehicle.index],choices:[...root.querySelectorAll('[data-regional-action="switch-gun"]')].map(b=>({gun:Number(b.dataset.key),disabled:b.disabled,text:b.textContent})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
