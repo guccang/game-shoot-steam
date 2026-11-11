@@ -1,3 +1,4 @@
+import {rearSEMount} from '../config/vehicle-se-mount.js';
 import {FLARE_RULES} from '../config/vehicle-special-ammo.js';
 import {rearFlareMuzzle} from '../world/vehicle-flares.js';
 import {worldDistance} from '../world/coordinates.js';
@@ -93,22 +94,40 @@ function flame(c, time, phase, reduced, rain) {
   c.restore();
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-// 后甲板上的短发射筒共用真实发射锚点，点火闪光只在弹体离筒时出现。
-export function drawRearFlareLauncher(c,game,player){
- const hull=game.vehicle.index;
- if(!game.progress.vehicleHulls[hull] || !seBuild(game.progress,hull).installed.includes('flare'))return;
- const muzzle=rearFlareMuzzle(player,hull);
- const flare=game.progress.supplies.activeFlare;
+// 外置双支臂连接车尾横梁，各舱的轮廓与工作灯对应装置功能。
+export function drawRearSERack(c,game,player){
+ const hull=game.vehicle.index,build=seBuild(game.progress,hull),keys=build.installed;
+ if(!game.progress.vehicleHulls[hull]||!keys.length)return;
+ const mounts=keys.map(key=>rearSEMount(player,hull,keys,key));
+ const y=mounts[0].y,left=Math.min(...mounts.map(p=>p.x))-8,right=Math.max(...mounts.map(p=>p.x))+8;
+ const edge='#344740',metal='#879991';
  c.save();
- c.translate(muzzle.x,muzzle.y);
- box(c,-9,4,16,8,3,'#64785d','#354e42',2);
- poly(c,[[-7,6],[-2,-2],[5,0],[1,9]],'#a8ad83','#354e42',2);
- oval(c,0,0,6,3,'#d1bd85','#354e42',1.5);
- oval(c,0,0,3.7,1.6,'#394b41');
- if(flare && flare.mapId===game.mapId && FLARE_RULES.duration-flare.life<.35 && worldDistance(muzzle,flare)<12){
-  const strength=Math.min(1,1-(FLARE_RULES.duration-flare.life)/.35);
-  glow(c,0,-3,18,strength);
-  poly(c,[[-3,0],[1,-10*strength],[5,-14*strength],[3,0]],'#fff1b0');
+ for(const x of [left+4,right-4])box(c,x-2,y+4,5,34,2,metal,edge,1.5);
+ box(c,left-2,y+2,right-left+4,8,3,'#576d63',edge,2);
+ for(const [i,key] of keys.entries()){
+  const p=mounts[i],enabled=!build.disabled.includes(key);
+  const lamp=enabled?({flare:'#ffd780',rocket:'#ff9e67',shield:'#80ebdc',autopilot:'#abdd91',combat:'#f1ab83'})[key]:'#859185';
+  c.save();c.translate(p.x,p.y);
+  box(c,-7,-4,14,10,3,metal,edge,1.6);
+  if(key==='flare'){
+   box(c,-5,-7,10,9,2,'#ad9f75',edge,1.5);
+   oval(c,0,-6,5,2.5,lamp,edge,1.5);oval(c,0,-6,2.5,1.2,edge);
+  }else if(key==='rocket'){
+   for(const dx of [-3,3]){box(c,dx-2.5,-7,5,9,1.5,'#bd8968',edge,1);oval(c,dx,-5,2,1.4,lamp,edge,1);}
+  }else if(key==='shield'){
+   poly(c,[[0,-11],[5,-6],[4,0],[0,3],[-4,0],[-5,-6]],lamp,edge,1.5);
+   poly(c,[[0,-9],[0,0],[-3,-5]],'#c3ebe1');
+  }else if(key==='autopilot'){
+   box(c,-2,-10,4,9,1,edge);oval(c,0,-9,7,3,lamp,edge,1.5);
+  }else{
+   box(c,-6,-8,12,7,2,edge);oval(c,0,-5,3,2,lamp);
+  }
+  box(c,-4,3,8,1.5,.5,lamp);c.restore();
+ }
+ const flare=game.progress.supplies?.activeFlare;
+ if(keys.includes('flare')&&flare&&flare.mapId===game.mapId){
+  const muzzle=rearFlareMuzzle(player,hull,keys),age=FLARE_RULES.duration-flare.life;
+  if(age<.35&&worldDistance(muzzle,flare)<12){const strength=1-age/.35;glow(c,muzzle.x,muzzle.y-3,18,strength);poly(c,[[muzzle.x-3,muzzle.y],[muzzle.x+2,muzzle.y-14*strength],[muzzle.x+3,muzzle.y]],'#fff1b0');}
  }
  c.restore();
 }
