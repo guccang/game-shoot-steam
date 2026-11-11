@@ -51,15 +51,25 @@ export function seTargetAllowed(g,t){const s=g.seControl;return !s||s.mode!=='co
 function stop(g,text){g.seControl=null;g.onEvent?.('story-hint',{text});return {x:0,y:0};}
 // 预测短时间来弹与敌人接触风险；十二方向加原地候选遵守地形、树干与巡战圆边界。
 export function combatSteering(g,s){
- const p=g.player,body=playerNavigationBody(g),targets=[...(g.enemies||[]),...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&seTargetAllowed(g,t)&&attackTargetKnown(g,t)).sort((a,b)=>worldDistance(p,a)-worldDistance(p,b)),target=targets[0];
+ const p=g.player,body=playerNavigationBody(g),targets=[...(g.enemies||[]),...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&seTargetAllowed(g,t)&&attackTargetKnown(g,t)).sort((a,b)=>worldDistance(p,a)-worldDistance(p,b));
+ // 距离相近的敌人交错时维持当前走位目标，明显更近的威胁仍可立即接管。
+ const closest=targets[0],previous=s.steeringTarget;
+ const target=previous&&targets.includes(previous)&&worldDistance(p,previous)<=worldDistance(p,closest)+30?previous:closest;
+ s.steeringTarget=target;
+ const nearby=targets.slice(0,16),trees=g.trees||[],grid=treeGrid(trees);
+ const bolts=(g.enemyBolts||[]).slice(0,24).map(b=>({...nearest(b,p),vx:b.dx*b.speed,vy:b.dy*b.speed,radius:b.radius||0}));
  let best={x:0,y:0},bestScore=-Infinity;
  for(let i=-1;i<12;i++){const angle=i*Math.PI/6,v=i<0?{x:0,y:0}:{x:Math.cos(angle),y:Math.sin(angle)},q={x:p.x+v.x*55,y:p.y+v.y*55};
-  if(worldDistance(q,s.anchor)>s.radius-25||blocked(q.x,q.y,body.radius||18,g.trees||[],body)||!questLineClear(p,q,body,treeGrid(g.trees||[])))continue;
-  let score=target?-Math.abs(worldDistance(q,target)-150)*.1:-worldDistance(q,s.anchor)*.03;
-  for(const e of targets.slice(0,16))score-=Math.max(0,95-worldDistance(q,e))*3;
-  for(const b of (g.enemyBolts||[]).slice(0,24)){const point=nearest(b,p),vx=b.dx*b.speed,vy=b.dy*b.speed,t=Math.max(0,Math.min(.6,((q.x-point.x)*vx+(q.y-point.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-point.x-vx*t,q.y-point.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
-  if(i<0)score+=2;if(score>bestScore){bestScore=score;best=v;}
+  if(worldDistance(q,s.anchor)>s.radius-25||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid))continue;
+  let score=target?-Math.max(0,Math.abs(worldDistance(q,target)-150)-20)*.1:-worldDistance(q,s.anchor)*.03;
+  for(const e of nearby)score-=Math.max(0,95-worldDistance(q,e))*3;
+  for(const b of bolts){const {vx,vy}=b,t=Math.max(0,Math.min(.6,((q.x-b.x)*vx+(q.y-b.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-b.x-vx*t,q.y-b.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
+  // 停在合适射距内；移动方案接近时优先延续原方向，来弹风险仍逐帧比较。
+  if(i<0)score+=s.steeringDirection===null?3:2;
+  else if(s.steeringDirection)score-=3*(1-v.x*s.steeringDirection.x-v.y*s.steeringDirection.y);
+  if(score>bestScore){bestScore=score;best=v;}
  }
+ s.steeringDirection=best.x||best.y?best:null;
  s.status=target?'接敌 / 预测避弹':'圈内待命';return best;
 }
 // 巡战让出手动移动输入；自动驾驶遇到手动输入结束行程。暂停冻结两种控制。
@@ -69,7 +79,7 @@ export function updateSEControl(g,dt,input){const s=g.seControl;if(!s)return inp
  if(g.state!=='playing'||dt<=0)return input;
  if(Math.hypot(input.x,input.y)>.01){
   if(s.mode==='combat'){
-   s.manual=true;
+   s.manual=true;s.steeringDirection=null;s.steeringTarget=null;
    s.status='手动走位 · 巡战中';
    if(worldDistance(g.player,s.anchor)>s.radius)s.anchor=canonical(g.player);
   }else g.seControl=null;
