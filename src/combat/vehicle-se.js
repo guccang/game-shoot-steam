@@ -1,3 +1,4 @@
+import {mountedWeapon} from './mounted-weapon.js';
 import {rearSEMount} from '../config/vehicle-se-mount.js';
 // SE 运行控制：自动运动只输出输入向量，伤害与火箭沿用正式战斗链。
 import {energyShieldPoint} from './energy-shield-surface.js';
@@ -85,22 +86,27 @@ export function seTargetAllowed(g,t){const s=g.seControl;return !s||s.mode!=='co
 function stop(g,text){if(g.seControl?.mode==='autopilot')g.sePausedRoute={key:g.seControl.routeKey,vehicle:g.vehicle,player:g.player};g.seControl=null;g.onEvent?.('story-hint',{text});return {x:0,y:0};}
 // 预测短时间来弹与敌人接触风险；十二方向加原地候选遵守地形、树干与巡战圆边界。
 export function combatSteering(g,s){
- const p=g.player,body=playerNavigationBody(g),targets=[...(g.enemies||[]),...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&seTargetAllowed(g,t)&&attackTargetKnown(g,t)).sort((a,b)=>worldDistance(p,a)-worldDistance(p,b));
+ const range=mountedWeapon(g)?.range||0;
+ const p=g.player,body=playerNavigationBody(g),targets=[...(g.enemies||[]),...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&!t.equipmentObstacle&&(seTargetAllowed(g,t)||worldDistance(p,t)<=range)&&attackTargetKnown(g,t)).sort((a,b)=>worldDistance(p,a)-worldDistance(p,b));
  // 距离相近的敌人交错时维持当前走位目标，明显更近的威胁仍可立即接管。
  const closest=targets[0],previous=s.steeringTarget;
- const target=previous&&targets.includes(previous)&&worldDistance(p,previous)<=worldDistance(p,closest)+30?previous:closest;
+ const inRange=closest&&worldDistance(p,closest)<=range;
+ const target=previous&&targets.includes(previous)&&(!inRange||worldDistance(p,previous)<=range)&&worldDistance(p,previous)<=worldDistance(p,closest)+30?previous:closest;
  s.steeringTarget=target;
  const horizon=.6+.15*seLevel(seBuild(g.progress,g.vehicle.index),'combat');
  const nearby=targets.slice(0,16),trees=g.trees||[],grid=treeGrid(trees);
  const bolts=(g.enemyBolts||[]).slice(0,24).map(b=>({...nearest(b,p),vx:b.dx*b.speed,vy:b.dy*b.speed,radius:b.radius||0}));
  let best={x:0,y:0},bestScore=-Infinity;
  for(let i=-1;i<12;i++){const angle=i*Math.PI/6,v=i<0?{x:0,y:0}:{x:Math.cos(angle),y:Math.sin(angle)},q={x:p.x+v.x*55,y:p.y+v.y*55};
-  if(worldDistance(q,s.anchor)>s.radius-25||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid))continue;
-  let score=target?-Math.max(0,Math.abs(worldDistance(q,target)-150)-20)*.1:-worldDistance(q,s.anchor)*.03;
+  if(worldDistance(q,s.anchor)>s.radius-(i<0?0:25)||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid))continue;
+  // 已能开火时优先驻车；射程外只缩短缺口，跨过射程边缘后不再贴近。
+  const gap=target&&range>0?Math.max(0,worldDistance(q,target)-range):0;
+  let score=target?-gap*.1:-worldDistance(q,s.anchor)*.03;
+  if(target&&range>0&&!inRange&&gap===0)score+=6;
   for(const e of nearby)score-=Math.max(0,95-worldDistance(q,e))*3;
   for(const b of bolts){const {vx,vy}=b,t=Math.max(0,Math.min(horizon,((q.x-b.x)*vx+(q.y-b.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-b.x-vx*t,q.y-b.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
   // 停在合适射距内；移动方案接近时优先延续原方向，来弹风险仍逐帧比较。
-  if(i<0)score+=s.steeringDirection===null?3:2;
+  if(i<0)score+=inRange?6:s.steeringDirection===null?3:2;
   else if(s.steeringDirection)score-=3*(1-v.x*s.steeringDirection.x-v.y*s.steeringDirection.y);
   if(score>bestScore){bestScore=score;best=v;}
  }

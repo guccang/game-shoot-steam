@@ -109,7 +109,7 @@ test('车载盾在来袭侧显示命中，破盾余光与车体伤害分开结�
 });
 
 // 两侧敌人以一像素交替领先，用正式惯性移动逐帧检查走位方向。
-test('巡战接近等距敌群时连续行驶，进入射距后停稳并能立即避弹',async()=>{
+test('巡战遇到射程内等距敌群时保持停车并能立即避弹',async()=>{
  const {driveBody}=await import('../src/physics/motion.js');
  const {WORLD}=await import('../src/world/coordinates.js');
  for(const dt of [1/60,1/24]){
@@ -125,7 +125,7 @@ test('巡战接近等距敌群时连续行驶，进入射距后停稳并能立�
    if(v.x>0)moving++;
    driveBody(g.player,v,95,dt,WORLD,g.trees);
   }
-  assert.ok(moving>0);assert.ok(Math.abs(g.player.vx)<1);
+  assert.equal(moving,0);assert.ok(Math.abs(g.player.vx)<1);
   g.enemyBolts=[{x:g.player.x-100,y:g.player.y,dx:1,dy:0,speed:320,radius:8}];
   assert.ok(Math.abs(updateSEControl(g,dt,{x:0,y:0}).y)>.3);
  }
@@ -235,4 +235,25 @@ test('改装工坊建成后可进门，旧盾等比例扩容，改装扣费和�
  updateSEDevices(g,60);
  assert.equal(seBuild(g.progress,1).shield,950);
  assert.equal(absorbSEShield(g,1000),50);
+});
+
+// 从射程边缘外接敌，并在进入真实炮程的第一步停止接近。
+test('巡战在主炮射程边缘切换接近与驻车',async()=>{
+ const {mountedWeapon}=await import('../src/combat/mounted-weapon.js');
+ const g=scene(),build=equip(g,'combat');build.radius=400;
+ startSEControl(g,'combat');const range=mountedWeapon(g).range;
+ const t=enemy(g,101,range+1);g.enemies=[t];
+ g.seControl.anchor.x=(t.x+g.player.x)/2;
+ assert.ok(updateSEControl(g,.05,{x:0,y:0}).x>0);
+ t.x-=1;
+ assert.deepEqual(updateSEControl(g,.05,{x:0,y:0}),{x:0,y:0});
+});
+
+// 领主进入主炮射程时，实际炮塔锁定目标，车身保持驻车。
+test('巡战驻车时主炮仍能锁定远处领主',async()=>{
+ const {updateVehicle}=await import('../src/combat/vehicle.js');
+ const g=scene();equip(g,'combat');startSEControl(g,'combat');
+ g.boss=enemy(g,102,380);
+ assert.deepEqual(updateSEControl(g,.05,{x:0,y:0}),{x:0,y:0});
+ updateVehicle(g,.05);assert.equal(g.vehicle.targetId,g.boss.id);
 });
