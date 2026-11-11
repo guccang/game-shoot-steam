@@ -493,8 +493,8 @@ dialog.npc-bottom-dialogue header h2 { margin: 4px 0; font-size: 20px; color: va
 #industry-dialog .ui-inset + .ui-inset { margin-top: 12px; }
 #industry-dialog .production-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-/* 浅色手绘纸页：共用底板结构，只改变表面色与轻描边，不改变触控尺寸。 */
-dialog.ui-panel--sketch {
+/* 正式功能页共享巡林手机的纸页表面；底部人物对白使用自己的停靠外框。 */
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) {
   --ui-forest: #697653;
   --ui-deep: #a5aa80;
   --ui-paper: #fff9e9;
@@ -503,32 +503,79 @@ dialog.ui-panel--sketch {
   --ui-text: #394c40;
   --ui-muted: #647052;
   --ui-gold: #dfad58;
-  border-width: 2px;
-  border-radius: 25px 21px 24px 18px;
-  box-shadow: inset 0 0 0 4px #f4e8bd, 0 4px 0 #9ba57c, 0 12px 32px #253b302b;
+  --ui-radius-panel: 25px 21px 24px 18px;
+  --ui-radius-button: 13px 16px 12px 15px;
+  --ui-panel-shadow: inset 0 0 0 4px #f4e8bd, 0 4px 0 #9ba57c, 0 12px 32px #253b302b;
+  border: 2px solid var(--ui-forest);
+  border-radius: var(--ui-radius-panel);
+  background: var(--ui-paper);
+  color: var(--ui-text);
+  box-shadow: var(--ui-panel-shadow);
 }
-.ui-panel--sketch > .ui-panel__header {
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) > :is(.ui-panel__header,.settings-heading) {
   background: #f5d98f;
   color: var(--ui-text);
   border-bottom: 2px dashed #c6a365;
 }
-.ui-panel--sketch > .ui-panel__header :is(h2,p,small) { color: var(--ui-text); }
-.ui-panel--sketch > .ui-panel__footer { background: #f2eacb; border-top: 1px dashed #b3b78b; }
-.ui-panel--sketch :is(.ui-button,.ui-close) {
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) > :is(.ui-panel__header,.settings-heading) :is(h2,p,small,.eyebrow,.settings-build,code) {
   color: var(--ui-text);
-  border-color: #84916a;
-  border-radius: 13px 16px 12px 15px;
+}
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) :is(.ui-panel__footer,.settings-footer) {
+  background: #f2eacb;
+  border-top: 1px dashed #b3b78b;
+}
+
+/* 只装饰页面操作；拖拽零件、图标、插槽和画布热点沿用各自的轮廓。 */
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) :is(.ui-button,.ui-close,.settings-heading .close,.settings-row,.settings-footer button,.ui-panel__footer .primary,.ui-panel__footer .secondary) {
+  border-radius: var(--ui-radius-button);
+}
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) :is(.ui-button,.ui-close,.settings-heading .close,.settings-row,.settings-footer button,.ui-panel__footer .primary,.ui-panel__footer .secondary):where(:not(:active,:disabled,[aria-pressed="true"],[aria-selected="true"],.danger-button,.ui-button--danger)) {
+  --button-edge: #84916a;
   box-shadow: 0 2px 0 #b7bd94;
 }
-.ui-panel--sketch .ui-button--primary { background: #dce9b7; color: var(--ui-text); border-color: #81915f; }
-.ui-panel--sketch :is(.ui-button,.ui-close):focus-visible { outline: 3px solid #8a6331; outline-offset: 2px; }
-.ui-panel--sketch .ui-button:disabled { background: #ebe9dc; color: #797c6e; box-shadow: none; }
-/* 手机功能卡使用低饱和纸片色，深绿仅作为文字和图标描线。 */
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) :is(.ui-button--primary,.primary) {
+  --button-face: #dce9b7;
+  --button-edge: #81915f;
+  --button-ink: var(--ui-text);
+  --button-hover: #d1e3a8;
+}
+:is(dialog.ui-panel, #settings-dialog):not(.npc-bottom-dialogue) :is(.ui-button,.ui-close,.settings-row,.settings-footer button):focus-visible {
+  outline: 3px solid #8a6331;
+  outline-offset: 2px;
+}
+:is(dialog.ui-panel,#settings-dialog) :is(.ui-close,.settings-heading .close) {
+  background-color: var(--ui-paper);
+  color: var(--ui-text);
+}
+:is(dialog.ui-panel,#settings-dialog) :is(.ui-button,.settings-row,.primary):disabled {
+  background: #ebe9dc;
+  color: #686b5d;
+  box-shadow: none;
+}
+/* 标题标出分区起点；浅色衬底承托内容，状态和商品稀有度仍由业务卡片表达。 */
+:is(dialog.ui-panel, #settings-dialog) :is(.ui-panel__body > h3,.settings-group > h3) {
+  padding-inline-start: 10px;
+  border-inline-start: 4px solid #dfb56b;
+}
+dialog.ui-panel .ui-inset { background-color: #f0efda; border-color: #c4c59d; }
+dialog.ui-panel .ui-section { border-radius: 15px 12px 16px 13px; }
+/* 四色纸片用于并列入口。选中项用独立轮廓，禁用项沿用灰色状态。 */
 #phone-dialog .keepsake-apps { gap: 10px; }
-#phone-dialog .keepsake-apps .ui-button { min-height: 48px; background: #f9e5c2; }
-#phone-dialog .keepsake-apps .ui-button:nth-child(4n+2) { background: #e6edd1; }
-#phone-dialog .keepsake-apps .ui-button:nth-child(4n+3) { background: #f5ded0; }
-#phone-dialog .keepsake-apps .ui-button:nth-child(4n) { background: #dcebea; }
+#phone-dialog .keepsake-apps .ui-button { min-height: 48px; }
+:is(dialog.ui-panel,#settings-dialog) :is(.keepsake-apps,.vehicle-page-tabs,.warehouse-tabs,.camp-manager-primary-tabs,.settings-links) > button { --card-paper: #f9e5c2; }
+:is(dialog.ui-panel,#settings-dialog) :is(.keepsake-apps,.vehicle-page-tabs,.warehouse-tabs,.camp-manager-primary-tabs,.settings-links) > button:nth-child(4n+2) { --card-paper: #e6edd1; }
+:is(dialog.ui-panel,#settings-dialog) :is(.keepsake-apps,.vehicle-page-tabs,.warehouse-tabs,.camp-manager-primary-tabs,.settings-links) > button:nth-child(4n+3) { --card-paper: #f5ded0; }
+:is(dialog.ui-panel,#settings-dialog) :is(.keepsake-apps,.vehicle-page-tabs,.warehouse-tabs,.camp-manager-primary-tabs,.settings-links) > button:not(:disabled,[aria-pressed="true"],[aria-selected="true"]) {
+  background: var(--card-paper);
+  color: var(--ui-text);
+  border-color: #84916a;
+}
+:is(dialog.ui-panel,#settings-dialog) :is(.keepsake-apps,.vehicle-page-tabs,.warehouse-tabs,.camp-manager-primary-tabs,.settings-links) > button:nth-child(4n) { --card-paper: #dcebea; }
+dialog.ui-panel :is(.vehicle-page-tabs,.warehouse-tabs,.camp-manager-primary-tabs) > button[aria-pressed="true"] {
+  background: #dce9b7;
+  color: #324634;
+  box-shadow: inset 0 -3px #81915f;
+}
 #phone-dialog #phone-wallet .resource-pill { background: #fff0c6; border-color: #c6b77f; }
 #phone-dialog #phone-wallet .resource-pill:nth-child(2) { background: #edf0d7; border-color: #b5bd92; }
 #phone-dialog #phone-environment button { background: #f3efd9; color: var(--ui-text); border: 1px solid #aab58b; box-shadow: 0 2px 0 #c1c8a4; border-radius: 14px 12px 16px 13px; }

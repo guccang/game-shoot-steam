@@ -35,8 +35,6 @@ export function createKeepsakeBackpack({onWaystations,onTrade,game,root,dialogs,
   root.body.append(node);scope.on(node.querySelector('.ui-close'),'click',()=>dialogs.close(node.id));return node;
  }
  const bag=root.getElementById('current-cat-dialog'),itemPanel=panel('keepsake','物品详情','重要的东西，随身带好。'),phone=panel('phone','巡林手机','查看季节、时间、天气，或联系邻居。');
- // 手机采用统一框架的浅色手绘纸页，保留原交互与暂停归属。
- phone.classList.add('ui-panel--sketch');
  // 搬移原环境节点，保留圆环、实时状态及已有监听；通讯录重绘不会重建图标。
  const environmentStatus=root.getElementById('phone-environment');
  // 手机接管原钱包节点，金额刷新和资源说明沿用既有入口，不创建第二份余额。

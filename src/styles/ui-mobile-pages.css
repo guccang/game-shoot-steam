@@ -4,7 +4,7 @@
   max-width: none; height: fit-content; max-height: calc(100dvh - var(--ui-safe-top) - var(--ui-safe-bottom));
   inset: var(--ui-safe-top) var(--ui-safe-right) var(--ui-safe-bottom) var(--ui-safe-left);
   margin: auto; padding: 0; gap: 0; overflow: hidden;
-  border: 3px solid var(--ui-forest); border-radius: var(--ui-radius-panel);
+  border: 2px solid var(--ui-forest); border-radius: var(--ui-radius-panel);
   background: var(--ui-paper); color: var(--ui-text); box-shadow: var(--ui-panel-shadow);
 }
 /* 标题与固定操作占自然高度，只给正文分配可滚动空间。 */
