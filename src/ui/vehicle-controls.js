@@ -42,10 +42,8 @@ function updateDeviceIcons(node,keys){
  const signature=keys.join(',');
  if(node.dataset.seDevices===signature)return;
  node.dataset.seDevices=signature;
- let group=node.querySelector('.vehicle-se-badges');
- if(!keys.length){group?.remove();return;}
- if(!group){group=node.ownerDocument.createElement('span');group.className='vehicle-se-badges';node.append(group);}
- group.innerHTML=keys.map(seDeviceIcon).join('');
+ node.hidden=!keys.length;
+ node.innerHTML=keys.map(key=>'<button type="button" data-view-se="'+key+'" aria-haspopup="dialog" aria-controls="field-equipment-dialog" aria-label="查看'+VEHICLE_SE[key].name+'">'+seDeviceIcon(key)+'</button>').join('');
 }
 // 圆内蓝色显示仓库负荷、外圈显示换弹，独立数字显示弹药；HP继续使用生命条。
 export function updateVehicleHud(root, game) {
@@ -80,7 +78,7 @@ export function updateVehicleHud(root, game) {
   const action=v.active?'下车':nearby?'上车':parkingFleetApplies(game)?'找车':'上车',count=w?Math.max(0,Math.ceil(ammo||0)):'—';
   const keys=Object.keys(VEHICLE_SE).filter(key=>seActive(game,key));
   updateVehicleLoadHud(node,game,{ammo:count,label:`${nearby?vehicleModel(nearby.hull).shortName:model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}${keys.length?' · 已开启 '+keys.map(key=>VEHICLE_SE[key].name).join('、'):''}`,mark:service?'!':repairing||reloading?'↻':'',reload:vehicleReloadHudState(m,w)});
-  updateDeviceIcons(node,keys);
+  updateDeviceIcons(root.getElementById('vehicle-se-badges'),node.hidden?[]:keys);
   node.setAttribute('aria-pressed', String(v.active));
   // 车型图配进出箭头表达操作，文字仅保留在无障碍名称与悬停说明中。
   let icon=node.querySelector('.vehicle-action-icon');if(!icon){icon=root.createElement('span');icon.className='vehicle-action-icon';icon.setAttribute('aria-hidden','true');node.append(icon);}

@@ -305,7 +305,7 @@ dialog.ui-panel.ui-page {
 #game-frame .hud-resources{left:auto;width:44px;grid-template-columns:44px;gap:0}
 #game-frame .hud-resources .utility-buttons{grid-column:1}
 /* 名称和生命值相邻排列，压缩留白；右侧仪表仍保留44px触控区。 */
-.player-hud { padding:3px 6px; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:1fr 1fr; column-gap:4px; row-gap:2px; }
+.player-hud { padding:1px 5px; display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:1fr 1fr; column-gap:4px; row-gap:2px; }
 .player-hud > .player-heading:first-child { grid-column:1; grid-row:1; margin:0; min-width:0; align-self:end; justify-content:flex-start; gap:3px; }
 .player-hud #player-health { margin-left:0; }
 /* 两根进度条共享第二行，避免经验另起隐式网格行撑高生命卡。 */
@@ -317,6 +317,7 @@ dialog.ui-panel.ui-page {
 #hero-experience-hud::-moz-progress-bar { background:#6c9d99; border-radius:3px; }
 /* 生命与弹药面板归入左上信息区，避开底部摇杆和农具。 */
 #game-frame { --hud-card-width:248px; }
+#game-frame:not([data-supply="independent"]) > .bottom-info { --hud-card-width:212px; }
 #game-frame > .bottom-info { position:absolute; z-index:16; left:max(10px,env(safe-area-inset-left)); top:max(12px,env(safe-area-inset-top)); width:min(var(--hud-card-width),calc(100% - 20px)); pointer-events:auto; }
 /* 顶部HP与设置互不覆盖，秘境继续使用原有布局。 */
 #game-frame:not(.realm-active) > .bottom-info{max-width:calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)) - 52px)}
