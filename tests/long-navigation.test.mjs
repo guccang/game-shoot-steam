@@ -28,7 +28,7 @@ test('步行和气垫船的远程路线在任务预算内完成，所有短边�
 });
 
 test('原先超时的1672米驿站路线能起步并真实驾驶抵达',()=>{
- const g=scene();g.vehicle=g.vehicles[3];g.summonVehicle();Object.assign(g.player,{x:3320,y:3000,vx:0,vy:0});const goal={id:1,name:'远山驿站',x:18000,y:11000,mapId:'forest'};g.progress.waystations.sites=[goal];assert.equal(travelToWaystation(g,1).ok,true);let moving=false;
+ const g=scene();g.vehicle=g.vehicles[3];g.summonVehicle();g.progress.vehicleSE[3].owned=g.progress.vehicleSE[3].installed=['autopilot'];Object.assign(g.player,{x:3320,y:3000,vx:0,vy:0});const goal={id:1,name:'远山驿站',x:18000,y:11000,mapId:'forest'};g.progress.waystations.sites=[goal];assert.equal(travelToWaystation(g,1).ok,true);let moving=false;
  for(let frame=0;frame<5000&&g.waystationTravel;frame++){
   const input=updateWaystationTravel(g,.04,{x:0,y:0});moving ||= !!g.waystationTravel?.moving;
   driveBody(g.player,input,HEROES[g.progress.hero].speed*vehicleSpeed(g.loadout,3)*movementLoadFactor(g),.04,WORLD,g.trees);

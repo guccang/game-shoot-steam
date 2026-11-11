@@ -81,6 +81,20 @@ export function travelToWaystation(g,id){
  clearWorldNavigation(g);setTaskNavigationEnabled(g,false,{silent:true});
  return {ok:true,message:`正在规划前往${site.name}的路线。`};
 }
+// 车轮已贴入围栏时，用正式移动碰撞逐步探测可退回原侧的短路，脱离后再规划到站。
+function fenceExitDirection(body,trees){
+ if(!body.fenceVehicle?.active||!blocked(body.x,body.y,12,trees,body))return null;
+ for(const [x,y] of [[1,0],[-1,0],[0,1],[0,-1]]){
+  const probe={...body,planningRoute:false};
+  for(let distance=0;distance<128;distance+=4){
+   const nx=probe.x+4*x,ny=probe.y+4*y;
+   if(blocked(nx,ny,12,trees,probe))break;
+   probe.x=nx;probe.y=ny;
+   if(!blocked(nx,ny,12,trees,body))return {x,y};
+  }
+ }
+ return null;
+}
 // 暂停不消耗搜索预算；能力变化和新障碍会触发有限重规划，无法到达时明确停止。
 export function updateWaystationTravel(g,dt,input){
  const trip=g.waystationTravel;if(!trip)return input;
@@ -95,10 +109,24 @@ export function updateWaystationTravel(g,dt,input){
  trip.key=key;
  trip.clock+=dt;trip.frame++;
  // 与任务使用同一32单位网格、1.5ms/256批次、完整主路和局部接入缓存。
+ if(!trip.session&&body.fenceVehicle?.active){
+  const index=treeGrid(trees);
+  if(!trip.exitDirection)trip.exitDirection=fenceExitDirection(body,index);
+  if(trip.exitDirection&&blocked(body.x,body.y,12,index,body)){
+   trip.elapsed+=dt;
+   if(trip.elapsed>W.stuckSeconds){stopWaystationTravel(g,'门口受阻，无法退开。');return {x:0,y:0};}
+   trip.phase='moving';trip.moving=true;return trip.exitDirection;
+  }
+  trip.exitDirection=null;
+ }
  if(!trip.session){trip.session=createVisualRouteSession(body,site,createPlayerNavigationIndex(trees),trip.clock,null,{budget:W.routeBudget});trip.phase='planning';trip.elapsed=0;trip.checkAt=0;}
  const route=advanceVisualRouteSession(trip.session,body,trip.clock);
  trip.points=route.points;
  if(!route.reachable){
+  if(body.fenceVehicle?.active&&trip.phase==='moving'){
+   const exit=fenceExitDirection(body,treeGrid(trees));
+   if(exit){trip.exitDirection=exit;trip.session=null;trip.elapsed=0;return exit;}
+  }
   trip.elapsed+=dt;trip.still=0;trip.phase='planning';trip.moving=false;g.player.vx=g.player.vy=0;
   if(!route.planning)stopWaystationTravel(g,'没有找到可通行路线，请调整位置或换一辆载具。');
   else if(trip.elapsed>W.searchSeconds)stopWaystationTravel(g,'路线规划超时，请调整位置后重试。');

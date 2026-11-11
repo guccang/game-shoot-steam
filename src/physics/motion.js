@@ -37,8 +37,10 @@ export function blocked(x, y, radius = 12, trees = [], body = null) {
   if(!body?.flying&&(body?.worldBarriers||[]).some(b=>Math.abs(delta(x-b.x,WORLD.width))<b.width/2+radius&&Math.abs(delta(y-b.y,WORLD.height))<b.height/2+radius))return true;
   // 守门战区共享当前营地几何，玩家、团子和援军不再碰到已拆除的旧围栏。
   const campProgress=body?.arena?.campProgress||(!body?.arena&&!body?.story?body?.campProgress:null);
+  // 退离围栏的特例仅用于真实移动，规划远处路段时不能沿用起点的退让方向。
+  const fenceOrigin=body?.fenceVehicle?.active&&!body.planningRoute?body:null;
   const fenceFootprint=vehicleFenceFootprint(body?.fenceVehicle,radius);
-  if(body?.mapId==='forest'&&!body.flying&&(!body.arena||body.arena.terrain==='forest')&&(campProgress?campBoundaryBlocked(x,y,radius,campProgress,fenceFootprint,body?.fenceVehicle?.active?body:null):settlementBlocked(x,y,radius,fenceFootprint,body?.fenceVehicle?.active?body:null)))return true;
+  if(body?.mapId==='forest'&&!body.flying&&(!body.arena||body.arena.terrain==='forest')&&(campProgress?campBoundaryBlocked(x,y,radius,campProgress,fenceFootprint,fenceOrigin):settlementBlocked(x,y,radius,fenceFootprint,fenceOrigin)))return true;
   if(body?.livingCollision&&!body.flying&&livingFacilityBlocked(x,y,radius,body))return true;
   // 主场景秘境同时遵守圆形区域与森林碰撞；旧平台夹具保留兼容路径。
   if (body?.arena) {
