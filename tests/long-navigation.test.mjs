@@ -55,3 +55,23 @@ test('规划期间停车变化不丢弃进度，但发布前必须绕开新增�
   for(let i=1;i<route.points.length;i++)assert.ok(questLineClear(route.points[i-1],route.points[i],body,[]));
  }
 });
+
+// 手机营地按钮选择居民的实际位置，检查车辆在森林内过桥并开到交互范围。
+test('晴叶营地到苔溪营地的地图路点可跨河起步并抵达',async()=>{
+ const {regionalNpc,REGIONAL_CAMPS}=await import('../src/config/regional-camps.js');
+ const {requestWorldNavigation}=await import('../src/core/navigation/world-navigation.js');
+ const {driveToTrackedTask,updateSEControl}=await import('../src/combat/vehicle-se.js');
+ const g=scene();g.progress.vehicleHulls[1]=1;g.vehicle=g.vehicles[1];g.vehicle.active=true;
+ g.progress.vehicleSE[1].owned=g.progress.vehicleSE[1].installed=['autopilot'];
+ g.mainlineSpeech=null;g.enemies=[];g.boss=null;g.state='playing';
+ Object.assign(g.player,{x:600,y:700,vx:0,vy:0,mapId:'forest',campProgress:g.progress,fenceVehicle:g.vehicle});
+ const site={...regionalNpc(REGIONAL_CAMPS.find(c=>c.id==='mossbrook')),id:'mossbrook',mapId:'forest'};
+ requestWorldNavigation(g,site,'前往苔溪营地',{direct:true,arrivalRadius:45});driveToTrackedTask(g);
+ let started=false;
+ for(let i=0;i<6000&&g.seControl;i++){
+  const input=updateSEControl(g,.04,{x:0,y:0});
+  if(!started&&(input.x||input.y)){assert.ok(i<250,'应在十秒内起步');started=true;}
+  driveBody(g.player,input,155,.04,WORLD,g.trees);
+ }
+ assert.ok(started);assert.ok(worldDistance(g.player,site)<=45,'应抵达苔溪营地');
+});

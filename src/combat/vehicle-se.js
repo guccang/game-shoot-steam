@@ -133,7 +133,8 @@ export function updateSEControl(g,dt,input){syncSEControl(g);const s=g.seControl
   s.session??=createVisualRouteSession(body,s.goal,createPlayerNavigationIndex(g.trees||[]),s.clock,null,{budget:120000});
   route=advanceVisualRouteSession(s.session,body,s.clock);
  }
- if(!route.reachable){if(!route.planning||s.clock>120)return stop(g,'自动驾驶未找到可通行路线，请调整目标。');return {x:0,y:0};}
+ if(!route.reachable){s.planningTime=(s.planningTime||0)+dt;if(!route.planning||s.planningTime>120)return stop(g,'自动驾驶未找到可通行路线，请调整目标。');return {x:0,y:0};}
+ s.planningTime=0;
  s.still=worldDistance(g.player,s.last)<.1?s.still+dt:0;s.last=canonical(g.player);if(s.still>2)return stop(g,'自动驾驶前方受阻，请手动调整。');
  const q=nearest(route.points[1]||s.goal,g.player),dx=q.x-g.player.x,dy=q.y-g.player.y,d=Math.hypot(dx,dy);s.status='沿路线驾驶';return {x:dx/Math.max(1,d),y:dy/Math.max(1,d)};
 }
