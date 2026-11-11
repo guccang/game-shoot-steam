@@ -22,12 +22,15 @@ export function createLoadCleanup({game,root,dialogs,onChange}){
  // 选择物品时只建议刚好低于限重的数量，库存不足时最多选择持有量。
  function suggested(item){const load=cleanupLoad(game,target());return Math.min(item.count,Math.max(1,Math.ceil((load.weight-load.capacity+.01-1e-9)/cleanupUnitMass(item))));}
  // 列表与重量从实时库存生成；切换货舱不沿用旧的物品选择。
- function render(view=panel){
+ function render(view=panel,goods,accessible){
   const slot=name=>view.querySelector("[data-cleanup-slot="+name+"]");
   const load=cleanupLoad(game,hull),entries=cleanupEntries(game,hull),available=cleanupAvailable(game,hull),plan=planLoadCleanup(game,hull);
   if(view===panel){panel.dataset.source=hull===null?'bag':'vehicle';get('load-cleanup-title').textContent=hull===null?'整理背包':'整理载具仓库';}
   slot('meter').innerHTML=`<div><b>${hull===null?'猫猫背包':escape(vehicleModel(hull).name)}</b><span>${kg(load.weight)} / ${kg(load.capacity)} kg</span></div><progress aria-label="当前载荷" max="${load.capacity}" value="${Math.min(load.weight,load.capacity)}"></progress><small>${load.weight>=load.capacity?'载荷已满，清理后解除负重限制': '剩余载重 '+kg(load.capacity-load.weight)+' kg'}</small>`;
-  slot('content').innerHTML=entries.length?'<div class="cleanup-grid" aria-label="可清理物品">'+entries.map(r=>`<button type="button" class="cleanup-item" data-cleanup-item="${r.id}" aria-label="${escape(r.name)}，${r.count}份，${kg(r.weight)}千克，选择丢弃数量"><span class="cleanup-grip" data-cleanup-grip aria-hidden="true">${inventoryIcon(r)}</span><b>${escape(r.name)}</b><small>×${r.count} · ${kg(r.weight)} kg</small></button>`).join('')+'</div><p class="cleanup-protection">当前装备、农具和重要物品受保护。拖动图标清理，滑动文字浏览。</p>':`<div class="cleanup-grid cleanup-empty">${available?'这里没有可清理的物品。':'请靠近这辆载具后整理货舱。'}</div>`;
+  if(goods){
+   const hint=accessible?"点击货物选择数量移到背包；拖动图标到清理区可丢弃。":"请靠近这辆载具后装卸或清理。";
+   slot('content').innerHTML=`<p>${hint}背包物品可在物品详情中移到载具。</p><div class="cleanup-grid" aria-label="载具货物">${goods.map(item=>`<button type="button" class="cleanup-item" data-cargo-item="${escape(item.id)}" data-cleanup-item="${escape(item.id)}" aria-haspopup="dialog" aria-controls="inventory-transfer-dialog" ${accessible?"":"disabled"}><span class="cleanup-grip" data-cleanup-grip>${inventoryIcon(item)}</span><b>${escape(item.name)}</b><small>×${item.count} · ${kg(item.weight)} kg</small></button>`).join("")||"货舱是空的。"}</div>`;
+  }else slot('content').innerHTML=entries.length?'<div class="cleanup-grid" aria-label="可清理物品">'+entries.map(r=>`<button type="button" class="cleanup-item" data-cleanup-item="${r.id}" aria-label="${escape(r.name)}，${r.count}份，${kg(r.weight)}千克，选择丢弃数量"><span class="cleanup-grip" data-cleanup-grip aria-hidden="true">${inventoryIcon(r)}</span><b>${escape(r.name)}</b><small>×${r.count} · ${kg(r.weight)} kg</small></button>`).join('')+'</div><p class="cleanup-protection">当前装备、农具和重要物品受保护。拖动图标清理，滑动文字浏览。</p>':`<div class="cleanup-grid cleanup-empty">${available?'这里没有可清理的物品。':'请靠近这辆载具后整理货舱。'}</div>`;
   const auto=view.querySelector('[data-cleanup-auto]');auto.disabled=!plan.ok;auto.title=plan.message;slot('message').textContent=message||(!plan.ok&&plan.weight>=plan.capacity?plan.message:'');paintInventoryIcons(view,game.progress);
  }
  // 滑动时只更新数值和减重预览，不重建滑条以免手势中断。
@@ -38,14 +41,17 @@ export function createLoadCleanup({game,root,dialogs,onChange}){
  }
  // 仓库内复用拖拽、数量确认与一键减负操作。
  const inline=root.createElement('section');
- inline.innerHTML='<h3>整理载具仓库</h3><div data-cleanup-slot="meter" hidden></div><div data-cleanup-slot="content"></div><div data-cleanup-drop class="cleanup-drop">拖到这里清理</div><button class="ui-button" data-cleanup-auto>一键清理至限重内</button><p data-cleanup-slot="message" role="status"></p>';
+ inline.innerHTML='<h3>整理载具仓库</h3><div data-cleanup-slot="meter" hidden></div><div data-cleanup-slot="content"></div><div data-cleanup-drop class="cleanup-drop"><span aria-hidden="true">↓</span><b>拖到这里清理</b><small>松手后选择数量</small></div><button class="ui-button" data-cleanup-auto>一键清理至限重内</button><p data-cleanup-slot="message" role="status"></p>';
  let inlineHull=null;
  // 操作前绑定当前货舱，避免背包整理入口改变物品来源。
- function selectInline(id){hull=inlineHull;choose(id);}
- const inlineDrag=createCleanupDrag({panel:inline,root,game,onDrop:selectInline});
- scope.on(inline,'click',e=>{const button=e.target.closest('button');if(!button)return;hull=inlineHull;if(button.hasAttribute('data-cleanup-auto'))automatic();else if(button.dataset.cleanupItem)selectInline(button.dataset.cleanupItem);});
+ function selectInline(id){hull=inlineHull;const status=inline.querySelector('[data-cleanup-slot="message"]');
+  if(!cleanupAvailable(game,hull)){status.textContent="请靠近这辆载具后清理。";return;}
+  if(!cleanupEntries(game,hull).some(item=>item.id===id)){message="该物品受保护，无法清理。";status.textContent=message;return;}
+  choose(id);}
+ const inlineDrag=createCleanupDrag({panel:inline,root,game,onDrop:selectInline,dropZoneOnly:true});
+ scope.on(inline,'click',e=>{const button=e.target.closest('button');if(!button)return;hull=inlineHull;if(button.hasAttribute('data-cleanup-auto'))automatic();});
  // 在货舱页面直接展示可清理物品。
- function mount(host,index){inlineDrag.cancel();if(inlineHull!==index)message='';inlineHull=index;hull=index;host.append(inline);render(inline);}
+ function mount(host,index,goods,accessible){inlineDrag.cancel();if(inlineHull!==index)message='';inlineHull=index;hull=index;host.append(inline);render(inline,goods,accessible);}
  const drag=createCleanupDrag({panel,root,game,onDrop:choose});
  // 快捷方案按来源列明物品，不隐藏可能涉及的背包物品。
  function automatic(){const plan=planLoadCleanup(game,hull);if(!plan.ok){message=plan.message;render();return;}pending={plan};get('cleanup-quantity-title').textContent='清理至限重内';get('cleanup-quantity-content').innerHTML=`<p>${escape(plan.message)}</p><ul class="cleanup-plan">${plan.changes.map(r=>`<li><span>${r.hull===null?'背包':'货舱'} · ${escape(r.name)}</span><b>×${r.count}</b></li>`).join('')}</ul><p class="ui-inset">${kg(plan.weight)} → <strong>${kg(plan.after)}</strong> / ${kg(plan.capacity)} kg</p><p>确认后一次性丢弃上述物品，无法找回。</p>`;root.body.append(quantity);dialogs.open(quantity.id);}

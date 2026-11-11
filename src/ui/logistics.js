@@ -5,6 +5,7 @@ import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
 import {REGIONAL_CAMPS} from '../config/regional-camps.js';
 import {refitMarkup,refitPreview} from './vehicle-refit.js';
 import {vehicleRefitStats,redistributeVehicleZones,VEHICLE_ZONES} from '../config/vehicle-refit.js';
+import {cleanupEntries} from '../core/inventory/load-cleanup.js';
 import {vehicleCargoEntries} from '../core/inventory/inventory-transfer.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
 import {inspectLogisticsLesson} from '../progression/story/mainline-logistics.js';
@@ -48,13 +49,16 @@ export function createLogistics({game,root,dialogs,onChange,mountCleanup,onTrans
  function renderCargo(fixed=false){
   const cat=catLoad(game),owned=game.progress.vehicleHulls.map((n,i)=>n?i:null).filter(i=>i!==null);if(!owned.includes(hull))hull=owned.includes(game.vehicle.index)?game.vehicle.index:owned[0]??null;
   const b=hull===null?null:vehicleBuild(game.progress,hull),v=hull===null?null:vehicleLoad(game,hull,{driver:true}),accessible=hull!==null&&cargoAccessible(game,hull);
-  const rows=hull===null?[]:vehicleCargoEntries(game,hull);
+  // 仓库按物品合并库存与可清理数量，弹药总数包含已装填部分。
+  const stock=new Map(vehicleCargoEntries(game,hull).map(item=>[item.id,item]));
+  if(hull!==null)for(const item of cleanupEntries(game,hull))stock.set(item.id,item);
+  const rows=[...stock.values()];
   const picker=b&&!fixed?`<label class="inventory-transfer-field">当前载具<select data-cargo-hull aria-label="当前载具">${owned.map(i=>`<option value="${i}" ${i===hull?'selected':''}>${vehicleModel(i).name}</option>`).join('')}</select></label>`:'';
   const goodsWeight=rows.reduce((total,item)=>total+item.weight,0);
-  cargo.innerHTML=(b?`${picker}<h3>${vehicleModel(hull).name} · 仓库总览</h3>${meter('载具载荷',v.payload,v.capacity)}<p>货物 ${rows.length} 类 · 共 ${kg(goodsWeight)}</p>${meter('随身背包',cat.weight,cat.capacity)}<h3>货物装卸</h3><p>${accessible?'点击货物，选择数量移到背包。':'请到这辆车旁装卸。'}背包物品可在物品详情中移到载具。</p><div class="keepsake-pockets" aria-label="载具货物">${rows.map(item=>`<button type="button" class="keepsake-pocket" data-cargo-item="${item.id}" aria-haspopup="dialog" aria-controls="inventory-transfer-dialog" aria-label="${item.name}，数量${item.count}，移到背包" ${accessible?'':'disabled'}>${inventoryIcon(item)}<span>${item.name}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')||'<p>货舱是空的。</p>'}</div><div data-inline-cleanup></div>`:'<p>尚未拥有载具。</p>'+meter('随身背包',cat.weight,cat.capacity))+woodStorageMarkup()+`<div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`;
+  cargo.innerHTML=(b?`${picker}<h3>${vehicleModel(hull).name} · 仓库总览</h3>${meter('载具载荷',v.payload,v.capacity)}<p>货物 ${rows.length} 类 · 共 ${kg(goodsWeight)}</p>${meter('随身背包',cat.weight,cat.capacity)}<div data-inline-cleanup></div>`:'<p>尚未拥有载具。</p>'+meter('随身背包',cat.weight,cat.capacity))+woodStorageMarkup()+`<div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`;
   cargo.insertAdjacentHTML('beforeend',treasureCargoMarkup()+'<p data-cargo-status role="status"></p>');
   paintInventoryIcons(cargo,game.progress);
-  if(b)mountCleanup(cargo.querySelector('[data-inline-cleanup]'),hull);
+  if(b)mountCleanup(cargo.querySelector('[data-inline-cleanup]'),hull,rows,accessible);
 
  }
  // 运输与工坊保管共享实物位置，贵重唯一件不放入一键丢弃列表。
