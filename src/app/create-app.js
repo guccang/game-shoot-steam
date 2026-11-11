@@ -111,7 +111,7 @@ import { createAudioControls } from '../ui/audio-controls.js';
 import { createGameEventHandler } from './game-events.js';
 import { createProgressController } from './progress-controller.js';
 import { createDiagnostics } from './diagnostics.js';
-const GAME_FRAME_HZ = 30;
+const GAME_FRAME_HZ = 60;
 const UI_INTERVAL_MS = 50;
 const mounted = new WeakMap();
 
