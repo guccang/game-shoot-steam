@@ -31,7 +31,7 @@ import {equipmentLevelCap,normalizeLegendaryWorkshop} from '../config/legendary-
 import {normalizeMonsterCamps} from './battle/monster-camps.js';
 import {TOWN_LAYOUT_VERSION} from '../config/town-layout.js';
 import {FIRE_STATION_LAYOUT_VERSION} from '../config/fire-station-layout.js';
-import {freshRestoration,validateRestoration} from '../config/town-restoration.js';
+import {freshRestoration,validateRestoration,TOWN_RESTORATIONS} from '../config/town-restoration.js';
 import {freshFarm,validateFarm} from './farming/farm.js';
 import {initializeWildFarmAges} from './farming/wild-farm-age.js';
 import {freshKeepsakes,normalizeKeepsakes} from './inventory/keepsakes.js';
@@ -160,6 +160,13 @@ export function validateProgress(raw) {
   p.campLayout=normalizeCampLayout(raw.campLayout);
   p.campLand=normalizeCampLand(raw.campLand);
   p.restoration=validateRestoration(raw.restoration);
+  // 已购街区在升级时一次补齐建筑；正在施工的设施沿用原进度。
+  if(raw.campLand&&raw.campLand.version<4){
+    for(const f of TOWN_RESTORATIONS){
+      if(f.plotId&&f.plotId!=='core'&&p.campLand.owned.includes(f.plotId)&&p.restoration.build?.id!==f.id&&!p.restoration.repaired.includes(f.id))p.restoration.repaired.push(f.id);
+    }
+    p.restoration=validateRestoration(p.restoration);
+  }
   // 老存档原本营业的商店保留权限；新档必须在对应土地上建设。
   if(!raw.campLand)for(const id of ['outdoor','ammo','cat-home','furniture','construction','repair','refinery','factory'])if(!p.restoration.repaired.includes(id))p.restoration.repaired.push(id);
   p.farm=validateFarm(raw.farm);
@@ -235,6 +242,10 @@ export function validateProgress(raw) {
   p.realms = validateRealms(raw.realms);
   p.story = validateStory(raw.story);
   p.living=normalizeLivingWorld(raw.living);
+  // 老院落的居民首次载入时从新住址开始作息；自定义布局仍决定各自住址。
+  if((raw.campLand?.version??0)<4)for(const [id,person] of Object.entries(p.living.residents)){
+    if(person.y>=1400&&person.y<=2040&&person.x>=-180&&person.x<=790)delete p.living.residents[id];
+  }
   p.homeDecor=normalizeHome(raw.homeDecor,p.living.calendar);
   p.campManagement=normalizeCampManagement(raw.campManagement);
   // 旧档可能先获得了伙伴才引入住宿，补足其楼层，不动原有设施与家具。

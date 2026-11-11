@@ -35,7 +35,7 @@ export const TOWN_RESTORATIONS=[
  {id:'travel',name:'远行驿站',before:'other-map',wood:160,shape:'board',...T.travel,site:{x:T.travel.x,y:T.travel.y+30},extra:true,benefit:'解锁九寨沟地图旅行',minute:'60分钟后'},
  {id:'fire',name:'森林消防站',before:'fire-duty',wood:240,shape:'garage',...FIRE_STATION,site:at('realm-fire'),benefit:'接警、驾驶消防车并扑灭林火',minute:'60分钟后'},
  {id:'football',name:'林间球场站',before:'football-day',wood:100,shape:'board',...T.football,site:{x:T.football.x,y:T.football.y+30},extra:true,benefit:'开启团子足球',minute:'60分钟后'}
-].map(f=>({...f,width:f.width||110,height:f.height||100,site:{...f.site,mapId:'forest'},order:content.tasks.findIndex(t=>t.id===f.before)})).sort((a,b)=>a.order-b.order);
+].map(f=>({...f,plotId:campPlotAt(f)?.id,width:f.width||110,height:f.height||100,site:{...f.site,mapId:'forest'},order:content.tasks.findIndex(t=>t.id===f.before)})).sort((a,b)=>a.order-b.order);
 // 缺少新字段也视为未修复，不迁移旧存档权限。
 export function freshRestoration(){return {version:1,repaired:[],cottageRested:false,gathered:Object.fromEntries(TOWN_RESTORATIONS.map(f=>[f.id,0])),build:null};}
 // 仅恢复有效修复记录和有限的采集量。
@@ -63,6 +63,6 @@ export function pendingRestoration(progress){
  return TOWN_RESTORATIONS.find(f=>!facilityOpen(progress,f.id)&&f.before===task?.id&&(!f.extra||!isCampaignTask(task)))||null;
 }
 // 所有入口共用同一锁定原因。
-export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'先购买'+campPlotAt(f).name+'，再投入木材建设。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
+export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'先购买'+campPlotAt(f).name+'，即可开放。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
 // 角色培养共用武器工坊，炮塔整备共用载具工坊。
 export function workshopFacility(kind){return ['vehicle','turret'].includes(kind)?'garage':'weapons';}

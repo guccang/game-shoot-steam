@@ -5,7 +5,6 @@ import {campPlots,CAMP_PLOTS,ownsCampPlot,ownsCampPoint} from '../config/camp-la
 import {CAMP_BUILDINGS,campBuildingPosition} from '../config/camp-layout.js';
 import {TOWN_PATHS} from '../config/town-layout.js';
 import {REGIONAL_CAMPS,REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';
-import {SETTLEMENTS} from '../config/settlements.js';
 import {campRoadNetwork} from './camp-layout-roads.js';
 import {nearest,visibleBodies} from './coordinates.js';
 const cache=new WeakMap();
@@ -13,7 +12,7 @@ const cache=new WeakMap();
 // 只在真实友善地契范围开灯，未购买的野地不会提前变成亮营地。
 export function campLightRegions(game){
  if(game.mapId!=='forest'||game.realm||game.cottage)return [];
- return [...campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id)),SETTLEMENTS.find(s=>s.id==='neighbors'),...REGIONAL_SETTLEMENTS];
+ return [...campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id)),...REGIONAL_SETTLEMENTS];
 }
 
 // 周期世界中使用实际矩形边界，不能因为主营地的负坐标而漏掉照明。
@@ -48,8 +47,7 @@ export function campRoadLights(progress,includeManaged=false){
    lights.push(lamp('camp-road-'+lights.length,x,y));break;
   }
  }
- // 邻里主路与五方营地十字口同样有固定路肩照明，不把路灯铺满野外。
- lights.push(lamp('neighbors-road',280,1830));
+ // 地区营地保留固定路灯，居民街区采用所属地块的照明。
  for(const c of REGIONAL_CAMPS)for(const [i,[dx,dy]]of [[-95,-95],[95,95]].entries())lights.push(lamp('camp-'+c.id+'-'+i,c.x+dx,c.y+dy));
  entry={key,lights,plots,count:plots?.length};cache.set(progress,entry);return includeManaged||!progress.campManagement?.defaultDecorVersion?lights:lights.filter(l=>!l.id.startsWith('camp-road-'));
 }

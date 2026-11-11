@@ -1,7 +1,6 @@
-// 固定面积沿指定外缘增地，保护未购地、邻里小院和实际水面。
+// 固定面积沿指定外缘增地，保护未购地和实际水面。
 import {campPlots,ownsCampPlot} from '../config/camp-land.js';
 import {CAMP_EXPANSION} from '../config/camp-expansion.js';
-import {SETTLEMENTS} from '../config/settlements.js';
 import {isWaterScenery} from './river-geometry.js';
 import {isLakeWater} from './natural-terrain.js';
 export const CAMP_EXPANSION_DIRECTIONS={north:'北',south:'南',west:'西',east:'东'};
@@ -13,7 +12,7 @@ export function campExpansionSite(progress,direction='north'){const key=JSON.str
 function computeExpansionSite(progress,direction='north'){
  if(!CAMP_EXPANSION_DIRECTIONS[direction])return {reason:'请选择扩建方向。'};
  if(direction==='east')return {reason:'东面临河，不能向河流方向扩建。'};
- const plots=campPlots(progress),owned=plots.filter(p=>ownsCampPlot(progress,p.id)),horizontal=direction!=='west',side=direction==='north'?'top':direction==='south'?'bottom':'left',edge=(direction==='south'?Math.max:Math.min)(...owned.map(p=>p[side])),neighbors=SETTLEMENTS.find(p=>p.id==='neighbors'),obstacles=[...plots.filter(p=>!ownsCampPlot(progress,p.id)),neighbors],segments=[];
+ const plots=campPlots(progress),owned=plots.filter(p=>ownsCampPlot(progress,p.id)),horizontal=direction!=='west',side=direction==='north'?'top':direction==='south'?'bottom':'left',edge=(direction==='south'?Math.max:Math.min)(...owned.map(p=>p[side])),obstacles=[...plots.filter(p=>!ownsCampPlot(progress,p.id))],segments=[];
  for(const p of owned.filter(p=>p[side]===edge)){
   let intervals=[[horizontal?p.left:p.top,horizontal?p.right:p.bottom]];
   for(const o of obstacles){const touches=direction==='north'?o.bottom>=edge&&o.top<edge:direction==='south'?o.top<=edge&&o.bottom>edge:o.right>=edge&&o.left<edge;if(!touches)continue;const lo=horizontal?o.left:o.top,hi=horizontal?o.right:o.bottom;intervals=intervals.flatMap(([a,b])=>hi<=a||lo>=b?[[a,b]]:[[a,Math.min(b,lo)],[Math.max(a,hi),b]].filter(([x,y])=>y>x));}
@@ -27,5 +26,5 @@ function computeExpansionSite(progress,direction='north'){
   let water=false;for(let x=site.left;x<=site.right&&!water;x+=20)for(let y=site.top;y<=site.bottom;y+=20)if(isWaterScenery(x,y)||isLakeWater(x,y,20)){water=true;break;}
   if(!water)return {site:{...site,direction},reason:''};
  }
- return {reason:'该方向有水域、邻里小院或未购土地，无法扩建。'};
+ return {reason:'该方向有水域或未购土地，无法扩建。'};
 }

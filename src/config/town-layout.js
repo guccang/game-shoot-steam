@@ -5,8 +5,8 @@ export const TOWN_LAYOUT_VERSION=1;
 // 将原规划点平移到新营地，保留其他字段及局部相对尺寸。
 export function townPoint(point){return {...point,x:point.x+TOWN_SHIFT_X};}
 export const TOWN_LAYOUT = {
-  spawn: {x:900,y:700},
-  neighborsPost: {x:650,y:1800},
+  spawn: {x:665,y:700},
+  neighborsPost: {x:-132,y:145},
   race: {x:510,y:1100},
   football: {x:470,y:1350},
   travel: {x:1040,y:690},

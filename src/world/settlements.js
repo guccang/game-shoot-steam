@@ -1,10 +1,15 @@
-import {campExpansionPoint,campPlots} from '../config/camp-land.js';
+import {activeCampPlots} from '../config/camp-land.js';
 // 安全范围和护栏碰撞由同一配置生成，避免看得见的门与实际通路错位。
 import {SETTLEMENTS} from '../config/settlements.js';
 import {nearest} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
 // 边缘余量也用于检查整座战斗圈与安全区分离。
-export function settlementAt(point,margin=0){if(campExpansionPoint(point,undefined,margin)){const region=campPlots().find(r=>{const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top-58)/2});return r.top< -58&&p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<-58;});return {...SETTLEMENTS.find(s=>s.id==='sunleaf'),...region,id:'sunleaf',name:'晴叶营地'};}return SETTLEMENTS.find(s=>{const p=nearest(point,{x:(s.left+s.right)/2,y:(s.top+s.bottom)/2});return Math.hypot(Math.max(s.left-p.x,0,p.x-s.right),Math.max(s.top-p.y,0,p.y-s.bottom))<=margin;})||null;}
+const regionalSettlements=SETTLEMENTS.slice(1);
+// 安全区随实际地契扩展，和地区营地共用周期坐标距离判断。
+export function settlementAt(point,margin=0){
+ const contains=s=>{const p=nearest(point,{x:(s.left+s.right)/2,y:(s.top+s.bottom)/2});return Math.hypot(Math.max(s.left-p.x,0,p.x-s.right),Math.max(s.top-p.y,0,p.y-s.bottom))<=margin;};
+ return activeCampPlots().some(contains)?SETTLEMENTS[0]:regionalSettlements.find(contains)||null;
+}
 // 相邻聚落共用的边完全敞开，只生成合并轮廓的外栏；绘制、碰撞和树冠避让同源。
 export function buildSettlementFences(settlements){return settlements.flatMap(s=>['top','bottom','left','right'].flatMap(side=>{
  const horizontal=['top','bottom'].includes(side),lo=horizontal?s.left:s.top,hi=horizontal?s.right:s.bottom,fixed=s[side];

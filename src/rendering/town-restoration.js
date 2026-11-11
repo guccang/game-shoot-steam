@@ -32,11 +32,7 @@ export function restorationForObject(item) {
   else if (item.type === 'story-post' && !item.camp)
     id = item.clearing ? 'clearing' : item.id === 'monster-neighbors' ? 'neighbors' : 'story';
   else if (item.type === 'camp-defense' && item.kind === 'marker') id = 'defense';
-  else if (
-    item.type === 'living-facility' &&
-    ['camp', 'relay', 'kitchen', 'pottery', 'roost', 'market', 'flowers'].includes(item.id)
-  )
-    id = item.id === 'camp' ? 'story' : 'neighbors';
+  // 居民建筑随所属地块出现，委托板独立开放接单。
   else if (item.type === 'restoration-extra') id = item.id;
   const f = TOWN_RESTORATIONS.find((f) => f.id === id);
   return f

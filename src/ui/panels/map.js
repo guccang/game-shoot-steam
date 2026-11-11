@@ -1,3 +1,4 @@
+import {canInspectBuilding} from '../../core/camp/building-entry.js';
 import {driveToTrackedTask} from '../../combat/vehicle-se.js';
 import {monsterCampRetired} from '../../world/camp-retired-monsters.js';
 import {REGIONAL_CAMPS,regionalNpc,regionalParcel} from '../../config/regional-camps.js';
@@ -41,6 +42,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
   function previewOptions() { return { mapId: game.mapId, season: renderer.environment.forestSeason }; }
   // 绘制等级区域和玩家当前位置。
   function showRegionMap(retry = false) {
+    $('map-camp-land').hidden=!canInspectBuilding(game);
     const STORY_WORLD=storyDefinition(game).world,STORY_SITES=STORY_WORLD.sites;
     const map = MAPS.find(m => m.id === game.mapId) || MAPS[0];
     const zones = game.mapId === 'jiuzhaigou' ? JIUZHAIGOU_ZONES : BIOMES;
@@ -156,6 +158,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       `<div style="--zone-color:${sign.zone.accent}"><b>${i + 1}. ${sign.zone.name}</b><small>${i18nHtml("ui.panels.map.27d417b328", { p0: (sign.subtitle) })}</small></div>`).join('');
   }
   // 只有真正进入地图页面才记录教学进度，手机首页不算看过地图。
+  scope.on($('map-camp-land'),'click',()=>game.openCampLand?.());
   dialogs.register('map-dialog', { onOpen: () => {showRegionMap(true);markMainline(game,'map');} });
   // 事件委托只绑定一次，旅行后刷新当前面板，关闭时仍由公共弹窗恢复暂停。
   scope.on($('map-destinations'), 'click', event => {

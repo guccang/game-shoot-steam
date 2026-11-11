@@ -1,5 +1,5 @@
 // 地契投影到正式场景：未购地保留草地，正式围栏单独读取已购外边界。
-import {CAMP_PLOTS,availableCampPlots,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
+import {CAMP_LAND_SIGN,CAMP_PLOTS,availableCampPlots,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
 import {nearest} from '../world/coordinates.js';
 import {box,oval} from './primitives.js';
 import {drawWorldSign} from './world-signs.js';
@@ -14,7 +14,7 @@ export function campObjectVisible(game,item){
 // 相邻未购地显示扩建木牌，核心区保留营地建设入口。
 export function campLandObjects(game){
  if(!campLandActive(game))return [];
- const objects=[{x:440,y:720,id:'core',type:'camp-land-sign',name:'营地建设'},...availableCampPlots(game.progress).map(p=>({...p.sign,id:p.id,type:'camp-land-sign',name:p.name}))];
+ const objects=[{...CAMP_LAND_SIGN,...CAMP_LAND_SIGN.sign,type:'camp-land-sign'},...availableCampPlots(game.progress).map(p=>({...p.sign,id:p.id,type:'camp-land-sign',name:p.name}))];
  return objects;
 }
 // 覆盖未开发院落与铺路，复用两张小草地纹理；购买后的下一帧立即恢复原地面。

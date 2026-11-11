@@ -47,7 +47,7 @@ export function restorationObjective(game,task,pending=pendingRestoration(game.p
  if(!pending||arrivalPending(game.progress)||game.cottage||game.story||game.realm||game.fireActive||game.campDefense)return null;
  const s=restorationStatus(game,pending.id),f=s.facility,build=game.progress.restoration?.build?.id===f.id,gather=!build&&!s.enough;
  task??={id:'restore-'+f.id,title:'建设'+f.name};
- if(!s.landOwned)return {task,restoration:f.id,key:'land-'+s.plot.id,phase:'doing',navigation:true,site:{...s.plot.sign,mapId:'forest'},label:'购买'+s.plot.name+' · '+s.plot.coins+' 金币',hint:'点击地界木牌购买土地，再建设'+f.name+'。'};
+ if(!s.landOwned)return {task,restoration:f.id,key:'land-'+s.plot.id,phase:'doing',navigation:true,site:{...s.plot.sign,mapId:'forest'},label:'购买'+s.plot.name+' · '+s.plot.coins+' 金币',hint:'在营地管理或大地图购买地块，即可开放'+f.name+'。'};
  if(gather&&s.wood.destination){const d=s.wood.destination;return {task,restoration:f.id,key:(d.kind==='store'?'store-wood-':'retrieve-wood-')+f.id,phase:'doing',navigation:true,site:d.site,label:(d.kind==='store'?'运回木材':'取回木材')+' '+s.wood.gatherProgress+' · '+f.name,hint:d.label+' · '+s.wood.breakdown};}
  let tree=null,distance=Infinity;
  if(gather)for(const t of game.trees){const d=worldDistance(game.player,t);if(t.hp>0&&d<distance){tree=t;distance=d;}}

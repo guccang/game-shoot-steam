@@ -12,13 +12,13 @@ export const LIVING_SEASONS = ['spring','summer','autumn','winter'];
 export const LIVING_SEASON_NAMES = ['春','夏','秋','冬'];
 export const LIVING_PLACES = {
   camp:{...TOWN_LAYOUT.letters,name:'晴叶饭桌',kind:'letters',width:90,height:48},
-  relay:{...townPoint({x:790,y:1540}),name:'旧哨站',kind:'relay',width:104,height:100},
-  // 厨房向西让出栖架与纵路，完整墙体不占用居民出门和车辆通路。
-  kitchen:{...townPoint({x:445,y:1810}),name:'阿团的厨房',kind:'kitchen',width:140,height:92},
-  pottery:{...townPoint({x:780,y:1800}),name:'铁牙陶作台',kind:'pottery',width:104,height:46},
-  roost:{...townPoint({x:560,y:1660}),name:'小夜的栖架',kind:'roost',width:100,height:112},
-  market:{...townPoint({x:880,y:1900}),name:'林间集市',kind:'market',width:120,height:65},
-  flowers:{...townPoint({x:470,y:1870}),name:'月光花圃',kind:'flowers',width:75,height:35},
+  relay:{...townPoint({x:-220,y:1220}),name:'旧哨站',kind:'relay',width:104,height:100},
+  // 厨房和陶作台在西北工艺院，中间留出委托板和出入通道。
+  kitchen:{...townPoint({x:-245,y:96}),name:'阿团的厨房',kind:'kitchen',width:140,height:92},
+  pottery:{...townPoint({x:-20,y:96}),name:'铁牙陶作台',kind:'pottery',width:104,height:46},
+  roost:{...townPoint({x:180,y:60}),name:'小夜的栖架',kind:'roost',width:100,height:112},
+  market:{...townPoint({x:8,y:1220}),name:'林间集市',kind:'market',width:120,height:65},
+  flowers:{...townPoint({x:460,y:794}),name:'月光花圃',kind:'flowers',width:75,height:35},
   basket:{x:2590,y:720,name:'散落的食材篮',kind:'basket',width:42,height:25},
   danger:{x:2600,y:2350,name:'夜班巡护线',kind:'warning',width:54,height:50},
 };
@@ -26,10 +26,9 @@ export const LIVING_PLACES = {
 export const LIVING_ROADS = [
   // 建筑支路在纵向主路处收口，不再另铺一条平行长路。
   ...TOWN_PATHS,
-  [townPoint({x:560,y:1700}),PATHS[1].find(p=>p.y===1720),townPoint({x:650,y:1730}),townPoint({x:650,y:1850}),townPoint({x:530,y:1850}),townPoint({x:470,y:1905})],
-  [townPoint({x:650,y:1850}),townPoint({x:780,y:1850}),townPoint({x:780,y:1990})],
-  [PATHS[1].find(p=>p.y===1580),townPoint({x:700,y:1580}),townPoint({x:790,y:1580})],
-  [townPoint({x:780,y:1990}),townPoint({x:880,y:1990})],
+  // 居民门口直接接入相邻的营地主路。
+  ...['relay','roost','market','flowers'].map(id=>{const site=LIVING_PLACES[id],y=Math.round((site.y+35)/20)*20;return [{x:site.x,y},PATHS[1][y/20]];}),
+  [townPoint({x:-245,y:140}),townPoint({x:-20,y:140}),townPoint({x:-20,y:365})],
 ];
 export const RESIDENTS = [
   {id:'snow',name:'雪团',hero:4,home:'camp',job:'整理补给',wish:'忙完补给就去户外画花草，攒一本邻里的四季',relation:'替薄荷留饭，陪小夜记下新芽，也想学着把朋友画进画里',day:['camp','sort'],dusk:['camp','eat'],night:['camp','rest'],line:'今天在外面画草叶，风一吹就全变样了。小夜说，画歪也没关系，他认得那是自家的花。'},

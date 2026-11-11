@@ -2,7 +2,6 @@ import {REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';
 import {buildSettlementFences} from './settlements.js';
 // 已购地块的并集外轮廓，同时供正式木栏、通行碰撞和规划图读取。
 import {campPlots,CAMP_PLOTS,ownsCampPlot} from '../config/camp-land.js';
-import {SETTLEMENTS} from '../config/settlements.js';
 import {nearest} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
 export const CAMP_GATE_WIDTH=360;
@@ -17,14 +16,15 @@ function outline(regions){const lines=[];
 }
 // 地契与门位共用有界缓存，最多64项，不在碰撞热路径重建围栏。
 export function campBoundary(progress,layout=progress?.campLayout){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=JSON.stringify(owned)+JSON.stringify(layout?.gates||{});if(cache.has(key))return cache.get(key);
- // 默认围栏把营地与邻里小院收进同一矩形；扩建仍按已保存区域取并集，不更改地契。
- const base=[...owned.filter(p=>!p.id.startsWith('expansion-')),SETTLEMENTS.find(s=>s.id==='neighbors')];
- const envelope=[{left:Math.min(...base.map(p=>p.left)),right:Math.max(...base.map(p=>p.right)),top:Math.min(...base.map(p=>p.top)),bottom:Math.max(...base.map(p=>p.bottom))},...owned.filter(p=>p.id.startsWith('expansion-'))],regions=envelope,lines=outline(envelope),objects=[],gates=[];
+ // 围栏只围住已购地块，相邻街区共用外沿。
+ const regions=owned,lines=outline(regions),objects=[],gates=[];
  // 东侧保留原营地与邻里各自的出入口，直线围栏不再带内凹转角。
  const fenceLines=lines.flatMap(l=>l.side==='right'&&l.lo<1000&&l.hi>1000?[{...l,hi:1000},{...l,lo:1000}]:[l]);
  for(const line of fenceLines){const {horizontal,fixed,lo,hi,side}=line;let gate=null;
- const gateWidth=horizontal&&side==='bottom'&&fixed===850?520:CAMP_GATE_WIDTH;
- if(hi-lo>=gateWidth+48){const id=side+':'+(horizontal?lo:fixed)+':'+(horizontal?(side==='top'&&fixed< -58?-58:fixed):hi),low=lo+gateWidth/2+24,high=hi-gateWidth/2-24,preferred=layout?.gates?.[id];const ideal=Number.isFinite(preferred)?low+(high-low)*preferred:horizontal?(fixed>=2000?300:side==='bottom'&&fixed===850?500:390):lo>=1000?(side==='left'?1850:1250):729,at=Math.max(lo+gateWidth/2+24,Math.min(hi-gateWidth/2-24,ideal));gate={id,low,high,type:'settlement-gate',settlement:'sunleaf',name:'营地通道',horizontal,x:horizontal?at:fixed,y:horizontal?fixed:at,length:gateWidth,side};gates.push(gate);objects.push(gate);}
+ const gateWidth=horizontal&&side==='bottom'&&fixed===850&&hi-lo>=1000?520:CAMP_GATE_WIDTH;
+ // 服务地北沿正对户外用品店后墙，保留围栏直到居民工艺院接入。
+ const shopBackWall=side==='top'&&fixed===CAMP_PLOTS.find(p=>p.id==='services').top;
+ if(!shopBackWall&&hi-lo>=gateWidth+48){const id=side+':'+(horizontal?lo:fixed)+':'+(horizontal?(side==='top'&&fixed< -58?-58:fixed):hi),low=lo+gateWidth/2+24,high=hi-gateWidth/2-24,preferred=layout?.gates?.[id];const ideal=Number.isFinite(preferred)?low+(high-low)*preferred:horizontal?(fixed>=2000?300:side==='bottom'&&fixed===850?500:390):lo>=1000?(side==='left'?1850:1250):729,at=Math.max(lo+gateWidth/2+24,Math.min(hi-gateWidth/2-24,ideal));gate={id,low,high,type:'settlement-gate',settlement:'sunleaf',name:'营地通道',horizontal,x:horizontal?at:fixed,y:horizontal?fixed:at,length:gateWidth,side};gates.push(gate);objects.push(gate);}
  const center=gate&&(horizontal?gate.x:gate.y),parts=gate?[[lo,center-gate.length/2],[center+gate.length/2,hi]]:[[lo,hi]];
  for(const [a,b] of parts){const count=Math.ceil((b-a)/58);for(let i=0;i<count;i++)objects.push({type:'settlement-fence',settlement:'sunleaf',horizontal,x:horizontal?a+(b-a)*(i+.5)/count:fixed,y:horizontal?fixed:a+(b-a)*(i+.5)/count,length:(b-a)/count});}
  }

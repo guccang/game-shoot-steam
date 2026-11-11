@@ -18,7 +18,7 @@ export const CAMP_BUILDINGS=Object.entries({cottage:'巡林小屋',weapons:'武�
  // 牛栏以南围栏底边为锚点，北门单独预留通道。
  {id:'pasture',name:'牛栏',x:PASTURE_BASE.x,y:PASTURE_BASE.y+PASTURE_BASE.halfHeight,width:PASTURE_BASE.halfWidth*2,height:PASTURE_BASE.halfHeight*2,publicFacility:true,placementKind:'pasture'},
  // 生活设施保留稳定身份，饭桌、栖架和房屋均可规划搬迁。
- ...['camp','roost','relay','pottery','kitchen','market'].map(id=>({...LIVING_PLACES[id],id,publicFacility:true})),
+ ...['camp','roost','relay','pottery','kitchen','market'].map(id=>({...LIVING_PLACES[id],id})),
  {...FIRE_STATION,id:'fire',name:'森林消防站',publicFacility:true,placementKind:'fire'},
  // 订单板独立搬迁，原商路身份与统计内容保持不变。
  {...TRADE_BOARD,id:'trade',passable:true,width:TRADE_BOARD_SIZE.width,height:TRADE_BOARD_SIZE.height-TRADE_BOARD_SIZE.foot},
