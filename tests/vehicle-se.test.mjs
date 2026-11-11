@@ -1,6 +1,7 @@
 // SE 装置集成回归：存档、重量、事务、实际弹道与自动控制边界。
 import test from 'node:test';import assert from 'node:assert/strict';
 import {Game,freshProgress,validateProgress} from '../src/game.js';
+import {vehicleDamage} from '../src/config/vehicles.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {seBuild,normalizeVehicleSE,seMass} from '../src/config/vehicle-se.js';
@@ -349,5 +350,18 @@ test('四面包围时对称缺口保持同一脱离方向',()=>{
   g.enemies[0].x=g.player.x+125+(i%2?2:-2);
   const v=updateSEControl(g,1/30,{x:0,y:0});first??=v;
   assert.ok(v.x*first.x+v.y*first.y>.9);
+ }
+});
+
+// 两种专属主炮逐枚检查伤害快照，卸下主炮后检查弹药和冷却。
+test('蜂巢每枚火箭造成当前主炮三倍直击伤害',()=>{
+ for(const hull of [1,6]){
+  const g=scene(hull),build=equip(g,'rocket'),stock=g.progress.supplies.vehicles[hull];
+  stock.heavy=4;g.enemies=[enemy(g,1)];
+  const expected=3*vehicleDamage(g.progress,g.vehicle.weaponIndex);
+  assert.ok(expected>0);updateSEDevices(g,.1);
+  assert.deepEqual(g.projectiles.map(shot=>shot.initialAmount),[expected,expected]);
+  g.vehicle.weaponIndex=null;build.rocketWait=0;updateSEDevices(g,.1);
+  assert.equal(stock.heavy,2);assert.equal(build.rocketWait,0);assert.equal(g.projectiles.length,2);
  }
 });

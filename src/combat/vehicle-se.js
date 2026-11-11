@@ -1,3 +1,5 @@
+import {vehicleDamage} from '../config/vehicles.js';
+import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
 import {mountedWeapon} from './mounted-weapon.js';
 import {rearSEMount} from '../config/vehicle-se-mount.js';
 // SE 运行控制：自动运动只输出输入向量，伤害与火箭沿用正式战斗链。
@@ -217,7 +219,11 @@ export function updateSEDevices(g,dt){
  if(seActive(g,'shield')){const wait=Math.min(dt,b.shieldWait);b.shieldWait-=wait;b.shield=Math.min(seShieldMax(b),b.shield+(dt-wait)*18);}
  if(!seActive(g,'rocket')||g.parking?.idle)return;b.rocketWait=Math.max(0,b.rocketWait-dt);const stock=g.progress.supplies.vehicles[g.vehicle.index];if(b.rocketWait>0||stock.heavy<2)return;
  const t=[...g.enemies,...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&worldDistance(t,g.player)<=360&&attackTargetKnown(g,t)&&(!g.combatLineClear||g.combatLineClear(g.player,nearest(t,g.player)))).sort((a,b)=>worldDistance(a,g.player)-worldDistance(b,g.player))[0];if(!t)return;
+ // 双联火箭各自继承发射时主炮的非暴击伤害；没有主炮时保留弹药。
+ const gunDamage=vehicleDamage(g.loadout||g.progress,g.vehicle.weaponIndex);
+ if(gunDamage<=0)return;
+ const rocketDamage=3*Math.round(gunDamage*(1+(g.realm?.buffs.power||0)*GAMEPLAY_VALUES.blessings.powerPerStack));
  const mount=rearSEMount(g.player,g.vehicle.index,b.installed,'rocket');
  const p=nearest(t,mount),angle=Math.atan2(p.y-mount.y,p.x-mount.x);stock.heavy-=2;b.rocketWait=8-seLevel(b,'rocket');
- for(const side of [-1,1]){const a=angle+side*.035,d={x:Math.cos(a),y:Math.sin(a)},m={x:mount.x+side*3,y:mount.y-5};emitWeaponAttack(g,{id:'se-rocket',vehicleMounted:true,targetTrees:true,range:420,speed:720,pellets:1,spread:0,hitRadius:5,blastRadius:75,blastRatio:.65,impulse:250,color:'#efbb7c'},m,d,125,false,true);}
+ for(const side of [-1,1]){const a=angle+side*.035,d={x:Math.cos(a),y:Math.sin(a)},m={x:mount.x+side*3,y:mount.y-5};emitWeaponAttack(g,{id:'se-rocket',vehicleMounted:true,targetTrees:true,range:420,speed:720,pellets:1,spread:0,hitRadius:5,blastRadius:75,blastRatio:.65,impulse:250,color:'#efbb7c'},m,d,rocketDamage,false,true);}
 }
