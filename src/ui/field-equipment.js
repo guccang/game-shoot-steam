@@ -56,7 +56,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
   get('body').insertAdjacentHTML('beforeend','<section class="ui-section"><h3>野外装备</h3><p>帐篷、钓具与鱼获交易已迁至独立的户外用品店。</p><button class="ui-button" data-outdoor-shop>查看户外用品店</button></section>');
   get('body').insertAdjacentHTML('beforeend',`<section class="ui-section"><h3>探索工具</h3><span class="treasure-art">${inventoryIcon(itemDefinition('metal-detector'))}</span><b>金属探测器 · 1.2千克</b><p>反复使用，在手机寻宝页开启，循邻居线索找到埋藏装备。</p><button class="ui-button" data-shop-good="metal-detector" data-buy-detector ${p.treasure.detector?'disabled':''}>${p.treasure.detector?'已拥有':'加入购物车 · 180金币'}</button></section>`);
  }
- scope.on(panel,'change',e=>{if(e.target.matches('[data-se-radius]')){const r=configureVehicleSE(game,game.vehicle.index,'combat','radius',Number(e.target.value));message=r.message;render();onChange();return;}if(!e.target.matches('[data-special-ammo]'))return;const r=configureSpecialAmmo(game,{key:e.target.value});message=r.message;render();onChange();});
+ scope.on(panel,'change',e=>{if(!e.target.matches('[data-special-ammo]'))return;const r=configureSpecialAmmo(game,{key:e.target.value});message=r.message;render();onChange();});
  scope.on(panel,'click',e=>{if(!e.target.closest('[data-auto-flare]'))return;const r=configureSpecialAmmo(game,{autoFlare:!game.progress.supplies.autoFlare});message=r.message;render();onChange();});
  // 标题与导航始终对应当前模式，其他车和其他枪没有浏览入口。
  function render(){renderWeaponList();panel.querySelector('[data-field-nav]').parentElement.hidden=mode==='weapons';panel.querySelector('[data-field-cargo]').hidden=mode!=='vehicle';panel.querySelector('[data-field-cargo]').disabled=!game.progress.vehicleHulls[game.vehicle.index];panel.querySelector('[data-field-cleanup]').hidden=mode!=='vehicle';get('title').textContent=mode==='ammo'?'弹药补给铺':mode==='items'?'随身道具':mode==='vehicle'?'当前载具':'当前武器';get('subtitle').textContent=mode==='ammo'?'购买弹药、准备材料制作与补充道具':mode==='items'?'选择随身道具使用':'查看当前装备状态';mode==='ammo'?renderShop():mode==='items'?get('body').innerHTML=items():renderEquipment();get('message').textContent=message;panel.querySelector('[data-field-nav]').textContent=['ammo','items'].includes(mode)?'前往弹药补给铺':'前往载具工坊';}
@@ -64,7 +64,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
  // 只有屋内售货员能打开交易页，外部入口只负责导航。
  function open(kind='weapons'){mode=kind;message='';if(kind==='ammo'){if(game.cottage?.kind!=='ammo')return;target=supplyVehicleNearby(game)?'vehicle':'hand';}dialogs.open(panel.id);}
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
- scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.seAction){const r=configureVehicleSE(game,game.vehicle.index,b.dataset.seKey,b.dataset.seAction);message=r.message;render();onChange();return;}if(b.hasAttribute('data-field-weapon')){
+ scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.seAction){const r=configureVehicleSE(game,game.vehicle.index,b.dataset.seKey,b.dataset.seAction,Number(b.dataset.seRadius));message=r.message;render();if(b.dataset.seRadius)panel.querySelector('[data-se-radius="'+b.dataset.seRadius+'"]')?.focus({preventScroll:true});onChange();return;}if(b.hasAttribute('data-field-weapon')){
   const index=Number(b.dataset.fieldWeapon);
   if(mode!=='weapons'||index===game.progress.weapon)return;
   if(!game.transact('weapons',index,'equip')){get('message').textContent='当前无法装备这把武器。';return;}

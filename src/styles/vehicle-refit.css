@@ -14,3 +14,10 @@
 #logistics-dialog .refit-tabs .ui-button[aria-pressed=true]{background:#315c43;color:#fff4cf}
 .refit-tabs svg{display:block;margin:auto}.refit-tabs span{display:block}
 .refit-plan-title{margin:0 0 8px;font-size:12px}.refit-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:12px}.refit-legend i{display:inline-block;width:10px;height:10px;border:1px solid #315c43;margin-right:4px}
+
+/* 巡战距离按钮按等宽排列，窄屏保留触控尺寸。 */
+.se-patrol-radius { border: 0; margin: .75rem 0 0; padding: 0; min-width: 0; }
+.se-patrol-radius legend { padding: 0; margin-bottom: .35rem; }
+.se-patrol-radius > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+.se-patrol-radius .ui-button { display: flex; justify-content: center; align-items: center; gap: .25rem; min-height: 44px; padding: .25rem; }
+.se-patrol-radius .ui-button[aria-pressed="true"] { background: #315b45; color: #fff7de; }
