@@ -1,6 +1,5 @@
 import {fallbackShell} from '../combat/vehicle-special-ammo.js';
-import {seBuild} from '../config/vehicle-se.js';
-// 当前载具页内的增强装填和照明开关；说明与库存都读取正式目录。
+// 当前载具页内的增强装填；说明与库存都读取正式目录。
 import {SPECIAL_AMMO} from '../config/vehicle-special-ammo.js';
 import {ammoKind} from '../config/supplies.js';
 import {ammoIcon} from './ammo-icons.js';
@@ -22,4 +21,4 @@ export function specialAmmoMarkup(game,weapon){
  }
  return `<section class="ui-section"><h3>主炮增强装填</h3><p>标准炮和重炮可用普通弹搭配选中的增强弹。普通弹打光后，每发单独消耗一枚增强弹，优先使用所选弹种，再自动切换其他有库存的战斗弹。</p>
   <div class="shell-choices" role="group" aria-label="当前增强弹">${choices.join('')}</div>
-  <p>${fallback?'普通弹已空，当前供弹：'+SPECIAL_AMMO[fallback].name+' · '+stock[fallback]+' 发。':enabled?(SPECIAL_AMMO[selected]?.use||'选择增强弹，下一发起生效。'):'当前主炮不支持增强炮弹；安装照明 SE 后仍可使用照明弹。'}</p></section>`+'<section class="ui-section"><h3><span class="ammo-symbol">'+ammoIcon('flare')+'</span>自动照明</h3><p>'+(seBuild(game.progress,h).installed.includes('flare')?'已安装照明 SE。':'未安装照明 SE，当前不会发射。')+'库存 '+(stock.flare||0)+' 发 · 所有营地有售。夜间从车尾发射，升空时逐渐扩光，照明约45秒。光照随升高扩大，随下落收缩，落地慢慢熄灭；完全熄灭或驶离后补发，白天不消耗。</p><button class="ui-button" data-auto-flare aria-pressed="'+s.autoFlare+'">自动释放照明弹：'+(s.autoFlare?'开启':'关闭')+'</button></section>';}
+  <p>${fallback?'普通弹已空，当前供弹：'+SPECIAL_AMMO[fallback].name+' · '+stock[fallback]+' 发。':enabled?(SPECIAL_AMMO[selected]?.use||'选择增强弹，下一发起生效。'):'当前主炮不支持增强炮弹；安装照明 SE 后仍可使用照明弹。'}</p></section>`;}

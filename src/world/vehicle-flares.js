@@ -38,7 +38,7 @@ export function vehicleFlareIllumination(game,point=game.player){const p=vehicle
 export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  if(game.state!=='playing'||dt<=0)return;const s=game.progress.supplies;if(!s)return;
  if(s.activeFlare){s.activeFlare.life-=dt;if(s.activeFlare.life<=0)s.activeFlare=null;}
- if(!seActive(game,'flare')||!s.autoFlare||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic)return;
+ if(!seActive(game,'flare')||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic)return;
  const stock=s.vehicles[game.vehicle.index];if(!(stock?.flare>0))return;
  // 优先使用这一帧的驾驶指令，自动导航起步和转向时也能提前照向新路段。
  const inputLength=Math.hypot(input?.x||0,input?.y||0);

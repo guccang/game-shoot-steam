@@ -110,10 +110,9 @@ export function mountMainGun(game,hull,gun){
  return result;
 }
 
-// 随车选择增强弹和自动照明，保存失败不改变当前设置；旧档默认开启照明。
-export function configureSpecialAmmo(game,{key,autoFlare}={}){
+// 随车选择主炮增强弹，保存失败时保留原设置。
+export function configureSpecialAmmo(game,{key}={}){
  if(!supplyAvailable(game)||!game.progress.vehicleHulls[game.vehicle.index])return {ok:false,message:'当前无法设置自有载具弹药。'};
- if(key!==undefined&&key!=='none'&&(!SPECIAL_AMMO[key]||key==='flare'))return {ok:false,message:'无效的主炮增强弹。'};
- if(autoFlare!==undefined&&typeof autoFlare!=='boolean')return {ok:false,message:'无效照明开关。'};
- const next=candidate(game);if(key!==undefined)next.supplies.selectedSpecial[game.vehicle.index]=key;if(autoFlare!==undefined)next.supplies.autoFlare=autoFlare;return commit(game,next,'载具弹药设置已保存。');
+ if(key!=='none'&&(!SPECIAL_AMMO[key]||key==='flare'))return {ok:false,message:'无效的主炮增强弹。'};
+ const next=candidate(game);next.supplies.selectedSpecial[game.vehicle.index]=key;return commit(game,next,'载具弹药设置已保存。');
 }

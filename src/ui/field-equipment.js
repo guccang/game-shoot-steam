@@ -58,7 +58,6 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
  }
  // 图标和文字都能点选，刷新详情后将键盘焦点留在该弹种上。
  scope.on(panel,'click',e=>{const button=e.target.closest('[data-special-ammo]');if(!button||button.disabled)return;const key=button.dataset.specialAmmo;const r=configureSpecialAmmo(game,{key});message=r.message;render();onChange();panel.querySelector('[data-special-ammo="'+key+'"]')?.focus({preventScroll:true});});
- scope.on(panel,'click',e=>{if(!e.target.closest('[data-auto-flare]'))return;const r=configureSpecialAmmo(game,{autoFlare:!game.progress.supplies.autoFlare});message=r.message;render();onChange();});
  // 标题与导航始终对应当前模式，其他车和其他枪没有浏览入口。
  function render(){renderWeaponList();panel.querySelector('[data-field-nav]').parentElement.hidden=mode==='weapons';panel.querySelector('[data-field-cargo]').hidden=mode!=='vehicle';panel.querySelector('[data-field-cargo]').disabled=!game.progress.vehicleHulls[game.vehicle.index];panel.querySelector('[data-field-cleanup]').hidden=mode!=='vehicle';get('title').textContent=mode==='ammo'?'弹药补给铺':mode==='items'?'随身道具':mode==='vehicle'?'当前载具':'当前武器';get('subtitle').textContent=mode==='ammo'?'购买弹药、准备材料制作与补充道具':mode==='items'?'选择随身道具使用':'查看当前装备状态';mode==='ammo'?renderShop():mode==='items'?get('body').innerHTML=items():renderEquipment();get('message').textContent=message;panel.querySelector('[data-field-nav]').textContent=['ammo','items'].includes(mode)?'前往弹药补给铺':'前往载具工坊';}
  dialogs.register(panel.id,{focusId:'field-equipment-close',onOpen:render});
