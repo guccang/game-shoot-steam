@@ -281,3 +281,30 @@ test('巡战视野二分之一超过射程时使用主炮射程',async()=>{
  assert.deepEqual(updateSEControl(g,.05,{x:0,y:0}),{x:0,y:0});
  t.x-=60;assert.ok(updateSEControl(g,.05,{x:0,y:0}).x<0);
 });
+
+// 用实际移动、弹匣和炮塔验证后撤中开火，怪物在停稳边缘小幅移动时车辆保持原地。
+test('巡战边退边打，拉开后稳住并仅在怪物再次逼近时后撤',async()=>{
+ const {updateVehicle}=await import('../src/combat/vehicle.js');
+ const {driveBody}=await import('../src/physics/motion.js');
+ const {WORLD}=await import('../src/world/coordinates.js');
+ const g=scene();equip(g,'combat');startSEControl(g,'combat');
+ g.arrivalView={left:-300,right:300,top:-225,bottom:225,width:600,height:450};
+ const t=enemy(g,204,125);g.enemies=[t];g.vehicle.module.magazine.ammo=1;
+ g.vehicle.angle=0;g.vehicle.module.magazine.remaining=0;g.vehicle.module.cooldown=0;
+ const idle={x:0,y:0},dt=1/30;
+ let fired=false,stopped=false;
+ for(let i=0;i<120;i++){
+  const v=updateSEControl(g,dt,idle);
+  updateVehicle(g,dt);
+  if(!v.x&&!v.y){stopped=true;break;}
+  assert.ok(v.x<0);
+  if(g.projectiles.length)fired=true;
+  driveBody(g.player,v,95,dt,WORLD,g.trees);
+ }
+ assert.ok(fired);assert.ok(stopped);assert.ok(t.x-g.player.x>=218&&t.x-g.player.x<=225);
+ for(let i=0;i<60;i++){
+  t.x=g.player.x+215+Math.sin(i)*7;
+  assert.deepEqual(updateSEControl(g,dt,idle),idle);
+ }
+ t.x=g.player.x+178;assert.ok(updateSEControl(g,dt,idle).x<0);
+});
