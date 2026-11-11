@@ -1,6 +1,9 @@
 // 真实手机按钮完成营地故事和服务，正式场景覆盖五营昼夜及宽门驾驶。
 const {chromium}=require('playwright');const fs=require('fs'),assert=require('assert/strict');
 (async()=>{const out='output/playwright/regional-trade-interactions';fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({channel:'msedge',headless:true}),context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir:out+'/video',size:{width:390,height:844}}}),page=await context.newPage(),errors=[],reports=[];page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(45000);
+
+ // 从当前营地购物车确认交付。
+ const checkout=async()=>{await page.locator('#regional-camps-dialog > .shop-dropzone').tap();await page.locator('#shop-checkout [data-pay]').tap();};
 try{
  // 测试路由工作树模块，正式服务保持4175端口。
  const cp=require('child_process'),path=require('path');const files=[...cp.execFileSync('git',['diff','--name-only'],{encoding:'utf8'}).trim().split(/\r?\n/),...cp.execFileSync('git',['ls-files','--others','--exclude-standard'],{encoding:'utf8'}).trim().split(/\r?\n/)];for(const file of files.filter(f=>f.startsWith('src/')&&f.endsWith('.js')))await context.route('http://localhost:4175/'+file,r=>r.fulfill({path:path.resolve(file),contentType:'text/javascript'}));
@@ -12,9 +15,9 @@ try{
  for(const time of ['day','night']){await page.evaluate(async time=>{g.update=()=>{};Object.assign(a.environment,{time,autoTime:false});a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();},time);await page.waitForTimeout(250);await page.screenshot({path:out+'/room-'+time+'.png'});}
  await page.evaluate(async()=>{const {shopkeeperApproach}=await import('/src/core/workshop/workshop-display-entry.js');Object.assign(g.player,shopkeeperApproach(g.cottage),{vx:0,vy:0});g.update=updateGame;});
  await page.locator('#regional-camps-dialog').waitFor({state:'visible'});assert.equal(await page.locator('[data-regional-tab="repair"]').getAttribute('aria-pressed'),'true');
- await page.locator('[data-regional-action="gun"]').tap();assert.equal(await page.evaluate(()=>g.progress.vehicleWeapons[25]),1);assert.match(await page.locator('#regional-camps-message').innerText(),/主炮已存入/);
+ await page.locator('[data-regional-action="gun"]').tap();await checkout();assert.equal(await page.evaluate(()=>g.progress.vehicleWeapons[25]),1);assert.match(await page.locator('#regional-camps-message').innerText(),/主炮已存入/);
  await page.locator('[data-regional-action="install-gun"]').tap();assert.equal(await page.evaluate(()=>g.progress.vehicleLoadouts[1]),25);
- await page.locator('[data-regional-tab="cat"]').tap();await page.locator('[data-regional-action="recruit"]').tap();assert.equal(await page.evaluate(()=>g.progress.heroes[1]),1);assert.match(await page.locator('#regional-camps-message').innerText(),/已加入/);await page.screenshot({path:out+'/indoor-recruit-feedback.png'});
+ await page.locator('[data-regional-tab="cat"]').tap();await page.locator('[data-regional-action="recruit"]').tap();await checkout();assert.equal(await page.evaluate(()=>g.progress.heroes[1]),1);assert.match(await page.locator('#regional-camps-message').innerText(),/已加入/);await page.screenshot({path:out+'/indoor-recruit-feedback.png'});
  await page.locator('#regional-camps-dialog .ui-close').tap();await page.evaluate(async()=>{const {interiorLayout}=await import('/src/config/workshop-interiors.js');Object.assign(g.player,interiorLayout(g.cottage).exit,{vx:0,vy:0});});await page.waitForFunction(()=>!g.cottage);assert.ok(await page.evaluate(()=>Math.hypot(g.player.x-7250,g.player.y-18860)<150));
  assert.deepEqual(errors,[]);fs.writeFileSync(out+'/room-report.json',JSON.stringify({entry:true,seller:true,gun:25,recruit:1,exit:true,errors},null,2));console.log('室内实际入屋、售货员、购买主炮、招募及返回通过');
  }catch(e){await page.screenshot({path:out+'/room-failure.png'});throw e;}finally{await context.close();await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
