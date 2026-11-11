@@ -308,3 +308,46 @@ test('巡战边退边打，拉开后稳住并仅在怪物再次逼近时后撤',
  }
  t.x=g.player.x+178;assert.ok(updateSEControl(g,dt,idle).x<0);
 });
+
+// 从三个方向逼近时沿空侧突围；距离排序抖动不能让车身折返，炮塔仍可开火。
+test('巡战沿夹击缺口带开追兵，敌群集中后驻车射击',async()=>{
+ const {driveBody}=await import('../src/physics/motion.js'),{WORLD}=await import('../src/world/coordinates.js');
+ const {updateVehicle}=await import('../src/combat/vehicle.js');
+ const g=scene();equip(g,'combat').radius=400;startSEControl(g,'combat');
+ g.arrivalView={left:-270,right:270,top:-250,bottom:250,width:540,height:500};
+ const origin={...g.player},dt=1/30;
+ g.enemies=[[122,0],[-122,0],[0,118],[55,107]].map(([x,y],i)=>({...enemy(g,300+i,x),y:origin.y+y}));
+ g.vehicle.module.magazine.ammo=1;g.vehicle.module.magazine.remaining=0;g.vehicle.module.cooldown=0;
+ let stationary=0,fired=false;
+ for(let i=0;i<150;i++){
+  // 两翼交替靠近，同时模拟敌群以低于车速的速度追车。
+  for(const [j,e] of g.enemies.entries()){
+   const dx=g.player.x-e.x,dy=g.player.y-e.y,d=Math.hypot(dx,dy);
+   if(i<60){e.x+=dx/d*dt*18;e.y+=dy/d*dt*18;}
+   if(j<2)e.x+=(i%2?1:-1);
+  }
+  const v=updateSEControl(g,dt,{x:0,y:0});
+  if(i===0)assert.ok(v.y<-.9,'应向上方的空缺脱离');
+  assert.ok(v.y<=.001,'不能因两翼敌人的细小位移折返');
+  stationary=v.x===0&&v.y===0?stationary+1:0;
+  updateVehicle(g,dt);if(g.projectiles.length)fired=true;
+  driveBody(g.player,v,95,dt,WORLD,g.trees);
+ }
+ assert.ok(fired&&stationary>=30);
+ assert.ok(g.enemies.every(e=>e.y>g.player.y),'敌群应处于车身同一侧');
+ assert.ok(g.vehicle.targetId!=null);
+});
+
+// 对称包围中每帧交换左右威胁排序，检查几乎等价的缺口不会交替抢占。
+test('四面包围时对称缺口保持同一脱离方向',()=>{
+ const g=scene();equip(g,'combat');startSEControl(g,'combat');
+ g.arrivalView={left:-240,right:240,top:-300,bottom:300,width:480,height:600};
+ const offsets=[[125,0],[-125,0],[0,125],[0,-125]];
+ g.enemies=offsets.map(([x,y],i)=>({...enemy(g,401+i,x),y:g.player.y+y}));
+ let first;
+ for(let i=0;i<90;i++){
+  g.enemies[0].x=g.player.x+125+(i%2?2:-2);
+  const v=updateSEControl(g,1/30,{x:0,y:0});first??=v;
+  assert.ok(v.x*first.x+v.y*first.y>.9);
+ }
+});
