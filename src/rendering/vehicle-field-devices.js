@@ -1,4 +1,4 @@
-import {smokeRadius} from '../combat/vehicle-field-devices.js';
+import {vehicleSmokeCloud} from '../combat/vehicle-field-devices.js';
 import {nearest} from '../world/coordinates.js';
 
 const turn=Math.PI*2;
@@ -22,9 +22,10 @@ export function drawFieldDevices(c,game,reduced){
  }
 }
 
-// 在车体上层绘制不断向外翻卷的烟团，外围阴影与亮边让昼夜都能辨认烟幕。
-export function drawVehicleSmoke(c,game,reduced,position=game.player){
- const r=smokeRadius(game);if(!r)return;
+// 在烟雾弹的固定落点绘制向外翻卷的烟团，外围阴影与亮边让昼夜都能辨认烟幕。
+export function drawVehicleSmoke(c,game,reduced){
+ const cloud=vehicleSmokeCloud(game);if(!cloud)return;
+ const position=nearest(cloud,game.player),r=cloud.radius;
  const clock=reduced?0:(game.time||0)*.42;
  c.save();c.translate(position.x,position.y-8);
  for(let i=0;i<10;i++){

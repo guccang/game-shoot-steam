@@ -528,7 +528,10 @@ export class Renderer {
     drawStormGround(c, view, objects, light.storm, this.storm, this.reduced.matches, this.stormStrike);
     profiler?.end('render.lighting');
     profiler?.start('render.gravity');
-    if(!source.cottage&&!source.realm&&!source.story)drawFieldDevices(c,source,this.reduced.matches);
+    if(!source.cottage&&!source.realm&&!source.story){
+      drawFieldDevices(c,source,this.reduced.matches);
+      drawVehicleSmoke(c,source,this.reduced.matches);
+    }
     drawSpecialAmmoZones(c,source,this.reduced.matches);
 
     drawGravityFields(c,source,this.reduced.matches);
@@ -686,10 +689,7 @@ export class Renderer {
         drawFarmTool(c,source,g.player);
         drawOutdoorFishing(c,source,g.player,light.night);
         if(source.fireActive||g.vehicle.active&&g.vehicle.index===4)drawFireHelmet(c,g.player);
-        if (g.vehicle.active){
-          drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, this.reduced.matches);
-          drawVehicleSmoke(c,source,this.reduced.matches,g.player);
-        }
+        if (g.vehicle.active)drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, this.reduced.matches);
         if (frontRider(g.vehicle) && !source.arrivalCinematic)
           drawRiderWeapon(c, riderPosition(g.player, g.vehicle), playerHero, g.progress.weapon, {
             scale: PLAYER_SCALE, motionScale: this.reduced.matches ? 0.35 : 1, chargePose,
