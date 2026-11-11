@@ -23,3 +23,9 @@
 #game-frame:has(#farm-tools:not([hidden]),#farm-ox-controls:not([hidden]))>#vehicle-button{bottom:calc(170px + env(safe-area-inset-bottom))}
 #game-frame.guardian-active>#vehicle-button{bottom:calc(94px + env(safe-area-inset-bottom))}
 @media(max-width:360px),(max-height:500px){#game-frame{--local-map-size:88px}}
+
+/* 驾驶和巡战徽记分别贴近按钮上缘两侧，避开底部下车箭头。 */
+#game-frame>#vehicle-button{overflow:visible}
+#vehicle-button .vehicle-mode-icon{position:absolute;bottom:calc(100% - 3px);left:4px;display:grid;place-items:center;width:26px;height:26px;box-sizing:border-box;border:2px solid currentColor;border-radius:50%;color:var(--ui-forest);background:var(--ui-paper);box-shadow:0 2px 0 #315c4326;pointer-events:none}
+#vehicle-button .vehicle-mode-icon[data-mode=combat]{left:auto;right:4px;color:#81432d;background:#fff1d4}
+#vehicle-button .vehicle-mode-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
