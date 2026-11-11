@@ -18,12 +18,12 @@ function arrive(skip=false){
 }
 // 上车使用真实停车坐标旁的可通行位置，不直接改变载具状态。
 function approach(g){Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});}
-test('旧档已领电动车时保留原车与木材，上车仍能完成教学',()=>{
+test('旧档已领电动车时保留原车与木材，读信后可自由骑行',()=>{
  const p=freshRangerProgress();Object.assign(p.arrival,{keys:true,phase:'leave',parked:true});
  p.vehicleIndex=RANGER.scooter;p.vehicleHulls[RANGER.scooter]=1;p.logistics.builds[RANGER.scooter].wood=12;
  const g=new Game(p);g.start();assert.ok(skipArrivalJourney(g));assert.ok(completeArrivalLetter(g));
  assert.equal(g.progress.vehicleHulls[RANGER.giftHull],0);assert.equal(g.progress.logistics.builds[RANGER.scooter].wood,12);
- approach(g);assert.ok(g.summonVehicle());g.update(.05);assert.equal(g.progress.arrival.phase,'gather');
+ approach(g);assert.ok(g.summonVehicle());g.update(.05);assert.equal(g.progress.arrival.phase,'complete');
 });
 test('自然交接后赠车立即成为可点击的停车实体，不等待造枪与车库',()=>{
  const g=arrive();assert.equal(parkedOwned(g).length,1);

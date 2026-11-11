@@ -25,7 +25,7 @@ async original=>{
   await page.evaluate(()=>{a.game.arrivalPersist=window.originalArrivalPersist;});await page.locator('[data-pack-action=letter]').tap();
   await page.waitForFunction(()=>!document.getElementById('keepsake-dialog').open);
   if(await page.evaluate(()=>a.game.state!=='paused'||!document.getElementById('current-cat-dialog').open))throw Error('详情关闭应返回背包并暂停');
-  await page.locator('#current-cat-close').tap();await page.waitForFunction(()=>a.game.state==='playing'&&a.game.progress.arrival.phase==='ride-guide');
+  await page.locator('#current-cat-close').tap();await page.waitForFunction(()=>a.game.state==='playing'&&a.game.progress.arrival.phase==='complete');
   // 第一项任务通过正式任务卡打开手机；只有实际查看地图才记录进度。
   await page.evaluate(async()=>{const g=a.game,p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.phase='doing';p.mainline.currentId='first-map';p.restoration.repaired=['cottage','neighbors','travel'];g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.mainlineTalkDelay=999;g.vehicle.active=false;a.refresh();});
   await page.locator('#mainline-hud').tap();await page.locator('#phone-dialog').waitFor({state:'visible'});

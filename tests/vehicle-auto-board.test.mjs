@@ -1,3 +1,4 @@
+// 旧版入职存档的上车、采木和施工检查点仍可接续。
 // 自动上车通过真实Game状态、真实停驻记录与正式更新循环验证，不替换业务计时。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +11,7 @@ import {vehicleBoardingPoint,updateVehicleBoarding,nearVehicle} from '../src/cor
 import {playerActionCountdown} from '../src/rendering/player-action-countdown.js';
 import {activateVehicleTransfer} from '../src/ui/vehicle-transfer.js';
 import {worldNavigationDiagnostics} from '../src/core/navigation/world-navigation.js';
-import {skipArrivalJourney,completeArrivalLetter,arrivalTarget} from '../src/core/camp/ranger-arrival.js';
+import {skipArrivalJourney,arrivalTarget} from '../src/core/camp/ranger-arrival.js';
 import {FIRE_GARAGE} from '../src/world/fire-navigation.js';
 import {WORLD} from '../src/world/coordinates.js';
 // 清理无关任务，仅创建两辆正常自有车，保留正式碰撞和上车事务。
@@ -33,7 +34,7 @@ test('室内、驾驶、剧情和种地作业不能自动登车，离开范围�
 test('下车后仍在触发区不回车，先移开再站定才重新上车',()=>{const g=scene();front(g);step(g,1);assert.ok(g.dismountVehicle());front(g);step(g,1.5);assert.equal(g.vehicle.active,false);assert.equal(g.vehicleBoarding,null);g.player.x-=180;step(g,.05);front(g);step(g,1);assert.equal(g.vehicle.active,true);});
 test('路边、其他地图、周期镜像、库内泊位均使用实际停驻位置',()=>{for(const mode of ['roadside','jiuzhaigou','mirror','garage']){const g=scene();g.progress.campParking.owned.length=1;const r=g.progress.campParking.owned[0];if(mode==='roadside'||mode==='jiuzhaigou'){Object.assign(r,{spot:null,mapId:mode==='jiuzhaigou'?'jiuzhaigou':'forest',x:1400,y:1000});g.mapId=r.mapId;g.player.mapId=r.mapId;}if(mode==='garage')r.spot='garage';front(g);if(mode==='mirror')g.player.x+=WORLD.width;step(g,1);assert.equal(g.vehicle.active,true,mode);assert.equal(g.cottage,null,mode);}});
 test('快捷换乘仅导航不立即上车，导航落在安全位置；消防库内车也可自动登车',()=>{const g=scene(),s=front(g);assert.ok(activateVehicleTransfer(g,0));assert.equal(g.vehicle.active,false);assert.equal(worldNavigationDiagnostics(g).intent.site.y,vehicleBoardingPoint(s).y);step(g,1);assert.equal(g.vehicle.active,true);const f=scene();f.progress.vehicleHulls[4]=1;f.progress.vehicleIndex=4;f.vehicle=f.vehicles[4];f.progress.fireDispatch.garage={parked:true,truckHp:1};Object.assign(f.player,vehicleBoardingPoint(FIRE_GARAGE),{vx:0,vy:0});step(f,1);assert.equal(f.vehicle.active,true);assert.equal(f.fireGarageParked,false);});
-test('真实入职赠车无需点击上车，自动推进至采木任务',()=>{const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));assert.ok(completeArrivalLetter(g));Object.assign(g.player,arrivalTarget(g),{vx:0,vy:0,pushX:0,pushY:0});step(g,.95);assert.equal(g.vehicle.active,false);const t=g.vehicleBoarding.elapsed;g.state='paused';step(g,2);assert.equal(g.vehicleBoarding.elapsed,t);g.state='playing';step(g,.15);assert.equal(g.vehicle.active,true);assert.equal(g.progress.arrival.phase,'gather');});
+test('真实入职赠车无需点击上车，自动推进至采木任务',()=>{const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));g.progress.arrival.phase='ride-guide';Object.assign(g.player,arrivalTarget(g),{vx:0,vy:0,pushX:0,pushY:0});step(g,.95);assert.equal(g.vehicle.active,false);const t=g.vehicleBoarding.elapsed;g.state='paused';step(g,2);assert.equal(g.vehicleBoarding.elapsed,t);g.state='playing';step(g,.15);assert.equal(g.vehicle.active,true);assert.equal(g.progress.arrival.phase,'gather');});
 
 // 库内车从开放通道接近；靠近墙后即使距离够近也不能穿墙登乘。
 test('库内近距离检测阻止隔墙登车，门前接近仍可上车',()=>{const g=scene();g.progress.campParking.owned=[{...g.progress.campParking.owned[0],spot:'garage'}];const s=front(g);Object.assign(g.player,{x:s.x+100,y:s.y});assert.equal(nearVehicle(g,s),false);Object.assign(g.player,{x:s.x,y:s.y-85});assert.equal(nearVehicle(g,s),false);front(g);assert.equal(nearVehicle(g,s),true);step(g,1);assert.equal(g.vehicle.active,true);});

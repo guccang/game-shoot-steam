@@ -1,3 +1,4 @@
+import {attachFeatureHelp} from './feature-help.js';
 import {createCottageSleep} from './cottage-sleep.js';
 import {setHidden,setText} from './shared/dom-state.js';
 import {createResidentChat} from './cottage-resident-chat.js';
@@ -25,6 +26,7 @@ import {calendarView} from '../world/living-calendar.js';
 export function createCampHome({game,renderer,root,input,onChange,openWorkshop,dialogs,onDecorChange,onCharacter,onTalk,onOutdoors}){
  const scope=createEventScope(),frame=root.getElementById('game-frame'),panel=root.createElement('section');
  panel.id='cottage-controls';setHidden(panel,true);panel.innerHTML='<header><b>巡林小屋</b><small id="cottage-date"></small></header><footer><p id="cottage-notice" role="status"></p><div><button id="home-glider" class="ui-button" hidden>三角翼滑翔</button><button id="cottage-character" class="ui-button">当前猫猫</button></div></footer>';
+ attachFeatureHelp(panel,dialogs.showFeatureHelp);
  frame.append(panel);
  const glideButton=panel.querySelector('#home-glider');
  scope.on(glideButton,'click',()=>{input.reset();if(game.cottage?.glide)descendHomeGlider(game);else launchHomeGlider(game);render();});

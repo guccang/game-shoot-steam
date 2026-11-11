@@ -1,4 +1,5 @@
 import {setHidden} from './shared/dom-state.js';
+import {attachFeatureHelp} from './feature-help.js';
 import {farmToolReady} from '../config/farm-tools.js';
 import {industrialToolKey} from '../config/industry.js';
 import {createFarmToolGroups,farmGroupMarkup} from './farm-tool-groups.js';
@@ -48,6 +49,7 @@ export function createFarmPanel({game,root,renderer,input,dialogs,onChange,onNot
  const oxControls=createOxControls({game,root,layer,renderer,frame,onPasture,onAxis:()=>get('axis').click(),start:startPlow,stop:()=>{stop(false);open(false);},say});
  const placement=createFarmPlacement({game,root,renderer,frame,layer});
  const get=id=>root.getElementById('farm-'+id),coin=root.querySelector('[data-coins]')?.closest('.resource-pill'),cells=new Map(),flights=new Set();
+ attachFeatureHelp(get('tools'),dialogs.showFeatureHelp);
  sceneHit(get('delivery-hit'),'查看快递站');
  const toolCanvases=[menu.querySelector('[data-farm-tool-art]'),...layer.querySelectorAll('[data-farm-tool-art]')];
  let opened=false,combat=false,autoCombat=false,weaponSignature='',selected=0,category='ornamental',seedPage=0,anchor=null,popup=null,loaded=false,disposed=false,gesture=null,signature='',lastResult=null,mailOpen=false,mailViewport='',mailSignature='',notice='',introduced=false;

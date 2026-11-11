@@ -6,7 +6,8 @@ async page=>{
  try{
   await t.goto('http://localhost:4175');await t.locator('#start').tap();await t.locator('#arrival-skip').tap();await t.locator('#arrival-goal').tap();
   await t.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;a.game.update=()=>{};});
-  if(!(await t.locator('#arrival-letter-dialog').textContent()).includes('前阵子的暴风雨'))throw Error('来信缺少小镇损毁背景');
+  const letter=await t.locator('#arrival-letter-dialog').textContent();
+  for(const topic of ['种地赚钱','采集木头','解锁建筑','使用仓库'])if(!letter.includes(topic))throw Error('来信缺少'+topic);
   for(const [width,height]of [[320,568],[390,844]]){
    await t.setViewportSize({width,height});
    for(const selector of ['#arrival-letter-dialog','#arrival-letter-done','#arrival-letter-close']){
@@ -18,7 +19,7 @@ async page=>{
    if(layout.scrollWidth>layout.width+1||layout.top+layout.height<layout.scrollHeight-1)throw Error('信件不能完整阅读');
    await t.screenshot({path:`output/playwright/letter-navigation/letter-bottom-${width}.png`});
   }
-  await t.locator('#arrival-letter-done').tap();if(!await t.evaluate(()=>a.game.progress.arrival.phase==='ride-guide'))throw Error('读信后任务没有推进');checks.push('两种手机尺寸完整阅读、读信后进入上车任务');
+  await t.locator('#arrival-letter-done').tap();if(!await t.evaluate(()=>a.game.progress.arrival.phase==='complete'))throw Error('读信后任务没有推进');checks.push('两种手机尺寸完整阅读、读信后进入自由探索');
   await t.evaluate(async()=>{const p=(await import('/src/progression/progress.js')).freshProgress();p.mainline.phase='doing';a.game.progress=p;a.game.reset();a.game.state='playing';a.game.mainlineTalkDelay=99999;a.refresh();});
   await t.locator('#field-menu-toggle').tap();await t.locator('#map-button').tap();await t.locator('#close-map').tap();
   await t.evaluate(async()=>{a.game.progress.mainline.distance=80;(await import('/src/core/story/mainline-manager.js')).updateMainline(a.game,.05);a.refresh();});

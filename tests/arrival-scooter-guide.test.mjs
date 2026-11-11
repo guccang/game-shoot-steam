@@ -1,3 +1,4 @@
+// 旧版入职存档的上车、采木和施工检查点仍可接续。
 // 入职上下车引导专项：使用真实赠车、伐木、靠近自动修复和工坊交易验证任务顺序。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -5,7 +6,7 @@ import {Game} from '../src/core/game.js';
 import {freshRangerProgress,validateProgress} from '../src/progression/progress.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {RESTORATION_FLIGHT,facilityOpen} from '../src/config/town-restoration.js';
-import {skipArrivalJourney,completeArrivalLetter,arrivalTarget,workshopBuildView} from '../src/core/camp/ranger-arrival.js';
+import {skipArrivalJourney,arrivalTarget,workshopBuildView} from '../src/core/camp/ranger-arrival.js';
 import {capturePatrol} from '../src/core/battle/patrol-session.js';
 import {arrivalWorkshopGuide} from '../src/ui/arrival-workshop-guide.js';
 import {worldNavigationObjective} from '../src/core/navigation/world-navigation.js';
@@ -18,7 +19,7 @@ import {commitWorkshop} from '../src/core/workshop/workshop.js';
 import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 
 // 原定赠品从正式短剧跳过入口交付，来信仍需明确确认。
-function ready(wood=0){const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));g.progress.wood=wood;assert.ok(completeArrivalLetter(g));return g;}
+function ready(wood=0){const g=new Game(freshRangerProgress(),()=>.5);g.start();assert.ok(skipArrivalJourney(g));g.progress.wood=wood;g.progress.arrival.phase='ride-guide';return g;}
 // 走到实际北广场赠车附近，上车和进度判断使用生产入口。
 function board(g){Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.ok(g.summonVehicle());g.update(.05);}
 // 固定帧长推进，避免绕过正式施工时长。

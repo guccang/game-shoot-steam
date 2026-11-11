@@ -1,3 +1,4 @@
+// 旧版入职存档的上车、采木和施工检查点仍可接续。
 // 新手来信与采木指引：验证真实任务推进、静止出路点及目标切换。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,7 +13,7 @@ import {storyRouteState,storyRouteDots} from '../src/core/navigation/story-route
 // 从正式交接入口进入来信任务，不伪造阶段或赠品。
 function waiting(){const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);return g;}
 // 实际上车触发采木任务，冻结电锯以观察静止导航。
-function gathering(){const g=waiting();completeArrivalLetter(g);Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.ok(g.summonVehicle());g.update(.05);g.attackTimer=999;assert.equal(g.progress.arrival.phase,'gather');return g;}
+function gathering(){const g=waiting();g.progress.arrival.phase='ride-guide';Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.ok(g.summonVehicle());g.update(.05);g.attackTimer=999;assert.equal(g.progress.arrival.phase,'gather');return g;}
 
 test('来信猫爪指向任务按钮，弹窗期间隐藏，关闭未读来信后恢复',()=>{
  const g=waiting();assert.equal(arrivalWorkshopGuide(g).source,'#arrival-goal');assert.equal(arrivalWorkshopGuide(g).id,'arrival-letter');

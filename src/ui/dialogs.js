@@ -1,9 +1,22 @@
 // 原生弹窗统一管理暂停归属，嵌套说明不会提前恢复底层设置中的战斗。
 import { createEventScope } from '../platform/events.js';
+import {attachFeatureHelp} from './feature-help.js';
 import {prepareMobilePanel} from './mobile-panels.js';
 export function createDialogs({ game, root, resetInput, onChange, isGameplayActive = () => true, onEvent = () => {} }) {
   const scope = createEventScope(),
     entries = new Map();
+  let catHelp=null;
+  // 功能说明使用同一弹窗，保持来源页面与游戏暂停状态。
+  function showFeatureHelp(text){
+    if(!catHelp){
+      catHelp=root.createElement('dialog');catHelp.id='cat-feature-help-dialog';catHelp.className='ui-panel ui-sheet';
+      catHelp.setAttribute('aria-labelledby','cat-feature-help-title');
+      catHelp.innerHTML='<header class="ui-panel__header"><h2 id="cat-feature-help-title">猫猫讲解</h2><button type="button" id="cat-feature-help-close" class="ui-close" aria-label="收起讲解">×</button></header><div class="ui-panel__body"><p></p></div>';
+      root.body.append(catHelp);register(catHelp.id,{focusId:'cat-feature-help-close'});
+      scope.on(catHelp.querySelector('button'),'click',()=>close(catHelp.id));
+    }
+    catHelp.querySelector('p').textContent=text;open(catHelp.id);
+  }
   // 注册关闭回调一次，避免反复打开时堆积监听器。
   function register(id, { onOpen = () => {}, focusId } = {}) {
     const dialog = root.getElementById(id),
@@ -36,6 +49,7 @@ export function createDialogs({ game, root, resetInput, onChange, isGameplayActi
     if (e.resume) game.pause();
     resetInput();
     e.onOpen();
+    if(!e.dialog.querySelector('.cat-feature-help'))attachFeatureHelp(e.dialog,showFeatureHelp);
     e.modal=modal;e.dialog.setAttribute('aria-modal',String(modal));
     if(modal)e.dialog.showModal();else e.dialog.show();
     e.dialog.scrollTop = 0;
@@ -70,7 +84,7 @@ export function createDialogs({ game, root, resetInput, onChange, isGameplayActi
     scope.dispose();
     cancelResume();
     for (const e of entries.values()) if (e.dialog.open) e.dialog.close();
-    entries.clear();
+    entries.clear();catHelp?.remove();
   }
-  return { register, open, close, cancelResume, willResume, transferResume, dispose };
+  return { register, open, close, showFeatureHelp, cancelResume, willResume, transferResume, dispose };
 }

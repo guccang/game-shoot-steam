@@ -16,18 +16,18 @@ test('自然九秒开场和跳过开场均先进入阅读任务，不自动打�
  const restored=new Game(validateProgress(structuredClone(g.progress)));restored.start();
  restored.update(.05);assert.equal(restored.progress.arrival.phase,'letter');
 });
-test('材料足够也先保留阅读任务，确认后进入上车引导且不扣费',()=>{
+test('材料足够也先保留阅读任务，确认后进入自由探索且不扣费',()=>{
  const g=waiting();g.progress.wood=RANGER.repairWood;
  Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});g.update(.05);
  assert.equal(g.progress.arrival.phase,'letter');assert.equal(g.progress.wood,RANGER.repairWood);
- g.pause();assert.ok(completeArrivalLetter(g));assert.equal(g.progress.arrival.phase,'ride-guide');
- assert.equal(g.state,'paused');assert.equal(g.progress.wood,RANGER.repairWood);
+ g.pause();assert.ok(completeArrivalLetter(g));assert.equal(g.progress.arrival.phase,'complete');
+ assert.equal(g.progress.farm.seeds[0],3);assert.equal(g.progress.mainline.trackingPaused,true);assert.equal(g.state,'paused');assert.equal(g.progress.wood,RANGER.repairWood);
 });
-test('读完后进入上车引导，重复阅读和重新加载不重置任务或发放奖励',()=>{
+test('读完后进入自由探索，重复阅读和重新加载不重置任务或发放奖励',()=>{
  const g=waiting(),before={wood:g.progress.wood,coins:g.progress.coins,hulls:[...g.progress.vehicleHulls]};
- assert.ok(completeArrivalLetter(g));assert.equal(g.progress.arrival.phase,'ride-guide');
+ assert.ok(completeArrivalLetter(g));assert.equal(g.progress.arrival.phase,'complete');
  assert.equal(completeArrivalLetter(g),false);
- const restored=new Game(structuredClone(g.progress));assert.equal(restored.progress.arrival.phase,'ride-guide');
+ const restored=new Game(structuredClone(g.progress));assert.equal(restored.progress.arrival.phase,'complete');
  assert.deepEqual({wood:g.progress.wood,coins:g.progress.coins,hulls:g.progress.vehicleHulls},before);
 });
 test('阅读保存失败留在原任务，暂停面板中可重试且只提交一次',()=>{
@@ -35,7 +35,7 @@ test('阅读保存失败留在原任务，暂停面板中可重试且只提交�
  assert.equal(completeArrivalLetter(g),false);assert.equal(g.progress.arrival.phase,'letter');assert.equal(g.arrivalError,true);
  let saves=0;g.arrivalPersist=()=>{saves++;return true;};
  assert.ok(completeArrivalLetter(g));assert.equal(g.arrivalError,false);
- assert.equal(completeArrivalLetter(g),false);assert.equal(saves,1);
+ assert.equal(completeArrivalLetter(g),false);assert.equal(saves,1);assert.equal(g.progress.farm.seeds[0],3);
 });
 test('未交接钥匙和非游玩状态不能越过阅读步骤',()=>{
  const g=waiting();g.progress.arrival.keys=false;assert.equal(completeArrivalLetter(g),false);

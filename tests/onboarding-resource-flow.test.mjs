@@ -1,3 +1,4 @@
+// 旧版入职存档的上车、采木和施工检查点仍可接续。
 // 开局工坊、赠车、整备预算与缺口提示回归，事务使用正式游戏入口。
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -5,7 +6,7 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {freshRangerProgress} from '../src/progression/progress.js';
 import {quoteWorkshop} from '../src/progression/workshop/workshop.js';
 import {commitWorkshop} from '../src/core/workshop/workshop.js';
-import {skipArrivalJourney,completeArrivalLetter} from '../src/core/camp/ranger-arrival.js';
+import {skipArrivalJourney} from '../src/core/camp/ranger-arrival.js';
 import {RANGER} from '../src/config/ranger-arrival.js';
 import {WORKSHOP} from '../src/world/workshop.js';
 import {RESTORATION_FLIGHT,TOWN_RESTORATIONS,facilityOpen} from '../src/config/town-restoration.js';
@@ -15,7 +16,7 @@ import {mainlineSteps} from '../src/core/story/mainline-manager.js';
 import {mainlineReward} from '../src/config/economy.js';
 import {boardParkedVehicle,parkedOwned} from '../src/core/vehicles/camp-parking.js';
 // 只快进原开场，80木料由测试提供，后续开工、报价和购枪均走真实事务。
-function rebuilt(){const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);completeArrivalLetter(g);g.progress.wood=80;Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});assert.ok(g.advanceArrival());g.attackTimer=999;for(let i=0;i<125;i++)g.update(.05);assert.equal(g.progress.arrival.phase,'craft');return g;}
+function rebuilt(){const g=new Game(freshRangerProgress(),()=>.5);g.start();skipArrivalJourney(g);g.progress.arrival.phase='repair';g.progress.wood=80;Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});assert.ok(g.advanceArrival());g.attackTimer=999;for(let i=0;i<125;i++)g.update(.05);assert.equal(g.progress.arrival.phase,'craft');return g;}
 
 test('80木料重建后谢礼足够买首枪，正式工坊一次扣费且先于清缴开放',()=>{
  const g=rebuilt();assert.equal(g.progress.wood,8);assert.equal(g.arrivalPending,true);assert.equal(g.progress.weapons[0],0);

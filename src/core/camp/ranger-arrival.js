@@ -1,3 +1,4 @@
+import {grantFarmSeeds} from '../../progression/farming/farm.js';
 import {woodTaskStatus,repairWoodStatus} from '../inventory/wood-task-status.js';
 import {vehicleBoardingPoint} from '../vehicles/vehicle-boarding.js';
 import {creditResource,constructionWood,spendConstructionWood} from '../../progression/economy/resource-wallet.js';
@@ -151,11 +152,17 @@ export function advanceArrival(game) {
   if(a.phase==='craft')return false;
   return false;
 }
-// 阅读后先学习驾驶赠车；余额分流在实际骑上赠车后判断。
+// 收信一次结算开局种子并停止主动追踪，后续委托由玩家选择。
 export function completeArrivalLetter(game){
  const a=game.progress.arrival;
  if(a?.phase!=='letter'||!a.keys||!['playing','paused'].includes(game.state))return false;
- return phaseArrival(game,'ride-guide');
+ const saved=phaseArrival(game,'complete',p=>{
+  grantFarmSeeds(p.farm,0,3);
+  p.mainline.trackingPaused=true;
+  p.taskTracking={kind:'none'};
+ });
+ if(saved)game.arrivalScene=null;
+ return saved;
 }
 // 自然交接和跳过剧情只发一次赠品，已经交过钥匙的旧档继续使用原车。
 function handoverEquipment(game,phase){

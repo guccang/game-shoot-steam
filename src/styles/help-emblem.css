@@ -8,3 +8,7 @@
 #story-dialog .story-help-button:hover,#workshop-dialog #ws-mastery-help:hover { background:#e8edcf; }
 :is(#wave-help,#camp-help,#realm-help,.story-help-button):hover:not(:disabled) { background:#e8edcf; border-radius:12px; }
 :is(#camp-help,#realm-help,.story-help-button):focus-visible { outline:2px solid #365d48; outline-offset:-2px; }
+
+/* 说明按钮使用与现有猫耳徽章一致的触控区域。 */
+.cat-feature-help { display:inline-grid; place-items:center; flex:none; min-width:44px; min-height:44px; padding:4px; background:transparent; border:0; cursor:pointer; }
+.cat-feature-help:focus-visible { outline:2px solid #365d48; }
