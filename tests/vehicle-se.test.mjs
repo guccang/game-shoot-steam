@@ -412,15 +412,48 @@ test('载重足够时可安装全部 SE，读档保留每件装置的开关和�
  assert.deepEqual(seBuild(g.progress,hull).installed,keys);
 });
 // 烟幕打断远程前摇；关闭装置后敌人可重新开始瞄准。
-test('随车烟幕阻止锁定和释放，关闭后恢复',async()=>{
+test('烟幕投到车外，驶入打断瞄准，驶出或关闭后恢复锁定',async()=>{
+ const {vehicleSmokeCloud,smokeConceals}=await import('../src/combat/vehicle-field-devices.js');
  const {updateRangedAttack}=await import('../src/combat/ranged-enemies.js');
  const {RANGED_ENEMIES}=await import('../src/config/ranged-enemies.js');
  const g=scene(),b=equip(g,'smoke'),e=enemy(g,81);
+ g.vehicle.angle=0;g.combatLineClear=()=>true;
+ updateSEDevices(g,.05);
+ const cloud=vehicleSmokeCloud(g),start={...g.player};
+ assert.equal(cloud.x,start.x+110);assert.equal(cloud.y,start.y);
+ assert.equal(smokeConceals(g,g.player),false);
+ assert.equal(smokeConceals(g,{x:cloud.x,y:cloud.y+40}),true);
+ Object.assign(g.player,{x:cloud.x,y:cloud.y});updateSEDevices(g,.2);
+ assert.equal(vehicleSmokeCloud(g),cloud);
  Object.assign(e,{species:Object.keys(RANGED_ENEMIES)[0],arena:{},assault:{phase:'windup',elapsed:10}});
  g.enemies=[e];updateRangedAttack(g,e,g.player,.1);
  assert.equal(e.assault.phase,'chase');assert.equal(g.enemyBolts.length,0);
  updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'chase');
+ Object.assign(g.player,start);
+ updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'windup');
+ g.player.x=cloud.x;updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'chase');
  b.disabled.push('smoke');updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'windup');
+ assert.equal(vehicleSmokeCloud(g),null);
+});
+// 地下层用自己的烟幕，沿行驶方向遇墙时改投车侧，暂停期间不换落点。
+test('矿层烟幕与地表隔离并避开前方岩壁',async()=>{
+ const {updateVehicleSmoke,vehicleSmokeCloud}=await import('../src/combat/vehicle-field-devices.js');
+ const g=scene();equip(g,'smoke');
+ g.combatLineClear=()=>true;updateVehicleSmoke(g,.1);
+ const surface=vehicleSmokeCloud(g);
+ const layer=Object.assign(Object.create(g),{smokeDeployment:null});
+ g.cottage={kind:'mine',combat:layer};
+ assert.equal(vehicleSmokeCloud(g),null);
+ g.player.vx=20;g.player.vy=0;g.vehicle.angle=Math.PI;
+ layer.combatLineClear=(a,b)=>b.y>a.y+100;
+ updateVehicleSmoke(layer,.1);
+ const first=vehicleSmokeCloud(g);
+ assert.equal(first.x,g.player.x);assert.equal(first.y,g.player.y+110);
+ g.state='paused';g.player.x+=50;
+ updateVehicleSmoke(layer,5);assert.equal(vehicleSmokeCloud(g),first);
+ g.state='playing';updateVehicleSmoke(layer,4);
+ assert.equal(vehicleSmokeCloud(g).x,g.player.x);
+ g.cottage=null;assert.equal(vehicleSmokeCloud(g),surface);
 });
 // 地雷部署后固定在地面，驾驶者驶离后仍会触发，并按爆炸范围筛选目标。
 test('布雷器定点部署，暂停冻结，引爆一次并杀伤周边敌人',()=>{

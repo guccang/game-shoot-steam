@@ -1,4 +1,4 @@
-import {updateVehicleMines} from './vehicle-field-devices.js';
+import {updateVehicleMines,updateVehicleSmoke} from './vehicle-field-devices.js';
 import {vehicleDamage} from '../config/vehicles.js';
 import {GAMEPLAY_VALUES} from '../config/gameplay-values.js';
 import {mountedWeapon} from './mounted-weapon.js';
@@ -212,7 +212,7 @@ export function absorbSEShield(g,amount,source=null){
 }
 // 火箭以两发重炮弹驱动独立双联炮口，正式弹道负责扫掠、遮挡、爆炸与统计。
 export function updateSEDevices(g,dt){
- if(!g.cottage&&!g.realm&&!g.story)updateVehicleMines(g,dt);
+ if(!g.cottage&&!g.realm&&!g.story){updateVehicleSmoke(g,dt);updateVehicleMines(g,dt);}
  if(g.seShieldEffects){
   if(g.seShieldEffects.vehicle!==g.vehicle||!seActive(g,'shield'))g.seShieldEffects=null;
   else if(g.state==='playing'&&dt>0)advanceShieldImpacts(g.seShieldEffects,dt);

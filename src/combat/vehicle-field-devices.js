@@ -4,16 +4,40 @@ import {nearest,canonical,worldDistance} from '../world/coordinates.js';
 import {statisticsSource} from './statistics-source.js';
 import {terrainLineClear} from '../physics/terrain-navigation.js';
 
-// 同一半径用于技能判定和烟幕显示，未安装或已关闭时返回零。
-export function smokeRadius(game){
- if(!game.progress?.vehicleSE||!seActive(game,'smoke'))return 0;
- return 45+10*seLevel(seBuild(game.progress,game.vehicle.index),'smoke');
+// 烟雾弹每四秒向行进方向投放一次，停车时沿炮口方向投放。
+export function updateVehicleSmoke(game,dt){
+ if(game.state!=='playing'||dt<=0)return;
+ if(!seActive(game,'smoke')){game.smokeDeployment=null;return;}
+ const hull=game.vehicle.index,previous=game.smokeDeployment;
+ if(previous?.mapId===game.mapId&&previous?.hull===hull){
+  previous.life-=dt;
+  if(previous.life>0)return;
+ }
+ const player=game.player;
+ const heading=Math.hypot(player.vx,player.vy)>1?Math.atan2(player.vy,player.vx):game.vehicle.angle;
+ const radius=45+10*seLevel(seBuild(game.progress,hull),'smoke');
+ const deployment={mapId:game.mapId,hull,life:4,cloud:null};
+ game.smokeDeployment=deployment;
+ // 前方被墙挡住时依次尝试车侧和后方，封闭处等待下一轮投放。
+ for(const offset of [0,Math.PI/2,-Math.PI/2,Math.PI]){
+  const point={x:player.x+110*Math.cos(heading+offset),y:player.y+110*Math.sin(heading+offset)};
+  const clear=game.combatLineClear?game.combatLineClear(player,point):terrainLineClear(player,point,0);
+  if(!clear)continue;
+  deployment.cloud={...point,radius};break;
+ }
+}
+
+// 地表和当前矿层各自持有落点，关闭装置时立即停止遮蔽和显示。
+export function vehicleSmokeCloud(game){
+ const deployment=game.cottage?.kind==='mine'?game.cottage.combat?.smokeDeployment:game.smokeDeployment;
+ if(!deployment?.cloud||deployment.mapId!==game.mapId||deployment.hull!==game.vehicle?.index||!seActive(game,'smoke'))return null;
+ return deployment.cloud;
 }
 
 // 只影响新锁定及尚未释放的攻击，弹丸碰撞沿用原有规则。
 export function smokeConceals(game,target){
- const radius=smokeRadius(game);
- return radius>0&&worldDistance(game.player,target)<=radius;
+ const cloud=vehicleSmokeCloud(game);
+ return !!cloud&&worldDistance(cloud,target)<=cloud.radius;
 }
 
 // 地雷部署和爆炸均检查通路，地表与矿层分别持有自己的临时列表。
