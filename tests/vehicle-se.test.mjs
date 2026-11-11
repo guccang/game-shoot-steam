@@ -257,3 +257,25 @@ test('巡战驻车时主炮仍能锁定远处领主',async()=>{
  assert.deepEqual(updateSEControl(g,.05,{x:0,y:0}),{x:0,y:0});
  updateVehicle(g,.05);assert.equal(g.vehicle.targetId,g.boss.id);
 });
+
+// 使用实际镜头的世界坐标，在手机和横屏上检查拉远、接近与停稳。
+for(const [width,height] of [[450,900],[900,450]])test('巡战按视口短边的三分之一调整距离 '+width+'×'+height,()=>{
+ const g=scene();equip(g,'combat');startSEControl(g,'combat');
+ g.arrivalView={left:-width/2,right:width/2,top:-height/2,bottom:height/2,width,height};
+ const t=enemy(g,201,105);g.enemies=[t];
+ const steer=()=>updateSEControl(g,.05,{x:0,y:0});
+ assert.ok(steer().x<0,'近身时后撤');
+ t.x=g.player.x+150;assert.deepEqual(steer(),{x:0,y:0});
+ t.x=g.player.x+200;assert.ok(steer().x>0,'距离过远时接近');
+});
+
+// 在宽阔视野里由主炮射程封顶，进入射程后保持火力。
+test('巡战视野三分之一超过射程时使用主炮射程',async()=>{
+ const {mountedWeapon}=await import('../src/combat/mounted-weapon.js');
+ const g=scene();equip(g,'combat').radius=400;startSEControl(g,'combat');
+ g.arrivalView={left:-1500,right:1500,top:-1500,bottom:1500,width:3000,height:3000};
+ const range=mountedWeapon(g).range,t=enemy(g,202,range);g.enemies=[t];
+ g.seControl.anchor.x+=range/2;
+ assert.deepEqual(updateSEControl(g,.05,{x:0,y:0}),{x:0,y:0});
+ t.x-=60;assert.ok(updateSEControl(g,.05,{x:0,y:0}).x<0);
+});

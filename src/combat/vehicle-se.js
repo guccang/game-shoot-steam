@@ -18,7 +18,7 @@ import {blocked} from '../physics/motion.js';
 import {questLineClear} from '../physics/quest-route.js';
 import {treeGrid} from '../world/spatial-grid.js';
 import {emitWeaponAttack} from './weapon-fire.js';
-import {attackTargetKnown} from './perception.js';
+import {attackTargetKnown,combatView} from './perception.js';
 // 与任务指引共用目的地优先级，邻里委托使用当前节点的实时位置。
 function drivingDestination(game){
  if(!taskNavigationEnabled(game))return null;
@@ -93,20 +93,36 @@ export function combatSteering(g,s){
  const inRange=closest&&worldDistance(p,closest)<=range;
  const target=previous&&targets.includes(previous)&&(!inRange||worldDistance(p,previous)<=range)&&worldDistance(p,previous)<=worldDistance(p,closest)+30?previous:closest;
  s.steeringTarget=target;
+ // 用镜头短边的世界长度计算交战距离，偏移镜头还要给目标留出可见边距。
+ const view=target&&combatView(g);
+ let spacing=range;
+ const distance=target?worldDistance(p,target):0;
+ if(view){
+  const t=nearest(target,p),dx=t.x-p.x,dy=t.y-p.y;
+  const edgeX=dx===0?Infinity:distance*Math.max(0,(dx>0?view.right:-view.left)-12)/Math.abs(dx);
+  const edgeY=dy===0?Infinity:distance*Math.max(0,(dy>0?view.bottom:-view.top)-12)/Math.abs(dy);
+  spacing=Math.min(range,(view.right-view.left)/3,(view.bottom-view.top)/3,edgeX,edgeY);
+ }
+ const inner=view?Math.max(0,spacing-Math.min(16,spacing*.1)):0;
+ // 在目标距离内侧保留停稳区，避免目标轻微晃动时反复换向。
+ const error=d=>Math.max(0,d-spacing,inner-d);
+ const currentError=error(distance);
+ const step=Math.min(55,currentError);
  const horizon=.6+.15*seLevel(seBuild(g.progress,g.vehicle.index),'combat');
  const nearby=targets.slice(0,16),trees=g.trees||[],grid=treeGrid(trees);
  const bolts=(g.enemyBolts||[]).slice(0,24).map(b=>({...nearest(b,p),vx:b.dx*b.speed,vy:b.dy*b.speed,radius:b.radius||0}));
  let best={x:0,y:0},bestScore=-Infinity;
  for(let i=-1;i<12;i++){const angle=i*Math.PI/6,v=i<0?{x:0,y:0}:{x:Math.cos(angle),y:Math.sin(angle)},q={x:p.x+v.x*55,y:p.y+v.y*55};
   if(worldDistance(q,s.anchor)>s.radius-(i<0?0:25)||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid))continue;
-  // 已能开火时优先驻车；射程外只缩短缺口，跨过射程边缘后不再贴近。
-  const gap=target&&range>0?Math.max(0,worldDistance(q,target)-range):0;
-  let score=target?-gap*.1:-worldDistance(q,s.anchor)*.03;
-  if(target&&range>0&&!inRange&&gap===0)score+=6;
-  for(const e of nearby)score-=Math.max(0,95-worldDistance(q,e))*3;
+  // 距离修正仅向前预测所需步长，避弹与通行检查仍使用完整预测距离。
+  const projected=target?worldDistance({x:p.x+v.x*step,y:p.y+v.y*step},target):0;
+  const gap=error(projected);
+  let score=target&&range>0?(currentError-gap)*.45:target?0:-worldDistance(q,s.anchor)*.03;
+  if(target&&range>0&&currentError>0&&gap<=currentError*.1)score+=6;
+  for(const e of nearby)score-=Math.max(0,Math.min(95,spacing||95)-worldDistance(q,e))*3;
   for(const b of bolts){const {vx,vy}=b,t=Math.max(0,Math.min(horizon,((q.x-b.x)*vx+(q.y-b.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-b.x-vx*t,q.y-b.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
   // 停在合适射距内；移动方案接近时优先延续原方向，来弹风险仍逐帧比较。
-  if(i<0)score+=inRange?6:s.steeringDirection===null?3:2;
+  if(i<0)score+=inRange&&currentError===0?6:s.steeringDirection===null?3:2;
   else if(s.steeringDirection)score-=3*(1-v.x*s.steeringDirection.x-v.y*s.steeringDirection.y);
   if(score>bestScore){bestScore=score;best=v;}
  }

@@ -13,15 +13,19 @@ export function attackTargetDistance(game, target, limit) {
 }
 
 // 正式镜头包含缩放与前场偏移；无画布的离线规则模拟保持原射程。
-export function attackTargetVisible(game,target){
- if(!surfaceTargetVisible(game,target))return false;
+export function combatView(game){
  const size=game.viewport,provided=game.summonView||game.arrivalView;
- if(!size&&!provided)return true;
+ if(!size&&!provided)return null;
  const width=size?.width||provided.width,height=size?.height||provided.height;
  const valid=provided&&(game.summonView||provided.width===width&&provided.height===height);
  const kind=valid?null:game.weapon?.().id,base=width<500?.85:1.05;
  const zoom=['sniper','funnel'].includes(kind)?width<500?.6:.75:kind==='pulse'?base/1.2:base;
- const view=valid?provided:{left:-width/zoom/2,right:width/zoom/2,top:-height/zoom/2+30,bottom:height/zoom/2+30};
+ return valid?provided:{left:-width/zoom/2,right:width/zoom/2,top:-height/zoom/2+30,bottom:height/zoom/2+30};
+}
+// 使用同一世界坐标视口判断敌人是否已进入画面。
+export function attackTargetVisible(game,target){
+ if(!surfaceTargetVisible(game,target))return false;
+ const view=combatView(game);if(!view)return true;
  const observer=game.summonViewOrigin||game.player,p=nearest(target,observer),x=p.x-observer.x,y=p.y-observer.y;
  const radius=target.radius||12,body=target.kind==='boar'?AUTO_AIM_VIEW.boar:{
   halfWidth:radius,above:radius+AUTO_AIM_VIEW.headroom,below:radius,
