@@ -17,6 +17,26 @@ import {finishFootball} from '../src/core/activities/slime-football.js';
 import {rewardReceipt} from '../src/progression/economy/reward-receipt.js';
 import {RECOMMENDED_ECONOMY,validateEconomy} from '../src/config/economy.js';
 // 富裕玩家不具备任何旧挑战或主线资格。
+test('异地完成清缴共享轮次，经验只归接取营地，批次和旧档各自保存',async()=>{
+ const {REGIONAL_CLEARING_POSTS}=await import('../src/config/clearing.js');
+ const {defeatBoss}=await import('../src/core/battle/boss-manager.js');
+ const {clearingPostObjects}=await import('../src/rendering/clearing-post.js');
+ const g=game(),p=g.progress,issuer=REGIONAL_CLEARING_POSTS[0],other=REGIONAL_CLEARING_POSTS[1];
+ p.campLevel.xp=200;p.bosses=3;
+ p.living.clearingSite={origin:issuer};p.living.patrolActive=true;
+ Object.assign(g.player,{x:other.x,y:other.y});g.boss={id:999,livingChallenge:true};
+ defeatBoss(g);
+ assert.equal(p.bosses,4);assert.equal(p.campLevel.xp,200);
+ assert.equal(campProgress(p,issuer.camp).xp,180);assert.equal(campProgress(p,other.camp).xp,0);
+ for(const post of clearingPostObjects(g))assert.equal(post.level,5);
+ countCampActivity(p,'trees',29,other.camp);countCampActivity(p,'trees',1,issuer.camp);
+ const saved=validateProgress(structuredClone(p));
+ assert.equal(saved.regionalCamps[other.camp].campLevel.trees,29);
+ assert.equal(saved.regionalCamps[issuer.camp].campLevel.trees,1);
+ delete saved.regionalCamps[issuer.camp].campLevel;
+ assert.equal(campProgress(validateProgress(saved),issuer.camp).xp,0);
+});
+
 function funded(){const p=freshProgress();p.coins=p.wood=99990000;p.materials={parts:99999,crystal:99999,core:99999};return p;}
 // 固定随机数稳定测试中的世界生成。
 function game(){const g=new Game(freshProgress(),()=>.42);g.start();return g;}

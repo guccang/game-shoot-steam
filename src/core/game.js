@@ -1,3 +1,4 @@
+import {nearestClearingPost} from '../config/clearing.js';
 import {seBuild,seLevel} from '../config/vehicle-se.js';
 import {updateSEControl,updateSEDevices,absorbSEShield} from '../combat/vehicle-se.js';
 import {updateSpecialAmmo} from '../combat/vehicle-special-ammo.js';
@@ -701,13 +702,13 @@ export class Game {
     let coins = 0,
       wood = 0;
     if (target.type === 'tree') {
-      countCampActivity(this.progress,'trees');
+      countCampActivity(this.progress,'trees',1,nearestClearingPost(target).camp);
       this.chopped++;
       coins = TREE_REWARD.coins;
       wood = TREE_REWARD.wood;
       this.leaveStump(target);
     } else if (target.type === 'enemy') {
-      if(!waveReward&&!target.wave&&!target.bossOwner&&!this.progress.living.patrolActive)countCampActivity(this.progress,'enemies');
+      if(!waveReward&&!target.wave&&!target.bossOwner&&!this.progress.living.patrolActive)countCampActivity(this.progress,'enemies',1,nearestClearingPost(target).camp);
       coins = defeatEnemy(this, target, impact);
       wood = enemyWoodReward(coins);
     } else {

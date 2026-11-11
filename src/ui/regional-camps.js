@@ -34,7 +34,7 @@ export function createRegionalCampPanel({game,root,dialogs,onChange}){
    case 'se-buy':price=VEHICLE_SE[key].coins;place=vehicle+'装置库';break;
    case 'engine':price=VEHICLE_ENGINES[camp.engine].cost;place=vehicle+'引擎库';break;
    case 'gun':price=VEHICLE_WEAPONS[camp.gun].cost;place='工坊主炮库';break;
-   case 'recruit':price=campPurchasePrice(game.progress,HEROES[camp.hero]).coins;place='营地住屋';break;
+   case 'recruit':price=campPurchasePrice(game.progress,HEROES[camp.hero],camp.id).coins;place='营地住屋';break;
    default:return;
   }
   const vehicleBound=action==='engine'||action==='se-buy'||target==='vehicle';
@@ -86,7 +86,7 @@ export function createRegionalCampPanel({game,root,dialogs,onChange}){
  if(tab==='repair'){renderCampDevices();row('现场检修','修复车体耐久、引擎与主炮故障，原位交车，不搬回晴叶营地。',[{action:'repair',label:'维修当前车 · '+vehicleRepairQuote(game,hull)+'金币'}]);const e=VEHICLE_ENGINES[camp.engine],w=VEHICLE_WEAPONS[camp.gun],owned=p.logistics.builds[hull]?.engines.includes(camp.engine);row(e.name,'载重×'+e.payload+' · 牵引×'+e.tow+' · 速度×'+e.speed+'。'+(!ready?'完成当地委托后开放。':''),[{action:'engine',label:owned?'已购入':'购入 · '+e.cost+'金币',disabled:!ready||owned},{action:'install-engine',label:'免费换装引擎',disabled:!owned}]);row(w.name,'伤害'+w.damage+' · 射程'+w.range+' · 重量'+w.mass+'kg · '+AMMO_TYPES[w.ammo].name,[{action:'gun',label:p.vehicleWeapons[camp.gun]?'已拥有':'购买 · '+w.cost+'金币',disabled:!ready||!!p.vehicleWeapons[camp.gun]},{action:'install-gun',label:'安装到当前车',disabled:!p.vehicleWeapons[camp.gun]}]);}
  if(tab==='repair')renderOwnedMainGuns();
  if(tab==='seed')for(const key of camp.seeds){const crop=FARM_CROPS[key];row(crop.name,'每粒'+crop.cost+'金币 · 随身库存'+p.farm.seeds[key]+'。购买即可解锁此种子。',[{action:'seed',key,label:'购买一粒'}]);}
- if(tab==='cat'){const hero=HEROES[camp.hero],price=campPurchasePrice(p,hero);row(hero.name,camp.ending+' 招募需'+price.coins+'金币、'+price.wood+'木头，并有一间空余住屋。',[{action:'recruit',label:p.heroes[camp.hero]?'已加入营地':'邀请加入营地',disabled:!ready||!!p.heroes[camp.hero]}]);}
+ if(tab==='cat'){const hero=HEROES[camp.hero],price=campPurchasePrice(p,hero,camp.id);row(hero.name,camp.ending+' 招募需'+price.coins+'金币、'+price.wood+'木头，并有一间空余住屋。',[{action:'recruit',label:p.heroes[camp.hero]?'已加入营地':'邀请加入营地',disabled:!ready||!!p.heroes[camp.hero]}]);}
  }
  scope.on(panel,'regional-purchase',e=>{message=e.detail;render();onChange();});
  dialogs.register(panel.id,{onOpen:render});scope.on(panel.querySelector('.ui-close'),'click',()=>dialogs.close(panel.id));

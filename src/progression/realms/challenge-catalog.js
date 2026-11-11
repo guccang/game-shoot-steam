@@ -2,4 +2,4 @@
 import {CAMP_LEVELS} from '../../config/camp-level.js';
 import {campProgress} from '../camp/camp-level.js';
 // 只读预览，浏览高等级优惠不会改变当前购买价格。
-export function challengeCatalog(progress){const current=campProgress(progress).tier;return {current,next:Math.min(current+1,6),tiers:CAMP_LEVELS.map((row,index)=>({...row,tier:index+1,reached:index+1<=current}))};}
+export function challengeCatalog(progress,camp){const current=campProgress(progress,camp).tier;return {current,next:Math.min(current+1,6),tiers:CAMP_LEVELS.map((row,index)=>({...row,tier:index+1,reached:index+1<=current}))};}

@@ -1,3 +1,4 @@
+import {nearestClearingPost} from '../../config/clearing.js';
 import {recordMainlineCombat} from '../../progression/story/mainline-combat.js';
 import {awardCampXp} from '../../progression/camp/camp-level.js';
 import {clearingDifficulty} from '../../config/clearing-difficulty.js';
@@ -81,8 +82,10 @@ export function defeatBoss(game) {
   const clearing=!!game.boss?.livingChallenge&&game.progress.living.patrolActive;
   // 援兵随领主败退，不触发击杀奖励；原有主线怪物仍留在战场。
   if (game.boss) game.enemies = game.enemies.filter(e => e.bossOwner !== game.boss.id);
-  const previousTier=challengeProgress(game.progress).tier;
-  const gained=clearing?awardCampXp(game.progress,'clearing'):0;
+  const issuer=game.progress.living.clearingSite?.origin;
+  const camp=clearing&&issuer?nearestClearingPost(issuer).camp:undefined;
+  const previousTier=challengeProgress(game.progress,camp).tier;
+  const gained=clearing?awardCampXp(game.progress,'clearing',null,'',camp):0;
   game.roundBosses++;
   game.progress.bosses++;
   recordEconomy(game.progress,'challenge','forest:'+game.progress.bosses);
@@ -99,5 +102,5 @@ export function defeatBoss(game) {
   game.pendingClearingRound=clearing?game.progress.bosses:0;
   game.hazards = [];
   // 胜利保留受伤状态，回小屋休息才能恢复猫猫生命。
-  game.onEvent('victory',{clearingComplete:clearing,clearingRound:clearing?game.progress.bosses:0,qualification:{...challengeProgress(game.progress),previousTier,gained}});
+  game.onEvent('victory',{clearingComplete:clearing,clearingRound:clearing?game.progress.bosses:0,qualification:{...challengeProgress(game.progress,camp),previousTier,gained}});
 }

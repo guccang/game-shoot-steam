@@ -124,7 +124,7 @@ export function challengeTier(progress,config=economyFor(progress)){
   return tier;
 }
 // 保留旧展示入口名称，返回当前营地经验和折扣快照。
-export function challengeProgress(progress) {return campProgress(progress);}
+export function challengeProgress(progress,camp) {return campProgress(progress,camp);}
 // 配方原门槛映射到五个阶级，保持原目录相对先后顺序。
 export function requiredTier(gate,config=RECOMMENDED_ECONOMY){
   if(!gate)return 0;

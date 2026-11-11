@@ -16,7 +16,8 @@ export function createChallengeCatalog({game,root,dialogs,scope}){
  }
  scope.on(root,'click',event=>{const button=event.target.closest('[data-challenge-catalog]');if(!button)return;origin=button;dialogs.open(dialog.id);});
  dialogs.register(dialog.id,{focusId:'challenge-catalog-close',onOpen:()=>{
-  model=challengeCatalog(game.progress);selected=model.current;const q=campProgress(game.progress);
+  const camp=origin?.dataset.challengeCatalog;
+  model=challengeCatalog(game.progress,camp);selected=model.current;const q=campProgress(game.progress,camp);
   $('challenge-catalog-current').textContent=`当前 ${q.tier} 级 · ${campDiscountText(q.percent)} · ${q.xp} 经验`;
   $('challenge-tier-nav').replaceChildren(...model.tiers.map(group=>{const button=root.createElement('button');button.type='button';button.dataset.challengeTier=group.tier;button.textContent=`${group.tier} 级`;button.className=group.reached?'reached':'';return button;}));renderTier();
  }});
