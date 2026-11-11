@@ -1,3 +1,4 @@
+import {seDeviceIcon} from './se-device-icon.js';
 import {ammoSoldAt} from '../config/vehicle-special-ammo.js';
 // 地区营地服务页沿用手机统一底板，现场事务失败时保留页面并显示具体原因。
 import {REGIONAL_CAMPS,regionalParcel} from '../config/regional-camps.js';
@@ -61,7 +62,8 @@ export function createRegionalCampPanel({game,root,dialogs,onChange}){
    const note=device.mass+' kg · '+device.description;
    const action=mounted?'remove':owned?'install':'buy';
    const label=mounted?'卸下装置':owned?'免费安装':'购买 · '+device.coins+'金币';
-   row(title,note,[{action:'se-'+action,key,label,disabled:!!reason}]);
+   const heading=row(title,note,[{action:'se-'+action,key,label,disabled:!!reason}]).querySelector('h3');
+   heading.classList.add('se-device-title');heading.insertAdjacentHTML('afterbegin',seDeviceIcon(key));
   }
  }
  // 已有主炮不受当地销售目录限制；调炮时提示来源车，实际事务再次校验位置和载重。
