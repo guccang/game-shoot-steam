@@ -15,12 +15,12 @@ const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 export function vehicleFlarePose(game){
  const f=game.progress?.supplies?.activeFlare;if(!f||f.life<=0||f.mapId!==game.mapId||game.cottage||game.realm||game.story)return null;
  const age=Math.max(0,R.duration-f.life),up=Math.min(1,age/R.rise),fall=Math.max(0,Math.min(1,(age-R.rise)/(R.landing-R.rise))),fade=1-smooth((age-R.landing)/(R.duration-R.landing));
- const height=age<R.rise?R.height*(2*up-up*up):R.height*(1-fall),spread=age<R.rise?smooth(up):Math.pow(1-fall,.55);
+ const height=age<R.rise?R.height*(2*up-up*up):R.height*(1-fall),spread=age<R.rise?1-(1-up)**2:Math.pow(1-fall,.55);
  // 移动中的弹先快速飞向前路，再在升空顶点减速展开。
  const travel=f.travel??R.throwDistance;
  const distance=travel*(travel>R.throwDistance?1-(1-up)**3:up)+18*fall;
  const point=canonical({x:f.x+Math.cos(f.angle)*distance,y:f.y+Math.sin(f.angle)*distance});
- return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.landing?'descent':'fade',radius:(24+(R.radius-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*smooth(up):1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
+ return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.landing?'descent':'fade',radius:(24+(R.radius-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
 }
 // 一枚光源照亮约三片基础视野面积；高度只影响弹体，不把地面光池移到空中。
 export function vehicleFlareLights(game){const p=vehicleFlarePose(game);return p&&p.radius>1?[{...p,id:'vehicle-flare',type:'fixture',kind:'flare',height:0,flightHeight:p.height,offset:0,flare:true,flying:true}]:[];}
@@ -39,15 +39,31 @@ function insideFlareCamp(game){
  return REGIONAL_SETTLEMENTS.some(contains)||campBoundary(game.progress).regions.some(contains);
 }
 // 仅夜间驾驶自有载具消耗，离开范围或本枚完全熄灭后发射下一枚。
-export function updateVehicleFlares(game,dt){
+export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  if(game.state!=='playing'||dt<=0)return;const s=game.progress.supplies;if(!s)return;
  if(s.activeFlare){s.activeFlare.life-=dt;if(s.activeFlare.life<=0)s.activeFlare=null;}
- if(!seActive(game,'flare')||!s.autoFlare||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic||vehicleFlareCovers(game))return;
- const stock=s.vehicles[game.vehicle.index];if(!(stock?.flare>0)||insideFlareCamp(game))return;
- const {vx=0,vy=0}=game.player,speed=Math.hypot(vx,vy);
+ if(!seActive(game,'flare')||!s.autoFlare||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic)return;
+ const stock=s.vehicles[game.vehicle.index];if(!(stock?.flare>0))return;
+ // 优先使用这一帧的驾驶指令，自动导航起步和转向时也能提前照向新路段。
+ const inputLength=Math.hypot(input?.x||0,input?.y||0);
+ const steering=inputLength>.01&&driveSpeed>0;
+ const vx=steering?driveSpeed*input.x/Math.max(1,inputLength):game.player.vx||0;
+ const vy=steering?driveSpeed*input.y/Math.max(1,inputLength):game.player.vy||0;
+ const speed=Math.hypot(vx,vy);
  const moving=Number.isFinite(speed)&&speed>1;
+ const pose=vehicleFlarePose(game);
+ if(pose){
+  if(!moving){if(vehicleFlareCovers(game))return;}
+  else {
+   // 给新弹留足升空时间；巡航时在前方道路即将离开有效光区之前补射。
+   const lookAhead=Math.min(R.radius*.4,speed*R.rise);
+   const road={x:game.player.x+vx/speed*lookAhead,y:game.player.y+vy/speed*lookAhead};
+   if(pose.age<R.rise||worldDistance(road,pose)<pose.radius*.82)return;
+  }
+ }
  const angle=moving?Math.atan2(vy,vx):-Math.PI/9;
  const travel=moving?Math.min(R.maxThrowDistance,R.throwDistance+speed*R.leadSeconds):R.throwDistance;
+ if(insideFlareCamp(game))return;
  stock.flare--;
  s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});
