@@ -26,7 +26,7 @@ import { drawRealmEntrance, drawRealmEntranceGround } from './realm-entrances.js
 const atlas = new Map();
 
 // 共用绘制与动作输入，风格差异由配置提供。
-export function drawSceneryGround(c) {
+export function drawSceneryGround(c, view = null) {
   drawTownGround(c);
   // 屋前浅土色小径接上主路，踏石有疏有密；麦田正面保持开放，不围成封闭院落。
   c.save();
@@ -169,6 +169,10 @@ export function drawSceneryGround(c) {
   oval(c, TOWN_LAYOUT.tent.x + 10, TOWN_LAYOUT.tent.y + 6, 55, 16, '#284f3a38');
   // 景物投影留在缓存地面层，角色绕到前方时不会被影子涂黑。
   for (const prop of [...CAMP_PROPS, ...LANDSCAPES.props]) {
+    // 最大投影是栅栏，按物件比例保留边缘，离屏投影无需提交画布命令。
+    const reach = 60 * prop.size + 2;
+    if (view && (prop.x + reach < view.x || prop.x - reach > view.x + view.w ||
+      prop.y + reach < view.y || prop.y - reach > view.y + view.h)) continue;
     c.save();
     c.translate(prop.x, prop.y);
     c.scale(prop.size, prop.size);

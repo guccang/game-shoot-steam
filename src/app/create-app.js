@@ -689,11 +689,19 @@ export function createApplication({
         // 保留队列供返回地面后继续，避免后台全图计算挤占地下移动帧。
         if(game.cottage?.kind!=='mine'){
           warmupClock += dt;
-          if (warmupClock >= .2) { navigationWarmup.prepare({ ...game.player, mapId: game.mapId }); warmupClock = 0; }
+          // 预热静态导航边只使用空闲帧；实际路线请求仍按需执行。
+          if (warmupClock >= .2 && host.performance.now() - frameStart < 10) {
+            profiler.start('cache.navigationPrepare');
+            navigationWarmup.prepare({ x: game.player.x, y: game.player.y, mapId: game.mapId });
+            profiler.end('cache.navigationPrepare');
+            warmupClock = 0;
+          }
           const remaining = Math.max(0, 12 - (host.performance.now() - frameStart));
           const seasonBudget=seasonPrewarm.budget(host.performance.now()-frameStart,host.performance.now());
           renderer.ground.setPrewarmPolicy(seasonPrewarm.allowed,seasonPrewarm.reason);
+          profiler.start('cache.groundAdvance');
           renderer.ground.advance(Math.max(renderer.ground.needsWarmup() ? .75 : 0, Math.min(2, remaining)),()=>host.performance.now(),seasonBudget);
+          profiler.end('cache.groundAdvance');
           seasonPrewarm.record(renderer.ground.backgroundMs,host.performance.now());
           navigationWarmup.advance(Math.min(1, Math.max(0, 12 - (host.performance.now() - frameStart))));
           mapPanel.advance();
