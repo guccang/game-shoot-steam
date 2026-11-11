@@ -145,3 +145,19 @@ test('气垫船满载、发动机损坏和牵引不足明确提示，恢复后�
  g.progress.logistics.tow=null;assert.ok(travelToWaystation(g,1).ok);g.progress.supplies.engineFaults[3]=100;assert.deepEqual(updateWaystationTravel(g,.04,{x:0,y:0}),{x:0,y:0});assert.equal(g.waystationTravel,null);assert.match(g.waystationMessage,/发动机/);
  g.progress.supplies.engineFaults[3]=0;assert.ok(travelToWaystation(g,1).ok);advance(g);assert.match(g.waystationMessage,/已到达/);
 });
+test('坦克在晴叶西门贴近门柱时能绕进门洞并抵达驿站',async()=>{
+ const {campBoundary}=await import('../src/world/camp-boundary.js');
+ const {driveBody}=await import('../src/physics/motion.js');
+ const g=fixture(),gate=campBoundary(g.progress).gates.find(g=>g.side==='left');
+ g.vehicle={active:true,index:1,hp:300};g.progress.vehicleHulls[1]=1;
+ g.progress.vehicleSE[1].owned=g.progress.vehicleSE[1].installed=['autopilot'];
+ Object.assign(g.player,{mapId:'forest',campProgress:g.progress,fenceVehicle:g.vehicle,x:gate.x-28,y:gate.y-152});
+ const goal={id:1,name:'晴叶营地',mapId:'forest',x:gate.x+110,y:gate.y-205};
+ g.progress.waystations.sites=[goal];
+ assert.ok(travelToWaystation(g,1).ok);
+ for(let i=0;i<1200&&g.waystationTravel;i++){
+  const input=updateWaystationTravel(g,.035,{x:0,y:0});
+  driveBody(g.player,input,155,.035,WORLD,g.trees);
+ }
+ assert.match(g.waystationMessage,/已到达/);
+});

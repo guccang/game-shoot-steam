@@ -6,11 +6,11 @@ const prepared=new WeakMap();
 // 开始规划时复制树木碰撞快照；后续生长、砍伐和原对象血量变化都不改变本次搜索。
 export function createPlayerNavigationIndex(trees){return new SpatialGrid(trees.filter(t=>t.hp>0).map(t=>({x:t.x,y:t.y,radius:t.radius,hp:t.hp})));}
 // 导航读取当前通行能力，不修改角色、载具和召唤物的真实移动碰撞。
-export function playerNavigationBody(game){return {...game.player,campProgress:game.progress,mapId:game.mapId,legendaryBuilding:legendaryVisible(game),livingCollision:!game.story};}
+export function playerNavigationBody(game){return {...game.player,fenceVehicle:game.vehicle,planningRoute:true,campProgress:game.progress,mapId:game.mapId,legendaryBuilding:legendaryVisible(game),livingCollision:!game.story};}
 
 // 通行条件变化必须重新验证，停车车体与维修护栏也属于正式障碍。
 export function navigationBodyKey(body,{parking=true}={}){
- return JSON.stringify([body.campProgress?.campLand,body.campProgress?.campManagement?.items,body.campProgress?.campLayout,body.campProgress?.restoration?.repaired,body.mapId,!!body.flying,!!body.amphibious,!!body.treePass,!!body.livingCollision,!!body.legendaryBuilding,body.navigationRadius??12,body.arena??null,body.worldBarriers??[],parking?body.parkingBarriers??[]:null]);
+ return JSON.stringify([body.campProgress?.campLand,body.campProgress?.campManagement?.items,body.campProgress?.campLayout,body.campProgress?.restoration?.repaired,body.mapId,body.fenceVehicle?.active?body.fenceVehicle.index:null,!!body.flying,!!body.amphibious,!!body.treePass,!!body.livingCollision,!!body.legendaryBuilding,body.navigationRadius??12,body.arena??null,body.worldBarriers??[],parking?body.parkingBarriers??[]:null]);
 }
 
 // 只记录成功事务的路线与树木快照；接单后树木变化不使已验证的路线失效。
