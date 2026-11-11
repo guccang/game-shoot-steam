@@ -1,3 +1,5 @@
+import {seActive} from '../config/vehicle-se.js';
+import {driveToTrackedTask} from '../combat/vehicle-se.js';
 import {escapeHtml as escape} from './shared/html.js';
 import {isCampaignTask} from '../config/mainline-pacing.js';
 import {selectMainlineTask} from '../core/story/mainline-selection.js';
@@ -60,7 +62,7 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   $('mainline-chapters').innerHTML=chapters.map(ch=>`<details><summary>${escape(ch)}</summary><ol>${campaign.filter(t=>t.chapter===ch).map(t=>`<li class="${run.completed.includes(t.id)?'done':t===task?'current':''}"><b>${run.completed.includes(t.id)?'✓ ':t===task?'现在 · ':''}${escape(t.title)}</b></li>`).join('')}</ol></details>`).join('');
   const near=o&&(o.navigation===false||worldDistance(game.player,o.site)<=150&&game.mapId===o.site.mapId);
   const action=mainlineAction(game);
-  $('mainline-action').textContent=run.trackingPaused&&task?'继续当前任务':trackedLivingRequest(game)?'追踪巡林主线':task&&run.phase==='doing'&&near&&action?action.label:task?'返回指引':'继续巡林';
+  $('mainline-action').textContent=run.trackingPaused&&task?'继续当前任务':trackedLivingRequest(game)?'追踪巡林主线':task&&run.phase==='doing'&&near&&action?action.label:task && !near && seActive(game,'autopilot')?'自动驾驶前往任务地点':task?'返回指引':'继续巡林';
  }
  dialogs.register('mainline-dialog',{onOpen:renderBook,focusId:'mainline-close'});
  // 正文打开当前任务的数据或操作页，保持玩家在右侧按钮选择的寻路状态。
@@ -109,7 +111,14 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   if(game.progress.mainline.trackingPaused||trackedLivingRequest(game)){
    if(!selectMainlineTask(game,mainlineTask(game)?.id)){game.mainlineError||='请先结束当前战斗或活动。';renderBook();return;}
   }else requestMainlineNavigation(game);
-  if(!openCurrentAction())dialogs.close('mainline-dialog');
+  const site=worldNavigationObjective(game)?.site;
+  if(site && site.mapId===game.mapId && worldDistance(game.player,site)>150 && seActive(game,'autopilot')){
+   dialogs.close('mainline-dialog');
+   driveToTrackedTask(game);
+  }else if(!openCurrentAction()){
+   dialogs.close('mainline-dialog');
+   if(site)driveToTrackedTask(game);
+  }
  });
  scope.on($('mainline-map'),'click',()=>{root.getElementById('phone-button').click();dialogs.transferResume('mainline-dialog','phone-dialog');dialogs.close('mainline-dialog');});
  // 只有实际打开操作面板才记录浏览，不把角色路过门前当作已经学会操作。

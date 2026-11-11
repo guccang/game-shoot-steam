@@ -2,7 +2,7 @@
 export const VEHICLE_SE={
  flare:{name:'空投照明器',mass:90,coins:500,description:'夜间自动发射库存照明弹，重型坦克原厂安装。'},
  autopilot:{name:'自动驾驶仪',mass:160,coins:1800,description:'沿任务或地图选定目标自动寻路；手动移动立即接管。'},
- combat:{name:'战术巡战仪',mass:240,coins:2600,description:'在指定圆圈内接敌、避弹和自动战斗，主炮沿用真实弹药与装填。'},
+ combat:{name:'战术巡战仪',mass:240,coins:2600,description:'在指定圆圈内接敌、避弹，手动走位时持续战斗，主炮沿用真实弹药与装填。'},
  rocket:{name:'蜂巢火箭架',mass:475,coins:3200,description:'发现射程内敌人自动发射双联火箭，消耗2枚重炮弹，冷却8秒。'},
  shield:{name:'脉冲防护罩',mass:375,coins:3000,description:'吸收180点伤害，受击后等待8秒，再以每秒18点恢复；卸装不重置能量。'},
 };

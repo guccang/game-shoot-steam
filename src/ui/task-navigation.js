@@ -1,3 +1,4 @@
+import {driveToTrackedTask} from '../combat/vehicle-se.js';
 // 手机任务卡右侧共用寻路开关；不把取消路线当作放弃任务。
 import {taskNavigationEnabled,toggleTaskNavigation} from '../core/navigation/task-navigation.js';
 import {createEventScope} from '../platform/events.js';
@@ -9,7 +10,12 @@ export function createTaskNavigation({game,root,onChange}){
  button.id='task-navigation-toggle';button.type='button';button.className='ui-button task-navigation-toggle';button.hidden=true;frame.append(button);
  // 图标沿用正式SVG语言，关闭用斜杠与空心箭头区分，不只依赖颜色。
  button.innerHTML='<svg viewBox="0 0 32 32" aria-hidden="true"><path class="task-route-trail" d="M7 25v-5a4 4 0 0 1 4-4h3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle class="task-route-trail" cx="7" cy="26" r="2" fill="currentColor"/><path class="task-route-arrow" d="m22 5 6 16-6-4-6 4Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path class="task-route-slash" d="M5 5 27 27" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>';
- scope.on(button,'click',()=>{toggleTaskNavigation(game);onChange();});
+ scope.on(button,'click',()=>{
+  toggleTaskNavigation(game);
+  if(taskNavigationEnabled(game))driveToTrackedTask(game);
+  else if(game.seControl?.mode==='autopilot')game.seControl=null;
+  onChange();
+ });
  // 只由右侧独立按钮切换寻路，任务正文事件交回各自的详情与操作入口。
  // 开关在任务卡右侧留白内居中，保持独立按钮，避免在可点击任务卡中嵌套按钮。
  function render(){

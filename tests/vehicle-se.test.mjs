@@ -22,7 +22,7 @@ test('安装按重量扣费，拆卸保管、免费重装；存盘失败与超�
 test('照明器卸下或关闭不发射，原有空中弹继续燃烧，别车不共享',()=>{const g=scene();g.surfaceNight=1;g.progress.supplies.vehicles[1].flare=5;updateVehicleFlares(g,.1);assert.equal(g.progress.supplies.vehicles[1].flare,4);seBuild(g.progress,1).installed=[];updateVehicleFlares(g,21);assert.equal(g.progress.supplies.vehicles[1].flare,4);assert.equal(g.progress.supplies.activeFlare,null);equip(g,'flare').disabled=['flare'];updateVehicleFlares(g,1);assert.equal(g.progress.supplies.vehicles[1].flare,4);});
 test('护盾承伤、溢出、等待与暂停恢复、切车隔离',()=>{const g=scene(),b=equip(g,'shield');b.shield=180;assert.equal(absorbSEShield(g,210),30);assert.equal(b.shield,0);updateSEDevices(g,8);assert.equal(b.shield,0);updateSEDevices(g,2);assert.equal(b.shield,36);g.state='paused';updateSEDevices(g,5);assert.equal(b.shield,36);g.progress=validateProgress(g.progress);assert.equal(seBuild(g.progress,1).shield,36);g.vehicle.active=false;assert.equal(absorbSEShield(g,10),10);});
 test('双联火箭消耗、冷却、实际扫掠直击溅射与空弹停射',()=>{const g=scene(),b=equip(g,'rocket');g.progress.supplies.vehicles[1].heavy=4;g.enemies=[enemy(g,1),enemy(g,2,150)];updateSEDevices(g,.1);assert.equal(g.progress.supplies.vehicles[1].heavy,2);assert.equal(g.projectiles.length,2);updateSEDevices(g,1);assert.equal(g.projectiles.length,2);for(let i=0;i<20;i++)updateBallistics(g,.02);assert.ok(g.enemies.every(t=>t.hp<10000));g.state='paused';updateSEDevices(g,99);assert.equal(b.rocketWait,7);g.state='playing';updateSEDevices(g,7);assert.equal(g.progress.supplies.vehicles[1].heavy,0);updateSEDevices(g,9);assert.equal(g.progress.supplies.vehicles[1].heavy,0);});
-test('巡战真实范围、手动接管、暂停、换图与下车取消',()=>{const g=scene();equip(g,'combat');assert.equal(startSEControl(g,'combat').ok,true);const s=g.seControl;assert.equal(seTargetAllowed(g,enemy(g,1,300)),false);assert.equal(seTargetAllowed(g,enemy(g,1,100)),true);g.state='paused';updateSEControl(g,5,{x:0,y:0});assert.equal(s.clock,0);g.state='playing';updateSEControl(g,.1,{x:1,y:0});assert.equal(g.seControl,null);startSEControl(g,'combat');g.mapId='jiuzhaigou';updateSEControl(g,.1,{x:0,y:0});assert.equal(g.seControl,null);g.mapId='forest';startSEControl(g,'combat');g.vehicle.active=false;updateSEControl(g,.1,{x:0,y:0});assert.equal(g.seControl,null);});
+test('巡战真实范围、手动接管、暂停、换图与下车取消',()=>{const g=scene();equip(g,'combat');assert.equal(startSEControl(g,'combat').ok,true);const s=g.seControl;assert.equal(seTargetAllowed(g,enemy(g,1,300)),false);assert.equal(seTargetAllowed(g,enemy(g,1,100)),true);g.state='paused';updateSEControl(g,5,{x:0,y:0});assert.equal(s.clock,0);g.state='playing';assert.deepEqual(updateSEControl(g,.1,{x:1,y:0}),{x:1,y:0});assert.equal(g.seControl,s);g.player.x+=300;updateSEControl(g,.1,{x:0,y:0});assert.equal(g.seControl,s);assert.equal(s.anchor.x,g.player.x);startSEControl(g,'combat');g.mapId='jiuzhaigou';updateSEControl(g,.1,{x:0,y:0});assert.equal(g.seControl,null);g.mapId='forest';startSEControl(g,'combat');g.vehicle.active=false;updateSEControl(g,.1,{x:0,y:0});assert.equal(g.seControl,null);});
 test('来弹预测产生侧向避让，不能冲出巡战圈或穿树',()=>{const g=scene();equip(g,'combat');startSEControl(g,'combat');g.enemyBolts=[{x:g.player.x-130,y:g.player.y,dx:1,dy:0,speed:300,radius:8}];const v=updateSEControl(g,.05,{x:0,y:0});assert.ok(Math.abs(v.y)>.3);assert.ok(Math.hypot(v.x,v.y)<=1.001);g.player.x=g.seControl.anchor.x+260;assert.deepEqual(updateSEControl(g,.05,{x:0,y:0}),{x:0,y:0});assert.equal(g.seControl,null);});
 test('自动驾驶要求装置与目标，正式寻路并到达停止，驿站同样检查装置',()=>{const g=scene();assert.equal(startSEControl(g,'autopilot').ok,false);assert.match(waystationMovementReason(g),/自动驾驶/);equip(g,'autopilot');assert.equal(startSEControl(g,'autopilot').ok,false);requestWorldNavigation(g,{x:9100,y:9000,mapId:'forest'},'测试目标',{direct:true});assert.equal(startSEControl(g,'autopilot').ok,true);let v;for(let i=0;i<10;i++)v=updateSEControl(g,.05,{x:0,y:0});assert.ok(v.x>0);Object.assign(g.player,{x:9090,y:9000});updateSEControl(g,.05,{x:0,y:0});assert.equal(g.seControl,null);});
 
@@ -55,5 +55,38 @@ test('五营地分别出售特色SE，购买仅入库，已购件可在异地按
   assert.equal(configureVehicleSE(g,hull,key,'remove').ok,true);
   assert.equal(vehicleLoad(g,hull).payload,load);
   assert.equal(g.progress.coins,coins-VEHICLE_SE[key].coins);
+ }
+});
+
+test('自动驾驶沿主线和邻里正式任务路点行驶，到达任务交互范围后停车',async()=>{
+ const {freshProgress}=await import('../src/progression/progress.js');
+ const {worldNavigationObjective}=await import('../src/core/navigation/world-navigation.js');
+ const {driveToTrackedTask}=await import('../src/combat/vehicle-se.js');
+ const {LIVING_REQUESTS}=await import('../src/config/living-world.js');
+ const {livingRequestTarget,updateLivingWorld}=await import('../src/core/camp/living-world.js');
+ const {worldDistance}=await import('../src/world/coordinates.js');
+ for(const neighbor of [false,true]){
+  const g=scene();
+  equip(g,'autopilot');
+  g.progress.mainline=freshProgress().mainline;
+  updateLivingWorld(g,.05);
+  let target;
+  if(neighbor){
+   const request=LIVING_REQUESTS[0];
+   g.progress.living.requests[request.id]={accepted:true,stage:0,completed:false};
+   g.progress.taskTracking={kind:'living',id:request.id};
+   target=livingRequestTarget(g,request);
+  }else target=worldNavigationObjective(g).site;
+  Object.assign(g.player,{x:target.x+225,y:target.y});
+  driveToTrackedTask(g);
+  assert.equal(g.seControl?.taskRoute,neighbor?'living':'mainline');
+  for(let i=0;i<1000&&g.seControl;i++){
+   g.time+=.05;
+   const v=updateSEControl(g,.05,{x:0,y:0});
+   g.player.x+=v.x*5;
+   g.player.y+=v.y*5;
+  }
+  assert.equal(g.seControl,null);
+  assert.ok(worldDistance(g.player,target)<=100);
  }
 });
