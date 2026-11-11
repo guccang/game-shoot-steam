@@ -1,3 +1,4 @@
+import {clearingEnemyLevel} from '../config/clearing-difficulty.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
 import { drawWorldSign } from './world-signs.js';
@@ -14,7 +15,7 @@ import { canvasFont } from './text-style.js';
 // 共用绘制与动作输入，风格差异由配置提供。
 export function clearingPostObjects(game) {
   return livingForest(game)
-    ? CLEARING_POSTS.map(post=>({ ...post, type: 'story-post', clearing: true, challenge: challengeProgress(game.progress) }))
+    ? CLEARING_POSTS.map(post=>({ ...post, type: 'story-post', clearing: true, level:clearingEnemyLevel(game.progress.bosses),challenge: challengeProgress(game.progress,post.camp) }))
     : [];
 }
 // 共用绘制与动作输入，风格差异由配置提供。
@@ -65,7 +66,7 @@ export function drawClearingPost(c, p, night, player) {
   c.textBaseline = 'middle';
   c.fillText(`营地 ${q.tier} 级`, 12, -68);
   c.font = canvasFont(11, 700);
-  c.fillText(`购买 ${q.percent / 10} 折`, 0, -48);
+  c.fillText(`清缴 ${p.level} 级`, 0, -48);
   box(c, -42, -36, 84, 7, 3, '#d6d7ad', ink, 1);
   if (ratio > 0) box(c, -41, -35, 82 * ratio, 5, 2, '#658b54');
   drawWorldSign(c, '清缴委托', 0, -13);

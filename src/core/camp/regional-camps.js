@@ -1,3 +1,4 @@
+import {awardCampXp} from '../../progression/camp/camp-level.js';
 import {ammoSoldAt} from '../../config/vehicle-special-ammo.js';
 // 地区营地的任务、补给、采购、维修和招募统一先保存候选存档，再更新现场。
 import {REGIONAL_CAMPS,regionalParcel} from '../../config/regional-camps.js';
@@ -30,7 +31,7 @@ export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target=
  const nearby=Number.isInteger(hull)&&next.vehicleHulls[hull]&&supplyVehicleNearby(g,hull);
  if(action==='story'){
   if(stage===0){next.regionalCamps[c.id].stage=1;message=c.intro;}
-  else if(stage===2){next.regionalCamps[c.id].stage=3;next.coins+=300;recordEconomy(next,'income','regional:'+id,{coins:300});message=c.ending+' 获得300金币，当地装备与招募已开放。';}
+  else if(stage===2){next.regionalCamps[c.id].stage=3;awardCampXp(next,'living',null,c.story,c.id);next.coins+=300;recordEconomy(next,'income','regional:'+id,{coins:300});message=c.ending+' 获得300金币，当地装备与招募已开放。';}
   else return {ok:false,message:stage===1?'请到营地东边寻找'+c.parcel+'。':'这段故事已经完成。'};
  }else if(action==='clue'){
   if(stage!==3)return {ok:false,message:'完成当地委托后，居民愿意分享寻宝线索。'};
@@ -71,7 +72,7 @@ export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target=
  }else if(action==='recruit'){
   if(stage!==3)return {ok:false,message:'请先完成当地委托，赢得猫猫信任。'};
   if(next.heroes[c.hero])return {ok:false,message:'这只猫猫已经加入你的营地。'};
-  if(!transactProgress(next,'heroes',c.hero,'buy',{catHome:true}))return {ok:false,message:'招募需要足够金币、木头和一间空余住屋；请先扩建家园。'};
+  if(!transactProgress(next,'heroes',c.hero,'buy',{catHome:true,camp:c.id}))return {ok:false,message:'招募需要足够金币、木头和一间空余住屋；请先扩建家园。'};
   next.heroXp[c.hero]=0;message=c.ending+' 已加入你的营地，可回家与住户对话换班。';
  }else return {ok:false,message:'无效的营地服务。'};
  if(next.coins<cost)return {ok:false,message:'金币不足，需要'+cost+'金币。'};

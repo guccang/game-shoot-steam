@@ -43,7 +43,7 @@ export function transactProgress(progress, kind, index, action, context={}) {
       return true;
     }
     if(homeFloors(progress.homeDecor)<residentRoster(progress.heroes,progress.residentCats).length+2)return false;
-    cost = campPurchasePrice(progress,list[index]);
+    cost = campPurchasePrice(progress,list[index],context.camp);
   } else if (action === 'upgrade' && level && level < equipmentLevelCap(progress,kind)) cost = upgradeCost(level,progress,kind,index);
   else if (action !== 'equip' || !level) return false;
   if(kind==='weapons'){

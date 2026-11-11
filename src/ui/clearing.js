@@ -35,12 +35,12 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
  const challenge=root.createElement('div');challenge.id='clearing-challenge-level';dialog.querySelector('.clearing-steps').after(challenge);
  // 节点状态来自实际接取与地点，失败时保持原界面可重试。
  function render(){if(!dialog.open)return;const active=game.progress.living.patrolActive,resuming=!active&&!!game.boss?.livingChallenge;
-  challenge.innerHTML=challengeLevelMarkup(game.progress);
+  challenge.innerHTML=challengeLevelMarkup(game.progress,nearestClearingPost(game.player).camp);
   [...dialog.querySelectorAll('li')].forEach((n,i)=>n.dataset.current=String(i===(active?1:0)));
   dialog.querySelector('.clearing-loot').textContent=game.progress.bosses<3?'入门清缴 · 团怪成群，特殊怪穿插':'进阶清缴 · 成群团怪与特殊强敌';
   dialog.querySelector('.clearing-loot').textContent+=' · 击败怪物获得装备材料；金币来自种地，木材通过采集与任务获取';
   dialog.querySelector('.clearing-loot').textContent+=' · 完成后营地经验 +180';
-  $('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴 · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`接取营地周围 1000 米内 · 清理 5 批怪物及领主`}`;
+  $('clearing-status').textContent=`共享清缴等级 ${clearingRound(game)} · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`接取营地周围 1000 米内 · 清理 5 批怪物及领主`}`;
   if(resuming)$('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴已暂停 · 领主 ${Math.ceil(game.boss.hp)} / ${game.boss.maxHp} HP · 继续后返回原地点。`;
   dialog.querySelector('.clearing-loot').textContent+=' · 远离领主脱战或回营后可暂停并购买弹药，无需先击败领主';
   const reason=clearingPostReason(game),accept=$('clearing-accept');
@@ -65,11 +65,11 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
  function renderFrame(){
   const focused=clearingCombatActive(game),objective=game.boss?'击败领主':game.bossReady?'领主即将登场':'清理怪潮';
   // 文本节点重建会触发布局；轮次、目标或显隐实际改变时才提交更新。
-  const combatText=`第 ${clearingRound(game)} 轮清缴 · ${objective}`;
+  const combatText=`共享清缴等级 ${clearingRound(game)} · ${objective}`;
   for(const {host,label} of combatLabels){if(label.hidden===focused)label.hidden=!focused;if(host.classList.contains('clearing-focused')!==focused)host.classList.toggle('clearing-focused',focused);if(label.textContent!==combatText)label.textContent=combatText;}
   if(!livingForest(game)||game.state!=='playing'||game.mainlineSpeech||!renderer.view||root.querySelector('dialog[open]')||frame.dataset.page==='title'){if(!marker.hidden)marker.hidden=true;return;}
   placeSceneHit(marker,nearestClearingPost(game.player),renderer,frame,{width:118,height:108});const stage=clearingStage(game);if(marker.dataset.stage!==stage)marker.dataset.stage=stage;
-  const q=challengeProgress(game.progress),label=`查看清缴告示牌，营地 ${q.tier} 级，购买${q.percent/10}折`;
+  const q=challengeProgress(game.progress,nearestClearingPost(game.player).camp),label=`查看清缴告示牌，共享清缴等级 ${clearingRound(game)}，营地 ${q.tier} 级，购买${q.percent/10}折`;
   if(marker.getAttribute('aria-label')!==label)marker.setAttribute('aria-label',label);
  }
  // 释放原生弹窗与场景命中区，不留下空白标签。
