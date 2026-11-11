@@ -1,3 +1,5 @@
+import {seDeviceIcon} from './se-device-icon.js';
+import {VEHICLE_SE,seActive} from '../config/vehicle-se.js';
 import {activateVehicleTransfer} from './vehicle-transfer.js';
 import {parkingFleetApplies} from '../core/vehicles/camp-parking.js';
 import {boardParkedVehicle} from '../core/vehicles/camp-parking.js';
@@ -35,19 +37,15 @@ export function createVehicleControls({ game, root, onChange }) {
   });
   return { dispose: scope.dispose };
 }
-// 状态徽记固定在载具按钮上缘；仅在实际巡航或巡战切换时更新图形。
-const modeIcons={
- autopilot:{label:'自动驾驶',shape:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/><path d="m4 9 6 2m10-2-6 2m-2 3v6"/>'},
- combat:{label:'自动战斗',shape:'<path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>'}
-};
-// 徽记只报告状态，触控仍交给原有的上下载具按钮。
-function updateModeIcon(node,mode){
- let badge=node.querySelector('.vehicle-mode-icon');
- if(!mode){badge?.remove();return;}
- if(badge?.dataset.mode===mode)return;
- if(!badge){badge=node.ownerDocument.createElement('span');badge.className='vehicle-mode-icon';badge.setAttribute('aria-hidden','true');node.append(badge);}
- badge.dataset.mode=mode;
- badge.innerHTML='<svg viewBox="0 0 24 24">'+modeIcons[mode].shape+'</svg>';
+// 按已开启的装置列出徽记，只在开关或载具变化时替换内容。
+function updateDeviceIcons(node,keys){
+ const signature=keys.join(',');
+ if(node.dataset.seDevices===signature)return;
+ node.dataset.seDevices=signature;
+ let group=node.querySelector('.vehicle-se-badges');
+ if(!keys.length){group?.remove();return;}
+ if(!group){group=node.ownerDocument.createElement('span');group.className='vehicle-se-badges';node.append(group);}
+ group.innerHTML=keys.map(seDeviceIcon).join('');
 }
 // 圆内蓝色显示仓库负荷、外圈显示换弹，独立数字显示弹药；HP继续使用生命条。
 export function updateVehicleHud(root, game) {
@@ -80,10 +78,9 @@ export function updateVehicleHud(root, game) {
   const nearby=nearbyBoardingVehicle(game);
   if(nearby&&!game.cottage&&!game.arrivalCinematic&&['playing','paused'].includes(game.state))node.disabled=false;
   const action=v.active?'下车':nearby?'上车':parkingFleetApplies(game)?'找车':'上车',count=w?Math.max(0,Math.ceil(ammo||0)):'—';
-  const control=game.seControl;
-  const mode=v.active&&control?.hull===v.index&&control.mapId===game.mapId&&Object.hasOwn(modeIcons,control.mode)?control.mode:null;
-  updateVehicleLoadHud(node,game,{ammo:count,label:`${nearby?vehicleModel(nearby.hull).shortName:model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}${mode?' · '+modeIcons[mode].label:''}`,mark:service?'!':repairing||reloading?'↻':'',reload:vehicleReloadHudState(m,w)});
-  updateModeIcon(node,mode);
+  const keys=Object.keys(VEHICLE_SE).filter(key=>seActive(game,key));
+  updateVehicleLoadHud(node,game,{ammo:count,label:`${nearby?vehicleModel(nearby.hull).shortName:model.shortName} · ${action} · ${w?'弹药 '+count+' / '+capacity:'无车载弹药'}${status?' · '+status:''} · ${detail}${keys.length?' · 已开启 '+keys.map(key=>VEHICLE_SE[key].name).join('、'):''}`,mark:service?'!':repairing||reloading?'↻':'',reload:vehicleReloadHudState(m,w)});
+  updateDeviceIcons(node,keys);
   node.setAttribute('aria-pressed', String(v.active));
   // 车型图配进出箭头表达操作，文字仅保留在无障碍名称与悬停说明中。
   let icon=node.querySelector('.vehicle-action-icon');if(!icon){icon=root.createElement('span');icon.className='vehicle-action-icon';icon.setAttribute('aria-hidden','true');node.append(icon);}
