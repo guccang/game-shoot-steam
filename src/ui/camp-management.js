@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {campManagementTabs} from './camp-management-tabs.js';
 import {campPathWidth} from '../config/camp-roads.js';
 import {campPlanUnavailable} from '../core/camp/camp-layout.js';
@@ -56,7 +57,7 @@ export function createCampManagement({game,renderer,root,dialogs,onChange,onWays
  scope.on(dialog,'pointerup',e=>{if(drag?.id!==e.pointerId)return;if(!drag.moved&&draft){const r=e.target.getBoundingClientRect();draft={x:Math.round((view.x+(e.clientX-r.left-r.width/2)/(view.scale*zoom))/10)*10,y:Math.round((view.y+(e.clientY-r.top-160)/(view.scale*zoom))/10)*10};message='';drawMap();}drag=null;});scope.on(dialog,'pointercancel',()=>{drag=null;});
  scope.on(root.defaultView,'resize',()=>{if(dialog.open&&draft)drawMap();});scope.on(hotspot,'click',e=>{if(e.detail===0)open();});
  // 场景热点只在可管理时展示；短按走统一输入，不把拖动误判为购买。
- function render(){worldPlacement.render();hotspot.hidden=!canManageCamp(game)||game.state!=='playing'||!!root.querySelector('dialog[open]');if(!hotspot.hidden)placeSceneHit(hotspot,CAMP_DECOR_SHOP,renderer,frame,{width:110,height:100});}
+ function render(){worldPlacement.render();if(!canManageCamp(game)||game.state!=='playing'||root.querySelector('dialog[open]'))setHidden(hotspot,true);else placeSceneHit(hotspot,CAMP_DECOR_SHOP,renderer,frame,{width:110,height:100});}
  // 统一战场短按按真实屋体命中，不使用屏幕固定位置。
  function tap(e){if(!canManageCamp(game)||root.querySelector('dialog[open]')||!renderer.view)return false;const r=renderer.canvas.getBoundingClientRect(),v=renderer.view,p={x:v.x+(e.clientX-r.left)/r.width*v.w,y:v.y+(e.clientY-r.top)/r.height*v.h},s=nearest(CAMP_DECOR_SHOP,p);return Math.abs(p.x-s.x)<60&&p.y>s.y-100&&p.y<s.y+12?open():false;}
  // 销毁时移除页面、热点和回调，不遗留重复监听。

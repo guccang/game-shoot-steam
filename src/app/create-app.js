@@ -177,7 +177,7 @@ export function createApplication({
   const updateHud = createHud({ game, root, inventory, dialogs, getView: () => renderer.view });
   let equipmentGoals, realmPanel, storyPanel, settingsPanel, firePanel, rangerArrival, mainline, livingPanel, clearingPanel, farmPanel, productionPanel, industryPanel, seedShop, monsterCampPanel, regionalCampPanel;
   // 交互立即刷新全部界面；低频 HUD 在绘制之后更新，复用本帧已刷新的面板。
-  refresh = ({afterDraw = false} = {}) => {
+  refresh = ({afterDraw = false, uiElapsed = 0} = {}) => {
     if (!afterDraw || shell.page === 'title') titleMenu?.render();
     if(shell.page==='title')return;
     updateHud();
@@ -204,7 +204,9 @@ export function createApplication({
     monsterCampPanel?.render();if(!afterDraw)regionalCampPanel?.render();
     clearingPanel?.render();
     firePanel?.render();
-    mainline?.render();
+    profiler.start('render.panels.mainline');
+    mainline?.render(uiElapsed);
+    profiler.end('render.panels.mainline');
     campDefensePanel?.render();
   };
   // 捕获不冒泡的DOM画布事件；离屏由统一工厂监听，恢复时刷新暂停中的菜单图标。
@@ -585,8 +587,6 @@ export function createApplication({
       monsterCampPanel.renderFrame();
       profiler.start('render.panels.living'); livingPanel.renderFrame(); profiler.end('render.panels.living');
       profiler.start('render.panels.arrival'); rangerArrival.renderFrame(); profiler.end('render.panels.arrival');
-      profiler.start('render.panels.mainline'); mainline.renderFrame(uiElapsed); profiler.end('render.panels.mainline');
-      npcConversations.renderFrame();
       profiler.start('render.panels.campDefense'); campDefensePanel.renderFrame(); profiler.end('render.panels.campDefense');
       profiler.start('render.panels.waveTail'); waveTailNavigation.renderFrame(); profiler.end('render.panels.waveTail');
       profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
@@ -597,7 +597,8 @@ export function createApplication({
       profiler.start('render.panels.guardian'); guardianBuild.render(); profiler.end('render.panels.guardian');
       profiler.end('render.panels');
       profiler.start('ui');
-      refresh({afterDraw:true});
+      refresh({afterDraw:true,uiElapsed});
+      npcConversations.renderFrame();
       profiler.end('ui');
     } finally {
       endSceneLayout(renderer);

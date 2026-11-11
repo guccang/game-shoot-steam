@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 // 运动会面板采用短规则、名次和资源图标；输入只请求冲刺，不执行奖励结算。
 import {RACE,RACE_TURN,raceTime,racePlace} from '../config/forest-race.js';
 import {drawRaceCard,drawRaceMap} from '../rendering/forest-race.js';
@@ -27,7 +28,7 @@ export function createRaceControls({game,root}){
  scope.on(button,'keyup',release);
  // HUD只刷新文本、进度和小地图；不重建正在触摸的按钮。
  function render(){
-  const r=game.realm,active=r?.mode==='race';root.getElementById('game-frame').classList.toggle('race-active',active);layer.hidden=!active||r.phase!=='combat';
+  const r=game.realm,active=r?.mode==='race';root.getElementById('game-frame').classList.toggle('race-active',active);setHidden(layer,!active||r.phase!=='combat');
   if(!active||game.state!=='playing'){release();if(!active)return;}
   if(active){const status=layer.querySelector('.race-track-status');status.hidden=!(r.track.boostLeft>0||r.track.muddy);status.textContent=r.track.muddy?'≈ 泥地减速':`➜ 顺风 ${r.track.boostLeft.toFixed(1)}秒`;meter.value=r.stamina;button.disabled=game.state!=='playing'||r.warning>0;button.querySelector('b').textContent=r.exhausted?'恢复中':'冲刺';drawRaceMap(canvas.getContext('2d'),r,game.player);
    root.getElementById('quest-title').textContent=`森林运动会 · 第 ${racePlace(r)} 名`;

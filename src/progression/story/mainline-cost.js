@@ -51,8 +51,9 @@ export function cachedMainlineConditionCost(progress,condition){
  return cached.costs.get(condition);
 }
 // 资源不足时明确指出缺什么和去哪获取，余额足够即自动恢复原操作提示。
-export function mainlineResourceHint(progress,condition){
- const cost=cachedMainlineConditionCost(progress,condition),names={coins:'金币',wood:'木头',parts:'机械零件',crystal:'能源晶体',core:'首领核心'};
+export function mainlineResourceHint(progress,condition,cost=cachedMainlineConditionCost(progress,condition)){
+ if(!KEYS.some(key=>cost[key]>0))return '';
+ const names={coins:'金币',wood:'木头',parts:'机械零件',crystal:'能源晶体',core:'首领核心'};
  const missing=KEYS.filter(k=>cost[k]>taskResourceStock(progress,k).total),crops=taskCropStock(progress);
  const gaps=missing.map(k=>({key:k,count:Math.ceil(Math.max(0,cost[k]-taskResourceStock(progress,k).total-(k==='coins'?crops.value:0)))})).filter(g=>g.count>0).map(g=>names[g.key]+g.count);
  const messages=[];

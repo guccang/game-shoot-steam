@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {ERA_RESOURCES,eraVehicle,eraDonor} from '../config/vehicle-eras.js';
 import {createChallengeCatalog} from './challenge-catalog.js';
 import { challengeLevelMarkup } from './challenge-feedback.js';
@@ -67,7 +68,7 @@ export function createEquipmentGoals({ game, root, dialogs, onChange }) {
     // 清缴保留材料追踪；其他副本仍让位给各自HUD，显隐不受余额缓存影响。
     const pill = $('equipment-goal');
     const clearing=clearingCombatActive(game);
-    pill.hidden = !!game.campDefense || !active || !!game.realm || combatHudVisible(root)&&!clearing || !!game.story || game.state!=='playing' || !!root.querySelector('dialog[open]');
+    setHidden(pill, !!game.campDefense || !active || !!game.realm || combatHudVisible(root)&&!clearing || !!game.story || game.state!=='playing' || !!root.querySelector('dialog[open]'));
     if(pill.classList.contains('clearing-material-goal')!==clearing)pill.classList.toggle('clearing-material-goal',clearing);
     const blocker=goal&&(eraCraftReason(p,goal.kind,goal.index)||equipmentQuestReason(p,goal.kind,goal.index));
     const key = JSON.stringify([p.materials, blocker, goal, goal&&equipmentRequirements(p,goal.kind,goal.index), p.coins, p.wood, p.bosses, p.campLevel?.xp, !!owned, !!game.realm, clearing]);
