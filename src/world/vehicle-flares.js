@@ -14,14 +14,18 @@ const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 // 返回弹体脚下投影与真实高度；原点只保存发射位置，老档剩余时间由校验层限幅。
 export function vehicleFlarePose(game){
  const f=game.progress?.supplies?.activeFlare;if(!f||f.life<=0||f.mapId!==game.mapId||game.cottage||game.realm||game.story)return null;
- const age=Math.max(0,R.duration-f.life),up=Math.min(1,age/R.rise),fall=Math.max(0,Math.min(1,(age-R.rise)/(R.landing-R.rise))),fade=1-smooth((age-R.landing)/(R.duration-R.landing));
+ const age=Math.max(0,R.duration-f.life),up=Math.min(1,age/R.rise);
+ // 开伞后在高空轻缓下沉，末段才集中下降；高度、亮度和光圈沿用同一连续曲线。
+ const drift=smooth((age-R.rise)/(R.descentStart-R.rise));
+ const fall=.06*drift+.94*smooth((age-R.descentStart)/(R.landing-R.descentStart));
+ const fade=1-smooth((age-R.landing)/(R.duration-R.landing));
  const height=age<R.rise?R.height*(2*up-up*up):R.height*(1-fall),spread=age<R.rise?1-(1-up)**2:Math.pow(1-fall,.55);
  // 水平飞行独立于升空扩光；按发射速度前移，达到投射距离后随下降轻微漂移。
  const travel=f.travel??R.throwDistance;
  const forward=f.flightSpeed===undefined?travel*(travel>R.throwDistance?1-(1-up)**3:up):Math.min(travel,f.flightSpeed*age);
  const distance=forward+18*fall;
  const point=canonical({x:f.x+Math.cos(f.angle)*distance,y:f.y+Math.sin(f.angle)*distance});
- return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.landing?'descent':'fade',radius:(24+(R.radius*(1+.15*(f.level||0))-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
+ return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.descentStart?'aloft':age<R.landing?'descent':'fade',radius:(24+(R.radius*(1+.15*(f.level||0))-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
 }
 // 一枚光源照亮约三片基础视野面积；高度只影响弹体，不把地面光池移到空中。
 export function vehicleFlareLights(game){const p=vehicleFlarePose(game);return p&&p.radius>1?[{...p,id:'vehicle-flare',type:'fixture',kind:'flare',height:0,flightHeight:p.height,offset:0,flare:true,flying:true}]:[];}

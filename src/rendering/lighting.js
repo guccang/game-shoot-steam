@@ -128,7 +128,7 @@ export function drawLightFixture(c, light, time, environment, reduced = false) {
     c.globalAlpha=light.power;oval(c,0,4,9,3,'#b99b6940');c.translate(0,-h);
     if(light.phase==='rise')c.globalAlpha=1;
     if(light.phase==='rise'){c.strokeStyle='#f6d393';const tail=Math.min(1,age*4),horizontal=-8*Math.cos(light.angle)*tail;c.lineWidth=3;c.beginPath();c.moveTo(horizontal,20*tail);c.quadraticCurveTo(horizontal/2,8*tail,0,0);c.stroke();}
-    if(light.phase==='descent'){c.strokeStyle='#e8d9a8';c.fillStyle='#f0e7bf';c.lineWidth=1.5;c.beginPath();c.moveTo(-15+sway,-28);c.quadraticCurveTo(sway,-48,15+sway,-28);c.quadraticCurveTo(sway,-33,-15+sway,-28);c.fill();c.stroke();c.beginPath();c.moveTo(-15+sway,-28);c.lineTo(0,0);c.lineTo(15+sway,-28);c.stroke();}
+    if(light.phase==='aloft'||light.phase==='descent'){c.strokeStyle='#e8d9a8';c.fillStyle='#f0e7bf';c.lineWidth=1.5;c.beginPath();c.moveTo(-15+sway,-28);c.quadraticCurveTo(sway,-48,15+sway,-28);c.quadraticCurveTo(sway,-33,-15+sway,-28);c.fill();c.stroke();c.beginPath();c.moveTo(-15+sway,-28);c.lineTo(0,0);c.lineTo(15+sway,-28);c.stroke();}
     glow(c,0,0,45,light.power);oval(c,0,0,4,6,'#fff4bd');
     if(!reduced)for(let i=0;i<3;i++){const t=(age*1.3+i/3)%1;oval(c,Math.sin(i*3+age)*4,7+t*20,1.5,2,'#edb56d');}c.restore();return;
   }
