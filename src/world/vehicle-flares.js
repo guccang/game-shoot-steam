@@ -1,12 +1,13 @@
+import {rearSEMount} from '../config/vehicle-se-mount.js';
 import {seActive,seBuild,seLevel} from '../config/vehicle-se.js';
 // 单枚空中照明弹：抛物线升空、慢速下降与落地熄灭，灯光与可见性共用同一时钟。
 import {FLARE_RULES as R} from '../config/vehicle-special-ammo.js';
 import {insideSurfaceCamp} from './camp-boundary.js';
 import {worldDistance,canonical} from './coordinates.js';
 // 固定正面车体的后甲板朝画面上方，炮塔独立转动；同一筒口用于装置绘制与世界发射。
-export function rearFlareMuzzle(player,hull){
- const compact=hull===5||hull>=11;
- return {x:player.x+(compact?13:30),y:player.y-(compact?12:22)};
+export function rearFlareMuzzle(player,hull,installed=['flare']){
+ const mount=rearSEMount(player,hull,installed,'flare');
+ return {x:mount.x,y:mount.y-6};
 }
 // 连续平滑插值用于升空扩光和落地余辉，暂停不依赖真实时间。
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
@@ -59,6 +60,6 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  const actualSpeed=Math.hypot(game.player.vx||0,game.player.vy||0);
  const flightSpeed=moving?Math.max(1,actualSpeed)*1.18:R.throwDistance/R.rise;
  stock.flare--;
- s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,flightSpeed,level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
+ s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index,seBuild(game.progress,game.vehicle.index).installed)),angle,travel,flightSpeed,level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});
 }
