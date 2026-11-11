@@ -1,4 +1,5 @@
 // 绘制与拦截共用同一椭圆罩体，坐标为正式世界坐标，跨地图接缝取最近镜像。
+import {seActive,seBuild} from '../config/vehicle-se.js';
 import {nearest} from '../world/coordinates.js';
 import {segmentCircle} from './collision.js';
 
@@ -12,6 +13,11 @@ export function hasEnergyShield(game){
  return game.weapon?.()?.attackKind==='defense'&&(game.magazines?.[game.loadout.weapon]?.ammo||0)>0;
 }
 
+// 车载装置与手持武器共用一层拦截面，各自按原有顺序消耗能量。
+export function activeSEShield(game){
+ return game.progress?.vehicleHulls&&seActive(game,'shield')&&!game.cottage?seBuild(game.progress,game.vehicle.index):null;
+}
+
 // 将来袭方向投到罩体表面；缺少方向的环境伤害落在上缘，不再落在猫身上。
 export function energyShieldPoint(game,source,position=game.player){
  const shape=energyShieldShape(position,game.vehicle?.active),point=source?nearest(source,shape):{x:shape.x,y:shape.y-shape.ry};
@@ -21,7 +27,7 @@ export function energyShieldPoint(game,source,position=game.player){
 
 // 对相对移动的椭圆进行扫掠，返回首次接触比例与盾面落点，兼容高速弹与移动中的玩家。
 export function traceEnergyShield(game,from,to,previous=game.player,padding=0){
- if(!hasEnergyShield(game))return null;
+ if(!hasEnergyShield(game)&&!(activeSEShield(game)?.shield>0))return null;
  const now=energyShieldShape(nearest(game.player,from),game.vehicle?.active),old=energyShieldShape(nearest(previous,now),game.vehicle?.active);
  const rx=now.rx+padding,ry=now.ry+padding;
  const t=segmentCircle({x:(from.x-old.x)/rx,y:(from.y-old.y)/ry},{x:(to.x-now.x)/rx,y:(to.y-now.y)/ry},{x:0,y:0},1);
@@ -33,6 +39,6 @@ export function traceEnergyShield(game,from,to,previous=game.player,padding=0){
 
 // 近战瞄向最近盾面，仍沿用原有追击、前摇和返回，不把怪物直接传送到边缘。
 export function energyShieldMeleeTarget(game,enemy,position=game.player){
- if(!hasEnergyShield(game))return position;
+ if(!hasEnergyShield(game)&&!(activeSEShield(game)?.shield>0))return position;
  return {...position,...energyShieldPoint(game,enemy,position),attackRadius:0,shieldSurface:true};
 }

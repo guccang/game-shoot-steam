@@ -1,4 +1,6 @@
 // SE 运行控制：自动运动只输出输入向量，伤害与火箭沿用正式战斗链。
+import {energyShieldPoint} from './energy-shield-surface.js';
+import {recordShieldImpact,advanceShieldImpacts} from './energy-shield.js';
 import {seActive,seBuild} from '../config/vehicle-se.js';
 import {canonical,nearest,worldDistance} from '../world/coordinates.js';
 import {trackedLivingRequest} from '../core/navigation/task-tracking.js';
@@ -100,9 +102,26 @@ export function updateSEControl(g,dt,input){const s=g.seControl;if(!s)return inp
  const q=nearest(route.points[1]||s.goal,g.player),dx=q.x-g.player.x,dy=q.y-g.player.y,d=Math.hypot(dx,dy);s.status='沿路线驾驶';return {x:dx/Math.max(1,d),y:dy/Math.max(1,d)};
 }
 // 护罩承伤先于车体，等待与剩余容量持久保存，反复装卸不能瞬间充满。
-export function absorbSEShield(g,amount){if(!seActive(g,'shield')||amount<=0)return amount;const b=seBuild(g.progress,g.vehicle.index),n=Math.min(amount,b.shield);b.shield-=n;b.shieldWait=8;if(n>0){g.seShieldFlash=.25;g.float?.(g.player.x,g.player.y-40,'SE护罩 −'+Math.ceil(n),'#a4dacd');}return amount-n;}
+export function absorbSEShield(g,amount,source=null){
+ if(!seActive(g,'shield')||amount<=0)return amount;
+ const build=seBuild(g.progress,g.vehicle.index),absorbed=Math.min(amount,build.shield);
+ build.shield-=absorbed;
+ build.shieldWait=8;
+ if(absorbed>0){
+  const point=energyShieldPoint(g,source);
+  if(g.seShieldEffects?.vehicle!==g.vehicle)g.seShieldEffects={vehicle:g.vehicle};
+  recordShieldImpact(g.seShieldEffects,point);
+  g.float?.(point.x,point.y,'SE护罩 −'+Math.ceil(absorbed),'#a4dacd');
+ }
+ return amount-absorbed;
+}
 // 火箭以两发重炮弹驱动独立双联炮口，正式弹道负责扫掠、遮挡、爆炸与统计。
-export function updateSEDevices(g,dt){if(g.state!=='playing'||dt<=0||!g.vehicle.active||g.cottage)return;const b=seBuild(g.progress,g.vehicle.index);g.seShieldFlash=Math.max(0,(g.seShieldFlash||0)-dt);
+export function updateSEDevices(g,dt){
+ if(g.seShieldEffects){
+  if(g.seShieldEffects.vehicle!==g.vehicle||!seActive(g,'shield'))g.seShieldEffects=null;
+  else if(g.state==='playing'&&dt>0)advanceShieldImpacts(g.seShieldEffects,dt);
+ }
+ if(g.state!=='playing'||dt<=0||!g.vehicle.active||g.cottage)return;const b=seBuild(g.progress,g.vehicle.index);
  if(seActive(g,'shield')){const wait=Math.min(dt,b.shieldWait);b.shieldWait-=wait;b.shield=Math.min(180,b.shield+(dt-wait)*18);}
  if(!seActive(g,'rocket')||g.parking?.idle)return;b.rocketWait=Math.max(0,b.rocketWait-dt);const stock=g.progress.supplies.vehicles[g.vehicle.index];if(b.rocketWait>0||stock.heavy<2)return;
  const t=[...g.enemies,...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&seTargetAllowed(g,t)&&worldDistance(t,g.player)<360&&attackTargetKnown(g,t)&&(!g.combatLineClear||g.combatLineClear(g.player,nearest(t,g.player)))).sort((a,b)=>worldDistance(a,g.player)-worldDistance(b,g.player))[0];if(!t)return;

@@ -842,7 +842,7 @@ export class Game {
     if(this.state!=='playing')return;
     if (this.realm) amount = Math.max(1, amount * Math.max(GAMEPLAY_VALUES.blessings.armorFloor, 1 - (this.realm.buffs.armor || 0) * GAMEPLAY_VALUES.blessings.armorPerStack));
     // 格挡不产生或刷新无敌时间，已有的身体保护也不能免除护盾消耗。
-    amount=absorbSEShield(this,amount);
+    amount=absorbSEShield(this,amount,source);
     amount=absorbEnergyShield(this,amount,source);
     if(amount<=0||this.player.invincible>0)return;
     if (absorbVehicleHit(this, amount, source)) return;
