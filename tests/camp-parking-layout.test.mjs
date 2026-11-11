@@ -51,8 +51,8 @@ test('北场十二位与扩建车位可设置，整队读档不重叠',async()=>
  assert.equal(PARKING_SPOTS.filter(s=>s.number&&!s.lotId).length,12);
 });
 
-// 门外停车场使用正式出生地、车体碰撞、设置和存档入口，逐门复核三个独立地坪。
-test('晴叶与五个地区营地每座门外三场，每场两位，实际倒车通路畅通',async()=>{
+// 门外停车场使用正式出生地、车体碰撞、设置和存档入口，逐门复核独立地坪。
+test('晴叶与五个地区营地每座门外一场，每场两位，实际倒车通路畅通',async()=>{
  const {campBoundary}=await import('../src/world/camp-boundary.js');
  const {gateParkingSpots}=await import('../src/world/gate-parking.js');
  const {parkingPathClear,nearestParkingSpot}=await import('../src/core/vehicles/parking.js');
@@ -60,11 +60,11 @@ test('晴叶与五个地区营地每座门外三场，每场两位，实际倒�
  const g=setup(),p=g.progress;
  p.vehicleHulls[0]=1;g.player.campProgress=p;g.parkingVisitors=[];
  const spots=gateParkingSpots(p),gates=campBoundary(p).gates;
- assert.equal(spots.length,gates.length*6);
+ assert.equal(spots.length,gates.length*2);
  assert.equal(new Set(spots.map(s=>s.id)).size,spots.length);
  for(const gate of new Set(spots.map(s=>s.gateName))){
   const bays=spots.filter(s=>s.gateName===gate);
-  assert.equal(bays.length,6);assert.equal(new Set(bays.map(s=>s.lotId)).size,3);
+  assert.deepEqual(bays.map(s=>s.number),[1,2]);assert.equal(new Set(bays.map(s=>s.lotId)).size,1);
  }
  for(const spot of spots){
   Object.assign(g.player,{x:spot.x,y:spot.approachY});
@@ -74,4 +74,19 @@ test('晴叶与五个地区营地每座门外三场，每场两位，实际倒�
  const slot=spots.find(s=>s.settlement==='snowcedar');
  assert.ok(assignParkingSpot(g,0,slot.id,()=>true));
  assert.equal(validateProgress(p).campParking.preferred[0],slot.id);
+});
+
+// 验证旧场车辆从正式读档入口恢复，二次读档不再迁移。
+test('旧门外停车场撤除后保留原地车辆及其状态',async()=>{
+ const {gateParkingSpots,retiredGateParkingSpot}=await import('../src/world/gate-parking.js');
+ const p=setup().progress,first=gateParkingSpots(p).find(s=>s.settlement==='snowcedar');
+ p.vehicleHulls[0]=1;
+ const id=first.lotId.slice(0,-1)+'2-1',old=retiredGateParkingSpot(p,id);
+ const record={hull:0,spot:id,hp:.6,ammo:7,reload:.4,wheel:1,track:2};
+ p.campParking={owned:[record],preferred:{0:id}};
+ const saved=validateProgress(p);
+ const parked=saved.campParking.owned.find(r=>r.hull===0);
+ assert.deepEqual(parked,{...record,spot:null,mapId:'forest',x:old.x,y:old.y});
+ assert.equal(saved.campParking.preferred?.[0],undefined);
+ assert.deepEqual(validateProgress(saved).campParking.owned.find(r=>r.hull===0),parked);
 });
