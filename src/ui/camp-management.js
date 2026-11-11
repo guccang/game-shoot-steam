@@ -8,12 +8,12 @@ import {campSurfaceRoads} from '../world/camp-surface-roads.js';
 // 营地管理沿用统一手机底板；预览与世界共用画笔，草稿取消不写存档。
 import {createEventScope} from '../platform/events.js';
 import {CAMP_APPEARANCE,CAMP_DECOR_CATALOG,CAMP_DECOR_LIMIT,CAMP_DECOR_SHOP,campStyle,campDecorDefinition} from '../config/camp-management.js';
-import {campPlots,CAMP_PLOTS,ownsCampPlot} from '../config/camp-land.js';
+import {campPlots,ownsCampPlot} from '../config/camp-land.js';
 import {canManageCamp,applyCampStyle,buyCampDecor,placeCampDecor,storeCampDecor} from '../core/camp/camp-management.js';
 import {campDecorPlacementError} from '../world/camp-decor.js';
-import {campRoadNetwork,layoutBuildings} from '../world/camp-layout-roads.js';
+import {layoutBuildings} from '../world/camp-layout-roads.js';
 import {campBoundary} from '../world/camp-boundary.js';
-import {drawCampDecoration,drawCampDecorShop} from '../rendering/camp-decor.js';
+import {drawCampDecoration} from '../rendering/camp-decor.js';
 import {drawSettlement} from '../rendering/settlements.js';
 import {drawBuildingArchitecture} from '../rendering/building-architecture.js';
 import {withCampBuildingFinish} from '../rendering/camp-building-finish.js';

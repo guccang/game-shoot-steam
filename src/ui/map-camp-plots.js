@@ -15,6 +15,8 @@ export function createMapCampPlots({game,root,scope,onChange,dialogs,renderer}){
  const select=section.querySelector('select'),wallet=section.querySelector('[data-construction-wallet]'),notice=section.querySelector('[role=status]'),here=section.querySelector('[data-build-here]'),world=section.querySelector('[data-build-world]');
  const bar=root.createElement('div');bar.className='camp-placement-hint';bar.hidden=true;bar.innerHTML='<span role="status"></span> <button class="ui-button" type="button">结束建设</button>';root.getElementById('game-frame').append(bar);
  let target=null,armed=false;
+ // 两个建造入口都需要先选中设施。
+ function updatePlacementButtons(){here.disabled=world.disabled=!select.value;}
  // 每次打开时读取真实的等级、已建设施和全部可用库存。
  function refresh(){
   section.hidden=!canInspectBuilding(game);if(section.hidden)return;
@@ -27,7 +29,7 @@ export function createMapCampPlots({game,root,scope,onChange,dialogs,renderer}){
   }
   select.value=[...select.options].some(o=>o.value===previous&&!o.disabled)?previous:'';
   wallet.textContent='营地 '+campProgress(game.progress).tier+' 级 · 持有 '+game.progress.coins+' 金币、'+workshopMaterialCount(game.progress,'wood')+' 木材';
-  here.hidden=!target;here.disabled=!select.value;world.disabled=!select.value;
+  here.hidden=!target;updatePlacementButtons();
  }
  // 已完成的房屋停止重复建设，栅栏保留选择，便于连续摆放。
  function place(point){
@@ -37,16 +39,16 @@ export function createMapCampPlots({game,root,scope,onChange,dialogs,renderer}){
   refresh();return true;
  }
  // 已选地面可直接选建筑；从管理页打开时先选建筑再点地。
- function open(point=null,kind=''){
+ function open(point=null){
   if(!canInspectBuilding(game))return false;
   target=point;armed=false;bar.hidden=true;
   const previous=[...root.querySelectorAll('dialog[open]')].filter(d=>d!==dialog);dialogs.open(dialog.id);
   for(const d of previous){dialogs.transferResume(d.id,dialog.id);dialogs.close(d.id);}
-  refresh();if(kind&&[...select.options].some(o=>o.value===kind&&!o.disabled))select.value=kind;
+  refresh();
   notice.textContent=point?'已选中地面，选择设施后即可建设。':'选择设施后，点大地图或现场的营地空地即可建设。';
-  here.disabled=!select.value;world.disabled=!select.value;section.scrollIntoView({block:'nearest'});return true;
+  section.scrollIntoView({block:'nearest'});return true;
  }
- scope.on(select,'change',()=>{here.disabled=!select.value;world.disabled=!select.value;notice.textContent=target?'点击“在此建设”使用已选地面。':'点击大地图上已解锁的营地空地即可建设。';});
+ scope.on(select,'change',()=>{updatePlacementButtons();notice.textContent=target?'点击“在此建设”使用已选地面。':'点击大地图上已解锁的营地空地即可建设。';});
  scope.on(here,'click',()=>{if(target&&select.value)place(target);});
  scope.on(world,'click',()=>{armed=true;target=null;bar.hidden=false;bar.querySelector('span').textContent='点击空地建设 · '+select.selectedOptions[0].textContent;dialogs.close(dialog.id);});
  scope.on(bar.querySelector('button'),'click',()=>{armed=false;bar.hidden=true;});

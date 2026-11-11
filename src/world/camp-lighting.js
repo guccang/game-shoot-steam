@@ -1,7 +1,7 @@
 import {hasCampLayoutChanges} from '../config/camp-layout.js';
 // 友善营地的基础亮度和路口灯具，按地契与布局缓存，不扫描整张世界。
 import {CAMP_LIGHTING} from '../config/camp-lighting.js';
-import {campPlots,CAMP_PLOTS,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
+import {campPlots,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
 import {CAMP_BUILDINGS,campBuildingPosition} from '../config/camp-layout.js';
 import {TOWN_PATHS} from '../config/town-layout.js';
 import {REGIONAL_CAMPS,REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';

@@ -23,9 +23,14 @@ export const CAMP_CONSTRUCTION=CAMP_BUILDINGS.filter(b=>!['weapons','north'].inc
 }).concat([true,false].map(horizontal=>({id:horizontal?'fence-h':'fence-v',name:horizontal?'横向木栅栏':'纵向木栅栏',horizontal,width:horizontal?60:8,height:horizontal?8:60,level:1,cost:{wood:4,coins:0}})));
 
 // 老存档原本已开放的设施照常使用；栅栏可以反复建造。
+function isBuilt(progress,b){
+ if(b.horizontal!==undefined)return false;
+ if(progress.campLand?.sites?.[b.id])return true;
+ return ownsCampPlot(progress,b.plot)&&(!TOWN_RESTORATIONS.some(f=>f.id===b.repair)||facilityOpen(progress,b.repair));
+}
+// 选址和提交共用等级、地契和材料报价。
 export function constructionState(progress,b){
- const established=ownsCampPlot(progress,b.plot)&&(!TOWN_RESTORATIONS.some(f=>f.id===b.repair)||facilityOpen(progress,b.repair));
- return {landOpen:!b.plot||ownsCampPlot(progress,b.plot),built:b.horizontal===undefined&&(!!progress.campLand?.sites?.[b.id]||established),level:campProgress(progress).tier,enough:Object.entries(b.cost).every(([key,n])=>workshopMaterialCount(progress,key)>=n)};
+ return {landOpen:!b.plot||ownsCampPlot(progress,b.plot),built:isBuilt(progress,b),level:campProgress(progress).tier,enough:Object.entries(b.cost).every(([key,n])=>workshopMaterialCount(progress,key)>=n)};
 }
 // 以脚底为锚点，环形世界两端的建筑用最近镜像检查占地。
 function occupied(game,b,at){
@@ -41,7 +46,7 @@ function occupied(game,b,at){
  for(const building of CAMP_BUILDINGS){
   if(building.id===b.id)continue;
   const def=CAMP_CONSTRUCTION.find(c=>c.id===building.id);
-  if(def&&!constructionState(game.progress,def).built)continue;
+  if(def&&!isBuilt(game.progress,def))continue;
   if(overlaps(campBuildingPosition(game.progress.campLayout,building),-building.width/2,building.width/2,-building.height,10))return '此处已有建筑。';
  }
  for(const f of game.progress.campLand.fences||[]){

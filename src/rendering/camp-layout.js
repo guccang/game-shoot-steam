@@ -5,7 +5,7 @@ import {campSurfaceRoads,campGateInnerRoads} from '../world/camp-surface-roads.j
 import {drawCampRoadFinish,visibleCampRoads} from './camp-road-finish.js';
 // 搬迁后的道路在正式地面层绘制；布局和地契变化才重新生成有界路网。
 import {campRoadNetwork} from '../world/camp-layout-roads.js';
-import {campPlots,CAMP_PLOTS,ownsCampPlot} from '../config/camp-land.js';
+import {campPlots,ownsCampPlot} from '../config/camp-land.js';
 import {CAMP_BUILDINGS,campBuildingPosition,CAMP_ROAD_WIDTH} from '../config/camp-layout.js';
 import {nearest} from '../world/coordinates.js';
 import {drawCampGrass} from './ground-depth.js';

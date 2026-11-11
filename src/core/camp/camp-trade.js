@@ -5,7 +5,7 @@ import {stopWaystationTravel} from '../navigation/waystations.js';
 import {escortDeposit,escortQuote,escortWaveDone,escortPayout,TRADE_ESCORT} from '../../config/trade-escort.js';
 import {updateEscortEncounter,startEscortRest} from './trade-escort.js';
 // 商路交易只取随身作物和实际到站的自有货舱；护送不占用玩家货位。
-import {TRADE_SITES,TRADE_BOARD,TRADE_RELIC} from '../../config/camp-trade.js';
+import {TRADE_SITES,TRADE_RELIC} from '../../config/camp-trade.js';
 import {FARM_CROPS} from '../../config/farm.js';
 import {validateProgress} from '../../progression/progress.js';
 import {creditResource} from '../../progression/economy/resource-wallet.js';
