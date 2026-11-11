@@ -12,7 +12,7 @@ import {updateVehicleFlares,vehicleFlareLights} from '../src/world/vehicle-flare
 import {surfaceAttackRange,surfaceTargetVisible} from '../src/world/surface-vision.js';
 import {fireBallistics,updateBallistics} from '../src/combat/ballistics.js';
 // 独立车队与空旷靶位，不绕过购买、存档和命中结算。
-function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[1]=1;grantVehicleArmament(p,1);p.vehicleIndex=1;p.coins=10000;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.trees=[];g.enemies=[];g.boss=null;g.vehicle.active=true;g.livingPersist=()=>true;g.progress.campParking.owned=[];Object.assign(g.player,{x:9000,y:9000});return g;}
+function scene(hull=1){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[hull]=1;grantVehicleArmament(p,hull);p.vehicleIndex=hull;p.coins=10000;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.trees=[];g.enemies=[];g.boss=null;g.vehicle.active=true;g.livingPersist=()=>true;g.progress.campParking.owned=[];Object.assign(g.player,{x:9000,y:9000});return g;}
 // 高生命靶体保证不会以死亡奖励掩盖伤害来源。
 function enemy(g,id,x=100){return {id,type:'enemy',x:g.player.x+x,y:g.player.y,hp:10000,maxHp:10000,radius:17,mass:1,speed:0};}
 test('旧档默认照明开启，库存与关闭开关及剩余光照保存',()=>{const g=scene();assert.equal(g.progress.supplies.autoFlare,true);g.progress.supplies.autoFlare=false;g.progress.supplies.vehicles[1].frost=12;g.progress.supplies.selectedSpecial[1]='frost';const p=validateProgress(g.progress);assert.equal(p.supplies.autoFlare,false);assert.equal(p.supplies.vehicles[1].frost,12);assert.equal(p.supplies.selectedSpecial[1],'frost');});
@@ -94,4 +94,22 @@ test('自动驾驶起步按前进指令迅速扩光，车头接近暗区时提�
  }
  assert.equal(s.vehicles[1].flare,3);
  assert.ok(Math.abs(g.player.y-light.y)<FLARE_RULES.radius);
+});
+
+// 从空弹匣开始驱动真实炮塔，检查自动换种、扣弹、重装间隔和照明弹隔离。
+for(const [hull,base] of [[1,'shell'],[6,'heavy']])test('基础弹耗尽后按本车库存连续发射特殊弹 · '+base,async()=>{
+ const {updateVehicle}=await import('../src/combat/vehicle.js');
+ const g=scene(hull),s=g.progress.supplies,stock=s.vehicles[hull];
+ for(const key of Object.keys(SPECIAL_AMMO))stock[key]=0;
+ Object.assign(stock,{[base]:0,frost:1,he:1,flare:8});s.selectedSpecial[hull]='frost';
+ g.vehicle.module.magazine={ammo:0,remaining:.5};
+ for(let i=0;i<50;i++)updateVehicle(g,.025);
+ assert.equal(stock.frost,1);
+ g.enemies=[enemy(g,91,160)];
+ for(let i=0;i<300;i++)updateVehicle(g,.025);
+ assert.deepEqual(g.projectiles.map(b=>b.specialAmmo),['frost','he']);
+ assert.deepEqual([stock.frost,stock.he,stock.flare],[0,0,8]);
+ stock[base]=1;
+ for(let i=0;i<180;i++)updateVehicle(g,.025);
+ assert.equal(g.projectiles.length,3);assert.equal(g.projectiles[2].specialAmmo,undefined);
 });
