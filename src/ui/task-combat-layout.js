@@ -17,8 +17,8 @@ export function taskCombatHudTop(root){
  if(health)setTop(health,top);
  const visible=panel?.getBoundingClientRect().height>0&&getComputedStyle(panel).visibility!=='hidden';
  // 高塔、守护和远征使用 CSS 安全区定位，以真实生命卡底边接续进度，兼容刘海与独立弹药高度。
- if(frame.matches('.tower-active,.guardian-active,.rogue-active'))return health.getBoundingClientRect().top-r.top+(visible?panel.getBoundingClientRect().height+6:0);
- const next=top+(visible?panel.getBoundingClientRect().height+6:0);
+ if(frame.matches('.tower-active,.guardian-active,.rogue-active'))return health.getBoundingClientRect().top-r.top+(visible?health.getBoundingClientRect().height+6:0);
+ const next=top+(visible?health.getBoundingClientRect().height+6:0);
  // 战斗条横向内容较宽，排到地图和设置下方，避免右端详情入口被圆盘挡住。
  return minimap&&!frame.classList.contains('camp-defending')&&combatHudVisible(root)?Math.max(next,minimap.bottom-r.top+8,resources.bottom-r.top+8):next;
 }

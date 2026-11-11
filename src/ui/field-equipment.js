@@ -64,6 +64,13 @@ export function createFieldEquipment({game,root,dialogs,onChange,onCleanup,onCar
  dialogs.register(panel.id,{focusId:'field-equipment-close',onOpen:render});
  // 只有屋内售货员能打开交易页，外部入口只负责导航。
  function open(kind='weapons'){mode=kind;message='';if(kind==='ammo'){if(game.cottage?.kind!=='ammo')return;target=supplyVehicleNearby(game)?'vehicle':'hand';}dialogs.open(panel.id);}
+ // 从生命面板下方进入当前装置，焦点落在名称上，避免误触启停。
+ scope.on(root.getElementById('vehicle-se-badges'),'click',e=>{
+  const button=e.target.closest('[data-view-se]');if(!button)return;
+  open('vehicle');
+  const heading=panel.querySelector('[data-se-heading="'+button.dataset.viewSe+'"]');
+  heading?.focus({preventScroll:true});heading?.scrollIntoView({block:'start'});
+ });
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
  scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.seAction){const r=configureVehicleSE(game,game.vehicle.index,b.dataset.seKey,b.dataset.seAction,Number(b.dataset.seRadius));message=r.message;render();if(b.dataset.seRadius)panel.querySelector('[data-se-radius="'+b.dataset.seRadius+'"]')?.focus({preventScroll:true});onChange();return;}if(b.hasAttribute('data-field-weapon')){
   const index=Number(b.dataset.fieldWeapon);
