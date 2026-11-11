@@ -383,3 +383,21 @@ test('主动防护只拦截威胁本车的敌弹，每次拦截进入独立冷�
  build.disabled=[];build.levels.protection=2;updateEnemyBolts(g,.1,p);
  assert.equal(g.enemyBolts.length,0);assert.equal(build.protectionWait,1.2);
 });
+
+// 五个安装位按车辆独立计数；旧档多出的装置保留所有权及改装等级。
+test('SE安装位满时拒绝第六件，卸下后可换装，旧档保留超额装置',()=>{
+ const g=scene();g.cottage={kind:'vehicle'};
+ const first=['flare','combat','autopilot','rocket','shield'];
+ const b=equip(g,...first);b.disabled=['shield'];
+ const before=structuredClone(g.progress);
+ assert.equal(configureVehicleSE(g,1,'protection','install').ok,false);
+ assert.deepEqual(g.progress,before);
+ assert.equal(configureVehicleSE(g,1,'protection','buy').ok,true);
+ assert.equal(configureVehicleSE(g,1,'protection','install').ok,false);
+ assert.equal(configureVehicleSE(g,1,'shield','remove').ok,true);
+ assert.equal(configureVehicleSE(g,1,'protection','install').ok,true);
+ const saved=g.progress.vehicleSE[1];saved.installed.push('shield');saved.levels.shield=2;
+ const restored=validateProgress(g.progress).vehicleSE[1];
+ assert.deepEqual(restored.installed,saved.installed.slice(0,5));
+ assert.ok(restored.owned.includes('shield'));assert.equal(restored.levels.shield,2);
+});

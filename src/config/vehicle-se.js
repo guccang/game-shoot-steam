@@ -1,4 +1,5 @@
-// SE 装置目录：重量参与正式载荷，每车同类限一套，不限制不同装置组合。
+// SE 装置目录：重量参与正式载荷，每车同类限一套，各类装置共用安装位。
+export const SE_INSTALL_LIMIT=5;
 export const VEHICLE_SE={
  flare:{name:'空投照明器',mass:90,coins:500,description:'安装于车尾，夜间自动发射库存照明弹，重型坦克原厂安装。'},
  autopilot:{name:'自动驾驶仪',mass:160,coins:1800,description:'沿任务或地图选定目标自动寻路；手动移动立即接管。'},
@@ -24,7 +25,7 @@ export function normalizeVehicleSE(raw,count){
   const build=raw?.[h]??seBuild({},h);
   const ids=list=>[...new Set(Array.isArray(list)?list:[])].filter(key=>Object.hasOwn(VEHICLE_SE,key));
   const clamp=(value,max)=>Number.isFinite(value)?Math.max(0,Math.min(max,value)):0;
-  const owned=ids(build.owned),installed=ids(build.installed).filter(key=>owned.includes(key));
+  const owned=ids(build.owned),installed=ids(build.installed).filter(key=>owned.includes(key)).slice(0,SE_INSTALL_LIMIT);
   const levels=Object.fromEntries(owned.map(key=>[key,Math.floor(clamp(build.levels?.[key],SE_MAX_UPGRADE))]));
   // 引入改装等级前的护盾上限为180，迁移时保留剩余能量比例。
   const shield=build.levels?clamp(build.shield,seShieldMax({levels})):Math.round(clamp(build.shield,180)*500/180);
