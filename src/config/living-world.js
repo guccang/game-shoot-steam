@@ -16,7 +16,7 @@ export const LIVING_PLACES = {
   // 厨房和陶作台在西北工艺院，中间留出委托板和出入通道。
   kitchen:{...townPoint({x:-245,y:96}),name:'阿团的厨房',kind:'kitchen',width:140,height:92},
   pottery:{...townPoint({x:-20,y:96}),name:'铁牙陶作台',kind:'pottery',width:104,height:46},
-  roost:{...townPoint({x:180,y:60}),name:'小夜的栖架',kind:'roost',width:100,height:112},
+  roost:{...townPoint({x:-42,y:-30}),name:'小夜的栖架',kind:'roost',width:100,height:112},
   market:{...townPoint({x:8,y:1220}),name:'林间集市',kind:'market',width:120,height:65},
   flowers:{...townPoint({x:460,y:794}),name:'月光花圃',kind:'flowers',width:75,height:35},
   basket:{x:2590,y:720,name:'散落的食材篮',kind:'basket',width:42,height:25},

@@ -9,7 +9,7 @@ export const PARKING = Object.freeze({wait:3,radius:48,approachMargin:18,roadCle
 // 候停边界只覆盖车位及院内过道，主路和路肩保留通行；车库须驶到门前再候停。
 // 北门内侧原场六个公共车位，共用两条倒车过道，入口通道留在停车场东侧。
 // 地坪与入口由营地布局统一迁移。
-export const NORTH_PARKING = {x:145+TOWN_SHIFT_X,y:145,width:380,height:280,entrance:townPoint({x:650,y:205})};
+export const NORTH_PARKING = {x:145+TOWN_SHIFT_X,y:145,width:380,height:280,entrance:townPoint({x:510,y:205})};
 export const PARKING_SPOTS = [
  // 弹药补给铺库内装弹，停稳后直接进入屋内柜台。
  {id:'ammo-garage',building:'ammo',name:'弹药补给铺',kind:'ammo',indoor:true,garageY:AMMO_SHOP.y,x:AMMO_SHOP.x,y:AMMO_SHOP.y+GARAGE.parkingY,approachY:AMMO_SHOP.y+10,disembarkY:AMMO_SHOP.y+75},

@@ -1,7 +1,7 @@
 import {cartProductIcon} from './cart-product-icon.js';
 import {HORSE_PRICE} from '../config/vehicle-eras.js';
 // 农矿生产页面复用手机底板；世界选址、配方与实际补给均提交正式核心规则。
-import {PEN_GATE,PASTURE} from '../config/pasture.js';
+import {pastureOpen,PEN_GATE,PASTURE} from '../config/pasture.js';
 import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 import {createEventScope} from '../platform/events.js';
 import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES} from '../config/farm-production.js';
@@ -39,6 +39,7 @@ export function createFarmProduction({game,root,renderer,input,dialogs,onNotice,
  }
  // 栏外也能查看价格和用途，到北门下车后可领养并照料牛羊。
  function pastureMarkup(){
+  if(!pastureOpen(game.progress))return '<p>向南扩建至河畔勤务区后，即可在牧栏领养和照料动物。</p>';
   const f=game.progress.farm,near=game.mapId==='forest'&&worldDistance(game.player,PEN_GATE)<=145&&!game.cottage&&!game.vehicle.active;
   const animals=[
    ['挽马','打造木马车时套车使用。',HORSE_PRICE,'adopt-horse',game.progress.materials.draftHorse?'已领养':''],

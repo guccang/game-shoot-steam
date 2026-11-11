@@ -32,7 +32,7 @@ export function drawNaturalFarmCrop(c,index,x,y,time,phase,night=false,reduced=f
 // 实景土地、作物、快递站与独立农具共享正式世界镜头。
 import {FARM_DELIVERY,FARM_SEED_SHOP,FARM_GARDEN,FARM_PLOT_SHAPE,farmPosition} from '../config/farm.js';
 import {farmWorking} from '../core/farming/farm.js';
-import {PASTURE,oxFoot} from '../config/pasture.js';
+import {pastureOpen,PASTURE,oxFoot} from '../config/pasture.js';
 import {nearest,visibleBodies,worldDistance} from '../world/coordinates.js';
 // 两个世界与其故事现场共用永久田块，仅独立副本隔离土地。
 export function farmVisible(game){return ['forest','jiuzhaigou'].includes(game.mapId)&&!game.realm;}
@@ -95,7 +95,7 @@ export function farmObjects(game){
  if(!farmVisible(game))return [];
  const site=game.progress.farm.oxSite;
  const parked=site?.mapId===game.mapId&&!game.cottage&&(game.farmWork?.tool!=='ox'||game.farmWork.ox?.approach||game.farmWork.autoCombat)?[{...site,...oxFoot(site),type:'parked-ox',moving:!!game.oxArrival?.moving,phase:game.oxArrival?.phase||0,unhitched:!!game.progress.farm.oxReturn||!!game.oxArrival||worldDistanceToPen(site)<65}]:[];
- const pen=game.mapId==='forest'?[{...PASTURE,y:PASTURE.y-PASTURE.halfHeight,type:'pasture-back'},{...PASTURE,y:PASTURE.y+PASTURE.halfHeight,type:'pasture-front'},...(game.progress.farm.sheep?[{x:PASTURE.x+58,y:PASTURE.y+34,type:'pasture-sheep'}]:[])]:[];
+ const pen=game.mapId==='forest'&&pastureOpen(game.progress)?[{...PASTURE,y:PASTURE.y-PASTURE.halfHeight,type:'pasture-back'},{...PASTURE,y:PASTURE.y+PASTURE.halfHeight,type:'pasture-front'},...(game.progress.farm.sheep?[{x:PASTURE.x+58,y:PASTURE.y+34,type:'pasture-sheep'}]:[])]:[];
  return [...pen,...parked,...productionObjects(game),...game.progress.farm.plots.filter(p=>p.mapId===game.mapId&&p.crop!==null).map(plot=>({...farmPosition(plot),type:'farm-crop',plot})),...(game.mapId==='forest'?[{...FARM_SEED_SHOP,type:'seed-shop'},{x:FARM_GARDEN.x-90,y:598,type:'farm-sign'},{...FARM_DELIVERY,type:'farm-delivery',parcels:game.progress.farm.delivery.parcels.length}]:[])];
 }
 // 三阶段保持宽高比例和固定根部，过渡期间茎叶逐渐长成并局部轻摆。

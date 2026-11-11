@@ -161,7 +161,7 @@ export function validateProgress(raw) {
   p.campLand=normalizeCampLand(raw.campLand);
   p.restoration=validateRestoration(raw.restoration);
   // 已购街区在升级时一次补齐建筑；正在施工的设施沿用原进度。
-  if(raw.campLand&&raw.campLand.version<4){
+  if(raw.campLand&&raw.campLand.version<5){
     for(const f of TOWN_RESTORATIONS){
       if(f.plotId&&f.plotId!=='core'&&p.campLand.owned.includes(f.plotId)&&p.restoration.build?.id!==f.id&&!p.restoration.repaired.includes(f.id))p.restoration.repaired.push(f.id);
     }

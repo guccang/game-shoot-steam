@@ -1,7 +1,8 @@
 // 地契投影到正式场景：未购地保留草地，正式围栏单独读取已购外边界。
-import {CAMP_LAND_SIGN,CAMP_PLOTS,availableCampPlots,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
+import {CAMP_DIRECTIONS,CAMP_PLOTS,campDirectionStatus,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
 import {nearest} from '../world/coordinates.js';
 import {box,oval} from './primitives.js';
+import {canvasFont} from './text-style.js';
 import {drawWorldSign} from './world-signs.js';
 import {drawCampGrass} from './ground-depth.js';
 // 室内与独立战斗场景不叠加地契图层。
@@ -14,8 +15,11 @@ export function campObjectVisible(game,item){
 // 相邻未购地显示扩建木牌，核心区保留营地建设入口。
 export function campLandObjects(game){
  if(!campLandActive(game))return [];
- const objects=[{...CAMP_LAND_SIGN,...CAMP_LAND_SIGN.sign,type:'camp-land-sign'},...availableCampPlots(game.progress).map(p=>({...p.sign,id:p.id,type:'camp-land-sign',name:p.name}))];
- return objects;
+ return CAMP_DIRECTIONS.map(d=>{
+  const step=campDirectionStatus(game.progress,d);
+  return {...d.sign,type:'camp-land-sign',id:d.id,name:d.name+'侧扩建',count:step.total-step.remaining+'/'+step.total,preview:step.next?'下次 · '+step.landmark:'已全部扩建'};
+ });
+
 }
 // 覆盖未开发院落与铺路，复用两张小草地纹理；购买后的下一帧立即恢复原地面。
 export function drawCampLandGround(c,game,view,night,season='summer'){
@@ -36,7 +40,11 @@ export function drawCampLandGround(c,game,view,night,season='summer'){
 export function drawCampLandObject(c,item,night){
  c.save();c.translate(item.x,item.y);oval(c,3,3,item.type==='camp-land-sign'?20:6,3,'#31523e30');
  box(c,-3,-18,6,20,2,night>.5?'#a59470':'#c8ad7b','#41634b',1.5);
- if(item.type==='camp-land-sign'){box(c,-52,-54,104,38,5,night>.5?'#c4c39c':'#fff0c6','#41634b',2);drawWorldSign(c,(item.id==='core'?'':'扩建 · ')+item.name,0,-29);}
+ if(item.type==='camp-land-sign'){
+  box(c,-59,-64,118,49,5,night>.5?'#c4c39c':'#fff0c6','#41634b',2);
+  c.textAlign='center';c.fillStyle='#374e3d';c.font=canvasFont(13);c.fillText(item.name+' '+item.count,0,-45);
+  c.font=canvasFont(11);c.fillText(item.preview,0,-24);
+ }
  c.restore();
 }
 // 地基无完整墙体和屋顶，与完工建筑形成明确结构差异。

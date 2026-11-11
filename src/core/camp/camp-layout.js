@@ -23,7 +23,7 @@ import {worldDistance,nearest} from '../../world/coordinates.js';
 // 门前、车道与正在使用的实体均不能被新建筑覆盖。
 export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.find(b=>b.id===id);if(!base)return '没有这座建筑。';const b=campBuildingPosition(layout,base),sign=b.placementKind==='sign',boundary=campBoundary(game.progress,layout);
  if(id!=='plaza'&&(b.parking||sign?campLayoutFootprints(b).some(r=>overlapsCampPlaza((r.left+r.right)/2,(r.top+r.bottom)/2,(r.right-r.left)/2,(r.bottom-r.top)/2,game.progress)):overlapsCampPlaza(b.x,b.y-b.height/2,b.width/2,b.height/2,game.progress)))return '请保留中央庆典广场。';
- if(!base.publicFacility&&!ownsCampPlot(game.progress,campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
+ if((!base.publicFacility||campPlotAt(base))&&!ownsCampPlot(game.progress,base.plotId||campPlotAt(base)?.id))return '请先购买这座建筑所在的土地。';
  // 外围公共道路和公交站保留原位，不能被新屋体覆盖。
  const land=campPlotAt(b,game.progress);if(!sign&&(!land||!ownsCampPlot(game.progress,land.id))){const center={x:b.x,y:b.y-b.height/2};if(PATHS.some(path=>path.some((point,i)=>i&&roadFootprintDistance(path[i-1],point,nearest(center,path[i-1]),b.width/2,b.height/2)<28))||[RANGER.busStop,RANGER.bus].some(site=>{const p=nearest(site,b);return Math.abs(p.x-b.x)<b.width/2+85&&p.y+45>b.y-b.height&&p.y-150<b.y;}))return '请避开营地外的公共道路和公交站。';}
  // 围栏独立检查真实屋体与入口；道路根据新位置重建，不要求侧面留一条宽车道。

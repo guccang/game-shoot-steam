@@ -15,3 +15,7 @@
 /* 四个同级功能页签共用选中态，窄屏采用两列，触控高度至少44px。 */
 .camp-manager-primary-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.camp-manager-primary-tabs>.ui-button{min-width:0;min-height:44px;padding:8px 4px;font-size:14px}.camp-manager-primary-tabs>[aria-pressed="true"]{outline:2px solid #b9994d;outline-offset:1px}
 @media(max-width:360px){.camp-manager-primary-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 扩建方向成对排列，各阶段按钮独占一行，触屏可直接查看建筑清单。 */
+#camp-land-dialog [data-land-list]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#camp-land-dialog [data-land-detail] [data-land-select]{display:block;width:100%;margin-bottom:4px;text-align:left}

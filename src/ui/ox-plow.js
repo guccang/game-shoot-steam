@@ -2,7 +2,7 @@ import {setHidden,setText} from './shared/dom-state.js';
 // 牵牛操作栏、留场耕牛热点和逐格预览共享正式世界坐标。
 import {reaperLine,releaseReaper} from '../core/farming/row-reaper.js';
 import {farmGrowth} from '../progression/farming/farm.js';
-import {PASTURE,PEN_GATE,oxFoot} from '../config/pasture.js';
+import {pastureOpen,PASTURE,PEN_GATE,oxFoot} from '../config/pasture.js';
 import {worldDistance} from '../world/coordinates.js';
 import {createEventScope} from '../platform/events.js';
 import {farmLandReason} from '../world/farm-land.js';
@@ -51,7 +51,7 @@ export function createOxControls({game,root,layer,renderer,frame,start,stop,say,
    button.dataset.site=String(object.id);
    placeSceneHit(button,{...object,y:object.y+38},renderer,frame,{width:96,height:44,centered:true});
   }
-  if(accessible&&!dialog&&!showing&&game.mapId===PEN_GATE.mapId&&worldDistance(game.player,PEN_GATE)<145)placeSceneHit(gate,{x:PEN_GATE.x-PASTURE.gate*.8,y:PEN_GATE.y+16},renderer,frame,{width:110,height:52});else setHidden(gate,true);
+  if(accessible&&!dialog&&!showing&&pastureOpen(game.progress)&&game.mapId===PEN_GATE.mapId&&worldDistance(game.player,PEN_GATE)<145)placeSceneHit(gate,{x:PEN_GATE.x-PASTURE.gate*.8,y:PEN_GATE.y+16},renderer,frame,{width:110,height:52});else setHidden(gate,true);
   setHidden(panel,!showing);
   if(showing){const running=!!reaper?.held||!!work?.ox?.auto;setText(hold,running?'停止作业':'点格作业');hold.disabled=!running;}
   if(accessible&&(!work||work.tool==='select')&&!dialog&&!game.oxArrival&&!game.progress.farm.oxReturn&&site?.mapId===game.mapId&&!showing)placeSceneHit(hit,oxFoot(site),renderer,frame,{width:112,height:82});

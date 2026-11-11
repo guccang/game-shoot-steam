@@ -1,6 +1,6 @@
 import {HORSE_PRICE} from '../../config/vehicle-eras.js';
 // 农矿配合事务：设施、配方和补给只在保存成功后生效。
-import {PASTURE,PEN_OX,PEN_GATE,oxFoot} from '../../config/pasture.js';
+import {pastureOpen,PASTURE,PEN_OX,PEN_GATE,oxFoot} from '../../config/pasture.js';
 import {PRODUCTION as P,PRODUCTION_BUILDINGS,PRODUCTION_RECIPES,productionCrop,SPRINKLER} from '../../config/farm-production.js';
 import {productionUnlocked,productionIngredients,sprinklerCovers,productionCropStock,consumeProductionCrop} from '../../progression/farming/farm-production.js';
 import {FARM_CROPS,FARM_WATER} from '../../config/farm.js';
@@ -35,6 +35,7 @@ export function upgradeWateringCan(game){
 }
 // 在栏门现场领养或喂养，金币和动物归属一起保存。
 export function tendPasture(game,action,crop){
+ if(!pastureOpen(game.progress))return {ok:false,message:'请先向南扩建河畔勤务区。'};
  if(!productionAvailable(game)||game.mapId!=='forest'||game.cottage||game.vehicle.active||worldDistance(game.player,PEN_GATE)>145)return {ok:false,message:'请先走到营地牧栏门口。'};
  const next=candidate(game),farm=next.farm;
  if(action==='adopt-horse'){

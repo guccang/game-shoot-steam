@@ -34,7 +34,7 @@ export function campBuildingPosition(layout,building){return {...building,...lay
 
 // 布局校验分别保留地坪和东侧弯道，避免把入口下方空地误作停车场。
 // 消防站按偏心车库和侧门占地；站牌按底座与点击站位占地，保留临河原址干地。
-export function campLayoutFootprints(b){if(b.placementKind==='pasture')return [{left:b.x-b.width/2-16,right:b.x+b.width/2+16,top:b.y-b.height-16,bottom:b.y+16},{left:b.x-80,right:b.x+80,top:b.y-b.height-72,bottom:b.y-b.height}];if(b.placementKind==='fire')return [{left:b.x-142,right:b.x+97,top:b.y-135,bottom:b.y+105}];if(b.placementKind==='sign')return [{left:b.x-24,right:b.x+24,top:b.y-12,bottom:b.y+36}];if(b.plaza)return [{left:b.x-b.width/2,right:b.x+b.width/2,top:b.y-b.height,bottom:b.y}];const main={left:b.x-b.width/2-24,right:b.x+b.width/2+24,top:b.y-b.height-20,bottom:b.y+(b.parking?20:95)};return b.parking?[main,{left:b.x+166,right:b.x+343,top:b.y-248,bottom:b.y-132}]:[main];}
+export function campLayoutFootprints(b){if(b.placementKind==='pasture')return [{left:b.x-b.width/2-16,right:b.x+b.width/2+16,top:b.y-b.height-16,bottom:b.y+16},{left:b.x-80,right:b.x+80,top:b.y-b.height-72,bottom:b.y-b.height}];if(b.placementKind==='fire')return [{left:b.x-142,right:b.x+97,top:b.y-135,bottom:b.y+105}];if(b.placementKind==='sign')return [{left:b.x-24,right:b.x+24,top:b.y-12,bottom:b.y+36}];if(b.plaza)return [{left:b.x-b.width/2,right:b.x+b.width/2,top:b.y-b.height,bottom:b.y}];const main={left:b.x-b.width/2-24,right:b.x+b.width/2+24,top:b.y-b.height-20,bottom:b.y+(b.parking?20:95)};return b.parking?[main,{left:b.x+150,right:b.x+200,top:b.y-248,bottom:b.y-132}]:[main];}
 
 // 建筑或大门任一发生搬迁，都启用同一套正式道路与灯光。
 export function hasCampLayoutChanges(layout){return Object.keys(layout?.positions||{}).length>0||Object.keys(layout?.gates||{}).length>0;}
