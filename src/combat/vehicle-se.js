@@ -103,7 +103,11 @@ export function combatSteering(g,s){
   const edgeY=dy===0?Infinity:distance*Math.max(0,(dy>0?view.bottom:-view.top)-12)/Math.abs(dy);
   spacing=Math.min(range,(view.right-view.left)/2,(view.bottom-view.top)/2,edgeX,edgeY);
  }
- const inner=view?Math.max(0,spacing-Math.min(16,spacing*.1)):0;
+ // 敌人明显逼近才启动后撤，持续退至半屏附近再制动，两个阈值之间沿用当前状态。
+ const resumeAt=spacing-Math.min(40,spacing*.15);
+ const stopAt=spacing-Math.min(8,spacing*.03);
+ s.retreating=!!view&&inRange&&distance<(s.retreating&&previous===target?stopAt:resumeAt);
+ const inner=s.retreating?stopAt:0;
  // 二分之一视野用于近身后撤；可见目标在炮程内时，整段安全距离都能驻车开火。
  const outer=target&&attackTargetVisible(g,target)?range:spacing;
  const error=d=>Math.max(0,d-outer,inner-d);
@@ -137,7 +141,7 @@ export function updateSEControl(g,dt,input){syncSEControl(g);const s=g.seControl
  if(g.state!=='playing'||dt<=0)return input;
  if(Math.hypot(input.x,input.y)>.01){
   if(s.mode==='combat'){
-   s.manual=true;s.steeringDirection=null;s.steeringTarget=null;
+   s.manual=true;s.retreating=false;s.steeringDirection=null;s.steeringTarget=null;
    s.status='手动走位 · 巡战中';
    if(worldDistance(g.player,s.anchor)>s.radius)s.anchor=canonical(g.player);
   }else {g.sePausedRoute={key:s.routeKey,vehicle:g.vehicle,player:g.player};g.seControl=null;}
