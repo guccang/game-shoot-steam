@@ -266,7 +266,9 @@ for(const [width,height] of [[450,900],[900,450]])test('巡战按视口短边的
  const steer=()=>updateSEControl(g,.05,{x:0,y:0});
  assert.ok(steer().x<0,'近身时后撤');
  t.x=g.player.x+150;assert.deepEqual(steer(),{x:0,y:0});
- t.x=g.player.x+200;assert.ok(steer().x>0,'距离过远时接近');
+ t.x=g.player.x+200;g.player.vx=80;
+ assert.deepEqual(steer(),{x:0,y:0},'已在视野和炮程内时原地开火');
+ assert.equal(g.player.vx,0,'不沿接敌方向继续滑行');
 });
 
 // 在宽阔视野里由主炮射程封顶，进入射程后保持火力。
