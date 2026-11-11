@@ -1,4 +1,4 @@
-import {drawFieldDevices} from './vehicle-field-devices.js';
+import {drawFieldDevices,drawVehicleSmoke} from './vehicle-field-devices.js';
 import {drawVehicleSE} from './vehicle-se.js';
 import {drawSpecialAmmoZones} from './vehicle-special-ammo.js';
 import {TOWN_COURTS,TOWN_LAYOUT} from '../config/town-layout.js';
@@ -686,8 +686,10 @@ export class Renderer {
         drawFarmTool(c,source,g.player);
         drawOutdoorFishing(c,source,g.player,light.night);
         if(source.fireActive||g.vehicle.active&&g.vehicle.index===4)drawFireHelmet(c,g.player);
-        if (g.vehicle.active)
+        if (g.vehicle.active){
           drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, this.reduced.matches);
+          drawVehicleSmoke(c,source,this.reduced.matches,g.player);
+        }
         if (frontRider(g.vehicle) && !source.arrivalCinematic)
           drawRiderWeapon(c, riderPosition(g.player, g.vehicle), playerHero, g.progress.weapon, {
             scale: PLAYER_SCALE, motionScale: this.reduced.matches ? 0.35 : 1, chargePose,

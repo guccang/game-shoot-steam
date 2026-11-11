@@ -29,7 +29,12 @@ export function updateVehicleMines(game,dt){
   if(m.mapId!==game.mapId||m.life<=0){mines.splice(i,1);continue;}
   if(m.life>24.5||!targets.some(e=>e.hp>0&&worldDistance(e,m)<=34+(e.radius||0)&&clear(m,e)))continue;
   mines.splice(i,1);
-  game.fx.add('blast',m.x,m.y,.35,{size:90,color:'#f4c272'});
+  game.fx.add('blast',m.x,m.y,.48,{size:90,color:'#f4c272'});
+  game.fx.add('ring',m.x,m.y,.58,{size:90,color:'#ffc374'});
+  for(let j=0;j<8;j++){
+   const angle=j*Math.PI/4,speed=j%2?150:205;
+   game.fx.add('spark',m.x,m.y,.38,{vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,angle,size:4,color:'#ffe4a4'});
+  }
   for(const e of targets)if(e.hp>0&&worldDistance(e,m)<=90+(e.radius||0)&&clear(m,e))
    game.hit(e,m.damage,false,{kind:'se-mine',statisticsSource:m.source});
  }
@@ -42,7 +47,7 @@ export function updateVehicleMines(game,dt){
   const point=canonical({x:game.player.x+48*Math.cos(a+offset),y:game.player.y+48*Math.sin(a+offset)});
   if(!clear(game.player,point)||mines.some(m=>worldDistance(m,point)<30))continue;
   const level=seLevel(seBuild(game.progress,game.vehicle.index),'mine');
-  mines.push({...point,life:25,mapId:game.mapId,damage:240+60*level,source:statisticsSource(game,{id:'se-mine'},game.vehicle.index)});
+  mines.push({...point,launchDx:-48*Math.cos(a+offset),launchDy:-48*Math.sin(a+offset),life:25,mapId:game.mapId,damage:240+60*level,source:statisticsSource(game,{id:'se-mine'},game.vehicle.index)});
   game.mineWait=4;break;
  }
 }

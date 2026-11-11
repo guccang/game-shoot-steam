@@ -1,3 +1,4 @@
+import {drawProtectionTrace} from './vehicle-field-devices.js';
 import {drawDumplingImpact} from './dumpling-impact.js';
 // 战斗粒子的 Canvas 适配器，不负责更新或伤害。
 import { drawFunnelBurst } from './funnel-effects.js';
@@ -9,7 +10,7 @@ export function drawCombatFX(c, items, reduced = false, reference = null) {
   c.lineCap = 'round';
   for (const original of items) {
     const p = reference ? { ...original, ...nearest(original, reference) } : original;
-    if (reduced && !['gel-impact','spark','blast','funnel-burst','tide-splash','tide-muzzle'].includes(p.kind)) continue;
+    if (reduced && !['protection-trace','gel-impact','spark','blast','funnel-burst','tide-splash','tide-muzzle'].includes(p.kind)) continue;
     const age = 1 - p.life / p.duration;
     if (p.z > 0) {
       c.save();
@@ -26,7 +27,8 @@ export function drawCombatFX(c, items, reduced = false, reference = null) {
     c.globalAlpha = Math.min(1, (p.life / p.duration) * 2) * (reduced ? 0.45 : 1);
     c.fillStyle = p.color;
     c.strokeStyle = p.color;
-    if(p.kind==='gel-impact'){drawDumplingImpact(c,p,age,reduced);}
+    if(p.kind==='protection-trace'){drawProtectionTrace(c,p,age,reduced);}
+    else if(p.kind==='gel-impact'){drawDumplingImpact(c,p,age,reduced);}
     else if(p.kind==='tide-splash'||p.kind==='tide-muzzle') {
       drawTideSplash(c,p,age,reduced);
     } else if (p.kind === 'funnel-burst') {
