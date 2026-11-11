@@ -1,6 +1,6 @@
 import {seTargetAllowed} from './vehicle-se.js';
 import {enhancedVehicleShot} from './vehicle-special-ammo.js';
-import {surfaceWeapon} from '../world/surface-vision.js';
+import {mountedWeapon} from './mounted-weapon.js';
 import {weaponTerrainTargets} from './terrain-targets.js';
 import {applyVehicleFault} from './vehicle-faults.js';
 import {takeSupplyAmmo,finiteSupply,supplyAmmoCount} from './supply-ammo.js';
@@ -30,7 +30,6 @@ import {
   vehicleModel,
 } from '../config/vehicles.js';
 import { landingPoint } from './vehicle-landing.js';
-import { realmWeapon } from '../config/realms.js';
 import { worldDistance, nearest } from '../world/coordinates.js';
 import {attackTargetDistance,attackTargetKnown,rememberCombatTarget} from './perception.js';
 import { hitCenter } from './collision.js';
@@ -253,7 +252,7 @@ export function updateVehicle(game, dt, holdFire = false) {
   if (!v.active) return;
   // 完全损坏的主炮停止装填和攻击，活动借用装备不使用永久故障。
   if (finiteSupply(game)&&vehicleFaults(game.progress,v.index).gun>=100){v.targetId=null;return;}
-  const baseWeapon = surfaceWeapon(game,realmWeapon(vehicleWeapon((game.loadout || game.progress), v.weaponIndex), game.realm?.buffs)),
+  const baseWeapon = mountedWeapon(game),
     w = baseWeapon && {...baseWeapon,vehicleMounted:true,interval:baseWeapon.interval*(1+(finiteSupply(game)?vehicleFaults(game.progress,v.index).gun:0)/100),statisticsSource:statisticsSource(game,baseWeapon,game.statisticsVehicleIndex!==undefined?game.statisticsVehicleIndex:v.index)},
     m = v.module;
   if (!w || !m) {
