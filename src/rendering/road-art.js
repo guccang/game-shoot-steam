@@ -18,6 +18,11 @@ const roads = [...PATHS, ...LIVING_ROADS].flatMap(path=>path.some(p=>p.x<0)?[pat
     return { ...p, nx: -(b.y - a.y) / length, ny: (b.x - a.x) / length };
   }),
 );
+// 曲线始终位于控制点包围盒内，各地块仅提交可能覆盖其像素的整条道路。
+const roadBounds = roads.map(points => ({
+  left: Math.min(...points.map(p => p.x)), right: Math.max(...points.map(p => p.x)),
+  top: Math.min(...points.map(p => p.y)), bottom: Math.max(...points.map(p => p.y)),
+}));
 const verges = roads.slice(0, PATHS.length).flatMap((road, index) =>
   road.flatMap((p, i) => {
     if (i % 3 !== index || i === 0 || i === road.length - 1) return [];
@@ -48,11 +53,20 @@ export function drawSoftRoads(c, view) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function* drawSoftRoadsSteps(c, view) {
+  // 计入最宽路肩、平移和抗锯齿边缘，跨块时仍沿用相同曲线与笔触。
+  const pad = Math.max(52, ...style.roadArt.drawSoftRoadsStepsValue.map(([width]) => width + 2));
+  const visibleRoads = view ? roads.filter((road, index) => {
+    const b = roadBounds[index];
+    return b.right + pad >= view.x && b.left - pad <= view.x + view.w &&
+      b.bottom + pad >= view.y && b.top - pad <= view.y + view.h;
+  }) : roads;
+  // 草缘距中心线最远 35 单位，另计草叶伸展后，空地块可跳过整组绘制和读回。
+  if (!visibleRoads.length) return;
   c.save();
   // 路肩受光与浅凹暗缘复用完全相同的曲线，防止视觉道路偏离寻路几何。
   c.lineCap='round';c.lineJoin='round';
   for(const [width,color,dx,dy] of [[59,'#506c4930',2,3],[54,'#f0e3b5',-1,-1],[51,'#b9a77b',0,0]]){
-    c.save();c.translate(dx,dy);c.lineWidth=width;c.strokeStyle=color;c.beginPath();for(const road of roads)roadPath(c,road);c.stroke();c.restore();yield;
+    c.save();c.translate(dx,dy);c.lineWidth=width;c.strokeStyle=color;c.beginPath();for(const road of visibleRoads)roadPath(c,road);c.stroke();c.restore();yield;
   }
   for (const [width, alpha] of style.roadArt.drawSoftRoadsStepsValue) {
     c.strokeStyle = style.roadArt.drawSoftRoadsSteps_strokeStyleColor;
@@ -61,7 +75,7 @@ export function* drawSoftRoadsSteps(c, view) {
     c.lineCap = 'round';
     c.lineJoin = 'round';
     c.beginPath();
-    for (const road of roads) roadPath(c, road);
+    for (const road of visibleRoads) roadPath(c, road);
     c.stroke();
     yield;
   }

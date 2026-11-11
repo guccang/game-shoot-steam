@@ -128,7 +128,7 @@ export function* paintGroundSteps(c, view = null, winter = false, season = 'summ
     c.arc(sceneryMask.x, sceneryMask.y, sceneryMask.radius, 0, Math.PI * 2);
     c.clip('evenodd');
   }
-  drawSceneryGround(c);
+  drawSceneryGround(c, view);
   c.restore();
   for (const [x, y] of [
     // 小田路口的大石移到西侧草地，主路与田牌前保持空旷。

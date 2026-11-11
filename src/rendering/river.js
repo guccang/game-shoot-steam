@@ -149,6 +149,8 @@ export function drawRiverGround(ctx, winter = false) {
 }
 // 共用绘制与动作输入，风格差异由配置提供。
 export function* drawRiverGroundSteps(ctx, winter = false, view = null) {
+  // 河心控制点在 1160～1380 之间；两侧各留 360 单位覆盖沙湾、桥头与岸石。
+  if (view && (view.x + view.w < 800 || view.x > 1740)) return;
   ctx.save();
   ctx.lineCap = 'round';
   yield* drawShoreGroundSteps(ctx, winter, view);
