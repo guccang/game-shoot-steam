@@ -8,7 +8,7 @@ import {WORLD_BUILDINGS} from '../config/world-buildings.js';
 import {PASTURE_BASE} from '../config/pasture.js';
 import {nearest} from './coordinates.js';
 
-const layouts=new WeakMap();
+const layouts=new WeakMap(),oldLayouts=new WeakMap();
 // 记录建筑的原始占地，切换存档时通过该档布局恢复，不读取上个世界的坐标。
 const buildings=WORLD_BUILDINGS.map(b=>({...b}));
 const sideNames={top:'北',bottom:'南',left:'西',right:'东'};
@@ -41,9 +41,9 @@ function findLot(gate,side,index,regions,lots){
 }
 
 // 泊位编号与具体坐标分离，门位搬迁后存档、导航与停驻车辆使用同一地坪。
-export function gateParkingSpots(progress){
+function buildGateParking(progress,lotsPerGate,cache){
  const boundary=campBoundary(progress);
- const positions=progress?.campLayout?.positions||{},key=JSON.stringify(positions),cached=layouts.get(boundary);
+ const positions=progress?.campLayout?.positions||{},key=JSON.stringify(positions),cached=cache.get(boundary);
  if(cached?.key===key)return cached.spots;
  const regions=boundary.regions.concat(REGIONAL_SETTLEMENTS),spots=[],lots=[],counts=new Map();
  for(const b of buildings){
@@ -58,13 +58,22 @@ export function gateParkingSpots(progress){
   const group=g.settlement+'-'+side,ordinal=(counts.get(group)||0)+1;
   counts.set(group,ordinal);
   const gateName=(region?.name||'晴叶营地')+sideNames[side]+'门'+(ordinal>1?ordinal:'');
-  for(let i=0;i<3;i++){
+  for(let i=0;i<lotsPerGate;i++){
    const site=findLot(g,side,i,regions,lots);
    if(!site)continue;
    lots.push(site);
-   const lotId='gate-'+group+'-'+ordinal+'-'+i,lotName=gateName+'外 '+(i+1)+' 号场';
+   const lotId='gate-'+group+'-'+ordinal+'-'+i,lotName=gateName+'外停车场';
    for(let bay=1;bay<=2;bay++)spots.push({id:lotId+'-'+bay,building:'gate-lot',lotId,lotName,settlement:g.settlement,gateName,number:bay,name:lotName+' · '+bay+' 号位',x:site.x+(bay===1?-55:55),y:site.y,approachY:site.y+65});
   }
  }
- layouts.set(boundary,{key,spots});return spots;
+ cache.set(boundary,{key,spots});return spots;
+}
+
+// 正式地图每座门只生成一块地坪，保留原一号场的泊位编号。
+export function gateParkingSpots(progress){return buildGateParking(progress,1,layouts);}
+
+// 仅在读取撤销场地的车辆记录时还原旧坐标，供车辆原地转为路边停驻。
+export function retiredGateParkingSpot(progress,id){
+ if(typeof id!=='string'||!/^gate-.+-[12]-[12]$/.test(id))return null;
+ return buildGateParking(progress,3,oldLayouts).find(s=>s.id===id);
 }

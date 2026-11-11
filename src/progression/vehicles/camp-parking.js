@@ -1,3 +1,4 @@
+import {retiredGateParkingSpot} from '../../world/gate-parking.js';
 import {COLLECTED_VEHICLES} from '../../config/vehicles.js';
 import {parkingRecordOccupies} from './roadside-parking.js';
 // 停驻存档只接受已拥有车体和真实泊位；访客不写入玩家装备。
@@ -45,7 +46,10 @@ export function normalizeCampParking(raw,progress){
  const parking=parkingSpotsFor(progress),preferred={};
  for(const [h,id] of Object.entries(raw?.preferred||{}))if(String(Number(h))===h&&progress.vehicleHulls[h]&&parking.some(s=>s.number&&s.id===id)&&!Object.values(preferred).includes(id))preferred[h]=id;
  const owned=[],hulls=new Set(),spots=new Set();
- for(const value of Array.isArray(raw?.owned)?raw.owned:[]){
+ for(let value of Array.isArray(raw?.owned)?raw.owned:[]){
+  // 旧二、三号场拆除后车辆留在原坐标，同时保留耐久、弹匣和换弹进度。
+  const old=retiredGateParkingSpot(progress,value?.spot);
+  if(old)value={...value,spot:null,mapId:'forest',x:old.x,y:old.y};
   const roadside=value?.spot==null&&['forest','jiuzhaigou'].includes(value?.mapId)&&Number.isFinite(value.x)&&Number.isFinite(value.y);
   if(progress.vehicleService?.[value?.hull]?.phase||!(Number.isInteger(value?.hull)&&COLLECTED_VEHICLES[value.hull])||!progress.vehicleHulls[value.hull]||value.hull===4&&progress.fireDispatch?.garage?.parked||(!roadside&&!parking.some(s=>s.id===value.spot))||hulls.has(value.hull)||(!roadside&&spots.has(value.spot)))continue;
   const finite=(n,lo,hi,fallback)=>Number.isFinite(n)?Math.max(lo,Math.min(hi,n)):fallback;
