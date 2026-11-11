@@ -29,3 +29,39 @@ test('坦克增强开火每发只扣一枚，1.8秒周期且保持真实后坐',
 
 // 晴叶商店正向交易仍走正式库存路由，不只验证拒绝路径。
 test('晴叶能购买高爆与照明，库存重量参与货舱校验',()=>{const g=scene();g.cottage={kind:'ammo',outside:{...g.player}};for(const id of ['he','flare']){const before=g.progress.coins,r=tradeSupply(g,{kind:'ammo',id,target:'vehicle'});assert.ok(r.ok,r.message);assert.equal(g.progress.supplies.vehicles[1][id],SPECIAL_AMMO[id].pack);assert.equal(g.progress.coins,before-SPECIAL_AMMO[id].coins);}});
+
+// 行驶方向独立于炮塔，光圈随车速前移，存档恢复同一弹道。
+test('倒车与斜行按实际速度提前照明，经过发射点外的光圈仍沿用原弹',()=>{
+ const g=scene(),s=g.progress.supplies;
+ g.surfaceNight=1;s.vehicles[1].flare=10;
+ for(const [vx,vy] of [[-150,0],[50,50],[0,-60],[0,90],[40,0]]){
+  Object.assign(g.player,{x:9000,y:9000,vx,vy});s.activeFlare=null;
+  updateVehicleFlares(g,.01);
+  const shot=s.activeFlare;
+  assert.equal(shot.angle,Math.atan2(vy,vx));
+  assert.equal(shot.travel,Math.min(280,85+2*Math.hypot(vx,vy)));
+  updateVehicleFlares(g,6);
+  const light=vehicleFlareLights(g)[0];
+  assert.ok(Math.abs(light.x-shot.x-Math.cos(shot.angle)*shot.travel)<1e-6);
+  assert.ok(Math.abs(light.y-shot.y-Math.sin(shot.angle)*shot.travel)<1e-6);
+  assert.deepEqual(validateProgress(g.progress).supplies.activeFlare,shot);
+  Object.assign(g.player,{x:shot.x+390*Math.cos(shot.angle),y:shot.y+390*Math.sin(shot.angle)});
+  updateVehicleFlares(g,.01);assert.equal(s.activeFlare,shot);
+ }
+});
+
+// 围栏内的整段停留及入营后的到期均不耗弹，离开安全区恢复夜间补发。
+test('主营和五处小营地暂停发射，出营补发',()=>{
+ const g=scene(),s=g.progress.supplies;
+ g.surfaceNight=1;s.vehicles[1].flare=8;
+ for(const p of [{x:390,y:729},...REGIONAL_CAMPS]){
+  Object.assign(g.player,{x:p.x,y:p.y});updateVehicleFlares(g,46);
+  assert.equal(s.activeFlare,null);assert.equal(s.vehicles[1].flare,8);
+ }
+ const camp=REGIONAL_CAMPS[0];
+ Object.assign(g.player,{x:camp.x+450,y:camp.y});updateVehicleFlares(g,.1);
+ assert.equal(s.activeFlare,null);
+ g.player.x++;updateVehicleFlares(g,.1);assert.equal(s.vehicles[1].flare,7);
+ g.player.x=camp.x;updateVehicleFlares(g,46);
+ assert.equal(s.activeFlare,null);assert.equal(s.vehicles[1].flare,7);
+});
