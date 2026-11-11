@@ -1,9 +1,8 @@
 import {seActive} from '../config/vehicle-se.js';
 // 单枚空中照明弹：抛物线升空、慢速下降与落地熄灭，灯光与可见性共用同一时钟。
 import {FLARE_RULES as R} from '../config/vehicle-special-ammo.js';
-import {campBoundary} from './camp-boundary.js';
-import {REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';
-import {worldDistance,canonical,nearest} from './coordinates.js';
+import {insideSurfaceCamp} from './camp-boundary.js';
+import {worldDistance,canonical} from './coordinates.js';
 // 固定正面车体的后甲板朝画面上方，炮塔独立转动；同一筒口用于装置绘制与世界发射。
 export function rearFlareMuzzle(player,hull){
  const compact=hull===5||hull>=11;
@@ -29,15 +28,6 @@ export function vehicleFlareCovers(game,point=game.player){const f=game.progress
  return !!pose&&(worldDistance(point,f)<R.departure||worldDistance(point,pose)<Math.min(R.departure,pose.radius));}
 // 交战射程只在真正亮起的光圈内恢复，余辉暗下去时平滑恢复夜间限制。
 export function vehicleFlareIllumination(game,point=game.player){const p=vehicleFlarePose(game);if(!p)return 0;const d=worldDistance(point,p);return Math.max(0,Math.min(1,(p.radius-d)/Math.max(1,p.radius*.2)))*p.power;}
-// 车辆位于当前地契围栏或地区营地内时暂停发射，边界采用最近的地图镜像。
-function insideFlareCamp(game){
- if(game.mapId!=='forest')return false;
- const contains=region=>{
-  const p=nearest(game.player,{x:(region.left+region.right)/2,y:(region.top+region.bottom)/2});
-  return p.x>=region.left&&p.x<=region.right&&p.y>=region.top&&p.y<=region.bottom;
- };
- return REGIONAL_SETTLEMENTS.some(contains)||campBoundary(game.progress).regions.some(contains);
-}
 // 仅夜间驾驶自有载具消耗，离开范围或本枚完全熄灭后发射下一枚。
 export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  if(game.state!=='playing'||dt<=0)return;const s=game.progress.supplies;if(!s)return;
@@ -63,7 +53,7 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  }
  const angle=moving?Math.atan2(vy,vx):-Math.PI/9;
  const travel=moving?Math.min(R.maxThrowDistance,R.throwDistance+speed*R.leadSeconds):R.throwDistance;
- if(insideFlareCamp(game))return;
+ if(insideSurfaceCamp(game))return;
  stock.flare--;
  s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});
