@@ -5,7 +5,7 @@ import {REGIONAL_CAMPS,regionalParcel} from '../config/regional-camps.js';
 import {regionalCampHere} from '../core/camp/regional-camp-access.js';
 import {regionalCampAction} from '../core/camp/regional-camps.js';
 import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
-import {VEHICLE_SE,SE_INSTALL_LIMIT,seBuild} from '../config/vehicle-se.js';
+import {VEHICLE_SE,seBuild} from '../config/vehicle-se.js';
 import {vehicleBuildReason,configureVehicleBuild} from '../core/vehicles/vehicle-build.js';
 import {mountMainGun,supplyVehicleNearby} from '../core/vehicles/supplies.js';
 import {vehicleRepairQuote} from '../core/vehicles/vehicle-repair.js';
@@ -61,9 +61,8 @@ export function createRegionalCampPanel({game,root,dialogs,onChange}){
    const title=(key===camp.seDevice?'当地特色 SE · ':'随车 SE · ')+device.name;
    const note=device.mass+' kg · '+device.description;
    const action=mounted?'remove':owned?'install':'buy';
-   const full=action==='install'&&build.installed.length>=SE_INSTALL_LIMIT;
-   const label=full?'安装位已满':mounted?'卸下装置':owned?'免费安装':'购买 · '+device.coins+'金币';
-   const heading=row(title,note,[{action:'se-'+action,key,label,disabled:!!reason||full}]).querySelector('h3');
+   const label=mounted?'卸下装置':owned?'免费安装':'购买 · '+device.coins+'金币';
+   const heading=row(title,note,[{action:'se-'+action,key,label,disabled:!!reason}]).querySelector('h3');
    heading.classList.add('se-device-title');heading.insertAdjacentHTML('afterbegin',seDeviceIcon(key));
   }
  }

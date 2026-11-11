@@ -4,7 +4,7 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {vehicleDamage} from '../src/config/vehicles.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {seActive,seBuild,normalizeVehicleSE,seMass} from '../src/config/vehicle-se.js';
+import {VEHICLE_SE,seActive,seBuild,normalizeVehicleSE,seMass} from '../src/config/vehicle-se.js';
 import {configureVehicleSE} from '../src/core/vehicles/vehicle-se.js';
 import {vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {updateVehicleFlares} from '../src/world/vehicle-flares.js';
@@ -386,22 +386,30 @@ test('主动防护只拦截威胁本车的敌弹，每次拦截进入独立冷�
  assert.equal(g.enemyBolts.length,0);assert.equal(build.protectionWait,1.2);
 });
 
-// 五个安装位按车辆独立计数；旧档多出的装置保留所有权及改装等级。
-test('SE安装位满时拒绝第六件，卸下后可换装，旧档保留超额装置',()=>{
- const g=scene();g.cottage={kind:'vehicle'};
- const first=['flare','combat','autopilot','rocket','shield'];
- const b=equip(g,...first);b.disabled=['shield'];
- const before=structuredClone(g.progress);
- assert.equal(configureVehicleSE(g,1,'protection','install').ok,false);
- assert.deepEqual(g.progress,before);
- assert.equal(configureVehicleSE(g,1,'protection','buy').ok,true);
- assert.equal(configureVehicleSE(g,1,'protection','install').ok,false);
- assert.equal(configureVehicleSE(g,1,'shield','remove').ok,true);
- assert.equal(configureVehicleSE(g,1,'protection','install').ok,true);
- const saved=g.progress.vehicleSE[1];saved.installed.push('shield');saved.levels.shield=2;
- const restored=validateProgress(g.progress).vehicleSE[1];
- assert.deepEqual(restored.installed,saved.installed.slice(0,5));
- assert.ok(restored.owned.includes('shield'));assert.equal(restored.levels.shield,2);
+// 通过工坊逐件安装，覆盖超过五件时的交易、读档与拆装。
+test('载重足够时可安装全部 SE，读档保留每件装置的开关和改装等级',()=>{
+ const g=scene(),hull=g.vehicle.index;
+ g.cottage={kind:'vehicle'};
+ const keys=Object.keys(VEHICLE_SE);
+ for(const key of keys){
+  if(seBuild(g.progress,hull).installed.includes(key))continue;
+  const result=configureVehicleSE(g,hull,key,'install');
+  assert.ok(result.ok,result.message);
+ }
+ assert.deepEqual(seBuild(g.progress,hull).installed,keys);
+ const last=keys.at(-1);
+ assert.ok(configureVehicleSE(g,hull,last,'toggle').ok);
+ seBuild(g.progress,hull).levels[last]=2;
+ g.progress=validateProgress(JSON.parse(JSON.stringify(g.progress)));
+ const restored=seBuild(g.progress,hull);
+ assert.deepEqual(restored.installed,keys);
+ assert.deepEqual(restored.disabled,[last]);
+ assert.equal(restored.levels[last],2);
+ const coins=g.progress.coins;
+ assert.ok(configureVehicleSE(g,hull,last,'remove').ok);
+ assert.ok(configureVehicleSE(g,hull,last,'install').ok);
+ assert.equal(g.progress.coins,coins);
+ assert.deepEqual(seBuild(g.progress,hull).installed,keys);
 });
 // 烟幕打断远程前摇；关闭装置后敌人可重新开始瞄准。
 test('随车烟幕阻止锁定和释放，关闭后恢复',async()=>{
