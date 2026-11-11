@@ -25,7 +25,7 @@ export const CAMP_BUILDINGS=Object.entries({cottage:'巡林小屋',weapons:'武�
  {...FARM_SEED_SHOP,id:'seed',name:'种子小屋'},
  {...FARM_DELIVERY,id:'delivery',name:'种子快递站'},
  {...CAMP_DECOR_SHOP,name:'营地装饰店'},
- // 停车场以底边中心为规划锚点，六车位保持原稳定标识。
+ // 停车场以底边中心为规划锚点，原六个车位保持原稳定标识。
  {id:'north',name:'北门停车场',x:NORTH_PARKING.x+NORTH_PARKING.width/2,y:NORTH_PARKING.y+NORTH_PARKING.height,width:NORTH_PARKING.width,height:NORTH_PARKING.height,parking:true}]);
 // 原坐标单独保存，运行设施迁移不会反过来改变默认规划。
 export function normalizeCampLayout(raw){const positions={};for(const b of CAMP_BUILDINGS){const p=raw?.positions?.[b.id];if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.abs(p.x)<23500&&Math.abs(p.y)<23500)positions[b.id]={x:Math.round(p.x/CAMP_LAYOUT_GRID)*CAMP_LAYOUT_GRID,y:Math.round(p.y/CAMP_LAYOUT_GRID)*CAMP_LAYOUT_GRID};}const gates={};for(const [id,value] of Object.entries(raw?.gates||{}))if(/^(top|bottom|left|right):-?\d+(\.\d+)?:-?\d+(\.\d+)?$/.test(id)&&Number.isFinite(value))gates[id]=Math.max(0,Math.min(1,value));return {version:1,positions,gates};}

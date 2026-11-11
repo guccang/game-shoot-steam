@@ -7,7 +7,7 @@ import {WEAPONS} from '../../config/weapons.js';
 import {VEHICLE_WEAPONS,nativeVehicleWeapon} from '../../config/vehicle-armaments.js';
 import {storeDebugWeaponOverflow} from '../inventory/debug-storage.js';
 import {parkNewVehicle} from '../vehicles/camp-parking.js';
-import {PARKING_SPOTS} from '../../config/parking.js';
+import {parkingSpotsFor} from '../../config/parking.js';
 import {parkingRecordOccupies} from '../vehicles/roadside-parking.js';
 import {TREASURE_SITES} from '../../config/treasure.js';
 import { RESOURCE_CAP } from '../../config/resource-limits.js';
@@ -80,7 +80,7 @@ function grantDebugVehicles(next,previous,game){
   if(next.vehicleService[i]?.phase||i===4&&next.fireDispatch.garage?.parked)continue;
   if(!parkNewVehicle(next,i)){
    // 批量领取超过北场容量时使用其余真实泊位，禁止多辆车叠在同一位置。
-   const spot=PARKING_SPOTS.find(s=>!next.campParking.owned.some(r=>parkingRecordOccupies(r,s)));
+   const spot=parkingSpotsFor(next).find(s=>!Object.values(next.campParking.preferred||{}).includes(s.id)&&!next.campParking.owned.some(r=>parkingRecordOccupies(r,s)));
    if(spot)next.campParking.owned.push({hull:i,spot:spot.id,hp:1,ammo:0,reload:0,wheel:0,track:0});
   }
  }

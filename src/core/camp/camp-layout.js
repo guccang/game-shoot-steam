@@ -38,6 +38,7 @@ export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.fin
  if(game.progress.farm?.plots?.some?.(plot=>{if(plot.mapId&&plot.mapId!=='forest')return false;const p=nearest(plot,b);return p.x>=left-20&&p.x<=right+20&&p.y>=top-20&&p.y<=bottom+20;}))return '请避开已有农田。';
  const player=game.player&&nearest(game.player,b);if(player&&player.x>=left&&player.x<=right&&player.y>=top&&player.y<=bottom)return '请先离开计划放置建筑的位置。';
  if((game.progress.campParking?.owned||[]).some(v=>{const p=nearest(v,b);return v.spot==null&&v.mapId==='forest'&&p.x>=left-30&&p.x<=right+30&&p.y>=top-30&&p.y<=bottom+30;}))return '这里停着载具，请先移走。';
+ if(PARKING_SPOTS.some(s=>s.building==='annex'&&left<s.x+50&&right>s.x-50&&top<s.approachY+20&&bottom>s.y-48))return '请保留公共停车位及进出车道。';
  for(const fixed of campFixedFacilities(game.progress)){const p=nearest(fixed,b),overlap=fixed.publicTable?(b.parking||sign?left<p.x+fixed.width/2&&right>p.x-fixed.width/2&&top<p.y+5&&bottom>p.y-19:b.x-b.width/2<p.x+fixed.width/2&&b.x+b.width/2>p.x-fixed.width/2&&b.y-b.height<p.y+5&&b.y>p.y-19):fixed.rects.some(([l,t,r,bt])=>left<fixed.x+r+20&&right>fixed.x+l-20&&top<fixed.y+bt+20&&bottom>fixed.y+t-20);if(overlap)return '请避开'+fixed.name+'（公共设施）。';}
  }
  const aliases={'vehicle':'garage','cat-home':'catHome','warehouse-depot':'warehouseDepot'};

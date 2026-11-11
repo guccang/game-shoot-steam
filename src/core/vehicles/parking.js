@@ -19,7 +19,7 @@ export function parkingAvailable(game){
 export function nearestParkingSpot(game){
  const p=game.player;
  return PARKING_SPOTS.map(s=>({s,at:nearest(s,p),front:nearest({x:s.x,y:s.approachY},p)}))
-  .filter(({s,at,front})=>!parkingOccupied(game,s.id)&&Math.abs(p.x-at.x)<C.radius&&p.y>=at.y-10&&p.y<=front.y+C.approachMargin)
+  .filter(({s,at,front})=>!parkingOccupied(game,s.id)&&!Object.entries(game.progress.campParking?.preferred||{}).some(([h,id])=>id===s.id&&Number(h)!==game.vehicle.index)&&Math.abs(p.x-at.x)<C.radius&&p.y>=at.y-10&&p.y<=front.y+C.approachMargin)
   .filter(()=>pathDistance(p.x,p.y)>C.roadClearance)
   .sort((a,b)=>worldDistance(p,a.front)-worldDistance(p,b.front))[0]?.s||null;
 }

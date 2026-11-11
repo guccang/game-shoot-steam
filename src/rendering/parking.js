@@ -10,7 +10,7 @@ import {parkingInteractionAnchor,nearbyInteractionAnchor} from '../world/interac
 // 露天车位使用浅土色地坪和开口标线，不占房门及道路；室内位沿用原车库地坪。
 export function drawParkingGround(c,game,view,night=0){
  if(game.mapId!=='forest'||game.realm||game.story)return;
- // 公共停车场以一块浅土色地面和共用过道组织六个泊位，北门主通道保持开放。
+ // 公共停车场以一块浅土色地面和共用过道组织原场泊位，北门主通道保持开放。
  const lot=nearest(NORTH_PARKING,game.player),shiftX=lot.x-NORTH_PARKING.x,shiftY=lot.y-NORTH_PARKING.y;
  // 包围范围包含通道曲线、描边和牌子；完全屏外时不提交停车场图元。
  if(lot.x-30<=view.x+view.w&&lot.x+560>=view.x&&lot.y-30<=view.y+view.h&&lot.y+NORTH_PARKING.height+30>=view.y){
@@ -29,7 +29,7 @@ export function drawParkingGround(c,game,view,night=0){
   c.strokeStyle=night?'#c8d4a5':'#f4e8ba';c.lineWidth=2.8;c.lineCap='round';
   c.beginPath();c.moveTo(-43,29);c.lineTo(-43,-37);c.quadraticCurveTo(-43,-42,-38,-42);c.lineTo(38,-42);c.quadraticCurveTo(43,-42,43,-37);c.lineTo(43,29);c.stroke();
   for(const x of [-26,18]){box(c,x+2,-34,14,7,2,'#38543d30');box(c,x,-36,14,6,2,'#b7bea0','#71856c',1);}
-  c.fillStyle=night?'#bfcd9c':'#7b956a';c.font='bold 14px sans-serif';c.textAlign='center';c.fillText('停',0,16);
+  c.fillStyle=night?'#bfcd9c':'#7b956a';c.font='bold 14px sans-serif';c.textAlign='center';c.fillText(spot.number?String(spot.number):'停',0,16);
   c.restore();
  }
 }
