@@ -15,9 +15,10 @@ export function vehicleFlarePose(game){
  const f=game.progress?.supplies?.activeFlare;if(!f||f.life<=0||f.mapId!==game.mapId||game.cottage||game.realm||game.story)return null;
  const age=Math.max(0,R.duration-f.life),up=Math.min(1,age/R.rise),fall=Math.max(0,Math.min(1,(age-R.rise)/(R.landing-R.rise))),fade=1-smooth((age-R.landing)/(R.duration-R.landing));
  const height=age<R.rise?R.height*(2*up-up*up):R.height*(1-fall),spread=age<R.rise?1-(1-up)**2:Math.pow(1-fall,.55);
- // 移动中的弹先快速飞向前路，再在升空顶点减速展开。
+ // 水平飞行独立于升空扩光；按发射速度前移，达到投射距离后随下降轻微漂移。
  const travel=f.travel??R.throwDistance;
- const distance=travel*(travel>R.throwDistance?1-(1-up)**3:up)+18*fall;
+ const forward=f.flightSpeed===undefined?travel*(travel>R.throwDistance?1-(1-up)**3:up):Math.min(travel,f.flightSpeed*age);
+ const distance=forward+18*fall;
  const point=canonical({x:f.x+Math.cos(f.angle)*distance,y:f.y+Math.sin(f.angle)*distance});
  return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.landing?'descent':'fade',radius:(24+(R.radius*(1+.15*(f.level||0))-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
 }
@@ -54,7 +55,10 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  const angle=moving?Math.atan2(vy,vx):-Math.PI/9;
  const travel=moving?Math.min(R.maxThrowDistance,R.throwDistance+speed*R.leadSeconds):R.throwDistance;
  if(insideSurfaceCamp(game))return;
+ // 弹道朝向取驾驶指令，初速取车身实速，避免起步或转向时按满速将光区甩远。
+ const actualSpeed=Math.hypot(game.player.vx||0,game.player.vy||0);
+ const flightSpeed=moving?Math.max(1,actualSpeed)*1.18:R.throwDistance/R.rise;
  stock.flare--;
- s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
+ s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,flightSpeed,level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});
 }

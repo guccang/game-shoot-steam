@@ -40,11 +40,14 @@ test('倒车与斜行按实际速度提前照明，经过发射点外的光圈�
   const shot=s.activeFlare;
   assert.equal(shot.angle,Math.atan2(vy,vx));
   assert.equal(shot.travel,Math.min(FLARE_RULES.maxThrowDistance,85+FLARE_RULES.leadSeconds*Math.hypot(vx,vy)));
+  assert.equal(shot.flightSpeed,Math.hypot(vx,vy)*1.18);
   updateVehicleFlares(g,FLARE_RULES.rise);
   const light=vehicleFlareLights(g)[0];
-  assert.ok(Math.abs(light.x-shot.x-Math.cos(shot.angle)*shot.travel)<1e-6);
-  assert.ok(Math.abs(light.y-shot.y-Math.sin(shot.angle)*shot.travel)<1e-6);
+  const flown=Math.min(shot.travel,shot.flightSpeed*FLARE_RULES.rise);
+  assert.ok(Math.abs(light.x-shot.x-Math.cos(shot.angle)*flown)<1e-6);
+  assert.ok(Math.abs(light.y-shot.y-Math.sin(shot.angle)*flown)<1e-6);
   assert.deepEqual(validateProgress(g.progress).supplies.activeFlare,shot);
+  updateVehicleFlares(g,shot.travel/shot.flightSpeed);
   Object.assign(g.player,{x:shot.x+390*Math.cos(shot.angle),y:shot.y+390*Math.sin(shot.angle)});
   updateVehicleFlares(g,.01);assert.equal(s.activeFlare,shot);
  }
@@ -79,7 +82,10 @@ test('自动驾驶起步按前进指令迅速扩光，车头接近暗区时提�
   updateVehicleFlares(g,1/60,input,speed);
  }
  const light=vehicleFlareLights(g)[0];
- assert.ok(light.y<g.player.y-100);
+ // 起步时方向与残余惯性相反，半秒后的前路已被照亮，弹体没有按目标巡航速度窜出。
+ assert.equal(first.flightSpeed,10*1.18);
+ assert.ok(Math.abs(light.y-first.y+first.flightSpeed*.5)<1e-5);
+ assert.ok(Math.hypot(light.x-g.player.x,light.y-(g.player.y-100))<light.radius*.8);
  assert.ok(light.radius>200&&light.power>.65);
  assert.equal(s.activeFlare,first);
  for(let i=0;i<300&&s.activeFlare===first;i++){
