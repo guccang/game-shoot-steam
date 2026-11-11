@@ -63,6 +63,8 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  if(s.activeFlare){s.activeFlare.life-=dt;if(s.activeFlare.life<=0)s.activeFlare=null;}
  if(!seActive(game,'flare')||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage)return;
  const stock=s.vehicles[game.vehicle.index];if(!(stock?.flare>0))return;
+ const combat=fightingNearVehicle(game),build=seBuild(game.progress,game.vehicle.index);
+ if(build.flareAuto?.[combat?'combat':'travel']===false)return;
  // 优先使用这一帧的驾驶指令，自动导航起步和转向时也能提前照向新路段。
  const inputLength=Math.hypot(input?.x||0,input?.y||0);
  const steering=inputLength>.01&&driveSpeed>0;
@@ -70,7 +72,7 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  const vy=steering?driveSpeed*input.y/Math.max(1,inputLength):game.player.vy||0;
  const speed=Math.hypot(vx,vy);
  const moving=Number.isFinite(speed)&&speed>1;
- const combat=fightingNearVehicle(game);
+
  for(const flare of [s.activeFlare,...(s.previousFlares||[])]){
   const pose=vehicleFlarePose(game,flare);if(!pose)continue;
   if(combat){
@@ -92,6 +94,6 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  const flightSpeed=moving?Math.max(1,actualSpeed)*1.18:R.throwDistance/R.rise;
  if(s.activeFlare)(s.previousFlares??=[]).push(s.activeFlare);
  stock.flare--;
- s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index,seBuild(game.progress,game.vehicle.index).installed)),angle,travel,flightSpeed,...(combat?{combat:true}:{}),level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
+ s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index,build.installed)),angle,travel,flightSpeed,...(combat?{combat:true}:{}),level:seLevel(build,'flare'),life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});
 }

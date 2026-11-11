@@ -30,7 +30,8 @@ export function normalizeVehicleSE(raw,count){
   const levels=Object.fromEntries(owned.map(key=>[key,Math.floor(clamp(build.levels?.[key],SE_MAX_UPGRADE))]));
   // 引入改装等级前的护盾上限为180，迁移时保留剩余能量比例。
   const shield=build.levels?clamp(build.shield,seShieldMax({levels})):Math.round(clamp(build.shield,180)*500/180);
-  return {owned,installed,levels,disabled:ids(build.disabled).filter(key=>installed.includes(key)),shield,
+  const flareAuto={combat:build.flareAuto?.combat!==false,travel:build.flareAuto?.travel!==false};
+  return {owned,installed,levels,flareAuto,disabled:ids(build.disabled).filter(key=>installed.includes(key)),shield,
    protectionWait:clamp(build.protectionWait,2),shieldWait:clamp(build.shieldWait,8),rocketWait:clamp(build.rocketWait,8),radius:[150,250,400].includes(build.radius)?build.radius:250};
  });
 }

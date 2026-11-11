@@ -81,7 +81,16 @@ export function createFieldEquipment({game,root,dialogs,onChange,mountCargo,onOu
   heading?.focus({preventScroll:true});heading?.scrollIntoView({block:'start'});
  });
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
- scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.vehicleTab){vehicleTab=b.dataset.vehicleTab;message='';render();get('body').scrollTop=0;return;}if(b.dataset.seAction){const r=configureVehicleSE(game,game.vehicle.index,b.dataset.seKey,b.dataset.seAction,Number(b.dataset.seRadius));message=r.message;render();if(b.dataset.seRadius)panel.querySelector('[data-se-radius="'+b.dataset.seRadius+'"]')?.focus({preventScroll:true});onChange();return;}if(b.hasAttribute('data-field-weapon')){
+ scope.on(panel,'click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.vehicleTab){vehicleTab=b.dataset.vehicleTab;message='';render();get('body').scrollTop=0;return;}
+  if(b.dataset.seAction){
+   const {seKey,seAction,flareMode,seRadius}=b.dataset;
+   const result=configureVehicleSE(game,game.vehicle.index,seKey,seAction,flareMode??Number(seRadius));
+   message=result.message;render();
+   const selector=flareMode?'[data-flare-mode="'+flareMode+'"]':seRadius?'[data-se-radius="'+seRadius+'"]':null;
+   if(selector)panel.querySelector(selector)?.focus({preventScroll:true});
+   onChange();return;
+  }
+  if(b.hasAttribute('data-field-weapon')){
   const index=Number(b.dataset.fieldWeapon);
   if(mode!=='weapons'||index===game.progress.weapon)return;
   if(!game.transact('weapons',index,'equip')){get('message').textContent='当前无法装备这把武器。';return;}

@@ -6,6 +6,7 @@ import {REGIONAL_CAMPS,regionalNpc} from '../src/config/regional-camps.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
 import {SPECIAL_AMMO,FLARE_RULES} from '../src/config/vehicle-special-ammo.js';
 import {regionalCampAction} from '../src/core/camp/regional-camps.js';
+import {configureVehicleSE} from '../src/core/vehicles/vehicle-se.js';
 import {configureSpecialAmmo,tradeSupply} from '../src/core/vehicles/supplies.js';
 import {enhancedVehicleShot,detonateSpecialAmmo,updateSpecialAmmo} from '../src/combat/vehicle-special-ammo.js';
 import {updateVehicleFlares,vehicleFlareLights,vehicleFlareIllumination} from '../src/world/vehicle-flares.js';
@@ -23,6 +24,37 @@ test('六种弹真实命中、持续伤害和一次触发，区域数量有上�
 test('真实炮弹携带增强效果，穿透不重复爆破',()=>{const g=scene();g.enemies=[enemy(g,1,120),enemy(g,2,180)];fireBallistics(g,{...VEHICLE_WEAPONS[18],specialAmmo:'frost'},g.player,{x:1,y:0},230,false,true);for(let i=0;i<30;i++)updateBallistics(g,.02);assert.ok(g.enemies.every(e=>e.hp<10000&&e.chill>0));assert.equal(g.specialAmmoZones.length,1);});
 test('照明仅夜间驾驶触发，单枚空中光源不重复扣弹，过期/走远补发',()=>{const g=scene(),s=g.progress.supplies;s.vehicles[1].flare=8;g.surfaceNight=0;updateVehicleFlares(g,1);assert.equal(s.vehicles[1].flare,8);g.surfaceNight=1;updateVehicleFlares(g,.1);assert.equal(s.vehicles[1].flare,7);assert.equal(vehicleFlareLights(g).length,1);updateVehicleFlares(g,FLARE_RULES.rise);assert.equal(surfaceAttackRange(g,560),560);assert.equal(surfaceTargetVisible(g,enemy(g,2,225)),true);assert.equal(surfaceTargetVisible(g,enemy(g,3,400)),false);updateVehicleFlares(g,10);assert.equal(s.vehicles[1].flare,7);g.progress=validateProgress(g.progress);updateVehicleFlares(g,1);assert.equal(g.progress.supplies.vehicles[1].flare,7);updateVehicleFlares(g,FLARE_RULES.duration-FLARE_RULES.rise-11+.01);assert.equal(g.progress.supplies.vehicles[1].flare,6);g.player.y+=700;updateVehicleFlares(g,.1);assert.equal(g.progress.supplies.vehicles[1].flare,5);g.progress.vehicleSE[1].disabled.push('flare');g.player.y+=700;updateVehicleFlares(g,46);assert.equal(g.progress.supplies.vehicles[1].flare,5);assert.equal(vehicleFlareLights(g).length,0);});
 test('暂停、下车、白天与空库存不自动发射，坦克基础威力提升',()=>{const g=scene();g.surfaceNight=1;g.progress.supplies.vehicles[1].flare=2;g.state='paused';updateVehicleFlares(g,50);assert.equal(g.progress.supplies.vehicles[1].flare,2);g.state='playing';g.vehicle.active=false;updateVehicleFlares(g,1);assert.equal(g.progress.supplies.vehicles[1].flare,2);g.vehicle.active=true;g.progress.supplies.vehicles[1].flare=0;updateVehicleFlares(g,1);assert.equal(vehicleFlareLights(g).length,0);assert.equal(VEHICLE_WEAPONS[18].damage,230);assert.equal(VEHICLE_WEAPONS[18].reloadTime,1.8);assert.equal(VEHICLE_WEAPONS[18].blastRadius,90);});
+
+// 切换两种释放条件并跨过遇敌、脱战和读档，按实际消耗核对随车偏好。
+test('照明器可分别设置战斗与非战斗释放，已发射的弹继续计时',()=>{
+ const g=scene(),h=g.vehicle.index;
+ delete g.progress.vehicleSE[h].flareAuto;
+ g.progress=validateProgress(g.progress);
+ assert.deepEqual(g.progress.vehicleSE[h].flareAuto,{combat:true,travel:true});
+ g.surfaceNight=1;g.progress.supplies.vehicles[h].flare=5;
+ assert.ok(configureVehicleSE(g,h,'flare','flare-auto','travel').ok);
+ g.progress=validateProgress(structuredClone(g.progress));
+ updateVehicleFlares(g,1);
+ assert.equal(g.progress.supplies.activeFlare,null);
+ g.enemies=[enemy(g,1)];
+ updateVehicleFlares(g,1);
+ assert.equal(g.progress.supplies.activeFlare.combat,true);
+ g.enemies=[];updateVehicleFlares(g,1);
+ assert.equal(g.progress.supplies.activeFlare.life,44);
+ updateVehicleFlares(g,44);
+ assert.equal(g.progress.supplies.activeFlare,null);
+ assert.equal(g.progress.supplies.vehicles[h].flare,4);
+ assert.ok(configureVehicleSE(g,h,'flare','flare-auto','combat').ok);
+ assert.ok(configureVehicleSE(g,h,'flare','flare-auto','travel').ok);
+ g.boss=enemy(g,2);updateVehicleFlares(g,1);
+ assert.equal(g.progress.supplies.activeFlare,null);
+ g.boss=null;updateVehicleFlares(g,1);
+ assert.ok(g.progress.supplies.activeFlare);
+ assert.equal(g.progress.supplies.vehicles[h].flare,3);
+ g.livingPersist=()=>false;
+ assert.equal(configureVehicleSE(g,h,'flare','flare-auto','combat').ok,false);
+ assert.deepEqual(g.progress.vehicleSE[h].flareAuto,{combat:false,travel:true});
+});
 
 // 固定与变步长验证实际车炮周期和后坐，使用当前有限弹药夹具。
 test('坦克增强开火每发只扣一枚，1.8秒周期且保持真实后坐',async()=>{const {updateVehicle}=await import('../src/combat/vehicle.js');for(const steps of [[.01],[.017,.024,.013]]){const g=scene();g.enemies=[enemy(g,1,200)];g.progress.supplies.vehicles[1].shell=20;g.progress.supplies.vehicles[1].he=10;g.progress.supplies.selectedSpecial[1]='he';g.vehicle.module.magazine={ammo:1,remaining:0};let elapsed=0;const times=[];g.onEvent=(name)=>{if(name==='shot')times.push(elapsed);};for(let i=0;elapsed<8;i++){const dt=steps[i%steps.length];elapsed+=dt;updateVehicle(g,dt);}assert.equal(times.length,5);assert.equal(g.progress.supplies.vehicles[1].he,5);assert.ok(g.projectiles.every(b=>b.specialAmmo==='he'));for(let i=1;i<times.length;i++)assert.ok(Math.abs(times[i]-times[i-1]-1.8)<.05);assert.ok(Number.isFinite(g.vehicle.recoil.tankAge));}});
