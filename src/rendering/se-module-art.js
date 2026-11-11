@@ -14,6 +14,10 @@ const modules={
   ['M-6 -7 L-4 -9 H-2 L0 -7 V1 H-6 Z','#b18068'],
   ['M0 -7 L2 -9 H4 L6 -7 V1 H0 Z','#b18068'],
   ['M-5 -6 Q-3 -9 -1 -6 Q-3 -3 -5 -6 Z M1 -6 Q3 -9 5 -6 Q3 -3 1 -6 Z',lens]]],
+ protection:['#ffe19a',[
+  ['M-6 -6 L0 -10 L6 -6 L0 -2 Z','#719786'],
+  ['M-4 -6 L0 -8 L4 -6 L0 -4 Z',lens],
+  ['M0 -2 V1',null,rim]]],
  shield:['#82dccc',[
   ['M0 -11 L5 -6 L4 0 L0 3 L-4 0 L-5 -6 Z',lens],
   ['M0 -9 V1 L-4 -5 Z','#cae5d6']]],

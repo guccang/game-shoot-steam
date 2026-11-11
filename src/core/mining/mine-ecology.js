@@ -1,3 +1,4 @@
+import {advanceProtection,interceptThreat} from '../../combat/active-protection.js';
 import {advanceMineSpecial} from '../../combat/mine-specials.js';
 import {specialMineKind} from '../../config/mine-specials.js';
 import {advanceMineDumplingMotion} from '../../combat/mine-dumpling-motion.js';
@@ -59,10 +60,13 @@ function hurtExplorer(game,damage){
 }
 // 独立投射物与真实岩壁碰撞，孢子蓄力后瞄准固定位置，玩家可以走位躲避。
 function advanceBolts(game,dt){
+ advanceProtection(game,dt);
  const room=game.cottage;room.bolts??=[];
  room.bolts=room.bolts.filter(b=>{
   if(b.blast){b.delay-=dt;b.life-=dt;if(b.delay<=0&&!b.fired){b.fired=true;if(Math.hypot(b.x-game.player.x,b.y-game.player.y)<b.radius+(game.vehicle.active?26:10)&&mineLineClear(game,b,game.player))hurtExplorer(game,b.damage);}return b.life>0;}
-  const next={x:b.x+b.vx*dt,y:b.y+b.vy*dt};b.life-=dt;if(b.life<=0||!mineLineClear(game,b,next))return false;Object.assign(b,next);
+  const next={x:b.x+b.vx*dt,y:b.y+b.vy*dt};b.life-=dt;if(b.life<=0||!mineLineClear(game,b,next))return false;
+  if(b.enemy&&interceptThreat(game,b,next,{x:next.x+b.vx*b.life,y:next.y+b.vy*b.life},{bodyRadius:32}))return false;
+  Object.assign(b,next);
   if(b.enemy){if(Math.hypot(b.x-game.player.x,b.y-game.player.y)<(game.vehicle.active?32:15)){hurtExplorer(game,b.damage);return false;}}
   else{const a=Object.values(currentMineLayer(game).animals).find(a=>a.hp>0&&Math.hypot(b.x-a.x,b.y-a.y)<(a.kind==='coreking'?32:20));if(a){hitMineAnimal(game,a,b.damage,{statisticsSource:b.statisticsSource});return false;}const rock=mineRockTargets(game).find(t=>t.hp>0&&Math.hypot(b.x-t.x,b.y-t.y)<24);if(rock){hitMineRock(game,rock,b.damage);return false;}}return true;});
 }

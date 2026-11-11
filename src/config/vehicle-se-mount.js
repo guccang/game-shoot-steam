@@ -1,6 +1,6 @@
 // 车尾外置挂架沿屏幕横轴布置，炮塔转向不会改变装置挂点。
 import {vehicleFenceFootprint} from './vehicle-fence-footprint.js';
-const order=['rocket','combat','shield','autopilot','flare'];
+const order=['rocket','protection','combat','shield','autopilot','flare'];
 // 按底盘宽度收紧小型载具的槽距，保持每个已安装模块都有独立位置。
 export function rearSEMount(player,hull,installed,key){
  const footprint=vehicleFenceFootprint({active:true,index:hull});

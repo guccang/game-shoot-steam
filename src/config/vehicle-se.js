@@ -4,11 +4,12 @@ export const VEHICLE_SE={
  autopilot:{name:'自动驾驶仪',mass:160,coins:1800,description:'沿任务或地图选定目标自动寻路；手动移动立即接管。'},
  combat:{name:'战术巡战仪',mass:240,coins:2600,description:'在指定圆圈内接敌、避弹，手动走位时持续战斗，主炮沿用真实弹药与装填。'},
  rocket:{name:'蜂巢火箭架',mass:475,coins:3200,description:'发现射程内敌人自动发射双联火箭，每枚直击伤害为当前主炮伤害的3倍，消耗2枚重炮弹，冷却8秒。'},
+ protection:{name:'主动防护系统',mass:280,coins:2800,description:'自动拦截飞向载具的敌方弹丸，基础冷却2秒，每次拦截一枚，无需弹药。'},
  shield:{name:'脉冲防护罩',mass:375,coins:3000,description:'基础容量500点，吸收来袭伤害，受击后等待8秒，再以每秒18点恢复；卸装不重置能量。'},
 };
 // 每辆车独立保存装置改装次数，基础型为零级，最高三级。
 export const SE_MAX_UPGRADE=3;
-export const SE_UPGRADE_EFFECTS={shield:'护盾容量 +150 HP',autopilot:'自动巡航速度 +10%',combat:'来弹预判时间 +0.15 秒',rocket:'齐射冷却 −1 秒',flare:'最大光照半径 +15%'};
+export const SE_UPGRADE_EFFECTS={protection:'拦截冷却 −0.4 秒',shield:'护盾容量 +150 HP',autopilot:'自动巡航速度 +10%',combat:'来弹预判时间 +0.15 秒',rocket:'齐射冷却 −1 秒',flare:'最大光照半径 +15%'};
 // 费用随装置原价和目标改装等级递增。
 export function seUpgradeCost(key,level){return Math.ceil(VEHICLE_SE[key].coins*(level+1)/2);}
 // 旧档或尚未改装的装置采用基础性能。
@@ -28,7 +29,7 @@ export function normalizeVehicleSE(raw,count){
   // 引入改装等级前的护盾上限为180，迁移时保留剩余能量比例。
   const shield=build.levels?clamp(build.shield,seShieldMax({levels})):Math.round(clamp(build.shield,180)*500/180);
   return {owned,installed,levels,disabled:ids(build.disabled).filter(key=>installed.includes(key)),shield,
-   shieldWait:clamp(build.shieldWait,8),rocketWait:clamp(build.rocketWait,8),radius:[150,250,400].includes(build.radius)?build.radius:250};
+   protectionWait:clamp(build.protectionWait,2),shieldWait:clamp(build.shieldWait,8),rocketWait:clamp(build.rocketWait,8),radius:[150,250,400].includes(build.radius)?build.radius:250};
  });
 }
 // 装置关闭仍占重量；只有拆卸回工坊才减重。

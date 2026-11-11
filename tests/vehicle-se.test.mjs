@@ -9,6 +9,7 @@ import {configureVehicleSE} from '../src/core/vehicles/vehicle-se.js';
 import {vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {updateVehicleFlares} from '../src/world/vehicle-flares.js';
 import {startSEControl,updateSEControl,updateSEDevices,absorbSEShield,seTargetAllowed} from '../src/combat/vehicle-se.js';
+import {updateEnemyBolts} from '../src/combat/ranged-enemies.js';
 import {updateBallistics} from '../src/combat/ballistics.js';
 import {requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
 import {waystationMovementReason} from '../src/core/navigation/waystations.js';
@@ -34,7 +35,7 @@ test('五营地分别出售特色SE，购买仅入库，已购件可在异地按
  const hull=0;
  g.progress.vehicleHulls[hull]=1;
  assert.deepEqual(Object.fromEntries(Object.entries(VEHICLE_SE).map(([id,d])=>[id,d.mass])),{
-  flare:90,autopilot:160,combat:240,rocket:475,shield:375
+  flare:90,autopilot:160,combat:240,rocket:475,protection:280,shield:375
  });
  assert.equal(seMass(validateProgress(g.progress),1),90);
  assert.equal(new Set(REGIONAL_CAMPS.map(c=>c.seDevice)).size,5);
@@ -364,4 +365,21 @@ test('蜂巢每枚火箭造成当前主炮三倍直击伤害',()=>{
   g.vehicle.weaponIndex=null;build.rocketWait=0;updateSEDevices(g,.1);
   assert.equal(stock.heavy,2);assert.equal(build.rocketWait,0);assert.equal(g.projectiles.length,2);
  }
+});
+
+// 在正式弹道更新中检查侧向掠过、迎面齐射、装置开关与溅射拦截。
+test('主动防护只拦截威胁本车的敌弹，每次拦截进入独立冷却',()=>{
+ const g=scene(),build=equip(g,'protection'),p=g.player;
+ g.enemies=[enemy(g,17)];
+ // 从右侧发射测试弹，纵向偏移决定弹道是否经过玩家。
+ function bolt(offset,splash=0){return {owner:17,x:p.x+130,y:p.y+offset,dx:-1,dy:0,speed:200,radius:3,damage:20,age:0,remaining:130,splash};}
+ const miss=bolt(60),second=bolt(0);g.enemyBolts=[miss,bolt(0),second];
+ updateEnemyBolts(g,.1,p);
+ assert.deepEqual(g.enemyBolts,[miss,second]);assert.equal(build.protectionWait,2);
+ assert.equal(validateProgress(g.progress).vehicleSE[1].protectionWait,2);
+ g.enemyBolts=[];updateEnemyBolts(g,2,p);assert.equal(build.protectionWait,0);
+ const shell=bolt(40,60);g.enemyBolts=[shell];build.disabled.push('protection');
+ updateEnemyBolts(g,.1,p);assert.equal(g.enemyBolts.length,1);
+ build.disabled=[];build.levels.protection=2;updateEnemyBolts(g,.1,p);
+ assert.equal(g.enemyBolts.length,0);assert.equal(build.protectionWait,1.2);
 });

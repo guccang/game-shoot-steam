@@ -1,3 +1,4 @@
+import {advanceProtection,interceptThreat} from './active-protection.js';
 import {biomeBoltStep} from './biome-bolt-motion.js';
 import {campBarricadeTarget,hurtCampBarricade} from '../core/camp/camp-defense.js';
 import {surfaceTargetVisible,surfaceAttackRange} from '../world/surface-vision.js';
@@ -68,6 +69,7 @@ export function updateRangedAttack(game, enemy, victim, dt) {
 // 相对扫掠保留玩家/伙伴本帧移动，树干优先遮挡；一颗弹只命中一个对象。
 export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
   if (game.state !== 'playing' || dt <= 0) return;
+  advanceProtection(game,dt);
   game.rangedShotTimer = Math.max(0, game.rangedShotTimer - dt);
   // 领主刚入场时立即收紧普通弹量，旧弹不能越过本阶段预算。
   if (game.boss && game.enemyBolts.length > 1) game.enemyBolts.length = 1;
@@ -94,6 +96,8 @@ export function updateEnemyBolts(game, dt, previousPlayer, companions = []) {
         { x: to.x - p.x, y: to.y - p.y }, { x: 0, y: 0 }, b.radius + (target.node.radius || 12));
       if (t !== null && t < fraction) { fraction = t; hit = target; }
     }
+    const end={x:to.x+b.dx*(b.remaining-travel),y:to.y+b.dy*(b.remaining-travel)};
+    if(interceptThreat(game,from,to,end,{previous:previousPlayer,radius:b.radius,splash:b.splash,limit:fraction})){b.remaining=0;continue;}
     b.x = to.x; b.y = to.y; b.age += dt; b.remaining -= travel;
     if (hit) {
       b.remaining = 0;

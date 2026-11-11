@@ -1,3 +1,4 @@
+import {interceptThreat} from './active-protection.js';
 import {traceEnergyShield,energyShieldMeleeTarget} from './energy-shield-surface.js';
 import {bossCombatActive,updateBossEngagement} from '../core/battle/boss-engagement.js';
 import {advanceDumplingMotion} from './dumpling-motion.js';
@@ -248,6 +249,7 @@ export function updateBossHazards(game, dt, previousPlayer = game.player) {
       const from = { x: h.x + h.dx * Math.min(h.length,h.speed*prev), y: h.y + h.dy * Math.min(h.length,h.speed*prev) };
       const to = { x: h.x + h.dx * Math.min(h.length,h.speed*active), y: h.y + h.dy * Math.min(h.length,h.speed*active) };
       if(livingBoltBlocked(game,{...from,vx:to.x-from.x,vy:to.y-from.y},1)){h.expired=true;continue;}
+      if(target===game.player&&!h.hit&&interceptThreat(game,from,to,{x:h.x+h.dx*h.length,y:h.y+h.dy*h.length},{previous:previousPlayer,radius:h.radius})){h.expired=true;continue;}
       breakTreesAlong(game, from, to, h.radius);
       const shield=target===game.player?traceEnergyShield(game,from,to,previousPlayer,h.radius):null;
       touches=!!shield||bossSweep(from,to,previousPlayer,target,h.radius);
