@@ -83,3 +83,21 @@ export function campPlots(progress=activeLand){const additions=progress?.campLan
 export function campArea(progress){const built=Object.values(progress?.campLand?.sites||{}).reduce((n,s)=>n+s.width*s.height/100,0);return built+campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)).reduce((n,p)=>n+(p.right-p.left)*(p.bottom-p.top),0)/100;}
 // 新增区域作为平整营地地面，查询带余量用于清理树冠，不改变原区域内容。
 export function campExpansionPoint(point,progress=activeLand,margin=0){if(!progress)return false;if(builtSiteAt(progress,point))return true;return campPlots(progress).some(r=>{if(r.id.startsWith('expansion-')){const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top+r.bottom)/2});return p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<=r.bottom+margin;}if(r.top>=-58)return false;const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top-58)/2});return p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<-58;});}
+
+// 按地契边界切成纵条，逐条确认完整占地都在已解锁营地内，允许跨相邻地块。
+export function insideCampLand(progress,left,top,right,bottom){
+ const origin=nearest({x:left,y:top},{x:0,y:0});
+ right=origin.x+right-left;bottom=origin.y+bottom-top;left=origin.x;top=origin.y;
+ const plots=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)&&p.right>left&&p.left<=right&&p.bottom>top&&p.top<=bottom);
+ const cuts=[left,...plots.flatMap(p=>[p.left,p.right]).filter(x=>x>left&&x<right),right].sort((a,b)=>a-b);
+ for(let i=1;i<cuts.length;i++){
+  const x=(cuts[i-1]+cuts[i])/2;
+  let covered=top;
+  for(const p of plots.filter(p=>p.left<=x&&x<p.right).sort((a,b)=>a.top-b.top)){
+   if(p.top>covered)break;
+   covered=Math.max(covered,p.bottom);
+  }
+  if(covered<bottom||!plots.some(p=>p.left<=x&&x<p.right&&p.top<=top&&p.bottom>top))return false;
+ }
+ return true;
+}

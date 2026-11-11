@@ -1,6 +1,6 @@
 // 自由建设在落点一次性结算资源、建筑功能与存档，流程由现场和大地图共用。
 import {CAMP_BUILDINGS,campBuildingPosition} from '../../config/camp-layout.js';
-import {CAMP_PLOTS,campPlotAt,ownsCampPlot} from '../../config/camp-land.js';
+import {CAMP_PLOTS,campPlotAt,ownsCampPlot,insideCampLand} from '../../config/camp-land.js';
 import {TOWN_RESTORATIONS,facilityOpen} from '../../config/town-restoration.js';
 import {campProgress} from '../../progression/camp/camp-level.js';
 import {spendWorkshopMaterials,workshopMaterialCount} from '../../progression/workshop/workshop-materials.js';
@@ -25,12 +25,13 @@ export const CAMP_CONSTRUCTION=CAMP_BUILDINGS.filter(b=>!['weapons','north'].inc
 // 老存档原本已开放的设施照常使用；栅栏可以反复建造。
 export function constructionState(progress,b){
  const established=ownsCampPlot(progress,b.plot)&&(!TOWN_RESTORATIONS.some(f=>f.id===b.repair)||facilityOpen(progress,b.repair));
- return {built:b.horizontal===undefined&&(!!progress.campLand?.sites?.[b.id]||established),level:campProgress(progress).tier,enough:Object.entries(b.cost).every(([key,n])=>workshopMaterialCount(progress,key)>=n)};
+ return {landOpen:!b.plot||ownsCampPlot(progress,b.plot),built:b.horizontal===undefined&&(!!progress.campLand?.sites?.[b.id]||established),level:campProgress(progress).tier,enough:Object.entries(b.cost).every(([key,n])=>workshopMaterialCount(progress,key)>=n)};
 }
 // 以脚底为锚点，环形世界两端的建筑用最近镜像检查占地。
 function occupied(game,b,at){
  const fence=b.horizontal!==undefined;
  const top=fence?-b.height/2:-b.height,bottom=fence?b.height/2:8;
+ if(!insideCampLand(game.progress,at.x-b.width/2,at.y+top,at.x+b.width/2,at.y+bottom))return '请在已解锁的营地范围内建设，整个占地都需位于营地内。';
  const overlaps=(site,left,right,t,bottomEdge)=>{
   const q=nearest(site,at);return q.x+right>at.x-b.width/2&&q.x+left<at.x+b.width/2&&q.y+bottomEdge>at.y+top&&q.y+t<at.y+bottom;
  };
@@ -60,6 +61,7 @@ export function buildCampAt(game,id,point,persist=game.restorationPersist){
  if(!b||!canInspectBuilding(game)||!['playing','paused'].includes(game.state)||!Number.isFinite(point?.x)||!Number.isFinite(point?.y))return {ok:false,message:'当前无法建设。'};
  const state=constructionState(game.progress,b);
  if(state.built)return {ok:false,message:b.name+'已建成。'};
+ if(!state.landOpen)return {ok:false,message:'请先扩建对应地块，解锁这座建筑。'};
  if(state.level<b.level)return {ok:false,message:'营地达到 '+b.level+' 级后开放。'};
  if(!state.enough)return {ok:false,message:'金币或木材不足。'};
  const snapped={x:Math.round(point.x/20)*20,y:Math.round(point.y/20)*20},at=nearest(snapped,{x:0,y:0}),reason=occupied(game,b,at);

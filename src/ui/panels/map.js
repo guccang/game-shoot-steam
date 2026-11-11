@@ -162,7 +162,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       `<div style="--zone-color:${sign.zone.accent}"><b>${i + 1}. ${sign.zone.name}</b><small>${i18nHtml("ui.panels.map.27d417b328", { p0: (sign.subtitle) })}</small></div>`).join('');
   }
   // 只有真正进入地图页面才记录教学进度，手机首页不算看过地图。
-  scope.on($('map-camp-land'),'click',()=>game.openCampConstruction?.());
+  scope.on($('map-camp-land'),'click',()=>game.openCampLand?.());
   dialogs.register('map-dialog', { onOpen: () => {showRegionMap(true);markMainline(game,'map');} });
   // 事件委托只绑定一次，旅行后刷新当前面板，关闭时仍由公共弹窗恢复暂停。
   scope.on($('map-destinations'), 'click', event => {

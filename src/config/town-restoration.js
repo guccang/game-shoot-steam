@@ -65,6 +65,6 @@ export function pendingRestoration(progress){
  return TOWN_RESTORATIONS.find(f=>!facilityOpen(progress,f.id)&&f.before===task?.id&&(!f.extra||!isCampaignTask(task)))||null;
 }
 // 所有入口共用同一锁定原因。
-export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'在大地图选择'+f.name+'，点击空地建造。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
+export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'在大地图扩建对应地块，即可解锁'+f.name+'。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
 // 角色培养共用武器工坊，炮塔整备共用载具工坊。
 export function workshopFacility(kind){return ['vehicle','turret'].includes(kind)?'garage':'weapons';}

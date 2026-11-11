@@ -1,5 +1,6 @@
 // 现场与大地图使用同一份建设清单，点击的世界坐标就是实际施工位置。
 import {CAMP_CONSTRUCTION,constructionState,buildCampAt} from '../core/camp/free-construction.js';
+import {CAMP_PLOTS,insideCampLand} from '../config/camp-land.js';
 import {canInspectBuilding} from '../core/camp/building-entry.js';
 import {campProgress} from '../progression/camp/camp-level.js';
 import {workshopMaterialCount} from '../progression/workshop/workshop-materials.js';
@@ -21,8 +22,8 @@ export function createMapCampPlots({game,root,scope,onChange,dialogs,renderer}){
   select.replaceChildren(new root.defaultView.Option('选择要建造的设施',''));
   for(const b of CAMP_CONSTRUCTION){
    const state=constructionState(game.progress,b),option=root.createElement('option');
-   option.value=b.id;option.disabled=state.built||state.level<b.level;
-   option.textContent=b.name+' · '+(state.built?'已建成':state.level<b.level?'营地 '+b.level+' 级开放':(b.cost.coins?b.cost.coins+' 金币 + ':'')+b.cost.wood+' 木材');select.append(option);
+   option.value=b.id;option.disabled=state.built||!state.landOpen||state.level<b.level;
+   option.textContent=b.name+' · '+(state.built?'已建成':!state.landOpen?'扩建'+CAMP_PLOTS.find(p=>p.id===b.plot).name+'后开放':state.level<b.level?'营地 '+b.level+' 级开放':(b.cost.coins?b.cost.coins+' 金币 + ':'')+b.cost.wood+' 木材');select.append(option);
   }
   select.value=[...select.options].some(o=>o.value===previous&&!o.disabled)?previous:'';
   wallet.textContent='营地 '+campProgress(game.progress).tier+' 级 · 持有 '+game.progress.coins+' 金币、'+workshopMaterialCount(game.progress,'wood')+' 木材';
@@ -42,23 +43,25 @@ export function createMapCampPlots({game,root,scope,onChange,dialogs,renderer}){
   const previous=[...root.querySelectorAll('dialog[open]')].filter(d=>d!==dialog);dialogs.open(dialog.id);
   for(const d of previous){dialogs.transferResume(d.id,dialog.id);dialogs.close(d.id);}
   refresh();if(kind&&[...select.options].some(o=>o.value===kind&&!o.disabled))select.value=kind;
-  notice.textContent=point?'已选中地面，选择设施后即可建设。':'选择设施后，点大地图或现场的空地即可建设。';
+  notice.textContent=point?'已选中地面，选择设施后即可建设。':'选择设施后，点大地图或现场的营地空地即可建设。';
   here.disabled=!select.value;world.disabled=!select.value;section.scrollIntoView({block:'nearest'});return true;
  }
- scope.on(select,'change',()=>{here.disabled=!select.value;world.disabled=!select.value;notice.textContent=target?'点击“在此建设”使用已选地面。':'点击大地图上的空地即可建设。';});
+ scope.on(select,'change',()=>{here.disabled=!select.value;world.disabled=!select.value;notice.textContent=target?'点击“在此建设”使用已选地面。':'点击大地图上已解锁的营地空地即可建设。';});
  scope.on(here,'click',()=>{if(target&&select.value)place(target);});
  scope.on(world,'click',()=>{armed=true;target=null;bar.hidden=false;bar.querySelector('span').textContent='点击空地建设 · '+select.selectedOptions[0].textContent;dialogs.close(dialog.id);});
  scope.on(bar.querySelector('button'),'click',()=>{armed=false;bar.hidden=true;});
  scope.on(canvas,'click',e=>{
   if(section.hidden)return;
   const r=canvas.getBoundingClientRect(),point={x:(e.clientX-r.left)*WORLD.width/r.width,y:(e.clientY-r.top)*WORLD.height/r.height};
-  if(select.value)place(point);else open(point);
+  if(select.value)place(point);
+  else if(insideCampLand(game.progress,point.x,point.y,point.x,point.y))open(point);
+  else notice.textContent='请选择已解锁的营地，或点击“扩建营地”查看下一块地。';
  });
  // 建设模式优先于普通地点交互；普通空地点击可先选落点。
  function tap(event,onlyArmed){
   if((onlyArmed&&!armed)||!renderer.view||game.state!=='playing'||!canInspectBuilding(game)||root.querySelector('dialog[open]'))return false;
   const r=renderer.canvas.getBoundingClientRect(),v=renderer.view,point={x:v.x+(event.clientX-r.left)*v.w/r.width,y:v.y+(event.clientY-r.top)*v.h/r.height};
-  return armed?place(point):open(point);
+  return armed?place(point):insideCampLand(game.progress,point.x,point.y,point.x,point.y)&&open(point);
  }
  // 已建房屋以实际坐标标在大地图上。
  function draw(c,sx,sy){

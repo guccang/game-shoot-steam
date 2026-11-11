@@ -10,7 +10,7 @@ import {relocateLayoutService} from './camp-layout-service.js';
 import {overlapsCampPlaza} from '../../world/camp-plaza.js';
 import {campLayoutDecorConflicts} from '../../world/camp-layout-decor.js';
 import {PARKING_SPOTS} from '../../config/parking.js';
-import {campPlotAt,ownsCampPlot} from '../../config/camp-land.js';
+import {campPlotAt,ownsCampPlot,insideCampLand} from '../../config/camp-land.js';
 // 布局草稿先检查占地和道路，保存成功后统一迁移全部正式锚点。
 import {CAMP_BUILDINGS,normalizeCampLayout,campBuildingPosition,campLayoutFootprints,campFenceFootprints} from '../../config/camp-layout.js';
 import {layoutBuildings,campLayoutRoads} from '../../world/camp-layout-roads.js';
@@ -29,6 +29,7 @@ export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.fin
  if(!sign&&campFenceFootprints(b).some(({left,right,top,bottom})=>boundary.objects.some(f=>f.type==='settlement-fence'&&(f.horizontal?left<f.x+f.length/2&&right>f.x-f.length/2&&top<f.y+5&&bottom>f.y-5:left<f.x+5&&right>f.x-5&&top<f.y+f.length/2&&bottom>f.y-f.length/2))))return '请勿让建筑横跨围栏。';
  // 停车场东侧弯道与入口计入占地，防止搬到房屋、树木或土地外。
  for(const {left,right,top,bottom} of campLayoutFootprints(b)){
+ if(!insideCampLand(game.progress,left,top,right,bottom))return '请将建筑和门前通道放在已解锁的营地范围内。';
  for(let x=left;x<=right;x+=20)for(let y=top;y<=bottom;y+=20)if(!campPlacementPoint(game.progress,x,y,sign?0:12)&&!(sign&&boundary.gates.some(g=>g.settlement==='sunleaf'&&(g.horizontal?Math.abs(x-g.x)<=g.length/2-24&&Math.abs(y-g.y)<=48:Math.abs(y-g.y)<=g.length/2-24&&Math.abs(x-g.x)<=48))))return '请让建筑和门前通道落在干地上。';
 
  for(const other of layoutBuildings(game.progress,layout)){if(other.id===id)continue;if(campLayoutFootprints(other).some(r=>left<r.right&&right>r.left&&top<r.bottom&&bottom>r.top))return '与'+other.name+'或它的门前通道重叠。';}

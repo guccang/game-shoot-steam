@@ -7,7 +7,7 @@ import {CAMP_CONSTRUCTION,constructionState,buildCampAt} from '../src/core/camp/
 import {campBoundary,campBoundaryBlocked} from '../src/world/camp-boundary.js';
 import {facilityOpen} from '../src/config/town-restoration.js';
 import {COTTAGE} from '../src/config/cottage.js';
-import {ownsCampPoint} from '../src/config/camp-land.js';
+import {insideCampLand} from '../src/config/camp-land.js';
 
 // 隔离存档的起始资金、树木和活动状态。
 function setup(){
@@ -15,25 +15,34 @@ function setup(){
  const g=new Game(p);g.state='playing';g.trees=[];g.mainlineSpeech=null;g.restorationPersist=()=>true;
  return g;
 }
-test('任选空地直接建设，扣费与读档一致，原地契不变',()=>{
- const g=setup(),p=g.progress,b=CAMP_CONSTRUCTION.find(b=>b.id==='cottage');
- const point={x:2200,y:8000};
- assert.equal(buildCampAt(g,b.id,point,()=>false).ok,false);assert.equal(g.progress,p);
- const result=buildCampAt(g,b.id,point);assert.ok(result.ok,result.message);
- assert.deepEqual(g.progress.campLand.owned,['core']);assert.equal(g.progress.coins,5000-b.cost.coins);assert.equal(g.progress.wood,5000-b.cost.wood);
- assert.ok(facilityOpen(g.progress,'cottage'));assert.equal(COTTAGE.door.x,point.x);assert.ok(ownsCampPoint(g.progress,point));
- assert.equal(buildCampAt(g,b.id,{x:100,y:100}).ok,false);
- const loaded=new Game(validateProgress(structuredClone(g.progress)));
- assert.ok(constructionState(loaded.progress,b).built);assert.deepEqual(loaded.progress.campLayout.positions.cottage,point);
-});
-test('建筑按营地等级开放，手建栏段可连续放置并保存碰撞',()=>{
+test('野外、未购地和跨界栅栏不扣资源，营地内可连续摆放',()=>{
  const g=setup(),before=g.progress.wood;
- assert.equal(buildCampAt(g,'seWorkshop',{x:2220,y:8000}).ok,false);
- assert.equal(g.progress.wood,before);g.progress.campLevel.xp=10800;
- assert.ok(buildCampAt(g,'seWorkshop',{x:2220,y:8000}).ok);
- assert.equal(campBoundary(g.progress).objects.some(f=>f.settlement==='sunleaf'),false);
- for(const x of [2600,2660])assert.ok(buildCampAt(g,'fence-h',{x,y:8000}).ok);
- assert.equal(buildCampAt(g,'fence-h',{x:2600,y:8000}).ok,false);
- const loaded=validateProgress(g.progress);assert.equal(loaded.campLand.fences.length,2);
- assert.ok(campBoundaryBlocked(2600,8000,10,loaded));assert.equal(campBoundaryBlocked(2600,8080,10,loaded),false);
+ for(const point of [{x:2200,y:8000},{x:300,y:500},{x:240,y:500}]){
+  assert.equal(buildCampAt(g,'fence-h',point).ok,false);
+ }
+ assert.equal(g.progress.wood,before);
+ const point={x:0,y:680};
+ const r=buildCampAt(g,'fence-h',point);assert.ok(r.ok,r.message);
+ assert.ok(buildCampAt(g,'fence-h',{x:60,y:680}).ok);
+ assert.equal(g.progress.wood,before-8);
+ assert.ok(campBoundaryBlocked(0,680,10,validateProgress(g.progress)));
+});
+test('旧档野外小屋保留位置和功能，周边不能继续建设',()=>{
+ const g=setup(),point={x:2200,y:8000};
+ g.progress.campLand.sites.cottage={...point,width:140,height:120};
+ g.progress.campLayout.positions.cottage=point;g.progress.restoration.repaired.push('cottage');
+ const loaded=new Game(validateProgress(g.progress));
+ assert.ok(facilityOpen(loaded.progress,'cottage'));assert.equal(COTTAGE.door.x,point.x);
+ assert.ok(constructionState(loaded.progress,CAMP_CONSTRUCTION.find(b=>b.id==='cottage')).built);
+ assert.equal(insideCampLand(loaded.progress,2190,8010,2210,8030),false);
+});
+
+// 共界可跨越，四角在地契内而中间缺一块地时仍应拒绝。
+test('只允许完整覆盖的占地跨越地契共界',()=>{
+ const g=setup();
+ assert.equal(insideCampLand(g.progress,230,400,260,460),false);
+ g.progress.campLand.owned.push('quarter');
+ assert.equal(insideCampLand(g.progress,230,400,260,460),true);
+ g.progress.campLand.owned=['core','homes'];
+ assert.equal(insideCampLand(g.progress,230,400,460,460),false);
 });

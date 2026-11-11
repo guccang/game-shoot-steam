@@ -14,7 +14,12 @@ export function campObjectVisible(game,item){
 }
 // 相邻未购地显示扩建木牌，核心区保留营地建设入口。
 export function campLandObjects(game){
- return [];
+ if(!campLandActive(game))return [];
+ return CAMP_DIRECTIONS.map(d=>{
+  const step=campDirectionStatus(game.progress,d);
+  return {...d.sign,type:'camp-land-sign',id:d.id,name:d.name+'侧扩建',count:step.total-step.remaining+'/'+step.total,preview:step.next?'下次 · '+step.landmark:'已全部扩建'};
+ });
+
 }
 // 覆盖未开发院落与铺路，复用两张小草地纹理；购买后的下一帧立即恢复原地面。
 export function drawCampLandGround(c,game,view,night,season='summer'){

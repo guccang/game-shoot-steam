@@ -31,7 +31,7 @@ export function createRestorationPanel({game,root,dialogs,onChange,onUse}){
  }
  // 已有面板转交暂停归属，返回后恢复原游玩状态。
  function open(id){
-  if(!TOWN_RESTORATIONS.some(f=>f.id===id))return false;const land=restorationStatus(game,id);if(!land.landOwned)return game.openCampConstruction?.(null,({'cat-home':'catHome',defense:'defense-top'}[id]||id))||false;selected=id;message='';
+  if(!TOWN_RESTORATIONS.some(f=>f.id===id))return false;const land=restorationStatus(game,id);if(!land.landOwned)return game.openCampLand?.(land.plot.id)||false;selected=id;message='';
   if(!facilityOpen(game.progress,id)){
    if(trackRestoration(game,id)){clearWorldNavigation(game);message='正在追踪修复'+restorationStatus(game,id).facility.name+'。';}
    else message='修复任务未保存，请点击下方导航按钮重试。';
