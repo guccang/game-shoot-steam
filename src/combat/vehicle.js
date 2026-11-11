@@ -1,9 +1,9 @@
 import {seTargetAllowed} from './vehicle-se.js';
-import {enhancedVehicleShot} from './vehicle-special-ammo.js';
+import {advanceMainGunReload,takeMainGunShot} from './vehicle-special-ammo.js';
 import {mountedWeapon} from './mounted-weapon.js';
 import {weaponTerrainTargets} from './terrain-targets.js';
 import {applyVehicleFault} from './vehicle-faults.js';
-import {takeSupplyAmmo,finiteSupply,supplyAmmoCount} from './supply-ammo.js';
+import {finiteSupply} from './supply-ammo.js';
 import {ammoKind,vehicleFaults} from '../config/supplies.js';
 import {parkAtPosition,roadsideParkingRecord} from '../progression/vehicles/roadside-parking.js';
 import {parkingCollisionBarriers} from '../core/vehicles/camp-parking.js';
@@ -36,7 +36,6 @@ import { hitCenter } from './collision.js';
 import { createRecoil, triggerRecoil, updateRecoil, RECOIL_PROFILES } from './recoil.js';
 import { advancePulse } from './pulse.js';
 import { advanceGrenadeCharge, launchGrenade } from './grenades.js';
-import { consumeRound, advanceReload } from './magazine.js';
 import { emitWeaponAttack } from './weapon-fire.js';
 
 import { VEHICLE_COOLDOWN } from '../config/vehicles.js';
@@ -260,7 +259,7 @@ export function updateVehicle(game, dt, holdFire = false) {
     return;
   }
   updateRecoil(v.recoil, v.weaponIndex, dt);
-  const activeTime = advanceReload(m.magazine, w, dt, game.onEvent,n=>takeSupplyAmmo(game,w,n,v.index),supplyAmmoCount(game,w,v.index));
+  const activeTime = advanceMainGunReload(game,w,m.magazine,dt);
   // 候停和停稳期间停止搜索与开火，正常装填和各车修复冷却照常推进。
   if(holdFire){v.targetId=null;return;}
   if (w.controller) { updateVehicleCompanions(game, dt); return; }
@@ -298,11 +297,11 @@ export function updateVehicle(game, dt, holdFire = false) {
   const muzzle = vehicleMuzzle(game.player, v, game.reducedMotion),
     point = nearest(hitCenter(target), muzzle),
     distance = Math.hypot(point.x - muzzle.x, point.y - muzzle.y) || 1;
-  if (!consumeRound(m.magazine, w)) return;
+  const round=takeMainGunShot(game,w,m.magazine);if(!round)return;
   const critical = game.random() < GAMEPLAY_VALUES.combat.criticalChance;
   emitWeaponAttack(
     game,
-    w.id==='chainsaw'?{...w,sawScale:VEHICLE_GUN_SCALE,sawAngle:vehicleGunPose(v,game.reducedMotion).angle}:enhancedVehicleShot(game,w),
+    w.id==='chainsaw'?{...w,sawScale:VEHICLE_GUN_SCALE,sawAngle:vehicleGunPose(v,game.reducedMotion).angle}:round,
     muzzle,
     { x: (point.x - muzzle.x) / distance, y: (point.y - muzzle.y) / distance },
     Math.round(vehicleDamage((game.loadout || game.progress), v.weaponIndex) * (critical ? GAMEPLAY_VALUES.combat.criticalMultiplier : 1) * (1 + (game.realm?.buffs.power || 0) * GAMEPLAY_VALUES.blessings.powerPerStack)),

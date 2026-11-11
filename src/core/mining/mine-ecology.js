@@ -13,8 +13,9 @@ import {currentMineLayer} from './mine-layers.js';
 import {miningCommit,mineNotice,mineFreightReward} from './mine-transactions.js';
 import {mineOccupancy,mineLineClear} from '../../physics/mine-motion.js';
 import {vehicleWeapon,vehicleDamage} from '../../config/vehicles.js';
-import {consumeRound,advanceReload} from '../../combat/magazine.js';
-import {takeSupplyAmmo,supplyAmmoCount} from '../../combat/supply-ammo.js';
+import {takeMainGunShot,advanceMainGunReload} from '../../combat/vehicle-special-ammo.js';
+import {emitWeaponAttack} from '../../combat/weapon-fire.js';
+import {supplyAmmoCount} from '../../combat/supply-ammo.js';
 import {updateAmmoWarning} from '../../combat/ammo-warning.js';
 import {triggerRecoil,updateRecoil} from '../../combat/recoil.js';
 // 天然水面无需挖掘即可铺桥，脚下和前方均可施工，桥面支持轨道与战车。
@@ -70,7 +71,7 @@ function defendExplorer(game,dt,actors){
  if(game.fishing){updateAmmoWarning(game,dt,false);return;}
  const room=game.cottage,p=game.player,v=game.vehicle;room.attackWait=Math.max(0,(room.attackWait||0)-dt);room.strike=Math.max(0,(room.strike||0)-dt);
  const weapon=v.active?vehicleWeapon(game.progress,v.weaponIndex):null,module=v.module;
- if(v.active&&weapon&&module){advanceReload(module.magazine,weapon,dt,game.onEvent,n=>takeSupplyAmmo(game,weapon,n,v.index),supplyAmmoCount(game,weapon,v.index));updateRecoil(v.recoil,v.weaponIndex,dt);}
+ if(v.active&&weapon&&module){advanceMainGunReload(game,weapon,module.magazine,dt);updateRecoil(v.recoil,v.weaponIndex,dt);}
  const range=v.active?Math.min(340,weapon?.range||260):64,target=actors.filter(a=>a.hp>0&&Math.hypot(a.x-p.x,a.y-p.y)<range&&mineLineClear(game,p,a)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
  // 矿镐作业和打岩壁不报缺弹；地下枪械和主炮沿用地表的库存与去重规则。
  updateAmmoWarning(game,dt,v.active?!!target:room.weaponReady&&room.weaponTarget!=null&&room.combat.enemies.some(a=>a.key===room.weaponTarget));
@@ -79,9 +80,11 @@ function defendExplorer(game,dt,actors){
  if(!v.active){const w=game.weapon(),mag=game.magazines[game.loadout.weapon];if(room.weaponReady&&(w.controller||w.attackKind==='defense'||mag.ammo>0||mag.remaining>0||supplyAmmoCount(game,w)>0))return;room.strike=.3;room.attackWait=.65;hitMineAnimal(game,target,24);return;}
  if(!weapon||!module||weapon.crew||module.magazine.modules||weapon.attackKind==='defense')return;
  room.charge=(room.charge||0)+dt;if(room.charge<(weapon.chargeTime||0))return;
- v.angle=Math.atan2(target.y-p.y,target.x-p.x);if(!consumeRound(module.magazine,weapon))return;
+ v.angle=Math.atan2(target.y-p.y,target.x-p.x);const round=takeMainGunShot(game,weapon,module.magazine);if(!round)return;
  room.charge=0;room.attackWait=Math.max(.12,weapon.interval||.65);triggerRecoil(v.recoil,v.weaponIndex);v.recoil.tankAngle=v.angle;
- const dx=target.x-p.x,dy=target.y-p.y,n=Math.max(1,Math.hypot(dx,dy));room.bolts.push({x:p.x,y:p.y,vx:dx/n*420,vy:dy/n*420,life:1.2,damage:vehicleDamage(game.progress,v.weaponIndex),statisticsSource:statisticsSource(game,weapon,v.index),enemy:false});
+ const dx=target.x-p.x,dy=target.y-p.y,n=Math.max(1,Math.hypot(dx,dy));
+ if(round.specialAmmo){emitWeaponAttack(room.combat,{...round,vehicleMounted:true,statisticsSource:statisticsSource(game,weapon,v.index)},p,{x:dx/n,y:dy/n},vehicleDamage(game.progress,v.weaponIndex),false,true);return;}
+ room.bolts.push({x:p.x,y:p.y,vx:dx/n*420,vy:dy/n*420,life:1.2,damage:vehicleDamage(game.progress,v.weaponIndex),statisticsSource:statisticsSource(game,weapon,v.index),enemy:false});
 }
 // 团子按实际路程衔接地表软体动作，翼拍、脚步、轮组、蓄力与死亡各自保持独立。
 export function updateMineEcology(game,dt){

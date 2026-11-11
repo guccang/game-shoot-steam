@@ -1,3 +1,4 @@
+import {fallbackShell} from './vehicle-special-ammo.js';
 // 实物武器只有在交战且无弹可装时才提醒。手持和主炮独立判定，同帧缺弹合并展示。
 import {AMMO_TYPES,ammoKind,vehicleFaults} from '../config/supplies.js';
 import {vehicleWeapon} from '../config/vehicles.js';
@@ -22,7 +23,7 @@ export function updateAmmoWarning(game,dt,engaged){
  function check(slot,weapon,mag,hull){
   if(weapon?.id==='water'&&mag?.ammo===0&&!mag.waterFilling&&supplyAmmoCount(game,weapon,hull)<=0){if(notice[slot]!==mag){notice[slot]=mag;messages.push('水袋与备用水罐已空，靠近河流或湖泊即可补水（战斗中也可补水）');}return;}
   const key=ammoKind(weapon);
-  if(!key||mag?.waterFilling||mag?.ammo!==0||supplyAmmoCount(game,weapon,hull)>0){notice[slot]=null;return;}
+  if(!key||mag?.waterFilling||mag?.ammo!==0||supplyAmmoCount(game,weapon,hull)>0||hull!==null&&fallbackShell(game,weapon,mag)){notice[slot]=null;return;}
   if(notice[slot]===mag)return;
   notice[slot]=mag;
   if(hull===null&&catAmmoWarehouse(game)?.[key]>0)messages.push('手持武器没子弹了，背包腾出空间后可从车内补弹');
