@@ -22,7 +22,8 @@ export function interceptThreat(game,from,to,end,{previous=game.player,radius=0,
  if(splash?Math.hypot(end.x-now.x,end.y-now.y)>splash:!direct)return false;
  build.protectionWait=2-.4*seLevel(build,'protection');
  const x=from.x+(to.x-from.x)*t,y=from.y+(to.y-from.y)*t;
- game.fx.add('ring',x,y,.22,{size:20,color:'#ffe19a'});
- game.fx.add('blast',x,y,.15,{size:12,color:'#badcca'});
+ // 起点与拦截点使用同一世界镜像，跨地图边界时曳光仍指向真实来弹。
+ const originY=now.y-15,dx=x-now.x,dy=y-originY;
+ game.fx.add('protection-trace',now.x,originY,.48,{size:Math.hypot(dx,dy),angle:Math.atan2(dy,dx)});
  return true;
 }
