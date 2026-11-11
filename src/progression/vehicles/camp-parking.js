@@ -7,7 +7,7 @@ import {vehicleWeapon} from '../../config/vehicles.js';
 export function northParkingSpot(progress,hull,available=null){
  const spots=parkingSpotsFor(progress),preferred=progress.campParking?.preferred||{};
  const free=s=>s.number&&(!available||available(s))&&!Object.entries(preferred).some(([h,id])=>Number(h)!==hull&&id===s.id)&&!progress.campParking?.owned?.some(r=>r.hull!==hull&&parkingRecordOccupies(r,s));
- return spots.find(s=>s.id===preferred[hull]&&free(s))||spots.find(free);
+ return spots.find(s=>s.id===preferred[hull]&&free(s))||spots.find(s=>(s.building!=='gate-lot'||s.settlement==='sunleaf')&&free(s));
 }
 // 北场满位后使用既有工坊泊位，购买与停驻共用容量判断。
 export function availableParkingSpot(progress,hull){
@@ -27,6 +27,17 @@ export function parkNewVehicle(progress,hull){
 export function parkMissingFleet(progress){
  for(const [hull,owned] of progress.vehicleHulls.entries()){
   if(owned&&hull!==progress.vehicleIndex&&!(hull===4&&progress.fireDispatch?.garage?.parked))parkNewVehicle(progress,hull);
+ }
+}
+// 扩建或购地撤销旧门时，将原车记录完整迁到可用泊位，保留耐久与弹药。
+export function relocateRetiredGateSpots(progress){
+ const parking=progress.campParking;if(!parking)return;
+ const valid=new Set(parkingSpotsFor(progress).map(s=>s.id));
+ for(const [h,id] of Object.entries(parking.preferred||{}))if(id.startsWith('gate-')&&!valid.has(id))delete parking.preferred[h];
+ for(const record of parking.owned){
+  if(!record.spot?.startsWith('gate-')||valid.has(record.spot))continue;
+  const replacement=availableParkingSpot(progress,record.hull);
+  if(replacement)record.spot=replacement.id;
  }
 }
 // 按车体和泊位双重去重，损坏记录不能创造车辆或重复占位。

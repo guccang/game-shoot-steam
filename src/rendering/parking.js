@@ -1,6 +1,6 @@
 // 停车位和建筑操作徽记复用正式世界投影；绘制只读状态，不推进停车。
 // 车位、地坪和标牌均使用当前停车场局部坐标。
-import {PARKING as C,PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
+import {PARKING as C,PARKING_SPOTS,NORTH_PARKING,nearbyParkingSpots} from '../config/parking.js';
 import {nearest} from '../world/coordinates.js';
 import {GARAGE} from '../world/workshop.js';
 import {box} from './primitives.js';
@@ -20,7 +20,16 @@ export function drawParkingGround(c,game,view,night=0){
  box(c,NORTH_PARKING.x,NORTH_PARKING.y,NORTH_PARKING.width,NORTH_PARKING.height,20,night?'#9baf8230':'#d5c99880','#91a07770',1.5);
  box(c,NORTH_PARKING.x+135,NORTH_PARKING.y-6,110,23,5,'#e9dcaf','#6c8869',1.5);c.fillStyle='#456a4b';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText('北门停车场',NORTH_PARKING.x+190,NORTH_PARKING.y+10);c.restore();
  }
- for(const spot of PARKING_SPOTS){
+ const nearby=nearbyParkingSpots(view.x,view.y,view.x+view.w,view.y+view.h,210);
+ // 门外双车位共用一块地坪和场号牌，牌面不挡倒车路线。
+ for(const spot of nearby){
+  if(!spot.lotId||spot.number!==1)continue;
+  const p=nearest(spot,game.player);
+  box(c,p.x-58,p.y-55,226,148,12,night?'#9baf8230':'#d5c99880','#91a07770',1.5);
+  box(c,p.x-48,p.y-77,205,23,5,'#e9dcaf','#6c8869',1.5);
+  c.save();c.font='bold 13px sans-serif';c.fillStyle='#456a4b';c.textAlign='center';c.fillText(spot.lotName,p.x+55,p.y-61);c.restore();
+ }
+ for(const spot of nearby){
   if(spot.indoor)continue;
   const p=nearest(spot,game.player);
   if(p.x<view.x-70||p.x>view.x+view.w+70||p.y<view.y-70||p.y>view.y+view.h+70)continue;

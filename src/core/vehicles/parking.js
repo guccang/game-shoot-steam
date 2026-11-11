@@ -3,7 +3,7 @@ import {enterParkedWorkshop} from '../home/cottage.js';
 import {parkingOccupied,leaveParkedVehicle} from './camp-parking.js';
 import {movementLoadFactor} from '../../progression/inventory/load-weight.js';
 // 正常森林的点击停车：可取消的低速对齐和倒车，复用正式碰撞与车轮动作。
-import {PARKING as C,PARKING_SPOTS} from '../../config/parking.js';
+import {PARKING as C,PARKING_SPOTS,nearbyParkingSpots} from '../../config/parking.js';
 import {pathDistance} from '../../world/paths.js';
 import {WORLD,nearest,worldDistance} from '../../world/coordinates.js';
 import {moveBody,blocked} from '../../physics/motion.js';
@@ -18,7 +18,7 @@ export function parkingAvailable(game){
 // 只有院内泊位及紧邻过道可以候停，路面和路肩即使静止也不会触发。
 export function nearestParkingSpot(game){
  const p=game.player;
- return PARKING_SPOTS.map(s=>({s,at:nearest(s,p),front:nearest({x:s.x,y:s.approachY},p)}))
+ return nearbyParkingSpots(p.x,p.y,p.x,p.y,150).map(s=>({s,at:nearest(s,p),front:nearest({x:s.x,y:s.approachY},p)}))
   .filter(({s,at,front})=>!parkingOccupied(game,s.id)&&!Object.entries(game.progress.campParking?.preferred||{}).some(([h,id])=>id===s.id&&Number(h)!==game.vehicle.index)&&Math.abs(p.x-at.x)<C.radius&&p.y>=at.y-10&&p.y<=front.y+C.approachMargin)
   .filter(()=>pathDistance(p.x,p.y)>C.roadClearance)
   .sort((a,b)=>worldDistance(p,a.front)-worldDistance(p,b.front))[0]?.s||null;

@@ -21,7 +21,7 @@ test('北场十二位与扩建车位可设置，整队读档不重叠',async()=>
  const {parkingSpotsFor}=await import('../src/config/parking.js');
  const g=setup(),p=g.progress;
  p.vehicleHulls.fill(1);
- assert.equal(parkingSpotsFor(p).filter(s=>s.number).length,12);
+ assert.equal(parkingSpotsFor(p).filter(s=>s.number&&!s.lotId).length,12);
  const {campExpansionSite}=await import('../src/world/camp-expansion-site.js');
  const {campPlots}=await import('../src/config/camp-land.js');
  p.campLand.baseTops=Object.fromEntries(campPlots(p).map(r=>[r.id,r.top]));
@@ -30,7 +30,7 @@ test('北场十二位与扩建车位可设置，整队读档不重叠',async()=>
   p.campLand.additions.push(site);p.campLand.expansions++;
  }
  activateCampLayout(p);
- const all=parkingSpotsFor(p).filter(s=>s.number);
+ const all=parkingSpotsFor(p).filter(s=>s.number&&!s.lotId);
  assert.equal(all.length,24);
  p.campParking.owned=[{hull:0,spot:all[0].id,hp:.4,ammo:3,reload:0,wheel:0,track:0}];
  const before=structuredClone(p.campParking);
@@ -48,5 +48,30 @@ test('北场十二位与扩建车位可设置，整队读档不重叠',async()=>
  for(const [h,owned] of restored.vehicleHulls.entries())if(owned&&h!==restored.vehicleIndex&&!(h===4&&restored.fireDispatch.garage?.parked))assert.ok(parked.some(r=>r.hull===h));
  assert.equal(new Set(parked.map(r=>r.spot)).size,parked.length);
  activateCampLayout(freshProgress());
- assert.equal(PARKING_SPOTS.filter(s=>s.number).length,12);
+ assert.equal(PARKING_SPOTS.filter(s=>s.number&&!s.lotId).length,12);
+});
+
+// 门外停车场使用正式出生地、车体碰撞、设置和存档入口，逐门复核三个独立地坪。
+test('晴叶与五个地区营地每座门外三场，每场两位，实际倒车通路畅通',async()=>{
+ const {campBoundary}=await import('../src/world/camp-boundary.js');
+ const {gateParkingSpots}=await import('../src/world/gate-parking.js');
+ const {parkingPathClear,nearestParkingSpot}=await import('../src/core/vehicles/parking.js');
+ const {assignParkingSpot}=await import('../src/core/vehicles/camp-parking.js');
+ const g=setup(),p=g.progress;
+ p.vehicleHulls[0]=1;g.player.campProgress=p;g.parkingVisitors=[];
+ const spots=gateParkingSpots(p),gates=campBoundary(p).gates;
+ assert.equal(spots.length,gates.length*6);
+ assert.equal(new Set(spots.map(s=>s.id)).size,spots.length);
+ for(const gate of new Set(spots.map(s=>s.gateName))){
+  const bays=spots.filter(s=>s.gateName===gate);
+  assert.equal(bays.length,6);assert.equal(new Set(bays.map(s=>s.lotId)).size,3);
+ }
+ for(const spot of spots){
+  Object.assign(g.player,{x:spot.x,y:spot.approachY});
+  assert.ok(parkingPathClear(g,[spot]),spot.name);
+  assert.equal(nearestParkingSpot(g)?.id,spot.id,spot.name);
+ }
+ const slot=spots.find(s=>s.settlement==='snowcedar');
+ assert.ok(assignParkingSpot(g,0,slot.id,()=>true));
+ assert.equal(validateProgress(p).campParking.preferred[0],slot.id);
 });
