@@ -84,6 +84,22 @@ export function syncSEControl(g){
 export function seTargetAllowed(g,t){const s=g.seControl;return !s||s.mode!=='combat'||worldDistance(t,s.anchor)<=s.radius;}
 // 统一取消临时驾驶状态并显示停止原因。
 function stop(g,text){if(g.seControl?.mode==='autopilot')g.sePausedRoute={key:g.seControl.routeKey,vehicle:g.vehicle,player:g.player};g.seControl=null;g.onEvent?.('story-hint',{text});return {x:0,y:0};}
+// 以近处敌人的最大空扇区判断夹击；脱围后等敌人从同一侧追来再驻车。
+function crowdFlanks(targets,player,state){
+ const directions=[];
+ for(const enemy of targets){
+  const point=nearest(enemy,player),dx=point.x-player.x,dy=point.y-player.y,d=Math.hypot(dx,dy);
+  if(d>210)break;
+  if(d>0)directions.push({angle:Math.atan2(dy,dx),x:dx/d,y:dy/d});
+ }
+ if(directions.length<2){state.breakingOut=false;return directions;}
+ directions.sort((a,b)=>a.angle-b.angle);
+ let gap=2*Math.PI+directions[0].angle-directions.at(-1).angle;
+ for(let i=1;i<directions.length;i++)gap=Math.max(gap,directions[i].angle-directions[i-1].angle);
+ const spread=2*Math.PI-gap;
+ state.breakingOut=state.breakingOut?spread>Math.PI*.5:spread>Math.PI*.72&&worldDistance(player,targets[0])<160;
+ return directions;
+}
 // 预测短时间来弹与敌人接触风险；十二方向加原地候选遵守地形、树干与巡战圆边界。
 export function combatSteering(g,s){
  const range=mountedWeapon(g)?.range||0;
@@ -104,9 +120,10 @@ export function combatSteering(g,s){
   spacing=Math.min(range,(view.right-view.left)/2,(view.bottom-view.top)/2,edgeX,edgeY);
  }
  // 敌人明显逼近才启动后撤，持续退至半屏附近再制动，两个阈值之间沿用当前状态。
+ const flanks=crowdFlanks(targets,p,s);
  const resumeAt=spacing-Math.min(40,spacing*.15);
  const stopAt=spacing-Math.min(8,spacing*.03);
- s.retreating=!!view&&inRange&&distance<(s.retreating&&previous===target?stopAt:resumeAt);
+ s.retreating=flanks.length<2&&!!view&&inRange&&distance<(s.retreating&&previous===target?stopAt:resumeAt);
  const inner=s.retreating?stopAt:0;
  // 二分之一视野用于近身后撤；可见目标在炮程内时，整段安全距离都能驻车开火。
  const outer=target&&attackTargetVisible(g,target)?range:spacing;
@@ -117,17 +134,25 @@ export function combatSteering(g,s){
  const nearby=targets.slice(0,16),trees=g.trees||[],grid=treeGrid(trees);
  const bolts=(g.enemyBolts||[]).slice(0,24).map(b=>({...nearest(b,p),vx:b.dx*b.speed,vy:b.dy*b.speed,radius:b.radius||0}));
  let best={x:0,y:0},bestScore=-Infinity;
- for(let i=-1;i<12;i++){const angle=i*Math.PI/6,v=i<0?{x:0,y:0}:{x:Math.cos(angle),y:Math.sin(angle)},q={x:p.x+v.x*55,y:p.y+v.y*55};
+ const headings=s.breakingOut?24:12;
+ for(let i=-1;i<headings;i++){const angle=i*2*Math.PI/headings,v=i<0?{x:0,y:0}:{x:Math.cos(angle),y:Math.sin(angle)},q={x:p.x+v.x*55,y:p.y+v.y*55};
   if(i>=0&&(worldDistance(q,s.anchor)>s.radius-25||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid)))continue;
   // 距离修正仅向前预测所需步长，避弹与通行检查仍使用完整预测距离。
   const projected=target?worldDistance({x:p.x+v.x*step,y:p.y+v.y*step},target):0;
   const gap=error(projected);
   let score=target&&range>0?(currentError-gap)*.45:target?0:-worldDistance(q,s.anchor)*.03;
   if(target&&range>0&&currentError>0&&gap<=currentError*.1)score+=6;
+  // 穿过夹击缺口时优先延续已选航向；树木、圈界、近身和来弹仍单独参与判断。
+  if(s.breakingOut&&i>=0){
+   let nearestBearing=-1;
+   for(const flank of flanks)nearestBearing=Math.max(nearestBearing,v.x*flank.x+v.y*flank.y);
+   score+=32*(1-nearestBearing);
+   if(s.steeringDirection)score+=13*(v.x*s.steeringDirection.x+v.y*s.steeringDirection.y);
+  }
   for(const e of nearby)score-=Math.max(0,Math.min(95,spacing||95)-worldDistance(q,e))*3;
   for(const b of bolts){const {vx,vy}=b,t=Math.max(0,Math.min(horizon,((q.x-b.x)*vx+(q.y-b.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-b.x-vx*t,q.y-b.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
   // 停在合适射距内；移动方案接近时优先延续原方向，来弹风险仍逐帧比较。
-  if(i<0)score+=inRange&&currentError===0?6:s.steeringDirection===null?3:2;
+  if(i<0)score+=s.breakingOut?0:inRange&&currentError===0?6:s.steeringDirection===null?3:2;
   else if(s.steeringDirection)score-=3*(1-v.x*s.steeringDirection.x-v.y*s.steeringDirection.y);
   if(score>bestScore){bestScore=score;best=v;}
  }
@@ -141,7 +166,7 @@ export function updateSEControl(g,dt,input){syncSEControl(g);const s=g.seControl
  if(g.state!=='playing'||dt<=0)return input;
  if(Math.hypot(input.x,input.y)>.01){
   if(s.mode==='combat'){
-   s.manual=true;s.retreating=false;s.steeringDirection=null;s.steeringTarget=null;
+   s.manual=true;s.breakingOut=false;s.retreating=false;s.steeringDirection=null;s.steeringTarget=null;
    s.status='手动走位 · 巡战中';
    if(worldDistance(g.player,s.anchor)>s.radius)s.anchor=canonical(g.player);
   }else {g.sePausedRoute={key:s.routeKey,vehicle:g.vehicle,player:g.player};g.seControl=null;}
