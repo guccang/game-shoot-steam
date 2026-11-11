@@ -13,7 +13,7 @@
 #game-frame>#vehicle-button{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));top:auto;right:auto;z-index:18;width:66px;height:66px;min-width:66px;min-height:66px;padding:0;border:2px solid var(--ui-line);border-radius:50%;background:var(--ui-paper);color:var(--ui-forest);box-shadow:0 3px 0 #315c4326;touch-action:manipulation}
 #game-frame>#vehicle-button[hidden]{display:none}
 #game-frame>#vehicle-button[aria-pressed=true]{background:var(--ui-sage);border-color:var(--ui-forest)}
-#game-frame>#vehicle-button .vehicle-load-picture{left:5px;top:1px;width:52px;height:52px}
+#game-frame>#vehicle-button .vehicle-load-picture{left:50%;transform:translateX(-50%);top:1px;width:52px;height:52px}
 #game-frame>#vehicle-button .vehicle-load-art{inset:6px}
 #game-frame>#vehicle-button .vehicle-load-art canvas{display:block;width:100%;height:100%}
 #game-frame>#vehicle-button .vehicle-ammo-count{bottom:2px;font-size:10px;line-height:12px}
@@ -24,9 +24,10 @@
 #game-frame.guardian-active>#vehicle-button{bottom:calc(94px + env(safe-area-inset-bottom))}
 @media(max-width:360px),(max-height:500px){#game-frame{--local-map-size:88px}}
 
-/* 驾驶和巡战徽记分别贴近按钮上缘两侧，避开底部下车箭头。 */
+/* 装置按每排最多三枚居中排列，与圆钮共用中轴，底部留出上下车提示。 */
 #game-frame>#vehicle-button{overflow:visible}
 .se-device-title{display:flex;align-items:center;gap:.5rem}
-#vehicle-button .vehicle-se-badges{position:absolute;bottom:calc(100% - 3px);left:0;width:84px;display:flex;flex-wrap:wrap;gap:2px;pointer-events:none}
+#vehicle-button .vehicle-se-badges{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);width:74px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 4px;pointer-events:none}
+#vehicle-button .vehicle-mode-icon{width:22px;height:22px}
 .vehicle-mode-icon{display:inline-grid;flex:none;place-items:center;width:26px;height:26px;pointer-events:none}
 .vehicle-mode-icon svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #35473e33)}
