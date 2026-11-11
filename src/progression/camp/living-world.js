@@ -17,6 +17,7 @@ export function normalizeLivingWorld(raw){
   for(const spec of RESIDENTS){const p=raw?.residents?.[spec.id];if(validWorldPosition(p))residents[spec.id]={x:p.x,y:p.y};}
   const position=raw?.position;
   return {version:1,calendar,requests,residents,position:validWorldPosition(position)?{x:position.x,y:position.y}:null,patrolActive:raw?.patrolActive===true,clearingSite:normalizeClearingSite(raw?.clearingSite),
+    clearingReports:Number.isSafeInteger(raw?.clearingReports)&&raw.clearingReports>0?raw.clearingReports:0,
     clearingNotice:['arrival','continue','seen'].includes(raw?.clearingNotice)?raw.clearingNotice:'arrival',
     journal:Array.isArray(raw?.journal)?raw.journal.filter(t=>typeof t==='string').slice(-GAMEPLAY_VALUES.living.journalLimit).map(t=>t.slice(0,300)):[]};
 }

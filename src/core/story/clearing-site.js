@@ -1,9 +1,11 @@
 import {clearingEnemyLevel} from '../../config/clearing-difficulty.js';
+import {REGIONAL_CAMPS} from '../../config/regional-camps.js';
+import {WORLD_UNITS_PER_METER} from '../../world/distance-units.js';
 import {ENCOUNTERS} from '../../config/encounters.js';
 import {FOREST_LEVEL_ORIGIN,FOREST_LEVEL_BANDS,forestThreatAt} from '../../world/forest-levels.js';
 import {MONSTER_CAMPS,MONSTER_CAMP_RULES} from '../../config/monster-camps.js';
 // 接取时随机选择真实可达的林间战场，不修改地貌或生成额外奖励。
-import {CLEARING_SITE_RULES as RULES,CLEARING_STARTER_RULES,CLEARING_STARTER_CENTER} from '../../config/clearing.js';
+import {CLEARING_SITE_RULES as RULES,CLEARING_STARTER_RULES,CLEARING_STARTER_CENTER,nearestClearingPost} from '../../config/clearing.js';
 import {biomeAt} from '../../world/biomes.js';
 import {canonical,worldDistance} from '../../world/coordinates.js';
 import {settlementAt} from '../../world/settlements.js';
@@ -26,28 +28,32 @@ export function clearingSiteOpen(site,trees){
  return entries>=6;
 }
 // 有界抽样后用正式步行碰撞确认可达；树木采用接单快照，不被之后的生长或砍伐打断。
-export function chooseClearingSite(game,onRoute=null){
+export function chooseClearingSite(game,onRoute=null,issuer=game.player){
  const origin=canonical(game.player),trees=createPlayerNavigationIndex(game.trees),previous=game.progress.living.clearingSite;
  const level=clearingEnemyLevel(game.progress.bosses),beginner=level<=3,maxLevel=Math.max(3,level);
  const band=FOREST_LEVEL_BANDS.find(b=>b.max>=maxLevel)||FOREST_LEVEL_BANDS.at(-1);
  const safeRadius=maxLevel>=FOREST_LEVEL_BANDS.at(-1).max?Infinity:band.from+(band.to-band.from)*(maxLevel-band.min+1)/(band.max-band.min+1);
  // 有限等级带内收紧抽样上界，避免大量候选落在必定被拒绝的远端。
- const rules=beginner?{...RULES,...CLEARING_STARTER_RULES}:{...RULES,minDistance:band.from+RULES.radius+40,maxDistance:Math.min(band.to-400,safeRadius-400),attempts:512};
- const center=beginner?CLEARING_STARTER_CENTER:FOREST_LEVEL_ORIGIN;
+ const post=nearestClearingPost(issuer),camp=REGIONAL_CAMPS.find(c=>c.id===post.camp);
+ const limit=1000*WORLD_UNITS_PER_METER-RULES.radius;
+ const rules=camp?{...RULES,maxDistance:limit}:beginner?{...RULES,...CLEARING_STARTER_RULES}:{...RULES,minDistance:band.from+RULES.radius+40<limit?band.from+RULES.radius+40:RULES.minDistance,maxDistance:Math.min(limit,band.to-400,safeRadius-400),attempts:512};
+ const campCenter=camp||FOREST_LEVEL_ORIGIN;
+ const center=!camp&&beginner?CLEARING_STARTER_CENTER:campCenter;
  const body={...game.player,...origin,flying:false,amphibious:false,treePass:false,mapId:'forest',livingCollision:true},start=game.random()*Math.PI*2,offset=game.random();
  let routes=0;
  for(let i=0;i<rules.attempts;i++){
   // 低级任务半径与角度使用不同步长，避免窄草甸中的候选点退化到几条固定弧线。
   const angle=start+i*2.399963,distance=rules.minDistance+(rules.maxDistance-rules.minDistance)*((offset+i*0.41421356237)%1);
   const point=canonical({x:center.x+Math.cos(angle)*distance,y:center.y+Math.sin(angle)*distance});
-  const site=normalizeClearingSite({...point,origin,distributionVersion:1,level});
+  if(worldDistance(point,campCenter)>limit)continue;
+  const site=normalizeClearingSite({...point,origin:canonical(issuer),distributionVersion:1,level});
   if(!beginner&&(worldDistance(point,center)<rules.minDistance||worldDistance(point,center)>rules.maxDistance))continue;
-  if(beginner&&biomeAt(point.x,point.y).id!==CLEARING_STARTER_RULES.biome)continue;
+  if(!camp&&beginner&&biomeAt(point.x,point.y).id!==CLEARING_STARTER_RULES.biome)continue;
   // 整个战场不能跨入超出任务难度的等级带，赶路另检查遭遇出生距离。
-  if(!clearingAreaSafe(point,RULES.radius,safeRadius,maxLevel))continue;
+  if(!camp&&!clearingAreaSafe(point,RULES.radius,safeRadius,maxLevel))continue;
   if(!site||worldDistance(site,origin)<=RULES.radius+60||previous&&worldDistance(site,previous)<rules.minSeparation||!clearingSiteOpen(site,trees))continue;
   const route=planQuestRoute(body,clearingNavigationTarget(site),trees,24000,{shortEdges:true});
-  if(route.reachable&&clearingRouteSafe(route.points,safeRadius,beginner,maxLevel)){
+  if(route.reachable&&(camp||clearingRouteSafe(route.points,safeRadius,beginner,maxLevel))){
    // 仅成功候选交付安全短边，接取事务决定是否缓存，不把路径塞进地点或存档。
    onRoute?.(route,trees);return site;
   }

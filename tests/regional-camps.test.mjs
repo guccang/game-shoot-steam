@@ -3,6 +3,33 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {REGIONAL_CAMPS as CAMPS,regionalNpc,regionalParcel,regionalBuildings} from '../src/config/regional-camps.js';
 import {regionalCampAction as act,recoverRegionalParcel} from '../src/core/camp/regional-camps.js';
+import {REGIONAL_CLEARING_POSTS} from '../src/config/clearing.js';
+import {acceptClearingPost} from '../src/core/story/clearing-guide.js';
+import {deliverClearingReports} from '../src/core/camp/living-world.js';
+import {worldDistance} from '../src/world/coordinates.js';
+import {WORKSHOP_INTERIORS} from '../src/config/workshop-interiors.js';
+
+// 每个地区实测接单、异地交付、存档失败重试和各建筑的柜台服务。
+test('五营分别接取千米内清缴并跨营交付战报',()=>{
+ for(const [i,camp] of CAMPS.entries()){
+  const g=scene(camp),post=REGIONAL_CLEARING_POSTS[i];
+  Object.assign(g.player,{x:post.x,y:post.y+45});
+  assert.ok(acceptClearingPost(g).ok);
+  const site=g.progress.living.clearingSite;
+  assert.ok(worldDistance(camp,site)+site.radius<=10000);
+  const next=REGIONAL_CLEARING_POSTS[(i+1)%CAMPS.length];
+  Object.assign(g.player,{x:next.x,y:next.y+45});
+  g.progress.living.clearingReports=1;
+  g.progress=validateProgress(structuredClone(g.progress));
+  g.livingPersist=()=>false;
+  assert.equal(deliverClearingReports(g).ok,false);
+  assert.equal(g.progress.living.clearingReports,1);
+  g.livingPersist=()=>true;
+  assert.ok(deliverClearingReports(g).ok);
+  assert.equal(deliverClearingReports(g).ok,false);
+  assert.deepEqual(regionalBuildings(camp).map(b=>WORKSHOP_INTERIORS[b.id].regionalTab),['story','repair','seed','supply','cat']);
+ }
+});
 import {MAINLINE_IDS} from '../src/config/mainline.js';import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';import {configureVehicleBuild} from '../src/core/vehicles/vehicle-build.js';import {mountMainGun} from '../src/core/vehicles/supplies.js';
 import {blocked} from '../src/physics/motion.js';import {isNaturalBlocked} from '../src/world/natural-terrain.js';import {campBoundary} from '../src/world/camp-boundary.js';import {worldBuildingBlocked} from '../src/world/building-collision.js';import {forestLayout} from '../src/world/biomes.js';

@@ -13,7 +13,7 @@ import {FOREST_LEVEL_BANDS} from '../../world/forest-levels.js';
 import {forestRuleLines} from '../../config/forest-rules.js';
 import {facilityOpen} from '../../config/town-restoration.js';
 import {clearingSite} from '../../progression/story/clearing-site.js';
-import {CLEARING_POST} from '../../config/clearing.js';
+import {CLEARING_POSTS} from '../../config/clearing.js';
 import { canvasFont } from '../../rendering/text-style.js';
 import { i18nHtml, i18nText } from "../../i18n/index.js";
 import {worldStoryPosts} from '../../core/story/story-posts.js';
@@ -103,7 +103,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     const posts=worldStoryPosts(game);
     for(const post of posts){const x=post.x*scaleX,y=post.y*scaleY;c.fillStyle='#fff0bd';c.strokeStyle='#365a45';c.lineWidth=2;c.fillRect(x-9,y-6,18,12);c.strokeRect(x-9,y-6,18,12);c.beginPath();c.moveTo(x-9,y-6);c.lineTo(x,y+1);c.lineTo(x+9,y-6);c.stroke();}
     // 地图盾牌与营地实体共用坐标，区别于故事信封。
-    if(livingForest(game)){const x=CLEARING_POST.x*scaleX,y=CLEARING_POST.y*scaleY;c.beginPath();c.moveTo(x-8,y-7);c.lineTo(x+8,y-7);c.lineTo(x+8,y+3);c.lineTo(x,y+10);c.lineTo(x-8,y+3);c.closePath();c.fillStyle='#f1d678';c.fill();c.strokeStyle='#315747';c.lineWidth=2;c.stroke();}
+    if(livingForest(game))for(const post of CLEARING_POSTS){const x=post.x*scaleX,y=post.y*scaleY;c.beginPath();c.moveTo(x-8,y-7);c.lineTo(x+8,y-7);c.lineTo(x+8,y+3);c.lineTo(x,y+10);c.lineTo(x-8,y+3);c.closePath();c.fillStyle='#f1d678';c.fill();c.strokeStyle='#315747';c.lineWidth=2;c.stroke();}
     const goal=mainlineObjective(game);
     if(goal&&goal.site.mapId===game.mapId){c.beginPath();c.arc(goal.site.x*scaleX,goal.site.y*scaleY,10,0,Math.PI*2);c.fillStyle='#f1d678';c.fill();c.strokeStyle='#315747';c.lineWidth=2;c.stroke();$('map-description').textContent+=' 主线：'+goal.label+' · '+goal.site.name;}
     // 已接取的随机清缴独立标记，不依赖主线当前是否正在教学。

@@ -2,7 +2,7 @@ import {capturePatrol} from '../battle/patrol-session.js';
 import {bossCombatActive,pauseClearingBoss} from '../battle/boss-engagement.js';
 import {taskTreasureRumor} from '../activities/treasure.js';
 import {facilityOpen,facilityReason} from '../../config/town-restoration.js';
-import {CLEARING_CONTINUE_ROUND,nearClearingPost} from '../../config/clearing.js';
+import {CLEARING_CONTINUE_ROUND,regionalClearingBoard,nearClearingPost} from '../../config/clearing.js';
 import {chooseClearingSite} from '../story/clearing-site.js';
 import {rememberPreparedNavigation} from '../navigation/prepared-navigation.js';
 import {awardCampXp} from '../../progression/camp/camp-level.js';
@@ -192,7 +192,7 @@ export function restLivingWorld(game){
 }
 // 连续怪潮由当地入口显式开启；回到安全地带可结束，已有波次资格保留。
 export function setLivingPatrol(game,active){
- if(active&&!facilityOpen(game.progress,'clearing'))return {ok:false,message:facilityReason(game.progress,'clearing')};
+ if(active&&!regionalClearingBoard(game.player)&&!facilityOpen(game.progress,'clearing'))return {ok:false,message:facilityReason(game.progress,'clearing')};
   if(game.livingPreview||!livingForest(game)||!['playing','paused'].includes(game.state)||game.player.hp<=0||game.livingBattle||game.mainlineSpeech)return {ok:false,message:'请先离开当前活动或对话，再操作清缴任务。'};
   const unfinishedBoss=!!game.boss?.livingChallenge;
   if(game.boss&&(!unfinishedBoss||bossCombatActive(game)))return {ok:false,message:'请先远离领主脱战，或返回营地，再暂停或继续清缴。'};
@@ -212,10 +212,10 @@ export function setLivingPatrol(game,active){
   return {...result,message:result.ok?'清缴已暂停，可回营补给；波次与领主进度保留，重新接取后继续。':result.message};
 }
 // 告示牌与结算续接共享选点、存档事务，成功后消费当前结算资格。
-function beginClearingPatrol(game,site=null,resuming=false){
+function beginClearingPatrol(game,site=null,resuming=false,issuer=game.player){
   const notice=site&&!resuming?'continue':'arrival';
   let prepared=null;
-  if(!site)site=chooseClearingSite(game,(route,index)=>{prepared={route,index};});
+  if(!site)site=chooseClearingSite(game,(route,index)=>{prepared={route,index};},issuer);
   if(!site)return {ok:false,message:'暂时没有找到可达的清缴地点，请稍后重试。'};
   const result=commitLiving(game,p=>{if(!resuming)recordActivity(p,'clearing');p.living.patrolActive=true;p.living.clearingSite=site;p.living.clearingNotice=notice;p.taskTracking={kind:p.mainline.trackingPaused?'none':'mainline'};p.patrol=capturePatrol(Object.assign(Object.create(game),{progress:p}));},()=>{
    // 存档成功且界面刷新前移交路线，保存失败不能污染当前导航。
@@ -226,13 +226,13 @@ function beginClearingPatrol(game,site=null,resuming=false){
 }
 // 首轮起只接受当前胜利收据，不能借旧收据重复领奖。
 export function canAcceptNextClearing(game,round){
- return Number.isInteger(round)&&round>=CLEARING_CONTINUE_ROUND&&round===game.pendingClearingRound&&round===game.progress.bosses&&facilityOpen(game.progress,'clearing')&&!game.progress.living.patrolActive&&!game.livingPreview&&livingForest(game)&&['playing','paused'].includes(game.state)&&!game.boss&&!game.livingBattle&&!game.mainlineSpeech;
+ return Number.isInteger(round)&&round>=CLEARING_CONTINUE_ROUND&&round===game.pendingClearingRound&&round===game.progress.bosses&&(regionalClearingBoard(game.progress.living.clearingSite?.origin||game.player)||facilityOpen(game.progress,'clearing'))&&!game.progress.living.patrolActive&&!game.livingPreview&&livingForest(game)&&['playing','paused'].includes(game.state)&&!game.boss&&!game.livingBattle&&!game.mainlineSpeech;
 }
 // 下一轮按任务等级重新选场；保存失败保留续接资格，暂停恢复仍返回旧场。
 export function acceptNextClearing(game,round){
  if(!canAcceptNextClearing(game,round))return {ok:false,message:'本次结算现在不能继续接取清缴。'};
  // 追击领主离场仍保留续接资格，新地点到场前不推进怪潮。
- const result=beginClearingPatrol(game);
+ const result=beginClearingPatrol(game,null,false,game.progress.living.clearingSite?.origin||game.player);
  return {...result,message:result.ok?'已接取下一轮，请沿导航前往对应等级的新清缴地点。':result.message};
 }
 // 最多展示一个就近交互，任务目标优先于闲聊，委托板仍使用原有正式入口。
@@ -252,4 +252,9 @@ export function residentInteraction(game,id){
  const spec=trackedLivingRequest(game),target=spec&&livingRequestTarget(game,spec);
  if(target?.step.resident&&residentFor(game,target.step.resident)?.id===id)return target;
  return {...resident,resident:id,text:'和'+resident.name+'聊聊'};
+}
+// 各营地统一接收已结算的战报，存档成功后才清空待交付数量。
+export function deliverClearingReports(game){
+ if(!livingForest(game)||!nearClearingPost(game.player)||!game.progress.living.clearingReports)return {ok:false,message:'请携带已完成的清缴战报到营地告示牌交付。'};
+ return commitLiving(game,p=>{p.living.clearingReports=0;});
 }

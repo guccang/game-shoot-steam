@@ -1,12 +1,11 @@
-import {clearingEnemyLevel} from '../config/clearing-difficulty.js';
-import {FOREST_LEVEL_BANDS} from '../world/forest-levels.js';
+import {deliverClearingReports} from '../core/camp/living-world.js';
 import {displayMeters} from '../world/distance-units.js';
 import {forestRuleLines} from '../config/forest-rules.js';
 import {facilityOpen} from "../config/town-restoration.js";
 import {worldDistance} from '../world/coordinates.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 // 清缴场景交互：点告示牌接取，确认后自动接续正式导航，不借用邻里长列表。
-import {CLEARING_POST,CLEARING_APPROACH,CLEARING_STEPS} from '../config/clearing.js';
+import {regionalClearingBoard,nearestClearingPost,clearingApproach,CLEARING_STEPS} from '../config/clearing.js';
 import {challengeLevelMarkup} from './challenge-feedback.js';
 import {challengeProgress} from '../config/economy.js';
 import {clearingRound} from './clearing-round.js';
@@ -26,7 +25,7 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
  marker.id='clearing-marker';marker.className='clearing-marker';marker.hidden=true;sceneHit(marker,'查看清缴告示牌');frame.append(marker);
  dialog.id='clearing-dialog';dialog.className='clearing-dialog ui-panel ui-page';dialog.setAttribute('aria-labelledby','clearing-title');
  // 与任务簿共用固定标题、滚动正文和操作栏，短屏也能直接接取或暂停。
- dialog.innerHTML=`<header class="ui-panel__header"><div><small>营地 · 巡护委托</small><h2 id="clearing-title">领主清缴</h2></div><button id="clearing-close" class="ui-close" aria-label="关闭清缴告示牌">×</button></header><div class="ui-panel__body"><ol class="clearing-steps">${CLEARING_STEPS.map(s=>`<li><svg viewBox="0 0 40 40" aria-hidden="true">${icons[s.icon]}</svg><b>${s.label}</b></li>`).join('')}</ol><p id="clearing-status"></p><p class="clearing-loot">团怪成群 · 击败怪物获得装备材料</p><p id="clearing-error" role="status"></p></div><footer class="ui-panel__footer"><button id="clearing-stop" class="ui-button">暂停清缴</button><button id="clearing-accept" class="ui-button ui-button--primary"></button></footer>`;
+ dialog.innerHTML=`<header class="ui-panel__header"><div><small>营地 · 巡护委托</small><h2 id="clearing-title">领主清缴</h2></div><button id="clearing-close" class="ui-close" aria-label="关闭清缴告示牌">×</button></header><div class="ui-panel__body"><ol class="clearing-steps">${CLEARING_STEPS.map(s=>`<li><svg viewBox="0 0 40 40" aria-hidden="true">${icons[s.icon]}</svg><b>${s.label}</b></li>`).join('')}</ol><p id="clearing-status"></p><p class="clearing-loot">团怪成群 · 击败怪物获得装备材料</p><p id="clearing-error" role="status"></p></div><footer class="ui-panel__footer"><button id="clearing-deliver" class="ui-button">交付战报</button><button id="clearing-stop" class="ui-button">暂停清缴</button><button id="clearing-accept" class="ui-button ui-button--primary"></button></footer>`;
  root.body.append(dialog);const $=id=>root.getElementById(id);
  // 禁用原因固定在操作栏，不依赖点击禁用按钮，也不会随正文滚动而消失。
  const blockedReason=root.createElement('p');blockedReason.id='clearing-blocked-reason';blockedReason.setAttribute('role','status');blockedReason.hidden=true;
@@ -41,23 +40,25 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
   dialog.querySelector('.clearing-loot').textContent=game.progress.bosses<3?'入门清缴 · 团怪成群，特殊怪穿插':'进阶清缴 · 成群团怪与特殊强敌';
   dialog.querySelector('.clearing-loot').textContent+=' · 击败怪物获得装备材料；金币来自种地，木材通过采集与任务获取';
   dialog.querySelector('.clearing-loot').textContent+=' · 完成后营地经验 +180';
-  const level=clearingEnemyLevel(game.progress.bosses),band=FOREST_LEVEL_BANDS.find(b=>b.max>=level)||FOREST_LEVEL_BANDS.at(-1);
-  $('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴 · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`${level<=3?'营地草甸安全区域':band.name+' · 距营地 '+displayMeters(band.from)+'–'+displayMeters(band.to)+' 米'} · 清理 5 批怪物及领主`}`;
+  $('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴 · ${active?`已接取 · 距地点 ${displayMeters(worldDistance(game.player,clearingSite(game.progress)))} 米`:`接取营地周围 1000 米内 · 清理 5 批怪物及领主`}`;
   if(resuming)$('clearing-status').textContent=`第 ${clearingRound(game)} 轮清缴已暂停 · 领主 ${Math.ceil(game.boss.hp)} / ${game.boss.maxHp} HP · 继续后返回原地点。`;
   dialog.querySelector('.clearing-loot').textContent+=' · 远离领主脱战或回营后可暂停并购买弹药，无需先击败领主';
   const reason=clearingPostReason(game),accept=$('clearing-accept');
   blockedReason.textContent=reason;blockedReason.hidden=!reason;accept.dataset.disabledReason=reason;accept.title=reason;
+  const deliver=$('clearing-deliver'),reports=game.progress.living.clearingReports;
+  deliver.hidden=!reports;deliver.disabled=!!reason;deliver.textContent='交付清缴战报（'+reports+'）';
   accept.textContent=active?'继续前往':resuming?'继续本轮清缴':'接取并出发';accept.disabled=!!reason;$('clearing-stop').hidden=!active;
  }
  // 从菜单远程查看时先引向实体；不能隔空接取，也不会打开无关居民页面。
- function visit(){if(!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return;}if(canUseClearingPost(game))open();else{requestWorldNavigation(game,CLEARING_APPROACH,'去清缴告示牌接取');onChange();}}
+ function visit(){if(!nearestClearingPost(game.player).camp&&!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return;}if(canUseClearingPost(game))open();else{requestWorldNavigation(game,clearingApproach(game.player),'去清缴告示牌接取');onChange();}}
  // 原生弹窗只在现场打开，初始焦点落在当前确认操作上。
- function open(){if(!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return false;}if(!canUseClearingPost(game))return false;$('clearing-error').textContent='';dialogs.open('clearing-dialog');render();return true;}
+ function open(){if(!regionalClearingBoard(game.player)&&!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return false;}if(!canUseClearingPost(game))return false;$('clearing-error').textContent='';dialogs.open('clearing-dialog');render();return true;}
  // 任务卡可远程阅读委托数据；接取按钮继续使用原有现场距离和任务权限。
- function inspect(){if(!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return;}$('clearing-error').textContent='';dialogs.open('clearing-dialog');}
+ function inspect(){if(!regionalClearingBoard(game.player)&&!facilityOpen(game.progress,'clearing')){game.requestFacility?.('clearing');return;}$('clearing-error').textContent='';dialogs.open('clearing-dialog');}
  dialogs.register('clearing-dialog',{onOpen:()=>{render();dialog.querySelector('.ui-panel__body').scrollTop=0;},focusId:'clearing-accept'});
  scope.on(marker,'click',e=>{if(e.detail===0)visit();});scope.on($('clearing-close'),'click',()=>dialogs.close('clearing-dialog'));
  scope.on($('clearing-accept'),'click',()=>{const r=acceptClearingPost(game);if(!r.ok){$('clearing-error').textContent=r.message;return;}requestWorldNavigation(game,clearingSite(game.progress),'前往本次清缴地点');dialogs.close('clearing-dialog');onChange();});
+ scope.on($('clearing-deliver'),'click',()=>{const result=deliverClearingReports(game);render();$('clearing-error').textContent=result.ok?'清缴战报已交付。':result.message;onChange();});
  scope.on($('clearing-stop'),'click',()=>{const r=setLivingPatrol(game,false);if(!r.ok){$('clearing-error').textContent=r.message;return;}dialogs.close('clearing-dialog');onChange();});
  scope.on(root,'keydown',e=>{if(e.code==='KeyE'&&!e.repeat&&!e.defaultPrevented&&!marker.hidden&&canUseClearingPost(game)&&!root.querySelector('dialog[open]')){e.preventDefault();open();}});
  // 命中区贴合告示牌本体，离开屏幕或进入对话时隐藏，保留键盘操作。
@@ -67,7 +68,7 @@ export function createClearingPanel({game,root,renderer,dialogs,onChange}){
   const combatText=`第 ${clearingRound(game)} 轮清缴 · ${objective}`;
   for(const {host,label} of combatLabels){if(label.hidden===focused)label.hidden=!focused;if(host.classList.contains('clearing-focused')!==focused)host.classList.toggle('clearing-focused',focused);if(label.textContent!==combatText)label.textContent=combatText;}
   if(!livingForest(game)||game.state!=='playing'||game.mainlineSpeech||!renderer.view||root.querySelector('dialog[open]')||frame.dataset.page==='title'){if(!marker.hidden)marker.hidden=true;return;}
-  placeSceneHit(marker,CLEARING_POST,renderer,frame,{width:118,height:108});const stage=clearingStage(game);if(marker.dataset.stage!==stage)marker.dataset.stage=stage;
+  placeSceneHit(marker,nearestClearingPost(game.player),renderer,frame,{width:118,height:108});const stage=clearingStage(game);if(marker.dataset.stage!==stage)marker.dataset.stage=stage;
   const q=challengeProgress(game.progress),label=`查看清缴告示牌，营地 ${q.tier} 级，购买${q.percent/10}折`;
   if(marker.getAttribute('aria-label')!==label)marker.setAttribute('aria-label',label);
  }

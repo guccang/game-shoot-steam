@@ -1,5 +1,5 @@
 // 清缴引导只读取真实状态，不建立另一份任务进度或改变波次完成条件。
-import {nearClearingPost,CLEARING_APPROACH} from '../../config/clearing.js';
+import {regionalClearingBoard,nearClearingPost,clearingApproach} from '../../config/clearing.js';
 import {clearingSite,clearingNavigationSite} from '../../progression/story/clearing-site.js';
 import {livingForest} from '../../world/living-spaces.js';
 import {facilityOpen,facilityReason} from '../../config/town-restoration.js';
@@ -26,7 +26,7 @@ export function clearingPostReason(game){
  if(!livingForest(game))return '请先离开当前战场，返回营地清缴告示牌。';
  if(game.mainlineSpeech)return '请先结束当前对话，再操作清缴告示牌。';
  if(!['playing','paused'].includes(game.state))return '请先返回游戏，再操作清缴告示牌。';
- if(!facilityOpen(game.progress,'clearing'))return facilityReason(game.progress,'clearing');
+ if(!regionalClearingBoard(game.player)&&!facilityOpen(game.progress,'clearing'))return facilityReason(game.progress,'clearing');
  if(!nearClearingPost(game.player))return '请先靠近清缴告示牌，再操作。';
  // 已接取的继续按钮只恢复导航；新接取还须检查预览和战斗状态。
  if(!game.progress.living.patrolActive){
@@ -45,7 +45,7 @@ export function acceptClearingPost(game){
 }
 // 已接取后沿路线到站牌附近，HUD 和波次阶段不再提前吞掉赶路目标。
 export function clearingObjective(game){
- const stage=clearingStage(game),accept=stage==='accept',site=accept?CLEARING_APPROACH:clearingNavigationSite(game.progress);
+ const stage=clearingStage(game),accept=stage==='accept',site=accept?clearingApproach(game.player):clearingNavigationSite(game.progress);
  const navigation=accept||worldDistance(game.player,site)>site.arrivalRadius;
  return {key:accept?'clearing-post':'boss-clearing',site,navigation,clearingStage:stage,
   label:accept?'去清缴告示牌接取':navigation?'前往清缴场站牌附近':stage==='boss'?'领主即将登场':stage==='boss-fight'?'击败森林领主':'清理当前怪潮',
