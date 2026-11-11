@@ -1,6 +1,6 @@
 // 护盾发生器与立体罩体分层绘制，所有曲面和命中点使用正式拦截几何。
 import {box,oval,poly,outline} from './primitives.js';
-import {energyShieldShape} from '../combat/energy-shield-surface.js';
+import {energyShieldShape,activeSEShield} from '../combat/energy-shield-surface.js';
 
 // 厚边、斜切面和内嵌能源核赋予发生器厚度，保持既有握持原点。
 export function drawShieldEmitter(c) {
@@ -15,10 +15,14 @@ export function drawShieldEmitter(c) {
 
 // 后半罩体位于猫与车之后；前半罩体在装甲之后，避免屏障被车壳切开。
 export function drawEnergyShield(c,game,position=game.player,reduced=false,layer='front') {
- const w=game.weapon();if(w.attackKind!=='defense')return;
- const m=game.magazines[game.loadout.weapon],impacts=m?.shieldImpacts||[];
- if(!m||m.ammo<=0&&!impacts.length)return;
- const {x,y,rx,ry}=energyShieldShape(position,game.vehicle?.active),powered=m.ammo>0;
+ const m=game.weapon().attackKind==='defense'?game.magazines[game.loadout.weapon]:null;
+ const se=activeSEShield(game);
+ if(!m&&!se)return;
+ const vehicleHits=se&&game.seShieldEffects?.vehicle===game.vehicle?game.seShieldEffects.shieldImpacts:null;
+ const impacts=vehicleHits?.length?[...(m?.shieldImpacts||[]),...vehicleHits]:m?.shieldImpacts||[];
+ const powered=m?.ammo>0||se?.shield>0;
+ if(!powered&&!impacts.length)return;
+ const {x,y,rx,ry}=energyShieldShape(position,game.vehicle?.active);
  c.save();c.globalAlpha=1;
  if(layer==='back'){
   if(powered){

@@ -90,3 +90,20 @@ test('自动驾驶沿主线和邻里正式任务路点行驶，到达任务交�
   assert.ok(worldDistance(g.player,target)<=100);
  }
 });
+
+// 通过实际承伤入口确认未装备手盾时也能在盾面拦截，破盾涟漪会在暂停后继续消退。
+test('车载盾在来袭侧显示命中，破盾余光与车体伤害分开结算',async()=>{
+ const {traceEnergyShield,energyShieldShape}=await import('../src/combat/energy-shield-surface.js');
+ const g=scene(),b=equip(g,'shield'),shape=energyShieldShape(g.player,true);
+ b.shield=35;
+ const source={x:shape.x-200,y:shape.y},hit=traceEnergyShield(g,source,shape);
+ assert.ok(hit);assert.equal(hit.x,shape.x-shape.rx);
+ const hp=g.vehicle.hp;g.hurt(15,hit);
+ assert.equal(g.vehicle.hp,hp);assert.equal(b.shield,20);
+ assert.ok(Math.abs(Math.abs(g.seShieldEffects.shieldImpacts[0].angle)-Math.PI)<1e-8);
+ g.hurt(25,{x:shape.x+200,y:shape.y});
+ assert.equal(b.shield,0);assert.ok(g.vehicle.hp<hp);assert.equal(traceEnergyShield(g,source,shape),null);
+ assert.equal(g.seShieldEffects.shieldImpacts.at(-1).angle,0);
+ g.state='paused';updateSEDevices(g,1);assert.equal(g.seShieldEffects.shieldImpacts.length,2);
+ g.state='playing';updateSEDevices(g,.5);assert.equal(g.seShieldEffects.shieldImpacts.length,0);
+});
