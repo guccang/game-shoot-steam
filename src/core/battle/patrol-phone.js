@@ -7,6 +7,8 @@ import {LIVING_PLACES,LIVING_ACTION_NAMES,LIVING_REQUESTS} from '../../config/li
 import {livingForest} from '../../world/living-spaces.js';
 import {worldDistance} from '../../world/coordinates.js';
 import {requestWorldNavigation} from '../navigation/world-navigation.js';
+import {driveToTrackedTask} from '../../combat/vehicle-se.js';
+import {seActive} from '../../config/vehicle-se.js';
 import {COTTAGE} from '../../config/cottage.js';
 // 通讯录与现场居民共享身份；当前扮演的角色不会出现在自己的联系人里。
 export function phoneContacts(game){return ownsKeepsake(game.progress,'patrol-phone')?livingResidents(game):[];}
@@ -37,5 +39,11 @@ export function navigatePhone(game,id){
  const call=id==='home'?null:callNeighbor(game,id);if(call&&!call.ok)return call;
  const site=call?.site||{...COTTAGE.door,id:'cottage',name:'巡林小屋',mapId:'forest'};
  requestWorldNavigation(game,site,call?'去找'+call.name:'回巡林小屋',{direct:true});
+ // 主动选目的地即发出新的驾驶指令，即使上次手动接管的是同一个路点。
+ if(seActive(game,'autopilot')){
+  game.sceneApproach=null;
+  if(game.parking)game.parking.phase='cancelled';
+  driveToTrackedTask(game);
+ }
  return {ok:true,message:call?'已标出'+call.name+'的位置，路线会跟随邻居移动。':'已标出回小屋的路。'};
 }
