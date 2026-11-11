@@ -31,7 +31,7 @@ export function vehicleFlarePose(game,f=game.progress?.supplies?.activeFlare){
  const height=peak*(age<R.rise?2*up-up*up:1-fall);
  return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.descentStart?'aloft':age<R.landing?'descent':'fade',radius:(24+(R.radius*(1+.15*(f.level||0))-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
 }
-// 一枚光源照亮约三片基础视野面积；高度只影响弹体，不把地面光池移到空中。
+// 弹体悬在空中，夜雾和目标可见性都使用下方同一个局部光圈。
 export function vehicleFlareLights(game){
  const supplies=game.progress?.supplies;
  const lights=[];
