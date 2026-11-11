@@ -12,6 +12,7 @@ export const TOWN_LAYOUT = {
   travel: {x:1040,y:690},
   bounds: {left:-820,right:1090,top:-58,bottom:1400},
   refinery: {x:-650,y:300,width:200,height:140},
+  seWorkshop: {x:-650,y:1000,width:200,height:140},
   factory: {x:-650,y:650,width:200,height:140},
   weapons: {x:350,y:570,width:150,height:135,scale:.95},
   garage: {x:350,y:990,width:220,height:175},
@@ -39,6 +40,7 @@ for(const [id,p] of Object.entries(TOWN_LAYOUT))TOWN_LAYOUT[id]=id==='bounds'?{.
 export const TOWN_PATHS = [
   [{x:-650,y:365},{x:-340,y:365}],
   [{x:-650,y:365},{x:-490,y:365},{x:-490,y:715},{x:-650,y:715}],
+  [{x:-650,y:1065},{x:-490,y:1065},{x:-490,y:715}],
   [{x:-490,y:715},{x:-340,y:729}],
   // 建筑公司支路连接小屋院前，不占用原停车位。
   [{x:1015,y:560},{x:1050,y:560},{x:1050,y:729}],

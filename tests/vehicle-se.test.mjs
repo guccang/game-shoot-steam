@@ -201,3 +201,38 @@ test('手机回小屋在停稳及手动接管后都能直接重新发车',async(
  assert.equal(g.seControl,null);
  assert.ok(Math.hypot(g.player.x-door.x,g.player.y-door.y)<=90);
 });
+
+test('改装工坊建成后可进门，旧盾等比例扩容，改装扣费和等级随车保存',async()=>{
+ const {WORKSHOP_INTERIORS,interiorShopkeeper}=await import('../src/config/workshop-interiors.js');
+ const {enterWorkshop}=await import('../src/core/home/cottage.js');
+ const {seShieldMax}=await import('../src/config/vehicle-se.js');
+ const g=scene(),room=WORKSHOP_INTERIORS.seWorkshop;
+ g.vehicle.active=false;g.progress.campLand.owned.push('industry');
+ Object.assign(g.player,room.door);
+ assert.equal(enterWorkshop(g,'seWorkshop'),false);
+ g.progress.restoration.repaired.push('seWorkshop');
+ assert.equal(enterWorkshop(g,'seWorkshop'),true);
+ assert.ok(interiorShopkeeper(g.cottage));
+ const old=normalizeVehicleSE([{owned:['shield'],installed:['shield'],shield:90}],1)[0];
+ assert.equal(old.shield,250);
+ g.cottage={kind:'vehicle'};
+ assert.ok(configureVehicleSE(g,1,'shield','install').ok);
+ assert.equal(seBuild(g.progress,1).shield,500);
+ assert.equal(configureVehicleSE(g,1,'shield','upgrade').ok,false);
+ g.cottage={kind:'seWorkshop'};
+ const coins=g.progress.coins;
+ g.livingPersist=()=>false;
+ assert.equal(configureVehicleSE(g,1,'shield','upgrade').ok,false);
+ assert.equal(g.progress.coins,coins);
+ g.livingPersist=()=>true;
+ for(let n=1;n<=3;n++){
+  assert.ok(configureVehicleSE(g,1,'shield','upgrade').ok);
+  assert.equal(seShieldMax(seBuild(g.progress,1)),500+n*150);
+ }
+ assert.equal(g.progress.coins,coins-9000);
+ assert.equal(configureVehicleSE(g,1,'shield','upgrade').ok,false);
+ g.progress=validateProgress(g.progress);g.vehicle.active=true;g.cottage=null;
+ updateSEDevices(g,60);
+ assert.equal(seBuild(g.progress,1).shield,950);
+ assert.equal(absorbSEShield(g,1000),50);
+});

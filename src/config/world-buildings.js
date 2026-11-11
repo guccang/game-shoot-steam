@@ -11,6 +11,7 @@ import {LIVING_PLACES} from './living-world.js';
 export const WORLD_BUILDINGS=[
  {...CAMP_DECOR_SHOP,solidBeforeRepair:true,rects:[[-50,-75,50,4]]},
  ...REGIONAL_CAMPS.flatMap(c=>regionalBuildings(c).map(b=>({...b,regional:true,rects:[[-(b.kind==='legendary'?101:b.kind==='seed'?54:70),-105,b.kind==='legendary'?108:b.kind==='seed'?54:70,5]]}))),
+ {id:'seWorkshop',...TOWN_LAYOUT.seWorkshop,rects:[[-92,-118,92,4]]},
  {id:'refinery',...TOWN_LAYOUT.refinery,rects:[[-92,-118,92,4]]},
  {id:'factory',...TOWN_LAYOUT.factory,rects:[[-92,-118,92,4]]},
  {id:'outdoor',...TOWN_LAYOUT.outdoor,rects:[[-106,-114,-62,5],[62,-114,106,5],[-106,-114,106,-104]]},

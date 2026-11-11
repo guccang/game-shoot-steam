@@ -1,3 +1,4 @@
+import {VEHICLE_SE,SE_MAX_UPGRADE,SE_UPGRADE_EFFECTS,seBuild,seLevel,seUpgradeCost} from '../config/vehicle-se.js';
 import {vehicleSEMarkup} from './vehicle-se.js';
 import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
 import {REGIONAL_CAMPS} from '../config/regional-camps.js';
@@ -62,8 +63,24 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
   draftZones??={...vehicleRefitStats(game.progress,hull).zones};
   content.innerHTML=refitMarkup(game,hull,refitTab,draftZones,vehicleBuildReason(game,hull));cards.forEach(n=>content.append(n));
  }
+ // 改装台按车列出已购装置，库存中的装置同样保留强化等级。
+ function renderSEWorkshop(){
+  const owned=game.progress.vehicleHulls.flatMap((v,i)=>v?[i]:[]);
+  if(!owned.includes(hull))hull=owned[0]??null;
+  get('title').textContent='SE 改装工坊';
+  get('subtitle').textContent='持有金币 · '+game.progress.coins;
+  if(hull===null){get('content').textContent='尚未拥有载具。';return;}
+  const build=seBuild(game.progress,hull);
+  const selector='<label>选择载具 <select data-cargo-hull>'+owned.map(i=>'<option value="'+i+'" '+(hull===i?'selected':'')+'>'+vehicleModel(i).name+'</option>').join('')+'</select></label>';
+  const rows=build.owned.map(key=>{
+   const level=seLevel(build,key),price=seUpgradeCost(key,level);
+   const button=level===SE_MAX_UPGRADE?'已达最高级':'改装至 +'+(level+1)+' · '+price+' 金币';
+   return '<section class="ui-inset"><h3>'+VEHICLE_SE[key].name+' · +'+level+'</h3><p>每级'+SE_UPGRADE_EFFECTS[key]+'</p><button class="ui-button" data-se-key="'+key+'" data-se-action="upgrade" '+(level===SE_MAX_UPGRADE||price>game.progress.coins?'disabled':'')+'>'+button+'</button></section>';
+  });
+  get('content').innerHTML=selector+(rows.join('')||'<p>这辆车还没有 SE 装置。</p>');
+ }
  // 仅操作后刷新，长列表不会被每帧重绘打断滚动。
- function render(){get('title').textContent=mode==='fit'?'载具改造':'载具仓库';get('subtitle').textContent=mode==='fit'?'引擎 · 装甲 · 底盘区域，共同决定能力上限':'点击货物移到背包，装卸需靠近车辆';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();if(mode==='fit'&&hull!==null)get('content').insertAdjacentHTML('beforeend',vehicleSEMarkup(game,hull,{fit:true}));if(mode!=='fit')get('content').insertAdjacentHTML('beforeend',treasureCargoMarkup());}
+ function render(){if(mode==='seUpgrade'){get('message').textContent=message;renderSEWorkshop();return;}get('title').textContent=mode==='fit'?'载具改造':'载具仓库';get('subtitle').textContent=mode==='fit'?'引擎 · 装甲 · 底盘区域，共同决定能力上限':'点击货物移到背包，装卸需靠近车辆';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();if(mode==='fit'&&hull!==null)get('content').insertAdjacentHTML('beforeend',vehicleSEMarkup(game,hull,{fit:true}));if(mode!=='fit')get('content').insertAdjacentHTML('beforeend',treasureCargoMarkup());}
  dialogs.register(panel.id,{focusId:'logistics-close',onOpen:render});
  // 从载具页面进入时将货舱放到文档末尾，使嵌套弹窗的触控层级与打开顺序一致。
  function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';refitTab='vehicle';draftZones=null;if(!panel.open)root.body.append(panel);dialogs.open(panel.id);if(mode==='cargo'&&hull!==null&&inspectLogisticsLesson(game,'vehicleLoadViewed'))onChange();}

@@ -344,7 +344,7 @@ export function drawWorkshopInterior(renderer, g = renderer.game) {
     else if(item.type==='shopkeeper'){
       drawCat(c,item.x,item.y,4,Math.PI/2,PLAYER_SCALE,0,0,null,1,null,0,false,false,null,0,null,0,true);
       c.fillStyle='#fff2d0';c.strokeStyle='#58765c';box(c,item.x-40,item.y-78,80,23,6,'#fff2d0','#58765c',1);
-      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(room.kind==='refinery'?'提炼管理员':room.kind==='factory'?'加工管理员':room.kind==='warehouse'?'仓库管理员':room.kind==='cat-home'?'猫窝管理员':room.kind==='furniture'?'家具售货员':'售货员',item.x,item.y-62);
+      c.fillStyle='#3e6049';c.font='bold 12px sans-serif';c.textAlign='center';c.fillText(room.kind==='seWorkshop'?'SE 改装师':room.kind==='refinery'?'提炼管理员':room.kind==='factory'?'加工管理员':room.kind==='warehouse'?'仓库管理员':room.kind==='cat-home'?'猫窝管理员':room.kind==='furniture'?'家具售货员':'售货员',item.x,item.y-62);
     }
     // 分类箱保留中央通道，底座与房间碰撞使用同一尺寸。
     else if(item.type==='warehouse-crate'){box(c,item.x-32,item.y-40,64,56,5,'#b49a70','#365a48',2);box(c,item.x-34,item.y-40,68,12,3,'#d3bf8c','#365a48',2);box(c,item.x-24,item.y-19,48,22,3,'#fff2d0','#58765c',1);c.fillStyle='#365a48';c.font='bold 13px sans-serif';c.textAlign='center';c.fillText(item.label,item.x,item.y-3);}

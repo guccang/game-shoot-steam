@@ -1,7 +1,7 @@
 // SE 运行控制：自动运动只输出输入向量，伤害与火箭沿用正式战斗链。
 import {energyShieldPoint} from './energy-shield-surface.js';
 import {recordShieldImpact,advanceShieldImpacts} from './energy-shield.js';
-import {seActive,seBuild} from '../config/vehicle-se.js';
+import {seActive,seBuild,seLevel,seShieldMax} from '../config/vehicle-se.js';
 import {canonical,nearest,worldDistance} from '../world/coordinates.js';
 import {trackedLivingRequest} from '../core/navigation/task-tracking.js';
 import {livingRequestTarget} from '../core/camp/living-world.js';
@@ -89,6 +89,7 @@ export function combatSteering(g,s){
  const closest=targets[0],previous=s.steeringTarget;
  const target=previous&&targets.includes(previous)&&worldDistance(p,previous)<=worldDistance(p,closest)+30?previous:closest;
  s.steeringTarget=target;
+ const horizon=.6+.15*seLevel(seBuild(g.progress,g.vehicle.index),'combat');
  const nearby=targets.slice(0,16),trees=g.trees||[],grid=treeGrid(trees);
  const bolts=(g.enemyBolts||[]).slice(0,24).map(b=>({...nearest(b,p),vx:b.dx*b.speed,vy:b.dy*b.speed,radius:b.radius||0}));
  let best={x:0,y:0},bestScore=-Infinity;
@@ -96,7 +97,7 @@ export function combatSteering(g,s){
   if(worldDistance(q,s.anchor)>s.radius-25||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid))continue;
   let score=target?-Math.max(0,Math.abs(worldDistance(q,target)-150)-20)*.1:-worldDistance(q,s.anchor)*.03;
   for(const e of nearby)score-=Math.max(0,95-worldDistance(q,e))*3;
-  for(const b of bolts){const {vx,vy}=b,t=Math.max(0,Math.min(.6,((q.x-b.x)*vx+(q.y-b.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-b.x-vx*t,q.y-b.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
+  for(const b of bolts){const {vx,vy}=b,t=Math.max(0,Math.min(horizon,((q.x-b.x)*vx+(q.y-b.y)*vy)/Math.max(1,vx*vx+vy*vy))),d=Math.hypot(q.x-b.x-vx*t,q.y-b.y-vy*t);score-=Math.max(0,70+(b.radius||0)-d)*5;}
   // 停在合适射距内；移动方案接近时优先延续原方向，来弹风险仍逐帧比较。
   if(i<0)score+=s.steeringDirection===null?3:2;
   else if(s.steeringDirection)score-=3*(1-v.x*s.steeringDirection.x-v.y*s.steeringDirection.y);
@@ -157,9 +158,9 @@ export function updateSEDevices(g,dt){
   else if(g.state==='playing'&&dt>0)advanceShieldImpacts(g.seShieldEffects,dt);
  }
  if(g.state!=='playing'||dt<=0||!g.vehicle.active||g.cottage)return;const b=seBuild(g.progress,g.vehicle.index);
- if(seActive(g,'shield')){const wait=Math.min(dt,b.shieldWait);b.shieldWait-=wait;b.shield=Math.min(180,b.shield+(dt-wait)*18);}
+ if(seActive(g,'shield')){const wait=Math.min(dt,b.shieldWait);b.shieldWait-=wait;b.shield=Math.min(seShieldMax(b),b.shield+(dt-wait)*18);}
  if(!seActive(g,'rocket')||g.parking?.idle)return;b.rocketWait=Math.max(0,b.rocketWait-dt);const stock=g.progress.supplies.vehicles[g.vehicle.index];if(b.rocketWait>0||stock.heavy<2)return;
  const t=[...g.enemies,...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&worldDistance(t,g.player)<=360&&attackTargetKnown(g,t)&&(!g.combatLineClear||g.combatLineClear(g.player,nearest(t,g.player)))).sort((a,b)=>worldDistance(a,g.player)-worldDistance(b,g.player))[0];if(!t)return;
- const p=nearest(t,g.player),angle=Math.atan2(p.y-g.player.y,p.x-g.player.x);stock.heavy-=2;b.rocketWait=8;
+ const p=nearest(t,g.player),angle=Math.atan2(p.y-g.player.y,p.x-g.player.x);stock.heavy-=2;b.rocketWait=8-seLevel(b,'rocket');
  for(const side of [-1,1]){const a=angle+side*.035,d={x:Math.cos(a),y:Math.sin(a)},m={x:g.player.x-Math.sin(angle)*side*19,y:g.player.y+Math.cos(angle)*side*19-12};emitWeaponAttack(g,{id:'se-rocket',vehicleMounted:true,targetTrees:true,range:420,speed:720,pellets:1,spread:0,hitRadius:5,blastRadius:75,blastRatio:.65,impulse:250,color:'#efbb7c'},m,d,125,false,true);}
 }
