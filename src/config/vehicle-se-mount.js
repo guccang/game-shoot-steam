@@ -7,5 +7,5 @@ export function rearSEMount(player,hull,installed,key){
  const slots=order.filter(id=>installed.includes(id));
  const pitch=Math.min(20,Math.max(14,footprint.x*.48));
  const index=slots.indexOf(key);
- return {x:player.x+(index-(slots.length-1)/2)*pitch,y:player.y-footprint.y-24,pitch};
+ return {x:player.x+(index-(slots.length-1)/2)*pitch,y:player.y-footprint.y-6,pitch};
 }

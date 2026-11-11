@@ -1,3 +1,4 @@
+import {drawSEModule} from './se-module-art.js';
 import {rearSEMount} from '../config/vehicle-se-mount.js';
 import {FLARE_RULES} from '../config/vehicle-special-ammo.js';
 import {rearFlareMuzzle} from '../world/vehicle-flares.js';
@@ -94,35 +95,21 @@ function flame(c, time, phase, reduced, rain) {
   c.restore();
 }
 // 共用绘制与动作输入，风格差异由配置提供。
-// 外置双支臂连接车尾横梁，各舱的轮廓与工作灯对应装置功能。
+// 后置装甲舱压住车尾接缝，斜切侧壁、上沿和紧固件形成厚度。
 export function drawRearSERack(c,game,player){
  const hull=game.vehicle.index,build=seBuild(game.progress,hull),keys=build.installed;
  if(!game.progress.vehicleHulls[hull]||!keys.length)return;
  const mounts=keys.map(key=>rearSEMount(player,hull,keys,key));
  const y=mounts[0].y,left=Math.min(...mounts.map(p=>p.x))-8,right=Math.max(...mounts.map(p=>p.x))+8;
- const edge='#344740',metal='#879991';
+ const edge='#35473e';
  c.save();
- for(const x of [left+4,right-4])box(c,x-2,y+4,5,34,2,metal,edge,1.5);
- box(c,left-2,y+2,right-left+4,8,3,'#576d63',edge,2);
+ poly(c,[[left-4,y-3],[left,y-7],[right,y-7],[right+4,y-3],[right+4,y+8],[right,y+13],[left,y+13],[left-4,y+8]],'#5a685b',edge,1.8);
+ poly(c,[[left-4,y-3],[left,y-7],[right,y-7],[right+4,y-3],[right+1,y+3],[left-1,y+3]],'#94a08a',edge,1.2);
+ box(c,left,y+6,right-left,4,1.5,'#47564b',edge,1);
+ for(const x of [left,right])oval(c,x,y+7,1.2,1.2,'#dbca9b');
  for(const [i,key] of keys.entries()){
-  const p=mounts[i],enabled=!build.disabled.includes(key);
-  const lamp=enabled?({flare:'#ffd780',rocket:'#ff9e67',shield:'#80ebdc',autopilot:'#abdd91',combat:'#f1ab83'})[key]:'#859185';
-  c.save();c.translate(p.x,p.y);
-  box(c,-7,-4,14,10,3,metal,edge,1.6);
-  if(key==='flare'){
-   box(c,-5,-7,10,9,2,'#ad9f75',edge,1.5);
-   oval(c,0,-6,5,2.5,lamp,edge,1.5);oval(c,0,-6,2.5,1.2,edge);
-  }else if(key==='rocket'){
-   for(const dx of [-3,3]){box(c,dx-2.5,-7,5,9,1.5,'#bd8968',edge,1);oval(c,dx,-5,2,1.4,lamp,edge,1);}
-  }else if(key==='shield'){
-   poly(c,[[0,-11],[5,-6],[4,0],[0,3],[-4,0],[-5,-6]],lamp,edge,1.5);
-   poly(c,[[0,-9],[0,0],[-3,-5]],'#c3ebe1');
-  }else if(key==='autopilot'){
-   box(c,-2,-10,4,9,1,edge);oval(c,0,-9,7,3,lamp,edge,1.5);
-  }else{
-   box(c,-6,-8,12,7,2,edge);oval(c,0,-5,3,2,lamp);
-  }
-  box(c,-4,3,8,1.5,.5,lamp);c.restore();
+  c.save();c.translate(mounts[i].x,y);
+  drawSEModule(c,key,!build.disabled.includes(key));c.restore();
  }
  const flare=game.progress.supplies?.activeFlare;
  if(keys.includes('flare')&&flare&&flare.mapId===game.mapId){

@@ -28,6 +28,5 @@
 #game-frame>#vehicle-button{overflow:visible}
 .se-device-title{display:flex;align-items:center;gap:.5rem}
 #vehicle-button .vehicle-se-badges{position:absolute;bottom:calc(100% - 3px);left:0;width:84px;display:flex;flex-wrap:wrap;gap:2px;pointer-events:none}
-.vehicle-mode-icon{display:inline-grid;flex:none;place-items:center;width:26px;height:26px;box-sizing:border-box;border:2px solid currentColor;border-radius:50%;color:var(--ui-forest);background:var(--ui-paper);box-shadow:0 2px 0 #315c4326;pointer-events:none}
-.vehicle-mode-icon[data-mode=combat]{color:#81432d;background:#fff1d4}
-.vehicle-mode-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vehicle-mode-icon{display:inline-grid;flex:none;place-items:center;width:26px;height:26px;pointer-events:none}
+.vehicle-mode-icon svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #35473e33)}
