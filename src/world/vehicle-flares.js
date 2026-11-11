@@ -1,6 +1,6 @@
 import {rearSEMount} from '../config/vehicle-se-mount.js';
 import {seActive,seBuild,seLevel} from '../config/vehicle-se.js';
-// 单枚空中照明弹：抛物线升空、慢速下降与落地熄灭，灯光与可见性共用同一时钟。
+// 空中照明弹：抛物线升空、慢速下降与落地熄灭，灯光与可见性共用同一时钟。
 import {FLARE_RULES as R} from '../config/vehicle-special-ammo.js';
 import {insideSurfaceCamp} from './camp-boundary.js';
 import {worldDistance,canonical,nearest} from './coordinates.js';
@@ -12,8 +12,8 @@ export function rearFlareMuzzle(player,hull,installed=['flare']){
 // 连续平滑插值用于升空扩光和落地余辉，暂停不依赖真实时间。
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 // 返回弹体脚下投影与真实高度；原点只保存发射位置，老档剩余时间由校验层限幅。
-export function vehicleFlarePose(game){
- const f=game.progress?.supplies?.activeFlare;if(!f||f.life<=0||f.mapId!==game.mapId||game.cottage||game.realm||game.story)return null;
+export function vehicleFlarePose(game,f=game.progress?.supplies?.activeFlare){
+ if(!f||f.life<=0||f.mapId!==game.mapId||game.cottage||game.realm||game.story)return null;
  const age=Math.max(0,R.duration-f.life),up=Math.min(1,age/R.rise);
  // 开伞后在高空轻缓下沉，末段才集中下降；高度、亮度和光圈沿用同一连续曲线。
  const drift=smooth((age-R.rise)/(R.descentStart-R.rise));
@@ -32,12 +32,23 @@ export function vehicleFlarePose(game){
  return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.descentStart?'aloft':age<R.landing?'descent':'fade',radius:(24+(R.radius*(1+.15*(f.level||0))-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
 }
 // 一枚光源照亮约三片基础视野面积；高度只影响弹体，不把地面光池移到空中。
-export function vehicleFlareLights(game){const p=vehicleFlarePose(game);return p&&p.radius>1?[{...p,id:'vehicle-flare',type:'fixture',kind:'flare',height:0,flightHeight:p.height,offset:0,flare:true,flying:true}]:[];}
+export function vehicleFlareLights(game){
+ const supplies=game.progress?.supplies;
+ const lights=[];
+ for(const flare of [supplies?.activeFlare,...(supplies?.previousFlares||[])]){
+  const p=vehicleFlarePose(game,flare);
+  if(p&&p.radius>0)lights.push({...p,id:flare===supplies.activeFlare?'vehicle-flare':`vehicle-flare-${flare.mapId}-${flare.x}-${flare.y}`,type:'fixture',kind:'flare',height:0,flightHeight:p.height,offset:0,flare:true,flying:true});
+ }
+ return lights;
+}
 // 补发按发射区域判定，不因升空初期光圈小或落地衰减反复消耗；到期后完整补发。
-export function vehicleFlareCovers(game,point=game.player){const f=game.progress?.supplies?.activeFlare;const pose=vehicleFlarePose(game);
+export function vehicleFlareCovers(game,point=game.player,f=game.progress?.supplies?.activeFlare){const pose=vehicleFlarePose(game,f);
  return !!pose&&(worldDistance(point,f)<R.departure||worldDistance(point,pose)<Math.min(R.departure,pose.radius));}
 // 交战射程只在真正亮起的光圈内恢复，余辉暗下去时平滑恢复夜间限制。
-export function vehicleFlareIllumination(game,point=game.player){const p=vehicleFlarePose(game);if(!p)return 0;const d=worldDistance(point,p);return Math.max(0,Math.min(1,(p.radius-d)/Math.max(1,p.radius*.2)))*p.power;}
+export function vehicleFlareIllumination(game,point=game.player){let power=0;
+ for(const p of vehicleFlareLights(game)){const d=worldDistance(point,p);power=Math.max(power,Math.max(0,Math.min(1,(p.radius-d)/Math.max(1,p.radius*.2)))*p.power);}
+ return power;
+}
 // 手动驾驶与巡战共用判断；无交战目标时仍按车速提前照路。
 function fightingNearVehicle(game){
  const threat=t=>t?.hp>0&&(t.id!=null&&t.id===game.vehicle.targetId||worldDistance(t,game.player)<=280);
@@ -46,6 +57,9 @@ function fightingNearVehicle(game){
 // 仅夜间驾驶自有载具消耗，离开范围或本枚完全熄灭后发射下一枚。
 export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  if(game.state!=='playing'||dt<=0)return;const s=game.progress.supplies;if(!s)return;
+ // 已经飞离镜头的弹体继续使用游戏时钟，只有燃尽才移除。
+ for(const flare of s.previousFlares||[])flare.life-=dt;
+ if(s.previousFlares?.length)s.previousFlares=s.previousFlares.filter(flare=>flare.life>0);
  if(s.activeFlare){s.activeFlare.life-=dt;if(s.activeFlare.life<=0)s.activeFlare=null;}
  if(!seActive(game,'flare')||!game.vehicle?.active||game.vehicle.hp<=0||game.surfaceNight<.55||!Number.isFinite(game.surfaceNight)||game.cottage||game.realm||game.story||game.fireActive||game.workshopTrial||game.campDefense||game.arrivalCinematic)return;
  const stock=s.vehicles[game.vehicle.index];if(!(stock?.flare>0))return;
@@ -56,12 +70,13 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  const vy=steering?driveSpeed*input.y/Math.max(1,inputLength):game.player.vy||0;
  const speed=Math.hypot(vx,vy);
  const moving=Number.isFinite(speed)&&speed>1;
- const combat=fightingNearVehicle(game),pose=vehicleFlarePose(game);
- if(pose){
+ const combat=fightingNearVehicle(game);
+ for(const flare of [s.activeFlare,...(s.previousFlares||[])]){
+  const pose=vehicleFlarePose(game,flare);if(!pose)continue;
   if(combat){
    // 原弹仍在车边时继续使用，闪避和倒车不会反复换弹。
    if(pose.age<R.rise||worldDistance(game.player,pose)<R.combatDeparture)return;
-  }else if(!moving){if(vehicleFlareCovers(game))return;}
+  }else if(!moving){if(vehicleFlareCovers(game,game.player,flare))return;}
   else {
    // 给新弹留足升空时间；巡航时在前方道路即将离开有效光区之前补射。
    const lookAhead=Math.min(R.radius*.4,speed*R.rise);
@@ -75,6 +90,7 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  // 弹道朝向取驾驶指令，初速取车身实速，避免起步或转向时按满速将光区甩远。
  const actualSpeed=Math.hypot(game.player.vx||0,game.player.vy||0);
  const flightSpeed=moving?Math.max(1,actualSpeed)*1.18:R.throwDistance/R.rise;
+ if(s.activeFlare)(s.previousFlares??=[]).push(s.activeFlare);
  stock.flare--;
  s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index,seBuild(game.progress,game.vehicle.index).installed)),angle,travel,flightSpeed,...(combat?{combat:true}:{}),level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});

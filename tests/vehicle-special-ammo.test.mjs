@@ -131,3 +131,24 @@ test('夜战照明采用近投，倒车不连发，远离才补射',()=>{
  g.player.x+=200;updateVehicleFlares(g,.05);assert.equal(g.progress.supplies.vehicles[1].flare,3);
  updateVehicleFlares(g,.05);assert.equal(g.progress.supplies.vehicles[1].flare,3);
 });
+
+// 驶出视野补发后，两处光源独立计时；折返与读档都保留旧弹的剩余寿命。
+test('照明弹离屏后原地照明，满45秒逐枚熄灭',()=>{
+ const g=scene();g.surfaceNight=1;g.progress.supplies.vehicles[1].flare=4;
+ updateVehicleFlares(g,.01);
+ const start={...g.player};g.player.x+=1400;
+ updateVehicleFlares(g,10);
+ assert.equal(vehicleFlareLights(g).length,2);
+ assert.ok(vehicleFlareIllumination(g,start)>0);
+ g.progress=validateProgress(g.progress);
+ Object.assign(g.player,start);
+ updateVehicleFlares(g,34);
+ assert.equal(vehicleFlareLights(g).length,2);
+ assert.equal(g.progress.supplies.vehicles[1].flare,2);
+ g.vehicle.active=false;
+ updateVehicleFlares(g,1);
+ assert.equal(vehicleFlareLights(g).length,1);
+ assert.equal(vehicleFlareIllumination(g,start),0);
+ updateVehicleFlares(g,10);
+ assert.equal(vehicleFlareLights(g).length,0);
+});

@@ -48,7 +48,8 @@ export function fixturePower(fixture, time, environment, reduced = false) {
 
 // 可见镜像包含视口外照进来的光源，不创建额外实体或改变碰撞。
 export function visibleLights(view, time, environment, reduced = false, game=null) {
-  return visibleBodies([...(game?.mapId==='forest'&&!game.realm?[...activeFixedLights(game.progress),...campRoadLights(game.progress),...(!game.story&&!game.cottage&&!game.campDefense?campDecorLights(game.progress):[])]:LIGHT_FIXTURES),...(game?vehicleFlareLights(game):[])], view, CAMP_LIGHTING.lampRadius+120).map((fixture) => ({
+  const flares=game?vehicleFlareLights(game):[];
+  return visibleBodies([...(game?.mapId==='forest'&&!game.realm?[...activeFixedLights(game.progress),...campRoadLights(game.progress),...(!game.story&&!game.cottage&&!game.campDefense?campDecorLights(game.progress):[])]:LIGHT_FIXTURES),...flares], view, Math.max(CAMP_LIGHTING.lampRadius+120,...flares.map(light=>light.radius))).map((fixture) => ({
     ...fixture,
     power: fixture.flare?fixture.power:fixturePower(fixture, time, environment, reduced),
   }));
