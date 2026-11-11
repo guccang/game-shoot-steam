@@ -1,6 +1,6 @@
 import {syncSEControl} from '../../combat/vehicle-se.js';
 // SE 装配事务与操作入口；装配在工坊完成，控制开关可随车操作。
-import {VEHICLE_SE,SE_INSTALL_LIMIT,SE_MAX_UPGRADE,seLevel,seUpgradeCost,seShieldMax,usesPersonalSE,seBuild,normalizeVehicleSE} from '../../config/vehicle-se.js';
+import {VEHICLE_SE,SE_MAX_UPGRADE,seLevel,seUpgradeCost,seShieldMax,usesPersonalSE,seBuild,normalizeVehicleSE} from '../../config/vehicle-se.js';
 import {regionalCampHere} from '../camp/regional-camp-access.js';
 import {vehicleBuildReason} from './vehicle-build.js';
 import {vehicleLoad} from '../../progression/inventory/load-weight.js';
@@ -37,7 +37,6 @@ export function configureVehicleSE(g,h,key,action,value){
   b.owned.push(key);if(key==='shield')b.shield=seShieldMax(b);
  }
  else if(action==='install'){if(b.installed.includes(key))return {ok:false,message:'该装置已经安装。'};
-  if(b.installed.length>=SE_INSTALL_LIMIT)return {ok:false,message:`每辆车最多安装 ${SE_INSTALL_LIMIT} 个 SE 装置，请先卸下一件。`};
   cost=b.owned.includes(key)?0:r.coins;if(next.coins<cost)return {ok:false,message:'金币不足。'};if(!b.owned.includes(key)){b.owned.push(key);if(key==='shield')b.shield=seShieldMax(b);}b.installed.push(key);b.disabled=b.disabled.filter(k=>k!==key);next.coins-=cost;if(vehicleLoad(g,h,{progress:next,driver:true}).overloaded)return {ok:false,message:'安装后载荷不足，请先卸货。'};}
  else if(action==='remove'){if(!b.installed.includes(key))return {ok:false,message:'该装置未安装。'};b.installed=b.installed.filter(k=>k!==key);b.disabled=b.disabled.filter(k=>k!==key);}
  else if(action==='toggle'){if(!b.installed.includes(key))return {ok:false,message:'请先安装装置。'};b.disabled=b.disabled.includes(key)?b.disabled.filter(k=>k!==key):[...b.disabled,key];}
