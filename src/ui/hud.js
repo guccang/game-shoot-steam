@@ -1,3 +1,4 @@
+import {setHidden,setText} from './shared/dom-state.js';
 import {bossCombatActive} from '../core/battle/boss-engagement.js';
 import {heroExperience} from '../progression/player/hero-experience.js';
 import {unreadMailCount} from '../progression/camp/mailbox.js';
@@ -34,7 +35,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
   let pawAnimation = null, pawSequence = 0;
   // 将游戏快照映射到界面，不改变规则数据。
   function updateUI() {
-    const unread=unreadMailCount(game.progress),badge=$('phone-mail-badge');if(badge){badge.hidden=!unread;badge.textContent=unread>99?'99+':String(unread);$('phone-button').setAttribute('aria-label',unread?`打开巡林手机，${unread}封未读邮件`:'打开巡林手机');}
+    const unread=unreadMailCount(game.progress),badge=$('phone-mail-badge');if(badge){setHidden(badge, !unread);setText(badge, unread>99?'99+':String(unread));$('phone-button').setAttribute('aria-label',unread?`打开巡林手机，${unread}封未读邮件`:'打开巡林手机');}
     if(canvasRevision!==canvasRecoveryRevision()){canvasRevision=canvasRecoveryRevision();portraitKind=null;inventory.invalidateArt();}
     // 只按正式战斗状态精简顶栏；暂停不闪回资源栏，结算、退出和离开清缴区自动恢复。
     const clearing=clearingCombatActive(game);
@@ -44,22 +45,22 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const p = game.loadout,
       started = game.state !== 'ready';
     updateVehicleHud(root, game);
-    $('game-frame').dataset.state = game.state;
+    if ($('game-frame').dataset.state !== game.state) $('game-frame').dataset.state = game.state;
     // 借用装备只替换战斗属性，钱包始终显示玩家实际持有资源。
     const wallet=game.story?game.progress:p;
-    $('coins').textContent = wallet.coins.toLocaleString();
-    $('wood').textContent = wallet.wood.toLocaleString();
+    setText($('coins'), wallet.coins.toLocaleString());
+    setText($('wood'), wallet.wood.toLocaleString());
     const coinsNode=root.querySelector('[data-coins]'),coinsExact=wallet.coins.toLocaleString();
-    coinsNode.textContent=compactWalletResource(wallet.coins);coinsNode.title=coinsExact;
+    setText(coinsNode, compactWalletResource(wallet.coins));coinsNode.title=coinsExact;
     coinsNode.parentElement.setAttribute('aria-label',`${i18nText("balance.app.bbece6f829")} ${coinsExact}`);
     // 主界面统计全部自有木头，交易页仍显示能直接消费的仓库存量。
     const wood=woodInventory(game.progress),woodNode=root.querySelector('[data-wood]');
     const woodLabel=`木头总计 ${wood.total.toLocaleString()} · 背包 ${wood.bag.toLocaleString()} · 载具 ${wood.vehicles.toLocaleString()} · 仓库 ${wood.warehouse.toLocaleString()}`;
-    woodNode.textContent=compactTotalResource(wood.total);woodNode.title=woodLabel;woodNode.parentElement.setAttribute('aria-label',woodLabel);
+    setText(woodNode, compactTotalResource(wood.total));woodNode.title=woodLabel;woodNode.parentElement.setAttribute('aria-label',woodLabel);
     const woodButton=woodNode.parentElement.querySelector('[data-resource-info]');if(woodButton){woodButton.title=woodLabel;woodButton.setAttribute('aria-label',woodLabel+'，查看获取说明');}
-    $('kills').textContent = game.kills;
-    $('trees').textContent = game.chopped;
-    $('bosses').textContent = game.roundBosses;
+    setText($('kills'), game.kills);
+    setText($('trees'), game.chopped);
+    setText($('bosses'), game.roundBosses);
     // 上车后整组名称、数值与血条切换到载具，驾驶员生命保持原值。
     // 角色名称保留玩家身份，等级与生命仍显示当前任务采用的战斗配置。
     const mounted = game.vehicle.active,
@@ -69,13 +70,16 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
         ? COLLECTED_VEHICLES[p.vehicleIndex].shortName
         : i18nText("common.namedLevel", { p0: HEROES[game.progress.hero].name, p1: p.heroes[p.hero] }),
       healthLabel = mounted ? i18nText("ui.hud.20496aae49") : i18nText("ui.hud.6fb8ecc2a5");
-    $('player-name').textContent = name;
+    setText($('player-name'), name);
     // 经验只用HP下方的细条表示；详细数值保留给读屏，满级显示满条。
     const heroXp=heroExperience(game.progress),xpBar=$('hero-experience-hud');
-    xpBar.max=heroXp.next||1;xpBar.value=heroXp.next?heroXp.xp:1;
-    xpBar.setAttribute('aria-valuetext',heroXp.next?`经验 ${heroXp.xp} / ${heroXp.next}`:'角色已满级');
+    const max=heroXp.next||1,value=heroXp.next?heroXp.xp:1;
+    if(xpBar.max!==max)xpBar.max=max;
+    if(xpBar.value!==value)xpBar.value=value;
+    const xpLabel=heroXp.next?`经验 ${heroXp.xp} / ${heroXp.next}`:'角色已满级';
+    if(xpBar.getAttribute('aria-valuetext')!==xpLabel)xpBar.setAttribute('aria-valuetext',xpLabel);
     $('player-name').title = mounted ? COLLECTED_VEHICLES[p.vehicleIndex].name : name;
-    $('player-health').textContent = `${Math.ceil(hp)} / ${maxHp}`;
+    setText($('player-health'), `${Math.ceil(hp)} / ${maxHp}`);
     $('player-health').setAttribute('aria-label', `${healthLabel} ${Math.ceil(hp)} / ${maxHp}`);
     // 生命卡跟随当前显示的角色或载具生命，恢复至四分之一即停止红色提醒。
     $('player-health').closest('.player-hud').classList.toggle('low-health',maxHp>0&&hp/maxHp<.25);
@@ -88,11 +92,11 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     healthBar.setAttribute('aria-valuemin', '0');
     healthBar.setAttribute('aria-valuemax', String(maxHp));
     healthBar.setAttribute('aria-valuenow', String(Math.ceil(hp)));
-    $('intro').hidden = started;
+    setHidden($('intro'), started);
     if (!started) inventory.renderIntro();
     const weapon = game.weapon();
     updateFunnelSupply(root, game, weapon);
-    $('magazine-hud').hidden = !!weapon.independentSupply;
+    setHidden($('magazine-hud'), !!weapon.independentSupply);
     const magazine = weapon.independentSupply ? null : game.magazines[p.weapon];
     const reloading = !!magazine?.remaining || !!magazine?.waterFilling;
     const skill = weapon.chargeTime
@@ -134,28 +138,26 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const keepPaused = settingsOpen && dialogs?.willResume('settings-dialog');
     const resumeAction = game.state === 'paused' && !keepPaused;
     const pauseLabel = resumeAction ? i18nText("ui.hud.a897aeb6cf") : keepPaused ? i18nText("ui.hud.ead8886b1c") : i18nText("ui.hud.63dc641a6b");
-    $('pause').textContent = resumeAction ? '▷' : 'Ⅱ';
+    setText($('pause'), resumeAction ? '▷' : 'Ⅱ');
     $('pause').setAttribute('aria-label', pauseLabel);
     $('pause').title = pauseLabel;
-    $('pause-caption').textContent = pauseLabel;
-    $('overlay').hidden =
-      !['paused', 'dead'].includes(game.state) || !!root.querySelector('dialog[open]');
+    setText($('pause-caption'), pauseLabel);
+    setHidden($('overlay'), !['paused', 'dead'].includes(game.state) || !!root.querySelector('dialog[open]'));
     if (game.state === 'dead') {
-      $('overlay-icon').textContent = '♡';
-      $('overlay-title').textContent = i18nText("ui.hud.61ae57a541");
-      $('overlay-text').textContent =
-        `死亡惩罚：${game.deathPenaltyCoins===null?'回城将扣除':'已损失'} ${game.deathPenaltyCoins??deathCoinLoss(game.progress.coins)} 金币（10%，向下取整）。第 ${round} 轮清缴进度已保留，回城后可继续挑战。`;
-      $('resume').textContent = '返回营地';
+      setText($('overlay-icon'), '♡');
+      setText($('overlay-title'), i18nText("ui.hud.61ae57a541"));
+      setText($('overlay-text'), `死亡惩罚：${game.deathPenaltyCoins===null?'回城将扣除':'已损失'} ${game.deathPenaltyCoins??deathCoinLoss(game.progress.coins)} 金币（10%，向下取整）。第 ${round} 轮清缴进度已保留，回城后可继续挑战。`);
+      setText($('resume'), '返回营地');
     } else if (game.state === 'paused') {
-      $('overlay-icon').textContent = '☾';
-      $('overlay-title').textContent = i18nText("ui.hud.adf092bb4f");
-      $('overlay-text').textContent = i18nText("ui.hud.6448b4d398");
-      $('resume').textContent = i18nText("ui.hud.b4064d6093");
+      setText($('overlay-icon'), '☾');
+      setText($('overlay-title'), i18nText("ui.hud.adf092bb4f"));
+      setText($('overlay-text'), i18nText("ui.hud.6448b4d398"));
+      setText($('resume'), i18nText("ui.hud.b4064d6093"));
     }
     const remaining = game.bossReady?0:Math.max(1,game.bossWave-game.wave+(game.waveRest>0?0:1));
     const canChallenge = game.state === 'playing'&&livingWaveAllowed(game);
     // 清缴轨道收进详情；其他玩法仍保留原波次面板及领主头像操作。
-    $('quest').hidden = clearing||!!game.boss||!livingWaveAllowed(game);
+    setHidden($('quest'), clearing||!!game.boss||!livingWaveAllowed(game));
     $('boss-button').disabled = !!game.boss || remaining > 0 || !canChallenge;
     const showPaw = bossHint.update({
       available: !game.realm && !game.boss && remaining === 0 && livingWaveAllowed(game),
@@ -184,7 +186,7 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
         : i18nText("ui.hud.dd131a2ad4", { p0: (upcoming.name), p1: (canChallenge ? i18nText("ui.hud.7d14d5951e") : i18nText("ui.hud.3166f07543")) });
     $('boss-button').title = challengeLabel;
     $('boss-button').setAttribute('aria-label', challengeLabel);
-    $('boss-button-badge').textContent = remaining > 0 ? i18nText("common.boss") : i18nText("ui.hud.4eed57b5a1");
+    setText($('boss-button-badge'), remaining > 0 ? i18nText("common.boss") : i18nText("ui.hud.4eed57b5a1"));
     // 仅轮换领主时重绘静态头像，避免随 HUD 刷新重复绘制。
     if (portraitKind !== upcoming.id) {
       drawBossIcon($('boss-button-icon'), upcoming.id);
@@ -194,33 +196,29 @@ export function createHud({ game, root, inventory, dialogs, getView = () => null
     const wave = waveDifficulty(game.wave, game.recoveryRun);
     const incoming = !game.bossReady && game.waveRest <= 0 && game.waveWarning > 0;
     $('quest').classList.toggle('incoming', incoming);
-    $('quest-title').textContent =
-      `第 ${round} 轮 · ${game.bossReady?'Boss 将至':game.waveRest>0?'休整':incoming?'怪潮将至':'怪潮'}`;
-    $('quest-detail').textContent =
-      game.bossReady ? i18nText("ui.hud.90be11a49c") : game.waveRest > 0
+    setText($('quest-title'), `第 ${round} 轮 · ${game.bossReady?'Boss 将至':game.waveRest>0?'休整':incoming?'怪潮将至':'怪潮'}`);
+    setText($('quest-detail'), game.bossReady ? i18nText("ui.hud.90be11a49c") : game.waveRest > 0
         ? i18nText("ui.hud.0efa7afeed")
         : incoming ? i18nText("ui.hud.13bae4de86") :
-          i18nText("ui.hud.df52aeb03e", { p0: (wave.health.toFixed(2)), p1: (wave.damage.toFixed(2)) });
-    $('quest-count').textContent =
-      game.bossReady ? i18nText("ui.hud.5f992daade") : game.waveRest > 0 ? i18nText("ui.hud.67d54f9c74", { p0: (Math.ceil(game.waveRest)) }) :
-        incoming ? i18nText("ui.hud.67d54f9c74", { p0: (Math.ceil(game.waveWarning)) }) : `${game.waveKills} / ${wave.total}`;
+          i18nText("ui.hud.df52aeb03e", { p0: (wave.health.toFixed(2)), p1: (wave.damage.toFixed(2)) }));
+    setText($('quest-count'), game.bossReady ? i18nText("ui.hud.5f992daade") : game.waveRest > 0 ? i18nText("ui.hud.67d54f9c74", { p0: (Math.ceil(game.waveRest)) }) :
+        incoming ? i18nText("ui.hud.67d54f9c74", { p0: (Math.ceil(game.waveWarning)) }) : `${game.waveKills} / ${wave.total}`);
     updateWaveProgress(root,game);
-    $('boss-hud').hidden = !bossCombatActive(game);
+    setHidden($('boss-hud'), !bossCombatActive(game));
     const supportWarning = game.boss?.support?.warning || 0;
     $('boss-hud').classList.toggle('incoming', supportWarning > 0);
     if (game.boss) {
       const profile = bossProfile(game.boss);
       // 剧情命名领主显示本章身份，普通巡游仍读取物种名称。
       const bossName=game.boss.story&&game.boss.name||profile.name;
-      $('boss-name').textContent = `♛ ${bossName}${game.boss.livingChallenge?' · 巡护训练投影':''}${supportWarning > 0 ? i18nText("ui.hud.02ac4f1593", { p0: (Math.ceil(supportWarning)) }) : ''}`;
+      setText($('boss-name'), `♛ ${bossName}${game.boss.livingChallenge?' · 巡护训练投影':''}${supportWarning > 0 ? i18nText("ui.hud.02ac4f1593", { p0: (Math.ceil(supportWarning)) }) : ''}`);
       $('boss-fill').style.background = profile.color;
-      $('boss-hp').textContent = `${Math.max(0, game.boss.hp)} / ${game.boss.maxHp}`;
+      setText($('boss-hp'), `${Math.max(0, game.boss.hp)} / ${game.boss.maxHp}`);
       $('boss-fill').style.width = `${(game.boss.hp / game.boss.maxHp) * 100}%`;
     }
     const zone = biomeAt(game.player.x, game.player.y, game.mapId);
-    $('zone-name').textContent = zone.name;
-    $('wave-label').textContent = `Lv.${game.mapId==='forest'?forestThreatAt(game.player.x,game.player.y).range:zone.range} · 第 ${round} 轮清缴`;
-    if(livingForest(game)&&!clearingCombatActive(game))$('wave-label').textContent=calendarView(game.progress.living.calendar).label;
+    setText($('zone-name'), zone.name);
+    setText($('wave-label'), livingForest(game)&&!clearing ? calendarView(game.progress.living.calendar).label : `Lv.${game.mapId==='forest'?forestThreatAt(game.player.x,game.player.y).range:zone.range} · 第 ${round} 轮清缴`);
     inventory.render();
     inventory.renderFieldIcons();
   }

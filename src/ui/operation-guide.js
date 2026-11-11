@@ -225,9 +225,9 @@ export function createOperationGuide({game,root,workshop}){
   }
  }
  // 每帧跟随矩形；步骤变化时只调整指引，不自动关闭玩家正在操作的页面。
- function render(){
+ function render(o=mainlineObjective(game)){
   if(!taskNavigationEnabled(game)&&mainlineOperation(game)?.id!=='task-navigation-toggle'&&!root.querySelector('dialog[open]')){clear();return;}
-  const o=mainlineObjective(game),dialog=root.activeElement?.closest('dialog[open]')||[...root.querySelectorAll('dialog[open]')].at(-1);
+  const dialog=root.activeElement?.closest('dialog[open]')||[...root.querySelectorAll('dialog[open]')].at(-1);
   // 奖励已有独立关闭徽记，主线箭头不能盖住计时，也不催促玩家再领取一次。
   if(dialog?.id==='restoration-dialog'||dialog?.id==='task-reward-dialog'||o?.restoration||o?.cottageRest||game.progress.arrival?.phase==='repair'){clear();return;}
   // 靠近房屋时只保留本体热点，不再显示额外任务操作气泡。

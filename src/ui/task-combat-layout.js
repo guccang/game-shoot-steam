@@ -50,3 +50,23 @@ export function layoutTaskCombatHud(root){
  if(!card.hidden){setTop(card,top);top+=cardHeight+8;}
  nodes.forEach((n,i)=>{const height=heights[i];setTop(n,stack&&height?top:null);if(stack&&height)top+=height+8;});
 }
+
+// 任务栏位置只依赖屏幕面板布局。镜头移动时复用位置，尺寸或显示模式变化才重新测量。
+export function createTaskHudLayout(root) {
+ const frame=root.getElementById('game-frame');
+ const panels=[...frame.querySelectorAll('.hud-resources,.bottom-info,.player-hud,#local-minimap,#fps-display,#mainline-hud,#quest,#boss-hud,#equipment-goal,#ranger-arrival,#camp-defense-hud')];
+ let dirty=true, previous='';
+ // 视口变化由事件标记，平移时读取 innerWidth 会强制浏览器同步布局。
+ const invalidate=()=>{dirty=true;};
+ const observer=new root.defaultView.ResizeObserver(invalidate);
+ root.defaultView.addEventListener('resize',invalidate);
+ for(const node of [frame,...panels]) observer.observe(node);
+ // 显隐或玩法切换时同步排版；字体加载和屏幕旋转引起的尺寸变化由观察器标记。
+ function update() {
+   const state=[frame.className,frame.dataset.page,frame.dataset.supply,!!root.querySelector('.npc-bottom-dialogue:not(dialog):not([hidden]),dialog.npc-bottom-dialogue[open]'),...panels.map(node=>node.hidden+' '+node.className)].join('|');
+   if(!dirty&&previous===state)return;
+   layoutTaskCombatHud(root);
+   previous=state;dirty=false;
+ }
+ return {update,dispose(){observer.disconnect();root.defaultView.removeEventListener('resize',invalidate);}};
+}

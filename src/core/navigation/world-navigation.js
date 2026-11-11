@@ -29,7 +29,7 @@ export function worldNavigationObjective(game){
  return worldTaskObjective(game);
 }
 // 任务卡与点击操作共用目标优先级，独立于路点显隐；抵达后仍正常清理临时访问。
-export function worldTaskObjective(game){
+export function worldTaskObjective(game,main){
  game=gameSource(game);
  // 投料后已到达门前，隐藏终点徽记，让木料飞行与局部施工保持清晰。
  if(game.progress?.restoration?.build||game.progress?.arrival?.phase==='repairing')return null;
@@ -44,7 +44,8 @@ export function worldTaskObjective(game){
  const tracking=game.progress.taskTracking;
  const repair=tracking?.kind==='restoration'?TOWN_RESTORATIONS.find(f=>f.id===tracking.id):null;
  if(repair&&!intent?.direct)return restorationObjective(game,null,repair);
- const o=mainlineObjective(game);
+ // 同轮任务栏已读取主线时直接复用，仍按正式导航优先级处理临时目的地。
+ const o=main===undefined?mainlineObjective(game):main;
  // 找种任务从出发到交付都使用自己的目标，旧清缴任务不能将路线拉回清缴场。
  const seedTask=o?.task.gardening?.kind==='drop';
  if(seedTask&&o.navigation&&!intent?.direct)return o;

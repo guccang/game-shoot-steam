@@ -1,3 +1,4 @@
+import {setHidden,setText} from './shared/dom-state.js';
 import {seActive} from '../config/vehicle-se.js';
 import {driveToTrackedTask} from '../combat/vehicle-se.js';
 import {escapeHtml as escape} from './shared/html.js';
@@ -11,7 +12,7 @@ import {sceneLayout} from './scene-layout.js';
 import {taskNavigationEnabled} from '../core/navigation/task-navigation.js';
 import {dockNpcDialogue} from './npc-dialogue-layout.js';
 import {mainlineReward} from '../config/economy.js';
-import {layoutTaskCombatHud,combatHudVisible} from './task-combat-layout.js';
+import {createTaskHudLayout,combatHudVisible} from './task-combat-layout.js';
 import {clearingCombatActive} from '../core/camp/living-safety.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 import {MAP_CAT_HIT} from './scene-resident.js';
@@ -33,10 +34,11 @@ const resourceNames={coins:'金币',wood:'木材',parts:'机械零件',crystal:'
 // 一张紧凑任务卡、一名可交谈NPC和一本按章节展开的手册共享当前目标。
 export function createMainline({game,root,renderer,dialogs,onChange,openAction,workshop,onFarm,onTalk}){
  const scope=createEventScope(),frame=root.getElementById('game-frame');
- const navigationToggle=createTaskNavigation({game,root,onChange});
  const operationGuide=createOperationGuide({game,root,workshop});
  const card=root.createElement('button');card.id='mainline-hud';card.className='mainline-hud';card.hidden=true;
  card.innerHTML='<span class="mainline-bearing"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20"/><path d="M22 9 32 29 22 25 12 29Z"/></svg><small></small></span><span><small class="mainline-kicker">主线 · 巡林簿</small><b></b><span class="mainline-objective"></span></span>';frame.append(card);
+ const navigationToggle=createTaskNavigation({game,root,onChange});
+ const taskLayout=createTaskHudLayout(root);
  const npc=root.createElement('button');npc.id='mainline-npc';npc.className='mainline-npc';npc.hidden=true;sceneHit(npc,'与巡林伙伴交谈');frame.append(npc);
  const speechUI=createSpeechBubble(root,'mainline-speech','巡林主线对白',{onAdvance:finishSpeech,onSkip:finishSpeech}),bubble=speechUI.node;
  bubble.classList.add('mainline-speech');speechUI.next.classList.add('mainline-begin');frame.append(bubble);
@@ -126,43 +128,41 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   if(event.target.closest('[data-funnel-config],[data-mechanical-config],[data-spider-config],#ws-funnel'))markMainline(game,'config');
  },true);
  // 任务卡优先显示，波次与Boss进度依次排在下方。
- function render(){
-  const selected=worldTaskObjective(game);
+ function render(dt=0){
+  const main=mainlineObjective(game),selected=worldTaskObjective(game,main);
   // 已取消的临时访问不再有目标卡；正式任务进度和操作入口继续保留。
-  const main=mainlineObjective(game),priority=selected?.restoration||selected?.key==='visit'||selected?.key==='boss-clearing'||main?.restoration||main?.cottageRest;
+  const priority=selected?.restoration||selected?.key==='visit'||selected?.key==='boss-clearing'||main?.restoration||main?.cottageRest;
   const request=priority?null:trackedLivingRequest(game),target=request&&livingRequestTarget(game,request);
   const o=priority?(selected||main):target?{task:request,label:target.text,site:{...target,mapId:game.mapId}}:main,dialogOpen=!!root.querySelector('dialog[open]');
   // 靠近建筑仍保留任务入口，屋顶提示通过场景取景避让任务卡。
-  card.hidden=combatHudVisible(root)||clearingCombatActive(game)||!o||!!game.mainlineSpeech||dialogOpen||game.state!=='playing';
+  setHidden(card, combatHudVisible(root)||clearingCombatActive(game)||!o||!!game.mainlineSpeech||dialogOpen||game.state!=='playing');
   if(!card.hidden){
    card.dataset.taskKind=['visit','boss-clearing'].includes(o.key)?'navigation':request?'living':'mainline';card.dataset.taskId=o.task.id;
-   card.querySelector('.mainline-kicker').textContent=o.key==='visit'?'正在前往':o.key==='boss-clearing'?'野外任务':request?'森林邻里':isCampaignTask(o.task)?'主线':'自选体验';
+   setText(card.querySelector('.mainline-kicker'), o.key==='visit'?'正在前往':o.key==='boss-clearing'?'野外任务':request?'森林邻里':isCampaignTask(o.task)?'主线':'自选体验');
    const visiting=o.key==='visit'||o.key==='boss-clearing',step=!request&&!o.restoration&&mainlineStep(game);
    card.dataset.navigationTutorial=String(step?.operation?.id==='task-navigation-toggle'&&!step.done);
-   card.querySelector('b').textContent=request?o.task.title:o.label;
-   card.querySelector('.mainline-objective').textContent=o.hint|| (visiting?o.site.name||o.label:request?o.label:o.phase==='doing'?[step?.progress,step?.hint].filter(Boolean).join(' · '):MAINLINE_SITES[o.task.site].name);
+   setText(card.querySelector('b'), request?o.task.title:o.label);
+   setText(card.querySelector('.mainline-objective'), o.hint|| (visiting?o.site.name||o.label:request?o.label:o.phase==='doing'?[step?.progress,step?.hint].filter(Boolean).join(' · '):MAINLINE_SITES[o.task.site].name));
    // 缺资源时在战场直说采集地点；具体缺口保留在任务详情中。
    const shortage=!!step?.resourceHint&&o.phase==='doing'&&!request&&!visiting;card.dataset.resourceShortage=String(shortage);
    // 资源提示保留真实缺口或待运回状态，完整说明在任务详情中展示。
-   if(shortage&&!o.restoration)card.querySelector('.mainline-objective').textContent=step.resourceHint.split('。')[0];
-   const nav=target?o:worldNavigationObjective(game),bearing=storyBearing(game.player,nav?.site||o.site,85);
-   card.querySelector('.mainline-bearing').hidden=!nav||!taskNavigationEnabled(game);
+   if(shortage&&!o.restoration)setText(card.querySelector('.mainline-objective'), step.resourceHint.split('。')[0]);
+   const nav=target?o:taskNavigationEnabled(game)?selected:null,bearing=storyBearing(game.player,nav?.site||o.site,85);
+   setHidden(card.querySelector('.mainline-bearing'), !nav||!taskNavigationEnabled(game));
    card.querySelector('path').setAttribute('transform',`rotate(${bearing.angle} 22 22)`);
-   card.querySelector('.mainline-bearing small').textContent=(nav?.site||o.site).mapId===game.mapId?displayMeters(bearing.distance)+'米':'跨地图';
+   setText(card.querySelector('.mainline-bearing small'), (nav?.site||o.site).mapId===game.mapId?displayMeters(bearing.distance)+'米':'跨地图');
    card.title=[o.label,card.querySelector('.mainline-objective').textContent].filter(Boolean).join(' · ');
    card.setAttribute('aria-label',o.task.title+'，'+o.label+'。点击查看任务详情或相关操作');
 
   }
-  layoutTaskCombatHud(root);renderFrame();
+  taskLayout.update();renderFrame(dt,main);
  }
  // 主线对白停靠屏幕下方，不因NPC位置改动镜头。
- function renderSceneFrame(dt=0){
+ function renderSceneFrame(dt,o){
   renderer.profiler?.start('render.panels.mainline.navigation');
   navigationToggle.render();
   renderer.profiler?.end('render.panels.mainline.navigation');
-  renderer.profiler?.start('render.panels.mainline.objective');
-  const o=mainlineObjective(game),v=renderer.view,dialogOpen=!!root.querySelector('dialog[open]');
-  renderer.profiler?.end('render.panels.mainline.objective');
+  const v=renderer.view,dialogOpen=!!root.querySelector('dialog[open]');
   if(o?.restoration||o?.cottageRest){if(!bubble.hidden)bubble.hidden=true;if(!npc.hidden)npc.hidden=true;return;}
   // 短消息排在任务卡下方，避免上车、购买和波次提示被新增主线卡遮住。
   const toast=root.getElementById('toast');
@@ -193,13 +193,13 @@ export function createMainline({game,root,renderer,dialogs,onChange,openAction,w
   }
  }
  // 先提交本帧NPC热点，再测量并定位气泡；低频刷新也保持相同顺序。
- function renderFrame(dt=0){
-  renderSceneFrame(dt);
+ function renderFrame(dt=0,main=mainlineObjective(game)){
+  renderSceneFrame(dt,main);
   renderer.profiler?.start('render.panels.mainline.guide');
-  operationGuide.render();
+  operationGuide.render(main);
   renderer.profiler?.end('render.panels.mainline.guide');
  }
  // 应用重建时释放所有节点和监听，不保留旧存档的目标。
- function dispose(){navigationToggle.dispose();scope.dispose();operationGuide.dispose();root.getElementById('toast').style.removeProperty('top');card.remove();npc.remove();speechUI.dispose();book.remove();}
+ function dispose(){taskLayout.dispose();navigationToggle.dispose();scope.dispose();operationGuide.dispose();root.getElementById('toast').style.removeProperty('top');card.remove();npc.remove();speechUI.dispose();book.remove();}
  return {render,renderFrame,dispose,talk};
 }

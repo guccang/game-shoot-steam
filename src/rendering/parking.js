@@ -4,9 +4,18 @@ import {PARKING as C,PARKING_SPOTS,NORTH_PARKING,nearbyParkingSpots} from '../co
 import {nearest} from '../world/coordinates.js';
 import {GARAGE} from '../world/workshop.js';
 import {box} from './primitives.js';
+import {campBuildingCache} from './camp-building-cache.js';
 import {drawActionCountdown} from './action-countdown.js';
 import {parkingInteractionAnchor,nearbyInteractionAnchor} from '../world/interaction-anchors.js';
 
+// 相同编号与昼夜色的泊位复用静态标线，搬迁只改变贴图的世界坐标。
+function paintParkingSpace(c,label,night){
+  box(c,-C.width/2,-48,C.width,C.height,12,night?'#9baf822b':'#d5c99865');
+  c.strokeStyle=night?'#c8d4a5':'#f4e8ba';c.lineWidth=2.8;c.lineCap='round';
+  c.beginPath();c.moveTo(-43,29);c.lineTo(-43,-37);c.quadraticCurveTo(-43,-42,-38,-42);c.lineTo(38,-42);c.quadraticCurveTo(43,-42,43,-37);c.lineTo(43,29);c.stroke();
+  for(const x of [-26,18]){box(c,x+2,-34,14,7,2,'#38543d30');box(c,x,-36,14,6,2,'#b7bea0','#71856c',1);}
+  c.fillStyle=night?'#bfcd9c':'#7b956a';c.font='bold 14px sans-serif';c.textAlign='center';c.fillText(label,0,16);
+}
 // 露天车位使用浅土色地坪和开口标线，不占房门及道路；室内位沿用原车库地坪。
 export function drawParkingGround(c,game,view,night=0){
  if(game.mapId!=='forest'||game.realm||game.story)return;
@@ -34,11 +43,9 @@ export function drawParkingGround(c,game,view,night=0){
   const p=nearest(spot,game.player);
   if(p.x<view.x-70||p.x>view.x+view.w+70||p.y<view.y-70||p.y>view.y+view.h+70)continue;
   c.save();c.translate(p.x,p.y);
-  box(c,-C.width/2,-48,C.width,C.height,12,night?'#9baf822b':'#d5c99865');
-  c.strokeStyle=night?'#c8d4a5':'#f4e8ba';c.lineWidth=2.8;c.lineCap='round';
-  c.beginPath();c.moveTo(-43,29);c.lineTo(-43,-37);c.quadraticCurveTo(-43,-42,-38,-42);c.lineTo(38,-42);c.quadraticCurveTo(43,-42,43,-37);c.lineTo(43,29);c.stroke();
-  for(const x of [-26,18]){box(c,x+2,-34,14,7,2,'#38543d30');box(c,x,-36,14,6,2,'#b7bea0','#71856c',1);}
-  c.fillStyle=night?'#bfcd9c':'#7b956a';c.font='bold 14px sans-serif';c.textAlign='center';c.fillText(spot.number?String(spot.number):'停',0,16);
+  const label=spot.number?String(spot.number):'停';
+  campBuildingCache.draw(c,'parking:'+label+':'+Boolean(night),[-C.width/2-2,-50,C.width+4,C.height+4],
+    ctx=>paintParkingSpace(ctx,label,night));
   c.restore();
  }
 }

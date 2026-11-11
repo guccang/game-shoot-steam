@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {appendRangerLetter} from './ranger-letter.js';
 import {constructionWood} from '../progression/economy/resource-wallet.js';
 import {woodTaskStatus,repairWoodStatus} from '../core/inventory/wood-task-status.js';
@@ -65,12 +66,12 @@ export function createRangerArrival({game,root,renderer,dialogs,onChange,onOpenW
   // 左上短目标避开底部生命条与右侧入口，不承担修复或制作操作。
   function render(){
     const a=game.progress.arrival,active=arrivalGuidanceVisible(game);
-    skip.hidden=!active||!RANGER_STAGES[a?.phase];skip.disabled=game.state!=='playing';
+    setHidden(skip,!active||!RANGER_STAGES[a?.phase]);if(skip.disabled!==(game.state!=='playing'))skip.disabled=game.state!=='playing';
     frame.classList.toggle('arrival-active',active);frame.classList.toggle('arrival-cinematic',active&&game.arrivalCinematic);
     // 重建与短暂建成展示只保留屋顶徽记，避免手机任务卡遮住施工与计时。
     // 来信和目标卡不因靠近工坊隐藏，保持任务可读、可点击。
-    card.hidden=!active||(!game.arrivalError&&(a.phase==='repairing'||a.phase==='craft'&&a.elapsed<RANGER.rebuildRevealSeconds))||(game.arrivalCinematic&&!game.arrivalError&&a.phase!=='crafting')||!!root.querySelector('dialog[open]');
-    if(!active){node.hidden=true;return;}
+    setHidden(card,!active||(!game.arrivalError&&(a.phase==='repairing'||a.phase==='craft'&&a.elapsed<RANGER.rebuildRevealSeconds))||(game.arrivalCinematic&&!game.arrivalError&&a.phase!=='crafting')||!!root.querySelector('dialog[open]'));
+    if(!active){setHidden(node,true);return;}
     const titles={letter:'查看松伯的信','ride-guide':'骑上'+arrivalGiftName(game.progress),gather:'采集木料',repair:'重建武器工坊',repairing:'重建中…',craft:'购买手枪',crafting:'领取手枪…'};
     title.textContent=titles[a.phase]||'林间交接';
     const objective=arrivalWorkshopObjective(game),reading=a.phase==='letter';goal.disabled=!reading&&!objective;goal.setAttribute('aria-label',reading?'查看松伯的信，打开来信':objective?objective.label+'，查看相关详情':title.textContent);

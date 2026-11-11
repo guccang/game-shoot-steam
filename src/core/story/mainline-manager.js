@@ -61,9 +61,9 @@ export function mainlineSteps(game){
  const steps=task.guide.steps.map((step,index)=>{
   const condition=conditions[index],done=mainlineCondition(game,condition),value=condition.path?Number(taskResourcePath(game.progress,condition.path)?.total??read(game,condition.path)):NaN;
   const progress=(condition.min>1||taskResourcePath(game.progress,condition.path))&&Number.isFinite(value)?`${Math.min(condition.min,Math.max(0,Math.floor(value)))}/${condition.min}`:'';
-  const resourceHint=!done?(condition.harvestFor?harvestGuideHint(game,task):mainlineResourceHint(game.progress,condition)):'';
   // 先处理已收集的实物，再继续购买升级；运回步骤不直接扣库存或发放金币。
   const cost=condition.harvestFor?{coins:harvestBudget(game.progress,task).cost}:cachedMainlineConditionCost(game.progress,condition);
+  const resourceHint=!done?(condition.harvestFor?harvestGuideHint(game,task):mainlineResourceHint(game.progress,condition,cost)):'';
   const delivery=!done&&cost.wood>game.progress.wood&&taskResourceStock(game.progress,'wood').total>=cost.wood?'wood':!done&&cost.coins>game.progress.coins&&taskCropStock(game.progress).total?'crops':null;
   if(delivery)return {...step,label:delivery==='wood'?'木材已采齐，运回仓库':'运回收成结算金币',done:false,progress,resourceHint,hint:resourceHint,resourceDelivery:delivery,requiredWood:cost.wood,navigation:'warehouseEntry',action:{type:'warehouse',label:'查看小屋仓库'},operation:{type:'warehouse'}};
   // 极端旧档没有作物时沿用开田、选种教学，补种成熟后仍通过同一收割事务完成。

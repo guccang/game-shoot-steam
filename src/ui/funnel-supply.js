@@ -1,3 +1,4 @@
+import {setHidden} from './shared/dom-state.js';
 import {scooterCapacity} from '../config/scooter-capacity.js';
 import { i18nText } from "../i18n/index.js";
 // 三炮供给压缩为三个独立仪表，顺序与配置页的炮位保持一致。
@@ -7,10 +8,12 @@ import { ringMarkup, ammoRingState, updateRing } from './status-rings.js';
 // 圆环读取实际挂载武器，返航、装填和暂停均不自行推进时钟。
 export function updateFunnelSupply(root, game, weapon) {
   const host = root.getElementById('funnel-supply');
-  host.hidden = !weapon.independentSupply;
-  root.getElementById('game-frame').dataset.supply = weapon.independentSupply
+  setHidden(host, !weapon.independentSupply);
+  const frame = root.getElementById('game-frame');
+  const supply = weapon.independentSupply
     ? 'independent'
     : 'shared';
+  if (frame.dataset.supply !== supply) frame.dataset.supply = supply;
   if (host.hidden) return;
   if (!host.children.length)
     host.innerHTML = [1, 2, 3]

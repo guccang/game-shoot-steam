@@ -1,3 +1,4 @@
+import {setHidden} from '../shared/dom-state.js';
 import { nativeVehicleWeapon } from '../../config/vehicle-armaments.js';
 import {facilityOpen} from '../../config/town-restoration.js';
 import { i18nHtml, i18nText } from "../../i18n/index.js";
@@ -42,7 +43,7 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
   },true);
   // 查看单项玩法只展示原目录卡片，不创建挑战；玩家点击卡片进入后才开始。
   function open(mode=null){
-    catalogMode=REALMS[mode]?mode:null;render();dialogs.open('realm-dialog');
+    catalogMode=REALMS[mode]?mode:null;render(true);dialogs.open('realm-dialog');
     for(const image of $('realm-content').querySelectorAll('img[data-realm-art]'))if(image.complete&&!image.naturalWidth){delete image.dataset.artRetried;retryArtwork(image);}
     return true;
   }
@@ -58,7 +59,7 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
   }
   const slots = createExpeditionSlots({ game, root, audio, onChange });
   // 展示当前关卡与女神血量，自动弹出祝福或结算，只在状态改变时重建按钮。
-  function render() {
+  function render(opening=false) {
     const r = game.realm, dialog = $('realm-dialog');
     // 自动返回交付时关闭旧秘境弹窗，释放故事面板的自动打开条件。
     if(!r&&game.story&&dialog.open){dialogs.cancelResume();dialogs.close('realm-dialog');}
@@ -68,15 +69,15 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
     $('game-frame').classList.toggle('rogue-active',r?.mode==='rogue');
     $('game-frame').classList.toggle('football-active',r?.mode==='football');
     for (const id of ['story-button','phone-button', 'heroes-button'])
-      if($(id))$(id).hidden = !!r;
+      if($(id))setHidden($(id), !!r);
     // 武器入口沿用工坊开放条件；已有载具随时可查看，包含初始赠送电动车。
-    $('weapons-button').hidden = !!r || !facilityOpen(game.progress,'weapons');
-    $('vehicles-button').hidden = !!r || (!facilityOpen(game.progress,'garage')&&!game.progress.vehicleHulls.some(level=>level>0));
+    setHidden($('weapons-button'), !!r || !facilityOpen(game.progress,'weapons'));
+    setHidden($('vehicles-button'), !!r || (!facilityOpen(game.progress,'garage')&&!game.progress.vehicleHulls.some(level=>level>0)));
     $('unlock-weapons').disabled = !!r;
-    $('boss-button').hidden = !!r;
+    setHidden($('boss-button'), !!r);
     $('quest').classList.toggle('football-score',r?.mode==='football');
     // 秘境使用自己的关卡进度，不继承森林安全区和清缴接取状态的隐藏规则。
-    if(r)$('quest').hidden=false;
+    if(r)setHidden($('quest'), false);
     if (r && !['football','fire','race'].includes(r.mode)) {
       if (game.state === 'paused') {
         $('overlay-title').textContent = i18nText("ui.panels.realms.962b663e88");
@@ -107,8 +108,10 @@ export function createRealmPanel({ game, root, dialogs, audio, onChange, onFire 
     const mandatory = r && !['combat', 'rest'].includes(r.phase) && !(r.mode === 'guardian' && ['build','rest'].includes(r.phase));
     // 肉鸽入场补给页把退出入口收进右上角，关闭时执行完整返回森林事务。
     const rogueEntry=r?.mode==='rogue'&&r.phase==='loadout';
-    $('close-realm').hidden = !!mandatory&&!rogueEntry;
+    setHidden($('close-realm'), !!mandatory&&!rogueEntry);
     $('close-realm').setAttribute('aria-label',rogueEntry?'结束挑战并返回森林':'关闭秘境面板');
+    // 营地巡游仅同步外层 HUD；目录打开后按当前解锁和记录生成卡片。
+    if (!r && !dialog.open && !opening) { slots.render(); return; }
     let markup;
     if (!r) {
       $('realm-title').textContent = catalogMode?REALMS[catalogMode].name:i18nText("ui.panels.realms.f5dc54fbda");
