@@ -29,11 +29,14 @@ export function createVehicleRepairPanel({game,root,dialogs,onChange,onNotice}){
   panel.querySelector('#vehicle-repair-title').textContent=wreck===null?'载具维修中心':vehicleModel(wreck).name+' · 牵引';
   const reason=repairUnavailable(game,remote);panel.querySelector('[data-repair-message]').textContent=wreck!==null?'':reason||'关闭页面后继续维修，修好留在维修工坊原车位；可用手机定位。';
   panel.querySelector('[data-repair-balance]').textContent=`持有金币：${game.progress.coins}`;
-  panel.querySelector('[data-repair-list]').innerHTML=game.vehicles.filter(v=>game.progress.vehicleHulls[v.index]).map(v=>{
-   const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index),status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:r?.repairSpot?'车位维修中':'等待维修车位',ready:'已修好 · 等待停车场空位'})[phase]||(v.hp<=0?'已报废':vehicleFaults(game.progress,v.index).engine>=100?'发动机停驶':cost?'需要维修':'完好');
+  const owned=game.vehicles.filter(v=>game.progress.vehicleHulls[v.index]);
+  panel.querySelector('[data-repair-list]').innerHTML=owned.map(v=>{
+   const r=vehicleService(game,v.index),phase=r?.phase,cost=vehicleRepairQuote(game,v.index);
+   if(!phase&&!cost)return '';
+   const status=({wrecked:'已报废 · 需要救援',outbound:'拖车赶往现场',hooking:'正在挂钩',towing:'正在拖回中心',repairing:r?.repairSpot?'车位维修中':'等待维修车位',ready:'已修好 · 等待停车场空位'})[phase]||(v.hp<=0?'已报废':vehicleFaults(game.progress,v.index).engine>=100?'发动机停驶':cost?'需要维修':'完好');
    const available=!reason&&(phase==='ready'?true:(!phase||phase==='wrecked')&&cost>0&&(!remote||v.hp<=0||vehicleFaults(game.progress,v.index).engine>=100));
    return `<button type="button" class="ui-choice" data-repair-hull="${v.index}" aria-pressed="${selection===v.index}" ${available?'':'disabled'}>${repairVehicleIcon(v.index)}<span class="repair-vehicle-info"><b>${vehicleModel(v.index).name}</b><span>${status} · 耐久 ${Math.ceil(v.hp)} / ${v.maxHp} · 主炮损坏 ${vehicleFaults(game.progress,v.index).gun}% / 发动机损坏 ${vehicleFaults(game.progress,v.index).engine}%</span><small>${phase==='ready'?'空出车位后自动交付':phase&&phase!=='wrecked'?'已付费，无需重复支付':cost?`费用 ${cost} 金币${game.progress.coins<cost?' · 金币不足':''}`:'无需维修'}</small></span></button>`;
-  }).join('')||'<p>还没有自有载具。</p>';
+  }).join('')||(owned.length?'<p>所有载具均完好，无需维修。</p>':'<p>还没有自有载具。</p>');
   const tow=game.progress.logistics?.tow;
   panel.querySelector('[data-player-tow]').innerHTML='<h3>自行牵引 · 到厂维修费4折</h3><p>自行拖到维修中心，按普通救援维修报价的40%收费。车辆载荷越高，剩余牵引能力越低。</p>'+(tow&&(wreck===null||tow.target===wreck)?`<p class="repair-tow-heading">${repairVehicleIcon(tow.target)}<b>正在牵引 ${vehicleModel(tow.target).name} · 优惠维修 ${selfTowRepairQuote(game)} 金币</b></p><div class="logistics-actions"><button class="ui-button" data-tow-action="release">解除牵引</button><button class="ui-button" data-tow-action="deliver">到厂交车维修</button></div>`:`<p>${game.vehicle.active?'当前剩余牵引能力 '+Math.floor(vehicleLoad(game).towCapacity)+' kg':'猫猫徒步牵引余量 '+Math.floor(footTowCapacity(catLoad(game)))+' kg'}</p>`+game.vehicles.filter(v=>(wreck===null||v.index===wreck)&&game.progress.vehicleHulls[v.index]&&vehicleService(game,v.index)?.phase==='wrecked').map(v=>{const why=towReason(game,v.index);return `<div class="ui-inset"><div class="repair-tow-heading">${repairVehicleIcon(v.index)}<b>${vehicleModel(v.index).name} · ${Math.ceil(vehicleLoad(game,v.index,{driver:false}).mass)} kg</b></div><p>${why||'可以挂接'}</p><button class="ui-button" data-tow-target="${v.index}" ${why?'disabled':''}>挂接牵引绳</button></div>`;}).join(''));
   for(const icon of panel.querySelectorAll('[data-repair-icon]')){
