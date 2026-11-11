@@ -101,10 +101,10 @@ export function combatSteering(g,s){
   const t=nearest(target,p),dx=t.x-p.x,dy=t.y-p.y;
   const edgeX=dx===0?Infinity:distance*Math.max(0,(dx>0?view.right:-view.left)-12)/Math.abs(dx);
   const edgeY=dy===0?Infinity:distance*Math.max(0,(dy>0?view.bottom:-view.top)-12)/Math.abs(dy);
-  spacing=Math.min(range,(view.right-view.left)/3,(view.bottom-view.top)/3,edgeX,edgeY);
+  spacing=Math.min(range,(view.right-view.left)/2,(view.bottom-view.top)/2,edgeX,edgeY);
  }
  const inner=view?Math.max(0,spacing-Math.min(16,spacing*.1)):0;
- // 三分之一视野用于近身后撤；可见目标在炮程内时，整段安全距离都能驻车开火。
+ // 二分之一视野用于近身后撤；可见目标在炮程内时，整段安全距离都能驻车开火。
  const outer=target&&attackTargetVisible(g,target)?range:spacing;
  const error=d=>Math.max(0,d-outer,inner-d);
  const currentError=error(distance);
