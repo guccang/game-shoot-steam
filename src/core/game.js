@@ -1039,7 +1039,7 @@ export class Game {
       }
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
-    updateSEDevices(this,dt);updateVehicleFlares(this,dt);updateSpecialAmmo(this,dt);
+    updateSEDevices(this,dt);updateVehicleFlares(this,dt,input,speed);updateSpecialAmmo(this,dt);
     updateVehicle(this, dt, !!this.parking?.idle);
     // 进入清缴范围即可检查；自由探索只认真实敌人，树木采集不算开战。
     const gunTarget=this.vehicle.active?this.vehicle.targetId:null;

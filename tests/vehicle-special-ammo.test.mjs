@@ -4,7 +4,7 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {grantVehicleArmament,VEHICLE_WEAPONS} from '../src/config/vehicle-armaments.js';
 import {REGIONAL_CAMPS,regionalNpc} from '../src/config/regional-camps.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {SPECIAL_AMMO} from '../src/config/vehicle-special-ammo.js';
+import {SPECIAL_AMMO,FLARE_RULES} from '../src/config/vehicle-special-ammo.js';
 import {regionalCampAction} from '../src/core/camp/regional-camps.js';
 import {configureSpecialAmmo,tradeSupply} from '../src/core/vehicles/supplies.js';
 import {enhancedVehicleShot,detonateSpecialAmmo,updateSpecialAmmo} from '../src/combat/vehicle-special-ammo.js';
@@ -21,7 +21,7 @@ test('主营不能异地购买或制作增强弹，设置保存失败回滚',()=
 test('增强装填单次消耗，耗尽回到普通弹；机枪与临时活动不扣永久库存',()=>{const g=scene(),s=g.progress.supplies;s.selectedSpecial[1]='frost';s.vehicles[1].frost=1;assert.equal(enhancedVehicleShot(g,VEHICLE_WEAPONS[17]).specialAmmo,undefined);assert.equal(s.vehicles[1].frost,1);const w=enhancedVehicleShot(g,VEHICLE_WEAPONS[18]);assert.equal(w.specialAmmo,'frost');assert.equal(s.vehicles[1].frost,0);assert.equal(enhancedVehicleShot(g,VEHICLE_WEAPONS[18]).specialAmmo,undefined);s.vehicles[1].frost=1;g.realm={};assert.equal(enhancedVehicleShot(g,VEHICLE_WEAPONS[18]).specialAmmo,undefined);assert.equal(s.vehicles[1].frost,1);});
 test('六种弹真实命中、持续伤害和一次触发，区域数量有上限',()=>{for(const key of Object.keys(SPECIAL_AMMO).filter(k=>k!=='flare')){const g=scene(),e=enemy(g,1);g.enemies=[e];const b={x:e.x,y:e.y,initialAmount:100,specialAmmo:key,weaponIndex:18,statisticsSource:{kind:'vehicle',index:1}};detonateSpecialAmmo(g,b);assert.ok(e.hp<10000,key);const after=e.hp;detonateSpecialAmmo(g,b);assert.equal(e.hp,after);if(key==='frost'){assert.equal(e.chill,4);assert.equal(e.chillFactor,.25);}if(['flame','gas'].includes(key)){updateSpecialAmmo(g,2);assert.ok(e.hp<after);g.state='paused';const hp=e.hp;updateSpecialAmmo(g,3);assert.equal(e.hp,hp);}for(let i=0;i<12;i++)detonateSpecialAmmo(g,{...b,specialDetonated:false});assert.ok(g.specialAmmoZones.length<=8);}});
 test('真实炮弹携带增强效果，穿透不重复爆破',()=>{const g=scene();g.enemies=[enemy(g,1,120),enemy(g,2,180)];fireBallistics(g,{...VEHICLE_WEAPONS[18],specialAmmo:'frost'},g.player,{x:1,y:0},230,false,true);for(let i=0;i<30;i++)updateBallistics(g,.02);assert.ok(g.enemies.every(e=>e.hp<10000&&e.chill>0));assert.equal(g.specialAmmoZones.length,1);});
-test('照明仅夜间驾驶触发，单枚空中光源不重复扣弹，过期/走远补发',()=>{const g=scene(),s=g.progress.supplies;s.vehicles[1].flare=8;g.surfaceNight=0;updateVehicleFlares(g,1);assert.equal(s.vehicles[1].flare,8);g.surfaceNight=1;updateVehicleFlares(g,.1);assert.equal(s.vehicles[1].flare,7);assert.equal(vehicleFlareLights(g).length,1);updateVehicleFlares(g,6);assert.equal(surfaceAttackRange(g,560),560);assert.equal(surfaceTargetVisible(g,enemy(g,2,400)),true);updateVehicleFlares(g,10);assert.equal(s.vehicles[1].flare,7);g.progress=validateProgress(g.progress);updateVehicleFlares(g,1);assert.equal(g.progress.supplies.vehicles[1].flare,7);updateVehicleFlares(g,28);assert.equal(g.progress.supplies.vehicles[1].flare,6);g.player.y+=700;updateVehicleFlares(g,.1);assert.equal(g.progress.supplies.vehicles[1].flare,5);g.progress.supplies.autoFlare=false;g.player.y+=700;updateVehicleFlares(g,46);assert.equal(g.progress.supplies.vehicles[1].flare,5);assert.equal(vehicleFlareLights(g).length,0);});
+test('照明仅夜间驾驶触发，单枚空中光源不重复扣弹，过期/走远补发',()=>{const g=scene(),s=g.progress.supplies;s.vehicles[1].flare=8;g.surfaceNight=0;updateVehicleFlares(g,1);assert.equal(s.vehicles[1].flare,8);g.surfaceNight=1;updateVehicleFlares(g,.1);assert.equal(s.vehicles[1].flare,7);assert.equal(vehicleFlareLights(g).length,1);updateVehicleFlares(g,FLARE_RULES.rise);assert.equal(surfaceAttackRange(g,560),560);assert.equal(surfaceTargetVisible(g,enemy(g,2,400)),true);updateVehicleFlares(g,10);assert.equal(s.vehicles[1].flare,7);g.progress=validateProgress(g.progress);updateVehicleFlares(g,1);assert.equal(g.progress.supplies.vehicles[1].flare,7);updateVehicleFlares(g,FLARE_RULES.duration-FLARE_RULES.rise-11+.01);assert.equal(g.progress.supplies.vehicles[1].flare,6);g.player.y+=700;updateVehicleFlares(g,.1);assert.equal(g.progress.supplies.vehicles[1].flare,5);g.progress.supplies.autoFlare=false;g.player.y+=700;updateVehicleFlares(g,46);assert.equal(g.progress.supplies.vehicles[1].flare,5);assert.equal(vehicleFlareLights(g).length,0);});
 test('暂停、下车、白天与空库存不自动发射，坦克基础威力提升',()=>{const g=scene();g.surfaceNight=1;g.progress.supplies.vehicles[1].flare=2;g.state='paused';updateVehicleFlares(g,50);assert.equal(g.progress.supplies.vehicles[1].flare,2);g.state='playing';g.vehicle.active=false;updateVehicleFlares(g,1);assert.equal(g.progress.supplies.vehicles[1].flare,2);g.vehicle.active=true;g.progress.supplies.vehicles[1].flare=0;updateVehicleFlares(g,1);assert.equal(vehicleFlareLights(g).length,0);assert.equal(VEHICLE_WEAPONS[18].damage,230);assert.equal(VEHICLE_WEAPONS[18].reloadTime,1.8);assert.equal(VEHICLE_WEAPONS[18].blastRadius,90);});
 
 // 固定与变步长验证实际车炮周期和后坐，使用当前有限弹药夹具。
@@ -39,8 +39,8 @@ test('倒车与斜行按实际速度提前照明，经过发射点外的光圈�
   updateVehicleFlares(g,.01);
   const shot=s.activeFlare;
   assert.equal(shot.angle,Math.atan2(vy,vx));
-  assert.equal(shot.travel,Math.min(280,85+2*Math.hypot(vx,vy)));
-  updateVehicleFlares(g,6);
+  assert.equal(shot.travel,Math.min(FLARE_RULES.maxThrowDistance,85+FLARE_RULES.leadSeconds*Math.hypot(vx,vy)));
+  updateVehicleFlares(g,FLARE_RULES.rise);
   const light=vehicleFlareLights(g)[0];
   assert.ok(Math.abs(light.x-shot.x-Math.cos(shot.angle)*shot.travel)<1e-6);
   assert.ok(Math.abs(light.y-shot.y-Math.sin(shot.angle)*shot.travel)<1e-6);
@@ -64,4 +64,28 @@ test('主营和五处小营地暂停发射，出营补发',()=>{
  g.player.x++;updateVehicleFlares(g,.1);assert.equal(s.vehicles[1].flare,7);
  g.player.x=camp.x;updateVehicleFlares(g,46);
  assert.equal(s.activeFlare,null);assert.equal(s.vehicles[1].flare,7);
+});
+
+test('自动驾驶起步按前进指令迅速扩光，车头接近暗区时提前补射',()=>{
+ const g=scene(),s=g.progress.supplies;
+ g.surfaceNight=1;s.vehicles[1].flare=5;
+ const input={x:0,y:-1},speed=150;
+ g.player.vy=10;
+ updateVehicleFlares(g,.01,input,speed);
+ const first=s.activeFlare;
+ assert.equal(first.angle,-Math.PI/2);
+ for(let i=0;i<30;i++){
+  g.player.y-=speed/60;
+  updateVehicleFlares(g,1/60,input,speed);
+ }
+ const light=vehicleFlareLights(g)[0];
+ assert.ok(light.y<g.player.y-100);
+ assert.ok(light.radius>200&&light.power>.65);
+ assert.equal(s.activeFlare,first);
+ for(let i=0;i<300&&s.activeFlare===first;i++){
+  g.player.y-=speed/60;
+  updateVehicleFlares(g,1/60,input,speed);
+ }
+ assert.equal(s.vehicles[1].flare,3);
+ assert.ok(Math.abs(g.player.y-light.y)<FLARE_RULES.radius);
 });
