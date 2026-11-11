@@ -107,3 +107,26 @@ test('车载盾在来袭侧显示命中，破盾余光与车体伤害分开结�
  g.state='paused';updateSEDevices(g,1);assert.equal(g.seShieldEffects.shieldImpacts.length,2);
  g.state='playing';updateSEDevices(g,.5);assert.equal(g.seShieldEffects.shieldImpacts.length,0);
 });
+
+// 两侧敌人以一像素交替领先，用正式惯性移动逐帧检查走位方向。
+test('巡战接近等距敌群时连续行驶，进入射距后停稳并能立即避弹',async()=>{
+ const {driveBody}=await import('../src/physics/motion.js');
+ const {WORLD}=await import('../src/world/coordinates.js');
+ for(const dt of [1/60,1/24]){
+  const g=scene();equip(g,'combat');startSEControl(g,'combat');
+  const origin=g.player.x,right=enemy(g,1,220),left=enemy(g,2,-220);
+  g.enemies=[right,left];
+  let moving=0;
+  for(let i=0;i<Math.ceil(2/dt);i++){
+   const center=i*dt<.25?g.player.x:origin;
+   right.x=center+220+(i%2);left.x=center-221+(i%2);
+   const v=updateSEControl(g,dt,{x:0,y:0});
+   assert.ok(v.x>=0,'接敌过程中不应来回反向');
+   if(v.x>0)moving++;
+   driveBody(g.player,v,95,dt,WORLD,g.trees);
+  }
+  assert.ok(moving>0);assert.ok(Math.abs(g.player.vx)<1);
+  g.enemyBolts=[{x:g.player.x-100,y:g.player.y,dx:1,dy:0,speed:320,radius:8}];
+  assert.ok(Math.abs(updateSEControl(g,dt,{x:0,y:0}).y)>.3);
+ }
+});
