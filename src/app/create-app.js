@@ -267,7 +267,7 @@ export function createApplication({
    else if(id==='race')realmPanel.enter(id);
    else if(id==='travel')$('phone-button').click();
    else if(id==='clearing')clearingPanel.visit();
-   else if(['cottage','garage','fire','tower','outdoor','ammo','cat-home','furniture','construction','repair','refinery','factory'].includes(id)){const room=interiorLayout({kind:id==='garage'?'vehicle':id});requestWorldNavigation(game,{...room.door,id:room.id,mapId:'forest'},'前往'+room.name,{direct:true});toast.show('下车后在门口站定 1 秒进入，与屋内售货员交谈。');}
+   else if(['cottage','garage','fire','tower','outdoor','ammo','cat-home','furniture','construction','repair','refinery','factory','seWorkshop'].includes(id)){const room=interiorLayout({kind:id==='garage'?'vehicle':id});requestWorldNavigation(game,{...room.door,id:room.id,mapId:'forest'},'前往'+room.name,{direct:true});toast.show('下车后在门口站定 1 秒进入，与屋内售货员交谈。');}
    else if(id==='story')storyPanel.open();
    else if(id==='neighbors')livingPanel.open();
    else if(id==='defense')campDefensePanel.visit('left');
@@ -357,6 +357,7 @@ export function createApplication({
   // 房屋服务集中在室内售货员，关闭页面后继续留在原房间。
   function openRoomService(kind,index){
     const regional=WORKSHOP_INTERIORS[kind];if(regional?.regional)return regionalCampPanel.open(regional.regional,regional.regionalTab);
+    if(kind==='seWorkshop')return logistics.open('seUpgrade',game.vehicle.index);
     if(kind==='refinery'||kind==='factory')return industryPanel.open(kind);
     if(kind==='construction')return campHome.openService(kind,index);
     if(kind==='warehouse')return warehouse.open();

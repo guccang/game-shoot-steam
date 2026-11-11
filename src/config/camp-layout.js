@@ -11,7 +11,7 @@ import {NORTH_PARKING} from './parking.js';
 import {TOWN_LAYOUT} from './town-layout.js';
 export const CAMP_LAYOUT_GRID=20;
 export const CAMP_ROAD_WIDTH=56;
-export const CAMP_BUILDINGS=Object.entries({cottage:'巡林小屋',weapons:'武器工坊',garage:'载具工坊',warehouse:'小屋仓库',warehouseDepot:'后院仓库',outdoor:'户外用品店',ammo:'弹药补给铺',repair:'维修中心',catHome:'猫窝',furniture:'家具小铺',construction:'建筑公司',refinery:'提炼厂',factory:'加工厂',story:'回信驿',clearing:'清缴告示牌',rogue:'远征光门',tower:'时空塔',guardian:'守护祭坛',travel:'远行驿站',tent:'公共帐篷'}).map(([id,name])=>({id,name,...TOWN_LAYOUT[id],...(id==='travel'?{passable:true}:{}),width:TOWN_LAYOUT[id].width||(['cottage'].includes(id)?150:110),height:TOWN_LAYOUT[id].height||(['cottage'].includes(id)?160:100)})).concat([
+export const CAMP_BUILDINGS=Object.entries({cottage:'巡林小屋',weapons:'武器工坊',garage:'载具工坊',warehouse:'小屋仓库',warehouseDepot:'后院仓库',outdoor:'户外用品店',ammo:'弹药补给铺',repair:'维修中心',catHome:'猫窝',furniture:'家具小铺',construction:'建筑公司',refinery:'提炼厂',factory:'加工厂',seWorkshop:'SE 改装工坊',story:'回信驿',clearing:'清缴告示牌',rogue:'远征光门',tower:'时空塔',guardian:'守护祭坛',travel:'远行驿站',tent:'公共帐篷'}).map(([id,name])=>({id,name,...TOWN_LAYOUT[id],...(id==='travel'?{passable:true}:{}),width:TOWN_LAYOUT[id].width||(['cottage'].includes(id)?150:110),height:TOWN_LAYOUT[id].height||(['cottage'].includes(id)?160:100)})).concat([
  // 球场站牌独立搬迁，正式记分牌、修复入口和任务导航由统一锚点同步。
  {id:'football',name:'林间球场',...TOWN_LAYOUT.football,width:112,height:90,passable:true},
  ...CAMP_DEFENSE_POSTS,{...CAMP_PLAZA_BUILDING},

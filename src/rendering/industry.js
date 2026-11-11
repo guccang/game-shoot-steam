@@ -5,7 +5,7 @@ import {TOWN_LAYOUT} from '../config/town-layout.js';
 import {box,oval,poly} from './primitives.js';
 // 世界实体使用固定底座，室内、秘境和剧情不重复绘制营地工业区。
 export function industryObjects(game){
- return game.mapId==='forest'&&!game.cottage&&!game.realm&&!game.story?['refinery','factory'].map(id=>({...TOWN_LAYOUT[id],id,type:'industry'})):[];
+ return game.mapId==='forest'&&!game.cottage&&!game.realm&&!game.story?['refinery','factory','seWorkshop'].map(id=>({...TOWN_LAYOUT[id],id,type:'industry'})):[];
 }
 // 高砖炉和低车间使用不同剪影，工序动画独立于房屋主体。
 export function drawIndustry(c,item,game,night=0){
@@ -23,6 +23,10 @@ export function drawIndustry(c,item,game,night=0){
    for(let i=0;i<3;i++){const u=(t*.32+i/3)%1;c.globalAlpha=(1-u)*.3;oval(c,-63+Math.sin(u*4)*6,-154-u*31,6+u*7,4+u*4,'#c8c5ae');}c.globalAlpha=1;
   }
   poly(c,[[-80,-12],[-59,-29],[-40,-9]],'#9da991',edge,2);
+ }else if(item.id==='seWorkshop'){
+  // 工坊以车载雷达和两侧指示灯区别于加工厂。
+  box(c,-66,-131,8,35,2,edge);oval(c,-62,-133,21,9,'#88bdb1',edge,3);
+  for(const x of [-60,58]){box(c,x-13,-50,26,35,4,'#486b62',edge,2);oval(c,x,-37,7,7,'#e5bc65',edge,2);}
  }else{
   box(c,-73,-54,42,39,3,'#809a79',edge,2);
   c.save();c.translate(-52,-35);c.rotate(t*2);oval(c,0,0,13,13,'#d2c18b',edge,2);
@@ -30,7 +34,7 @@ export function drawIndustry(c,item,game,night=0){
   box(c,35,-60,42,9,2,'#7a8f72',edge,2);box(c,38,-51,6,37,1,'#7a8f72',edge,1);box(c,68,-51,6,37,1,'#7a8f72',edge,1);
   box(c,44,-43+(active?Math.sin(t*3)*6:0),24,9,2,'#bcc6ae',edge,2);box(c,33,-12,48,10,3,'#c8ac75',edge,2);
  }
- box(c,-61,-83,122,24,4,'#fff1c5',edge,2);c.font='bold 13px sans-serif';c.textAlign='center';c.fillStyle=edge;c.fillText(item.id==='refinery'?'矿产提炼厂':'金属加工厂',0,-66);
+ box(c,-61,-83,122,24,4,'#fff1c5',edge,2);c.font='bold 13px sans-serif';c.textAlign='center';c.fillStyle=edge;c.fillText(item.id==='refinery'?'矿产提炼厂':item.id==='seWorkshop'?'SE 改装工坊':'金属加工厂',0,-66);
  c.restore();
 }
 // 室内设备单独绘制，碰撞共用家具底座；炉火、压床与传动轮由本厂批次驱动。

@@ -1,4 +1,4 @@
-import {seActive} from '../config/vehicle-se.js';
+import {seActive,seBuild,seLevel} from '../config/vehicle-se.js';
 // 单枚空中照明弹：抛物线升空、慢速下降与落地熄灭，灯光与可见性共用同一时钟。
 import {FLARE_RULES as R} from '../config/vehicle-special-ammo.js';
 import {insideSurfaceCamp} from './camp-boundary.js';
@@ -19,7 +19,7 @@ export function vehicleFlarePose(game){
  const travel=f.travel??R.throwDistance;
  const distance=travel*(travel>R.throwDistance?1-(1-up)**3:up)+18*fall;
  const point=canonical({x:f.x+Math.cos(f.angle)*distance,y:f.y+Math.sin(f.angle)*distance});
- return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.landing?'descent':'fade',radius:(24+(R.radius-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
+ return {...point,age,height,angle:f.angle,phase:age<R.rise?'rise':age<R.landing?'descent':'fade',radius:(24+(R.radius*(1+.15*(f.level||0))-24)*spread)*Math.sqrt(fade),power:(age<R.rise?.15+.85*spread:1-.35*fall)*fade,origin:{x:f.x,y:f.y}};
 }
 // 一枚光源照亮约三片基础视野面积；高度只影响弹体，不把地面光池移到空中。
 export function vehicleFlareLights(game){const p=vehicleFlarePose(game);return p&&p.radius>1?[{...p,id:'vehicle-flare',type:'fixture',kind:'flare',height:0,flightHeight:p.height,offset:0,flare:true,flying:true}]:[];}
@@ -55,6 +55,6 @@ export function updateVehicleFlares(game,dt,input=null,driveSpeed=0){
  const travel=moving?Math.min(R.maxThrowDistance,R.throwDistance+speed*R.leadSeconds):R.throwDistance;
  if(insideSurfaceCamp(game))return;
  stock.flare--;
- s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,life:R.duration,mapId:game.mapId};
+ s.activeFlare={...canonical(rearFlareMuzzle(game.player,game.vehicle.index)),angle,travel,level:seLevel(seBuild(game.progress,game.vehicle.index),'flare'),life:R.duration,mapId:game.mapId};
  game.onEvent('story-hint',{text:`车尾照明弹升空 · 照明约${R.duration}秒`});
 }

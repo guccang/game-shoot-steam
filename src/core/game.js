@@ -1,3 +1,4 @@
+import {seBuild,seLevel} from '../config/vehicle-se.js';
 import {updateSEControl,updateSEDevices,absorbSEShield} from '../combat/vehicle-se.js';
 import {updateSpecialAmmo} from '../combat/vehicle-special-ammo.js';
 import {updateVehicleFlares} from '../world/vehicle-flares.js';
@@ -963,8 +964,10 @@ export class Game {
       speed =
         HEROES[(this.story?this.loadout:this.progress).hero].speed *
         (this.vehicle.active ? vehicleSpeed(this.loadout, this.vehicle.index) : 1)*movementLoadFactor(this);
+    // 巡航提速仅用于自动驾驶输出，手动接管或巡战走位使用原车速。
+    const cruiseSpeed=this.vehicle.active&&(this.seControl?.mode==='autopilot'||this.waystationTravel?.moving)?speed*(1+.1*seLevel(seBuild(this.progress,this.vehicle.index),'autopilot')):speed;
     if(speed===0)p.vx=p.vy=0;
-    driveBody(p, input, speed, dt, WORLD, this.trees);
+    driveBody(p, input, cruiseSpeed, dt, WORLD, this.trees);
     if(this.farmWork?.tool==='ox'&&!this.farmWork.autoCombat&&!this.farmWork.ox?.approach&&!oxRigClear(this,p,this.farmWork.ox?.yaw??0)){
       p.x=previousPlayer.x;p.y=previousPlayer.y;p.vx=p.vy=0;
       if(this.farmWork.ox?.held){liftOxPlow(this);this.farmWork.result={ok:false,message:'前方无法通行，已抬犁。'};}
@@ -1039,7 +1042,7 @@ export class Game {
       }
     }
     // 静止停车只收住火力，不暂停世界、装填或车体修复冷却。
-    updateSEDevices(this,dt);updateVehicleFlares(this,dt,input,speed);updateSpecialAmmo(this,dt);
+    updateSEDevices(this,dt);updateVehicleFlares(this,dt,input,cruiseSpeed);updateSpecialAmmo(this,dt);
     updateVehicle(this, dt, !!this.parking?.idle);
     // 进入清缴范围即可检查；自由探索只认真实敌人，树木采集不算开战。
     const gunTarget=this.vehicle.active?this.vehicle.targetId:null;

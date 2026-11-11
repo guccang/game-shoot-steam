@@ -29,6 +29,7 @@ export const VEHICLE_DISPLAYS=purchasableVehicles.map((index,slot)=>({id:'showro
 // 小型营业房使用同一门槛和通道，服务名称决定室内柜台文案。
 function serviceRoom(id,name,site,door={x:site.x,y:site.y+22}){return {...WORKSHOP_ROOM,id,name,site,door,outside:{x:door.x,y:door.y+52},service:true};}
 export const WORKSHOP_INTERIORS={
+ seWorkshop:serviceRoom('seWorkshop','SE 改装工坊',TOWN_LAYOUT.seWorkshop,{x:TOWN_LAYOUT.seWorkshop.x,y:TOWN_LAYOUT.seWorkshop.y+55}),
  refinery:serviceRoom('refinery','矿产提炼厂',TOWN_LAYOUT.refinery,{x:TOWN_LAYOUT.refinery.x,y:TOWN_LAYOUT.refinery.y+55}),
  factory:serviceRoom('factory','金属加工厂',TOWN_LAYOUT.factory,{x:TOWN_LAYOUT.factory.x,y:TOWN_LAYOUT.factory.y+55}),
  warehouse:serviceRoom('warehouse','小屋仓库',WAREHOUSE),
@@ -82,7 +83,7 @@ export const SHOPKEEPER_ENTRY={wait:1,depth:20,releaseRadius:16,clickRadius:170,
 export function interiorShopkeeper(room){
  const layout=interiorLayout(room),kind=room?.kind;
  if(!kind||kind==='cottage')return null;
- return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='refinery'?'提炼厂管理员':kind==='factory'?'加工厂管理员':kind==='construction'?'建筑师·森工':kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
+ return {id:'shopkeeper',type:'shopkeeper',kind,index:undefined,x:layout.width/2,y:layout.service?175:layout.spawn.y-80,width:58,height:64,label:kind==='seWorkshop'?'SE 改装师':kind==='refinery'?'提炼厂管理员':kind==='factory'?'加工厂管理员':kind==='construction'?'建筑师·森工':kind==='warehouse'?'仓库管理员':kind==='cat-home'?'猫窝管理员':kind==='furniture'?'家具售货员':layout.name+'售货员'};
 }
 // 柜台跟随售货员底座，绘制和碰撞共用同一位置；私人小屋没有柜台。
 export function interiorCounter(room){const seller=interiorShopkeeper(room);return seller?{id:'counter',type:'counter',x:seller.x,y:seller.y+30,width:130,height:36}:null;}
