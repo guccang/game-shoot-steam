@@ -543,3 +543,8 @@ dialog.ui-panel--sketch {
 .shell-choice small{font-variant-numeric:tabular-nums}
 .shell-choice[aria-pressed="true"]{background:var(--ui-sage);outline:2px solid var(--ui-forest);outline-offset:-2px}
 .shell-choice[aria-pressed="true"]::after{content:"✓";position:absolute;right:5px;top:3px;color:var(--ui-forest)}
+
+/* 载具页签固定在标题下方，窄屏也能等宽切换。 */
+.vehicle-page-tabs:not([hidden]) { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px var(--ui-space); }
+.vehicle-page-tabs [aria-pressed="true"] { background: var(--ui-forest); color: var(--ui-paper); }
+#field-equipment-dialog .ui-panel__footer:has(.logistics-actions[hidden]):has([data-field-weapons][hidden]):has([role="status"]:empty) { display: none !important; }

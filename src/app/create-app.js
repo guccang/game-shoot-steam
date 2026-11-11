@@ -283,11 +283,11 @@ export function createApplication({
   const loadCleanup=createLoadCleanup({game,root,dialogs,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const creatureCodex=createCreatureCodex({game,root,dialogs});
   const outdoors=createOutdoors({game,root,renderer,dialogs,onChange:refresh,onFishCaught:creatureCodex.showCatch,onNotice:toast.show});
-  const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onOutdoor:()=>outdoors.open(),onCargo:()=>logistics.open('cargo',game.vehicle.index),onCleanup:()=>loadCleanup.open(game.vehicle.index)});
+  const fieldEquipment=createFieldEquipment({game,root,dialogs,onChange:refresh,onOutdoor:()=>outdoors.open(),mountCargo:(host,index)=>logistics.mountCargo(host,index)});
   industryPanel=createIndustryPanel({game,root,renderer,dialogs,input,onChange:refresh,onNotice:toast.show});
   const warehouse=createWarehouse({game,root,dialogs,onChange:refresh});
   const inventoryTransfer=createInventoryTransfer({game,root,dialogs,onChange:refresh,onNotice:message=>toast.show(message)});
-  const logistics=createLogistics({game,root,dialogs,onTransfer:inventoryTransfer.open,onCleanup:index=>loadCleanup.open(index),onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
+  const logistics=createLogistics({game,root,dialogs,onTransfer:inventoryTransfer.open,mountCleanup:loadCleanup.mount,onChange:()=>{if(root.getElementById('workshop-dialog')?.open)workshop.render();refresh();}});
   const workshop = createWorkshop({ game, root, dialogs, onChange: refresh,onEquipmentStory:id=>storyPanel.openEquipment(id),onVehicleFit:index=>logistics.open('fit',index),onCurrent:kind=>fieldEquipment.open(kind),onCleanup:()=>loadCleanup.open(null),
     commit: plan => { const result = commitWorkshop(game, plan, store.saveProgress); diagnostics.gameplay.event('workshop-commit',{plan:{kind:plan.kind,index:plan.index,action:plan.action,part:plan.part,choice:plan.choice},ok:result.ok,reason:result.reason,cost:result.cost});renderSaveStatus(); return result; },
     createTrial: createWorkshopTrial });

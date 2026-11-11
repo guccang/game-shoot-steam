@@ -29,19 +29,32 @@ import {requestWorldNavigation} from '../core/navigation/world-navigation.js';
 // 按一位小数展示千克，运算仍使用原始重量。
 export function kg(n){return Number(n.toFixed(1))+' kg';}
 // 背包、货舱和装配使用独立状态；打开不会自动装卸或收费。
-export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer}){
+export function createLogistics({game,root,dialogs,onChange,mountCleanup,onTransfer}){
  const scope=createEventScope(),panel=root.createElement('dialog');panel.id='logistics-dialog';panel.className='ui-panel ui-page logistics';panel.setAttribute('aria-labelledby','logistics-title');
  panel.innerHTML='<header class="ui-panel__header"><div><h2 id="logistics-title">载具仓库</h2><p id="logistics-subtitle"></p></div><button id="logistics-close" class="ui-close" aria-label="关闭货物与装配">×</button></header><div class="ui-panel__body" id="logistics-content"></div><footer class="ui-panel__footer"><p id="logistics-message" role="status"></p><button class="ui-button" data-load-action="close">返回</button></footer>';root.body.append(panel);
  let mode='cargo',hull=null,message='',refitTab='vehicle',draftZones=null;const get=id=>panel.querySelector('#logistics-'+id);
  // 负重进度条以文字解释过载，避免只依赖颜色判断状态。
  function meter(label,weight,capacity){return `<div class="ui-inset"><b>${label} ${kg(weight)} / ${kg(capacity)}</b><progress max="${capacity}" value="${Math.min(weight,capacity)}"></progress><small>${weight>=capacity?'载荷已满，超出 '+kg(weight-capacity):'剩余 '+kg(capacity-weight)}</small></div>`;}
  // 从实际背包和选中车型生成货物列表，切换车辆不会合并不同货舱。
- function renderCargo(){
+ const cargo=root.createElement('section');
+ // 将同一套货舱操作挂到载具页或独立仓库页，载具页固定查看当前车辆。
+ function mountCargo(host,index,fixed=true){
+  hull=index;
+  host.replaceChildren(cargo);
+  renderCargo(fixed);
+  if(fixed&&inspectLogisticsLesson(game,'vehicleLoadViewed'))onChange();
+ }
+ // 总览先列出整车负重和实物货重，再展示装卸与清理操作。
+ function renderCargo(fixed=false){
   const cat=catLoad(game),owned=game.progress.vehicleHulls.map((n,i)=>n?i:null).filter(i=>i!==null);if(!owned.includes(hull))hull=owned.includes(game.vehicle.index)?game.vehicle.index:owned[0]??null;
   const b=hull===null?null:vehicleBuild(game.progress,hull),v=hull===null?null:vehicleLoad(game,hull,{driver:true}),accessible=hull!==null&&cargoAccessible(game,hull);
   const rows=hull===null?[]:vehicleCargoEntries(game,hull);
-  get('content').innerHTML=(b?`<label class="inventory-transfer-field">当前载具<select data-cargo-hull aria-label="当前载具">${owned.map(i=>`<option value="${i}" ${i===hull?'selected':''}>${vehicleModel(i).name}</option>`).join('')}</select></label>${meter('载具载荷',v.payload,v.capacity)}<p>${accessible?'点击货物，选择数量移到背包。':'请到这辆车旁装卸。'}背包物品可在物品详情中移到载具。</p><div class="keepsake-pockets" aria-label="载具货物">${rows.map(item=>`<button type="button" class="keepsake-pocket" data-cargo-item="${item.id}" aria-haspopup="dialog" aria-controls="inventory-transfer-dialog" aria-label="${item.name}，数量${item.count}，移到背包" ${accessible?'':'disabled'}>${inventoryIcon(item)}<span>${item.name}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')||'<p>货舱是空的。</p>'}</div><div class="logistics-actions"><button class="ui-button" data-load-action="cleanup-vehicle" ${accessible?'':'disabled'}>整理载具仓库</button></div>`:'<p>尚未拥有载具。</p>')+meter('随身背包',cat.weight,cat.capacity)+woodStorageMarkup()+`<div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`;
-  paintInventoryIcons(get('content'),game.progress);
+  const picker=b&&!fixed?`<label class="inventory-transfer-field">当前载具<select data-cargo-hull aria-label="当前载具">${owned.map(i=>`<option value="${i}" ${i===hull?'selected':''}>${vehicleModel(i).name}</option>`).join('')}</select></label>`:'';
+  const goodsWeight=rows.reduce((total,item)=>total+item.weight,0);
+  cargo.innerHTML=(b?`${picker}<h3>${vehicleModel(hull).name} · 仓库总览</h3>${meter('载具载荷',v.payload,v.capacity)}<p>货物 ${rows.length} 类 · 共 ${kg(goodsWeight)}</p>${meter('随身背包',cat.weight,cat.capacity)}<h3>货物装卸</h3><p>${accessible?'点击货物，选择数量移到背包。':'请到这辆车旁装卸。'}背包物品可在物品详情中移到载具。</p><div class="keepsake-pockets" aria-label="载具货物">${rows.map(item=>`<button type="button" class="keepsake-pocket" data-cargo-item="${item.id}" aria-haspopup="dialog" aria-controls="inventory-transfer-dialog" aria-label="${item.name}，数量${item.count}，移到背包" ${accessible?'':'disabled'}>${inventoryIcon(item)}<span>${item.name}</span><small>×${item.count} · ${item.weight.toFixed(2)} kg</small></button>`).join('')||'<p>货舱是空的。</p>'}</div><div data-inline-cleanup></div>`:'<p>尚未拥有载具。</p>'+meter('随身背包',cat.weight,cat.capacity))+woodStorageMarkup()+`<div class="logistics-actions"><button class="ui-button" data-load-action="sell" ${canSellCrops(game)?'':'disabled'}>出售在场全部作物</button><button class="ui-button" data-load-action="market">前往收购点</button></div>`;
+  cargo.insertAdjacentHTML('beforeend',treasureCargoMarkup()+'<p data-cargo-status role="status"></p>');
+  paintInventoryIcons(cargo,game.progress);
+  if(b)mountCleanup(cargo.querySelector('[data-inline-cleanup]'),hull);
 
  }
  // 运输与工坊保管共享实物位置，贵重唯一件不放入一键丢弃列表。
@@ -81,10 +94,21 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
   get('content').innerHTML=selector+(rows.join('')||'<p>这辆车还没有 SE 装置。</p>');
  }
  // 仅操作后刷新，长列表不会被每帧重绘打断滚动。
- function render(){if(mode==='seUpgrade'){get('message').textContent=message;renderSEWorkshop();return;}get('title').textContent=mode==='fit'?'载具改造':'载具仓库';get('subtitle').textContent=mode==='fit'?'引擎 · 装甲 · 底盘区域，共同决定能力上限':'点击货物移到背包，装卸需靠近车辆';get('message').textContent=message;mode==='fit'?renderFit():renderCargo();if(mode==='fit'&&hull!==null)get('content').insertAdjacentHTML('beforeend',vehicleSEMarkup(game,hull,{fit:true}));if(mode!=='fit')get('content').insertAdjacentHTML('beforeend',treasureCargoMarkup());}
+ function render(){if(mode==='seUpgrade'){get('message').textContent=message;renderSEWorkshop();return;}get('title').textContent=mode==='fit'?'载具改造':'载具仓库';get('subtitle').textContent=mode==='fit'?'引擎 · 装甲 · 底盘区域，共同决定能力上限':'点击货物移到背包，装卸需靠近车辆';get('message').textContent=message;mode==='fit'?renderFit():mountCargo(get('content'),hull,false);if(mode==='fit'&&hull!==null)get('content').insertAdjacentHTML('beforeend',vehicleSEMarkup(game,hull,{fit:true}));}
  dialogs.register(panel.id,{focusId:'logistics-close',onOpen:render});
  // 从载具页面进入时将货舱放到文档末尾，使嵌套弹窗的触控层级与打开顺序一致。
  function open(nextMode='cargo',index=null){mode=nextMode;hull=index;message='';refitTab='vehicle';draftZones=null;if(!panel.open)root.body.append(panel);dialogs.open(panel.id);if(mode==='cargo'&&hull!==null&&inspectLogisticsLesson(game,'vehicleLoadViewed'))onChange();}
+ // 两个仓库入口共用装卸、导航和入库事务。
+ scope.on(cargo,'click',event=>{
+  const node=event.target.closest('button');if(!node||node.disabled)return;let result;
+  if(node.dataset.cargoItem){onTransfer(node.dataset.cargoItem,'unload',hull);return;}
+  if(node.dataset.loadAction==='market'){requestWorldNavigation(game,FARM_SEED_DOOR,'前往作物收购点',{direct:true});for(const id of ['logistics-dialog','field-equipment-dialog','current-cat-dialog','phone-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
+  if(node.dataset.loadAction==='warehouse'){requestWorldNavigation(game,CAMP_WAREHOUSE,'返回营地仓库',{direct:true});for(const id of ['logistics-dialog','field-equipment-dialog','current-cat-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
+  if(node.dataset.loadAction==='store-wood')result=storeWood(game);
+  if(node.dataset.loadAction==='sell')result=sellCrops(game);
+  if(node.dataset.treasureTransfer)result=transferTreasurePart(game,node.dataset.treasureTransfer,hull,node.dataset.store==='store');
+  if(result){renderCargo(!panel.contains(cargo));cargo.querySelector('[data-cargo-status]').textContent=result.message;onChange();}
+ });
  scope.on(get('close'),'click',()=>dialogs.close(panel.id));
 
  scope.on(panel,'click',event=>{
@@ -94,14 +118,7 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
   if(node.dataset.refitTab){refitTab=node.dataset.refitTab;render();return;}
   if(node.hasAttribute('data-refit-reset')){draftZones=null;render();return;}
   if(node.dataset.refitAction)result=configureVehicleBuild(game,hull,node.dataset.refitAction,draftZones);
-  if(node.dataset.cargoItem){onTransfer(node.dataset.cargoItem,'unload',hull);return;}
-  if(node.dataset.loadAction==='cleanup-vehicle'){onCleanup(hull);return;}
   if(node.dataset.loadAction==='close'){dialogs.close(panel.id);return;}
-  if(node.dataset.loadAction==='market'){requestWorldNavigation(game,FARM_SEED_DOOR,'前往作物收购点',{direct:true});for(const id of ['logistics-dialog','field-equipment-dialog','current-cat-dialog','phone-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
-  if(node.dataset.loadAction==='warehouse'){requestWorldNavigation(game,CAMP_WAREHOUSE,'返回营地仓库',{direct:true});for(const id of ['logistics-dialog','field-equipment-dialog','current-cat-dialog'])if(root.getElementById(id)?.open)dialogs.close(id);onChange();return;}
-  if(node.dataset.loadAction==='store-wood')result=storeWood(game);
-  if(node.dataset.loadAction==='sell')result=sellCrops(game);
-  if(node.dataset.treasureTransfer)result=transferTreasurePart(game,node.dataset.treasureTransfer,hull,node.dataset.store==='store');
   if(node.dataset.fitEngine!==undefined)result=configureVehicleBuild(game,hull,'engine',Number(node.dataset.fitEngine));
   if(node.dataset.fitGun!==undefined)result=mountMainGun(game,hull,node.dataset.fitGun==='none'?null:Number(node.dataset.fitGun));
   if(node.dataset.fitArmor)result=configureVehicleBuild(game,hull,node.dataset.fitArmor);
@@ -110,8 +127,8 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
  // 原生滑动期间仅更新预览和数值，避免重建控件打断触摸。
  scope.on(panel,'input',e=>{const id=e.target.dataset.refitZone;if(!id)return;draftZones=redistributeVehicleZones(draftZones,id,Number(e.target.value));const r=vehicleRefitStats(game.progress,hull);panel.querySelector('[data-refit-preview]').innerHTML=refitPreview(game,hull,draftZones);for(const z of VEHICLE_ZONES){panel.querySelector('[data-refit-zone="'+z.id+'"]').value=draftZones[z.id];panel.querySelector('[data-zone-value="'+z.id+'"]').textContent=draftZones[z.id]+'%';panel.querySelector('[data-zone-strength="'+z.id+'"]').textContent=Math.round((.5+r.space*draftZones[z.id]/4000)*100)+'%';}});
  scope.on(panel,'change',e=>{if(e.target.matches('[data-cargo-hull]')){hull=Number(e.target.value);render();}});
- scope.on(root,'close',e=>{if(['load-cleanup-dialog','inventory-transfer-dialog'].includes(e.target.id)&&panel.open)render();},true);
+ scope.on(root,'close',e=>{if(['load-cleanup-quantity','load-cleanup-dialog','inventory-transfer-dialog'].includes(e.target.id)&&panel.open)render();},true);
  // 销毁时释放本页面事件和DOM。
  function dispose(){scope.dispose();panel.remove();}
- return {open,dispose};
+ return {open,mountCargo,dispose};
 }
