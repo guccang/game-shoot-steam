@@ -1,3 +1,4 @@
+import {seDeviceIcon} from './se-device-icon.js';
 import {VEHICLE_SE,SE_MAX_UPGRADE,SE_UPGRADE_EFFECTS,seBuild,seLevel,seUpgradeCost} from '../config/vehicle-se.js';
 import {vehicleSEMarkup} from './vehicle-se.js';
 import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
@@ -75,7 +76,7 @@ export function createLogistics({game,root,dialogs,onChange,onCleanup,onTransfer
   const rows=build.owned.map(key=>{
    const level=seLevel(build,key),price=seUpgradeCost(key,level);
    const button=level===SE_MAX_UPGRADE?'已达最高级':'改装至 +'+(level+1)+' · '+price+' 金币';
-   return '<section class="ui-inset"><h3>'+VEHICLE_SE[key].name+' · +'+level+'</h3><p>每级'+SE_UPGRADE_EFFECTS[key]+'</p><button class="ui-button" data-se-key="'+key+'" data-se-action="upgrade" '+(level===SE_MAX_UPGRADE||price>game.progress.coins?'disabled':'')+'>'+button+'</button></section>';
+   return '<section class="ui-inset"><h3 class="se-device-title">'+seDeviceIcon(key)+VEHICLE_SE[key].name+' · +'+level+'</h3><p>每级'+SE_UPGRADE_EFFECTS[key]+'</p><button class="ui-button" data-se-key="'+key+'" data-se-action="upgrade" '+(level===SE_MAX_UPGRADE||price>game.progress.coins?'disabled':'')+'>'+button+'</button></section>';
   });
   get('content').innerHTML=selector+(rows.join('')||'<p>这辆车还没有 SE 装置。</p>');
  }
