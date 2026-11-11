@@ -41,9 +41,9 @@ test('静止十秒不倒车，点击立即启动，暂停与连点不重复发�
  assert.ok(['align','reverse'].includes(g.parking.phase));assert.equal(requestParking(g),false);
 });
 test('三栋房屋各有专属车位，北门十二个公共位均可连续倒入且不重复开工坊',()=>{
- assert.equal(PARKING_SPOTS.filter(s=>s.number).length,12);
+ assert.equal(PARKING_SPOTS.filter(s=>s.number&&!s.lotId).length,12);
  for(const building of ['garage','weapons','cottage'])assert.ok(PARKING_SPOTS.filter(s=>s.building===building).length>=1&&PARKING_SPOTS.filter(s=>s.building===building).length<=3);
- for(const spot of PARKING_SPOTS){
+ for(const spot of PARKING_SPOTS.filter(s=>!s.lotId)){
   if(!spot.indoor)for(const dx of [-48,48])for(const dy of [-48,38])assert.ok(pathDistance(spot.x+dx,spot.y+dy)>30,'露天泊位退出主路');
   const {g,events}=setup(spot.id);g.player.x+=24;g.vehicle.hp*=.7;
   const hp=g.vehicle.hp,ammo=g.vehicle.module?.magazine.ammo,wheel=g.vehicle.wheelPhase;

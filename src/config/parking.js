@@ -1,3 +1,5 @@
+import {gateParkingSpots} from '../world/gate-parking.js';
+import {SpatialGrid} from '../world/spatial-grid.js';
 import {AMMO_SHOP} from './supplies.js';
 // 房屋泊位与自动停车参数共用世界坐标；车位不添加新的地形碰撞。
 import {REPAIR_CENTER} from './vehicle-repair.js';
@@ -36,7 +38,16 @@ export function expansionParkingSpots(progress){
  });
 }
 // 存档分配只读取该档地契，不借用上一个已激活地图的扩建车位。
-export function parkingSpotsFor(progress){return baseSpots.concat(expansionParkingSpots(progress));}
+export function parkingSpotsFor(progress){return baseSpots.concat(expansionParkingSpots(progress),gateParkingSpots(progress));}
 // 更新当前世界的实际泊位，所有交互、绘制和导航使用同一批对象。
-export function activateParkingSpots(progress){PARKING_SPOTS.splice(baseSpots.length,Infinity,...expansionParkingSpots(progress));}
+let parkingGrid;
+// 树冠和渲染只查询镜头或采样点附近的泊位。
+export function nearbyParkingSpots(x,y,right,bottom,padding){
+ parkingGrid??=new SpatialGrid(PARKING_SPOTS);
+ return parkingGrid.query(x,y,right,bottom,padding);
+}
+export function activateParkingSpots(progress){
+ PARKING_SPOTS.splice(baseSpots.length,Infinity,...expansionParkingSpots(progress),...gateParkingSpots(progress));
+ parkingGrid=null;
+}
 

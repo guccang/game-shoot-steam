@@ -66,9 +66,9 @@ for(const s of SCENERY){const b=CAMP_BUILDINGS.find(b=>Math.abs(s.x-b.x)<.1&&Mat
 for(const s of CAMP_PROPS){const b=CAMP_BUILDINGS.filter(b=>Math.abs(s.x-b.x)<b.width/2+30&&s.y>b.y-30&&s.y<b.y+80).sort((a,b)=>Math.hypot(s.x-a.x,s.y-a.y)-Math.hypot(s.x-b.x,s.y-b.y))[0];if(b)bind(b.id,s);}
 for(const court of TOWN_COURTS){const id=court.id.replace(/-yard$/,'');bind(id==='cat-home'?'catHome':id,court);}
 // 调用方在重建、更新和绘制前激活自己的存档；相同布局是常数时间返回。
-export function activateCampLayout(progress){activateCampLand(progress);activateCampPlaza(progress);const layout=progress?.campLayout,key=JSON.stringify([layout?.positions||{},progress?.campLand]);if(activeKey===key)return revision;activeKey=key;activateParkingSpots(progress);
+export function activateCampLayout(progress){activateCampLand(progress);activateCampPlaza(progress);const layout=progress?.campLayout,key=JSON.stringify([layout?.positions||{},progress?.campLand]);if(activeKey===key)return revision;activeKey=key;
  for(const {id,site,base} of bindings){const b=CAMP_BUILDINGS.find(b=>b.id===id),p=layout?.positions?.[id],dx=p?p.x-b.x:0,dy=p?p.y-b.y:0;for(const [k,v] of Object.entries(base))site[k]=v+(k==='x'?dx:dy);}
- invalidateBuildingCollisionIndex();return ++revision;
+ activateParkingSpots(progress);invalidateBuildingCollisionIndex();return ++revision;
 }
 // 碰撞、入口和停车单测可读取登记的真实位置，避免检验一份替代规划。
 export function campLayoutBindings(id){return bindings.filter(b=>b.id===id).map(b=>b.site);}

@@ -1,3 +1,5 @@
+import {relocateRetiredGateSpots} from '../../progression/vehicles/camp-parking.js';
+import {clearGateParkingTrees} from '../../world/forest-clearings.js';
 import {relocatePastureAnimals} from './camp-layout-pasture.js';
 import {PATHS} from '../../world/paths.js';
 import {roadFootprintDistance} from '../../world/road-footprint.js';
@@ -38,7 +40,7 @@ export function checkCampPlacement(game,layout,id){const base=CAMP_BUILDINGS.fin
  if(game.progress.farm?.plots?.some?.(plot=>{if(plot.mapId&&plot.mapId!=='forest')return false;const p=nearest(plot,b);return p.x>=left-20&&p.x<=right+20&&p.y>=top-20&&p.y<=bottom+20;}))return '请避开已有农田。';
  const player=game.player&&nearest(game.player,b);if(player&&player.x>=left&&player.x<=right&&player.y>=top&&player.y<=bottom)return '请先离开计划放置建筑的位置。';
  if((game.progress.campParking?.owned||[]).some(v=>{const p=nearest(v,b);return v.spot==null&&v.mapId==='forest'&&p.x>=left-30&&p.x<=right+30&&p.y>=top-30&&p.y<=bottom+30;}))return '这里停着载具，请先移走。';
- if(PARKING_SPOTS.some(s=>s.building==='annex'&&left<s.x+50&&right>s.x-50&&top<s.approachY+20&&bottom>s.y-48))return '请保留公共停车位及进出车道。';
+ if(PARKING_SPOTS.some(s=>(s.building==='annex'||s.lotId)&&left<s.x+50&&right>s.x-50&&top<s.approachY+20&&bottom>s.y-48))return '请保留公共停车位及进出车道。';
  for(const fixed of campFixedFacilities(game.progress)){const p=nearest(fixed,b),overlap=fixed.publicTable?(b.parking||sign?left<p.x+fixed.width/2&&right>p.x-fixed.width/2&&top<p.y+5&&bottom>p.y-19:b.x-b.width/2<p.x+fixed.width/2&&b.x+b.width/2>p.x-fixed.width/2&&b.y-b.height<p.y+5&&b.y>p.y-19):fixed.rects.some(([l,t,r,bt])=>left<fixed.x+r+20&&right>fixed.x+l-20&&top<fixed.y+bt+20&&bottom>fixed.y+t-20);if(overlap)return '请避开'+fixed.name+'（公共设施）。';}
  }
  const aliases={'vehicle':'garage','cat-home':'catHome','warehouse-depot':'warehouseDepot'};
@@ -69,7 +71,7 @@ export function saveCampLayout(game,draft,persist=game.restorationPersist){if(!c
  if([...(game.progress.farm?.plots||[]),...(game.progress.campParking?.owned||[]).filter(v=>v.spot==null)].some(p=>{const q=nearest(p,inset);return (!p.mapId||p.mapId==='forest')&&Math.abs(q.x-inset.x)<halfX+30&&Math.abs(q.y-inset.y)<halfY+30;}))return {ok:false,message:'请避开门前农田或停放载具。'};
  }
  const roads=campLayoutRoads(game.progress,layout,{ignoreDecor:true});if(roads.unreachable.length)return {ok:false,message:'有建筑或营门无法连通，请留出更宽的通道。'};
- const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));next.campLayout=layout;const pastureMoved=relocatePastureAnimals(game,next);const serviceError=relocateLayoutService(game,next);if(serviceError)return {ok:false,message:serviceError};const reclaimed=campLayoutDecorConflicts(game.progress,layout,roads),ids=new Set(reclaimed);for(const item of next.campManagement?.items||[])if(ids.has(item.uid))item.x=item.y=null;const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
+ const next=bindEconomy(structuredClone(game.progress),economyFor(game.progress));next.campLayout=layout;relocateRetiredGateSpots(next);const pastureMoved=relocatePastureAnimals(game,next);const serviceError=relocateLayoutService(game,next);if(serviceError)return {ok:false,message:serviceError};const reclaimed=campLayoutDecorConflicts(game.progress,layout,roads),ids=new Set(reclaimed);for(const item of next.campManagement?.items||[])if(ids.has(item.uid))item.x=item.y=null;const snapshot=Object.create(game);snapshot.progress=next;next.patrol=capturePatrol(snapshot);
  try{if(persist?.(next)!==true)return {ok:false,message:'布局未保存，建筑位置没有改变，请重试。'};}catch{return {ok:false,message:'布局未保存，建筑位置没有改变，请重试。'};}
- game.progress=next;activateCampLayout(next);if(pastureMoved&&game.oxArrival?.returning)game.oxArrival=null;game.sceneApproach=null;for(const actor of game.campActors?.values()||[]){actor.path=[];actor.action='rest';actor.stage=2;actor.remaining=0;}game.campRoutine=null;for(const actor of game.livingActors?.values()||[]){actor.path=[];actor.goal=null;}game.player.campProgress=next;return {ok:true,reclaimed,message:reclaimed.length?`布局已保存，${reclaimed.length} 件冲突装饰已回收到「我的装饰」，可再次摆放。`:'布局已保存，建筑入口和连接道路已同步更新。'};
+ game.progress=next;activateCampLayout(next);clearGateParkingTrees(game);if(pastureMoved&&game.oxArrival?.returning)game.oxArrival=null;game.sceneApproach=null;for(const actor of game.campActors?.values()||[]){actor.path=[];actor.action='rest';actor.stage=2;actor.remaining=0;}game.campRoutine=null;for(const actor of game.livingActors?.values()||[]){actor.path=[];actor.goal=null;}game.player.campProgress=next;return {ok:true,reclaimed,message:reclaimed.length?`布局已保存，${reclaimed.length} 件冲突装饰已回收到「我的装饰」，可再次摆放。`:'布局已保存，建筑入口和连接道路已同步更新。'};
 }

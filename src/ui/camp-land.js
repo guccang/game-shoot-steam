@@ -12,21 +12,29 @@ import {nearest} from '../world/coordinates.js';
 import {sceneHit,placeSceneHit} from './scene-hit.js';
 import {createEventScope} from '../platform/events.js';
 export function createCampLandPanel({game,root,renderer,dialogs,onChange}){
- const scope=createEventScope(),dialog=root.createElement('dialog'),layer=root.createElement('div'),frame=root.getElementById('game-frame');let selected='workyard',message='',lastPanel='';
+ const scope=createEventScope(),dialog=root.createElement('dialog'),layer=root.createElement('div'),frame=root.getElementById('game-frame');let parkingHull=0,selected='workyard',message='',lastPanel='';
  dialog.id='camp-land-dialog';dialog.className='ui-panel ui-page';dialog.setAttribute('aria-labelledby','camp-land-title');
- dialog.innerHTML='<header class="ui-panel__header"><div><small>营地 · 土地与建设</small><h2 id="camp-land-title">扩建营地</h2></div><button class="ui-close" aria-label="关闭营地扩建">×</button></header><div class="ui-panel__body"><button class="ui-button" data-land-management>营地管理与装饰</button><button class="ui-button" data-land-layout>营地布局规划</button><details><summary>北停车场 · 设置车位</summary><p>可为每辆车指定归场车位。选择另一辆场内车的位置可互换车位。每次面积扩建增加三个车位。</p><div data-parking-settings></div></details><p>买下相邻土地，再投入木材建造设施。地图、背包和仓储始终可用。</p><section class="ui-section" data-land-list></section><section class="ui-section" data-land-detail></section><p role="status" data-land-message></p></div><footer class="ui-panel__footer"><button class="ui-button" data-land-go>前往地界</button><button class="ui-button ui-button--primary" data-land-buy>购买土地</button></footer>';
+ dialog.innerHTML='<header class="ui-panel__header"><div><small>营地 · 土地与建设</small><h2 id="camp-land-title">扩建营地</h2></div><button class="ui-close" aria-label="关闭营地扩建">×</button></header><div class="ui-panel__body"><button class="ui-button" data-land-management>营地管理与装饰</button><button class="ui-button" data-land-layout>营地布局规划</button><details><summary>停车场 · 设置车位</summary><p>可为每辆车指定归场车位。选择另一辆场内车的位置可互换车位。每次面积扩建增加三个车位。</p><div data-parking-settings></div></details><p>买下相邻土地，再投入木材建造设施。地图、背包和仓储始终可用。</p><section class="ui-section" data-land-list></section><section class="ui-section" data-land-detail></section><p role="status" data-land-message></p></div><footer class="ui-panel__footer"><button class="ui-button" data-land-go>前往地界</button><button class="ui-button ui-button--primary" data-land-buy>购买土地</button></footer>';
  root.body.append(dialog);layer.className='world-building-entrances';layer.style.pointerEvents='none';renderer.canvas.after(layer);
  const buttons=[{id:'core',name:'营地建设',sign:{x:440,y:720}},...CAMP_PLOTS.filter(p=>p.sign)].map(plot=>{const b=root.createElement('button');sceneHit(b,'扩建营地：'+plot.name);b.dataset.campPlot=plot.id;b.style.pointerEvents='auto';scope.on(b,'click',e=>{if(e.detail===0)open(plot.id);});layer.append(b);return b;});
  const find=s=>dialog.querySelector(s);
  // 当前页面只读存档状态，价格、相邻条件和余额由核心层复核。
  function renderPanel(){
-  if(!dialog.open){lastPanel='';return;}const key=JSON.stringify([selected,message,game.progress.coins,game.progress.campLand,game.progress.restoration,game.progress.campParking,game.progress.vehicleHulls,game.player.x,game.player.y]);if(key===lastPanel)return;lastPanel=key;const s=campLandStatus(game,selected);if(!s)return;
+  if(!dialog.open){lastPanel='';return;}const key=JSON.stringify([selected,parkingHull,message,game.progress.coins,game.progress.campLand,game.progress.restoration,game.progress.campParking,game.progress.vehicleHulls,game.player.x,game.player.y]);if(key===lastPanel)return;lastPanel=key;const s=campLandStatus(game,selected);if(!s)return;
   const settings=find('[data-parking-settings]'),parking=game.progress.campParking;
   settings.replaceChildren();
+  const chooser=root.createElement('select');chooser.dataset.parkingVehicle='';chooser.setAttribute('aria-label','选择载具');
   for(const [h,vehicle] of COLLECTED_VEHICLES.entries()){
    if(!game.progress.vehicleHulls[h])continue;
+   const option=root.createElement('option');option.value=h;option.textContent=vehicle.name;chooser.append(option);
+  }
+  if(!game.progress.vehicleHulls[parkingHull])parkingHull=Number(chooser.options[0]?.value??0);
+  chooser.value=parkingHull;settings.append(chooser);
+  for(const [h,vehicle] of COLLECTED_VEHICLES.entries()){
+   if(h!==parkingHull)continue;
+   if(!game.progress.vehicleHulls[h])continue;
    const label=root.createElement('label'),select=root.createElement('select');
-   label.style.display='block';label.textContent=vehicle.name+' ';
+   label.style.display='block';label.textContent='归场车位 ';
    select.dataset.parkingHull=h;
    for(const spot of [null,...PARKING_SPOTS.filter(s=>s.number)]){
     const option=root.createElement('option');option.value=spot?.id||'';option.textContent=spot?.name||'自动分配';
@@ -48,6 +56,7 @@ export function createCampLandPanel({game,root,renderer,dialogs,onChange}){
  function open(id,showParking=false){if(!campLandStatus(game,id)||!canInspectBuilding(game))return false;selected=id;message='';find('details').open=showParking;const previous=[...root.querySelectorAll('dialog[open]')].filter(d=>d!==dialog);lastPanel='';dialogs.open(dialog.id);for(const d of previous){dialogs.transferResume(d.id,dialog.id);dialogs.close(d.id);}renderPanel();return true;}
  dialogs.register(dialog.id,{onOpen:renderPanel});
  scope.on(dialog,'change',event=>{
+  if(event.target.matches('[data-parking-vehicle]')){parkingHull=Number(event.target.value);renderPanel();return;}
   const select=event.target.closest('[data-parking-hull]');if(!select)return;
   message=assignParkingSpot(game,Number(select.dataset.parkingHull),select.value)?'停车位设置已保存。':'车位已占用或保存失败。';
   lastPanel='';renderPanel();onChange();

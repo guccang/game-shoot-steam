@@ -9,7 +9,7 @@ import {REPAIR_CENTER} from '../config/vehicle-repair.js';
 import {TOWN_LAYOUT,TOWN_SHIFT_X} from '../config/town-layout.js';
 import {FARM_DELIVERY,FARM_SEED_SHOP} from '../config/farm.js';
 import {TreeSpacingIndex} from './forest-expansion.js';
-import {PARKING_SPOTS} from '../config/parking.js';
+import {nearbyParkingSpots} from '../config/parking.js';
 import {BOSS_CLEARING} from '../config/settlements.js';
 import {RIVER_DOCKS} from '../config/river-crossing.js';
 import {livingClearing} from './living-spaces.js';
@@ -32,9 +32,18 @@ export const CAMP_EDGE_TREES = [
 ];
 // 固定采集树与随机树采用相同的车位树冠净空，避免布局迁移后树梢压住车位。
 export function parkingClearing(x,y){
- return PARKING_SPOTS.some(s=>{const p=nearest({x,y},s);return p.x+56>s.x-65&&p.x-56<s.x+65&&p.y+12>s.y-55&&p.y-140<s.approachY+45;});
+ return nearbyParkingSpots(x,y,x,y,260).some(s=>{const p=nearest({x,y},s);return p.x+56>s.x-65&&p.x-56<s.x+65&&p.y+12>s.y-55&&p.y-140<s.approachY+45;});
 }
 
+// 改门和扩建后在新场地清理现有树根，避免载具泊位被旧树林堵住。
+export function clearGateParkingTrees(game){
+ const outside=tree=>!nearbyParkingSpots(tree.x,tree.y,tree.x,tree.y,170).some(s=>{
+  if(!s.lotId)return false;
+  const point=nearest(tree,s);return Math.abs(point.x-s.x)<88&&point.y>s.y-80&&point.y<s.approachY+90;
+ });
+ if(game.trees)game.trees=game.trees.filter(outside);
+ if(game.stumps)game.stumps=game.stumps.filter(outside);
+}
 // 局部构图只接管营地到桥头的树位；外围密林与其他区域保持原生成规则。
 export function inCampComposition(x, y) {
   ({ x, y } = canonical({ x, y }));
