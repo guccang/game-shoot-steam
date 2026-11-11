@@ -1,3 +1,4 @@
+import {seActive} from '../config/vehicle-se.js';
 import {biomeDumplingArtStats} from './biome-dumpling-png.js';
 import {festivalCalendar,activeCampFestival} from '../world/camp-festivals.js';
 import {CAMP_DECOR_CATALOG} from '../config/camp-management.js';
@@ -2255,7 +2256,7 @@ export async function inspectMineCoreBoss(game,root=document){
 export function inspectForestSpecialDistribution(game,root=document){return {designCriterion:'forest-special-distribution',site:structuredClone(game.progress.living.clearingSite),horde:!!game.campDefense,special:game.enemies.filter(e=>e.hp>0&&e.dumplingVariant).map(e=>({id:e.dumplingVariant,phase:e.assault?.phase,campDefense:!!e.campDefense})),overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
 
 // 主炮增强和照明验收读取正式库存、场、雾源，不单独绘制替身。
-export function inspectVehicleSpecialAmmo(game,renderer,root=document){return {designCriterion:'vehicle-special-ammo',selected:game.progress.supplies.selectedSpecial[game.vehicle.index],autoFlare:game.progress.supplies.autoFlare,flare:game.progress.supplies.activeFlare,zones:(game.specialAmmoZones||[]).map(z=>({key:z.key,life:z.life,radius:z.radius})),fog:renderer.surfaceFogReview?.sources,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
+export function inspectVehicleSpecialAmmo(game,renderer,root=document){return {designCriterion:'vehicle-special-ammo',selected:game.progress.supplies.selectedSpecial[game.vehicle.index],autoFlare:seActive(game,'flare'),flare:game.progress.supplies.activeFlare,zones:(game.specialAmmoZones||[]).map(z=>({key:z.key,life:z.life,radius:z.radius})),fog:renderer.surfaceFogReview?.sources,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth,newBitmapBytes:0};}
 
 // 正式弹体、阶段与雾源一起采样，空中照明只有一个实体和一处连续光池。
 export async function inspectDumplingAttacksAirFlare(game,renderer,root=document){const {vehicleFlarePose,vehicleFlareLights}=await import('../world/vehicle-flares.js');return {designCriterion:'dumpling-attacks-air-flare',flare:vehicleFlarePose(game),lights:vehicleFlareLights(game).length,bolts:game.enemyBolts.map(b=>({id:b.dumplingVariant,speed:b.speed,curve:b.curve,age:b.age})),actors:game.enemies.filter(e=>e.dumplingVariant).map(e=>({id:e.dumplingVariant,phase:e.assault.phase,burst:e.assault.burstLeft||0})),fog:renderer.surfaceFogReview?.sources,newBitmapBytes:0,overflow:root.documentElement.scrollWidth>root.defaultView.innerWidth};}
