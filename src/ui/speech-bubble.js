@@ -2,7 +2,8 @@
 import {createEventScope} from '../platform/events.js';
 import {createDialogueText} from './dialogue-text.js';
 export function createSpeechBubble(root,id,label,{interactive=true,onAdvance=()=>{},onSkip=()=>{}}={}){
- const scope=createEventScope(),writer=createDialogueText(),node=root.createElement('section');
+ // 面板每半秒检查一次，按该间隔推进可见文字。
+ const scope=createEventScope(),writer=createDialogueText(30,.5),node=root.createElement('section');
  node.id=id;node.className='story-speech task-speech ui-dialogue';node.hidden=true;node.tabIndex=-1;node.setAttribute('aria-label',label);
  node.innerHTML=`<div class="story-speech-copy"><b id="${id}-speaker"></b><p id="${id}-text"><span class="speech-text-space" aria-hidden="true"></span><span class="speech-text-visible" aria-hidden="true"></span></p></div><div class="story-speech-actions"><button id="${id}-next" class="ui-button" type="button">显示全文</button><button id="${id}-skip" class="ui-button" type="button">跳过对话</button></div><span class="story-speech-tail" aria-hidden="true"></span>`;
  const copy=node.querySelector('.story-speech-copy'),speaker=node.querySelector('b'),text=node.querySelector('p'),space=node.querySelector('.speech-text-space'),visible=node.querySelector('.speech-text-visible'),next=node.querySelector('#'+id+'-next'),skip=node.querySelector('#'+id+'-skip');
