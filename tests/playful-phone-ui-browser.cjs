@@ -19,5 +19,27 @@ const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),ass
  for(const [width,height] of [[320,568],[360,640],[390,844],[430,932],[844,390]]){await page.setViewportSize({width,height});await page.locator('#phone-dialog .ui-panel__body').evaluate(n=>n.scrollTop=0);await page.screenshot({path:out+'/'+width+'x'+height+'.png'});const sizes=await page.locator('#phone-dialog').evaluate(n=>{const b=n.getBoundingClientRect(),f=n.querySelector('.ui-panel__footer').getBoundingClientRect();return {overflow:n.scrollWidth>n.clientWidth,bottom:f.bottom,viewport:innerHeight,header:getComputedStyle(n.querySelector('header')).backgroundColor};});assert.equal(sizes.overflow,false);assert.ok(sizes.bottom<=sizes.viewport);assert.equal(sizes.header,'rgb(245, 217, 143)');}
  await page.setViewportSize({width:390,height:844});await page.locator('#phone-dialog .ui-panel__body').evaluate(n=>n.scrollTop=n.scrollHeight);await page.screenshot({path:out+'/contacts.png'});await page.locator('#phone-dialog [data-pack-action="close"]').tap();await page.locator('#phone-dialog').waitFor({state:'hidden'});
  await page.evaluate(async()=>{a.environment.time='night';a.renderer.light=new(await import('/src/world/environment.js')).EnvironmentTransition(a.environment,0);a.renderer.tone=new(await import('/src/rendering/scene-tone.js')).SceneTone(a.environment,0);a.refresh();});await page.locator('#phone-button').tap();await page.screenshot({path:out+'/night.png'});
+ // 通过手机打开原生纸页、迁移后的地图以及设置子页，检查正式 CSS 层叠后的标题。
+ async function checkPaper(id){
+  const panel=page.locator('#'+id);
+  await panel.waitFor({state:'visible'});
+  const colors=await panel.locator('header').first().evaluate(header=>[
+   getComputedStyle(header).backgroundColor,getComputedStyle(header.querySelector('h2')).color
+  ]);
+  assert.deepEqual(colors,['rgb(245, 217, 143)','rgb(57, 76, 64)'],id);
+ }
+ for(const [action,id] of [['waystations','waystations-dialog'],['map','map-dialog']]){
+  if(!await page.locator('#phone-dialog').isVisible())await page.locator('#phone-button').tap();
+  await page.locator('#phone-dialog [data-pack-action="'+action+'"]').tap();
+  await checkPaper(id);
+  await page.keyboard.press('Escape');
+ }
+ if(await page.locator('#phone-dialog').isVisible())await page.keyboard.press('Escape');
+ await page.locator('#settings-button').tap();
+ await checkPaper('settings-dialog');
+ await page.locator('#help').tap();
+ await checkPaper('help-dialog');
+ await page.keyboard.press('Escape');
+ await page.locator('#close-settings').tap();
  assert.deepEqual(errors,[]);console.log('手机纸页五种视口、关闭操作与昼夜检查通过');
  }catch(e){await page.screenshot({path:out+'/failure.png'});throw e;}finally{await context.close();await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
