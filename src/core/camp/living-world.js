@@ -2,7 +2,7 @@ import {capturePatrol} from '../battle/patrol-session.js';
 import {bossCombatActive,pauseClearingBoss} from '../battle/boss-engagement.js';
 import {taskTreasureRumor} from '../activities/treasure.js';
 import {facilityOpen,facilityReason} from '../../config/town-restoration.js';
-import {CLEARING_CONTINUE_ROUND} from '../../config/clearing.js';
+import {CLEARING_CONTINUE_ROUND,nearClearingPost} from '../../config/clearing.js';
 import {chooseClearingSite} from '../story/clearing-site.js';
 import {rememberPreparedNavigation} from '../navigation/prepared-navigation.js';
 import {awardCampXp} from '../../progression/camp/camp-level.js';
@@ -196,7 +196,7 @@ export function setLivingPatrol(game,active){
   if(game.livingPreview||!livingForest(game)||!['playing','paused'].includes(game.state)||game.player.hp<=0||game.livingBattle||game.mainlineSpeech)return {ok:false,message:'请先离开当前活动或对话，再操作清缴任务。'};
   const unfinishedBoss=!!game.boss?.livingChallenge;
   if(game.boss&&(!unfinishedBoss||bossCombatActive(game)))return {ok:false,message:'请先远离领主脱战，或返回营地，再暂停或继续清缴。'};
-  if(!livingSafePoint(game.cottage?.outside||game.player)&&(active||!unfinishedBoss))return {ok:false,message:'请回到有木栏保护的聚落接取或暂停清缴。'};
+  if(!livingSafePoint(game.cottage?.outside||game.player)&&(active?!nearClearingPost(game.player):!unfinishedBoss))return {ok:false,message:active?'请靠近清缴告示牌接取委托。':'请回到有木栏保护的聚落暂停清缴。'};
   if(active&&game.progress.living.patrolActive)return {ok:true};
   if(active)return beginClearingPatrol(game,unfinishedBoss?clearingSite(game.progress):null,unfinishedBoss);
   const result=commitLiving(game,p=>{
