@@ -1,3 +1,4 @@
+import {driveToTrackedTask} from '../combat/vehicle-se.js';
 import {escapeOptionalHtml as escape} from './shared/html.js';
 import {livingInteractionPosition} from '../core/camp/living-world.js';
 import {equipmentQuestCards} from './equipment-quests.js';
@@ -159,8 +160,8 @@ export function createLivingPanel({game,root,dialogs,onChange,environment,onRest
       const page=root.getElementById('living-page');page.scrollTop=0;
       (itemId?page.querySelector('[data-living-back]'):page.querySelector('[data-living-item="'+previous+'"]'))?.focus({preventScroll:true});
     }
-    else if(button.dataset.livingAccept){const value=acceptLivingRequest(game,button.dataset.livingAccept);result(value);if(value.ok)dialogs.close('living-dialog');}
-    else if(button.dataset.livingTrack){const value=trackLivingRequest(game,button.dataset.livingTrack);result(value);if(value.ok)dialogs.close('living-dialog');}
+    else if(button.dataset.livingAccept){const value=acceptLivingRequest(game,button.dataset.livingAccept);result(value);if(value.ok){dialogs.close('living-dialog');driveToTrackedTask(game);}}
+    else if(button.dataset.livingTrack){const value=trackLivingRequest(game,button.dataset.livingTrack);result(value);if(value.ok){dialogs.close('living-dialog');driveToTrackedTask(game);}}
     else if(button.hasAttribute('data-living-mainline'))result(trackLivingRequest(game));
     else if(button.dataset.livingDo)result(interactLivingRequest(game,button.dataset.livingDo));
     else if(button.dataset.storyPrize)result(claimStoryCollection(game,button.dataset.storyBoard,button.dataset.storyPrize));
