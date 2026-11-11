@@ -45,7 +45,7 @@ export function nearbyInteractionAnchor(game,entry) {
   case 'realm':return building(REALM_ENTRANCES.find(s=>s.mode===entry.key));
   case 'post':{const post=STORY_POSTS.find(s=>s.id===entry.key);return entry.presentation==='task-entry'?at(post,136):building(post,112,96);}
   // 告示牌热点覆盖牌面与立柱。
-  case 'clearing':return building(CLEARING_POST,112,98);
+  case 'clearing':return building(entry.camp?entry:CLEARING_POST,112,98);
   // 守备热点覆盖正式标牌。
   case 'gate':{const g=CAMP_GATES.find(s=>s.id===entry.key);return g?at({x:g.x-g.ny*108,y:g.y+g.nx*108},166):null;}
   // 木牌热点在牌面中心，居民与灰堆保持原头顶入口。

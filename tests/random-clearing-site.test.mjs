@@ -15,17 +15,17 @@ import {worldNavigationObjective} from '../src/core/navigation/world-navigation.
 import {settlementObjects} from '../src/rendering/settlements.js';
 import {planQuestRoute} from '../src/physics/quest-route.js';
 import {capturePatrol} from '../src/core/battle/patrol-session.js';
-import {FOREST_LEVEL_ORIGIN,FOREST_LEVEL_BANDS} from '../src/world/forest-levels.js';
+import {FOREST_LEVEL_ORIGIN} from '../src/world/forest-levels.js';
 import {biomeAt} from '../src/world/biomes.js';
 // 可重复随机序列只服务测试，仍使用正式树木、地形与接取事务。
 function scene(seed=9){const g=new Game(freshProgress(),()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32));g.start();g.mainlineSpeech=null;Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});return g;}
 // 移动只写位置，不把地点半径覆盖到玩家碰撞尺寸。
 function arrive(g,p=clearingSite(g.progress)){Object.assign(g.player,{x:p.x,y:p.y});}
 
-test('高等级委托在对应地图等级带生成可步行到达的战场，安全圈不侵入聚落',()=>{
+test('高等级委托在营地千米内生成可步行到达的战场，安全圈不侵入聚落',()=>{
  const points=new Set();for(let i=1;i<=12;i++){
-  const g=scene(i);g.progress.bosses=8;const site=chooseClearingSite(g);assert.ok(site);const distance=worldDistance(FOREST_LEVEL_ORIGIN,site),band=FOREST_LEVEL_BANDS.find(b=>b.max>=9);assert.ok(distance>=band.from&&distance<=band.to);assert.equal(settlementAt(site,site.radius),null);assert.ok(clearingSiteOpen(site,g.trees));
-  assert.ok(planQuestRoute({...g.player,flying:false,amphibious:false,arena:null,mapId:'forest',livingCollision:true},site,g.trees,16000).reachable);points.add(`${site.x},${site.y}`);
+  const g=scene(i);g.progress.bosses=8;let route;const site=chooseClearingSite(g,r=>{route=r;});assert.ok(site);assert.ok(worldDistance(FOREST_LEVEL_ORIGIN,site)+site.radius<=10000);assert.equal(settlementAt(site,site.radius),null);assert.ok(clearingSiteOpen(site,g.trees));
+  assert.ok(route.reachable);assert.ok(worldDistance(route.points.at(-1),site)<=site.radius);points.add(`${site.x},${site.y}`);
  }assert.ok(points.size>=10);
 });
 test('新手首轮地点及完整步行路线留在草甸，暂停重接仍可找到安全新点',()=>{

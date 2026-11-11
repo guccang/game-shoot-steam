@@ -58,7 +58,7 @@ export const GARAGE_FURNITURE=[
  {id:'tool-cart',type:'cart',x:395,y:330,width:38,height:36},
 ].map(item=>({...item,y:item.y+VEHICLE_GALLERY.depth}));
 // 地区服务屋复用正式柜台、室内碰撞与一秒入室，门和返程坐标随真实建筑。
-for(const camp of REGIONAL_CAMPS)for(const b of regionalBuildings(camp))WORKSHOP_INTERIORS[b.id]={...serviceRoom(b.id,camp.name+' · '+b.label,{...b,width:180,height:160},{x:b.x,y:b.y+50}),regional:camp.id,regionalTab:b.id.endsWith('-repair')?'repair':b.id.endsWith('-seed')?'seed':'story'};
+for(const camp of REGIONAL_CAMPS)for(const b of regionalBuildings(camp))WORKSHOP_INTERIORS[b.id]={...serviceRoom(b.id,camp.name+' · '+b.label,{...b,width:180,height:160},{x:b.x,y:b.y+50}),regional:camp.id,regionalTab:b.tab};
 // 小屋仍使用原配置；旧会话没有kind字段时按小屋处理。
 export function interiorLayout(room){return WORKSHOP_INTERIORS[room?.kind]||{...COTTAGE,id:'cottage',name:'巡林小屋 · '+(room?.balcony?`第 ${cottageFloor(room)+1} 楼 · 阳台`:cottageFloor(room)?`第 ${cottageFloor(room)+1} 楼`:'一楼生活区')};}
 // 每件武器在室内有唯一固定展位；不再按页面复用柜子。

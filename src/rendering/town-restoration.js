@@ -29,7 +29,7 @@ export function restorationForObject(item) {
   if (item.type === 'scenery' && item.kind === 'garage') id = 'garage';
   else if (item.type === 'scenery' && item.kind === 'cottage' && !item.workshop) id = 'cottage';
   else if (item.type === 'realm-entrance') id = item.mode;
-  else if (item.type === 'story-post')
+  else if (item.type === 'story-post' && !item.camp)
     id = item.clearing ? 'clearing' : item.id === 'monster-neighbors' ? 'neighbors' : 'story';
   else if (item.type === 'camp-defense' && item.kind === 'marker') id = 'defense';
   else if (

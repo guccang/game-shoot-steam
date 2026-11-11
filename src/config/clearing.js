@@ -1,10 +1,22 @@
+import {REGIONAL_CAMPS} from './regional-camps.js';
 // 清缴的场景入口与教学节点表；位置、导航、面板和高亮共用稳定身份。
 import {worldDistance} from '../world/coordinates.js';
 import {TOWN_LAYOUT} from './town-layout.js';
 export const CLEARING_POST={id:'clearing-post',name:'清缴告示牌',mapId:'forest',...TOWN_LAYOUT.clearing,radius:120};
 export const CLEARING_APPROACH={...CLEARING_POST,x:CLEARING_POST.x,y:CLEARING_POST.y+45};
 // 告示牌随营地布局搬迁，界面与接取事务共用实际接近点及环形距离。
-export function nearClearingPost(point){return worldDistance(point,CLEARING_APPROACH)<=CLEARING_POST.radius;}
+export const REGIONAL_CLEARING_POSTS=REGIONAL_CAMPS.map(c=>({...CLEARING_POST,camp:c.id,x:c.x+45,y:c.y-185}));
+export const CLEARING_POSTS=[CLEARING_POST,...REGIONAL_CLEARING_POSTS];
+// 主营告示牌可以搬迁，地区告示牌使用各自聚落中心确定任务范围。
+export function nearestClearingPost(point){
+ return CLEARING_POSTS.reduce((best,post)=>worldDistance(point,post)<worldDistance(point,best)?post:best);
+}
+// 从牌前接取、导航与交付，沿用主营的可移动接近点。
+export function clearingApproach(point){
+ const post=nearestClearingPost(point);
+ return post===CLEARING_POST?CLEARING_APPROACH:{...post,y:post.y+45};
+}
+export function nearClearingPost(point){return worldDistance(point,clearingApproach(point))<=CLEARING_POST.radius;}
 // 初级委托仍在原营地周边的草甸选址，告示牌搬迁只改变接单与路线起点。
 export const CLEARING_STARTER_CENTER=Object.freeze({x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});
 export const CLEARING_STEPS=[{icon:'accept',label:'接取清缴'},{icon:'travel',label:'前往清缴场'},{icon:'battle',label:'怪潮与领主'}];
@@ -22,3 +34,5 @@ export const CLEARING_HUD_RADIUS_SCALE=1.5;
 
 // 寻路抵达站牌前的落脚点，不把清缴战斗半径当作到达距离。
 export const CLEARING_NAVIGATION=Object.freeze({offsetY:55,arrivalRadius:60});
+// 地区常驻告示牌自行开放，晴叶沿用本营修复进度。
+export function regionalClearingBoard(point){const post=nearestClearingPost(point);return !!post.camp&&nearClearingPost(point);}

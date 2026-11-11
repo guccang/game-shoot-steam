@@ -73,7 +73,7 @@ export function entryFacility(entry){
  if(entry.type==='realm')return entry.key;
  if(entry.type==='post')return entry.key==='monster-neighbors'?'neighbors':'story';
  if(entry.type==='gate')return 'defense';
- return entry.type==='clearing'?'clearing':entry.type==='restoration'?entry.key:null;
+ return entry.type==='clearing'&&!entry.camp?'clearing':entry.type==='restoration'?entry.key:null;
 }
 
 // 当前修复任务抵达后自动开工，其余建筑保留手动确认；暂停、离线不补跑。

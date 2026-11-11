@@ -2,7 +2,7 @@
 import { style } from '../art-styles/config.js';
 import { drawWorldSign } from './world-signs.js';
 import { box, oval, poly } from './primitives.js';
-import { CLEARING_POST } from '../config/clearing.js';
+import { CLEARING_POSTS } from '../config/clearing.js';
 import { livingForest } from '../world/living-spaces.js';
 import { challengeProgress } from '../config/economy.js';
 import { drawChallengeRankIcon } from './challenge-rank.js';
@@ -14,7 +14,7 @@ import { canvasFont } from './text-style.js';
 // 共用绘制与动作输入，风格差异由配置提供。
 export function clearingPostObjects(game) {
   return livingForest(game)
-    ? [{ ...CLEARING_POST, type: 'story-post', clearing: true, challenge: challengeProgress(game.progress) }]
+    ? CLEARING_POSTS.map(post=>({ ...post, type: 'story-post', clearing: true, challenge: challengeProgress(game.progress) }))
     : [];
 }
 // 共用绘制与动作输入，风格差异由配置提供。

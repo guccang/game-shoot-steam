@@ -95,7 +95,7 @@ export function defeatBoss(game) {
   game.bossWave=game.wave+rollWaveGroup(game.random);
   game.waveRest=WAVE_REST_SECONDS;
   // 一份清缴到本组领主为止；结算是否可续接由轮次门槛统一判断。
-  if(clearing){game.progress.living.patrolActive=false;recordMainlineCombat(game.progress,'clearing');}
+  if(clearing){game.progress.living.clearingReports=(game.progress.living.clearingReports||0)+1;game.progress.living.patrolActive=false;recordMainlineCombat(game.progress,'clearing');}
   game.pendingClearingRound=clearing?game.progress.bosses:0;
   game.hazards = [];
   // 胜利保留受伤状态，回小屋休息才能恢复猫猫生命。
