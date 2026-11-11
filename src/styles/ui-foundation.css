@@ -534,3 +534,11 @@ dialog.ui-panel--sketch {
 #phone-dialog .keepsake-phone-heading { padding: 10px 12px; background: #f7edcf; border-radius: 16px 12px 18px 13px; }
 #phone-dialog .keepsake-phone > h3 { padding-left: 10px; border-left: 4px solid #dfb56b; }
 #phone-dialog .ui-inset { background: #f0efda; border-color: #c4c59d; }
+
+/* 装填面板按可用宽度排列弹种，勾号与轮廓共同标识当前选择。 */
+.shell-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,88px),1fr));gap:8px}
+.shell-choices .shell-choice{display:grid;justify-items:center;align-content:center;gap:2px;position:relative;padding:6px 4px;white-space:normal}
+.shell-choice .ammo-symbol{width:40px;height:40px}
+.shell-choice small{font-variant-numeric:tabular-nums}
+.shell-choice[aria-pressed="true"]{background:var(--ui-sage);outline:2px solid var(--ui-forest);outline-offset:-2px}
+.shell-choice[aria-pressed="true"]::after{content:"✓";position:absolute;right:5px;top:3px;color:var(--ui-forest)}
