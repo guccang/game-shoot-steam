@@ -1,3 +1,4 @@
+import {drawFieldDevices} from './vehicle-field-devices.js';
 import {drawVehicleSE} from './vehicle-se.js';
 import {drawSpecialAmmoZones} from './vehicle-special-ammo.js';
 import {TOWN_COURTS,TOWN_LAYOUT} from '../config/town-layout.js';
@@ -526,6 +527,7 @@ export class Renderer {
     drawStormGround(c, view, objects, light.storm, this.storm, this.reduced.matches, this.stormStrike);
     profiler?.end('render.lighting');
     profiler?.start('render.gravity');
+    if(!source.cottage&&!source.realm&&!source.story)drawFieldDevices(c,source,this.reduced.matches);
     drawSpecialAmmoZones(c,source,this.reduced.matches);
 
     drawGravityFields(c,source,this.reduced.matches);

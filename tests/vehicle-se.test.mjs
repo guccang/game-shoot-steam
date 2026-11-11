@@ -35,7 +35,7 @@ test('五营地分别出售特色SE，购买仅入库，已购件可在异地按
  const hull=0;
  g.progress.vehicleHulls[hull]=1;
  assert.deepEqual(Object.fromEntries(Object.entries(VEHICLE_SE).map(([id,d])=>[id,d.mass])),{
-  flare:90,autopilot:160,combat:240,rocket:475,protection:280,shield:375
+  flare:90,autopilot:160,combat:240,rocket:475,smoke:120,mine:260,protection:280,shield:375
  });
  assert.equal(seMass(validateProgress(g.progress),1),90);
  assert.equal(new Set(REGIONAL_CAMPS.map(c=>c.seDevice)).size,5);
@@ -400,4 +400,26 @@ test('SE安装位满时拒绝第六件，卸下后可换装，旧档保留超额
  const restored=validateProgress(g.progress).vehicleSE[1];
  assert.deepEqual(restored.installed,saved.installed.slice(0,5));
  assert.ok(restored.owned.includes('shield'));assert.equal(restored.levels.shield,2);
+});
+// 烟幕打断远程前摇；关闭装置后敌人可重新开始瞄准。
+test('随车烟幕阻止锁定和释放，关闭后恢复',async()=>{
+ const {updateRangedAttack}=await import('../src/combat/ranged-enemies.js');
+ const {RANGED_ENEMIES}=await import('../src/config/ranged-enemies.js');
+ const g=scene(),b=equip(g,'smoke'),e=enemy(g,81);
+ Object.assign(e,{species:Object.keys(RANGED_ENEMIES)[0],arena:{},assault:{phase:'windup',elapsed:10}});
+ g.enemies=[e];updateRangedAttack(g,e,g.player,.1);
+ assert.equal(e.assault.phase,'chase');assert.equal(g.enemyBolts.length,0);
+ updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'chase');
+ b.disabled.push('smoke');updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'windup');
+});
+// 地雷部署后固定在地面，驾驶者驶离后仍会触发，并按爆炸范围筛选目标。
+test('布雷器定点部署，暂停冻结，引爆一次并杀伤周边敌人',()=>{
+ const g=scene();equip(g,'mine');g.combatLineClear=()=>true;
+ const a=enemy(g,1,170),b=enemy(g,2,130),far=enemy(g,3,260);g.enemies=[a,b,far];
+ updateSEDevices(g,.01);assert.equal(g.vehicleMines.length,1);
+ const m=g.vehicleMines[0];g.player.x+=500;Object.assign(a,{x:m.x,y:m.y,hp:100});
+ g.state='paused';updateSEDevices(g,4);assert.equal(m.life,25);
+ g.state='playing';updateSEDevices(g,.6);
+ assert.equal(g.vehicleMines.length,0);assert.ok(a.hp<=0);assert.ok(b.hp<10000);assert.equal(far.hp,10000);
+ const hp=b.hp;updateSEDevices(g,.1);assert.equal(b.hp,hp);
 });

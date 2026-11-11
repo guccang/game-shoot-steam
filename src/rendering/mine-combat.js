@@ -1,4 +1,5 @@
 // 地下复用正式武器和伙伴表现，光束、枪烟与受击效果随当前层独立消退。
+import {drawFieldDevices} from './vehicle-field-devices.js';
 import {drawBallistics,drawArcLink} from './projectiles.js';
 import {drawPulseBeam,pulseChargePose} from './pulse.js';
 import {drawCombatFX} from './particles.js';
@@ -16,6 +17,7 @@ export function drawMineArmedCat(c,g,x=g.player.x,y=g.player.y,lighting=null){
 // 共用正式弹道和伙伴，不创建新位图或第二份动画时钟。
 export function drawMineCombat(c,g,reduced){
  const b=g.cottage.combat;if(!b)return;
+ drawFieldDevices(c,b,reduced);
  drawGravityFields(c,b,reduced);
  if(g.cottage.weaponReady)drawTrialCompanions(c,b,reduced);
  else{drawBallistics(c,b.projectiles,reduced);drawCombatFX(c,b.fx.items,reduced);}

@@ -1,3 +1,4 @@
+import {smokeConceals} from './vehicle-field-devices.js';
 import {interceptThreat} from './active-protection.js';
 import {traceEnergyShield,energyShieldMeleeTarget} from './energy-shield-surface.js';
 import {bossCombatActive,updateBossEngagement} from '../core/battle/boss-engagement.js';
@@ -48,6 +49,9 @@ function beginAttack(game, b, profile) {
   let skill=nextBossSkill(b);
   // 召唤额度已满时使用专属攻击，不在后台再起一套刷怪计时。
   if(skill?.id==='summon'&&!beginBossSupport(game))skill=BOSS_SPECIAL_SKILLS[profile.id];
+  // 烟幕遮蔽锁点招式，召唤与围绕领主自身的范围攻击仍按轮换执行。
+  const aimed=skill?['spore-wreath','cross-feathers','root-fork','triple-bounce'].includes(skill.id):['owl','mushroom'].includes(profile.id);
+  if(aimed&&smokeConceals(game,attackTarget(game))){b.ai.phase='chase';b.attack=profile.interval;return;}
   if(skill){
     Object.assign(b.ai,{skill:skill.id,skillName:skill.name,skillHint:skill.hint,timing:skill});
     if(skill.id==='summon')game.hazards.push({owner:b.id,kind:'summon',x:b.x,y:b.y,radius:72,age:0,warmup:skill.windup,duration:skill.active});

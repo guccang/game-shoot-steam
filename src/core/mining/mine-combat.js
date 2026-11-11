@@ -1,3 +1,4 @@
+import {updateVehicleMines} from '../../combat/vehicle-field-devices.js';
 import {updateSpecialAmmo} from '../../combat/vehicle-special-ammo.js';
 import {mineCoreName} from '../../config/mine-specials.js';
 import {cancelMineWorkCombat} from './mine-work-combat.js';
@@ -117,7 +118,7 @@ function combatContext(game){
  const room=game.cottage;if(room.combat)return room.combat;
  resetMineCombat(game);
  const b=Object.create(game);Object.defineProperty(b,'progress',{get:()=>game.progress,set:p=>{game.progress=p;}});
- Object.assign(b,{trees:[],enemies:[],boss:null,projectiles:[],shots:[],specialAmmoZones:[],gravityFields:[],fx:new CombatFX(),particles:[],numbers:[],drops:[],pulse:createPulseState(),weaponCycle:createWeaponCycle(),attackTimer:0,aimLock:null,statisticsExcluded:!!game.workshopTrial||!!game.livingPreview});
+ Object.assign(b,{trees:[],enemies:[],boss:null,projectiles:[],shots:[],specialAmmoZones:[],vehicleMines:[],mineWait:0,gravityFields:[],fx:new CombatFX(),particles:[],numbers:[],drops:[],pulse:createPulseState(),weaponCycle:createWeaponCycle(),attackTimer:0,aimLock:null,statisticsExcluded:!!game.workshopTrial||!!game.livingPreview});
  b.combatLineClear=(a,z)=>mineLineClear(game,a,z);b.clipCombatLine=(a,z)=>clipMineCombatLine(game,a,z);
  b.combatWalkClear=(a,z,r=0)=>{const n=Math.max(1,Math.ceil(Math.hypot(z.x-a.x,z.y-a.y)/6));for(let i=0;i<=n;i++)if(!mineOccupancy(game,a.x+(z.x-a.x)*i/n,a.y+(z.y-a.y)*i/n,r,false))return false;return true;};
  b.trees.mineScene={walkable:(x,y,r,fly)=>mineOccupancy(game,x,y,r,fly)};
@@ -160,6 +161,6 @@ export function updateMineCombat(game,dt){
    if(w.grenade&&advanceGrenadeCharge(b.weaponCycle,w,fireTime,!!target&&aligned&&mag.remaining===0))launchGrenade(b,w,shot.muzzle,target,game.damage());
   }
  }else{b.pulse.charge=0;b.weaponCycle=createWeaponCycle();}
- updateBallistics(b,dt);updateSpecialAmmo(b,dt);updateGravityFields(b,dt);if(!room.ride&&!game.vehicle.active)updateHolderKick(game.player,dt,b.trees);
+ updateVehicleMines(b,dt);updateBallistics(b,dt);updateSpecialAmmo(b,dt);updateGravityFields(b,dt);if(!room.ride&&!game.vehicle.active)updateHolderKick(game.player,dt,b.trees);
  syncSupplyAmmo(game);
 }

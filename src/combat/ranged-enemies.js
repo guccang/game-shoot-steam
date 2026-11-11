@@ -1,3 +1,4 @@
+import {smokeConceals} from './vehicle-field-devices.js';
 import {advanceProtection,interceptThreat} from './active-protection.js';
 import {biomeBoltStep} from './biome-bolt-motion.js';
 import {campBarricadeTarget,hurtCampBarricade} from '../core/camp/camp-defense.js';
@@ -27,6 +28,7 @@ export function updateRangedAttack(game, enemy, victim, dt) {
   const profile = RANGED_ENEMIES[enemy.species], a = enemy.assault;
   if (!profile || enemy.hp <= 0 || dt <= 0) return;
   if (enemy.knockTime > 0) { a.phase = 'recovery'; a.elapsed = 0; return; }
+  if(smokeConceals(game,victim)){a.phase='chase';a.elapsed=0;return;}
   const slow = Math.min(enemy.wet ? GAMEPLAY_VALUES.combat.wetSpeedFactor : 1, enemy.chill ? enemy.chillFactor || GAMEPLAY_VALUES.combat.defaultChillFactor : 1);
   if (a.phase === 'recovery') {
     a.elapsed += dt * slow;

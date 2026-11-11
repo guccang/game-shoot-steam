@@ -1,4 +1,5 @@
 // 地下特种团子的锁点、冲刺和首领轮招；投射物继续走正式地下碰撞。
+import {smokeConceals} from './vehicle-field-devices.js';
 import {MINE_SPECIALS} from '../config/mine-specials.js';
 import {mineOccupancy,mineLineClear} from '../physics/mine-motion.js';
 
@@ -17,6 +18,7 @@ function release(game,a,spec){
 export function advanceMineSpecial(game,a,spec,dt,{engaged,nearEntry,home,visible,hurt}){
  const form=MINE_SPECIALS[a.kind];if(!form)return false;
  const p=game.player,d=Math.hypot(p.x-a.x,p.y-a.y),boss=a.kind==='coreking';
+ if(smokeConceals(game,p)&&(a.phase==='windup'?a.move:form.attack)!=='charge'&&a.phase!=='charge'){a.phase='roam';return true;}
  if(nearEntry||!engaged||!visible){a.phase='roam';a.timer=0;}
  if(a.phase==='charge'){
   const steps=Math.max(1,Math.ceil(230*dt/6));for(let i=0;i<steps;i++){const x=a.x+a.dirX*230*dt/steps,y=a.y+a.dirY*230*dt/steps;if(!mineOccupancy(game,x,y,16,false)){a.timer=0;break;}a.x=x;a.y=y;if(!a.chargedHit&&Math.hypot(x-p.x,y-p.y)<31){hurt(game,spec.damage);a.chargedHit=true;}}

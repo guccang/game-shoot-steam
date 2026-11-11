@@ -1,3 +1,4 @@
+import {smokeConceals} from './vehicle-field-devices.js';
 import {segmentCircle} from './collision.js';
 import {terrainLineClear} from '../physics/terrain-navigation.js';
 // 地貌团子独立施法状态机，共用正式弹丸、掩体、护盾、伙伴受伤与全场弹量预算。
@@ -13,6 +14,7 @@ export function updateBiomeDumpling(game,enemy,victim,dt){
   const p=BIOME_DUMPLING_BY_ID[enemy.dumplingVariant],a=enemy.assault;
   if(!p||dt<=0||enemy.hp<=0||game.state&&game.state!=='playing')return;
   if(enemy.knockTime>0){a.phase='recovery';a.elapsed=0;a.burstLeft=0;return;}
+  if(p.pattern!=='sweep'&&smokeConceals(game,victim)){a.phase='chase';a.elapsed=0;a.burstLeft=0;return;}
   dt*=Math.min(enemy.wet?.75:1,enemy.chill?(enemy.chillFactor||.6):1);
   enemy.ecoClock=(enemy.ecoClock||0)+dt;
   if(a.phase==='recovery'){

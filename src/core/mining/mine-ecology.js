@@ -1,3 +1,4 @@
+import {smokeConceals} from '../../combat/vehicle-field-devices.js';
 import {advanceProtection,interceptThreat} from '../../combat/active-protection.js';
 import {advanceMineSpecial} from '../../combat/mine-specials.js';
 import {specialMineKind} from '../../config/mine-specials.js';
@@ -101,6 +102,7 @@ export function updateMineEcology(game,dt){
   a.maxHp=spec.hp;a.wet=Math.max(0,(a.wet||0)-dt);a.chill=Math.max(0,(a.chill||0)-dt);
   a.timer=Math.max(0,(a.timer||0)-dt);
   if(advanceMineSpecial(game,a,spec,dt,{engaged:engaged.has(a.key),nearEntry,home,visible,hurt:hurtExplorer}))continue;
+  if(a.kind==='spore'&&smokeConceals(game,game.player)){a.phase='roam';continue;}
   if(a.phase==='windup'&&(!engaged.has(a.key)||nearEntry)){a.phase='roam';a.timer=0;}
   if(a.phase==='windup'){if(a.timer<=0){if(a.kind==='spore'){if(room.bolts.filter(b=>b.enemy).length>=12){a.phase='recover';a.timer=spec.recover;continue;}const n=Math.max(1,Math.hypot(a.aimX-a.x,a.aimY-a.y));room.bolts.push({x:a.x,y:a.y,vx:(a.aimX-a.x)/n*145,vy:(a.aimY-a.y)/n*145,life:2,damage:spec.damage,enemy:true});}else if(distance<spec.range+12&&visible&&!nearEntry)hurtExplorer(game,spec.damage);a.phase='recover';a.timer=spec.recover;}continue;}
   if(a.phase==='recover'&&a.timer>0)continue;
