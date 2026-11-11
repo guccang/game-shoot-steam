@@ -24,13 +24,13 @@
 #game-frame.guardian-active>#vehicle-button{bottom:calc(94px + env(safe-area-inset-bottom))}
 @media(max-width:360px),(max-height:500px){#game-frame{--local-map-size:88px}}
 
-/* 装置状态紧随生命卡排列，空行收起后任务信息自动上移。 */
+/* 装置状态紧随经验条排列，空行收起后任务信息自动上移。 */
 #game-frame>#vehicle-button{overflow:visible}
 .se-device-title{display:flex;align-items:center;gap:.5rem}
-.bottom-info:has(>#vehicle-se-badges:not([hidden])){row-gap:3px}
-#vehicle-se-badges:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;gap:2px;grid-column:1;grid-row:2;padding-left:4px;pointer-events:none}
-#vehicle-se-badges button{display:grid;place-items:center;width:38px;height:40px;padding:0;border:1px solid var(--ui-line);border-radius:9px;background:var(--ui-paper);pointer-events:auto;cursor:pointer}
+.player-hud:has(#vehicle-se-badges:not([hidden])){grid-template-rows:auto auto}
+#vehicle-se-badges:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;gap:0;pointer-events:none}
+#vehicle-se-badges button{display:grid;place-items:center;width:24px;height:24px;min-width:0;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;pointer-events:auto;cursor:pointer}
 #vehicle-se-badges button:focus-visible{outline:2px solid var(--ui-forest);outline-offset:1px}
-#vehicle-se-badges .vehicle-mode-icon{width:22px;height:22px}
+#vehicle-se-badges .vehicle-mode-icon{width:18px;height:18px}
 .vehicle-mode-icon{display:inline-grid;flex:none;place-items:center;width:26px;height:26px;pointer-events:none}
 .vehicle-mode-icon svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #35473e33)}
