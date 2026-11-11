@@ -138,7 +138,7 @@ import { SnowRenderer } from './snow.js';
 import { RainRenderer } from './rain.js';
 import { FireflyRenderer } from './fireflies.js';
 import { visibleLights, localIllumination } from '../world/lighting.js';
-import { drawLampGround, drawLightFixture } from './lighting.js';
+import { drawLampGround, drawLightFixture, drawRearFlareLauncher } from './lighting.js';
 import { REGION_SIGNPOSTS } from '../world/signposts.js';
 import { JIUZHAIGOU_SIGNPOSTS } from '../world/jiuzhaigou.js';
 import { drawRegionSignpost } from './signposts.js';
@@ -684,6 +684,7 @@ export class Renderer {
         if(source.fireActive||g.vehicle.active&&g.vehicle.index===4)drawFireHelmet(c,g.player);
         if (g.vehicle.active)
           drawVehicleArmor(c, g.player, g.vehicle, g.progress, g.time, this.reduced.matches);
+        if(g.vehicle.active && !source.realm && !source.story && !source.fireActive && !source.campDefense && !source.workshopTrial && !source.arrivalCinematic)drawRearFlareLauncher(c,source,g.player);
         if (frontRider(g.vehicle) && !source.arrivalCinematic)
           drawRiderWeapon(c, riderPosition(g.player, g.vehicle), playerHero, g.progress.weapon, {
             scale: PLAYER_SCALE, motionScale: this.reduced.matches ? 0.35 : 1, chargePose,

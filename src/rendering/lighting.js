@@ -1,3 +1,7 @@
+import {FLARE_RULES} from '../config/vehicle-special-ammo.js';
+import {rearFlareMuzzle} from '../world/vehicle-flares.js';
+import {worldDistance} from '../world/coordinates.js';
+import {seBuild} from '../config/vehicle-se.js';
 import {drawDecorLamp} from './camp-decor-expanded.js';
 // 共用美术绘制主体：颜色、线宽与局部细节来自当前风格配置。
 import { style } from '../art-styles/config.js';
@@ -89,6 +93,26 @@ function flame(c, time, phase, reduced, rain) {
   c.restore();
 }
 // 共用绘制与动作输入，风格差异由配置提供。
+// 后甲板上的短发射筒共用真实发射锚点，点火闪光只在弹体离筒时出现。
+export function drawRearFlareLauncher(c,game,player){
+ const hull=game.vehicle.index;
+ if(!game.progress.vehicleHulls[hull] || !seBuild(game.progress,hull).installed.includes('flare'))return;
+ const muzzle=rearFlareMuzzle(player,hull);
+ const flare=game.progress.supplies.activeFlare;
+ c.save();
+ c.translate(muzzle.x,muzzle.y);
+ box(c,-9,4,16,8,3,'#64785d','#354e42',2);
+ poly(c,[[-7,6],[-2,-2],[5,0],[1,9]],'#a8ad83','#354e42',2);
+ oval(c,0,0,6,3,'#d1bd85','#354e42',1.5);
+ oval(c,0,0,3.7,1.6,'#394b41');
+ if(flare && flare.mapId===game.mapId && FLARE_RULES.duration-flare.life<.35 && worldDistance(muzzle,flare)<12){
+  const strength=Math.min(1,1-(FLARE_RULES.duration-flare.life)/.35);
+  glow(c,0,-3,18,strength);
+  poly(c,[[-3,0],[1,-10*strength],[5,-14*strength],[3,0]],'#fff1b0');
+ }
+ c.restore();
+}
+
 export function drawLightFixture(c, light, time, environment, reduced = false) {
   c.save();
   c.translate(light.x, light.y);
@@ -96,7 +120,8 @@ export function drawLightFixture(c, light, time, environment, reduced = false) {
     // 灯芯悬在真实投影上方；尾焰随弧线升空，降落伞与吊线在顶点展开。
     const h=light.flightHeight||0,age=light.age||0,sway=reduced?0:Math.sin(age*2)*2;
     c.globalAlpha=light.power;oval(c,0,4,9,3,'#b99b6940');c.translate(0,-h);
-    if(light.phase==='rise'){c.strokeStyle='#f6d393';c.lineWidth=3;c.beginPath();c.moveTo(-Math.cos(light.angle)*18,16);c.quadraticCurveTo(-Math.cos(light.angle)*9,8,0,0);c.stroke();}
+    if(light.phase==='rise')c.globalAlpha=1;
+    if(light.phase==='rise'){c.strokeStyle='#f6d393';const tail=Math.min(1,age*4);c.lineWidth=3;c.beginPath();c.moveTo(-8*tail,20*tail);c.quadraticCurveTo(-4*tail,8*tail,0,0);c.stroke();}
     if(light.phase==='descent'){c.strokeStyle='#e8d9a8';c.fillStyle='#f0e7bf';c.lineWidth=1.5;c.beginPath();c.moveTo(-15+sway,-28);c.quadraticCurveTo(sway,-48,15+sway,-28);c.quadraticCurveTo(sway,-33,-15+sway,-28);c.fill();c.stroke();c.beginPath();c.moveTo(-15+sway,-28);c.lineTo(0,0);c.lineTo(15+sway,-28);c.stroke();}
     glow(c,0,0,45,light.power);oval(c,0,0,4,6,'#fff4bd');
     if(!reduced)for(let i=0;i<3;i++){const t=(age*1.3+i/3)%1;oval(c,Math.sin(i*3+age)*4,7+t*20,1.5,2,'#edb56d');}c.restore();return;

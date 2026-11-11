@@ -39,3 +39,11 @@
 长期参考：[空中照明峰值](../art-reference/air-flare-peak.png)、[照明落地余辉](../art-reference/air-flare-fade.png)、[藤鞭实机](../art-reference/dumpling-vine-sweep.png)。
 
 动态效果阶段结论：通过。PNG精修替换：不属于本轮范围，原有PNG未变。
+
+## 车尾照明器与 45 秒照明周期
+
+照明 SE 安装在随行载具的后甲板，沿用车体的固定正面造型。重型坦克筒口相对驾驶坐标为右 30、上 22 世界单位，小型底盘使用右 13、上 12。炮塔可独立转动。筒口、点火闪光与新弹初始投影使用同一锚点，发射后光源保留世界坐标。
+
+照明弹用前 6 秒弧线升空，地面半径从 24 平滑扩大至 420。第 6 至 40 秒开伞缓降，最后 5 秒落地渐暗。发射筒使用原有 Canvas 平涂、绿色描边和暖色筒口，点火闪光 0.35 秒，不新增位图或碰撞体。暂停、读档、离开范围补发使用原有世界时钟及载具弹仓。
+
+正式入口为 rearFlareMuzzle、drawRearFlareLauncher、drawLightFixture 与 vehicleFlarePose。沿用本任务的 designCriterion，手机昼夜实机比较出筒、扩光、顶点、缓降与熄灭六个阶段。夜间参考图见[车尾点火](../art-reference/rear-flare-launch.png)和[升空扩光](../art-reference/rear-flare-peak.png)。
