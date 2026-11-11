@@ -147,3 +147,34 @@ for(const hull of [1,6])test('巡战从圈内向树后的敌人开炮，超出�
  assert.ok(target.hp<10000);
  target.x=g.player.x+700;updateVehicle(g,.05);assert.equal(g.vehicle.targetId,null);
 });
+
+test('装置开关立即接管既有路点，途中接敌并在脱战后从当前位置续航',()=>{
+ const g=scene(), idle={x:0,y:0};
+ equip(g,'autopilot','combat').disabled=['autopilot','combat'];
+ requestWorldNavigation(g,{x:9500,y:9000,mapId:'forest'},'既有路点',{direct:true});
+ const toggle=key=>assert.equal(configureVehicleSE(g,1,key,'toggle').ok,true);
+ toggle('combat');
+ assert.equal(g.seControl.mode,'combat');
+ toggle('autopilot');
+ assert.equal(g.seControl.mode,'autopilot');
+ let motion;for(let i=0;i<15;i++)motion=updateSEControl(g,.05,idle);
+ assert.ok(motion.x>0);
+ g.player.x+=80;
+ g.enemies=[enemy(g,101)];
+ updateSEControl(g,.1,idle);
+ assert.equal(g.seControl.mode,'combat');
+ assert.equal(g.seControl.anchor.x,g.player.x);
+ toggle('combat');
+ assert.equal(g.seControl.mode,'autopilot');
+ toggle('combat');
+ assert.equal(g.seControl.mode,'combat');
+ g.player.y+=45;
+ g.enemies[0].hp=0;
+ updateSEControl(g,.1,idle);
+ assert.equal(g.seControl.mode,'autopilot');
+ assert.equal(g.seControl.anchor.y,g.player.y);
+ assert.equal(g.seControl.goal.x,9500);
+ g.player.x=9500;g.player.y=9000;
+ updateSEControl(g,.1,idle);
+ assert.equal(g.seControl.mode,'combat');
+});

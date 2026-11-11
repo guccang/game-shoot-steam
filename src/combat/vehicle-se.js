@@ -32,23 +32,56 @@ function drivingDestination(game){
 export function driveToTrackedTask(game){
  if(!seActive(game,'autopilot'))return;
  const result=startSEControl(game,'autopilot');
- if(!result.ok)game.onEvent?.('story-hint',{text:result.message});
+ if(result.ok)syncSEControl(game);
+ else game.onEvent?.('story-hint',{text:result.message});
 }
-// 自动模式互斥；暂停页面可提交，实际行动仅在关闭页面后推进。
+// 只有已经开始的倒车或停稳才占用驾驶；泊位附近的点击提示允许车辆自行驶离。
+function parkingControlsVehicle(g){return ['align','reverse','parked'].includes(g.parking?.phase);}
+// 临时访问点按地点区分，任务则按任务身份区分，移动中的居民不会反复重启导航。
+function destinationKey(d){return [d.route,d.taskId||'visit',d.site.mapId,d.site.id??(d.site.x+','+d.site.y)].join(':');}
+// 新的移动阶段从当前位置规划，战后绕开已偏离的旧路段。
+function beginControl(g,mode,destination){
+ g.seControl={mode,taskId:destination?.taskId,taskRoute:destination?.route,routeKey:destination?destinationKey(destination):null,
+  hull:g.vehicle.index,mapId:g.mapId,player:g.player,anchor:canonical(g.player),radius:seBuild(g.progress,g.vehicle.index).radius,
+  goal:destination?canonical(destination.site):null,clock:0,still:0,last:canonical(g.player),status:mode==='combat'?'圈内巡战':'规划路线'};
+}
+// 主动选择路线可解除对同一目标的手动接管。
 export function startSEControl(g,mode){
- if(mode==='stop'){g.seControl=null;return {ok:true,message:'已切换手动驾驶。'};}
- if(!['combat','autopilot'].includes(mode)||!seActive(g,mode)||g.cottage||g.parking||!['playing','paused'].includes(g.state))return {ok:false,message:'请驾驶安装并开启对应装置的载具，在室外启动。'};
+ if(!['combat','autopilot'].includes(mode)||!seActive(g,mode)||g.cottage||parkingControlsVehicle(g)||!['playing','paused'].includes(g.state))return {ok:false,message:'请驾驶安装并开启对应装置的载具，在室外启动。'};
  if(movementLoadFactor(g)<=0)return {ok:false,message:'车辆当前无法移动，请先维修或减重。'};
  const destination=mode==='autopilot'?drivingDestination(g):null;
- const goal=destination?.site;
- if(mode==='autopilot'&&(!goal||goal.mapId&&goal.mapId!==g.mapId))return {ok:false,message:'请先在地图或任务中选择当前地图的导航目标。'};
- g.waystationTravel=null;g.sceneApproach=null;g.seControl={mode,taskId:destination?.taskId,taskRoute:destination?.route,hull:g.vehicle.index,mapId:g.mapId,player:g.player,anchor:canonical(g.player),radius:seBuild(g.progress,g.vehicle.index).radius,goal:goal?canonical(goal):null,clock:0,still:0,last:canonical(g.player),status:mode==='combat'?'圈内巡战':'规划路线'};
- return {ok:true,message:mode==='combat'?'巡战已启动，手动走位后松开即可继续巡战。':'自动驾驶已启动，手动移动可立即接管。'};
+ if(mode==='autopilot'&&(!destination?.site||destination.site.mapId&&destination.site.mapId!==g.mapId))return {ok:false,message:'请先在地图或任务中选择当前地图的导航目标。'};
+ g.sePausedRoute=null;
+ beginControl(g,mode,destination);
+ return {ok:true,message:mode==='combat'?'巡战已启动。':'已接管当前导航。'};
+}
+// 根据装置开关与当前目标确定走位优先级，临时交战期间保留正式导航意图。
+export function syncSEControl(g){
+ const combat=seActive(g,'combat'),drive=seActive(g,'autopilot'),old=g.seControl;
+ if(old&&(old.hull!==g.vehicle.index||old.mapId!==g.mapId||old.player!==g.player)){
+  g.seControl=null;g.sePausedRoute=null;return;
+ }
+ if((!combat&&!drive)||g.cottage||parkingControlsVehicle(g)||g.player.hp<=0||g.waystationTravel||g.sceneApproach||!['playing','paused'].includes(g.state)){
+  g.seControl=null;if(!drive)g.sePausedRoute=null;return;
+ }
+ if(movementLoadFactor(g)<=0){g.seControl=null;return;}
+ const dest=drive?drivingDestination(g):null;
+ const key=dest?.site&&(!dest.site.mapId||dest.site.mapId===g.mapId)?destinationKey(dest):null;
+ if(!key||g.sePausedRoute?.key!==key||g.sePausedRoute?.vehicle!==g.vehicle||g.sePausedRoute?.player!==g.player)g.sePausedRoute=null;
+ const travelling=key&&!g.sePausedRoute;
+ const radius=seBuild(g.progress,g.vehicle.index).radius;
+ const anchor=old?.mode==='combat'?old.anchor:g.player;
+ const engaged=combat&&travelling&&[...(g.enemies||[]),...(g.boss?[g.boss]:[])].some(t=>t.hp>0&&worldDistance(t,anchor)<=radius&&attackTargetKnown(g,t));
+ const mode=travelling&&!engaged?'autopilot':combat?'combat':null;
+ if(!mode){g.seControl=null;return;}
+ if(old?.mode!==mode||(mode==='autopilot'&&old.routeKey!==key))beginControl(g,mode,mode==='autopilot'?dest:null);
+ const s=g.seControl;s.radius=radius;
+ if(mode==='autopilot')s.goal=canonical(dest.site);
 }
 // 选择可见敌人，圈外敌人不作为主动追击目标。
 export function seTargetAllowed(g,t){const s=g.seControl;return !s||s.mode!=='combat'||worldDistance(t,s.anchor)<=s.radius;}
 // 统一取消临时驾驶状态并显示停止原因。
-function stop(g,text){g.seControl=null;g.onEvent?.('story-hint',{text});return {x:0,y:0};}
+function stop(g,text){if(g.seControl?.mode==='autopilot')g.sePausedRoute={key:g.seControl.routeKey,vehicle:g.vehicle,player:g.player};g.seControl=null;g.onEvent?.('story-hint',{text});return {x:0,y:0};}
 // 预测短时间来弹与敌人接触风险；十二方向加原地候选遵守地形、树干与巡战圆边界。
 export function combatSteering(g,s){
  const p=g.player,body=playerNavigationBody(g),targets=[...(g.enemies||[]),...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&seTargetAllowed(g,t)&&attackTargetKnown(g,t)).sort((a,b)=>worldDistance(p,a)-worldDistance(p,b));
@@ -73,31 +106,23 @@ export function combatSteering(g,s){
  s.status=target?'接敌 / 预测避弹':'圈内待命';return best;
 }
 // 巡战让出手动移动输入；自动驾驶遇到手动输入结束行程。暂停冻结两种控制。
-export function updateSEControl(g,dt,input){const s=g.seControl;if(!s)return input;
-
- if(!seActive(g,s.mode)||s.hull!==g.vehicle.index||s.mapId!==g.mapId||s.player!==g.player||g.cottage||g.parking||g.player.hp<=0||g.waystationTravel||g.sceneApproach){g.seControl=null;return input;}
+export function updateSEControl(g,dt,input){syncSEControl(g);const s=g.seControl;if(!s)return input;
  if(g.state!=='playing'||dt<=0)return input;
  if(Math.hypot(input.x,input.y)>.01){
   if(s.mode==='combat'){
    s.manual=true;s.steeringDirection=null;s.steeringTarget=null;
    s.status='手动走位 · 巡战中';
    if(worldDistance(g.player,s.anchor)>s.radius)s.anchor=canonical(g.player);
-  }else g.seControl=null;
+  }else {g.sePausedRoute={key:s.routeKey,vehicle:g.vehicle,player:g.player};g.seControl=null;}
   return input;
  }
  if(s.manual){
   if(worldDistance(g.player,s.anchor)>s.radius-25)s.anchor=canonical(g.player);
   s.manual=false;
  }
- if(movementLoadFactor(g)<=0)return stop(g,'SE驾驶停止：车辆无法移动。');
  s.clock+=dt;if(s.mode==='combat'){if(worldDistance(g.player,s.anchor)>s.radius)return stop(g,'已离开巡战范围，恢复手动驾驶。');return combatSteering(g,s);}
  let route;
  if(s.taskId){
-  const target=drivingDestination(g);
-  if(!target || target.taskId!==s.taskId || target.route!==s.taskRoute || (target.site.mapId && target.site.mapId!==g.mapId)){
-   return stop(g,'任务指引已结束或目标已切换。');
-  }
-  s.goal=canonical(target.site);
   route=s.taskRoute==='living'?livingRouteStates(g)[0]:storyRouteState(g);
   if(route?.near)return stop(g,'自动驾驶已到达任务地点。');
   if(!route)return stop(g,'当前任务路线已结束。');
