@@ -4,7 +4,7 @@ import {Game,freshProgress,validateProgress} from '../src/game.js';
 import {vehicleDamage} from '../src/config/vehicles.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
-import {seBuild,normalizeVehicleSE,seMass} from '../src/config/vehicle-se.js';
+import {seActive,seBuild,normalizeVehicleSE,seMass} from '../src/config/vehicle-se.js';
 import {configureVehicleSE} from '../src/core/vehicles/vehicle-se.js';
 import {vehicleLoad} from '../src/progression/inventory/load-weight.js';
 import {updateVehicleFlares} from '../src/world/vehicle-flares.js';
@@ -12,6 +12,8 @@ import {startSEControl,updateSEControl,updateSEDevices,absorbSEShield,seTargetAl
 import {updateEnemyBolts} from '../src/combat/ranged-enemies.js';
 import {updateBallistics} from '../src/combat/ballistics.js';
 import {requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
+import {campDefensePost} from '../src/config/camp-defense.js';
+import {startCampDefense,leaveCampDefense} from '../src/core/camp/camp-defense.js';
 import {waystationMovementReason} from '../src/core/navigation/waystations.js';
 // 建立真实游戏与已拥有重型坦克，避开新手剧情与房屋保护。
 function scene(hull=1){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[hull]=1;grantVehicleArmament(p,hull);p.vehicleIndex=hull;p.coins=20000;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.trees=[];g.enemies=[];g.boss=null;g.vehicle.active=true;g.livingPersist=()=>true;g.progress.campParking.owned=[];Object.assign(g.player,{x:9000,y:9000});return g;}
@@ -422,4 +424,34 @@ test('布雷器定点部署，暂停冻结，引爆一次并杀伤周边敌人',
  g.state='playing';updateSEDevices(g,.6);
  assert.equal(g.vehicleMines.length,0);assert.ok(a.hp<=0);assert.ok(b.hp<10000);assert.equal(far.hp,10000);
  const hp=b.hp;updateSEDevices(g,.1);assert.equal(b.hp,hp);
+});
+
+test('自有坦克进入兽潮携带安装状态，消耗随车库存，关闭装置并刷新后仍一致',()=>{
+ const g=scene(),hull=g.vehicle.index;
+ g.progress.restoration.repaired.push('defense');
+ const build=seBuild(g.progress,hull);
+ Object.assign(build,{owned:['flare','rocket','shield','mine'],installed:['flare','rocket','shield'],disabled:['rocket'],levels:{shield:1,flare:2},shield:420});
+ g.progress.supplies.vehicles[hull].flare=3;
+ Object.assign(g.player,campDefensePost(g.progress,'left'));
+ assert.ok(startCampDefense(g,'left'));
+ assert.ok(g.vehicle.active);
+ assert.ok(seActive(g,'shield'));
+ assert.equal(seActive(g,'rocket'),false);
+ assert.equal(seActive(g,'mine'),false);
+ assert.equal(absorbSEShield(g,35),0);
+ g.surfaceNight=1;
+ updateVehicleFlares(g,.04);
+ assert.equal(g.progress.supplies.vehicles[hull].flare,2);
+ assert.equal(g.progress.supplies.activeFlare.level,2);
+ let save;
+ g.livingPersist=next=>{save=structuredClone(next);return true;};
+ assert.ok(configureVehicleSE(g,hull,'shield','toggle').ok);
+ const restored=new Game(validateProgress(save),()=>.5);
+ assert.equal(restored.campDefense.gateId,'left');
+ assert.ok(restored.vehicle.active);
+ assert.equal(seActive(restored,'shield'),false);
+ assert.equal(seBuild(restored.progress,hull).shield,385);
+ assert.ok(leaveCampDefense(restored));
+ assert.deepEqual(seBuild(restored.progress,hull).installed,['flare','rocket','shield']);
+ assert.equal(restored.progress.supplies.vehicles[hull].flare,2);
 });

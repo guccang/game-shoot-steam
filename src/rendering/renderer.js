@@ -139,6 +139,7 @@ import { SnowRenderer } from './snow.js';
 import { RainRenderer } from './rain.js';
 import { FireflyRenderer } from './fireflies.js';
 import { visibleLights, localIllumination } from '../world/lighting.js';
+import {usesPersonalSE} from '../config/vehicle-se.js';
 import { drawLampGround, drawLightFixture, drawRearSERack } from './lighting.js';
 import { REGION_SIGNPOSTS } from '../world/signposts.js';
 import { JIUZHAIGOU_SIGNPOSTS } from '../world/jiuzhaigou.js';
@@ -649,7 +650,7 @@ export class Renderer {
         const garage=parkingGaragePose(g.player,g.vehicle);if(garage)clipGarageOpening(c,garage);
         if (g.player.invincible > 0) c.globalAlpha = 0.55 + Math.sin(time * 40) * 0.3;
         drawEnergyShield(c,source,g.player,this.reduced.matches,'back');
-        if(g.vehicle.active && !source.realm && !source.story && !source.fireActive && !source.campDefense && !source.workshopTrial && !source.arrivalCinematic)drawRearSERack(c,source,g.player);
+        if(g.vehicle.active && usesPersonalSE(source))drawRearSERack(c,source,g.player);
         if (g.vehicle.active)
           drawVehicleTracks(c, g.player, g.vehicle, this.reduced.matches, g.time,g.progress);
         const ox=farmWorking(source)&&source.farmWork.ox;

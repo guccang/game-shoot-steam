@@ -37,5 +37,7 @@ export function normalizeVehicleSE(raw,count){
 }
 // 装置关闭仍占重量；只有拆卸回工坊才减重。
 export function seMass(p,h){return seBuild(p,h).installed.reduce((n,k)=>n+(VEHICLE_SE[k]?.mass||0),0);}
-// 仅自有车辆装置参与战斗，活动借用配置不调用永久设备。
-export function seActive(g,key){return !!g.vehicle?.active&&g.vehicle.hp>0&&!!g.progress.vehicleHulls?.[g.vehicle.index]&&!g.realm&&!g.story&&!g.fireActive&&!g.campDefense&&!g.workshopTrial&&!g.arrivalCinematic&&seBuild(g.progress,g.vehicle.index).installed.includes(key)&&!seBuild(g.progress,g.vehicle.index).disabled.includes(key);}
+// 巡林和营门兽潮使用自有车辆的 SE，借用装备的其他活动隔离永久装置。
+export function usesPersonalSE(g){return !g.realm&&!g.story&&!g.fireActive&&!g.workshopTrial&&!g.arrivalCinematic;}
+// 当前车体可用且装置已安装、已开启时才产生战斗效果。
+export function seActive(g,key){return !!g.vehicle?.active&&g.vehicle.hp>0&&!!g.progress.vehicleHulls?.[g.vehicle.index]&&usesPersonalSE(g)&&seBuild(g.progress,g.vehicle.index).installed.includes(key)&&!seBuild(g.progress,g.vehicle.index).disabled.includes(key);}
