@@ -227,10 +227,11 @@ export function vehicleMuzzle(player, vehicle, reduced = false) {
 // 怪物优先、Boss 集火；有效锁定不被更近目标抢占，循环地图按最近镜像瞄准。
 function vehicleTarget(game, weapon) {
   // 运木障碍交给履带处理，炮塔不会反复锁定无法射毁的任务树。
-  const valid = (t) => seTargetAllowed(game,t) && !t.equipmentObstacle && t.hp > 0 && attackTargetDistance(game,t,weapon.range) <= weapon.range && attackTargetKnown(game,t);
+  // 巡战圈约束走位，已发现敌人按主炮实际射程锁定，沿途树木交由弹道命中。
+  const valid = (t) => !t.equipmentObstacle && t.hp > 0 && attackTargetDistance(game,t,weapon.range) <= weapon.range && attackTargetKnown(game,t);
   if (game.boss && valid(game.boss)) return game.boss;
   const enemies = game.enemies.filter(valid),
-    pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : weaponTerrainTargets(game,true,true).filter(valid);
+    pool = enemies.length ? enemies : weapon.targetTrees===false||game.fireActive ? [] : weaponTerrainTargets(game,true,true).filter(t=>seTargetAllowed(game,t)&&valid(t));
   return (
     pool.find((t) => t.id === game.vehicle.targetId) ||
     pool.sort(

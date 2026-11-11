@@ -134,7 +134,7 @@ export function updateSEDevices(g,dt){
  if(g.state!=='playing'||dt<=0||!g.vehicle.active||g.cottage)return;const b=seBuild(g.progress,g.vehicle.index);
  if(seActive(g,'shield')){const wait=Math.min(dt,b.shieldWait);b.shieldWait-=wait;b.shield=Math.min(180,b.shield+(dt-wait)*18);}
  if(!seActive(g,'rocket')||g.parking?.idle)return;b.rocketWait=Math.max(0,b.rocketWait-dt);const stock=g.progress.supplies.vehicles[g.vehicle.index];if(b.rocketWait>0||stock.heavy<2)return;
- const t=[...g.enemies,...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&seTargetAllowed(g,t)&&worldDistance(t,g.player)<360&&attackTargetKnown(g,t)&&(!g.combatLineClear||g.combatLineClear(g.player,nearest(t,g.player)))).sort((a,b)=>worldDistance(a,g.player)-worldDistance(b,g.player))[0];if(!t)return;
+ const t=[...g.enemies,...(g.boss?[g.boss]:[])].filter(t=>t.hp>0&&worldDistance(t,g.player)<=360&&attackTargetKnown(g,t)&&(!g.combatLineClear||g.combatLineClear(g.player,nearest(t,g.player)))).sort((a,b)=>worldDistance(a,g.player)-worldDistance(b,g.player))[0];if(!t)return;
  const p=nearest(t,g.player),angle=Math.atan2(p.y-g.player.y,p.x-g.player.x);stock.heavy-=2;b.rocketWait=8;
  for(const side of [-1,1]){const a=angle+side*.035,d={x:Math.cos(a),y:Math.sin(a)},m={x:g.player.x-Math.sin(angle)*side*19,y:g.player.y+Math.cos(angle)*side*19-12};emitWeaponAttack(g,{id:'se-rocket',vehicleMounted:true,targetTrees:true,range:420,speed:720,pellets:1,spread:0,hitRadius:5,blastRadius:75,blastRatio:.65,impulse:250,color:'#efbb7c'},m,d,125,false,true);}
 }
