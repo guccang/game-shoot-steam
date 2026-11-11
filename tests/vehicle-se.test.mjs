@@ -418,6 +418,8 @@ test('烟幕投到车外，驶入打断瞄准，驶出或关闭后恢复锁定',
  const {RANGED_ENEMIES}=await import('../src/config/ranged-enemies.js');
  const g=scene(),b=equip(g,'smoke'),e=enemy(g,81);
  g.vehicle.angle=0;g.combatLineClear=()=>true;
+ updateSEDevices(g,5);assert.equal(vehicleSmokeCloud(g),null);
+ g.enemies=[e];
  updateSEDevices(g,.05);
  const cloud=vehicleSmokeCloud(g),start={...g.player};
  assert.equal(cloud.x,start.x+110);assert.equal(cloud.y,start.y);
@@ -434,11 +436,16 @@ test('烟幕投到车外，驶入打断瞄准，驶出或关闭后恢复锁定',
  g.player.x=cloud.x;updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'chase');
  b.disabled.push('smoke');updateRangedAttack(g,e,g.player,.1);assert.equal(e.assault.phase,'windup');
  assert.equal(vehicleSmokeCloud(g),null);
+ b.disabled=[];g.enemies=[];updateSEDevices(g,.1);
+ assert.equal(vehicleSmokeCloud(g),cloud);
+ updateSEDevices(g,4);assert.equal(vehicleSmokeCloud(g),null);
+ g.boss=enemy(g,92);updateSEDevices(g,.1);assert.ok(vehicleSmokeCloud(g));
 });
 // 地下层用自己的烟幕，沿行驶方向遇墙时改投车侧，暂停期间不换落点。
 test('矿层烟幕与地表隔离并避开前方岩壁',async()=>{
  const {updateVehicleSmoke,vehicleSmokeCloud}=await import('../src/combat/vehicle-field-devices.js');
  const g=scene();equip(g,'smoke');
+ g.enemies=[enemy(g,82)];
  g.combatLineClear=()=>true;updateVehicleSmoke(g,.1);
  const surface=vehicleSmokeCloud(g);
  const layer=Object.assign(Object.create(g),{smokeDeployment:null});

@@ -3,6 +3,7 @@ import {seActive,seBuild,seLevel} from '../config/vehicle-se.js';
 import {nearest,canonical,worldDistance} from '../world/coordinates.js';
 import {statisticsSource} from './statistics-source.js';
 import {terrainLineClear} from '../physics/terrain-navigation.js';
+import {fightingNearVehicle} from '../world/vehicle-flares.js';
 
 // 烟雾弹每四秒向行进方向投放一次，停车时沿炮口方向投放。
 export function updateVehicleSmoke(game,dt){
@@ -13,6 +14,7 @@ export function updateVehicleSmoke(game,dt){
   previous.life-=dt;
   if(previous.life>0)return;
  }
+ if(!fightingNearVehicle(game)){game.smokeDeployment=null;return;}
  const player=game.player;
  const heading=Math.hypot(player.vx,player.vy)>1?Math.atan2(player.vy,player.vx):game.vehicle.angle;
  const radius=45+10*seLevel(seBuild(game.progress,hull),'smoke');

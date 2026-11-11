@@ -49,8 +49,8 @@ export function vehicleFlareIllumination(game,point=game.player){let power=0;
  for(const p of vehicleFlareLights(game)){const d=worldDistance(point,p);power=Math.max(power,Math.max(0,Math.min(1,(p.radius-d)/Math.max(1,p.radius*.2)))*p.power);}
  return power;
 }
-// 手动驾驶与巡战共用判断；无交战目标时仍按车速提前照路。
-function fightingNearVehicle(game){
+// 照明器与烟雾弹共用交战判定：有存活的近敌或已锁定目标。
+export function fightingNearVehicle(game){
  const threat=t=>t?.hp>0&&(t.id!=null&&t.id===game.vehicle.targetId||worldDistance(t,game.player)<=280);
  return threat(game.boss)||(game.enemies||[]).some(threat);
 }
