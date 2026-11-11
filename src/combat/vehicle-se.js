@@ -18,7 +18,7 @@ import {blocked} from '../physics/motion.js';
 import {questLineClear} from '../physics/quest-route.js';
 import {treeGrid} from '../world/spatial-grid.js';
 import {emitWeaponAttack} from './weapon-fire.js';
-import {attackTargetKnown,combatView} from './perception.js';
+import {attackTargetKnown,attackTargetVisible,combatView} from './perception.js';
 // 与任务指引共用目的地优先级，邻里委托使用当前节点的实时位置。
 function drivingDestination(game){
  if(!taskNavigationEnabled(game))return null;
@@ -104,8 +104,9 @@ export function combatSteering(g,s){
   spacing=Math.min(range,(view.right-view.left)/3,(view.bottom-view.top)/3,edgeX,edgeY);
  }
  const inner=view?Math.max(0,spacing-Math.min(16,spacing*.1)):0;
- // 在目标距离内侧保留停稳区，避免目标轻微晃动时反复换向。
- const error=d=>Math.max(0,d-spacing,inner-d);
+ // 三分之一视野用于近身后撤；可见目标在炮程内时，整段安全距离都能驻车开火。
+ const outer=target&&attackTargetVisible(g,target)?range:spacing;
+ const error=d=>Math.max(0,d-outer,inner-d);
  const currentError=error(distance);
  const step=Math.min(55,currentError);
  const horizon=.6+.15*seLevel(seBuild(g.progress,g.vehicle.index),'combat');
@@ -113,7 +114,7 @@ export function combatSteering(g,s){
  const bolts=(g.enemyBolts||[]).slice(0,24).map(b=>({...nearest(b,p),vx:b.dx*b.speed,vy:b.dy*b.speed,radius:b.radius||0}));
  let best={x:0,y:0},bestScore=-Infinity;
  for(let i=-1;i<12;i++){const angle=i*Math.PI/6,v=i<0?{x:0,y:0}:{x:Math.cos(angle),y:Math.sin(angle)},q={x:p.x+v.x*55,y:p.y+v.y*55};
-  if(worldDistance(q,s.anchor)>s.radius-(i<0?0:25)||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid))continue;
+  if(i>=0&&(worldDistance(q,s.anchor)>s.radius-25||blocked(q.x,q.y,body.radius||18,trees,body)||!questLineClear(p,q,body,grid)))continue;
   // 距离修正仅向前预测所需步长，避弹与通行检查仍使用完整预测距离。
   const projected=target?worldDistance({x:p.x+v.x*step,y:p.y+v.y*step},target):0;
   const gap=error(projected);
@@ -126,6 +127,8 @@ export function combatSteering(g,s){
   else if(s.steeringDirection)score-=3*(1-v.x*s.steeringDirection.x-v.y*s.steeringDirection.y);
   if(score>bestScore){bestScore=score;best=v;}
  }
+ // 自动巡战决定驻车时立即制动，保留击退等外部冲量。
+ if(inRange&&!best.x&&!best.y)p.vx=p.vy=0;
  s.steeringDirection=best.x||best.y?best:null;
  s.status=target?'接敌 / 预测避弹':'圈内待命';return best;
 }
