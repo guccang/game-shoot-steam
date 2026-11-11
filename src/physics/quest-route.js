@@ -1,6 +1,7 @@
 // 任务视觉路线只查询正式碰撞，不移动角色，不修改地形或任务状态。
 import {blocked} from './motion.js';
-import {nearest,WORLD} from '../world/coordinates.js';
+import {BRIDGES,riverXAt} from '../world/river-geometry.js';
+import {canonical,nearest,worldDistance,WORLD} from '../world/coordinates.js';
 import {SpatialGrid} from '../world/spatial-grid.js';
 
 export const QUEST_ROUTE_STEP=32,QUEST_ROUTE_BUDGET=4096;
@@ -92,10 +93,42 @@ function* routeSearch(player,target,trees,budget,local=false,bounds=null,canOccu
  return {points:[],visited,reachable:false};
 }
 
+// 森林长途跨岸先连接真实桥头，避免网格搜索沿不可通行的河岸扩散到预算上限。
+function* playerRouteSearch(body,target,trees,budget,bounds,canOccupy,step){
+ const goal=nearest(target,body);
+ if(body.mapId==='forest'&&!body.flying&&!body.amphibious&&!body.arena&&!bounds&&!canOccupy&&worldDistance(body,goal)>1200){
+  // 两端相对同一条河的周期镜像判断岸别，跨世界接缝仍可选择最近的桥。
+  const mid={x:(body.x+goal.x)/2,y:body.y};
+  const bank=point=>point.x-nearest({x:riverXAt(canonical(point).y),y:point.y},mid).x;
+  const side=Math.sign(bank(body));
+  if(side*bank(goal)<0){
+   const crossings=BRIDGES.map(bridge=>{
+    const y=bridge.y+bridge.height/2;
+    const west={x:bridge.x-32,y},east={x:bridge.x+bridge.width+32,y};
+    const entry=nearest(side<0?west:east,body),exit=nearest(side<0?east:west,entry);
+    return {entry,exit,length:worldDistance(body,entry)+worldDistance(exit,goal)};
+   }).sort((a,b)=>a.length-b.length);
+   // 每座桥只占部分节点预算，保留余量给另一座桥和自由绕行。
+   const bridgeBudget=Math.floor(budget/(crossings.length+1));
+   for(const {entry,exit} of crossings){
+    const points=[{x:body.x,y:body.y}];let visited=0;
+    for(const waypoint of [entry,exit,goal]){
+     const leg=yield* routeSearch({...body,...points.at(-1)},waypoint,trees,bridgeBudget-visited,true,null,null,step);
+     visited+=leg.visited;budget-=leg.visited;
+     if(!leg.reachable)break;
+     points.push(...leg.points.slice(1));
+     if(waypoint===goal)return {reachable:true,points,visited};
+    }
+   }
+  }
+ }
+ return yield* routeSearch(body,target,trees,budget,true,bounds,canOccupy,step);
+}
+
 // 每帧最多1.5毫秒或256个搜索批次；每批最多32次采样，重复绘制不推进或伪造直线。
 export function createQuestRouteSearch(player,target,trees=[],budget=QUEST_ROUTE_BUDGET,{bounds=null,canOccupy=null,step=QUEST_ROUTE_STEP}={}){
  // 室内点击行走注入正式家具碰撞，仍共用有界搜索与逐段扫掠。
- const iterator=routeSearch(player,target,trees,budget,true,bounds,canOccupy,[32,64,96].includes(step)?step:QUEST_ROUTE_STEP);
+ const iterator=playerRouteSearch(player,target,trees,budget,bounds,canOccupy,[32,64,96].includes(step)?step:QUEST_ROUTE_STEP);
  return {result:null,steps:0,slices:0,lastFrame:null,
   // 有界推进供故事和邻里共用；时钟参数支持确定性预算回归。
   advance(frame,{milliseconds=1.5,steps=256,now=()=>performance.now()}={}){

@@ -1,3 +1,4 @@
+import {driveToTrackedTask} from '../../combat/vehicle-se.js';
 import {monsterCampRetired} from '../../world/camp-retired-monsters.js';
 import {REGIONAL_CAMPS,regionalNpc,regionalParcel} from '../../config/regional-camps.js';
 import {NATURAL_TERRAIN} from '../../world/natural-terrain.js';
@@ -165,7 +166,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     $('map-done').focus({ preventScroll: true });
   });
   // 地区营地与委托箱导航只标记真实目标，不传送玩家。
-  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-regional-camp],[data-regional-quest]');if(!b)return;const camp=REGIONAL_CAMPS.find(c=>c.id===(b.dataset.regionalCamp||b.dataset.regionalQuest));if(!camp||game.mapId!=='forest'||game.story)return;const site=b.dataset.regionalQuest?regionalParcel(camp):{...regionalNpc(camp),id:camp.id,mapId:'forest',name:camp.name};requestWorldNavigation(game,site,'前往'+site.name,{direct:true,arrivalRadius:45});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
+  scope.on($('region-legend'),'click',event=>{const b=event.target.closest('[data-regional-camp],[data-regional-quest]');if(!b)return;const camp=REGIONAL_CAMPS.find(c=>c.id===(b.dataset.regionalCamp||b.dataset.regionalQuest));if(!camp||game.mapId!=='forest'||game.story)return;const site=b.dataset.regionalQuest?regionalParcel(camp):{...regionalNpc(camp),id:camp.id,mapId:'forest',name:camp.name};requestWorldNavigation(game,site,'前往'+site.name,{direct:true,arrivalRadius:45});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);driveToTrackedTask(game);onChange();});
   // 观景目标在地貌前方的干地，不把导航终点设进裂谷或山体。
   scope.on($('region-legend'),'click',event=>{const id=event.target.closest('[data-earth-landform]')?.dataset.earthLandform,f=NATURAL_TERRAIN.earth.find(f=>f.id===id);if(!f)return;const point=landingPoint({...game.player,x:f.x,y:f.y+f.ry+100,mapId:'forest'},game.trees,{nearbyOnly:true});if(!point)return;requestWorldNavigation(game,{...point,id:f.id,mapId:'forest',name:f.name+'观景处',kind:'earth-viewpoint'},'前往'+f.name+'观景处',{direct:true,arrivalRadius:35});for(const id of ['map-dialog','phone-dialog','keepsake-dialog','current-cat-dialog'])if($(id)?.open)dialogs.close(id);onChange();});
   // 选中营地只设置圈外导航，关闭地图后由玩家实际行走。
