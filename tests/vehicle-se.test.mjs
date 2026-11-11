@@ -434,6 +434,29 @@ test('布雷器定点部署，暂停冻结，引爆一次并杀伤周边敌人',
  const hp=b.hp;updateSEDevices(g,.1);assert.equal(b.hp,hp);
 });
 
+// 从已开启巡战的森林入场，并验证兽潮读档和退出后的控制权。
+test('兽潮暂停战术巡战，读档仍可手动走位，离场恢复原开关',()=>{
+ const g=scene();
+ equip(g,'combat');
+ g.progress.restoration.repaired.push('defense');
+ Object.assign(g.player,campDefensePost(g.progress,'left'));
+ assert.ok(startSEControl(g,'combat').ok);
+ assert.ok(startCampDefense(g,'left'));
+ const restored=new Game(validateProgress(structuredClone(g.progress)),()=>.5);
+ for(const game of [g,restored]){
+  assert.ok(game.campDefense);
+  game.enemies=[enemy(game,1,60)];
+  assert.equal(startSEControl(game,'combat').ok,false);
+  for(const input of [{x:0,y:0},{x:1,y:0},{x:0,y:0}]){
+   assert.deepEqual(updateSEControl(game,.05,input),input);
+   assert.equal(game.seControl,null);
+  }
+  assert.ok(leaveCampDefense(game));
+  updateSEControl(game,.05,{x:0,y:0});
+  assert.equal(game.seControl?.mode,'combat');
+ }
+});
+
 test('自有坦克进入兽潮携带安装状态，消耗随车库存，关闭装置并刷新后仍一致',()=>{
  const g=scene(),hull=g.vehicle.index;
  g.progress.restoration.repaired.push('defense');
