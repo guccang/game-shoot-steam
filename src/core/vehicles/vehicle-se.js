@@ -20,7 +20,7 @@ export function configureVehicleSE(g,h,key,action,value){
  else if(action==='upgrade'){
   if(g.cottage?.kind!=='seWorkshop')return {ok:false,message:'请到 SE 改装工坊升级。'};
  }
- else if(!['toggle','radius'].includes(action)||!usesPersonalSE(g))return {ok:false,message:'当前无法操作装置。'};
+ else if(!['toggle','radius','flare-auto'].includes(action)||!usesPersonalSE(g))return {ok:false,message:'当前无法操作装置。'};
  const next=structuredClone(g.progress);next.vehicleSE=normalizeVehicleSE(next.vehicleSE,next.vehicleHulls.length);const b=next.vehicleSE[h],r=VEHICLE_SE[key];let cost=0;
  if(action==='upgrade'){
   if(!b.owned.includes(key))return {ok:false,message:'这辆车尚未拥有该装置。'};
@@ -40,6 +40,10 @@ export function configureVehicleSE(g,h,key,action,value){
   cost=b.owned.includes(key)?0:r.coins;if(next.coins<cost)return {ok:false,message:'金币不足。'};if(!b.owned.includes(key)){b.owned.push(key);if(key==='shield')b.shield=seShieldMax(b);}b.installed.push(key);b.disabled=b.disabled.filter(k=>k!==key);next.coins-=cost;if(vehicleLoad(g,h,{progress:next,driver:true}).overloaded)return {ok:false,message:'安装后载荷不足，请先卸货。'};}
  else if(action==='remove'){if(!b.installed.includes(key))return {ok:false,message:'该装置未安装。'};b.installed=b.installed.filter(k=>k!==key);b.disabled=b.disabled.filter(k=>k!==key);}
  else if(action==='toggle'){if(!b.installed.includes(key))return {ok:false,message:'请先安装装置。'};b.disabled=b.disabled.includes(key)?b.disabled.filter(k=>k!==key):[...b.disabled,key];}
+ else if(action==='flare-auto'){
+  if(key!=='flare'||!b.installed.includes('flare')||!['combat','travel'].includes(value))return {ok:false,message:'请选择已安装照明器的自动释放条件。'};
+  b.flareAuto[value]=!b.flareAuto[value];
+ }
  else {if(key!=='combat'||![150,250,400].includes(value))return {ok:false,message:'请选择有效范围。'};b.radius=value;}
  const snapshot=Object.create(g);snapshot.progress=next;
  // 局内切换装置时，随同本波进度和当前驾驶状态一次写入候选存档。
