@@ -8,6 +8,6 @@ export const SPECIAL_AMMO={
  seismic:{name:'层岩震荡弹',camp:'stratacove',color:'#d5ad85',radius:155,power:1,duration:0,pack:12,coins:240,use:'震地冲击：大范围爆破与强击退，减速2秒。'},
  flare:{name:'照明弹',camp:'all',color:'#ffe5a1',pack:8,coins:80,use:'夜间在营地外从车尾沿行进方向提前升空，逐渐扩光，约45秒后熄灭；光照随高度扩大和收缩，照亮约三个基础视野面积。'}
 };
-export const FLARE_RULES=Object.freeze({duration:45,rise:1.2,landing:40,height:180,throwDistance:85,leadSeconds:3,maxThrowDistance:335,radius:420,departure:350});
+export const FLARE_RULES=Object.freeze({duration:45,rise:1.2,descentStart:33,landing:40,height:180,throwDistance:85,leadSeconds:3,maxThrowDistance:335,radius:420,departure:350});
 // 特色商品只能在来源营地购买，照明弹六座营地通售。
 export function ammoSoldAt(key,camp='home'){return !SPECIAL_AMMO[key]||SPECIAL_AMMO[key].camp==='all'||SPECIAL_AMMO[key].camp===camp;}
