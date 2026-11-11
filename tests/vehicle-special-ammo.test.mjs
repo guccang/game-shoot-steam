@@ -8,7 +8,7 @@ import {SPECIAL_AMMO,FLARE_RULES} from '../src/config/vehicle-special-ammo.js';
 import {regionalCampAction} from '../src/core/camp/regional-camps.js';
 import {configureSpecialAmmo,tradeSupply} from '../src/core/vehicles/supplies.js';
 import {enhancedVehicleShot,detonateSpecialAmmo,updateSpecialAmmo} from '../src/combat/vehicle-special-ammo.js';
-import {updateVehicleFlares,vehicleFlareLights} from '../src/world/vehicle-flares.js';
+import {updateVehicleFlares,vehicleFlareLights,vehicleFlareIllumination} from '../src/world/vehicle-flares.js';
 import {surfaceAttackRange,surfaceTargetVisible} from '../src/world/surface-vision.js';
 import {fireBallistics,updateBallistics} from '../src/combat/ballistics.js';
 // 独立车队与空旷靶位，不绕过购买、存档和命中结算。
@@ -112,4 +112,22 @@ for(const [hull,base] of [[1,'shell'],[6,'heavy']])test('基础弹耗尽后按�
  stock[base]=1;
  for(let i=0;i<180;i++)updateVehicle(g,.025);
  assert.equal(g.projectiles.length,3);assert.equal(g.projectiles[2].specialAmmo,undefined);
+});
+
+// 夜战高速走位后驻车：光区留在车旁，伞顶保留视野余量，读档不会改成长距离巡航弹。
+test('夜战照明采用近投，倒车不连发，远离才补射',()=>{
+ const g=scene();g.surfaceNight=1;g.arrivalView={top:-170};
+ g.enemies=[enemy(g,91,130)];g.player.vy=-95;g.progress.supplies.vehicles[1].flare=5;
+ updateVehicleFlares(g,.05,{x:0,y:-1},95);
+ const shot=g.progress.supplies.activeFlare;
+ assert.equal(shot.travel,FLARE_RULES.combatTravel);
+ g.player.vy=0;updateVehicleFlares(g,12);
+ const light=vehicleFlareLights(g)[0];
+ assert.ok(Math.hypot(light.x-g.player.x,light.y-g.player.y)<120);
+ assert.ok(light.y-light.flightHeight-48>=g.player.y+g.arrivalView.top);
+ assert.ok(vehicleFlareIllumination(g)>.9);
+ g.progress=validateProgress(g.progress);assert.deepEqual(vehicleFlareLights(g)[0],light);
+ updateVehicleFlares(g,.05,{x:0,y:1},95);assert.equal(g.progress.supplies.vehicles[1].flare,4);
+ g.player.x+=200;updateVehicleFlares(g,.05);assert.equal(g.progress.supplies.vehicles[1].flare,3);
+ updateVehicleFlares(g,.05);assert.equal(g.progress.supplies.vehicles[1].flare,3);
 });
