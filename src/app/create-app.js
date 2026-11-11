@@ -111,6 +111,8 @@ import { createAudioControls } from '../ui/audio-controls.js';
 import { createGameEventHandler } from './game-events.js';
 import { createProgressController } from './progress-controller.js';
 import { createDiagnostics } from './diagnostics.js';
+const GAME_FRAME_HZ = 30;
+const UI_INTERVAL_MS = 50;
 const mounted = new WeakMap();
 
 // 注入宿主和存储便于集成与测试；同一画布必须先销毁旧实例再重新挂载。
@@ -133,7 +135,7 @@ export function createApplication({
   let disposed = false,
     handleEvent = () => {},
     refresh = () => {},
-    lastUiCheck = null;
+    lastUiCheck = null, nextUiCheck = 0;
   const initialSave=store.inspectProgress();
   const shell={page:'title',entered:false,ready:true,worldReady:false,loading:false,failed:false,saveStatus:initialSave.status};
   let titleMenu, suspendedDialogs=[];
@@ -537,7 +539,7 @@ export function createApplication({
     }
     syncAudio();
   });
-  const simulation = createFixedStep(), interpolation = createRenderInterpolation(), seasonPrewarm = new SeasonPrewarmScheduler();
+  const simulation = createFixedStep(), interpolation = createRenderInterpolation(), seasonPrewarm = new SeasonPrewarmScheduler(GAME_FRAME_HZ);
   scope.on(root, 'visibilitychange', () => {
     simulation.reset(); interpolation.reset(); loop.resetClock(); lastUiCheck = null;
     if (root.hidden) {
@@ -557,8 +559,51 @@ export function createApplication({
   scope.on(host, 'pagehide', () => { saveChronicle(); save(); audio.setScene({ active: false, visible: false }); });
   const observer = new host.ResizeObserver(resizeScene);
   observer.observe($('game-frame'));
+  // 界面沿自己的 50 毫秒节拍检查，可在两次场景绘制之间更新；卡顿后只执行一次。
+  function checkInterface(now) {
+    if (shell.page !== 'game' || renderer.c.isContextLost?.()) return;
+    if (lastUiCheck !== null && now + 0.5 < nextUiCheck) return;
+    const uiElapsed = lastUiCheck === null ? 0 : Math.min((now - lastUiCheck) / 1000, UI_INTERVAL_MS / 1000);
+    if (lastUiCheck === null) nextUiCheck = now;
+    nextUiCheck += (1 + Math.floor((now + 0.5 - nextUiCheck) / UI_INTERVAL_MS)) * UI_INTERVAL_MS;
+    lastUiCheck = now;
+    beginSceneLayout(renderer);
+    try {
+      environmentPanel.renderClock(Date.now());
+      profiler.start('render.panels');
+      updateHud.renderFrame();
+      profiler.start('render.panels.fire'); firePanel.renderFrame(); profiler.end('render.panels.fire');
+      profiler.start('render.panels.story'); storyPanel.renderFrame(uiElapsed); profiler.end('render.panels.story');
+      profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
+      profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); industryPanel.render(); warehouse.renderFrame(); profiler.end('render.panels.farm');
+      legendaryWorkshop.renderFrame();
+      seedShop.renderFrame();tradePanel.renderFrame();
+      outdoors.renderFrame();
+      waystations.renderFrame();
+      profiler.start('render.panels.minimap'); localMinimap.renderFrame(); profiler.end('render.panels.minimap');
+      monsterCampPanel.renderFrame();
+      profiler.start('render.panels.living'); livingPanel.renderFrame(); profiler.end('render.panels.living');
+      profiler.start('render.panels.arrival'); rangerArrival.renderFrame(); profiler.end('render.panels.arrival');
+      profiler.start('render.panels.mainline'); mainline.renderFrame(uiElapsed); profiler.end('render.panels.mainline');
+      npcConversations.renderFrame();
+      profiler.start('render.panels.campDefense'); campDefensePanel.renderFrame(); profiler.end('render.panels.campDefense');
+      profiler.start('render.panels.waveTail'); waveTailNavigation.renderFrame(); profiler.end('render.panels.waveTail');
+      profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
+      profiler.start('render.panels.home'); campHome.render(); profiler.end('render.panels.home');
+      profiler.start('render.panels.nearby'); nearbyControls.render();treasure.update(); profiler.end('render.panels.nearby');
+      profiler.start('render.panels.workshop'); worldWorkshop.render();campLandPanel.render();campManagement.render(); profiler.end('render.panels.workshop');
+      profiler.start('render.panels.vehicleWorkshop'); worldVehicleWorkshop.render(); profiler.end('render.panels.vehicleWorkshop');
+      profiler.start('render.panels.guardian'); guardianBuild.render(); profiler.end('render.panels.guardian');
+      profiler.end('render.panels');
+      profiler.start('ui');
+      refresh({afterDraw:true});
+      profiler.end('ui');
+    } finally {
+      endSceneLayout(renderer);
+    }
+  }
   const loop = createFrameLoop({
-    host,
+    host, maxFps: GAME_FRAME_HZ, onSkippedFrame: checkInterface,
     onFrame: (dt, now, frameElapsed) => {
       // 首页完全停止模拟、对白计时、经济计时和场景绘制，背景只使用视频。
       if(shell.page==='title'){simulation.reset();interpolation.reset();settingsPanel.recordFrame(null);return;}
@@ -566,9 +611,6 @@ export function createApplication({
       if(!renderer.recoverContext()){simulation.reset();chronicleAt=now;economyAt=now;return;}
       const frameStart = host.performance.now();
       settingsPanel.recordFrame(frameStart);
-      // 使用真实帧时间限制自动检查；低帧率或恢复前台时只检查一次。
-      const checkUi = lastUiCheck === null || frameStart - lastUiCheck >= 500;
-      if (checkUi) beginSceneLayout(renderer);
       profiler.beginFrame(now, game.state);
       try {
         profiler.start('environment');
@@ -609,7 +651,6 @@ export function createApplication({
         economyAt=now;economyActive=playingEconomy;
         chronicleSaveMs+=elapsed;
         if(chronicleSaveMs>=10000)saveChronicle();
-        if (checkUi) environmentPanel.renderClock(environmentNow);
         const vector = input.read();
         diagnostics.gameplay.input(vector);
         profiler.end('environment');
@@ -652,41 +693,8 @@ export function createApplication({
         renderer.ground.setPrewarmPolicy(seasonPrewarm.begin({now:host.performance.now(),elapsed:frameElapsed,
           combat:seasonPrewarmCombat(game),hidden:root.hidden}),seasonPrewarm.reason);
         try { renderer.draw(renderGame); } finally { renderer.commands.end(); profiler.end('render.canvas'); }
-        if (checkUi) {
-          const uiElapsed = lastUiCheck === null ? 0 : Math.min((frameStart - lastUiCheck) / 1000, 0.5);
-          lastUiCheck = frameStart;
-          profiler.start('render.panels');
-          updateHud.renderFrame();
-          profiler.start('render.panels.fire'); firePanel.renderFrame(); profiler.end('render.panels.fire');
-          profiler.start('render.panels.story'); storyPanel.renderFrame(uiElapsed); profiler.end('render.panels.story');
-          profiler.start('render.panels.clearing'); clearingPanel.renderFrame(); profiler.end('render.panels.clearing');
-          profiler.start('render.panels.farm'); farmPanel.renderFrame(); productionPanel.render(); industryPanel.render(); warehouse.renderFrame(); profiler.end('render.panels.farm');
-          legendaryWorkshop.renderFrame();
-          seedShop.renderFrame();tradePanel.renderFrame();
-          outdoors.renderFrame();
-          waystations.renderFrame();
-          profiler.start('render.panels.minimap'); localMinimap.renderFrame(); profiler.end('render.panels.minimap');
-          monsterCampPanel.renderFrame();
-          profiler.start('render.panels.living'); livingPanel.renderFrame(); profiler.end('render.panels.living');
-          profiler.start('render.panels.arrival'); rangerArrival.renderFrame(); profiler.end('render.panels.arrival');
-          profiler.start('render.panels.mainline'); mainline.renderFrame(uiElapsed); profiler.end('render.panels.mainline');
-          npcConversations.renderFrame();
-          profiler.start('render.panels.campDefense'); campDefensePanel.renderFrame(); profiler.end('render.panels.campDefense');
-          profiler.start('render.panels.waveTail'); waveTailNavigation.renderFrame(); profiler.end('render.panels.waveTail');
-          profiler.start('render.panels.realms'); worldRealms.render(); profiler.end('render.panels.realms');
-          profiler.start('render.panels.home'); campHome.render(); profiler.end('render.panels.home');
-          profiler.start('render.panels.nearby'); nearbyControls.render();treasure.update(); profiler.end('render.panels.nearby');
-          profiler.start('render.panels.workshop'); worldWorkshop.render();campLandPanel.render();campManagement.render(); profiler.end('render.panels.workshop');
-          profiler.start('render.panels.vehicleWorkshop'); worldVehicleWorkshop.render(); profiler.end('render.panels.vehicleWorkshop');
-          profiler.start('render.panels.guardian'); guardianBuild.render(); profiler.end('render.panels.guardian');
-          profiler.end('render.panels');
-        }
         profiler.end('render');
-        if (checkUi) {
-          profiler.start('ui');
-          refresh({afterDraw:true});
-          profiler.end('ui');
-        }
+        checkInterface(now);
         // 必需地面保留极小时间片，防止忙帧持续饿死预热、跨块时一次补建全部纹理。
         profiler.start('cache.warmup');
         // 地下使用独立地形与寻路；暂停不可见地表的整图预览、导航边和纹理预热。
@@ -724,11 +732,10 @@ export function createApplication({
           message: String(error.stack || error).slice(0, 2000) });
         throw error;
       } finally {
-        if (checkUi) endSceneLayout(renderer);
         profiler.finishFrame({ enemies: game.enemies.length, projectiles: game.projectiles.length,
           fx: game.fx.items.length, wave: game.wave, weapon: game.weapon().id,
           visible: renderer.visibleStats, logicSteps: renderer.frameTiming?.steps || 0,
-          logicHz: simulation.hz, renderTargetHz: 60,
+          logicHz: simulation.hz, renderTargetHz: GAME_FRAME_HZ,
           interpolationAlpha: renderer.frameTiming?.alpha || 0,
           droppedLogicSeconds: renderer.frameTiming?.droppedSeconds || 0 });
       }

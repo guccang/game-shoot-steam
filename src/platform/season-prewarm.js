@@ -12,10 +12,10 @@ export function seasonPrewarmCombat(game){
 
 export class SeasonPrewarmScheduler {
   // 退避只持有时间和原因，不记录游戏对象或画布。
-  constructor(){this.blockedUntil=0;this.reason='settling';this.allowed=false;}
+  constructor(renderHz=60){this.slowInterval=1.2/renderHz;this.blockedUntil=0;this.reason='settling';this.allowed=false;}
   // 先于正式绘制设置门禁，战斗中既不构建也不发起新的季节渐变。
   begin({now,elapsed,combat=false,hidden=false}){
-    const reason=hidden?'hidden':combat?'combat':elapsed>0.020?'slow-frame':null;
+    const reason=hidden?'hidden':combat?'combat':elapsed>this.slowInterval?'slow-frame':null;
     if(reason){this.blockedUntil=Math.max(this.blockedUntil,now+500);this.reason=reason;}
     this.allowed=!reason&&now>=this.blockedUntil;
     if(this.allowed)this.reason='idle';

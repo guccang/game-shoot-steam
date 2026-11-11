@@ -45,6 +45,8 @@ export class PerformanceMonitor {
 
   // 阶段名固定，热循环中不创建包装闭包；关闭记录后只保留一次布尔检查。
   start(name) {
+    // 绘制间隙的界面检查不占用场景帧，也不挤掉诊断事件记录。
+    if (!this.current && (name === 'ui' || name.startsWith('render.panels'))) return;
     if (this.enabled) this.active.set(name, this.now());
   }
 
@@ -130,6 +132,7 @@ export class PerformanceMonitor {
       [key, statistics(frames.map(frame => frame.sections[key] || 0))]));
     const interval = statistics(frames.map(frame => frame.interval).filter(n => n > 0));
     const total = statistics(frames.map(frame => frame.total));
+    const frameBudget = 1000 / (frames.at(-1)?.renderTargetHz || 60);
     const outside = statistics(frames.filter(frame => frame.interval > 50)
       .map(frame => frame.outside));
     const ranking = ['logic', 'render', 'ui', 'storage', 'environment']
@@ -139,7 +142,7 @@ export class PerformanceMonitor {
     if (frames.some(frame => frame.unfinished.length)) diagnosis = i18nText("platform.performance-monitor.dae62fa166");
     else if (interval.mean > 40 && outside.mean > Math.max(25, total.mean))
       diagnosis = i18nText("platform.performance-monitor.0c2336abf6");
-    else if (total.mean > 16.7 || total.p95 > 33)
+    else if (total.mean > frameBudget || total.p95 > 2 * frameBudget)
       diagnosis = i18nText("platform.performance-monitor.64107eec4d", { p0: ({ logic: i18nText("platform.performance-monitor.c735ed0901"), render: i18nText("platform.performance-monitor.e406d0343b"), ui: i18nText("platform.performance-monitor.785d65c70f"), storage: i18nText("platform.performance-monitor.c73a6774d9"), environment: i18nText("platform.performance-monitor.904dd029c7") }[main.name]) });
     // 偶发尖峰可能低于样本的 5%，不能因平均值和 P95 正常就报告没有慢帧。
     else if (total.max > 50) {
