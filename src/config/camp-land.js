@@ -40,7 +40,7 @@ export function campDirectionStatus(progress,direction){
 // 周期地图中的建筑、碰撞和点击统一匹配同一地块。
 export function campPlotAt(point,progress=null){return (progress?campPlots(progress):CAMP_PLOTS).find(p=>{const q=nearest(point,{x:(p.left+p.right)/2,y:(p.top+p.bottom)/2});return q.x>=p.left&&q.x<p.right&&q.y>=p.top&&q.y<p.bottom;})||null;}
 // 新巡林明确只授予起始地契。
-export function freshCampLand(){return {version:5,expansions:0,additions:[],owned:['core']};}
+export function freshCampLand(){return {version:5,expansions:0,additions:[],sites:{},fences:[],owned:['core']};}
 // 历史存档保留完整地契；新开局明确写入起始地契，避免把老玩家建筑收走。
 export function normalizeCampLand(raw){const additions=(Array.isArray(raw?.additions)?raw.additions:[]).filter(r=>r&&['north','south','west','east'].includes(r.direction)&&['left','right','top','bottom'].every(k=>Number.isFinite(r[k])&&Math.abs(r[k])<23500)&&r.right>r.left&&r.bottom>r.top&&Math.abs((r.right-r.left)*(r.bottom-r.top)-CAMP_EXPANSION.area*100)<1).slice(0,CAMP_EXPANSION.maxLevel).map(r=>({direction:r.direction,left:r.left,right:r.right,top:r.top,bottom:r.bottom}));
  const legacy=!!raw&&!(raw.version>=4),owned=new Set(Array.isArray(raw?.owned)?raw.owned:[]);
@@ -55,23 +55,31 @@ export function normalizeCampLand(raw){const additions=(Array.isArray(raw?.addit
  }
  if(raw?.baseTops&&(raw.version??0)<5){tops['north-yard']=tops.core;tops.quarter=tops.core;tops.core=140;}
  const baseTops=raw?.baseTops?Object.fromEntries(CAMP_PLOTS.filter(p=>Number.isFinite(tops[p.id])&&tops[p.id]<=p.top&&tops[p.id]>-23500).map(p=>[p.id,tops[p.id]])):null;
- return {version:5,additions,baseTops,expansions:Math.max(0,Math.min(CAMP_EXPANSION.maxLevel,Math.max(additions.length,Math.floor(Number(raw?.expansions)||0)))),owned:CAMP_PLOTS.filter(p=>p.id==='core'||!raw||owned.has(p.id)).map(p=>p.id)};
+ // 玩家选择的建筑占地和每一段手建栅栏独立保存。
+ const valid=p=>Number.isFinite(p?.x)&&Number.isFinite(p?.y)&&Math.abs(p.x)<=24000&&Math.abs(p.y)<=18000;
+ const sites=Object.fromEntries(Object.entries(raw?.sites||{}).filter(([id,p])=>/^[a-zA-Z][a-zA-Z0-9-]*$/.test(id)&&valid(p)&&p.width>0&&p.width<=600&&p.height>0&&p.height<=600).map(([id,p])=>[id,{x:p.x,y:p.y,width:p.width,height:p.height}]));
+ const fences=(Array.isArray(raw?.fences)?raw.fences:[]).filter(valid).map(p=>({x:p.x,y:p.y,horizontal:p.horizontal!==false}));
+ return {version:5,sites,fences,additions,baseTops,expansions:Math.max(0,Math.min(CAMP_EXPANSION.maxLevel,Math.max(additions.length,Math.floor(Number(raw?.expansions)||0)))),owned:CAMP_PLOTS.filter(p=>p.id==='core'||!raw||owned.has(p.id)).map(p=>p.id)};
 }
 // 地块身份与显示名称无关，旧内存对象维持迁移前权限。
 export function ownsCampPlot(progress,id){return !progress?.campLand||progress.campLand.owned.includes(id)||/^expansion-\d+$/.test(id)&&Number(id.slice(10))<(progress.campLand.additions?.length||0);}
 // 地契范围以外沿用野外通行权限。
-export function ownsCampPoint(progress,point){const p=campPlotAt(point,progress);return !p||ownsCampPlot(progress,p.id);}
+export function ownsCampPoint(progress,point){const p=campPlotAt(point,progress);return !p||ownsCampPlot(progress,p.id)||builtSiteAt(progress,point);}
+// 玩家所选位置和房前出入口共同构成新营地的范围。
+export function builtSiteAt(progress,point){
+ return Object.values(progress?.campLand?.sites||{}).some(s=>{const q=nearest(point,s);return Math.abs(q.x-s.x)<=s.width/2+16&&q.y>=s.y-s.height-12&&q.y<=s.y+100;});
+}
 // 只展示与任一已有地块相接的扩建入口。
 export function availableCampPlots(progress){const next=CAMP_DIRECTIONS.map(d=>campDirectionStatus(progress,d).next);return CAMP_PLOTS.filter(p=>next.includes(p.id));}
 
 let activeLand=null,activePlots=CAMP_PLOTS;const areaCache=new Map();
 // 仅正式激活存档更新环境采样，报价和预览不切换当前世界。
-export function activateCampLand(progress){activeLand=progress;activePlots=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id));}
+export function activateCampLand(progress){activeLand=progress;activePlots=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)).concat(Object.values(progress?.campLand?.sites||{}).map(s=>({left:s.x-s.width/2-16,right:s.x+s.width/2+16,top:s.y-s.height-12,bottom:s.y+100})));}
 // 安全区查询直接复用已激活的地契，避免每次移动时重新分配。
 export function activeCampPlots(){return activePlots;}
 // 保留旧版北侧已购面积；新版新增固定矩形，购地、围栏和道路共用。
 export function campPlots(progress=activeLand){const additions=progress?.campLand?.additions||[],level=Math.max(0,(progress?.campLand?.expansions||0)-additions.length),key=JSON.stringify([additions,progress?.campLand?.baseTops])+(progress?.campLand?.owned||CAMP_PLOTS.map(p=>p.id)).join('|')+':'+level;if(areaCache.has(key))return areaCache.get(key);const owned=CAMP_PLOTS.filter(p=>ownsCampPlot(progress,p.id)),area=owned.reduce((n,p)=>n+(p.right-p.left)*(p.bottom-p.top),0),width=owned.filter(p=>p.top===-58).reduce((n,p)=>n+p.right-p.left,0),extra=area*(CAMP_EXPANSION.baseArea*Math.pow(CAMP_EXPANSION.rate,level)-1)/Math.max(1,width);const plots=CAMP_PLOTS.map(p=>({...p,top:progress?.campLand?.baseTops?.[p.id]??(p.top===-58&&ownsCampPlot(progress,p.id)?p.top-extra:p.top)})).concat(additions.map((r,i)=>({...r,id:'expansion-'+i,name:'扩建用地',neighbors:[]})));if(areaCache.size>=64)areaCache.delete(areaCache.keys().next().value);areaCache.set(key,plots);return plots;}
 // 面积使用世界平方米：10逻辑单位等于1米。
-export function campArea(progress){return campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)).reduce((n,p)=>n+(p.right-p.left)*(p.bottom-p.top),0)/100;}
+export function campArea(progress){const built=Object.values(progress?.campLand?.sites||{}).reduce((n,s)=>n+s.width*s.height/100,0);return built+campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)).reduce((n,p)=>n+(p.right-p.left)*(p.bottom-p.top),0)/100;}
 // 新增区域作为平整营地地面，查询带余量用于清理树冠，不改变原区域内容。
-export function campExpansionPoint(point,progress=activeLand,margin=0){if(!progress)return false;return campPlots(progress).some(r=>{if(r.id.startsWith('expansion-')){const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top+r.bottom)/2});return p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<=r.bottom+margin;}if(r.top>=-58)return false;const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top-58)/2});return p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<-58;});}
+export function campExpansionPoint(point,progress=activeLand,margin=0){if(!progress)return false;if(builtSiteAt(progress,point))return true;return campPlots(progress).some(r=>{if(r.id.startsWith('expansion-')){const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top+r.bottom)/2});return p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<=r.bottom+margin;}if(r.top>=-58)return false;const p=nearest(point,{x:(r.left+r.right)/2,y:(r.top-58)/2});return p.x>=r.left-margin&&p.x<=r.right+margin&&p.y>=r.top-margin&&p.y<-58;});}

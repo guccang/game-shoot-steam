@@ -39,7 +39,7 @@ export function createWorldRealms({ game, renderer, root, onEnter }) {
     const rect = renderer.canvas.getBoundingClientRect(), view = renderer.view;
     const entry = realmEntranceAt({ x: view.x + (event.clientX-rect.left)/rect.width*view.w,
       y: view.y + (event.clientY-rect.top)/rect.height*view.h });
-    if (entry) enter(entry.mode);
+    if (entry){enter(entry.mode);return true;}return false;
   }
   // 入库后不把浮动门牌压在下车猫猫头上；建筑本体与菜单仍可接警。
   // 门牌只显示短名称，交互区域至少四十四像素，玩法说明继续由原菜单问号承载。

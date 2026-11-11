@@ -20,7 +20,7 @@ export function campRoadCacheStats(){return {builds,hits,count:cache.size};}
 // 路面保持在已购地内，边缘留出一半路宽。
 export function ownedLayoutPoint(progress,x,y,margin=0){return [[-margin,-margin],[margin,-margin],[-margin,margin],[margin,margin]].every(([dx,dy])=>{const plot=campPlotAt({x:x+dx,y:y+dy},progress);return plot&&ownsCampPlot(progress,plot.id);});}
 // 建筑屋面占地加通路余量，脚底向南保留门口直连段。
-export function layoutBuildings(progress,layout){return CAMP_BUILDINGS.filter(b=>{const p=campPlotAt(b);return b.plotId||p?ownsCampPlot(progress,b.plotId||p.id):b.publicFacility;}).map(b=>{if(b.plaza&&!layout?.positions?.plaza){const p=resolveCampPlaza(progress,layout);return {...b,x:p?.x??b.x,y:p?p.y+p.depth/2:b.y};}return campBuildingPosition(layout,b);});}
+export function layoutBuildings(progress,layout){return CAMP_BUILDINGS.filter(b=>{if(progress.campLand?.sites?.[b.id])return true;const p=campPlotAt(b);return b.plotId||p?ownsCampPlot(progress,b.plotId||p.id):b.publicFacility;}).map(b=>{if(b.plaza&&!layout?.positions?.plaza){const p=resolveCampPlaza(progress,layout);return {...b,x:p?.x??b.x,y:p?p.y+p.depth/2:b.y};}return campBuildingPosition(layout,b);});}
 // 营门外保留100单位接驳地带，让贴边种子小屋的真实门槛也能连到营路。
 // 有界网格先验证连通性，再从门口建立骨架；每条支路就近接入已有路网，只在布局变化时重算。
 export function campLayoutRoads(progress,layout=progress.campLayout,{ignoreDecor=false}={}){const key=roadKey(progress,layout,ignoreDecor);if(cache.has(key)){hits++;return cache.get(key);}const result=buildCampLayoutRoads(progress,layout,ignoreDecor);builds++;if(cache.size>=8)cache.delete(cache.keys().next().value);cache.set(key,result);return result;}
@@ -31,7 +31,7 @@ function buildCampLayoutRoads(progress,layout,ignoreDecor){const boundary=campBo
  const root=closest({x:175,y:675});if(root<0)return {paths:[],unreachable:buildings.map(b=>b.id)};parents[root]=-1;const queue=[root];
  for(let n=0;n<queue.length;n++){const i=queue[n],x=i%COLS,y=Math.floor(i/COLS);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,j=ny*COLS+nx;if(nx>=0&&nx<COLS&&ny>=0&&ny<ROWS&&!blocked[j]&&parents[j]===-2){parents[j]=i;queue.push(j);}}}
  const paths=[],unreachable=[],network=new Set([root]),searchParents=new Int32Array(blocked.length),seen=new Uint32Array(blocked.length);let searchId=0;
- const targets=[...buildings.map(b=>{
+ const targets=[...buildings.filter(b=>!progress.campLand?.sites?.[b.id]||ownedLayoutPoint(progress,b.x,b.y)).map(b=>{
  // 广场铺地可通行，连接中心，避免南边邻接房屋时把支路目标放进房屋。
  if(b.plaza)return {id:b.id,width:campBuildingRoadWidth(b),x:b.x,y:b.y-b.height/2,door:{x:b.x,y:b.y-b.height/2}};
  // 停车场地坪可通行，连接东侧入口。

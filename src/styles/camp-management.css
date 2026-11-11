@@ -19,3 +19,8 @@
 /* 扩建方向成对排列，各阶段按钮独占一行，触屏可直接查看建筑清单。 */
 #camp-land-dialog [data-land-list]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 #camp-land-dialog [data-land-detail] [data-land-select]{display:block;width:100%;margin-bottom:4px;text-align:left}
+
+/* 建设清单和现场提示分别适配手机地图与可移动的游戏画面。 */
+.map-camp-plots[hidden],.camp-placement-hint[hidden]{display:none}
+.map-camp-plots select{display:block;max-width:100%;width:100%;min-height:44px;margin:6px 0}
+.camp-placement-hint{position:absolute;left:8px;bottom:84px;z-index:25;background:#fff2d2;color:#35543d;padding:6px 10px;border-radius:10px}

@@ -1,7 +1,7 @@
 import {REGIONAL_SETTLEMENTS} from '../config/regional-camps.js';
 import {buildSettlementFences} from './settlements.js';
 // 已购地块的并集外轮廓，同时供正式木栏、通行碰撞和规划图读取。
-import {campPlots,CAMP_PLOTS,ownsCampPlot} from '../config/camp-land.js';
+import {campPlots,CAMP_PLOTS,ownsCampPlot,builtSiteAt} from '../config/camp-land.js';
 import {nearest} from './coordinates.js';
 import {SpatialGrid} from './spatial-grid.js';
 export const CAMP_GATE_WIDTH=360;
@@ -15,7 +15,7 @@ function outline(regions){const lines=[];
  lines.sort((a,b)=>a.side.localeCompare(b.side)||a.fixed-b.fixed||a.lo-b.lo);const merged=[];for(const line of lines){const last=merged.at(-1);if(last&&last.side===line.side&&last.fixed===line.fixed&&last.hi>=line.lo)last.hi=Math.max(last.hi,line.hi);else merged.push({...line});}return merged;
 }
 // 地契与门位共用有界缓存，最多64项，不在碰撞热路径重建围栏。
-export function campBoundary(progress,layout=progress?.campLayout){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=JSON.stringify(owned)+JSON.stringify(layout?.gates||{});if(cache.has(key))return cache.get(key);
+export function campBoundary(progress,layout=progress?.campLayout){const owned=campPlots(progress).filter(p=>ownsCampPlot(progress,p.id)),key=JSON.stringify(owned)+JSON.stringify(layout?.gates||{})+JSON.stringify(progress?.campLand?.fences||[]);if(cache.has(key))return cache.get(key);
  // 围栏只围住已购地块，相邻街区共用外沿。
  const regions=owned,lines=outline(regions),objects=[],gates=[];
  // 东侧保留原营地与邻里各自的出入口，直线围栏不再带内凹转角。
@@ -24,10 +24,10 @@ export function campBoundary(progress,layout=progress?.campLayout){const owned=c
  const gateWidth=horizontal&&side==='bottom'&&fixed===850&&hi-lo>=1000?520:CAMP_GATE_WIDTH;
  // 服务地北沿正对户外用品店后墙，保留围栏直到居民工艺院接入。
  const shopBackWall=side==='top'&&fixed===CAMP_PLOTS.find(p=>p.id==='services').top;
- if(!shopBackWall&&hi-lo>=gateWidth+48){const id=side+':'+(horizontal?lo:fixed)+':'+(horizontal?(side==='top'&&fixed< -58?-58:fixed):hi),low=lo+gateWidth/2+24,high=hi-gateWidth/2-24,preferred=layout?.gates?.[id];const ideal=Number.isFinite(preferred)?low+(high-low)*preferred:horizontal?(fixed>=2000?300:side==='bottom'&&fixed===850?500:390):lo>=1000?(side==='left'?1850:1250):729,at=Math.max(lo+gateWidth/2+24,Math.min(hi-gateWidth/2-24,ideal));gate={id,low,high,type:'settlement-gate',settlement:'sunleaf',name:'营地通道',horizontal,x:horizontal?at:fixed,y:horizontal?fixed:at,length:gateWidth,side};gates.push(gate);objects.push(gate);}
- const center=gate&&(horizontal?gate.x:gate.y),parts=gate?[[lo,center-gate.length/2],[center+gate.length/2,hi]]:[[lo,hi]];
- for(const [a,b] of parts){const count=Math.ceil((b-a)/58);for(let i=0;i<count;i++)objects.push({type:'settlement-fence',settlement:'sunleaf',horizontal,x:horizontal?a+(b-a)*(i+.5)/count:fixed,y:horizontal?fixed:a+(b-a)*(i+.5)/count,length:(b-a)/count});}
+ if(!shopBackWall&&hi-lo>=gateWidth+48){const id=side+':'+(horizontal?lo:fixed)+':'+(horizontal?(side==='top'&&fixed< -58?-58:fixed):hi),low=lo+gateWidth/2+24,high=hi-gateWidth/2-24,preferred=layout?.gates?.[id];const ideal=Number.isFinite(preferred)?low+(high-low)*preferred:horizontal?(fixed>=2000?300:side==='bottom'&&fixed===850?500:390):lo>=1000?(side==='left'?1850:1250):729,at=Math.max(lo+gateWidth/2+24,Math.min(hi-gateWidth/2-24,ideal));gate={id,low,high,type:'settlement-gate',settlement:'sunleaf',name:'营地通道',horizontal,x:horizontal?at:fixed,y:horizontal?fixed:at,length:gateWidth,side};gates.push(gate);}
  }
+ // 营门仍提供兽潮与车位的逻辑锚点；实体围栏只取玩家亲手摆放的段。
+ for(const f of progress?.campLand?.fences||[])objects.push({...f,type:'settlement-fence',settlement:'sunleaf',length:60});
  const remote=buildSettlementFences(REGIONAL_SETTLEMENTS);objects.push(...remote);gates.push(...remote.filter(o=>o.type==='settlement-gate'));
  const grid=new SpatialGrid(objects.filter(o=>o.type==='settlement-fence').map(o=>({...o,radius:o.length/2+5}))),result={objects,gates,lines,regions,grid,key};if(cache.size>=64)cache.delete(cache.keys().next().value);cache.set(key,result);return result;
 }
@@ -44,5 +44,5 @@ export function insideSurfaceCamp(game){
   const p=nearest(game.player,{x:(region.left+region.right)/2,y:(region.top+region.bottom)/2});
   return p.x>=region.left&&p.x<=region.right&&p.y>=region.top&&p.y<=region.bottom;
  };
- return REGIONAL_SETTLEMENTS.some(contains)||campBoundary(game.progress).regions.some(contains);
+ return builtSiteAt(game.progress,game.player)||REGIONAL_SETTLEMENTS.some(contains)||campBoundary(game.progress).regions.some(contains);
 }

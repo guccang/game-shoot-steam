@@ -46,6 +46,7 @@ for(const site of [FIRE_STATION,FIRE_PARKING,FIRE_EXIT,FIRE_GARAGE,FIRE_DOOR,FIR
 for(const [id,site] of Object.entries(LIVING_PLACES))bind(id,site);
 // 牛栏绘制、碰撞、交互和归栏目标共同迁移。
 for(const site of [PASTURE,PEN_GATE,PEN_OX])bind('pasture',site);
+bind('neighbors',TOWN_LAYOUT.neighborsPost);bind('neighbors',STORY_POSTS.find(p=>p.id==='monster-neighbors'));bind('neighbors',BUILDING_ENTRIES.find(e=>e.key==='monster-neighbors'));
 bind('trade',TRADE_BOARD);bind('delivery',FARM_DELIVERY);bind('camp-decor',CAMP_DECOR_SHOP);
 bind('weapons',CAMP_ROUTINES.oak.stroll);bind('garage',CAMP_ROUTINES.wheel.stroll);bind('tower',CAMP_ROUTINES.lumi.stroll);
 for(const [id,site] of Object.entries(INDUSTRY_SITES))bind(id,site);

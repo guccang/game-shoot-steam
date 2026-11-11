@@ -48,6 +48,8 @@ export function validateRestoration(raw){
 
 // 武器工坊沿用入职修复；随身地图、背包和设置不属于建筑功能。
 export function facilityOpen(progress,id){
+ const sites=progress?.campLand?.sites;
+ if((sites?.[({'cat-home':'catHome',defense:'defense-top'}[id]||id)]||(id==='defense'&&sites?.['defense-left']))&&progress.restoration?.repaired.includes(id))return true;
  const plotSite=TOWN_RESTORATIONS.find(f=>f.id===id);if(plotSite&&!(plotSite.locations||[plotSite]).some(site=>ownsCampPoint(progress,site)))return false;
  if(id==='weapons')return !progress?.arrival||['craft','crafting','complete'].includes(progress.arrival.phase);
  return !TOWN_RESTORATIONS.some(f=>f.id===id)||!!progress?.restoration?.repaired.includes(id);
@@ -63,6 +65,6 @@ export function pendingRestoration(progress){
  return TOWN_RESTORATIONS.find(f=>!facilityOpen(progress,f.id)&&f.before===task?.id&&(!f.extra||!isCampaignTask(task)))||null;
 }
 // 所有入口共用同一锁定原因。
-export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'先购买'+campPlotAt(f).name+'，即可开放。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
+export function facilityReason(progress,id){const f=TOWN_RESTORATIONS.find(f=>f.id===id);return facilityOpen(progress,id)?'':f&&!ownsCampPoint(progress,f)?'在大地图选择'+f.name+'，点击空地建造。':f?'带上'+f.wood+'木头，靠近修复'+f.name+'后即可使用，可提前修复。':'先修复武器工坊。';}
 // 角色培养共用武器工坊，炮塔整备共用载具工坊。
 export function workshopFacility(kind){return ['vehicle','turret'].includes(kind)?'garage':'weapons';}

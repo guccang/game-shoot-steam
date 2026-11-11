@@ -1,3 +1,4 @@
+import {createMapCampPlots} from '../map-camp-plots.js';
 import {canInspectBuilding} from '../../core/camp/building-entry.js';
 import {driveToTrackedTask} from '../../combat/vehicle-se.js';
 import {monsterCampRetired} from '../../world/camp-retired-monsters.js';
@@ -38,10 +39,12 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
   const loading = root.createElement('p'); loading.id = 'map-preview-loading';
   loading.textContent = '正在准备地图…'; loading.setAttribute('role', 'status'); loading.hidden = true;
   $('region-map').before(loading);
+  const campPlots=createMapCampPlots({game,root,scope,onChange:()=>{onChange();if($('map-dialog').open)showRegionMap();},dialogs,renderer});
   // 总览只取目标季节，不更改战场缓存的来源层、过渡权重与预热队列。
   function previewOptions() { return { mapId: game.mapId, season: renderer.environment.forestSeason }; }
   // 绘制等级区域和玩家当前位置。
   function showRegionMap(retry = false) {
+    campPlots.refresh();
     $('map-camp-land').hidden=!canInspectBuilding(game);
     const STORY_WORLD=storyDefinition(game).world,STORY_SITES=STORY_WORLD.sites;
     const map = MAPS.find(m => m.id === game.mapId) || MAPS[0];
@@ -125,6 +128,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       const x=s.x*scaleX,y=s.y*scaleY;c.fillStyle='#fff0c5';c.strokeStyle='#365b46';c.lineWidth=2;c.fillRect(x-8,y-8,16,16);c.strokeRect(x-8,y-8,16,16);c.fillStyle='#365b46';c.font=canvasFont(10);c.textAlign='center';c.fillText(String(s.id),x,y+3);
     }
     if(game.mapId==='forest'&&!game.story)for(const camp of REGIONAL_CAMPS){const x=camp.x*scaleX,y=camp.y*scaleY;c.fillStyle='#fff0c5';c.strokeStyle='#365b43';c.lineWidth=2;c.fillRect(x-7,y-7,14,14);c.strokeRect(x-7,y-7,14,14);c.font=canvasFont(10);c.fillStyle='#365b43';c.textAlign='center';c.fillText('营',x,y+4);}
+    campPlots.draw(c,scaleX,scaleY);
     const p = canonical(game.player);
     c.beginPath();
     c.arc(p.x * scaleX, p.y * scaleY, 7, 0, Math.PI * 2);
@@ -158,7 +162,7 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
       `<div style="--zone-color:${sign.zone.accent}"><b>${i + 1}. ${sign.zone.name}</b><small>${i18nHtml("ui.panels.map.27d417b328", { p0: (sign.subtitle) })}</small></div>`).join('');
   }
   // 只有真正进入地图页面才记录教学进度，手机首页不算看过地图。
-  scope.on($('map-camp-land'),'click',()=>game.openCampLand?.());
+  scope.on($('map-camp-land'),'click',()=>game.openCampConstruction?.());
   dialogs.register('map-dialog', { onOpen: () => {showRegionMap(true);markMainline(game,'map');} });
   // 事件委托只绑定一次，旅行后刷新当前面板，关闭时仍由公共弹窗恢复暂停。
   scope.on($('map-destinations'), 'click', event => {
@@ -184,6 +188,6 @@ export function createMapPanel({ game, renderer, root, dialogs, onChange = () =>
     if (preview.advance() && open) showRegionMap();
   }
   // 应用重挂载时删除本实例的状态节点，缓存由正式地形生命周期统一释放。
-  function dispose() { scope.dispose(); loading.remove(); }
+  function dispose() { scope.dispose(); campPlots.dispose();loading.remove(); }
   return { advance, dispose };
 }

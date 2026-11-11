@@ -4,7 +4,7 @@ export const PASTURE_BASE=Object.freeze({mapId:'forest',x:990,y:880,halfWidth:13
 // 可移动锚点由统一布局适配更新，尺寸与默认基准不累积变化。
 export const PASTURE={...PASTURE_BASE};
 // 勤务区地契同时开放牧栏的围栏、喂养和领养入口。
-export function pastureOpen(progress){return ownsCampPlot(progress,'river-yard');}
+export function pastureOpen(progress){return !!progress?.campLand?.sites?.pasture||ownsCampPlot(progress,'river-yard');}
 export const PEN_OX={mapId:'forest',x:PASTURE.x-84,y:PASTURE.y-15,facing:1};
 export const PEN_GATE={mapId:'forest',x:PASTURE.x,y:PASTURE.y-PASTURE.halfHeight-18};
 // 牧栏东南的三块林间草地轮流长出甜穗草，牛在草丛斜后方吃草。

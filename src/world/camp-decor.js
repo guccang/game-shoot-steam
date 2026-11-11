@@ -8,7 +8,8 @@ import {roadFootprintDistance} from './road-footprint.js';
 import {CAMP_ROAD_WIDTH} from '../config/camp-layout.js';
 // 装饰占地与通路保护：摆放保留完整外框，正式物理按可见立柱和底座检测。
 import {campDecorDefinition,CAMP_DECOR_SHOP} from '../config/camp-management.js';
-import {ownedLayoutPoint,layoutBuildings} from './camp-layout-roads.js';
+import {campPlacementPoint} from './camp-placement-area.js';
+import {layoutBuildings} from './camp-layout-roads.js';
 import {campBoundaryBlocked,campBoundary} from './camp-boundary.js';
 import {WORLD_BUILDINGS} from '../config/world-buildings.js';
 import {PARKING_SPOTS,NORTH_PARKING} from '../config/parking.js';
@@ -22,7 +23,7 @@ function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.mi
 // 放置不占路、不盖门、不挤车辆，也不允许把实体压到玩家脚下。
 export function campDecorPlacementError(game,uid,x,y){const p=game.progress,item=p.campManagement?.items.find(i=>i.uid===uid),d=campDecorDefinition(item?.type);if(!d||!Number.isFinite(x)||!Number.isFinite(y))return '请先选择已购买的装饰。';const point={x,y},r=Math.max(d.width/2,d.depth/2)+10;
  if(overlapsCampPlaza(x,y-d.height/2,d.width/2,d.height/2+d.depth/2,p))return '请保留中央庆典广场，装饰可放在广场周边。';
- if(!ownedLayoutPoint(p,x,y,r))return '请放在已购买营地的空地内。';
+ if(!campPlacementPoint(p,x,y,r))return '请选择陆地上的空地。';
  if(campBoundaryBlocked(x,y,r,p))return '请与围栏留出距离。';
  if(campBoundary(p).gates.some(g=>segmentDistance(point,g.horizontal?{x:g.x-g.length/2,y:g.y}:{x:g.x,y:g.y-g.length/2},g.horizontal?{x:g.x+g.length/2,y:g.y}:{x:g.x,y:g.y+g.length/2})<r+90))return '请保留大门和转弯通道。';
  const buildings=[...layoutBuildings(p,p.campLayout),...WORLD_BUILDINGS,CAMP_DECOR_SHOP];if(buildings.some(b=>{const q=nearest(b,point);return Math.abs(x-q.x)<(b.width||140)/2+r&&y>q.y-(b.height||130)-d.height/4&&y<q.y+85+d.depth/2;}))return '这里是建筑、屋檐或门前通道。';
