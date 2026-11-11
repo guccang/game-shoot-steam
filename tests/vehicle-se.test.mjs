@@ -12,9 +12,9 @@ import {updateBallistics} from '../src/combat/ballistics.js';
 import {requestWorldNavigation} from '../src/core/navigation/world-navigation.js';
 import {waystationMovementReason} from '../src/core/navigation/waystations.js';
 // 建立真实游戏与已拥有重型坦克，避开新手剧情与房屋保护。
-function scene(){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[1]=1;grantVehicleArmament(p,1);p.vehicleIndex=1;p.coins=20000;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.trees=[];g.enemies=[];g.boss=null;g.vehicle.active=true;g.livingPersist=()=>true;g.progress.campParking.owned=[];Object.assign(g.player,{x:9000,y:9000});return g;}
+function scene(hull=1){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.vehicleHulls[hull]=1;grantVehicleArmament(p,hull);p.vehicleIndex=hull;p.coins=20000;const g=new Game(p,()=>.5);g.state='playing';g.mainlineSpeech=null;g.trees=[];g.enemies=[];g.boss=null;g.vehicle.active=true;g.livingPersist=()=>true;g.progress.campParking.owned=[];Object.assign(g.player,{x:9000,y:9000});return g;}
 // 测试夹具安装只用于运行时场景，事务测试使用公开装配接口。
-function equip(g,...keys){const b=seBuild(g.progress,1);b.owned=[...new Set([...b.owned,...keys])];b.installed=[...b.owned];return b;}
+function equip(g,...keys){const b=seBuild(g.progress,g.vehicle.index);b.owned=[...new Set([...b.owned,...keys])];b.installed=[...b.owned];return b;}
 // 敌人使用真实生命与碰撞半径，供正式弹道命中。
 function enemy(g,id,x=120){return {id,type:'enemy',x:g.player.x+x,y:g.player.y,hp:10000,maxHp:10000,radius:17,mass:1,speed:0};}
 test('重型坦克默认照明、旧档迁移、卸下不重装、白名单与计时限幅',()=>{const p=freshProgress();delete p.vehicleSE;const migrated=validateProgress(p);assert.deepEqual(seBuild(migrated,1).installed,['flare']);assert.equal(seMass(migrated,0),0);migrated.vehicleSE[1].installed=[];assert.deepEqual(validateProgress(migrated).vehicleSE[1].installed,[]);const b=normalizeVehicleSE([{owned:['shield','shield','bad'],installed:['shield','rocket'],shield:Infinity,rocketWait:99}],1)[0];assert.deepEqual(b.installed,['shield']);assert.equal(b.shield,0);assert.equal(b.rocketWait,8);});
@@ -129,4 +129,21 @@ test('巡战接近等距敌群时连续行驶，进入射距后停稳并能立�
   g.enemyBolts=[{x:g.player.x-100,y:g.player.y,dx:1,dy:0,speed:320,radius:8}];
   assert.ok(Math.abs(updateSEControl(g,dt,{x:0,y:0}).y)>.3);
  }
+});
+
+// 圈外目标仍在主炮射程，使用真实发射与弹道验证树干先受击、后续炮弹能打到团子。
+for(const hull of [1,6])test('巡战从圈内向树后的敌人开炮，超出射程时停火 · 车体 '+hull,async()=>{
+ const {updateVehicle}=await import('../src/combat/vehicle.js');
+ const g=scene(hull);equip(g,'combat');startSEControl(g,'combat');
+ const target=enemy(g,81,440),tree={id:82,type:'tree',x:g.player.x+200,y:g.player.y,hp:1,maxHp:1,radius:22};
+ g.enemies=[target];g.trees=[tree];g.progress.supplies.vehicles[hull][hull===6?'heavy':'shell']=8;
+ g.vehicle.module.magazine.ammo=1;
+ assert.equal(seTargetAllowed(g,target),false);
+ updateVehicle(g,.05);
+ assert.equal(g.vehicle.targetId,target.id);
+ for(let i=0;i<240&&tree.hp>0;i++){updateVehicle(g,.025);updateBallistics(g,.025);}
+ assert.ok(tree.hp<=0);assert.equal(target.hp,10000);
+ for(let i=0;i<180;i++){updateVehicle(g,.025);updateBallistics(g,.025);}
+ assert.ok(target.hp<10000);
+ target.x=g.player.x+700;updateVehicle(g,.05);assert.equal(g.vehicle.targetId,null);
 });
