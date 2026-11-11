@@ -1,7 +1,7 @@
 // 清缴引导只读取真实状态，不建立另一份任务进度或改变波次完成条件。
-import {CLEARING_POST,CLEARING_APPROACH} from '../../config/clearing.js';
+import {nearClearingPost,CLEARING_APPROACH} from '../../config/clearing.js';
 import {clearingSite,clearingNavigationSite} from '../../progression/story/clearing-site.js';
-import {livingForest,livingSafePoint} from '../../world/living-spaces.js';
+import {livingForest} from '../../world/living-spaces.js';
 import {facilityOpen,facilityReason} from '../../config/town-restoration.js';
 import {worldDistance} from '../../world/coordinates.js';
 import {bossCombatActive} from '../battle/boss-engagement.js';
@@ -27,13 +27,12 @@ export function clearingPostReason(game){
  if(game.mainlineSpeech)return '请先结束当前对话，再操作清缴告示牌。';
  if(!['playing','paused'].includes(game.state))return '请先返回游戏，再操作清缴告示牌。';
  if(!facilityOpen(game.progress,'clearing'))return facilityReason(game.progress,'clearing');
- if(worldDistance(game.player,CLEARING_APPROACH)>CLEARING_POST.radius)return '请先靠近营地南侧的清缴告示牌，再操作。';
- // 已接取的继续按钮只恢复导航；新接取还须满足正式巡护事务的安全要求。
+ if(!nearClearingPost(game.player))return '请先靠近清缴告示牌，再操作。';
+ // 已接取的继续按钮只恢复导航；新接取还须检查预览和战斗状态。
  if(!game.progress.living.patrolActive){
   if(game.livingPreview)return '请先退出预览，再接取清缴任务。';
   if(game.boss&&(!game.boss.livingChallenge||bossCombatActive(game)))return '请先脱离当前领主战斗，再继续清缴任务。';
   if(game.livingBattle)return '请先结束当前遭遇战，再接取清缴任务。';
-  if(!livingSafePoint(game.player))return '请回到木栏保护的营地内，再接取清缴任务。';
  }
  return '';
 }

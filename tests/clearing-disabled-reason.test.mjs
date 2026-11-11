@@ -6,12 +6,12 @@ import {freshProgress} from '../src/progression/progress.js';
 import {CLEARING_POST,CLEARING_APPROACH} from '../src/config/clearing.js';
 import {clearingPostReason,canUseClearingPost,acceptClearingPost} from '../src/core/story/clearing-guide.js';
 // 最小权限场景保留正式进度和告示牌坐标，避免无关战斗逻辑影响原因判定。
-function scene(){const progress=freshProgress();progress.restoration.repaired.push('clearing');return {progress,state:'playing',mapId:'forest',player:{...CLEARING_APPROACH},vehicle:{active:false}};}
+function scene(){const progress=freshProgress();progress.campLand.owned.push('workyard');progress.restoration.repaired.push('clearing');return {progress,state:'playing',mapId:'forest',player:{...CLEARING_APPROACH},vehicle:{active:false}};}
 
 test('远处查看明确要求靠近告示牌，不改清缴进度；抵达边界恢复可用',()=>{
  const g=scene();g.player.x+=CLEARING_POST.radius+1;const before=structuredClone(g.progress);
  assert.match(clearingPostReason(g),/靠近.*清缴告示牌/);assert.equal(canUseClearingPost(g),false);assert.deepEqual(acceptClearingPost(g),{ok:false,message:clearingPostReason(g)});assert.deepEqual(g.progress,before);
- g.player.x--;assert.match(clearingPostReason(g),/木栏保护/);
+ g.player.x--;assert.equal(clearingPostReason(g),'');
  g.progress.living.patrolActive=true;assert.equal(clearingPostReason(g),'');assert.equal(canUseClearingPost(g),true);
  g.progress.living.patrolActive=false;Object.assign(g.player,CLEARING_APPROACH);assert.equal(clearingPostReason(g),'');
 });
@@ -30,4 +30,22 @@ test('原生弹窗暂停和驾驶均可现场确认，已接取不重复开任�
 test('实际接取保存失败继续返回事务错误，不能误报距离',()=>{
  const p=scene().progress,g=new Game(p,()=>.5);g.state='paused';g.enemies=[];g.boss=null;Object.assign(g.player,CLEARING_APPROACH);g.livingPersist=()=>false;
  assert.equal(clearingPostReason(g),'');const result=acceptClearingPost(g);assert.equal(result.ok,false);assert.match(result.message,/保存|存储/);assert.equal(g.progress.living.patrolActive,false);
+});
+
+// 通过正式布局激活搬迁后的牌位，并从车内提交实际委托。
+test('栅栏外的告示牌允许驾驶接取，原址不能远程接取',async()=>{
+ const {activateCampLayout}=await import('../src/world/camp-layout-bindings.js');
+ const {livingSafePoint}=await import('../src/world/living-spaces.js');
+ const p=scene().progress,old={...CLEARING_APPROACH};
+ p.campLayout.positions.clearing={x:100,y:-500};
+ const g=new Game(p,()=>.5);
+ try{
+  g.state='paused';g.vehicle.active=true;g.mainlineSpeech=null;g.boss=null;g.enemies=[];g.livingPersist=()=>true;
+  Object.assign(g.player,old);assert.equal(acceptClearingPost(g).ok,false);
+  Object.assign(g.player,{x:CLEARING_APPROACH.x,y:CLEARING_APPROACH.y});
+  assert.equal(livingSafePoint(g.player),false);
+  assert.equal(canUseClearingPost(g),true);
+  const result=acceptClearingPost(g);assert.ok(result.ok,result.message);
+  assert.equal(g.progress.living.patrolActive,true);assert.ok(g.progress.living.clearingSite);
+ }finally{activateCampLayout(freshProgress());}
 });
