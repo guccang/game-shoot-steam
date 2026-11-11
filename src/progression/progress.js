@@ -38,7 +38,7 @@ import {freshKeepsakes,normalizeKeepsakes} from './inventory/keepsakes.js';
 import {validateCampLevel} from './camp/camp-level.js';
 import {validateGameStatistics} from './player/game-statistics.js';
 import { RESOURCE_CAP } from '../config/resource-limits.js';
-import {normalizeCampParking} from './vehicles/camp-parking.js';
+import {normalizeCampParking,parkMissingFleet} from './vehicles/camp-parking.js';
 import {validateCampDefense} from './camp/camp-defense.js';
 import { GAMEPLAY_VALUES } from '../config/gameplay-values.js';
 import { MASTERY_THRESHOLDS, WEAPON_MODS } from '../config/weapon-mods.js';
@@ -293,6 +293,7 @@ export function validateProgress(raw) {
   p.shopStock=normalizeShopStock(raw.shopStock,p.vehicleHulls);
   normalizeWeaponStorage(p);
   if(!raw.forestExtentVersion)restoreForestExtent(p,raw);
+  parkMissingFleet(p);
   p.funnelLoadout=validateFunnelLoadout(p,p.funnelLoadout);p.mechanicalLoadout=validateMechanicalLoadout(p,p.mechanicalLoadout);p.spiderLoadout=validateSpiderLoadout(p,p.spiderLoadout);
   return grantDefaultCampDecor(p);
 }
