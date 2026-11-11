@@ -23,8 +23,9 @@ function commit(g,next,message){let saved=false;try{saved=g.livingPersist?.(next
 // 任务物不占背包，无出售价值；必须接任务后到实物箱旁亲自领取。
 export function recoverRegionalParcel(g,id){const c=REGIONAL_CAMPS.find(c=>c.id===id);if(!c||!regionalCampAvailable(g)||worldDistance(g.player,regionalParcel(c))>95||g.progress.regionalCamps[c.id].stage!==1)return {ok:false,message:'请先接取委托，再到任务箱旁寻找。'};const next=candidate(g);next.regionalCamps[c.id].stage=2;return commit(g,next,'找到'+c.parcel+'，请返回'+c.name+'交给'+c.npc+'。');}
 // 每次交易重新验证现场、商品归属和实际容量，按钮禁用仅作为提示。
-export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target='hand'}={}){
+export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target='hand',batches=1}={}){
  const c=regionalCampHere(g,id);if(!c)return {ok:false,message:'请到对应营地居民或服务屋前办理。'};
+ if(!Number.isSafeInteger(batches)||batches<1||batches>100000||batches!==1&&!['seed','ammo'].includes(action))return {ok:false,message:'请选择有效数量。'};
  const next=candidate(g),stage=next.regionalCamps[c.id].stage;let cost=0,message='',repair=false;
  const nearby=Number.isInteger(hull)&&next.vehicleHulls[hull]&&supplyVehicleNearby(g,hull);
  if(action==='story'){
@@ -38,15 +39,15 @@ export function regionalCampAction(g,id,action,{hull=g.vehicle.index,key,target=
  }else if(action==='ammo'){
   const rule=AMMO_TYPES[key];if(!rule||!ammoSoldAt(key,id)||!['hand','vehicle'].includes(target)||!rule.targets.includes(target))return {ok:false,message:'请选择适合背包或载具的弹药。'};
   if(target==='vehicle'&&!nearby)return {ok:false,message:'请把载具开到身边240单位内再补给。'};
-  const stock=target==='hand'?next.supplies.hand:next.supplies.vehicles[hull];if(stock[key]+rule.pack>100000)return {ok:false,message:'弹药库存已满。'};
-  stock[key]+=rule.pack;cost=rule.coins;
+  const stock=target==='hand'?next.supplies.hand:next.supplies.vehicles[hull];if(stock[key]+rule.pack*batches>100000)return {ok:false,message:'弹药库存已满。'};
+  stock[key]+=rule.pack*batches;cost=rule.coins*batches;
   const view=Object.assign(Object.create(g),{progress:next}),load=target==='hand'?catLoad(view):vehicleLoad(g,hull,{progress:next,driver:true});
   if(load.overloaded||load.weight>=load.capacity)return {ok:false,message:'装入这包弹药会满载，请先卸货。'};
-  message=rule.name+'已补充'+rule.pack+'发，存入'+(target==='hand'?'随身背包。':'附近载具。');
+  message=rule.name+'已补充'+(rule.pack*batches)+'发，存入'+(target==='hand'?'随身背包。':'附近载具。');
  }else if(action==='seed'){
   if(!Number.isInteger(key)||!c.seeds.includes(key))return {ok:false,message:'此营地不出售这种种子。'};
-  if(next.farm.seeds[key]>=FARM_STOCK_CAP)return {ok:false,message:'种子库存已满。'};
-  next.farm.seeds[key]++;next.farm.unlocked[key]=true;cost=FARM_CROPS[key].cost;
+  if(next.farm.seeds[key]+batches>FARM_STOCK_CAP)return {ok:false,message:'种子库存已满。'};
+  next.farm.seeds[key]+=batches;next.farm.unlocked[key]=true;cost=FARM_CROPS[key].cost*batches;
   const load=catLoad(Object.assign(Object.create(g),{progress:next}));if(load.weight>=load.capacity)return {ok:false,message:'背包没有足够空间。'};
   message='购得'+FARM_CROPS[key].name+'种子，已解锁后续购买。';
  }else if(action==='engine'){

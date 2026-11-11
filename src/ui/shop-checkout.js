@@ -1,3 +1,8 @@
+import {regionalCampAction} from '../core/camp/regional-camps.js';
+import {regionalCampHere} from '../core/camp/regional-camp-access.js';
+import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
+import {campPurchasePrice} from '../progression/camp/camp-level.js';
+import {HEROES} from '../config/heroes.js';
 import {cartProductIcon} from './cart-product-icon.js';
 import {buyFarmSeeds} from '../core/farming/farm-seeds.js';
 import {tradeSupply} from '../core/vehicles/supplies.js';
@@ -18,6 +23,14 @@ const selector='button[data-shop-good],button[data-shop-name]';
 // 商品牌和数量按钮共用同一报价，专用交付项目由原商店提供实际费用和去向。
 function offer(game,button,batches){
  const d=button.dataset,item=SHOP_GOODS[d.shopGood];
+ if(d.regionalStore){
+  const camp=regionalCampHere(game,d.regionalStore);
+  let price=d.shopPrice;
+  if(camp&&d.regionalAction==='recruit'){
+   const cost=campPurchasePrice(game.progress,HEROES[camp.hero]);price=cost.coins+' 金币、'+cost.wood+' 木材';
+  }
+  return {id:d.shopKey,name:d.shopName,price,count:Number(d.shopUnits),place:d.shopPlace,ok:!!camp&&!button.disabled,error:'当前无法购买，请检查营地、车辆或解锁条件。'};
+ }
  if(d.shopKind){
   const plan={kind:d.shopKind,index:Number(d.shopIndex),action:'buy'};
   const q=weaponPurchaseQuote(game,plan,quoteWorkshop(game.progress,plan,!!game.realm));
@@ -39,7 +52,7 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
  panel.id='shop-checkout';panel.className='ui-panel ui-panel--compact';panel.setAttribute('aria-labelledby','shop-checkout-title');
  panel.innerHTML='<header class="ui-panel__header"><h2 id="shop-checkout-title">购物车</h2></header><div class="ui-panel__body"><div data-cart-lines></div><p data-price></p><p data-cart-message role="status"></p></div><footer class="ui-panel__footer"><button class="ui-button" data-cancel>继续选购</button><button class="ui-button ui-button--primary" data-pay>确认付款</button></footer>';
  root.body.append(panel);dialogs.register(panel.id);
- const shops=new Set(['seed-shop-dialog','outdoor-dialog','field-equipment-dialog','home-decor-dialog','workshop-dialog','logistics-dialog','cat-home-dialog','production-dialog','camp-dialog','vehicle-collection-dialog','inventory-dialog']);
+ const shops=new Set(['regional-camps-dialog','seed-shop-dialog','outdoor-dialog','field-equipment-dialog','home-decor-dialog','workshop-dialog','logistics-dialog','cat-home-dialog','production-dialog','camp-dialog','vehicle-collection-dialog','inventory-dialog']);
  // 底栏只更新件数，保留同一个触控目标和键盘焦点。
  function updateZone(shop){
   const zone=shop.querySelector(':scope > .shop-dropzone');if(!zone)return;
@@ -69,7 +82,7 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
   if(row){
    if(row.repeatable)row.batches++;
    else onNotice('这件商品已在购物车中。');
-  }else lines.push({key,icon:cartProductIcon(button,game.progress),source:button.cloneNode(false),units:q.count,batches:1,repeatable:SHOP_GOODS[button.dataset.shopGood]?.cap>1||button.hasAttribute('data-buy')});
+  }else lines.push({key,icon:cartProductIcon(button,game.progress),source:button.cloneNode(false),units:q.count,batches:1,repeatable:['ammo','seed'].includes(button.dataset.regionalAction)||SHOP_GOODS[button.dataset.shopGood]?.cap>1||button.hasAttribute('data-buy')});
   carts.set(shop,lines);updateZone(shop);
  }
  // 数字和单位来自商店现有报价，同一货币或材料分别求和。
@@ -96,10 +109,10 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
    remove.type='button';remove.className='ui-button';remove.dataset.removeLine=i;remove.textContent='移除';remove.setAttribute('aria-label','移除'+q.name);
    entry.append(row.icon,name,info,remove);
    // 种子及弹药仍可在清单内快速选择常用数量。
-   const presets=row.source.hasAttribute('data-buy-seed')?[10,30,100]:row.source.hasAttribute('data-ammo-buy')?[1,5,20]:[];
+   const presets=(row.source.hasAttribute('data-buy-seed')||row.source.dataset.regionalAction==='seed')?[10,30,100]:(row.source.hasAttribute('data-ammo-buy')||row.source.dataset.regionalAction==='ammo')?[1,5,20]:[];
    if(presets.length){
     const options=root.createElement('div');options.className='cart-quantities';
-    for(const n of presets){const preset=root.createElement('button');preset.type='button';preset.className='ui-button';preset.textContent=n+(row.source.hasAttribute('data-buy-seed')?' 粒':' 包');preset.dataset.orderAmount=n;preset.dataset.cartRow=i;preset.setAttribute('aria-pressed',String(row.batches===n));options.append(preset);}
+    for(const n of presets){const preset=root.createElement('button');preset.type='button';preset.className='ui-button';preset.textContent=n+((row.source.hasAttribute('data-buy-seed')||row.source.dataset.regionalAction==='seed')?' 粒':' 包');preset.dataset.orderAmount=n;preset.dataset.cartRow=i;preset.setAttribute('aria-pressed',String(row.batches===n));options.append(preset);}
     entry.append(options);
    }
    list.append(entry);
@@ -108,8 +121,9 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
   panel.querySelector('[data-price]').textContent=lines.length?'合计　'+([...costs].map(([unit,n])=>n+' '+unit).join('、')||'免费'):'购物车是空的';
   const short=(costs.get('金币')||0)>game.progress.coins;
   const shortOre=(costs.get('矿石')||0)>game.progress.mining.ore;
-  panel.querySelector('[data-cart-message]').textContent=message||(short?'金币不足，请调整清单。':shortOre?'矿石不足，请调整清单。':'');
-  panel.querySelector('[data-pay]').disabled=!lines.length||short||shortOre||lines.some(r=>!r.quote.ok);
+  const shortWood=(costs.get('木材')||0)>game.progress.wood;
+  panel.querySelector('[data-cart-message]').textContent=message||(short?'金币不足，请调整清单。':shortOre?'矿石不足，请调整清单。':shortWood?'木材不足，请调整清单。':'');
+  panel.querySelector('[data-pay]').disabled=!lines.length||short||shortOre||shortWood||lines.some(r=>!r.quote.ok);
  }
 
  // 商品手柄独占拖放，货架文字和格间留白仍支持原生滚动。
@@ -189,6 +203,14 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
  // 货架可能已经切到另一分类，常规商品仍走同一个正式购买函数。
  function purchase(row,button){
   const d=row.source.dataset;
+  if(d.regionalStore){
+   const hull=d.orderHull===undefined?undefined:Number(d.orderHull),action=d.regionalAction;
+   if(!regionalCampHere(game,d.regionalStore))return {ok:false,message:'请返回原营地购买。'};
+   const result=action==='se-buy'?configureVehicleSE(game,hull,d.key,'buy'):
+    regionalCampAction(game,d.regionalStore,action,{hull,key:action==='seed'?Number(d.key):d.key,target:d.target,batches:row.batches});
+   if(result.ok)owner.dispatchEvent(new CustomEvent('regional-purchase',{detail:result.message}));
+   return result;
+  }
   if(d.buySeed!==undefined)return buyFarmSeeds(game,Number(d.buySeed),row.batches);
   if(button){
    if(button.disabled)return {ok:false,message:'该商品目前无法购买。'};
@@ -213,7 +235,7 @@ export function createShopCheckout({game,root,dialogs,onNotice}){
    let delivered=0;
    for(const row of [...lines]){
     while(row.batches>0){
-     const quantity=row.source.hasAttribute('data-buy-seed')?row.batches:1;
+     const quantity=row.source.dataset.regionalStore||row.source.hasAttribute('data-buy-seed')?row.batches:1;
      const button=liveButton(row),q=offer(game,button||row.source,quantity);
      if(!q.ok||q.price!==row.quote.price||q.place!==row.quote.place){if(button)row.source=button.cloneNode(false);renderCart(q.ok?'报价或交付地点已变化，请核对后继续。':q.error);return;}
      const result=purchase(row,button);

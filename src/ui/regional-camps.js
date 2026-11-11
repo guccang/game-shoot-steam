@@ -22,8 +22,32 @@ export function createRegionalCampPanel({game,root,dialogs,onChange}){
  panel.id='regional-camps-dialog';panel.className='ui-panel ui-page';panel.setAttribute('aria-labelledby','regional-camps-title');
  panel.innerHTML='<header class="ui-panel__header"><div><h2 id="regional-camps-title"></h2><p id="regional-camps-place"></p></div><button class="ui-close" aria-label="关闭营地服务">×</button></header><div class="ui-panel__body"><nav class="regional-camp-tabs" aria-label="营地服务"></nav><div id="regional-camps-body"></div></div><footer class="ui-panel__footer"><p id="regional-camps-message" role="status" aria-live="polite" aria-atomic="true"></p></footer>';
  root.body.append(panel);const body=panel.querySelector('#regional-camps-body');
+ // 将营地、品种和交付车辆一起写入购物车，切换页签或车辆不会改变已选商品。
+ function setShopOffer(button,title,action){
+  const {key,target}=button.dataset;
+  const vehicle=vehicleModel(hull).name;
+  let price,place,count=1;
+  switch(action){
+   case 'ammo':price=AMMO_TYPES[key].coins;count=AMMO_TYPES[key].pack;place=target==='vehicle'?vehicle:'随身背包';break;
+   case 'seed':price=FARM_CROPS[key].cost;place='随身种子库存';break;
+   case 'se-buy':price=VEHICLE_SE[key].coins;place=vehicle+'装置库';break;
+   case 'engine':price=VEHICLE_ENGINES[camp.engine].cost;place=vehicle+'引擎库';break;
+   case 'gun':price=VEHICLE_WEAPONS[camp.gun].cost;place='工坊主炮库';break;
+   case 'recruit':price=campPurchasePrice(game.progress,HEROES[camp.hero]).coins;place='营地住屋';break;
+   default:return;
+  }
+  const vehicleBound=action==='engine'||action==='se-buy'||target==='vehicle';
+  Object.assign(button.dataset,{shopName:title,regionalStore:camp.id,shopPlace:place,shopUnits:count,
+   shopKey:[camp.id,action,key||'',target||'',vehicleBound?hull:''].join('/'),shopPrice:price+' 金币'});
+  if(vehicleBound)button.dataset.orderHull=hull;
+  if(!button.disabled){
+   button.textContent='加入购物车';
+   if(target)button.textContent+=' · '+place;
+   if(['se-buy','engine','gun'].includes(action))button.textContent+=' · '+price+'金币';
+  }
+ }
  // 公共行组件只接收配置文字，按钮数据与中文名称分开。
- function row(title,note,actions=[]){const section=root.createElement('section');section.className='ui-section';const h=root.createElement('h3'),p=root.createElement('p');h.textContent=title;p.textContent=note;section.append(h,p);for(const a of actions){const b=root.createElement('button');b.className='ui-button';b.type='button';b.textContent=a.label;b.dataset.regionalAction=a.action;if(a.key!==undefined)b.dataset.key=a.key;if(a.target)b.dataset.target=a.target;b.disabled=!!a.disabled;section.append(b);}body.append(section);return section;}
+ function row(title,note,actions=[]){const section=root.createElement('section');section.className='ui-section';const h=root.createElement('h3'),p=root.createElement('p');h.textContent=title;p.textContent=note;section.append(h,p);for(const a of actions){const b=root.createElement('button');b.className='ui-button';b.type='button';b.textContent=a.label;b.dataset.regionalAction=a.action;if(a.key!==undefined)b.dataset.key=a.key;if(a.target)b.dataset.target=a.target;b.disabled=!!a.disabled;setShopOffer(b,title,a.action);section.append(b);}body.append(section);return section;}
  // 当地出售特色装置，各营地均能为所选车装卸它已拥有的装置。
  function renderCampDevices(){
   const build=seBuild(game.progress,hull);
@@ -62,9 +86,10 @@ export function createRegionalCampPanel({game,root,dialogs,onChange}){
  if(tab==='seed')for(const key of camp.seeds){const crop=FARM_CROPS[key];row(crop.name,'每粒'+crop.cost+'金币 · 随身库存'+p.farm.seeds[key]+'。购买即可解锁此种子。',[{action:'seed',key,label:'购买一粒'}]);}
  if(tab==='cat'){const hero=HEROES[camp.hero],price=campPurchasePrice(p,hero);row(hero.name,camp.ending+' 招募需'+price.coins+'金币、'+price.wood+'木头，并有一间空余住屋。',[{action:'recruit',label:p.heroes[camp.hero]?'已加入营地':'邀请加入营地',disabled:!ready||!!p.heroes[camp.hero]}]);}
  }
+ scope.on(panel,'regional-purchase',e=>{message=e.detail;render();onChange();});
  dialogs.register(panel.id,{onOpen:render});scope.on(panel.querySelector('.ui-close'),'click',()=>dialogs.close(panel.id));
  scope.on(panel,'change',e=>{if(e.target.matches('[data-regional-hull]')){hull=Number(e.target.value);render();}});
- scope.on(panel,'click',e=>{const t=e.target.closest('[data-regional-tab]');if(t){tab=t.dataset.regionalTab;message='';render();return;}const b=e.target.closest('[data-regional-action]');if(!b||b.disabled)return;const action=b.dataset.regionalAction;if(action==='navigate'){requestWorldNavigation(game,regionalParcel(camp),'寻找'+camp.parcel,{direct:true,arrivalRadius:45});dialogs.close(panel.id);onChange();return;}
+ scope.on(panel,'click',e=>{const t=e.target.closest('[data-regional-tab]');if(t){tab=t.dataset.regionalTab;message='';render();return;}const b=e.target.closest('[data-regional-action]');if(!b||b.disabled)return;if(b.dataset.regionalStore)return;const action=b.dataset.regionalAction;if(action==='navigate'){requestWorldNavigation(game,regionalParcel(camp),'寻找'+camp.parcel,{direct:true,arrivalRadius:45});dialogs.close(panel.id);onChange();return;}
  if(action.startsWith('se-')){
   if(!regionalCampHere(game,camp.id)){render();return;}
   const result=configureVehicleSE(game,hull,b.dataset.key,action.slice(3));

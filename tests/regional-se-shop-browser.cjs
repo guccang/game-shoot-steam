@@ -1,5 +1,8 @@
 // 通过营地服务的真实按钮检查购买、装卸、跨营地重装和显示重量。
 async(page)=>{
+ // 从当前营地购物车确认交付。
+ const checkout=async()=>{await page.locator('#regional-camps-dialog > .shop-dropzone').tap();await page.locator('#shop-checkout [data-pay]').tap();};
+
  const assert=require('node:assert/strict'),out='output/regional-se-shop',errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.evaluate(async()=>{window.a=(await import('/src/main.js')).application;await a.ready;window.g=a.game;const p=(await import('/src/progression/progress.js')).freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...(await import('/src/config/mainline.js')).MAINLINE_IDS];p.mainline.phase='complete';p.mainline.trackingPaused=true;p.restoration.repaired=(await import('/src/config/town-restoration.js')).TOWN_RESTORATIONS.map(r=>r.id);p.campLand.owned=(await import('/src/config/camp-land.js')).CAMP_PLOTS.map(r=>r.id);p.vehicleHulls[1]=1;(await import('/src/config/vehicle-armaments.js')).grantVehicleArmament(p,1);p.vehicleIndex=1;p.coins=25000;p.supplies.vehicles[1].shell=100;for(const k of ['he','frost','flame','gas','arcShell','seismic','flare'])p.supplies.vehicles[1][k]=10;g.progress=p;g.reset();g.state='playing';g.mainlineSpeech=null;g.vehicle.active=true;g.progress.campParking.owned=[];g.enemies=[];g.boss=null;g.update=()=>{};g.livingPersist=()=>true;Object.assign(g.player,{x:9000,y:9000});a.renderer.camera.time=null;a.refresh();});
@@ -19,7 +22,7 @@ async(page)=>{
   const button=(action,key)=>page.locator('[data-regional-action="se-'+action+'"][data-key="'+key+'"]');
   const key=camp.seDevice;
   if(key==='flare')await button('remove',key).tap();
-  else await button('buy',key).tap();
+  else {await button('buy',key).tap();await checkout();}
   await button('install',key).tap();
   assert.ok(await page.evaluate(k=>g.progress.vehicleSE[1].installed.includes(k),key));
   await button('remove',key).tap();

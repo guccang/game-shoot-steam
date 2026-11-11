@@ -1,3 +1,6 @@
+import {REGIONAL_CAMPS} from '../config/regional-camps.js';
+import {seDeviceIcon} from './se-device-icon.js';
+import {drawCat} from '../rendering/characters.js';
 // 购物车逐行保留所购型号的缩略图，切换货架或调整数量时复用同一节点。
 import {inventoryIcon,paintInventoryIcons} from './inventory-icons.js';
 import {drawWorkshopEquipment} from '../rendering/workshop.js';
@@ -16,6 +19,18 @@ export function cartProductIcon(button,progress){
  icon.className='cart-product-icon';icon.setAttribute('aria-hidden','true');
  const gear=OUTDOOR_GEAR[d.outdoorBuy];
  let symbol=itemDefinition(d.shopGood);
+ if(d.regionalStore){
+  const camp=REGIONAL_CAMPS.find(c=>c.id===d.regionalStore);
+  if(['ammo','seed'].includes(d.regionalAction))symbol=itemDefinition(d.regionalAction+':'+d.key);
+  if(d.regionalAction==='engine')symbol=itemDefinition('engine:'+camp.engine)||itemDefinition('engine:3');
+  if(d.regionalAction==='se-buy'){icon.innerHTML=seDeviceIcon(d.key);return icon;}
+  if(d.regionalAction==='gun'||d.regionalAction==='recruit'){
+   const canvas=root.createElement('canvas');canvas.width=canvas.height=96;icon.append(canvas);
+   if(d.regionalAction==='gun')drawWorkshopEquipment(canvas.getContext('2d'),progress,'turret',camp.gun,0,true);
+   else drawCat(canvas.getContext('2d'),48,74,camp.hero,0,1.4,0,0);
+   return icon;
+  }
+ }
  if(d.canUpgrade!==undefined)symbol=itemDefinition('tool:water');
  if(gear){icon.innerHTML=outdoorGearIcon(gear);return icon;}
  if(d.fitEngine!==undefined)symbol=itemDefinition('engine:'+d.fitEngine)||itemDefinition('engine:3');
