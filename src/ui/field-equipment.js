@@ -1,4 +1,5 @@
 import {vehicleSEMarkup} from './vehicle-se.js';
+import {usesPersonalSE} from '../config/vehicle-se.js';
 import {configureVehicleSE} from '../core/vehicles/vehicle-se.js';
 import {specialAmmoMarkup} from './vehicle-special-ammo.js';
 import {configureSpecialAmmo} from '../core/vehicles/supplies.js';
@@ -64,7 +65,7 @@ export function createFieldEquipment({game,root,dialogs,onChange,mountCargo,onOu
   for(const tab of tabs.children){tab.setAttribute('aria-pressed',String(tab.dataset.vehicleTab===vehicleTab));tab.disabled=tab.dataset.vehicleTab!=='cockpit'&&!owned;}
   panel.querySelector('[data-field-nav]').parentElement.hidden=mode==='weapons'||vehicle&&vehicleTab!=='cockpit';
   get('title').textContent=mode==='ammo'?'弹药补给铺':mode==='items'?'随身道具':mode==='vehicle'?'当前载具':'当前武器';get('subtitle').textContent=mode==='ammo'?'购买弹药、准备材料制作与补充道具':mode==='items'?'选择随身道具使用':'查看当前装备状态';if(vehicle&&owned&&vehicleTab==='cargo')mountCargo(get('body'),game.vehicle.index);
-  else if(vehicle&&owned&&vehicleTab==='se')get('body').innerHTML=finiteSupply(game)?vehicleSEMarkup(game,game.vehicle.index):'<p>当前活动使用独立装备。</p>';
+  else if(vehicle&&owned&&vehicleTab==='se')get('body').innerHTML=usesPersonalSE(game)?vehicleSEMarkup(game,game.vehicle.index):'<p>当前活动使用独立装备。</p>';
   else if(mode==='ammo')renderShop();
   else if(mode==='items')get('body').innerHTML=items();
   else renderEquipment();

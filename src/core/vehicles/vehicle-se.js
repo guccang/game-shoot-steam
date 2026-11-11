@@ -1,9 +1,10 @@
 import {syncSEControl} from '../../combat/vehicle-se.js';
 // SE 装配事务与操作入口；装配在工坊完成，控制开关可随车操作。
-import {VEHICLE_SE,SE_INSTALL_LIMIT,SE_MAX_UPGRADE,seLevel,seUpgradeCost,seShieldMax,seBuild,normalizeVehicleSE} from '../../config/vehicle-se.js';
+import {VEHICLE_SE,SE_INSTALL_LIMIT,SE_MAX_UPGRADE,seLevel,seUpgradeCost,seShieldMax,usesPersonalSE,seBuild,normalizeVehicleSE} from '../../config/vehicle-se.js';
 import {regionalCampHere} from '../camp/regional-camp-access.js';
 import {vehicleBuildReason} from './vehicle-build.js';
 import {vehicleLoad} from '../../progression/inventory/load-weight.js';
+import {syncCampDefense} from '../camp/camp-defense.js';
 import {capturePatrol} from '../battle/patrol-session.js';
 // 保存成功后才替换正式进度，失败不扣金币或改变装置状态。
 export function configureVehicleSE(g,h,key,action,value){
@@ -19,7 +20,7 @@ export function configureVehicleSE(g,h,key,action,value){
  else if(action==='upgrade'){
   if(g.cottage?.kind!=='seWorkshop')return {ok:false,message:'请到 SE 改装工坊升级。'};
  }
- else if(!['toggle','radius'].includes(action)||g.realm||g.story||g.fireActive||g.campDefense||g.workshopTrial)return {ok:false,message:'当前无法操作装置。'};
+ else if(!['toggle','radius'].includes(action)||!usesPersonalSE(g))return {ok:false,message:'当前无法操作装置。'};
  const next=structuredClone(g.progress);next.vehicleSE=normalizeVehicleSE(next.vehicleSE,next.vehicleHulls.length);const b=next.vehicleSE[h],r=VEHICLE_SE[key];let cost=0;
  if(action==='upgrade'){
   if(!b.owned.includes(key))return {ok:false,message:'这辆车尚未拥有该装置。'};
@@ -41,7 +42,10 @@ export function configureVehicleSE(g,h,key,action,value){
  else if(action==='remove'){if(!b.installed.includes(key))return {ok:false,message:'该装置未安装。'};b.installed=b.installed.filter(k=>k!==key);b.disabled=b.disabled.filter(k=>k!==key);}
  else if(action==='toggle'){if(!b.installed.includes(key))return {ok:false,message:'请先安装装置。'};b.disabled=b.disabled.includes(key)?b.disabled.filter(k=>k!==key):[...b.disabled,key];}
  else {if(key!=='combat'||![150,250,400].includes(value))return {ok:false,message:'请选择有效范围。'};b.radius=value;}
- const snapshot=Object.create(g);snapshot.progress=next;next.patrol=capturePatrol(snapshot);let saved=false;try{saved=g.livingPersist?.(next)===true;}catch{}
+ const snapshot=Object.create(g);snapshot.progress=next;
+ // 局内切换装置时，随同本波进度和当前驾驶状态一次写入候选存档。
+ if(g.campDefense)syncCampDefense(snapshot);
+ next.patrol=capturePatrol(snapshot);let saved=false;try{saved=g.livingPersist?.(next)===true;}catch{}
  if(!saved)return {ok:false,message:'保存失败，金币与装置未改变。'};g.progress=next;if(action!=='buy'&&h===g.vehicle.index&&['combat','autopilot'].includes(key)){
   if(key==='autopilot')g.sePausedRoute=null;
   syncSEControl(g);
