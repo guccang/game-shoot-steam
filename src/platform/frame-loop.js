@@ -1,5 +1,5 @@
 // 可启动和销毁的动画时钟；高刷屏限制运行频率，后台不执行场景工作。
-export function createFrameLoop({ host, onFrame, maxFps = 60 }) {
+export function createFrameLoop({ host, onFrame, maxFps = 60, onSkippedFrame }) {
   const interval = 1000 / maxFps;
   let running = false,
     frameId = null,
@@ -15,6 +15,8 @@ export function createFrameLoop({ host, onFrame, maxFps = 60 }) {
     }
     // 留出时间戳舍入误差；跳过高刷多余回调时不吞掉模拟时间。
     if (now + 0.5 < nextTime) {
+      // 仅运行独立的界面时钟，不推进游戏状态或提交场景。
+      onSkippedFrame?.(now);
       frameId = host.requestAnimationFrame(frame);
       return;
     }
