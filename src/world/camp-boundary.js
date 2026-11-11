@@ -37,3 +37,12 @@ export function campBoundaryBlocked(x,y,radius,progress,footprint={x:radius,y:ra
  const along=f.horizontal?'x':'y';
  if(old&&Math.abs(old[along]-f[along])<f.length/2+footprint[along]&&Math.abs(before)<footprint[axis]+5&&offset*before>0&&Math.abs(offset)>Math.abs(before))return false;
  return f.horizontal?Math.abs(p.x-f.x)<f.length/2+footprint.x&&Math.abs(p.y-f.y)<footprint.y+5:Math.abs(p.y-f.y)<f.length/2+footprint.y&&Math.abs(p.x-f.x)<footprint.x+5;});}
+// 按当前位置判断是否位于主营地或地区营地，兼容扩建地块和地图镜像。
+export function insideSurfaceCamp(game){
+ if(game.mapId!=='forest')return false;
+ const contains=region=>{
+  const p=nearest(game.player,{x:(region.left+region.right)/2,y:(region.top+region.bottom)/2});
+  return p.x>=region.left&&p.x<=region.right&&p.y>=region.top&&p.y<=region.bottom;
+ };
+ return REGIONAL_SETTLEMENTS.some(contains)||campBoundary(game.progress).regions.some(contains);
+}
