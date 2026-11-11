@@ -178,3 +178,26 @@ test('装置开关立即接管既有路点，途中接敌并在脱战后从当�
  updateSEControl(g,.1,idle);
  assert.equal(g.seControl.mode,'combat');
 });
+
+test('手机回小屋在停稳及手动接管后都能直接重新发车',async()=>{
+ const {navigatePhone}=await import('../src/core/battle/patrol-phone.js');
+ const {COTTAGE}=await import('../src/config/cottage.js');
+ const g=scene(),door=COTTAGE.door;
+ equip(g,'autopilot');
+ Object.assign(g.player,{x:door.x,y:door.y+350});
+ g.state='paused';
+ const {PARKING_SPOTS}=await import('../src/config/parking.js');
+ g.parking={phase:'parked',hull:g.vehicle.index,id:PARKING_SPOTS[0].id};
+ assert.equal(navigatePhone(g,'home').ok,true);
+ assert.equal(g.seControl?.mode,'autopilot');
+ g.state='playing';
+ updateSEControl(g,.05,{x:1,y:0});
+ assert.equal(g.seControl,null);
+ assert.equal(navigatePhone(g,'home').ok,true);
+ const before=g.player.y;
+ for(let i=0;i<180&&g.player.y>=before-5;i++)g.update(.035,{x:0,y:0});
+ assert.ok(g.player.y<before-5);
+ for(let i=0;i<600&&g.seControl;i++)g.update(.035,{x:0,y:0});
+ assert.equal(g.seControl,null);
+ assert.ok(Math.hypot(g.player.x-door.x,g.player.y-door.y)<=90);
+});
