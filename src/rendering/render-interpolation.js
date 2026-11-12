@@ -1,4 +1,5 @@
 // 表现快照只覆盖动态分支；静态地图、装备配置、生命与存档继续读取权威对象。
+import {MECH_HULL} from '../config/biped-mech.js';
 import { delta, WORLD } from '../world/coordinates.js';
 import {createMineCartInterpolation} from './mine-cart-interpolation.js';
 import {bindGameSource} from '../core/game-source.js';
@@ -98,7 +99,7 @@ export function createRenderInterpolation() {
         if (!Number.isFinite(current)) continue;
         if (!Number.isFinite(old) || blend === 1) { view[field] = current; continue; }
         // 商队轮相按整周取短方向，避免过零时反转一圈；其他已有载具沿用原表现规则。
-        const angle = ANGLES.has(field) || field === 'wheelPhase' && (value === game.tradeMotion || game.tradeDepartures?.some(e=>e.motion===value));
+        const angle = ANGLES.has(field) || field === 'wheelPhase' && (value === game.vehicle && value.index===MECH_HULL || value === game.tradeMotion || game.tradeDepartures?.some(e=>e.motion===value));
         const change = field === 'x' ? dx : field === 'y' ? dy : angle ? delta(current - old, Math.PI * 2) : current - old;
         // 年龄、寿命重置属于新事件，不从旧状态反向播放。
         const resetClock = RESET_CLOCKS.has(field) && current < old;

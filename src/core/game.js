@@ -925,7 +925,7 @@ export class Game {
       const p = this.player, x = p.x, y = p.y, length = Math.hypot(input.x, input.y);
       driveBody(p, input, HEROES[this.progress.hero].speed * (this.vehicle.active ? vehicleSpeed(this.loadout, this.vehicle.index) : 1), dt, WORLD, this.trees);
       crushVehicleTrees(this, {x,y});
-      advanceVehicleWheels(this.vehicle, p, { x, y }, dt);
+      advanceVehicleWheels(this.vehicle, p, { x, y }, dt, this.fx);
       updateCatMotion(p.bodyAnimation, dt, dt > 0 ? Math.hypot(p.x - x, p.y - y) / dt : 0, length > 0 && !this.vehicle.active, this.vehicle.active);
       if (length > 0) p.angle = Math.atan2(input.y, input.x);
       updateRealmIntermissionEffects(this, dt);
@@ -977,7 +977,7 @@ export class Game {
     crushVehicleTrees(this, previousPlayer);
     // 只记录主动移动，后坐与敌人击退不触发地图遭遇。
     const exploringMove = length > 0 && worldDistance(p, previousPlayer) > .01;
-    advanceVehicleWheels(this.vehicle, p, previousPlayer, dt);
+    advanceVehicleWheels(this.vehicle, p, previousPlayer, dt, this.fx);
     if(this.arrivalPending&&this.mapId==='forest'&&!this.realm&&!this.story&&!this.fireActive&&!this.campDefense){this.progress.arrival.x=p.x;this.progress.arrival.y=p.y;}
     syncOxFoot(this,previousPlayer);
     // 牛背骑乘沿用载具的坐姿时钟，牛自行迈步，猫不会在背上跑腿。
