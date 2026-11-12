@@ -14,7 +14,7 @@ import {HEROES} from './heroes.js';
 // 固定机制身份属于程序合同，配置不能凭空声明不存在的行为或美术。
 const RANGED_IDS=['spore-spitter','acorn-slinger','reed-archer','bramble-buggy','stump-bombard'];
 const OPERATIONS=['click','upgrade','hero-experience','trial','patrol-boss','buy','equip','modify','story','drive','clearing','dismount','track','controller','menu','camp-defense','farm'];
-const ACTIONS=['warehouse','logistics','cleanup-bag','cleanup-vehicle','vehicle-repair','seed-shop','menu','workshop','clearing','fire','realm','camp-defense','farm'];
+const ACTIONS=['warehouse','logistics','cleanup-bag','cleanup-vehicle','vehicle-repair','seed-shop','menu','workshop','clearing','fire','realm','camp-defense','farm','construction'];
 const SEEN=MAINLINE_SEEN;
 // 校验错误始终包含可定位的内容路径。
 function fail(path,message){throw Error(`内容配置 ${path}：${message}`);}
@@ -34,8 +34,8 @@ function text(value,path){if(typeof value!=='string'||!value.trim())fail(path,'�
 function numbers(value,path,required,optional=[],min=0){object(value,path,required,optional);for(const [key,n]of Object.entries(value))number(n,path+'.'+key,min);}
 // 条件只允许解释器支持的结构，禁止混合多种条件导致某个门槛被忽略。
 function condition(c,path){
- object(c,path,[],['all','any','path','min','equals','nativeLevel','tier','controllerReady','controllerLevel','harvestFor']);
- const kinds=['all','any','path','nativeLevel','tier','controllerReady','controllerLevel','harvestFor'].filter(k=>Object.hasOwn(c,k));
+ object(c,path,[],['all','any','path','min','equals','nativeLevel','tier','controllerReady','controllerLevel','harvestFor','builtHouse']);
+ const kinds=['all','any','path','nativeLevel','tier','controllerReady','controllerLevel','harvestFor','builtHouse'].filter(k=>Object.hasOwn(c,k));
  if(kinds.length!==1)fail(path,'必须且只能声明一种条件');
  const kind=kinds[0],expected=[kind];
  if(['path','nativeLevel'].includes(kind))expected.push(Object.hasOwn(c,'equals')?'equals':'min');
@@ -47,7 +47,7 @@ function condition(c,path){
   if(c.path.startsWith('progress.mainline.seen.')&&!SEEN.includes(c.path.split('.').at(-1)))fail(path+'.path','未注册的操作记录');
   if('min' in c)number(c.min,path+'.min');else if(!['number','boolean','string'].includes(typeof c.equals))fail(path+'.equals','必须是标量');
  }else if(kind==='nativeLevel'){number(c.nativeLevel,path+'.nativeLevel',0,true);if(!COLLECTED_VEHICLES[c.nativeLevel])fail(path,'载具不存在');number(c.min,path+'.min',1,true);}
- else if(kind==='controllerReady'){if(c[kind]!==true)fail(path,'必须为 true');}
+ else if(kind==='controllerReady'||kind==='builtHouse'){if(c[kind]!==true)fail(path,'必须为 true');}
  else if(kind==='harvestFor')text(c[kind],path+'.harvestFor');
  else number(c[kind],path+'.'+kind,1,true);
 }

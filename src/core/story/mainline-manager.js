@@ -37,6 +37,8 @@ export function mainlineTask(game){return currentMainlineTask(game.progress?.mai
 function read(source,path){return path.split('.').reduce((v,k)=>v&&Object.hasOwn(v,k)?v[k]:undefined,source);}
 // 所有条件只观察永久进度或真实操作标记，剧情借用武器不能满足拥有条件。
 export function mainlineCondition(game,condition){
+ // 房屋落址或在建筑公司加盖楼层都计入；栅栏、站牌和单纯扩地不计入。
+ if(condition.builtHouse)return game.progress.homeDecor?.floors>2||['cottage','catHome','garage','warehouse','warehouseDepot','outdoor','ammo','repair','furniture','construction','refinery','factory','seWorkshop','story','travel','seed','delivery','fire','kitchen','pottery','market','decor'].some(id=>game.progress.campLand?.sites?.[id]);
  if(condition.harvestFor)return harvestBudget(game.progress,mainlineTask(game)).ready;
  if(condition.all)return condition.all.every(c=>mainlineCondition(game,c));
  if(condition.any)return condition.any.some(c=>mainlineCondition(game,c));

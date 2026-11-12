@@ -37,3 +37,21 @@ test('缺金币指向种田；旧候选经济补新任务而不覆盖既有奖�
  const old=structuredClone(RECOMMENDED_ECONOMY);delete old.taskRewards['first-farm'];old.taskRewards['first-map'].coins=77;
  const next=validateEconomy(old);assert.equal(next.taskRewards['first-map'].coins,77);assert.equal(next.taskRewards['first-farm'].coins,0);assert.equal(next.taskRewards['first-farm'].wood,40);
 });
+
+// 营地入门用正式任务步骤和存档事实检查入口；原有二层小屋、栅栏和告示牌不算施工。
+test('营地入门依次引导伐木、开田、播种、浇水和建房',()=>{
+ const g=scene();g.progress.mainline.completed=[];g.progress.mainline.currentId='homestead-basics';
+ assert.deepEqual(mainlineSteps(g).map(s=>s.done),[false,false,false,false,false]);
+ assert.equal(mainlineAction(g).id,'weapons-button');
+ const tree={id:32,type:'tree',x:g.player.x+15,y:g.player.y,radius:10,hp:1,maxHp:1};
+ g.trees=[tree];g.hit(tree,2,false,{statisticsSource:'farm-saw'});
+ assert.equal(mainlineAction(g).type,'farm');
+ Object.assign(g.progress.farm,{dug:1,planted:1,watered:1});
+ assert.equal(mainlineAction(g).type,'construction');
+ const site={x:0,y:680,width:110,height:100};g.progress.campLand.sites.clearing=site;
+ assert.equal(mainlineSteps(g).at(-1).done,false);
+ g.progress.campLand.sites.warehouse=site;g.progress=validateProgress(g.progress);
+ assert.ok(mainlineSteps(g).every(s=>s.done));
+ delete g.progress.campLand.sites.warehouse;g.progress.homeDecor.floors++;
+ assert.ok(mainlineSteps(g).every(s=>s.done));
+});

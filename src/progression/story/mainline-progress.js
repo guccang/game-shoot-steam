@@ -3,7 +3,7 @@ import {CAMPAIGN_TASK_IDS} from '../../config/mainline-pacing.js';
 import {LOGISTICS_LESSONS} from './mainline-logistics.js';
 import {validateGardeningLesson} from './mainline-gardening.js';
 import {MAINLINE_IDS,MAINLINE_TASKS} from '../../config/mainline.js';
-export const MAINLINE_SEEN=[...Object.keys(LOGISTICS_LESSONS),'map','navigation','wave','trial','drive','dismount','blessing','defense','valley','track','config','companions','pineKills','pineWaves','westHorde','pistolField','weaponField','vehicleField','hoverHorde','aircraftField','controllerHorde','hoverTrial','aircraftTrial','controllerTrial'];
+export const MAINLINE_SEEN=[...Object.keys(LOGISTICS_LESSONS),'felledTree','map','navigation','wave','trial','drive','dismount','blessing','defense','valley','track','config','companions','pineKills','pineWaves','westHorde','pistolField','weaponField','vehicleField','hoverHorde','aircraftField','controllerHorde','hoverTrial','aircraftTrial','controllerTrial'];
 // 只读取当前结构；不重排历史任务或补领奖励。
 export function validateMainline(raw){
  if(raw?.version!==12)raw=null;

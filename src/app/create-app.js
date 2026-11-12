@@ -341,6 +341,7 @@ export function createApplication({
   game.campDefensePersist=store.saveProgress;
   campDefensePanel=createCampDefensePanel({game,root,renderer,dialogs,onChange:refresh});
   mainline=createMainline({game,root,renderer,dialogs,onTalk,workshop,onFarm:()=>farmPanel.open(),onChange:refresh,openAction:action=>{
+    if(action.type==='construction')return game.openCampConstruction?.()?'map-dialog':null;
     if(action.type==='warehouse')return warehouse.open()?'warehouse-dialog':null;
     if(action.type==='logistics'){logistics.open('cargo',game.vehicle.index);return 'logistics-dialog';}
     if(action.type==='cleanup-bag'){loadCleanup.open();return 'load-cleanup-dialog';}
