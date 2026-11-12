@@ -8,18 +8,14 @@ import {campRoadNetwork} from '../world/camp-layout-roads.js';
 import {campPlots,ownsCampPlot} from '../config/camp-land.js';
 import {CAMP_BUILDINGS,campBuildingPosition,CAMP_ROAD_WIDTH} from '../config/camp-layout.js';
 import {nearest} from '../world/coordinates.js';
-import {drawCampGrass} from './ground-depth.js';
 import {nightColor} from './river.js';
 // 缓存依附游戏实例，存档替换或扩建后只保留当前路网。
 export function campRoadView(game){return campRoadNetwork(game.progress);}
 // 同一路网叠加草沿接触暗边和土路亮肩，几何与通行宽度保持一致。
-export function drawCampLayoutRoads(c,game,view,night,season='summer'){
+export function drawCampLayoutRoads(c,game,view,night){
  if(game.mapId!=='forest'||game.cottage||game.story||game.realm)return;
- const finish=game.progress.campManagement?.styles.road;const customized=hasCampLayoutChanges(game.progress.campLayout)||finish&&(finish.material!=='earth'||finish.shape!=='plain');const expanded=campPlots(game.progress).filter(p=>p.top< -58&&ownsCampPlot(game.progress,p.id));
+ const finish=game.progress.campManagement?.styles.road;const customized=hasCampLayoutChanges(game.progress.campLayout)||finish&&(finish.material!=='earth'||finish.shape!=='plain');
  const moved=hasCampLayoutChanges(game.progress.campLayout),roads={paths:campSurfaceRoads(game.progress)},reference={x:view.x+view.w/2,y:view.y+view.h/2};if(!customized)roads.paths=roads.paths.filter(path=>path.every(p=>p.y<=-58));c.save();
- // 已购地覆盖旧院路，保留未开发土地和外部自然地貌；路网与建筑同帧更新。
- for(const p of expanded){const q=nearest({x:p.left,y:p.top},reference);drawCampGrass(c,{...q,w:p.right-p.left,h:-58-p.top},night,season);}
- if(moved)for(const p of campPlots(game.progress).filter(p=>ownsCampPlot(game.progress,p.id))){const q=nearest({x:p.left,y:p.top},reference),w=p.right-p.left,h=p.bottom-p.top;if(q.x>view.x+view.w||q.x+w<view.x||q.y>view.y+view.h||q.y+h<view.y)continue;drawCampGrass(c,{...q,w,h},night,season);}
  // 门外接驳不受营地地契裁剪；与门内铺面使用相同材质和中心线。
  drawCampRoadFinish(c,[...campGateRoads(game.progress),...campGateInnerRoads(game.progress)],view,finish,night);
  // 新路网已按水域和围栏寻路，搬到营地外的设施支路也必须完整绘制。
