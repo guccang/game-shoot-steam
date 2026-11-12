@@ -15,7 +15,7 @@ import {drawCampLayoutRoads,campLayoutObjectVisible} from './camp-layout.js';
 import {sampleSceneLight,buildingShadowShape} from '../world/scene-depth.js';
 import {drawActorCastShadow,drawBuildingCastShadow,sceneDepthStats} from './scene-depth.js';
 import {groundDepthStats} from './ground-depth.js';
-import {campLandObjects,campObjectVisible,drawCampLandGround,drawCampLandObject} from './camp-land.js';
+import {campLandObjects,campObjectVisible,drawCampLandObject} from './camp-land.js';
 import {industryObjects,drawIndustry} from './industry.js';
 import {tradeObjects,drawTradeObject} from './camp-trade.js';
 import {clipEraSeat} from './vehicle-eras.js';
@@ -396,7 +396,7 @@ export class Renderer {
         c.restore();
       }
     drawLivingGround(c,camp,light.night,view);
-    drawCampLayoutRoads(c,camp,view,light.night,this.ground.season);
+    drawCampLayoutRoads(c,camp,view,light.night);
     drawMonsterCampGround(c,source,light.night,view);
     drawRegionalCampGround(c,source,light.night,view);
     drawFarmGround(c,camp,view);
@@ -440,9 +440,8 @@ export class Renderer {
     c.stroke();
     c.setLineDash([]);
     }
-    drawCampLandGround(c,camp,view,light.night,this.ground.season);
     drawCampPlaza(c,camp,view,light.night);
-    // 土地覆盖只清除旧院落；真实树木投影和灯池随后绘制，不被地契底色擦掉。
+    // 地面和广场铺设完成后，再绘制树影与灯池。
     for(const tree of g.trees){
       if(source.balconyScene&&!balconyObjectVisible(view,tree))continue;
       if(source.balconyScene){c.save();balconyUpright(c,view,tree);}

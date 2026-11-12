@@ -1,10 +1,8 @@
 // 地契投影到正式场景：未购地保留草地，正式围栏单独读取已购外边界。
-import {CAMP_DIRECTIONS,CAMP_PLOTS,campDirectionStatus,ownsCampPlot,ownsCampPoint} from '../config/camp-land.js';
-import {nearest} from '../world/coordinates.js';
+import {CAMP_DIRECTIONS,campDirectionStatus,ownsCampPoint} from '../config/camp-land.js';
 import {box,oval} from './primitives.js';
 import {canvasFont} from './text-style.js';
 import {drawWorldSign} from './world-signs.js';
-import {drawCampGrass} from './ground-depth.js';
 // 室内与独立战斗场景不叠加地契图层。
 export function campLandActive(game){return game.mapId==='forest'&&!game.story&&!game.realm&&!game.cottage&&!game.campDefense;}
 // 实体白名单保留人、怪物、车辆、植物，隐藏未购地的建筑与常驻营业陈设。
@@ -21,21 +19,6 @@ export function campLandObjects(game){
   return {...d.sign,type:'camp-land-sign',id:d.id,name:d.name+'侧扩建',count:step.total-step.remaining+'/'+step.total,preview:step.next?'下次 · '+step.landmark:'已全部扩建'};
  });
 
-}
-// 覆盖未开发院落与铺路，复用两张小草地纹理；购买后的下一帧立即恢复原地面。
-export function drawCampLandGround(c,game,view,night,season='summer'){
- if(!campLandActive(game))return;
- for(const plot of CAMP_PLOTS){if(ownsCampPlot(game.progress,plot.id))continue;
-  const center=nearest({x:(plot.left+plot.right)/2,y:(plot.top+plot.bottom)/2},{x:view.x+view.w/2,y:view.y+view.h/2});
-  const w=plot.right-plot.left,h=plot.bottom-plot.top,x=center.x-w/2,y=center.y-h/2;
-  if(x>view.x+view.w||x+w<view.x||y>view.y+view.h||y+h<view.y)continue;
-  c.save();drawCampGrass(c,{x,y,w,h},night,season);
-  // 稀疏草簇采用固定位置，镜头移动不会闪烁或重新随机分布。
-  for(let row=0;row<h;row+=92)for(let col=0;col<w;col+=104){const px=x+col+24+(row%3)*7,py=y+row+25;
-   // 低矮林草只作装饰，疏密变化承接外围森林，保持通路开放。
-   if((Math.round(row/92)*7+Math.round(col/104)*3)%11===3){oval(c,px+8,py+4,25,7,'#52764b20');for(const [dx,dy,rx,ry] of [[-11,-3,12,7],[5,-7,15,10],[19,-1,10,6]])oval(c,px+dx,py+dy,rx,ry,night>.5?'#71916e':'#9ab975','#6f965c',1.2);}}
-  c.restore();
- }
 }
 // 木牌和界桩与角色共用脚底深度及夜色。
 export function drawCampLandObject(c,item,night){
