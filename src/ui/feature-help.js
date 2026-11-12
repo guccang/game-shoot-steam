@@ -86,6 +86,10 @@ export function attachFeatureHelp(panel,showHelp){
  button.type='button';button.className='cat-feature-help';button.innerHTML=HELP_EMBLEM;
  button.setAttribute('aria-label','猫猫问号：功能用途');
  button.addEventListener('click',()=>showHelp(text));
- const header=panel.querySelector(':scope > header, :scope > .ui-panel__header');
- if(header)header.append(button);else panel.prepend(button);
+ const header=panel.querySelector(':scope > header, :scope > .ui-panel__header, :scope > .camp-story-heading, :scope > .task-reward-panel > header');
+ // 说明放在关闭键左侧，沿用页面原有的按钮组和键盘顺序。
+ const close=header&&Array.from(header.querySelectorAll('button')).find(node=>node.textContent.trim()==='×');
+ if(close)close.before(button);
+ else if(header)header.append(button);
+ else panel.prepend(button);
 }
