@@ -81,7 +81,7 @@ function advanceParking(game,dt){
  s.stalled=moved<.001&&distance>1?s.stalled+dt:0;
  if(s.stalled>.4){s.phase='cancelled';p.vx=p.vy=0;return true;}
  p.vx=dt?(p.x-previous.x)/dt:0;p.vy=dt?(p.y-previous.y)/dt:0;
- advanceVehicleWheels(game.vehicle,p,previous,dt);
+ advanceVehicleWheels(game.vehicle,p,previous,dt,game.fx);
  if(game.vehicle.index===1)p.walkPhase=((p.walkPhase+(dy<=0?-1:1)*moved/12)%27+27)%27;
  updateCatMotion(p.bodyAnimation,dt,dt?moved/dt:0,false,true);game.time+=dt;game.fx.update(dt);
  if(worldDistance(p,target)<1e-6){

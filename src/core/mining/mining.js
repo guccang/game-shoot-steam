@@ -279,7 +279,7 @@ export function updateMining(game,dt,input){
  }
  if(!room.ride&&!game.vehicle.active&&Math.hypot(p.x-before.x,p.y-before.y)>.001)game.progress.production.effects.juice=Math.max(0,game.progress.production.effects.juice-dt);
  p.vx=(p.x-before.x)/Math.max(.001,dt);p.vy=(p.y-before.y)/Math.max(.001,dt);if(!game.fishing&&(!room.weaponTarget||room.tool||room.autoDig))p.angle=room.direction*Math.PI/2-Math.PI/2;
- if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before,dt);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
+ if(game.vehicle.active){advanceVehicleWheels(game.vehicle,p,before,dt,game.cottage.combat?.fx);p.walkPhase+=(Math.hypot(p.x-before.x,p.y-before.y)/12);}
  receiveStationFreight(game,room);
  updateMineEcology(game,dt);
  autoLoadMineFreight(game);

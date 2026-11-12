@@ -41,7 +41,7 @@ export function drawVehicleTracks(c, player, vehicle, reduced = false, time = 0,
   c.save();
   c.translate(player.x, player.y);
   if(eraVehicle(vehicle.index)){drawEraHull(c,eraVehicle(vehicle.index),vehicle);c.restore();return;}
-  if(vehicle.index===MECH_HULL){drawMechLegs(c,reduced?0:vehicle.wheelPhase||0);c.restore();return;}
+  if(vehicle.index===MECH_HULL){drawMechLegs(c,reduced?0:vehicle.wheelPhase||0,reduced?0:vehicle.strideX||0,reduced?0:vehicle.strideY||0);c.restore();return;}
   if (vehicle.index >= 9) {drawTreasureRear(c,vehicle.index,reduced?0:vehicle.wheelPhase||player.walkPhase||0);c.restore();return;}
   if (vehicle.index === 8) {
     drawPoliceRear(c, vehicle.wheelPhase || 0, time, reduced);

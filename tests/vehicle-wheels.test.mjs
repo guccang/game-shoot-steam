@@ -39,3 +39,15 @@ test('循环边缘使用最近位移并限制相位范围',()=>{
   for(let i=0;i<10000;i++)advanceVehicleWheels(v,{x:5,y:0},{x:0,y:0});
   assert.ok(Math.abs(v.wheelPhase)<Math.PI*2);
 });
+
+// 用实际位移跨过左右脚接触点，核对扬尘坐标及停步收脚后的静止状态。
+test('机甲交替落脚扬尘，停步仅完成当前步',()=>{
+ const vehicle={index:23,active:true,wheelPhase:0},dust=[];
+ const fx={add:(kind,x,y)=>dust.push({kind,x,y})};
+ advanceVehicleWheels(vehicle,{x:88,y:0},{x:0,y:0},.4,fx);
+ assert.deepEqual(dust.map(p=>p.x),[89,97,79,87]);
+ assert.ok(dust.every(p=>p.kind==='step-dust'&&p.y===36));
+ advanceVehicleWheels(vehicle,{x:99,y:0},{x:88,y:0},.05,fx);
+ for(let i=0;i<10;i++)advanceVehicleWheels(vehicle,{x:99,y:0},{x:99,y:0},.05,fx);
+ assert.equal(dust.length,6);assert.equal(vehicle.wheelPhase,Math.PI);
+});

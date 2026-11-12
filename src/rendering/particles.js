@@ -127,6 +127,9 @@ export function drawCombatFX(c, items, reduced = false, reference = null) {
       c.beginPath();
       c.ellipse(0, 0, 3 + p.size * age, 2 + p.size * age * 0.65, 0, 0, Math.PI * 2);
       c.stroke();
+    } else if (p.kind === 'step-dust') {
+      c.globalAlpha *= .53*(1-age);
+      c.beginPath();c.ellipse(0,0,p.size*(1+age),p.size*(.45+age*.45),0,0,Math.PI*2);c.fill();
     } else if (p.kind === 'smoke') {
       c.globalAlpha *= 0.23 * (1 - age);
       c.beginPath();
