@@ -50,3 +50,19 @@ test('暂停和读档恢复不复用旧场景的车辆插值历史',()=>{
  const previous=g.arrivalScene;restoreArrival(g);assert.notEqual(g.arrivalScene,previous);
  assert.equal(interpolation.sample(g,.2).arrivalScene.scooter.y,g.arrivalScene.scooter.y);
 });
+
+// 逐帧经过新档的地契边界，接送车承载两名角色，任何一帧都不能被地契裁掉。
+test('未扩建营地的入职接送车辆与乘客跨地块保持可见',async()=>{
+ const {campObjectVisible}=await import('../src/rendering/camp-land.js');
+ const {ownsCampPoint}=await import('../src/config/camp-land.js');
+ const g=scene('bus',0);
+ let crossed=false;
+ for(let frame=0;frame<230;frame++){
+  for(const item of arrivalObjects(g)){
+   if(item.elderVehicle&&g.arrivalScene.riding&&!ownsCampPoint(g.progress,item))crossed=true;
+   assert.ok(campObjectVisible(g,item),g.progress.arrival.phase+' '+item.type+' '+item.x+','+item.y);
+  }
+  updateArrival(g,.04);
+ }
+ assert.ok(crossed,'实际乘车路线须穿过未购地块');
+});

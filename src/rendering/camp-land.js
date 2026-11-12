@@ -9,7 +9,8 @@ import {drawCampGrass} from './ground-depth.js';
 export function campLandActive(game){return game.mapId==='forest'&&!game.story&&!game.realm&&!game.cottage&&!game.campDefense;}
 // 实体白名单保留人、怪物、车辆、植物，隐藏未购地的建筑与常驻营业陈设。
 export function campObjectVisible(game,item){
- if(!campLandActive(game)||ownsCampPoint(game.progress,item))return true;
+ // 接送车同层绘制主角和松伯，剧情车辆、站牌与交接物沿公共路线显示。
+ if(item.type?.startsWith('arrival-')||!campLandActive(game)||ownsCampPoint(game.progress,item))return true;
  return ['settlement-fence','settlement-gate','player','enemy','boss','tree','landform','parked-vehicle','camp-land-sign','camp-land-stake','mechanical-cat','mechanical-spider'].includes(item.type)||item.type==='scenery'&&['flowers','stones','logs'].includes(item.kind);
 }
 // 相邻未购地显示扩建木牌，核心区保留营地建设入口。
