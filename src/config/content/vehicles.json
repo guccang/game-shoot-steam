@@ -138,6 +138,12 @@
       "baseHp": 87,
       "hpGrowth": 9,
       "speed": 1.56
+    },
+    {
+      "id": "biped-mech",
+      "baseHp": 720,
+      "hpGrowth": 90,
+      "speed": 1.12
     }
   ]
 }

@@ -7,13 +7,13 @@ import {vehicleLoad} from '../../progression/inventory/load-weight.js';
 // 车体装配仅在工坊办理，保存成功后更新同一辆车，保留损耗比例及弹药。
 import {validateProgress} from '../../progression/progress.js';
 import {vehicleBuild,VEHICLE_ENGINES,LOAD_RULES} from '../../config/vehicle-load.js';
-import {vehicleMaxHp} from '../../config/vehicles.js';
+import {vehicleMaxHp,vehicleModel} from '../../config/vehicles.js';
 import {economyFor} from '../../config/economy.js';
 import {personalFleet} from './vehicle-repair.js';
 import {capturePatrol} from '../battle/patrol-session.js';
 // 不同底盘使用对应价格；已买发动机免费换装，拆下装甲保管在工坊。
 export function vehicleBuildPrice(progress,index,action,choice=0){
- const b=vehicleBuild(progress,index),price=economyFor(progress).vehicles[index]?.coins??(eraVehicle(index)?.payload||0)*4;
+ const b=vehicleBuild(progress,index),price=economyFor(progress).vehicles[index]?.coins??vehicleModel(index).purchaseRecipe?.coins??(eraVehicle(index)?.payload||0)*4;
  if(['upgrade-engine','upgrade-chassis'].includes(action))return Math.max(1,Math.ceil(price*.1*(1+normalizeVehicleRefit(b.refit)[action==='upgrade-engine'?'engineLevel':'chassisLevel'])));
  if(action==='engine')return b.engines.includes(choice)?0:Math.ceil(price*(VEHICLE_ENGINES[choice]?.price||0));
  return action==='add-armor'&&!b.spares?Math.max(1,Math.ceil(price*LOAD_RULES.platePriceRate)):0;

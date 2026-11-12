@@ -10,6 +10,7 @@ export const VEHICLE_LOADS=[
  {mass:1300,payload:65*WOOD_BICYCLE_PAYLOAD,tow:2100},
  {mass:3800,payload:150*WOOD_BICYCLE_PAYLOAD,tow:6500},{mass:7600,payload:240*WOOD_BICYCLE_PAYLOAD,tow:13000},
  ...ERA_VEHICLES.map(({mass,payload,tow})=>({mass,payload,tow})),
+ {mass:4600,payload:130*WOOD_BICYCLE_PAYLOAD,tow:5400},
 ];
 export const VEHICLE_ENGINES=[
  {id:'standard',name:'原厂发动机',payload:1,tow:1,speed:1,mass:0,price:0},

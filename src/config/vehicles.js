@@ -1,4 +1,5 @@
 import {vehicleRefitStats} from './vehicle-refit.js';
+import {MECH_MODEL} from './biped-mech.js';
 import {ERA_VEHICLES} from './vehicle-eras.js';
 import {TREASURE_VEHICLES} from './treasure.js';
 import {heroTalentMultiplier} from './hero-talents.js';
@@ -95,10 +96,10 @@ export const COLLECTED_VEHICLES = [
   {id:'red-wolf',treePass:true,name:'红狼坦克',shortName:'红狼',description:'红色重型坦克，超厚装甲与256毫米狼牙主炮；可直接压碎树木（不获得木材），缓慢推进，以范围重炮压制成群敌人。'},
   {id:'jinbei-van',name:'金杯面包车',shortName:'金杯',description:'奶油白的金杯载着热心邻居赶来支援。邻里猫小队拿起扳手、勺子等日常用品，互相照应，一起守护营地。'},
   {id:'police-car',name:'森林警车',shortName:'警车',description:'轻快的奶油白巡逻警车，红蓝警灯守护林间道路；驾驶时使用角色手持武器。',unarmed:true},
-...TREASURE_VEHICLES, ...ERA_VEHICLES,
+...TREASURE_VEHICLES, ...ERA_VEHICLES, MECH_MODEL,
 ].map(vehicle=>({...vehicle,...content.rows.find(row=>row.id===vehicle.id),coins:0,wood:0,bosses:0}));
 // 车库展示价格和挑战门槛使用正式经济配置。
-COLLECTED_VEHICLES.forEach((v,i)=>{const r=RECOMMENDED_ECONOMY.vehicles[i];if(!r)return;v.coins=r.coins;v.wood=r.wood;v.bosses=r.gate?RECOMMENDED_ECONOMY.challenges.forest[requiredTier(r.gate)-1]:0;});
+COLLECTED_VEHICLES.forEach((v,i)=>{const r=RECOMMENDED_ECONOMY.vehicles[i]??v.purchaseRecipe;if(!r)return;v.coins=r.coins;v.wood=r.wood;v.bosses=r.gate?RECOMMENDED_ECONOMY.challenges.forest[requiredTier(r.gate)-1]:0;});
 // 统一查询型号，旧调用未传编号时保持基础战车外观与数值。
 export function vehicleModel(index = 0) {
   return COLLECTED_VEHICLES[index] || COLLECTED_VEHICLES[0];
@@ -108,5 +109,5 @@ export function vehicleSpeed(progress, index = progress.vehicleIndex) { return v
 // 仅调整货架顺序，所有权、挂载和场景仍使用固定目录编号。
 export const VEHICLE_DISPLAY_ORDER = Object.freeze([
  'ranger-scooter','wood-bicycle','wood-wagon','pine-tank','police-car','heavy-tank',
- 'fire-truck','hovercraft','jinbei-van','helicopter','red-wolf','moss-sentinel','amber-bastion',
+ 'fire-truck','hovercraft','jinbei-van','helicopter','red-wolf','biped-mech','moss-sentinel','amber-bastion',
 ].map(id=>COLLECTED_VEHICLES.findIndex(model=>model.id===id)));

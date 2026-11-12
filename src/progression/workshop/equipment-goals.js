@@ -20,7 +20,7 @@ export function equipmentRecipe(kind, index, progress) {
   if (!item || item.rewardOnly || item.retired || !['weapons', 'vehicle', 'turret'].includes(kind)) return null;
   const era=kind==='vehicle'&&eraVehicle(index);
   if(era)return campPurchasePrice(progress,{name:era.name,coins:0,wood:0,parts:0,crystal:0,core:0,...era.cost});
-  const base = kind === 'vehicle' ? VEHICLE_RECIPES[index] : WEAPON_RECIPES[index];
+  const base = kind === 'vehicle' ? (item.purchaseRecipe??VEHICLE_RECIPES[index]) : WEAPON_RECIPES[index];
   if (!base) return null;
   const recipe = { ...base, coins: item.coins, wood: item.wood, bosses: item.bosses || 0,
     name: item.name + (kind === 'turret' ? i18nText("progression.equipment-goals.3d7947dc15") : '') };

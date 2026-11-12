@@ -1,4 +1,5 @@
 import {SPECIAL_AMMO} from './vehicle-special-ammo.js';
+import {MECH_GUN} from './biped-mech.js';
 import {REGIONAL_GUNS} from './regional-camps.js';
 import {TREASURE_GUNS} from './treasure.js';
 // 道具、弹药、主炮质量与故障概率集中配置；重量统一使用千克。
@@ -17,7 +18,7 @@ export const AMMO_TYPES={
  water:{name:'潮汐水罐',mass:.1,pack:200,coins:20,wood:1,parts:0,targets:['hand','vehicle']},
 };
 export const SUPPLY_ITEMS={medkit:{name:'急救包',mass:1,coins:60,heal:60},gunKit:{name:'主炮维修包',mass:3,coins:90,repair:35},engineKit:{name:'发动机维修包',mass:4,coins:100,repair:35}};
-export const GUN_MASSES={17:60,18:360,19:100,20:90,21:850,22:50,...Object.fromEntries([...TREASURE_GUNS,...REGIONAL_GUNS].map(w=>[w.weaponIndex,w.mass]))};
+export const GUN_MASSES={17:60,18:360,19:100,20:90,21:850,22:50,...Object.fromEntries([...TREASURE_GUNS,...REGIONAL_GUNS,MECH_GUN].map(w=>[w.weaponIndex,w.mass]))};
 export const FAULT_RULES={explosion:{chance:.35,gun:24,engine:18},electric:{chance:.5,gun:16,engine:30},fire:{chance:.25,gun:12,engine:22},piercing:{chance:.3,gun:25,engine:15}};
 // 召唤能量、近战和护盾不属于可购买的实物子弹。
 export function ammoKind(weapon){if(weapon?.id==='water')return 'water';if(!weapon||weapon.controller||weapon.attackKind==='defense'||weapon.id==='chainsaw'||weapon.attackKind==='melee')return null;if(weapon.ammo)return weapon.ammo;return weapon.id==='wolf-256'?'heavy':weapon.id==='tank-125'?'shell':weapon.id==='hover-tide'?'water':'light';}

@@ -50,7 +50,7 @@ export function markVehicleWreck(game,position){
 }
 // 保养与报废统一按损失耐久及故障比例乘车型维修费率，金币向上取整。
 export function vehicleRepairQuote(game,index){
- const v=game.vehicles[index],price=economyFor(game.progress).vehicles[index]?.coins??(eraVehicle(index)?.payload||0)*4;
+ const v=game.vehicles[index],price=economyFor(game.progress).vehicles[index]?.coins??vehicleModel(index).purchaseRecipe?.coins??(eraVehicle(index)?.payload||0)*4;
  if(!v||!game.progress.vehicleHulls[index])return 0;
  const f=vehicleFaults(game.progress,index),loss=Math.min(1,(1-Math.max(0,v.hp)/v.maxHp)+Math.max(f.gun,f.engine)/100*.2);
  return loss<=0?0:Math.max(1,Math.ceil(price*vehicleRepairRate(vehicleModel(index).id)*loss));
