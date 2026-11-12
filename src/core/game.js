@@ -704,6 +704,7 @@ export class Game {
     if (target.type === 'tree') {
       countCampActivity(this.progress,'trees',1,nearestClearingPost(target).camp);
       this.chopped++;
+      if(!this.realm&&!this.story&&!this.workshopTrial&&!this.fireActive)this.progress.mainline.seen.felledTree=1;
       coins = TREE_REWARD.coins;
       wood = TREE_REWARD.wood;
       this.leaveStump(target);
