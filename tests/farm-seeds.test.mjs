@@ -9,7 +9,7 @@ import {catLoad,movementLoadFactor} from '../src/progression/inventory/load-weig
 import {itemDefinition} from '../src/config/items.js';
 import {FARM_CROPS,FARM_SEED_DROP,FARM_SEED_DOOR,FARM_SEED_SHOP,FARM_STOCK_CAP} from '../src/config/farm.js';
 import {farmLandReason} from '../src/world/farm-land.js';
-import {livingFacilityBlocked} from '../src/world/living-spaces.js';
+import {worldBuildingBlocked} from '../src/world/building-collision.js';
 // 柜台夹具保留正式存档与事务，仅替换持久化接口和随机数。
 function scene(){const progress=freshProgress();progress.coins=100;return {progress,state:'playing',mapId:'forest',player:{...FARM_SEED_DOOR},livingPersist:()=>true,random:()=>0,trees:[]};}
 
@@ -33,11 +33,11 @@ test('领主两粒种子恰好满载时整批入仓，重复击杀不补发，�
  assert.equal(g.progress.coins,100-5*FARM_CROPS[0].cost);
  assert.equal(movementLoadFactor(g),1);
 });
-test('新档全部锁定，首获后用完仍解锁，升级不解锁；旧档保留历史权限',()=>{
+test('新档全部锁定，首获后用完仍解锁，升级不解锁；当前档保留权限，废弃版本使用初始农田',()=>{
  const g=scene(),f=g.progress.farm;assert.ok(f.unlocked.every(v=>!v));f.xp=9999;assert.ok(validateFarm(f).unlocked.every(v=>!v));
  f.plots=[{id:0,mapId:'forest',x:900,y:600,crop:7,plantedAt:0,readyAt:0,wild:true}];assert.equal(validateFarm(f).unlocked[7],false);
  grantFarmSeeds(f,0,1);f.seeds[0]=0;assert.equal(validateFarm(f).unlocked[0],true);
- const old=validateFarm({version:4,xp:30,seeds:[0,0,0,1]});assert.deepEqual(old.unlocked,FARM_CROPS.map((_,i)=>[0,1,3].includes(i)));assert.deepEqual(validateFarm(old),old);
+ const old=validateFarm({version:4,xp:30,seeds:[0,0,0,1]});assert.deepEqual(old,scene().progress.farm);assert.deepEqual(validateFarm(old),old);
  assert.equal(grantFarmSeeds(f,0,-1),0);assert.equal(grantFarmSeeds(f,99,1),0);
 });
 test('普通怪一粒与领主两粒，死亡结算不重复，连续十九次未掉后必掉',()=>{
@@ -78,7 +78,7 @@ test('店外有车也先装背包，批量购种只将余数装车，保存失�
  assert.equal(validateProgress(g.progress).shopStock[0]['seed:0'],3);
 });
 test('小屋底座阻挡种地与穿行，门前和两侧可通行',()=>{
- const g=scene();assert.ok(farmLandReason(g,FARM_SEED_SHOP));assert.equal(livingFacilityBlocked(FARM_SEED_SHOP.x,FARM_SEED_SHOP.y,10,'forest'),true);
- assert.equal(livingFacilityBlocked(FARM_SEED_DOOR.x,FARM_SEED_DOOR.y,10),false);
- for(const dx of [-85,85])assert.equal(livingFacilityBlocked(FARM_SEED_SHOP.x+dx,FARM_SEED_SHOP.y,10),false);
+ const g=scene();assert.ok(farmLandReason(g,FARM_SEED_SHOP));assert.equal(worldBuildingBlocked(FARM_SEED_SHOP.x,FARM_SEED_SHOP.y,10,{mapId:'forest'}),true);
+ assert.equal(worldBuildingBlocked(FARM_SEED_DOOR.x,FARM_SEED_DOOR.y,10,{mapId:'forest'}),false);
+ for(const dx of [-85,85])assert.equal(worldBuildingBlocked(FARM_SEED_SHOP.x+dx,FARM_SEED_SHOP.y,10,{mapId:'forest'}),false);
 });

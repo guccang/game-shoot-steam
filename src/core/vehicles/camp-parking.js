@@ -85,7 +85,7 @@ export function parkingOccupied(game,id){const spot=PARKING_SPOTS.find(s=>s.id==
 // 交接完成后接管北广场赠车，不移动到未修复车库，也不重复占位。
 export function adoptArrivalParking(game){
  const hull=arrivalGiftHull(game.progress);
- if(!arrivalParkingAllowed(game)||!game.progress.arrival?.parked||!game.progress.vehicleHulls[hull])return;
+ if(!arrivalParkingAllowed(game)||!game.progress.arrival?.keys||!game.progress.arrival.parked||!game.progress.vehicleHulls[hull])return;
  const owned=game.progress.campParking.owned;
  if(!owned.some(s=>s.hull===hull)){
   const spot=!owned.some(s=>s.spot===RANGER.parkingId)?PARKING_SPOTS.find(s=>s.id===RANGER.parkingId):northParkingSpot(game.progress,hull);

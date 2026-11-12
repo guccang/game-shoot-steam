@@ -40,17 +40,16 @@ test('跳过演出后的首个快捷输入仍需靠近北广场赠车',()=>{
  assert.equal(g.summonVehicle(),false);assert.equal(parkedOwned(g).length,1);
  approach(g);assert.equal(g.summonVehicle(),true);assert.equal(g.vehicle.active,true);
 });
-test('未交钥匙、演出和施工锁定时不能接管或上车',()=>{
- const g=arrive(true);approach(g);
- g.progress.arrival.keys=false;adoptArrivalParking(g);assert.equal(parkedOwned(g).length,0);
- g.progress.arrival.keys=true;g.progress.arrival.phase='leave';
+test('交接前和告别演出中不接管赠车，旧施工期间可自由骑乘',()=>{
+ const g=new Game(freshRangerProgress());g.start();adoptArrivalParking(g);assert.equal(parkedOwned(g).length,0);
+ // 钥匙和车体已交付，但告别演出尚未结束。
+ g.progress.vehicleHulls[RANGER.giftHull]=1;Object.assign(g.progress.arrival,{phase:'leave',keys:true,giftHull:RANGER.giftHull,parked:true});
  adoptArrivalParking(g);assert.equal(parkedOwned(g).length,0);assert.equal(g.summonVehicle(),false);
- g.progress.arrival.phase='gather';adoptArrivalParking(g);
- g.progress.arrival.phase='repairing';assert.equal(boardParkedVehicle(g,RANGER.giftHull),false);
- assert.equal(g.summonVehicle(),false);
- g.progress.arrival.phase='repair';g.vehicle.cooldown=1;
- assert.equal(boardParkedVehicle(g,RANGER.giftHull),false);
- g.vehicle.cooldown=0;assert.equal(boardParkedVehicle(g,RANGER.giftHull),true);
+ g.progress.arrival.phase='letter';g.progress.arrival.keys=false;adoptArrivalParking(g);
+ assert.equal(parkedOwned(g).length,0);assert.equal(g.progress.arrival.parked,true);
+ g.progress.arrival.keys=true;g.progress.arrival.phase='repairing';approach(g);adoptArrivalParking(g);
+ g.vehicles[RANGER.giftHull].cooldown=1;assert.equal(boardParkedVehicle(g,RANGER.giftHull),false);
+ g.vehicles[RANGER.giftHull].cooldown=0;assert.ok(boardParkedVehicle(g,RANGER.giftHull));
 });
 test('入职任务中的停车记录重载后仍能使用且不会生成第二辆赠车',()=>{
  const g=arrive();const restored=new Game(JSON.parse(JSON.stringify(g.progress)));

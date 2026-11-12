@@ -28,7 +28,7 @@ test('首次档无手枪战车，旧档不强制播放',()=>{const g=new Game(fr
 test('短剧暂停和刷新续接同一检查点，威胁不推进',()=>{const g=new Game(freshRangerProgress());g.start();tick(g,4);const a=structuredClone(g.progress.arrival),pos={x:g.player.x,y:g.player.y};g.pause();tick(g,10);assert.deepEqual(g.progress.arrival,a);const restored=new Game(JSON.parse(JSON.stringify(g.progress)));assert.equal(restored.player.x,pos.x);assert.equal(restored.player.y,pos.y);restored.start();tick(restored,5);assert.equal(restored.progress.arrival.phase,'letter');assert.equal(restored.wave,1);assert.equal(restored.enemies.length,0);assert.equal(restored.startFireRescue(),false);assert.equal(restored.enterRealm('tower'),false);assert.equal(restored.enterStory('first-patrol'),false);});
 test('交接只得电锯钥匙和北广场木制自行车，老人骑自己的车离开',()=>{const g=arrive();assert.equal(g.progress.arrival.keys,true);assert.equal(g.progress.weapons[14],1);assert.equal(g.progress.weapons[0],0);assert.ok(g.progress.vehicleHulls.every((level,index)=>level===(index===RANGER.giftHull?1:0)));assert.equal(g.vehicle.weaponIndex,null);assert.equal(g.enemies.length,0);assert.equal(g.progress.wood,0);});
 test('保存失败不发赠品，重试后只提交一次',()=>{const g=new Game(freshRangerProgress());g.start();tick(g,6.6);assert.equal(g.progress.arrival.phase,'handover');g.arrivalPersist=()=>false;tick(g,1);assert.equal(g.progress.arrival.phase,'handover');assert.equal(g.progress.weapons[14],0);assert.equal(g.arrivalError,true);g.arrivalPersist=()=>true;g.advanceArrival();tick(g,.05);assert.equal(g.progress.arrival.phase,'leave');assert.equal(g.progress.weapons[14],1);tick(g,3);assert.equal(g.progress.weapons[14],1);});
-test('骑车可用手持武器伐木，电动车无挂载槽',()=>{const g=arrive();g.progress.vehicleWeapons[0]=1;assert.equal(configureVehicle(g,0,5),false);assert.equal(quoteWorkshop(freshProgress(),{kind:'vehicle',index:5,action:'mount',choice:0,original:null}).ok,false);g.progress.vehicleLoadouts[5]=0;assert.equal(createVehicle(g.progress, 5).module,null);assert.equal(validateProgress(g.progress).vehicleLoadouts[5],null);assert.equal(previewWorkshop(g.progress,'vehicle',5,0).weapon,null);Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.equal(g.summonVehicle(),true);const tree=g.trees[0];Object.assign(g.player,{x:tree.x-55,y:tree.y});tick(g,3);assert.ok(tree.hp<55);assert.ok(g.progress.arrival.wood>0);});
+test('骑车可用手持电锯伐木，永久载具拒绝将手持武器编号当作主炮',()=>{const g=arrive();g.progress.vehicleWeapons[0]=1;assert.equal(configureVehicle(g,0,5),false);assert.equal(quoteWorkshop(freshProgress(),{kind:'vehicle',index:5,action:'mount',choice:0,original:null}).ok,false);g.progress.vehicleHulls[5]=1;g.progress.vehicleLoadouts[5]=0;assert.equal(createVehicle(g.progress, 5).module,null);assert.equal(validateProgress(g.progress).vehicleLoadouts[5],null);assert.equal(previewWorkshop(g.progress,'vehicle',5,0).weapon,null);Object.assign(g.player,{x:RANGER.parking.x+90,y:RANGER.parking.y+18});assert.equal(g.summonVehicle(),true);const tree=g.trees[0];Object.assign(g.player,{x:tree.x-55,y:tree.y});tick(g,3);assert.ok(tree.hp<55);assert.ok(g.progress.arrival.wood>0);});
 test('伐木、修复、造枪按序扣料，完成前无波次',()=>{const g=arrive();for(let i=0;i<50&&g.progress.arrival.phase==='gather';i++)chop(g);assert.equal(g.progress.arrival.phase,'repair');assert.ok(g.progress.wood>=RANGER.repairWood);assert.equal(g.transact('weapons',0,'buy'),false);assert.equal(quoteWorkshop(g.progress,{kind:'weapons',index:0,action:'buy'}).ok,false);while(g.progress.wood<RANGER.repairWood+RANGER.pistolWood)chop(g);Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});assert.equal(arrivalWorkReady(g),true);const before=g.progress.wood;assert.equal(g.advanceArrival(),true);tick(g,RANGER.rebuildSeconds+RESTORATION_FLIGHT+.1);assert.equal(g.progress.arrival.phase,'craft');assert.equal(g.progress.wood,before-RANGER.repairWood+RANGER.pistolWood);assert.equal(g.enemies.length,0);assert.equal(g.advanceArrival(),false);assert.equal(commitWorkshop(g,{kind:'weapons',index:0,action:'buy'},()=>true).ok,true);assert.equal(g.progress.arrival.phase,'complete');assert.equal(g.progress.wood,before-RANGER.repairWood);assert.equal(g.progress.weapons[0],1);assert.equal(g.progress.weapon,0);assert.equal(g.advanceArrival(),false);tick(g,4);assert.equal(g.enemies.length,0);assert.equal(g.progress.living.patrolActive,false);const restored=new Game(JSON.parse(JSON.stringify(g.progress)));assert.equal(restored.arrivalPending,false);assert.equal(restored.arrivalScene,null);});
 test('施工中重载不重复扣料；距离与钥匙都必须满足',()=>{const g=arrive();for(let i=0;i<50&&g.progress.arrival.phase==='gather';i++)chop(g);Object.assign(g.player,{x:1800,y:1800});assert.equal(g.advanceArrival(),false);Object.assign(g.player,{x:WORKSHOP.x,y:WORKSHOP.y+25});g.advanceArrival();tick(g,1);const before=g.progress.wood;const restored=new Game(JSON.parse(JSON.stringify(g.progress)));restored.start();tick(restored,RANGER.rebuildSeconds+RESTORATION_FLIGHT-1+.1);assert.equal(restored.progress.arrival.phase,'craft');assert.equal(restored.progress.wood,before+RANGER.pistolWood);tick(restored,10);assert.equal(restored.progress.wood,before+RANGER.pistolWood);});
 
@@ -70,7 +70,7 @@ test('公交下车站定一秒，急速接送到北门，老人骑走后持信�
  const parked=parkedVehicleObjects(g).find(o=>o.owner&&o.hull===RANGER.giftHull);assert.equal(parked.x,RANGER.parking.x);assert.equal(parked.y,RANGER.parking.y);
 });
 // 每个短节拍在中途恢复相同演员和车轮，旧导览迁移而不再播放长对白。
-test('全阶段刷新续接与两代旧入职存档兼容',()=>{
+test('当前阶段刷新续接，废弃版本不重播入职',()=>{
  const g=new Game(freshRangerProgress());g.start();const seen=new Set();
  for(let i=0;i<200&&g.progress.arrival.phase!=='letter';i++){
   g.update(.05);const a=g.progress.arrival;if(a.elapsed<.1||seen.has(a.phase))continue;seen.add(a.phase);
@@ -80,8 +80,8 @@ test('全阶段刷新续接与两代旧入职存档兼容',()=>{
  assert.equal(seen.size,Object.keys(RANGER_STAGES).length);
  for(const version of [1,2])for(const phase of ['ride','dialogue','cottage','weapons','vehicle','dismount','parking','handover','leave','watch']){
   const p=freshRangerProgress();Object.assign(p.arrival,{version,phase,elapsed:8});
-  assert.equal(validateProgress(p).arrival.phase,'handover');assert.equal(validateProgress(p).arrival.elapsed,0);
-  p.arrival.keys=true;assert.equal(validateProgress(p).arrival.phase,'gather');
+  assert.equal(validateProgress(p).arrival,null);
+  p.arrival.keys=true;assert.equal(new Game(validateProgress(p)).arrivalPending,false);
  }
  const p=freshRangerProgress();p.arrival.phase='complete';assert.equal(new Game(p).arrivalPending,false);
 });
@@ -116,7 +116,7 @@ test('建造武器工坊采集80木料即可，初始两秒仍展示采集过程
   g.player.angle=Math.atan2(dy,dx);g.update(.05,d>55?{x:dx/d,y:dy/d}:{x:0,y:0});seconds+=.05;
   if(seconds<=2)assert.equal(g.progress.arrival.phase,'gather');
  }
- assert.ok(availableWood(g)>=RANGER.repairWood,`采集超时：${availableWood(g)}份，${seconds}秒`);assert.equal(g.progress.arrival.phase,'gather');assert.equal(g.progress.wood,0);Object.assign(g.player,CAMP_WAREHOUSE);g.livingPersist=()=>true;assert.ok(storeWood(g).ok);
+ assert.ok(availableWood(g)>=RANGER.repairWood,`采集超时：${availableWood(g)}份，${seconds}秒`);assert.equal(g.progress.arrival.phase,'repair');assert.equal(g.progress.wood,0);Object.assign(g.player,CAMP_WAREHOUSE);g.livingPersist=()=>true;assert.ok(storeWood(g).ok);
  assert.equal(g.progress.arrival.phase,'repair');assert.ok(seconds>2&&seconds<40,`实际采集${seconds.toFixed(2)}秒`);
  assert.equal(g.progress.wood,RANGER.repairWood);
 });

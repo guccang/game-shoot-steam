@@ -39,10 +39,13 @@ export function ownsVehicleWeapon(progress, index) {
 }
 // 专属主炮读取自己的部件；旧型号兼容原熟练度与改装，等级始终独立。
 export function vehicleWeapon(progress, index = progress.vehicleLoadouts[progress.vehicleIndex]) {
-  if (!ownsVehicleWeapon(progress, index)) return null;
+  // 永久载具只读取主炮目录，活动借用装备保留其局内武器规则。
+  if (!ownsVehicleWeapon(progress,index))return null;
+  const armament=isVehicleArmament(index);
+  if(!armament&&!progress.guardianHandWeapons&&!progress.temporaryGrowth)return null;
   // 守护支架使用手持目录，新枪编号不能被旧车载机枪解释。
   if(progress.guardianHandWeapons&&index>=17)return effectiveWeapon(progress,index);
-  if(isVehicleArmament(index)){const w=applyWeaponParts({...VEHICLE_WEAPONS[index]},progress,index,'turret');return {...w,reloadTime:w.reloadTime/vehicleRefitStats(progress).strength.ammo};}
+  if(armament){const w=applyWeaponParts({...VEHICLE_WEAPONS[index]},progress,index,'turret');return {...w,reloadTime:w.reloadTime/vehicleRefitStats(progress).strength.ammo};}
   const weapon=effectiveWeapon({ ...progress, weapons: progress.vehicleWeapons, weaponParts: progress.turretParts }, index, 'turret');
   const w=vehicleCapacity(weapon,progress.vehicleAmmoBonus||GAMEPLAY_VALUES.vehicle.ammoMultiplier);return {...w,reloadTime:w.reloadTime/vehicleRefitStats(progress).strength.ammo};
 }

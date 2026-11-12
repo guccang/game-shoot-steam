@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import {Game} from '../src/core/game.js';
 import {freshProgress,validateProgress} from '../src/progression/progress.js';
 import {MAINLINE_IDS} from '../src/config/mainline.js';
+import {CAMP_PLOTS} from '../src/config/camp-land.js';
 import {TOWN_RESTORATIONS} from '../src/config/town-restoration.js';
 import {grantVehicleArmament} from '../src/config/vehicle-armaments.js';
 import {vehicleWeapon} from '../src/config/vehicles.js';
@@ -28,7 +29,7 @@ import {clampRiderSupply} from '../src/combat/rider-supply.js';
 import {captureRealmVehicles,restoreRealmVehicles} from '../src/core/realms/realm-vehicles.js';
 import {syncRealm} from '../src/core/realms/realm-manager.js';
 // 完成入职的独立车队，禁用随机波次但保留正常运行时和保存边界。
-function scene(hull=1){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.vehicleHulls.fill(1);p.vehicleHulls.forEach((_,i)=>grantVehicleArmament(p,i));p.vehicleIndex=hull;p.coins=p.wood=100000;p.materials.parts=100;const g=new Game(p,()=>0);g.state='playing';g.trees=[];g.enemies=[];g.boss=null;g.spawnTimer=g.fireClock=999;g.livingPersist=()=>true;g.progress.campParking.owned=[];g.vehicle.active=true;Object.assign(g.player,{x:220,y:835,vx:0,vy:0});return g;}
+function scene(hull=1){const p=freshProgress();p.arrival={version:3,phase:'complete',keys:true};p.mainline.completed=[...MAINLINE_IDS];p.mainline.phase='complete';p.campLand.owned=CAMP_PLOTS.map(plot=>plot.id);p.restoration.repaired=TOWN_RESTORATIONS.map(f=>f.id);p.vehicleHulls.fill(1);p.vehicleHulls.forEach((_,i)=>grantVehicleArmament(p,i));p.vehicleIndex=hull;p.coins=p.wood=100000;p.materials.parts=100;const g=new Game(p,()=>0);g.state='playing';g.trees=[];g.enemies=[];g.boss=null;g.spawnTimer=g.fireClock=999;g.livingPersist=()=>true;g.progress.campParking.owned=[];g.vehicle.active=true;Object.assign(g.player,{x:220,y:835,vx:0,vy:0});return g;}
 // 只推进车炮和在途弹丸，让驾驶员的手持枪无法代替车炮造成伤害。
 test('车炮按独立手机设定伐木，关闭后保留弹药且仍可击中树后的敌人',()=>{
  const g=scene(1);

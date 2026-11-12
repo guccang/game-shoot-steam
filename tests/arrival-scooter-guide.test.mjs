@@ -30,7 +30,7 @@ function gather(g){
  for(let n=0;n<40&&g.progress.arrival.phase==='gather';n++){
   const tree=g.trees.find(t=>t.hp>0);Object.assign(g.player,{x:tree.x-50,y:tree.y});g.player.angle=0;
   for(let i=0;i<120&&tree.hp>0&&g.progress.arrival.phase==='gather';i++)g.update(.05);
-  if(woodPickupCapacity(g)<TREE_REWARD.wood){Object.assign(g.player,CAMP_WAREHOUSE);assert.ok(storeWood(g).ok);}
+  if(g.progress.wood+g.progress.logistics.builds[g.vehicle.index].wood>=RANGER.repairWood||woodPickupCapacity(g)<TREE_REWARD.wood){Object.assign(g.player,CAMP_WAREHOUSE);assert.ok(storeWood(g).ok);}
  }
  assert.equal(g.progress.arrival.phase,'repair');
 }
