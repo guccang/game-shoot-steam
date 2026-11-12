@@ -1,3 +1,5 @@
+import {MECH_HULL} from '../config/biped-mech.js';
+import {drawMechLegs,drawMechArmor} from './biped-mech.js';
 import {eraVehicle} from '../config/vehicle-eras.js';
 import {drawEraHull,drawEraIcon} from './vehicle-eras.js';
 import {drawTreasureRear,drawTreasureFront} from './treasure-equipment.js';
@@ -39,6 +41,7 @@ export function drawVehicleTracks(c, player, vehicle, reduced = false, time = 0,
   c.save();
   c.translate(player.x, player.y);
   if(eraVehicle(vehicle.index)){drawEraHull(c,eraVehicle(vehicle.index),vehicle);c.restore();return;}
+  if(vehicle.index===MECH_HULL){drawMechLegs(c,reduced?0:vehicle.wheelPhase||0);c.restore();return;}
   if (vehicle.index >= 9) {drawTreasureRear(c,vehicle.index,reduced?0:vehicle.wheelPhase||player.walkPhase||0);c.restore();return;}
   if (vehicle.index === 8) {
     drawPoliceRear(c, vehicle.wheelPhase || 0, time, reduced);
@@ -99,7 +102,8 @@ export function drawVehicleArmor(c, player, vehicle, progress, time, reduced = f
   const hull = tankHullPose(vehicle, reduced);
   c.translate(hull.x, hull.y);
   if(eraVehicle(vehicle.index)){drawEraHull(c,eraVehicle(vehicle.index),vehicle,true,time,reduced);c.restore();return;}
-  if (vehicle.index >= 9) drawTreasureFront(c,vehicle.index,vehicle.flash>0);
+  if(vehicle.index===MECH_HULL)drawMechArmor(c,vehicle.flash>0);
+  else if (vehicle.index >= 9) drawTreasureFront(c,vehicle.index,vehicle.flash>0);
   else if (vehicle.index === 5) drawScooterFront(c,reduced?0:vehicle.wheelPhase||0);
   else if (vehicle.index === 8) drawPoliceFront(c);
   else if (vehicle.index === 7) drawJinbeiFront(c);
@@ -188,7 +192,7 @@ export function drawVehicleIcon(c, index = 0) {
   // 小导航图标和大收藏画像按同一包围盒缩放，耳朵及行走部件都不裁切。
   const scale = Math.min(
     c.canvas.width / ([6, 7].includes(index) ? 175 : 155),
-    c.canvas.height / (index === 7 ? 145 : index === 6 ? 135 : 115),
+    c.canvas.height / (index === MECH_HULL ? 145 : index === 7 ? 145 : index === 6 ? 135 : 115),
   );
   c.translate(c.canvas.width / 2, c.canvas.height / 2 + 10 * scale);
   c.scale(scale, scale);
@@ -215,7 +219,8 @@ export function drawVehicleIcon(c, index = 0) {
     ],
     '#d7bd76',
   );
-  if (index >= 9) drawTreasureFront(c,index);
+  if(index===MECH_HULL)drawMechArmor(c,false);
+  else if (index >= 9) drawTreasureFront(c,index);
   else if (index === 8) drawPoliceFront(c);
   else if (index === 7) drawJinbeiFront(c);
   else if (index === 6) drawRedWolfFront(c, false);

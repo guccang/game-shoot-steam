@@ -1,3 +1,4 @@
+import {MECH_GUN} from './biped-mech.js';
 import {REGIONAL_GUNS} from './regional-camps.js';
 import {TREASURE_GUNS} from './treasure.js';
 import { i18nText } from "../i18n/index.js";
@@ -14,7 +15,7 @@ export const VEHICLE_ARMAMENTS = [
   {id:'wolf-256',weaponIndex:21,hullIndex:6,name:'256毫米狼牙主炮',description:'红狼专属重炮：炮弹直击后引爆150米范围，周围敌人承受80%伤害；原厂装填2.2秒，适合压制密集敌群。',damage:700,interval:2.2,range:640,speed:1150,pellets:1,spread:0,magazineSize:1,reloadTime:2.2,impulse:1500,impactScale:3.4,hitRadius:8,aimAssist:true,muzzle:96,blastRadius:150,blastRatio:.8,color:'#f5bd83'},
   // 金杯专属召唤器沿用独立车载供给；伙伴只能近战，不能改挂远程枪。
   {id:'cat-crew',weaponIndex:22,hullIndex:7,name:'邻里猫小队',description:'邻里猫们带着扳手、勺子、叉子、树枝和棒球棍等日常用品逐只下车，齐心驱赶靠近的地面敌人，守护共同的营地；协同升级可增加队员。',controller:'mechanical',crew:true,fixedMelee:true,manualSpawn:true,freeMelee:true,armored:false,damage:38,interval:.85,range:340,meleeReach:28,moveSpeed:210,summonCount:4,companionHp:180,spawnInterval:1,windupTime:.18,swingTime:.24,emergeSpeed:150,guardRadius:100,magazineSize:12,reloadTime:4,resourceType:'energy',impulse:35,groundedPush:true,pushLimit:80,pellets:1,spread:0,color:'#d1b06e',muzzle:0},
- ...TREASURE_GUNS, ...REGIONAL_GUNS,
+ ...TREASURE_GUNS, ...REGIONAL_GUNS, MECH_GUN,
 ];
 // 旧炮塔0–16及专属主炮17–22保持固定编号；新手持枪不能挤占既有主炮存档。
 export const VEHICLE_WEAPONS = [...WEAPONS.slice(0,17), ...VEHICLE_ARMAMENTS];

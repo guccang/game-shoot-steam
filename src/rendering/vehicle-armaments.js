@@ -29,7 +29,13 @@ export function drawVehicleArmament(c, weapon, { kick = 0, flash = 0, rotor = 0,
   );
   c.save();
   c.save();
-  if(weapon.regional){drawRegionalGunBody(c,weapon,kick);}
+  if(weapon.id==='heron-cannon'){
+    box(c,-13,-10,31,20,5,'#5a827d',outline,2);
+    c.translate(-kick,0);
+    box(c,12,-5,42,10,2,'#99aca0',outline,2);
+    box(c,20,-8,17,16,3,'#cf9a58',outline,2);
+    box(c,48,-7,9,14,2,'#526963',outline,2);
+  }else if(weapon.regional){drawRegionalGunBody(c,weapon,kick);}
   else if (weapon.id === 'wolf-256') {
     drawWolfCannon(c, kick);
   } else if (tank) {
